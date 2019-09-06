@@ -1,0 +1,26 @@
+{
+  "scripts": {
+    "build": "webpack",
+    "lint": "eslint src/",
+    "test": "jasmine",
+    "prepublish": "npm run lint; npm run test; npm run build"
+  },
+  "dependencies": {
+    "@turf/turf": "^5.1.6",
+    "maplat_tin": "^0.4.7",
+    "ol": "^5.3.3"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.5.5",
+    "@babel/core": "^7.5.5",
+    "@babel/polyfill": "^7.4.4",
+    "@babel/preset-env": "^7.5.5",
+    "@babel/register": "^7.5.5",
+    "babel-loader": "^8.0.6",
+    "core-js": "^3.2.1",
+    "eslint": "^6.3.0",
+    "jasmine": "^3.4.0",
+    "webpack": "^4.39.3",
+    "webpack-cli": "^3.3.7"
+  }
+}
