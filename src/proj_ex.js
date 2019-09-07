@@ -9,10 +9,10 @@ export function transformDirect(xy, src, dist) {
     }
     const srcCode = src.getCode ? src.getCode() : src;
     const distCode = dist.getCode ? dist.getCode() : dist;
-    const func = getTransform(src, dist);
+    let func = getTransform(src, dist);
     if (func == identityTransform && srcCode != distCode) {
-        var srcFunc = getTransform(src, 'EPSG:3857');
-        var distFunc = ogetTransform('EPSG:3857', dist);
+        const srcFunc = getTransform(src, 'EPSG:3857');
+        const distFunc = getTransform('EPSG:3857', dist);
         if (srcFunc == identityTransform && srcCode != 'EPSG:3857')
             throw 'Transform of Source projection is not defined.';
         if (distFunc == identityTransform && distCode != 'EPSG:3857')
@@ -20,11 +20,11 @@ export function transformDirect(xy, src, dist) {
         func = function(xy) {
             return transform(transform(xy, src, 'EPSG:3857'), 'EPSG:3857', dist);
         };
-        var invFunc = function(xy) {
+        const invFunc = function(xy) {
             return transform(transform(xy, dist, 'EPSG:3857'), 'EPSG:3857', src);
         };
         addCoordinateTransforms(src, dist, func, invFunc);
     }
 
     if (xy) return func(xy);
-};
+}

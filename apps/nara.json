@@ -1,0 +1,155 @@
+{
+    "app_name" : {
+        "ja" : "ぷらっと奈良 - 奈良を楽しむ古地図/絵地図街歩きアプリ",
+        "en" : "Maplat Nara"
+    },
+    "description": "まち歩きの地図サービス「ぷらっと奈良」を片手にならまちを散策してみませんか。古刹元興寺・興福寺の歴史的境内図、奈良町奉行所支配時代の江戸の奈良町地図、大正時代の地図や楽しいならまちおもしろ絵図を収録。今ここではない時代に思いを馳せながら、ぷらぷら歩くのはきっと楽しいですよ。",
+    "lang": "ja",
+    "splash" : "nara_splash.png",
+    "fake_gps" : true,
+    "fake_center" : "興福寺",
+    "fake_radius" : 10,
+    "home_position" : [ 135.8311667, 34.68325 ],
+    "default_zoom" : 17,
+    "start_from": "nara_ezuya",
+    "sources" : [
+        {
+            "mapID" : "heijokyo_timetrip",
+            "label" : {
+                "ja" : "平城京",
+                "en" : "Heijokyo"
+            }
+        },
+        {
+            "mapID" : "kofukuji_keidai_kou",
+            "label" : {
+                "ja" : "興福寺",
+                "en" : "Kofuku-ji"
+            }
+        },
+        {
+            "mapID" : "narapreflib_138073_gangoji",
+            "label" : {
+                "ja" : "元興寺",
+                "en" : "Gango-ji"
+            }
+        },
+        {
+            "mapID" : "nara_ezuya",
+            "label" : 1844
+        },
+        {
+            "mapID" : "NaraOldMap1",
+            "label" : {
+                "ja" : "明治期",
+                "en" : "Meiji Era"
+            }
+        },
+        {
+            "mapID" : "nara_saiken_ndl",
+            "label" : 1889
+        },
+        {
+            "mapID" : "narapreflib_138174_nara",
+            "label" : 1917
+        },
+        {
+            "mapID" : "narapreflib_138194_nara",
+            "label" : 1925
+        },
+        {
+            "mapID" : "naramachi_omoshiro_part1",
+            "label" : {
+                "ja" : "ならまち初心者",
+                "en" : "Naramachi-1"
+            }
+        },
+        {
+            "mapID" : "naramachi_omoshiro_part2",
+            "label" : {
+                "ja" : "ならまち中級",
+                "en" : "Naramachi-2"
+            }
+        },
+        {
+            "mapID" : "naramachi_omoshiro_part3",
+            "label" : {
+                "ja" : "ならまち上級",
+                "en" : "Naramachi-3"
+            }
+        },
+        {
+            "mapID" : "kyobate_kaiwai_map",
+            "label" : {
+                "ja" : "京終界隈",
+                "en" : "Kyobate Area"
+            }
+        },
+        "gsi",
+        "gsi_ortho",
+        "osm"
+    ],
+    "pois" :[
+        {
+            "name" : {
+                "ja" : "興福寺",
+                "en" : "Kofuku-ji Temple"
+            },
+            "lat" : 34.68325,
+            "lng" : 135.8311667,
+            "url" : {
+                "ja" : "https://ja.m.wikipedia.org/wiki/%E8%88%88%E7%A6%8F%E5%AF%BA",
+                "en" : "https://en.m.wikipedia.org/wiki/K%C5%8Dfuku-ji"
+            }
+        },{
+            "name" : {
+                "ja" : "東大寺",
+                "en" : "Todai-ji Temple"
+            },
+            "lat" : 34.68897222,
+            "lng" : 135.8398333,
+            "url" : {
+                "ja" : "https://ja.m.wikipedia.org/wiki/%E6%9D%B1%E5%A4%A7%E5%AF%BA",
+                "en" : "https://en.m.wikipedia.org/wiki/T%C5%8Ddai-ji"
+            }
+        },{
+            "name" : {
+                "ja" : "春日大社",
+                "en" : "Kasuga-taisha Shrine"
+            },
+            "lat" : 34.68138889,
+            "lng" : 135.8483333,
+            "url" : {
+                "ja" : "https://ja.m.wikipedia.org/wiki/%E6%98%A5%E6%97%A5%E5%A4%A7%E7%A4%BE",
+                "en" : "https://en.m.wikipedia.org/wiki/Kasuga-taisha"
+            }
+        },{
+            "name" : {
+                "ja" : "念仏寺山古墳",
+                "en" : "Nenbutsuji-yama ancient tomb"
+            },
+            "lat" : 34.68346944,
+            "lng" : 135.8240111,
+            "url" : "https://ja.m.wikipedia.org/wiki/%E5%BF%B5%E4%BB%8F%E5%AF%BA%E5%B1%B1%E5%8F%A4%E5%A2%B3"
+        },{
+            "name" : {
+                "ja" : "多聞山城",
+                "en" : "Tamon-yama Castle"
+            },
+            "lat" : 34.69443889,
+            "lng" : 135.8314419,
+            "url" : "https://ja.m.wikipedia.org/wiki/%E5%A4%9A%E8%81%9E%E5%B1%B1%E5%9F%8E"
+        },{
+            "name" : {
+                "ja" : "元興寺",
+                "en" : "Gango-ji Temple"
+            },
+            "lat" : 34.67780278,
+            "lng" : 135.8313556,
+            "url" : {
+                "ja" : "https://ja.m.wikipedia.org/wiki/%E5%85%83%E8%88%88%E5%AF%BA",
+                "en" : "https://en.m.wikipedia.org/wiki/Gang%C5%8D-ji"
+            }
+        }
+    ]
+}

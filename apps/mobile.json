@@ -1,0 +1,11 @@
+{
+    "app_name" : "モバイルアプリ",
+    "sources" : [
+        "gsi",
+        "osm",
+        {
+            "mapID"     : "morioka_ndl"
+        }
+    ], 
+    "pois" :[]
+}

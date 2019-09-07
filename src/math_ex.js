@@ -4,9 +4,7 @@ export function randomFromCenter(center, pow) {
 }
 
 export function recursiveRound(val, decimal) {
-    if (val instanceof Array) return val.map(function (item) {
-        return recursiveRound(item, decimal);
-    });
+    if (val instanceof Array) return val.map((item) => recursiveRound(item, decimal));
     const decVal = Math.pow(10, decimal);
     return Math.round(val * decVal) / decVal;
 }
