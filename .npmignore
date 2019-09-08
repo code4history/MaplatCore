@@ -6,3 +6,5 @@ tiles
 tmpl
 index.html
 webpack.config.js
+gulpfile.js
+web_set.zip
