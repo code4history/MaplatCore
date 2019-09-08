@@ -8,15 +8,25 @@ This is part of [Maplat](https://github.com/code4nara/Maplat/wiki) project.
 
 ### Browser
 
-Use [maplat_core.js](https://code4history.github.io/MaplatCore/dist/maplat_core.js)
+Use [this zip file](https://code4history.github.io/MaplatCore/web_set.zip).  
+This include 
+* dist/maplat_core.js
+* dist/maplat_core.css
+* parts
+Put them under your web site root directory and call them like this:
 
 ```html
+<link rel="stylesheet" href="dist/maplat_core.css">
 <script type="text/javascript" src="maplat_core.js"></script>
 ```
 
+Working example is [here](https://code4history.github.io/MaplatCore/).
+
 ### node.js
 
-NOTICE: Maplat core is not working 
+NOTICE: Maplat core is not working on server side.  
+Installing this from npm is just for developing use.
+
 The easiest way to install maplat_core is with [`npm`][npm].
 
 [npm]: https://www.npmjs.com/
@@ -25,88 +35,112 @@ The easiest way to install maplat_core is with [`npm`][npm].
 npm install maplat_core
 ```
 
-## How to use (node.js case)
+## How to use (In browser)
 
 ```javascript
-var Tin = require('maplat_tin');
-
-var tin = new Tin({
-    wh: [500, 500],
-    yaxisMode: Tin.YAXIS_FOLLOW
-});
-
-tin.setPoints([
-  [[100,100], [200, 200]],
-  [[200,200], [400, 400]],
-  [[150,150], [320, 350]],
-  [[200,100], [420, 220]]
-]);
-tin.updateTinAsync().then(function() {
-  if (tin.strict_status == Tin.STATUS_STRICT) {
-    console.log('Topology OK: In this case, roundtrip transform is guaranteed');
-  } else if (tin.strict_status == Tin.STATUS_LOOSE) {
-    console.log('Topology error: In this case, roundtrip transform is not guaranteed');
-  } else {
-    console.log('Something wrong');
-  }
-
-  //Forward transform
-  var ord = tin.transform([160, 160], false);
-  console.log(ord);
-  //ord => [336.0769755832048, 360.048109739503]
-
-  //Backward transform
-  var rev = tin.transform(ord, true);
-  console.log(rev);
-  //rev => [160, 160]
-
-  //Solving triangulated irregular network from many points by scrach takes too many time.
-  //So, there are object-serialization method to store solved instance.
-
-  var compiled = tin.getCompiled();
-
-  var tin2 = new Tin();
-  tin2.setCompiled(compiled);
-  // Compiled triangulated irregular network was set. no "updateTinAsync" call is need.
-
-  var ord2 = tin.transform([160, 160], false);
-  console.log(ord2);
-  var rev2 = tin.transform(ord2, true);
-  console.log(rev2);
-  //Same results with ord, rev
-}).catch(function(e) {
-  if (e == 'TOO LINEAR1' || e == 'TOO LINEAR2') {
-    console.log('Given GCP points are too linear, fail to create triangulated irregular network.');
-  } else {
-    console.log('Something wrong');
-  }
-});
+    Maplat.createObject(option).then(function(app){
+        // Show current map information in console.
+        console.log(app.currentMapInfo());
+        // Show information of the map which id is 'gsi' in console.
+        console.log(app.mapInfo('gsi'));
+        // Make clicked pin as selected and show click event detail in console.
+        var moveFlag = false;
+        app.addEventListener('clickMarker', function(evt) {
+            app.selectMarker(evt.detail.namespace_id);
+            console.log(evt);
+        });
+        // show detail of map click event in console.
+        app.addEventListener('clickMap', function (evt) {
+            console.log(evt);
+        });
+        // Add line object to the map
+        app.addLine({
+            lnglats: [[141.151995, 39.701599], [141.151137, 39.703736], [141.1521671, 39.7090232]],
+            stroke: {
+                color: '#ffcc33',
+                width: 2
+            }
+        });
+        // Add map layer called 'main2' and add on-demand marker to the layer.
+        app.addPoiLayer('main2');
+        app.addPoiLayer('morioka_ndl2#main2', {
+            icon: 'parts/blue_marker.png',
+            selected_icon: 'parts/red_marker.png'
+        });
+        // Button function: Show all markers in the layer named 'main'.
+        document.getElementById('show').addEventListener('click', function(e) {
+            app.showPoiLayer('main');
+        });
+        // Button function: Hide all markers in the layer named 'main'.
+        document.getElementById('hide').addEventListener('click', function(e) {
+            app.hidePoiLayer('main');
+        });
+        // Button function: Remove all markers in the layer named 'main'.
+        document.getElementById('clear').addEventListener('click', function(e) {
+            app.clearMarker('main');
+        });
+        // Button function: Switch the location of single marker.
+        document.getElementById('move').addEventListener('click', function(e) {
+            var data;
+            if (moveFlag) {
+                data = {lat: 39.698620, lng: 141.145358};
+            } else {
+                data = {lat: 39.694758, lng: 141.146534};
+            }
+            moveFlag = !moveFlag;
+            app.updateMarker('main_1', data);
+        });
+        // Button function: Remove the single marker.
+        document.getElementById('remove').addEventListener('click', function(e) {
+            app.removeMarker('main_2');
+        });
+        // Button function: Add the single marker to the layer named 'main2'.
+        document.getElementById('add2').addEventListener('click', function(e) {
+            app.addMarker({
+                address: "岩手県盛岡市内丸1-42",
+                desc: "寛延２年創建で当時の藩主南部利視が初代藩主南部信直の功績を称え社殿を建立し御霊を勧請したのが始まりとされている。",
+                icon: undefined,
+                image: "sakurayama_jinja.jpg",
+                lat: 39.701599,
+                lng: 141.151995,
+                name: "桜山神社",
+                selected_icon: undefined,
+                start: 1749
+            }, 'main2');
+        });
+        // Button function: Remove all markers in the layer named 'main2'.
+        document.getElementById('clear2').addEventListener('click', function(e) {
+            app.clearMarker('main2');
+        });
+        // Button function: Add the single marker to the layer named 'morioka_ndl2#main2' (POI layer of the each map).
+        document.getElementById('addMap').addEventListener('click', function(e) {
+            app.addMarker({
+                address: "岩手県盛岡市内丸1-37",
+                desc: "南部（盛岡）藩南部氏の居城である。西部を流れる北上川と南東部を流れる中津川の合流地、現在の盛岡市中心部にあった花崗岩丘陵に築城された連郭式平山城。",
+                icon: undefined,
+                image: "moriokajo.jpg",
+                lat: 39.69994722,
+                lng: 141.1501111,
+                name: {ja: "盛岡城", en: "Morioka Castle"},
+                selected_icon: undefined,
+                start: 1598
+            }, 'morioka_ndl2#main2');
+        });
+        // Button function: Remove all markers in the layer named 'morioka_ndl2#main2' (POI layer of the each map).
+        document.getElementById('clearMap').addEventListener('click', function(e) {
+            app.clearMarker('morioka_ndl2#all');
+        });
+        // Button function: Make all markers' status to unselect.
+        document.getElementById('unSelect').addEventListener('click', function(e) {
+            app.unselectMarker();
+        });
+        // Button function: Show all markers on all layers.
+        document.getElementById('showAll').addEventListener('click', function(e) {
+            app.showAllMarkers();
+        });
+        // Button function: Hide all markers on all layers.
+        document.getElementById('hideAll').addEventListener('click', function(e) {
+            app.hideAllMarkers();
+        });
+    });
 ```
-
-## Options
-
-### wh (method: setWh)
-Set width and height of the first coordinate system.  
-*NOTE: If setWh was called, TIN network is reset. So need to call updateTinAsync() again.*
-
-### yaxisMode
-Set *Tin.YAXIS_FOLLOW* if the y coordinate of the first coordinate system is the same as the direction of the y axis of the second coordinate system, and set *Tin.YAXIS_INVERT* if it is in the opposite direction.  
-Default value is *Tin.YAXIS_INVERT*.
-
-### points (method: setPoints)
-A set of corresponding points in the first coordinate system and the second coordinate system is specified as an array. Minimum 3 points required. Also, if the alignment of points is too linear, TIN can not be calculated at updateTinAsync and an error occurs.   
-*NOTE: If setPoints was called, TIN network is reset. So need to call updateTinAsync() again.*
-
-## Methods
-
-### updateTinAsync()
-Return value is Promise. Calcurate TIN asynchronously. Before calling *transform*, this method needs to be completed.
-
-### transform(xy, inverse)
-Convert the coordinates. If the value of *inverse* is false, the direction of conversion is from the first coordinate system to the second one, if it is true, the direction of conversion is reverse direction.
-
-## Properties
-
-### strict_status
-
-Confirm after completion of *updateTinAsync()*. When the value is *Tin.STATUS_STRICT*, bijection conversion is guaranteed. In the case of *Tin.STATUS_LOOSE* it is not guaranteed.
