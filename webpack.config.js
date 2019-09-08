@@ -6,7 +6,7 @@ module.exports = {
     devtool: 'source-map',
     entry: ['./tmpl/web-bridge.js'],
     output: {
-        path: `${__dirname}/www`,
+        path: `${__dirname}/dist`,
         filename: 'maplat_core.js'
     },
     module: {

@@ -1,5 +1,5 @@
-import i18n from '../ext/i18next.min';
-import i18nxhr from '../ext/i18nextXHRBackend.min';
+import i18n from '../legacy/i18next.min';
+import i18nxhr from '../legacy/i18nextXHRBackend.min';
 import CustomEvent from './customevent';
 import browserLanguage from './browserlanguage';
 import { Logger, LoggerLevel } from './logger';
@@ -29,6 +29,7 @@ export class MaplatApp extends EventTarget {
         app.logger = new Logger(appOption.debug ? LoggerLevel.ALL : LoggerLevel.INFO);
         app.cacheEnable = appOption.cache_enable || false;
         app.stateBuffer = {};
+        app.translateUI = appOption.translate_ui;
         const setting = appOption.setting;
         let lang = appOption.lang;
         if (!lang) {
@@ -104,7 +105,8 @@ export class MaplatApp extends EventTarget {
             }
 
             const i18nPromise = new Promise(((resolve, reject) => { // eslint-disable-line no-unused-vars
-                i18n.use(i18nxhr).init({
+                const translib = app.translateUI ? i18n.use(i18nxhr) : i18n;
+                translib.init({
                     lng: lang,
                     fallbackLng: ['en'],
                     backend: {
@@ -134,7 +136,7 @@ export class MaplatApp extends EventTarget {
                 app.backMap = null;
                 app.__init = true;
 
-                app.dispatchEvent('uiPrepare');
+                app.dispatchEvent(new CustomEvent('uiPrepare'));
 
                 const frontDiv = `${app.mapDiv}_front`;
                 let newElem = createElement(`<div id="${frontDiv}" class="map" style="top:0; left:0; right:0; bottom:0; ` +
@@ -664,6 +666,30 @@ export class MaplatApp extends EventTarget {
                 return source.getPoi(splits[1]);
             }
         }
+    }
+
+    updateMarker(id, data, overwrite) {
+        const app = this;
+        const poi = app.getMarker(id);
+        if (!poi) return;
+        if (overwrite) {
+            Object.keys(poi).map((key) => {
+                if (key != 'id' && key != 'namespace_id') {
+                    delete poi[key];
+                }
+            });
+            Object.assign(poi, data);
+        } else {
+            Object.keys(data).map((key) => {
+                if (key == 'id' || key == 'namespace_id') return;
+                if (data[key] == '____delete____') {
+                    delete poi[key];
+                } else {
+                    poi[key] = data[key];
+                }
+            });
+        }
+        app.redrawMarkers();
     }
 
     addMarker(data, clusterId) {

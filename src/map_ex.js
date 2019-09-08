@@ -1,4 +1,5 @@
-import { Map, View, Feature, Geolocation, MapEvent } from "ol";
+import { Map, Feature, Geolocation, MapEvent } from "ol";
+import { View } from './view_ex';
 import { Group, Tile, Vector as layerVector } from "ol/layer";
 import { Vector as sourceVector } from "ol/source";
 import { Point, Circle, LineString, Polygon } from 'ol/geom';
