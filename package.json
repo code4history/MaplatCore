@@ -1,6 +1,6 @@
 {
   "name": "maplat_core",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "description": "Maplat is the cool Historical Map/Illustrated Map Viewer API.\nIt can transform each map coordinates with nonlinear but bijective projection and makes possible that the maps can collaborate with GPS/accurate maps, without distorting original maps.",
   "main": "src/index.js",
   "module": "src/index.js",
@@ -37,7 +37,6 @@
   "homepage": "https://github.com/code4nara/MaplatCore/wiki",
   "dependencies": {
     "@turf/turf": "^5.1.6",
-    "i18n": "^0.8.3",
     "maplat_tin": "^0.4.7",
     "ol": "^5.3.3"
   },
