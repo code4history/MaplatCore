@@ -41,6 +41,7 @@
     <button id="unSelect">unSelect</button>
     <button id="showAll">showAll</button>
     <button id="hideAll">hideAll</button>
+    <button id="changeMap">changeMap</button>
   </div>
 </body>
 <script src="dist/maplat_core.js"></script>
@@ -136,6 +137,12 @@
         });
         document.getElementById('hideAll').addEventListener('click', function(e) {
             app.hideAllMarkers();
+        });
+        var nowGsi = false;
+        document.getElementById('changeMap').addEventListener('click', function(e) {
+            var nextMap = nowGsi ? 'morioka' : 'osm';
+            nowGsi = !nowGsi;
+            app.changeMap(nextMap);
         });
     });
 </script>
