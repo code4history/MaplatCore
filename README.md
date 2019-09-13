@@ -8,11 +8,12 @@ This is part of [Maplat](https://github.com/code4nara/Maplat/wiki) project.
 
 ### Browser
 
-Use [this zip file](https://code4history.github.io/MaplatCore/web_set.zip).  
+Use [this zip file](https://code4history.github.io/MaplatCore/distribution.zip).  
 This include 
 * dist/maplat_core.js
 * dist/maplat_core.css
 * parts
+
 Put them under your web site root directory and call them like this:
 
 ```html
@@ -20,7 +21,8 @@ Put them under your web site root directory and call them like this:
 <script type="text/javascript" src="maplat_core.js"></script>
 ```
 
-Working example is [here](https://code4history.github.io/MaplatCore/).
+Working example is [here](https://code4history.github.io/MaplatCore/).  
+Example (including sample data) zip file is [here](https://code4history.github.io/MaplatCore/example.zip).
 
 ### node.js
 
