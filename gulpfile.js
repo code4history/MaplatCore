@@ -4,25 +4,47 @@ var gulp = require('gulp'),
 
 gulp.task('zip', function() {
     try {
-        fs.removeSync('./web_set.zip');
+        fs.removeSync('./distribution.zip');
     } catch (e) {
     }
     try {
-        fs.removeSync('./web_set');
+        fs.removeSync('./distribution');
+    } catch (e) {
+    }
+    try {
+        fs.removeSync('./example.zip');
+    } catch (e) {
+    }
+    try {
+        fs.removeSync('./example');
     } catch (e) {
     }
 
-    fs.ensureDirSync('./web_set');
-    fs.copySync('./dist', './web_set/dist');
-    fs.copySync('./parts', './web_set/parts');
+    fs.ensureDirSync('./distribution');
+    fs.copySync('./dist', './distribution/dist');
+    fs.copySync('./parts', './distribution/parts');
 
     return new Promise(function(resolve, reject) {
-        gulp.src(['./web_set/*', './web_set/*/*'])
-            .pipe(zip('web_set.zip'))
+        gulp.src(['./distribution/*', './distribution/*/*'])
+            .pipe(zip('distribution.zip'))
             .on('error', reject)
             .pipe(gulp.dest('./'))
             .on('end', resolve);
     }).then(function() {
-        fs.removeSync('./web_set');
+        fs.moveSync('./distribution', './example');
+        fs.copySync('./index.html', './example/index.html');
+        fs.copySync('./apps', './example/apps');
+        fs.copySync('./maps', './example/maps');
+        fs.copySync('./pois', './example/pois');
+        fs.copySync('./tiles', './example/tiles');
+        return new Promise(function(resolve, reject) {
+            gulp.src(['./example/*', './example/*/*'])
+                .pipe(zip('example.zip'))
+                .on('error', reject)
+                .pipe(gulp.dest('./'))
+                .on('end', resolve);
+        });
+    }).then(function() {
+        fs.removeSync('./example');
     });
 });
