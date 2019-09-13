@@ -25,7 +25,7 @@ gulp.task('zip', function() {
     fs.copySync('./parts', './distribution/parts');
 
     return new Promise(function(resolve, reject) {
-        gulp.src(['./distribution/*', './distribution/*/*'])
+        gulp.src(['./distribution/**/*'])
             .pipe(zip('distribution.zip'))
             .on('error', reject)
             .pipe(gulp.dest('./'))
@@ -38,7 +38,7 @@ gulp.task('zip', function() {
         fs.copySync('./pois', './example/pois');
         fs.copySync('./tiles', './example/tiles');
         return new Promise(function(resolve, reject) {
-            gulp.src(['./example/*', './example/*/*'])
+            gulp.src(['./example/**/*'])
                 .pipe(zip('example.zip'))
                 .on('error', reject)
                 .pipe(gulp.dest('./'))
