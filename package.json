@@ -7,7 +7,7 @@
   "files": [
     "src/",
     "dist/",
-    "legacy",
+    "legacy/",
     "less/",
     "parts/"
   ],
