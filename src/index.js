@@ -1,5 +1,5 @@
-import i18n from '../legacy/i18next.min';
-import i18nxhr from '../legacy/i18nextXHRBackend.min';
+import i18n from 'i18next';
+import i18nxhr from 'i18next-xhr-backend';
 import CustomEvent from './customevent';
 import browserLanguage from './browserlanguage';
 import { Logger, LoggerLevel } from './logger';
