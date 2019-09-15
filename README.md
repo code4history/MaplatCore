@@ -1,8 +1,8 @@
 # Maplat Core library
 
 Maplat is the cool Historical Map/Illustrated Map Viewer API.  
-It can transform each map coordinates with nonlinear but bijective projection and makes possible that the maps can collaborate with GPS/accurate maps, without distorting original maps.  
-This is part of [Maplat](https://github.com/code4nara/Maplat/wiki) project.
+It can transform each map coordinates with nonlinear but homeomorphic projection and makes possible that the maps can collaborate with GPS/accurate maps, without distorting original maps.  
+This is part of [Maplat](https://github.com/code4history/Maplat/wiki) project.
 
 ## Installation
 

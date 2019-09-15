@@ -1,13 +1,12 @@
 {
-  "name": "maplat_core",
-  "version": "0.6.0",
-  "description": "Maplat is the cool Historical Map/Illustrated Map Viewer API.\nIt can transform each map coordinates with nonlinear but bijective projection and makes possible that the maps can collaborate with GPS/accurate maps, without distorting original maps.",
+  "name": "@maplat/core",
+  "version": "0.6.1",
+  "description": "Maplat is the cool Historical Map/Illustrated Map Viewer API.\nIt can transform each map coordinates with nonlinear but homeomorphic projection and makes possible that the maps can collaborate with GPS/accurate maps, without distorting original maps.",
   "main": "src/index.js",
   "module": "src/index.js",
   "files": [
     "src/",
     "dist/",
-    "legacy/",
     "less/",
     "parts/"
   ],
@@ -23,7 +22,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/code4nara/MaplatCore.git"
+    "url": "git+https://github.com/code4history/MaplatCore.git"
   },
   "keywords": [
     "warp",
@@ -32,14 +31,14 @@
   "author": "Kohei Otsuka, Code for History",
   "license": "Apache 2.0",
   "bugs": {
-    "url": "https://github.com/code4nara/MaplatCore/issues"
+    "url": "https://github.com/code4history/MaplatCore/issues"
   },
-  "homepage": "https://github.com/code4nara/MaplatCore/wiki",
+  "homepage": "https://github.com/code4history/MaplatCore/wiki",
   "dependencies": {
     "@turf/turf": "^5.1.6",
     "i18next": "^17.0.14",
     "i18next-xhr-backend": "^3.1.2",
-    "maplat_tin": "^0.6.0",
+    "@maplat/tin": "^0.6.3",
     "ol": "^5.3.3"
   },
   "devDependencies": {
