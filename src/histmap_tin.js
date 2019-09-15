@@ -1,5 +1,5 @@
 import { HistMap } from './histmap';
-import Tin from 'maplat_tin';
+import Tin from '@maplat/tin';
 import { Projection, addProjection, addCoordinateTransforms, toLonLat } from 'ol/proj';
 import { transformDirect } from './proj_ex';
 import { polygon } from '@turf/helpers';
