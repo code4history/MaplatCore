@@ -34,7 +34,7 @@ The easiest way to install maplat_core is with [`npm`][npm].
 [npm]: https://www.npmjs.com/
 
 ```sh
-npm install maplat_core
+npm install @maplat/core
 ```
 
 ## How to use (In browser)
