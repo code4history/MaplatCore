@@ -13,7 +13,7 @@ module.exports = {
         rules: [
             {
                 test: /\.js$/,
-                exclude: /node_modules(?!\/maplat_tin)/,
+                exclude: /node_modules(?!\/@maplat\/tin)/,
                 use: {
                     loader: 'babel-loader',
                     query: {
