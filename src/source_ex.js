@@ -5,9 +5,19 @@ import { polygon, point, lineString } from '@turf/helpers';
 import centroid from '@turf/centroid';
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
 import lineIntersect from '@turf/line-intersect';
+import { Tile } from "ol/layer";
 
 export function setCustomFunction(target) {
     class Mixin extends target {
+        spawnLayer() {
+            const self = this;
+            const layer = new Tile({
+                source: self
+            });
+            layer.set('name', 'base');
+            return layer;
+        }
+
         setupTileCacheAsnyc() {
             const self = this;
             return new Promise((resolve) => {

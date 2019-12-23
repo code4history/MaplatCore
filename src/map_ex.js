@@ -84,11 +84,7 @@ export class MaplatMap extends Map {
         });
         envelopeLayer.set('name', 'envelope');
 
-        const baseLayer = optOptions.baseLayer ? optOptions.baseLayer :
-            new Tile({
-                source: optOptions.source
-            });
-        baseLayer.set('name', 'base');
+        const baseLayer = MaplatMap.spawnLayer(optOptions.source);
 
         const overlayLayer = new Group();
         overlayLayer.set('name', 'overlay');
@@ -135,6 +131,15 @@ export class MaplatMap extends Map {
         self.on('moveend', () => {
             view.on('propertychange', movestart);
         });
+    }
+
+    static spawnLayer(source) {
+        return source ? source.spawnLayer() :
+            (function() {
+                const layer = new Tile();
+                layer.set('name', 'base');
+                return layer;
+            })();
     }
 
     getLayer(name) {
@@ -267,8 +272,8 @@ export class MaplatMap extends Map {
 
     exchangeSource(source) {
         const layers = this.getLayers();
-        const layer = layers.item(0);
-        layer.setSource(source);
+        const layer = MaplatMap.spawnLayer(source);
+        layers.setAt(0, layer);
         if (source) {
             source._map = this;
         }
