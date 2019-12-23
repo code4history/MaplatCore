@@ -9,9 +9,13 @@ import { Tile } from "ol/layer";
 
 export function setCustomFunction(target) {
     class Mixin extends target {
-        spawnLayer() {
+        spawnLayer(layer) {
             const self = this;
-            const layer = new Tile({
+            if (layer) {
+                layer.setSource(self);
+                return layer;
+            }
+            layer = new Tile({
                 source: self
             });
             layer.set('name', 'base');
