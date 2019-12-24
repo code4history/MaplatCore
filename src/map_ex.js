@@ -134,12 +134,13 @@ export class MaplatMap extends Map {
     }
 
     static spawnLayer(layer, source) {
-        return source ? source.spawnLayer(layer) :
-            (function() {
-                const layer = new Tile();
-                layer.set('name', 'base');
-                return layer;
-            })();
+        if (source) return source.spawnLayer(layer);
+        if (layer) layer.setSource();
+        else {
+            layer = new Tile();
+            layer.set('name', 'base');
+        }
+        return layer;
     }
 
     getLayer(name) {

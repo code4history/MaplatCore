@@ -35,10 +35,11 @@
   },
   "homepage": "https://github.com/code4history/MaplatCore/wiki",
   "dependencies": {
+    "@maplat/tin": "^0.6.3",
     "@turf/turf": "^5.1.6",
     "i18next": "^17.0.14",
     "i18next-xhr-backend": "^3.1.2",
-    "@maplat/tin": "^0.6.3",
+    "mapbox-gl": "^1.6.1",
     "ol": "^5.3.3"
   },
   "devDependencies": {
