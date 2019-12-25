@@ -22,16 +22,22 @@
             "mapID" : "morioka_ndl_affine"
         },
         {
-            "mapID"     : "morioka_ndl2",
+            "mapID" : "morioka_ndl2",
             "setting_file" : "maps/morioka_ndl.json",
             "label" : "1644 (Maplat)",
             "url" : "tiles/morioka_ndl/{z}/{x}/{y}.jpg",
             "thumbnail" : "tmbs/morioka_ndl_menu.jpg"
         },
         {
-            "mapID"     : "morioka"
+            "mapID" : "morioka"
         },
-        "osm"
+        "osm",
+        {
+            "mapID" : "mapbox",
+            "style" : "mapbox://styles/moritoru/ck3xqi0hh1pob1cqpanp3jxxo",
+            "accessToken" : "pk.eyJ1IjoicmVraXNoaWtva3VkbyIsImEiOiJjazRoMmF3dncwODU2M2ttdzI2aDVqYXVwIn0.8Hb9sekgjfck6Setxk5uVg",
+            "maptype" : "mapbox"
+        }
     ], 
     "pois" : "morioka_all_poi.json"
 }

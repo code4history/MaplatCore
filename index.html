@@ -138,10 +138,11 @@
         document.getElementById('hideAll').addEventListener('click', function(e) {
             app.hideAllMarkers();
         });
-        var nowGsi = false;
+        var index = 1;
         document.getElementById('changeMap').addEventListener('click', function(e) {
-            var nextMap = nowGsi ? 'morioka' : 'osm';
-            nowGsi = !nowGsi;
+            index = index + 1;
+            if (index > 4) index = 0;
+            var nextMap = (["morioka_ndl_affine", "morioka_ndl2", "morioka", "osm", "mapbox"])[index];
             app.changeMap(nextMap);
         });
     });

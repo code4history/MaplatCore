@@ -150,7 +150,7 @@ export class HistMap extends setCustomFunction(XYZ) {
         options.label = options.label || options.year;
         options.sourceID = options.sourceID || options.mapID;
         if (options.maptype == 'base' || options.maptype == 'overlay' || options.maptype == 'mapbox') {
-            const targetSrc = options.maptype == 'basemap' ? NowMap :
+            const targetSrc = options.maptype == 'base' ? NowMap :
                 options.maptype == 'overlay' ? TmsMap : MapboxMap;
             if (options.zoom_restriction) {
                 options.maxZoom = options.maxZoom || options.merc_max_zoom;

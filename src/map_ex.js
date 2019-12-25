@@ -85,7 +85,7 @@ export class MaplatMap extends Map {
         });
         envelopeLayer.set('name', 'envelope');
 
-        const baseLayer = MaplatMap.spawnLayer(null, optOptions.source);
+        const baseLayer = MaplatMap.spawnLayer(null, optOptions.source, optOptions.target);
 
         const overlayLayer = new Group();
         overlayLayer.set('name', 'overlay');
@@ -134,12 +134,14 @@ export class MaplatMap extends Map {
         });
     }
 
-    static spawnLayer(layer, source) {
+    static spawnLayer(layer, source, container) {
         if (!layer || source && (source instanceof MapboxMap || (!(layer instanceof Tile) && !(source instanceof MapboxMap)))) {
             if (source instanceof MapboxMap) {
                 layer = new MapboxLayer({
                     style: source.style,
-                    accessToken: source.accessToken
+                    accessToken: source.accessToken,
+                    container,
+                    center: [135, 35]
                 });
             } else {
                 layer = new Tile({
@@ -284,7 +286,7 @@ export class MaplatMap extends Map {
     exchangeSource(source) {
         const layers = this.getLayers();
         const prevLayer = layers.item(0);
-        const layer = MaplatMap.spawnLayer(prevLayer, source);
+        const layer = MaplatMap.spawnLayer(prevLayer, source, this.getTarget());
         if (layer != prevLayer) layers.setAt(0, layer);
         if (source) {
             source._map = this;

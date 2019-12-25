@@ -1,4 +1,4 @@
-import { Layer } from "ol/layer";
+import Layer from "ol/layer/Layer";
 import mapboxgl from "mapbox-gl";
 import { toLonLat } from "ol/proj";
 
@@ -20,41 +20,43 @@ export class MapboxLayer extends Layer {
             scrollZoom: false,
             touchZoomRotate: false
         });
-        super({
-            render: function(frameState) {
-                const canvas = mbMap.getCanvas();
-                const viewState = frameState.viewState;
+        const render = function(frameState) {
+            const canvas = mbMap.getCanvas();
+            const viewState = frameState.viewState;
 
-                const visible = this.getVisible();
-                canvas.style.display = visible ? "block" : "none";
+            const visible = this.getVisible();
+            canvas.style.display = visible ? "block" : "none";
 
-                const opacity = this.getOpacity();
-                canvas.style.opacity = opacity;
+            const opacity = this.getOpacity();
+            canvas.style.opacity = opacity;
 
-                // adjust view parameters in mapbox
-                const rotation = viewState.rotation;
-                if (rotation) {
-                    mbMap.rotateTo((-rotation * 180) / Math.PI, {
-                        animate: false
-                    });
-                }
-                mbMap.jumpTo({
-                    center: toLonLat(viewState.center),
-                    zoom: viewState.zoom - 1,
+            // adjust view parameters in mapbox
+            const rotation = viewState.rotation;
+            if (rotation) {
+                mbMap.rotateTo((-rotation * 180) / Math.PI, {
                     animate: false
                 });
-
-                // cancel the scheduled update & trigger synchronous redraw
-                // see https://github.com/mapbox/mapbox-gl-js/issues/7893#issue-408992184
-                // NOTE: THIS MIGHT BREAK WHEN UPDATING MAPBOX
-                if (mbMap._frame) {
-                    mbMap._frame.cancel();
-                    mbMap._frame = null;
-                }
-                mbMap._render();
-
-                return canvas;
             }
+            mbMap.jumpTo({
+                center: toLonLat(viewState.center),
+                zoom: viewState.zoom - 1,
+                animate: false
+            });
+
+            // cancel the scheduled update & trigger synchronous redraw
+            // see https://github.com/mapbox/mapbox-gl-js/issues/7893#issue-408992184
+            // NOTE: THIS MIGHT BREAK WHEN UPDATING MAPBOX
+            if (mbMap._frame) {
+                mbMap._frame.cancel();
+                mbMap._frame = null;
+            }
+            mbMap._render();
+
+            return canvas;
+        };
+        super({
+            render
         });
+        this.render = render;
     }
 }
