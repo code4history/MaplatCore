@@ -753,4 +753,20 @@ export class TmsMap extends NowMap {
     }
 }
 
+export class MapboxMap extends NowMap {
+    constructor(optOptions) {
+        const options = optOptions || {};
+        super(options);
+        this.style = options.style;
+        this.accessToken = options.accessToken;
+    }
+
+    static createAsync(options) {
+        const promise = new Promise(((resolve, reject) => { // eslint-disable-line no-unused-vars
+            const obj = new MapboxMap(options);
+            resolve(obj);
+        }));
+        return promise.catch((err) => { throw err; });
+    }
+}
 

@@ -4,8 +4,9 @@ import { Group, Tile, Vector as layerVector } from "ol/layer";
 import { Vector as sourceVector } from "ol/source";
 import { Point, Circle, LineString, Polygon } from 'ol/geom';
 import { Style, Icon, Stroke, Fill } from 'ol/style';
-import { NowMap } from './source_ex';
+import {MapboxMap, NowMap} from './source_ex';
 import { getDistance, randomFromCenter } from './math_ex';
+import {MapboxLayer} from "./layer_mapbox";
 
 const gpsStyle = new Style({
     image: new Icon(({
@@ -134,11 +135,20 @@ export class MaplatMap extends Map {
     }
 
     static spawnLayer(layer, source) {
-        if (source) return source.spawnLayer(layer);
-        if (layer) layer.setSource();
-        else {
-            layer = new Tile();
+        if (!layer || source && (source instanceof MapboxMap || (!(layer instanceof Tile) && !(source instanceof MapboxMap)))) {
+            if (source instanceof MapboxMap) {
+                layer = new MapboxLayer({
+                    style: source.style,
+                    accessToken: source.accessToken
+                });
+            } else {
+                layer = new Tile({
+                    source
+                });
+            }
             layer.set('name', 'base');
+        } else {
+            layer.setSource(source);
         }
         return layer;
     }

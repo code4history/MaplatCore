@@ -22,8 +22,6 @@ export class MapboxLayer extends Layer {
         });
         super({
             render: function(frameState) {
-                const mbMap = this.mbMap;
-                const source = this.getSource();
                 const canvas = mbMap.getCanvas();
                 const viewState = frameState.viewState;
 
@@ -58,6 +56,5 @@ export class MapboxLayer extends Layer {
                 return canvas;
             }
         });
-        this.mbMap = mbMap;
     }
 }
