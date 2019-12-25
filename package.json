@@ -40,7 +40,7 @@
     "i18next": "^17.0.14",
     "i18next-xhr-backend": "^3.1.2",
     "mapbox-gl": "^1.6.1",
-    "ol": "^5.3.3"
+    "ol": "^6.1.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.5.5",
