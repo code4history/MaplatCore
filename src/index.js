@@ -168,6 +168,9 @@ export class MaplatApp extends EventTarget {
                         div: backDiv
                     });
                 }
+                newElem = createElement(`<div id="mapbox_div" class="map" style="top:0; left:0; right:0; bottom:0; ` +
+                    `position:absolute;visibility:hidden;"></div>`)[0];
+                app.mapDivDocument.insertBefore(newElem, app.mapDivDocument.firstChild);
 
                 app.startFrom = app.appData.start_from;
                 app.lines = [];
