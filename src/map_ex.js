@@ -136,8 +136,8 @@ export class MaplatMap extends Map {
     }
 
     static spawnLayer(layer, source, container) {
-        if (!layer || source && (source instanceof MapboxMap || (!(layer instanceof Tile) && !(source instanceof MapboxMap)))) {
-            if (layer && layer instanceof MapboxLayer) {
+        if (source instanceof MapboxMap || !(layer instanceof Tile)) {
+            if (layer instanceof MapboxLayer) {
                 layer.remove();
             }
             if (source instanceof MapboxMap) {
