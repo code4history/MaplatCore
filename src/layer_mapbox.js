@@ -21,6 +21,7 @@ export class MapboxLayer extends Layer {
             touchZoomRotate: false
         });
         const render = function(frameState) {
+            const mbMap = this.mbMap;
             const canvas = mbMap.getCanvas();
             const viewState = frameState.viewState;
 
@@ -58,5 +59,11 @@ export class MapboxLayer extends Layer {
             render,
             source: options.source
         });
+        this.mbMap = mbMap;
+    }
+
+    remove() {
+        this.mbMap.remove();
+        delete this.mbMap;
     }
 }
