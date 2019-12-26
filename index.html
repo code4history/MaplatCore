@@ -41,7 +41,12 @@
     <button id="unSelect">unSelect</button>
     <button id="showAll">showAll</button>
     <button id="hideAll">hideAll</button>
-    <button id="changeMap">changeMap</button>
+    <button id="morioka">盛岡城</button>
+    <button id="maplat">盛岡(Maplat)</button>
+    <button id="tms">盛岡(TMS)</button>
+    <button id="osm">OSM</button>
+    <button id="gsi">地理院</button>
+    <button id="mapbox">Mapbox</button>
   </div>
 </body>
 <script src="dist/maplat_core.js"></script>
@@ -138,12 +143,23 @@
         document.getElementById('hideAll').addEventListener('click', function(e) {
             app.hideAllMarkers();
         });
-        var index = 1;
-        document.getElementById('changeMap').addEventListener('click', function(e) {
-            index = index + 1;
-            if (index > 4) index = 0;
-            var nextMap = (["morioka_ndl_affine", "morioka_ndl2", "morioka", "osm", "mapbox"])[index];
-            app.changeMap(nextMap);
+        document.getElementById('morioka').addEventListener('click', function(e) {
+            app.changeMap('morioka');
+        });
+        document.getElementById('maplat').addEventListener('click', function(e) {
+            app.changeMap('morioka_ndl2');
+        });
+        document.getElementById('tms').addEventListener('click', function(e) {
+            app.changeMap('morioka_ndl_affine');
+        });
+        document.getElementById('osm').addEventListener('click', function(e) {
+            app.changeMap('osm');
+        });
+        document.getElementById('gsi').addEventListener('click', function(e) {
+            app.changeMap('gsi');
+        });
+        document.getElementById('mapbox').addEventListener('click', function(e) {
+            app.changeMap('mapbox');
         });
     });
 </script>
