@@ -105,7 +105,7 @@ export class HistMap extends setCustomFunction(XYZ) {
         options.tileUrlFunction = options.tileUrlFunction || function(coord) {
             const z = coord[0];
             const x = coord[1];
-            const y = -1 * coord[2] - 1;
+            const y = coord[2];
             if (x * tileSize * Math.pow(2, this.maxZoom - z) >= this.width ||
                 y * tileSize * Math.pow(2, this.maxZoom - z) >= this.height ||
                 x < 0 || y < 0 ) {

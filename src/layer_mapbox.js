@@ -55,8 +55,8 @@ export class MapboxLayer extends Layer {
             return canvas;
         };
         super({
-            render
+            render,
+            source: options.source
         });
-        this.render = render;
     }
 }
