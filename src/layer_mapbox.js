@@ -1,10 +1,9 @@
 import Layer from "ol/layer/Layer";
-import mapboxgl from "mapbox-gl";
 import { toLonLat } from "ol/proj";
 
 export class MapboxLayer extends Layer {
     constructor(options) {
-        const mbMap = new mapboxgl.Map({
+        const mbMap = new mapboxgl.Map({ // eslint-disable-line no-undef
             style: options.style,
             accessToken: options.accessToken,
             attributionControl: false,

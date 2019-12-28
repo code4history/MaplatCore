@@ -579,7 +579,7 @@ export function setCustomInitialize(self, options) {
         self[key] = options[key];
     }
 
-    const cacheWait = options.cache_enable ? self.setupTileCacheAsnyc() : Promise.resolve();
+    const cacheWait = options.enable_cache ? self.setupTileCacheAsnyc() : Promise.resolve();
     const poisWait = self.resolvePois(options.pois);
     self.initialWait = Promise.all([cacheWait, poisWait]);
 }
@@ -741,6 +741,7 @@ export class NowMap extends setCustomFunction(OSM) {
 export class TmsMap extends NowMap {
     constructor(optOptions) {
         const options = optOptions || {};
+        options.opaque = false;
         super(options);
     }
 
