@@ -18,6 +18,9 @@ export class MapboxLayer extends Layer {
 
             // adjust view parameters in mapbox
             const rotation = (viewState.rotation * -180) / Math.PI;
+            console.log(rotation); // eslint-disable-line no-undef
+            console.log(mbMap.getBearing()); // eslint-disable-line no-undef
+            console.log('==='); // eslint-disable-line no-undef
             if (mbMap.getBearing() != rotation) {
                 mbMap.rotateTo(rotation, {
                     animate: false
