@@ -18,7 +18,8 @@
     "build": "npm run less_build && npm run www_build && npm run zip_build",
     "lint": "eslint src/",
     "test": "jasmine",
-    "prepublish": "npm run lint && npm run build"
+    "prepublishOnly": "npm run lint && npm run build",
+    "preversion": "npm run prepublishOnly"
   },
   "repository": {
     "type": "git",
