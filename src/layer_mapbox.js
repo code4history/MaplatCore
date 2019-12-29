@@ -17,9 +17,9 @@ export class MapboxLayer extends Layer {
             canvas.style.opacity = opacity;
 
             // adjust view parameters in mapbox
-            const rotation = viewState.rotation;
-            if (rotation) {
-                mbMap.rotateTo((-rotation * 180) / Math.PI, {
+            const rotation = (viewState.rotation * -180) / Math.PI;
+            if (mbMap.getBearing() != rotation) {
+                mbMap.rotateTo(rotation, {
                     animate: false
                 });
             }
