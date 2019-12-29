@@ -19,7 +19,8 @@
     "lint": "eslint src/",
     "test": "jasmine",
     "prepublishOnly": "npm run lint && npm run build",
-    "preversion": "npm run prepublishOnly"
+    "preversion": "npm run lint",
+    "version": "npm run build && git add -A"
   },
   "repository": {
     "type": "git",
