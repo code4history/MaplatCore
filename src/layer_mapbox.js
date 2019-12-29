@@ -3,25 +3,10 @@ import { toLonLat } from "ol/proj";
 
 export class MapboxLayer extends Layer {
     constructor(options) {
-        const mbMap = new mapboxgl.Map({ // eslint-disable-line no-undef
-            style: options.style,
-            accessToken: options.accessToken,
-            attributionControl: false,
-            boxZoom: false,
-            center: options.center,
-            //container: options.container,
-            container: 'mapbox_div',
-            doubleClickZoom: false,
-            dragPan: false,
-            dragRotate: false,
-            interactive: false,
-            keyboard: false,
-            pitchWithRotate: false,
-            scrollZoom: false,
-            touchZoomRotate: false
-        });
         const render = function(frameState) {
-            const mbMap = this.mbMap;
+            const source = this.getSource();
+            const mbMap = source.mapboxMap;
+            mbMap.setStyle(source.style);
             const canvas = mbMap.getCanvas();
             const viewState = frameState.viewState;
 
@@ -59,11 +44,5 @@ export class MapboxLayer extends Layer {
             render,
             source: options.source
         });
-        this.mbMap = mbMap;
-    }
-
-    remove() {
-        this.mbMap.remove();
-        delete this.mbMap;
     }
 }

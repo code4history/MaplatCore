@@ -5,23 +5,9 @@ import { polygon, point, lineString } from '@turf/helpers';
 import centroid from '@turf/centroid';
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
 import lineIntersect from '@turf/line-intersect';
-import { Tile } from "ol/layer";
 
 export function setCustomFunction(target) {
     class Mixin extends target {
-        spawnLayer(layer) {
-            const self = this;
-            if (layer) {
-                layer.setSource(self);
-                return layer;
-            }
-            layer = new Tile({
-                source: self
-            });
-            layer.set('name', 'base');
-            return layer;
-        }
-
         setupTileCacheAsnyc() {
             const self = this;
             return new Promise((resolve) => {
@@ -759,7 +745,7 @@ export class MapboxMap extends NowMap {
         const options = optOptions || {};
         super(options);
         this.style = options.style;
-        this.accessToken = options.accessToken;
+        this.mapboxMap = options.mapboxMap;
     }
 
     static createAsync(options) {
