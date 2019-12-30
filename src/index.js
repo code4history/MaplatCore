@@ -34,7 +34,7 @@ export class MaplatApp extends EventTarget {
         app.mapDivDocument = document.querySelector(`#${app.mapDiv}`); // eslint-disable-line no-undef
         app.mapDivDocument.classList.add('maplat');
         app.logger = new Logger(appOption.debug ? LoggerLevel.ALL : LoggerLevel.INFO);
-        app.enableCache = appOption.cache_enable || appOption.enable_cache || false;
+        app.enableCache = appOption.enable_cache || false;
         app.stateBuffer = {};
         app.translateUI = appOption.translate_ui;
         const setting = appOption.setting;
