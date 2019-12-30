@@ -17,17 +17,32 @@ export class MapboxLayer extends Layer {
             canvas.style.opacity = opacity;
 
             // adjust view parameters in mapbox
-            const rotation = (viewState.rotation * -180) / Math.PI;
-            if (mbMap.getBearing() != rotation) {
-                mbMap.rotateTo(rotation, {
+            const newBearing = (viewState.rotation * -180) / Math.PI;
+            const newLonLat = toLonLat(viewState.center);
+            const newZoom = viewState.zoom - 1;
+
+            const nowBearing = mbMap.getBearing();
+            const nowLonLat = mbMap.getCenter().toArray();
+            const nowZoom = mbMap.getZoom();
+
+            if (newBearing == nowBearing && newLonLat[0] == nowLonLat[0] &&
+                newLonLat[1] == nowLonLat[1] && newZoom == nowZoom) {
+                return canvas;
+            }
+
+            if (newBearing != nowBearing) {
+                mbMap.rotateTo(newBearing, {
                     animate: false
                 });
             }
-            mbMap.jumpTo({
-                center: toLonLat(viewState.center),
-                zoom: viewState.zoom - 1,
-                animate: false
-            });
+            if (newLonLat[0] != nowLonLat[0] ||
+                newLonLat[1] != nowLonLat[1] || newZoom != nowZoom) {
+                mbMap.jumpTo({
+                    center: newLonLat,
+                    zoom: newZoom,
+                    animate: false
+                });
+            }
 
             // cancel the scheduled update & trigger synchronous redraw
             // see https://github.com/mapbox/mapbox-gl-js/issues/7893#issue-408992184
@@ -36,6 +51,7 @@ export class MapboxLayer extends Layer {
                 mbMap._frame.cancel();
                 mbMap._frame = null;
             }
+
             mbMap._render();
 
             return canvas;
