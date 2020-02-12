@@ -192,24 +192,27 @@ export class HistMap extends setCustomFunction(XYZ) {
                                 options.minZoom = options.minZoom || options.merc_min_zoom;
                             }
                             options.zoom_restriction = options.merc_max_zoom = options.merc_min_zoom = undefined;
-                            targetSrc.createAsync(options).then((ret) => {
-                                resolve(ret);
+                            targetSrc.createAsync(options).then((obj) => {
+                                obj.initialWait.then(() => {
+                                    resolve(obj);
+                                }).catch((err) => { // eslint-disable-line no-unused-vars
+                                    resolve(obj);
+                                });
                             }).catch((err) => {
                                 reject(err);
                             });
                             return;
                         }
 
-                        HistMap_tin.createAsync(options)
-                            .then((obj) => {
-                                obj.initialWait.then(() => {
-                                    obj.mapSize2MercSize(resolve);
-                                }).catch(() => {
-                                    obj.mapSize2MercSize(resolve);
-                                });
-                            }).catch((err) => {
-                                reject(err);
+                        HistMap_tin.createAsync(options).then((obj) => {
+                            obj.initialWait.then(() => {
+                                obj.mapSize2MercSize(resolve);
+                            }).catch((err) => { // eslint-disable-line no-unused-vars
+                                obj.mapSize2MercSize(resolve);
                             });
+                        }).catch((err) => {
+                            reject(err);
+                        });
                     } catch(err) {
                         reject(err);
                     }

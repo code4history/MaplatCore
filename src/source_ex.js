@@ -496,8 +496,6 @@ export function setCustomFunction(target) {
 
         listPoiLayers(hideOnly, nonzero) {
             const self = this;
-            console.log(self);
-            console.log(self.pois);
             return Object.keys(self.pois).sort((a, b) => {
                 if (a == 'main') return -1;
                 else if (b == 'main') return 1;
