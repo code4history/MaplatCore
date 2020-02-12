@@ -9,16 +9,14 @@
   },
   "files": [
     "src/",
-    "dist/",
-    "less/",
-    "parts/"
+    "dist/"
   ],
   "scripts": {
     "less_build": "lessc --clean-css less/core.less dist/maplat_core.css",
     "npm_build": "babel src/ --out-dir lib/ --source-maps",
     "www_build": "webpack",
     "zip_build": "gulp zip",
-    "build": "npm run less_build && npm run www_build && npm run zip_build",
+    "build": "npm run freeze && npm run less_build && npm run www_build && npm run zip_build",
     "lint": "eslint src/",
     "test": "jasmine",
     "preversion": "npm run lint",
