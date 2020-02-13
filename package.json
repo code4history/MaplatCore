@@ -9,7 +9,8 @@
   },
   "files": [
     "src/",
-    "dist/"
+    "dist/",
+    "parts/"
   ],
   "scripts": {
     "less_build": "lessc --clean-css less/core.less dist/maplat_core.css",
