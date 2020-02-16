@@ -14,6 +14,7 @@ import { HistMap } from './histmap';
 import { NowMap, TmsMap, MapboxMap, META_KEYS } from './source_ex';
 import { recursiveRound } from './math_ex';
 import pointer from './pointer_images';
+import locales from './freeze_locales';
 
 export class MaplatApp extends EventTarget {
     // Maplat App Class
@@ -113,13 +114,14 @@ export class MaplatApp extends EventTarget {
             }
 
             const i18nPromise = new Promise(((resolve, reject) => { // eslint-disable-line no-unused-vars
-                const translib = app.translateUI ? i18n.use(i18nxhr) : i18n;
+                const translib = app.translateUI && Object.keys(locales).length == 0 ? i18n.use(i18nxhr) : i18n;
                 translib.init({
                     lng: lang,
                     fallbackLng: ['en'],
                     backend: {
                         loadPath: 'locales/{{lng}}/{{ns}}.json'
-                    }
+                    },
+                    resources: locales
                 }, (err, t) => {
                     resolve([t, i18n]);
                 });
