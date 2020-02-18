@@ -114,14 +114,15 @@ export class MaplatApp extends EventTarget {
             }
 
             const i18nPromise = new Promise(((resolve, reject) => { // eslint-disable-line no-unused-vars
-                const translib = app.translateUI && Object.keys(locales).length == 0 ? i18n.use(i18nxhr) : i18n;
+                const localesFlag = Object.keys(locales).length != 0;
+                const translib = app.translateUI && !localesFlag ? i18n.use(i18nxhr) : i18n;
                 translib.init({
                     lng: lang,
                     fallbackLng: ['en'],
                     backend: {
                         loadPath: 'locales/{{lng}}/{{ns}}.json'
                     },
-                    resources: locales
+                    resources: localesFlag ? locales : undefined
                 }, (err, t) => {
                     resolve([t, i18n]);
                 });
