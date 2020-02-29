@@ -38,64 +38,67 @@ for (let z = 0; z < 9; z++) {
     })(key, maxxy);
 }
 
-const baseDict = {
-    osm: {
-        mapID: 'osm',
-        title: {
-            ja: 'オープンストリートマップ',
-            en: 'OpenStreetMap'
-        },
-        label: {
-            ja: 'OSM(現在)',
-            en: 'OSM(Now)'
-        },
-        attr: '©︎ OpenStreetMap contributors',
-        maptype: 'base',
-        thumbnail: pointer['osm.jpg']
-    },
-    gsi: {
-        mapID: 'gsi',
-        title: {
-            ja: '地理院地図',
-            en: 'Geospatial Information Authority of Japan Map'
-        },
-        label: {
-            ja: '地理院地図',
-            en: 'GSI Map'
-        },
-        attr: {
-            ja: '国土地理院',
-            en: 'The Geospatial Information Authority of Japan'
-        },
-        maptype: 'base',
-        url: 'https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',
-        maxZoom: 18,
-        thumbnail: pointer['gsi.jpg']
-    },
-    gsi_ortho: {
-        mapID: 'gsi_ortho',
-        title: {
-            ja: '地理院地図オルソ航空写真',
-            en: 'Geospatial Information Authority of Japan Ortho aerial photo'
-        },
-        label: {
-            ja: '地理院オルソ',
-            en: 'GSI Ortho'
-        },
-        attr: {
-            ja: '国土地理院',
-            en: 'The Geospatial Information Authority of Japan'
-        },
-        maptype: 'base',
-        url: 'https://cyberjapandata.gsi.go.jp/xyz/ort/{z}/{x}/{y}.jpg',
-        maxZoom: 18,
-        thumbnail: pointer['gsi_ortho.jpg']
-    }
-};
+let baseDict;
 
 export class HistMap extends setCustomFunction(XYZ) {
     constructor(optOptions) {
         const options = optOptions || {};
+
+        baseDict = {
+            osm: {
+                mapID: 'osm',
+                title: {
+                    ja: 'オープンストリートマップ',
+                    en: 'OpenStreetMap'
+                },
+                label: {
+                    ja: 'OSM(現在)',
+                    en: 'OSM(Now)'
+                },
+                attr: '©︎ OpenStreetMap contributors',
+                maptype: 'base',
+                thumbnail: pointer['osm.jpg']
+            },
+            gsi: {
+                mapID: 'gsi',
+                title: {
+                    ja: '地理院地図',
+                    en: 'Geospatial Information Authority of Japan Map'
+                },
+                label: {
+                    ja: '地理院地図',
+                    en: 'GSI Map'
+                },
+                attr: {
+                    ja: '国土地理院',
+                    en: 'The Geospatial Information Authority of Japan'
+                },
+                maptype: 'base',
+                url: 'https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',
+                maxZoom: 18,
+                thumbnail: pointer['gsi.jpg']
+            },
+            gsi_ortho: {
+                mapID: 'gsi_ortho',
+                title: {
+                    ja: '地理院地図オルソ航空写真',
+                    en: 'Geospatial Information Authority of Japan Ortho aerial photo'
+                },
+                label: {
+                    ja: '地理院オルソ',
+                    en: 'GSI Ortho'
+                },
+                attr: {
+                    ja: '国土地理院',
+                    en: 'The Geospatial Information Authority of Japan'
+                },
+                maptype: 'base',
+                url: 'https://cyberjapandata.gsi.go.jp/xyz/ort/{z}/{x}/{y}.jpg',
+                maxZoom: 18,
+                thumbnail: pointer['gsi_ortho.jpg']
+            }
+        };
+
         options.wrapX = false;
         if (!options.imageExtention) options.imageExtention = 'jpg';
         if (options.mapID) {
