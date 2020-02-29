@@ -44,6 +44,56 @@ export class HistMap extends setCustomFunction(XYZ) {
     constructor(optOptions) {
         const options = optOptions || {};
 
+        options.wrapX = false;
+        if (!options.imageExtention) options.imageExtention = 'jpg';
+        if (options.mapID) {
+            options.url = options.url || `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtention}`;
+        }
+
+        const zW = Math.log2(options.width/tileSize);
+        const zH = Math.log2(options.height/tileSize);
+        options.maxZoom = Math.ceil(Math.max(zW, zH));
+
+        options.tileUrlFunction = options.tileUrlFunction || function(coord) {
+            const z = coord[0];
+            const x = coord[1];
+            const y = coord[2];
+            if (x * tileSize * Math.pow(2, this.maxZoom - z) >= this.width ||
+                y * tileSize * Math.pow(2, this.maxZoom - z) >= this.height ||
+                x < 0 || y < 0 ) {
+                return transPng;
+            }
+            return this._tileUrlFunction(coord);
+        };
+
+        super(options);
+        if (options.mapID) {
+            this.mapID = options.mapID;
+        }
+        if (options.urls) {
+            this._tileUrlFunction =
+                createFromTemplates(
+                    options.urls);
+        } else if (options.url) {
+            this._tileUrlFunction =
+                createFromTemplates(
+                    expandUrl(options.url));
+        }
+
+        this.width = options.width;
+        this.height = options.height;
+        this.maxZoom = options.maxZoom;
+        this._maxxy = Math.pow(2, this.maxZoom) * tileSize;
+
+        setCustomInitialize(this, options);
+        setupTileLoadFunction(this);
+    }
+
+    getTransPng() {
+        return transPng;
+    }
+
+    static createAsync(options, commonOptions) {
         baseDict = {
             osm: {
                 mapID: 'osm',
@@ -99,56 +149,6 @@ export class HistMap extends setCustomFunction(XYZ) {
             }
         };
 
-        options.wrapX = false;
-        if (!options.imageExtention) options.imageExtention = 'jpg';
-        if (options.mapID) {
-            options.url = options.url || `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtention}`;
-        }
-
-        const zW = Math.log2(options.width/tileSize);
-        const zH = Math.log2(options.height/tileSize);
-        options.maxZoom = Math.ceil(Math.max(zW, zH));
-
-        options.tileUrlFunction = options.tileUrlFunction || function(coord) {
-            const z = coord[0];
-            const x = coord[1];
-            const y = coord[2];
-            if (x * tileSize * Math.pow(2, this.maxZoom - z) >= this.width ||
-                y * tileSize * Math.pow(2, this.maxZoom - z) >= this.height ||
-                x < 0 || y < 0 ) {
-                return transPng;
-            }
-            return this._tileUrlFunction(coord);
-        };
-
-        super(options);
-        if (options.mapID) {
-            this.mapID = options.mapID;
-        }
-        if (options.urls) {
-            this._tileUrlFunction =
-                createFromTemplates(
-                    options.urls);
-        } else if (options.url) {
-            this._tileUrlFunction =
-                createFromTemplates(
-                    expandUrl(options.url));
-        }
-
-        this.width = options.width;
-        this.height = options.height;
-        this.maxZoom = options.maxZoom;
-        this._maxxy = Math.pow(2, this.maxZoom) * tileSize;
-
-        setCustomInitialize(this, options);
-        setupTileLoadFunction(this);
-    }
-
-    getTransPng() {
-        return transPng;
-    }
-
-    static createAsync(options, commonOptions) {
         if (typeof options === 'string') {
             options = baseDict[options];
         }
