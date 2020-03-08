@@ -13,6 +13,7 @@
     "parts/"
   ],
   "scripts": {
+    "server": "gulp server",
     "less_build": "lessc --clean-css less/core.less dist/maplat_core.css",
     "less_build_packed": "lessc --clean-css less/core.less dist_packed/maplat_core.css",
     "npm_build": "babel src/ --out-dir lib/ --source-maps",

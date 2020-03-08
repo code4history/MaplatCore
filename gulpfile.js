@@ -1,6 +1,15 @@
 var gulp = require('gulp'),
     fs = require('fs-extra'),
+    spawn = require('child_process').spawn,
     zip = require('gulp-zip');
+
+gulp.task('server', function() {
+    spawn('node', ['server.js'], {
+        stdio: 'ignore',
+        detached: true
+    }).unref();
+    return Promise.resolve();
+});
 
 gulp.task('zip', function() {
     try {
