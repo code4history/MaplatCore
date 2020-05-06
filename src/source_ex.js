@@ -548,7 +548,6 @@ export function setCustomInitialize(self, options) {
     self.map_option = options.map_option || {};
     self.home_position = options.home_position;
     self.merc_zoom = options.merc_zoom;
-    self.thumbnail = options.thumbnail || `./tmbs/${options.mapID || options.sourceID}_menu.jpg`;
     self.label = options.label;
     self.maxZoom = options.maxZoom;
     self.minZoom = options.minZoom;
@@ -565,9 +564,26 @@ export function setCustomInitialize(self, options) {
         self[key] = options[key];
     }
 
+    const thumbWait = options.thumbnail ? new Promise((resolve) => {
+        self.thumbnail = options.thumbnail;
+        resolve();
+    }) : new Promise((resolve) => {
+        self.thumbnail = `./tmbs/${options.mapID || options.sourceID}.jpg`;
+        fetch(self.thumbnail).then((response) => { // eslint-disable-line no-undef
+            if(response.ok) {
+                resolve();
+            } else {
+                self.thumbnail = `./tmbs/${options.mapID || options.sourceID}_menu.jpg`;
+                resolve();
+            }
+        }).catch((error) => { // eslint-disable-line no-unused-vars
+            self.thumbnail = `./tmbs/${options.mapID || options.sourceID}_menu.jpg`;
+            resolve();
+        });
+    });
     const cacheWait = options.enable_cache ? self.setupTileCacheAsnyc() : Promise.resolve();
     const poisWait = self.resolvePois(options.pois);
-    self.initialWait = Promise.all([cacheWait, poisWait]);
+    self.initialWait = Promise.all([cacheWait, poisWait, thumbWait]);
 }
 
 export function setupTileLoadFunction(target) {
