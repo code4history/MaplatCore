@@ -44,7 +44,6 @@
   },
   "homepage": "https://github.com/code4history/MaplatCore/wiki",
   "dependencies": {
-    "@maplat/tin": "^0.6.3",
     "@turf/turf": "^5.1.6",
     "argv": "0.0.2",
     "base64-img": "^1.0.4",
