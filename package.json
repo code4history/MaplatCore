@@ -1,6 +1,6 @@
 {
   "name": "@maplat/core",
-  "version": "0.6.6",
+  "version": "0.6.7",
   "description": "Maplat is the cool Historical Map/Illustrated Map Viewer API.\nIt can transform each map coordinates with nonlinear but homeomorphic projection and makes possible that the maps can collaborate with GPS/accurate maps, without distorting original maps.",
   "main": "src/index.js",
   "module": "src/index.js",
@@ -27,7 +27,8 @@
     "test": "jasmine",
     "preversion": "npm run lint",
     "version": "npm run build && npm run build_packed && git add -A",
-    "freeze": "node bin/freezer.js -s parts -f src/freeze_images.js -u src/pointer_images.js"
+    "freeze": "node bin/freezer.js -s parts -f src/freeze_images.js -u src/pointer_images.js",
+    "preinstall": "npx npm-force-resolutions || true"
   },
   "repository": {
     "type": "git",
@@ -44,6 +45,7 @@
   },
   "homepage": "https://github.com/code4history/MaplatCore/wiki",
   "dependencies": {
+    "@maplat/tin": "^0.6.5",
     "@turf/turf": "^5.1.6",
     "argv": "0.0.2",
     "base64-img": "^1.0.4",
@@ -58,6 +60,7 @@
     "@babel/preset-env": "^7.8.4",
     "@babel/register": "^7.8.3",
     "babel-loader": "^8.0.6",
+    "clean-css": "^4.2.3",
     "core-js": "^3.6.4",
     "eslint": "^6.8.0",
     "fs-extra": "^8.1.0",
@@ -67,9 +70,18 @@
     "jasmine": "^3.5.0",
     "less": "^3.11.1",
     "less-plugin-clean-css": "^1.5.1",
+    "minimist": "^1.2.5",
     "psaux": "^0.4.0",
     "terminate": "^2.1.2",
+    "utils-extend": "^1.0.8",
     "webpack": "^4.41.6",
-    "webpack-cli": "^3.3.11"
+    "webpack-cli": "^3.3.11",
+    "yargs-parser": "^18.1.3"
+  },
+  "resolutions": {
+    "clean-css": "^4.2.3",
+    "minimist": "^1.2.5",
+    "yargs-parser": "^18.1.3",
+    "utils-extend": "^1.0.8"
   }
 }
