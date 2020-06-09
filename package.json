@@ -28,7 +28,7 @@
     "preversion": "npm run lint",
     "version": "npm run build && npm run build_packed && git add -A",
     "freeze": "node bin/freezer.js -s parts -f src/freeze_images.js -u src/pointer_images.js",
-    "preinstall": "npx npm-force-resolutions || true"
+    "preinstall": "npx npm-force-resolutions || echo 'ignore'"
   },
   "repository": {
     "type": "git",
@@ -45,7 +45,7 @@
   },
   "homepage": "https://github.com/code4history/MaplatCore/wiki",
   "dependencies": {
-    "@maplat/tin": "^0.6.5",
+    "@maplat/tin": "^0.6.6",
     "@turf/turf": "^5.1.6",
     "argv": "0.0.2",
     "base64-img": "^1.0.4",
