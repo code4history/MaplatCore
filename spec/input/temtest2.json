@@ -1,0 +1,11 @@
+{
+  "title": "Logic test",
+  "data": {
+    "boolean": true
+  },
+  "template": "{\n  \"icon\": \"<% if (boolean) { %>true<% } else { %>false<% } %>\",\n  \"selected_icon\": \"<% [0,1,2].map((x)=>{ %><%= x %><% }) %>\"\n}",
+  "fallback": {
+    "icon": "d",
+    "selected_icon": "e"
+  }
+}

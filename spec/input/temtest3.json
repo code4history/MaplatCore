@@ -1,0 +1,9 @@
+{
+  "title": "No template test",
+  "data": {
+  },
+  "fallback": {
+    "icon": "d",
+    "selected_icon": "e"
+  }
+}

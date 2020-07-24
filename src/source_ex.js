@@ -5,6 +5,7 @@ import { polygon, point, lineString } from '@turf/helpers';
 import centroid from '@turf/centroid';
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
 import lineIntersect from '@turf/line-intersect';
+import { normalizeLayers, addIdToPoi, normalizeLayer, normalizePoi } from './normalizePois';
 
 export function setCustomFunction(target) {
     class Mixin extends target {
@@ -361,87 +362,10 @@ export function setCustomFunction(target) {
             })).then((xys) => [xys]);
         }
 
-        resolvePois(pois) {
-            const self = this;
-            if (!pois) pois = [];
-            let promise;
-            if (typeof pois == 'string') {
-                promise = new Promise(((resolve, reject) => {
-                    const url = pois.match(/\//) ? pois : `pois/${pois}`;
-
-                    const xhr = new XMLHttpRequest(); // eslint-disable-line no-undef
-                    xhr.open('GET', url, true);
-                    xhr.responseType = 'json';
-
-                    xhr.onload = function (e) { // eslint-disable-line no-unused-vars
-                        if (this.status == 200 || this.status == 0) { // 0 for UIWebView
-                            try {
-                                let resp = this.response;
-                                if (typeof resp != 'object') resp = JSON.parse(resp);
-                                self.pois = resp;
-                                resolve();
-                            } catch (err) {
-                                reject(err);
-                            }
-                        } else {
-                            reject('Fail to load poi json');
-                        }
-                    };
-                    xhr.send();
-                }));
-            } else {
-                self.pois = pois;
-                promise = Promise.resolve();
-            }
-
-            return promise.then(() => {
-                if (Array.isArray(self.pois)) {
-                    self.pois = {
-                        main: {
-                            namespace_id: `${self.sourceID}#main`,
-                            name: self.officialTitle || self.title,
-                            pois: self.pois
-                        }
-                    };
-                    self.addIdToPoi('main');
-                } else {
-                    if (!self.pois['main']) {
-                        self.pois['main'] = {};
-                    }
-                    Object.keys(self.pois).map((key) => {
-                        if (!self.pois[key].name) {
-                            if (key == 'main') {
-                                self.pois[key].name = self.officialTitle || self.title;
-                            } else {
-                                self.pois[key].name = key;
-                            }
-                        }
-                        if (!self.pois[key].pois) {
-                            self.pois[key].pois = [];
-                        }
-                        self.pois[key].namespace_id = `${self.sourceID}#${key}`;
-                        self.addIdToPoi(key);
-                    });
-                }
-            });
-        }
-
-        addIdToPoi(clusterId) {
-            const self = this;
-            if (!self.pois[clusterId]) return;
-            const cluster = self.pois[clusterId];
-            const pois = cluster.pois;
-            if (!cluster.__nextId) {
-                cluster.__nextId = 0;
-            }
-            pois.map((poi) => {
-                if (!poi.id) {
-                    poi.id = `${clusterId}_${cluster.__nextId}`;
-                    cluster.__nextId++;
-                }
-                if (!poi.namespace_id) {
-                    poi.namespace_id = `${self.sourceID}#${poi.id}`;
-                }
+        async resolvePois(pois) {
+            this.pois = await normalizeLayers(pois || [], {
+                name: this.officialTitle || this.title,
+                namespace: this.sourceID
             });
         }
 
@@ -463,8 +387,12 @@ export function setCustomFunction(target) {
                 clusterId = 'main';
             }
             if (this.pois[clusterId]) {
+                data = normalizePoi(data);
                 this.pois[clusterId]['pois'].push(data);
-                this.addIdToPoi(clusterId);
+                addIdToPoi(this.pois, clusterId, {
+                    name: this.officialTitle || this.title,
+                    namespace: this.sourceID
+                });
                 return data.namespace_id;
             }
         }
@@ -512,22 +440,10 @@ export function setCustomFunction(target) {
         addPoiLayer(id, data) {
             if (id == 'main') return;
             if (this.pois[id]) return;
-            if (!data) {
-                data = {
-                    namespace_id: `${this.sourceID}#${id}`,
-                    name: id,
-                    pois: []
-                };
-            } else {
-                if (!data.name) {
-                    data.name = id;
-                }
-                if (!data.pois) {
-                    data.pois = [];
-                }
-                data.namespace_id = `${this.sourceID}#${id}`;
-            }
-            this.pois[id] = data;
+            this.pois[id] = normalizeLayer(data || [], id, {
+                name: this.officialTitle || this.title,
+                namespace: this.sourceID
+            });
         }
 
         removePoiLayer(id) {

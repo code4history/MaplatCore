@@ -15,6 +15,8 @@ import { NowMap, TmsMap, MapboxMap, META_KEYS } from './source_ex';
 import { recursiveRound } from './math_ex';
 import pointer from './pointer_images';
 import locales from './freeze_locales';
+import {normalizeLayers, addIdToPoi, normalizeLayer, normalizePoi} from './normalizePois';
+import {createIconSet} from './templateWorks';
 
 export class MaplatApp extends EventTarget {
     // Maplat App Class
@@ -126,36 +128,31 @@ export class MaplatApp extends EventTarget {
         }));
     }
 
-    // Async initializer 6: Load pois setting
-    async poisLoader(pois) {
+    // Async initializer 6: Load pois setting => move to normalizePois.js
+
+    // Async initializer 8: Load sources setting asynchronous
+    async sourcesLoader(mapReturnValue) {
         const app = this;
 
-        if (typeof pois == 'string') {
-            return new Promise(((resolve, reject) => {
-                const url = pois.match(/\//) ? pois : `pois/${pois}`;
-
-                const xhr = new XMLHttpRequest(); // eslint-disable-line no-undef
-                xhr.open('GET', url, true);
-                xhr.responseType = 'json';
-
-                xhr.onload = function(e) { // eslint-disable-line no-unused-vars
-                    if (this.status == 200 || this.status == 0) { // 0 for UIWebView
-                        try {
-                            let resp = this.response;
-                            if (typeof resp != 'object') resp = JSON.parse(resp);
-                            resolve(resp);
-                        } catch (err) {
-                            reject(err);
-                        }
-                    } else {
-                        reject('Fail to load poi json');
-                    }
-                };
-                xhr.send();
-            }));
-        } else {
-            return pois;
+        const dataSource = app.appData.sources;
+        const sourcePromise = [];
+        const commonOption = {
+            home_position: mapReturnValue.homePos,
+            merc_zoom: mapReturnValue.defZoom,
+            zoom_restriction: mapReturnValue.zoomRestriction,
+            merc_min_zoom: mapReturnValue.mercMinZoom,
+            merc_max_zoom: mapReturnValue.mercMaxZoom,
+            enable_cache: app.enableCache,
+            translator(fragment) {
+                return app.translate(fragment);
+            }
+        };
+        for (let i = 0; i < dataSource.length; i++) {
+            const option = dataSource[i];
+            sourcePromise.push(HistMap.createAsync(option, commonOption));
         }
+
+        return Promise.all(sourcePromise);
     }
 
     // Async initializers 2: Handle application setting
@@ -178,7 +175,7 @@ export class MaplatApp extends EventTarget {
 
         const mapReturnValue = app.prepareMap(appOption);
 
-        return app.poisLoader(app.appData.pois || []).then(x => app.handlePois(x, mapReturnValue));
+        return normalizeLayers(app.appData.pois || [], app).then(x => app.handlePois(x, mapReturnValue));
     }
 
     // Async initializers 5: Prepare map base elements and objects
@@ -196,6 +193,7 @@ export class MaplatApp extends EventTarget {
         const fakeRadius = appOption.fake ? app.appData.fake_radius : false;
         app.appLang = app.appData.lang || 'ja';
         app.noRotate = appOption.no_rotate || app.appData.no_rotate || false;
+        app.iconTemplate = appOption.icon_template || app.appData.icon_template || false;
         app.currentPosition = null;
         app.backMap = null;
         app.__init = true;
@@ -273,285 +271,287 @@ export class MaplatApp extends EventTarget {
 
         app.pois = pois;
 
-        if (Array.isArray(app.pois)) {
-            app.pois = {
-                main: {
-                    namespace_id: 'main',
-                    name: app.appName,
-                    pois: app.pois
+        return app.sourcesLoader(mapReturnValue).then(x => app.handleSources(x));
+    }
+
+    // Async initializer 9: Handle sources loading result
+    handleSources(sources) {
+        const app = this;
+
+        app.mercSrc = sources.reduce((prev, curr) => {
+            if (prev) return prev;
+            if (curr instanceof NowMap) return curr;
+        }, null);
+
+        const cache = [];
+        app.cacheHash = {};
+        for (let i = 0; i < sources.length; i++) {
+            const source = sources[i];
+            source._map = app.mapObject;
+            if (source instanceof MapboxMap) {
+                if (!app.mapboxMap) {
+                    throw "To use mapbox gl based base map, you have to make Maplat object with specifying 'mapboxgl' option."
                 }
-            };
-            app.addIdToPoi('main');
-        } else {
-            if (!app.pois['main']) {
-                app.pois['main'] = {};
+                source.mapboxMap = app.mapboxMap;
             }
-            Object.keys(app.pois).map((key) => {
-                if (!app.pois[key].name) {
-                    if (key == 'main') {
-                        app.pois[key].name = app.appName;
-                    } else {
-                        app.pois[key].name = key;
-                    }
-                }
-                if (!app.pois[key].pois) {
-                    app.pois[key].pois = [];
-                }
-                app.pois[key].namespace_id = key;
-                app.addIdToPoi(key);
-            });
-        }
-        const dataSource = app.appData.sources;
-        const sourcePromise = [];
-        const commonOption = {
-            home_position: mapReturnValue.homePos,
-            merc_zoom: mapReturnValue.defZoom,
-            zoom_restriction: mapReturnValue.zoomRestriction,
-            merc_min_zoom: mapReturnValue.mercMinZoom,
-            merc_max_zoom: mapReturnValue.mercMaxZoom,
-            enable_cache: app.enableCache,
-            translator(fragment) {
-                return app.translate(fragment);
-            }
-        };
-        for (let i = 0; i < dataSource.length; i++) {
-            const option = dataSource[i];
-            sourcePromise.push(HistMap.createAsync(option, commonOption));
+            cache.push(source);
+            app.cacheHash[source.sourceID] = source;
         }
 
-        return Promise.all(sourcePromise).then((sources) => {
-            app.mercSrc = sources.reduce((prev, curr) => {
-                if (prev) return prev;
-                if (curr instanceof NowMap) return curr;
-            }, null);
+        app.dispatchEvent(new CustomEvent('sourceLoaded', sources));
 
-            const cache = [];
-            app.cacheHash = {};
-            for (let i = 0; i < sources.length; i++) {
-                const source = sources[i];
-                source._map = app.mapObject;
-                if (source instanceof MapboxMap) {
-                    if (!app.mapboxMap) {
-                        throw "To use mapbox gl based base map, you have to make Maplat object with specifying 'mapboxgl' option."
-                    }
-                    source.mapboxMap = app.mapboxMap;
-                }
-                cache.push(source);
-                app.cacheHash[source.sourceID] = source;
+        app.setInitialMap(cache);
+        app.setMapClick();
+        app.setPointerEvents();
+        app.setMapOnOff();
+        app.setMouseCursor();
+        app.setBackMapBehavior();
+        app.raiseChangeViewPoint();
+    }
+
+    // Async initializer 10: Handle initial map
+    setInitialMap(cache) {
+        const app = this;
+
+        const initial = app.initialRestore.sourceID || app.startFrom || cache[cache.length - 1].sourceID;
+        app.from = cache.reduce((prev, curr) => {
+            if (prev) {
+                return !(prev instanceof HistMap) && curr.sourceID != initial ? curr : prev;
             }
+            if (curr.sourceID != initial) return curr;
+            return prev;
+        }, null);
+        app.changeMap(initial, app.initialRestore);
+    }
 
-            app.dispatchEvent(new CustomEvent('sourceLoaded', sources));
+    // Async initializer 11: Handle map click event
+    setMapClick() {
+        const app = this;
 
-            const initial = app.initialRestore.sourceID || app.startFrom || cache[cache.length - 1].sourceID;
-            app.from = cache.reduce((prev, curr) => {
-                if (prev) {
-                    return !(prev instanceof HistMap) && curr.sourceID != initial ? curr : prev;
-                }
-                if (curr.sourceID != initial) return curr;
-                return prev;
-            }, null);
-            app.changeMap(initial, app.initialRestore);
-
-            app.mapObject.on('click', function(evt) {
-                app.logger.debug(evt.pixel);
-                const feature = this.forEachFeatureAtPixel(evt.pixel,
-                    (feature) => {
-                        app.logger.debug(evt.pixel);
-                        if (feature.get('datum')) return feature;
-                    });
-                if (feature) {
-                    app.dispatchEvent(new CustomEvent('clickMarker', feature.get('datum')));
-                } else {
-                    const xy = evt.coordinate;
-                    app.dispatchEvent(new CustomEvent('clickMapXy', xy));
-                    app.from.xy2MercAsync(xy).then((merc) => {
-                        app.dispatchEvent(new CustomEvent('clickMapMerc', merc));
-                        const lnglat = transform(merc, 'EPSG:3857', 'EPSG:4326');
-                        app.dispatchEvent(new CustomEvent('clickMap', {
-                            longitude: lnglat[0],
-                            latitude: lnglat[1]
-                        }));
-                    });
-                }
-            });
-
-            let xyBuffer;
-            let waiting = false;
-            let dragging = false;
-            const pointerCounter = {};
-            const pointermoveHandler = function(xy) {
-                app.dispatchEvent(new CustomEvent('pointerMoveOnMapXy', xy));
+        app.mapObject.on('click', function(evt) {
+            app.logger.debug(evt.pixel);
+            const feature = this.forEachFeatureAtPixel(evt.pixel,
+                (feature) => {
+                    app.logger.debug(evt.pixel);
+                    if (feature.get('datum')) return feature;
+                });
+            if (feature) {
+                app.dispatchEvent(new CustomEvent('clickMarker', feature.get('datum')));
+            } else {
+                const xy = evt.coordinate;
+                app.dispatchEvent(new CustomEvent('clickMapXy', xy));
                 app.from.xy2MercAsync(xy).then((merc) => {
-                    app.dispatchEvent(new CustomEvent('pointerMoveOnMapMerc', merc));
-                    if (xyBuffer) {
-                        const next = xyBuffer;
-                        xyBuffer = false;
-                        pointermoveHandler(next);
-                    } else {
-                        waiting = false;
-                    }
+                    app.dispatchEvent(new CustomEvent('clickMapMerc', merc));
+                    const lnglat = transform(merc, 'EPSG:3857', 'EPSG:4326');
+                    app.dispatchEvent(new CustomEvent('clickMap', {
+                        longitude: lnglat[0],
+                        latitude: lnglat[1]
+                    }));
                 });
             }
+        });
+    }
 
-            app.mapObject.on('pointermove', (evt) => {
-                if (dragging) return;
-                if (waiting) {
-                    xyBuffer = evt.coordinate;
+    // Async initializer 12: Handle pointer event
+    setPointerEvents() {
+        const app = this;
+
+        let xyBuffer;
+        let waiting = false;
+        let dragging = false;
+        const pointerCounter = {};
+        const pointermoveHandler = function(xy) {
+            app.dispatchEvent(new CustomEvent('pointerMoveOnMapXy', xy));
+            app.from.xy2MercAsync(xy).then((merc) => {
+                app.dispatchEvent(new CustomEvent('pointerMoveOnMapMerc', merc));
+                if (xyBuffer) {
+                    const next = xyBuffer;
+                    xyBuffer = false;
+                    pointermoveHandler(next);
                 } else {
-                    waiting = true;
-                    pointermoveHandler(evt.coordinate);
+                    waiting = false;
                 }
             });
-            app.mapObject.on('pointerdown', (evt) => {
-                if (evt.originalEvent && evt.originalEvent.pointerId != null) {
-                    pointerCounter[evt.originalEvent.pointerId] = true;
-                }
-                dragging = true;
-            });
-            app.mapObject.on('pointerdrag', (evt) => {
-                if (evt.originalEvent && evt.originalEvent.pointerId != null) {
-                    pointerCounter[evt.originalEvent.pointerId] = true;
-                }
-                dragging = true;
-            });
-            app.mapObject.on('pointerup', (evt) => {
-                // Android
-                if (evt.originalEvent && evt.originalEvent.pointerId != null) {
-                    delete pointerCounter[evt.originalEvent.pointerId];
-                    if (Object.keys(pointerCounter).length == 0) {
-                        dragging = false;
-                    }
-                    // iOS
-                } else if (evt.originalEvent && evt.originalEvent.touches) {
-                    if (evt.originalEvent.touches.length == 0) {
-                        dragging = false;
-                    }
-                } else {
+        }
+
+        app.mapObject.on('pointermove', (evt) => {
+            if (dragging) return;
+            if (waiting) {
+                xyBuffer = evt.coordinate;
+            } else {
+                waiting = true;
+                pointermoveHandler(evt.coordinate);
+            }
+        });
+        app.mapObject.on('pointerdown', (evt) => {
+            if (evt.originalEvent && evt.originalEvent.pointerId != null) {
+                pointerCounter[evt.originalEvent.pointerId] = true;
+            }
+            dragging = true;
+        });
+        app.mapObject.on('pointerdrag', (evt) => {
+            if (evt.originalEvent && evt.originalEvent.pointerId != null) {
+                pointerCounter[evt.originalEvent.pointerId] = true;
+            }
+            dragging = true;
+        });
+        app.mapObject.on('pointerup', (evt) => {
+            // Android
+            if (evt.originalEvent && evt.originalEvent.pointerId != null) {
+                delete pointerCounter[evt.originalEvent.pointerId];
+                if (Object.keys(pointerCounter).length == 0) {
                     dragging = false;
                 }
-            });
-
-            // MapUI on off
-            let timer;
-            app.mapObject.on('click', () => {
-                if (timer) {
-                    clearTimeout(timer); // eslint-disable-line no-undef
-                    timer = undefined;
+                // iOS
+            } else if (evt.originalEvent && evt.originalEvent.touches) {
+                if (evt.originalEvent.touches.length == 0) {
+                    dragging = false;
                 }
+            } else {
+                dragging = false;
+            }
+        });
+    }
+
+    // Async initializer 13: Handle map UI on/off
+    setMapOnOff() {
+        const app = this;
+
+        // MapUI on off
+        let timer;
+        app.mapObject.on('click', () => {
+            if (timer) {
+                clearTimeout(timer); // eslint-disable-line no-undef
+                timer = undefined;
+            }
+            const ctls = app.mapDivDocument.querySelectorAll('.ol-control');
+            for (let i = 0; i < ctls.length; i++) {
+                ctls[i].classList.remove('fade');
+            }
+        });
+        app.mapObject.on('pointerdrag', () => {
+            if (timer) {
+                clearTimeout(timer); // eslint-disable-line no-undef
+                timer = undefined;
+            }
+            const ctls = app.mapDivDocument.querySelectorAll('.ol-control');
+            for (let i = 0; i < ctls.length; i++) {
+                ctls[i].classList.add('fade');
+            }
+        });
+        app.mapObject.on('moveend', () => {
+            if (timer) {
+                clearTimeout(timer); // eslint-disable-line no-undef
+                timer = undefined;
+            }
+            timer = setTimeout(() => { // eslint-disable-line no-undef
+                timer = undefined;
                 const ctls = app.mapDivDocument.querySelectorAll('.ol-control');
                 for (let i = 0; i < ctls.length; i++) {
                     ctls[i].classList.remove('fade');
                 }
-            });
-            app.mapObject.on('pointerdrag', () => {
-                if (timer) {
-                    clearTimeout(timer); // eslint-disable-line no-undef
-                    timer = undefined;
-                }
-                const ctls = app.mapDivDocument.querySelectorAll('.ol-control');
-                for (let i = 0; i < ctls.length; i++) {
-                    ctls[i].classList.add('fade');
-                }
-            });
-            app.mapObject.on('moveend', () => {
-                if (timer) {
-                    clearTimeout(timer); // eslint-disable-line no-undef
-                    timer = undefined;
-                }
-                timer = setTimeout(() => { // eslint-disable-line no-undef
-                    timer = undefined;
-                    const ctls = app.mapDivDocument.querySelectorAll('.ol-control');
-                    for (let i = 0; i < ctls.length; i++) {
-                        ctls[i].classList.remove('fade');
-                    }
-                }, 3000);
-            });
+            }, 3000);
+        });
+    }
 
-            // change mouse cursor when over marker
-            const moveHandler = function(evt) {
-                const pixel = this.getEventPixel(evt.originalEvent);
-                const hit = this.hasFeatureAtPixel(pixel);
-                const target = this.getTarget();
-                if (hit) {
-                    const feature = this.forEachFeatureAtPixel(evt.pixel,
-                        (feature) => {
-                            if (feature.get('datum')) return feature;
-                        });
-                    app.mapDivDocument.querySelector(`#${target}`).style.cursor = feature ? 'pointer' : '';
-                    return;
-                }
-                app.mapDivDocument.querySelector(`#${target}`).style.cursor = '';
-            };
-            app.mapObject.on('pointermove', moveHandler);
+    // Async initializer 14: Handle mouse cursor
+    setMouseCursor () {
+        const app = this;
 
-            const mapOutHandler = function(evt) {
-                let histCoord = evt.frameState.viewState.center;
-                const source = app.from;
-                if (!source.insideCheckHistMapCoords(histCoord)) {
-                    histCoord = source.modulateHistMapCoordsInside(histCoord);
-                    this.getView().setCenter(histCoord);
-                }
-            };
-            app.mapObject.on('moveend', mapOutHandler);
-
-            const backMapMove = function(evt) { // eslint-disable-line no-unused-vars
-                if (!app.backMap) return;
-                if (this._backMapMoving) {
-                    app.logger.debug('Backmap moving skipped');
-                    return;
-                }
-                const backSrc = app.backMap.getSource();
-                if (backSrc) {
-                    this._backMapMoving = true;
-                    app.logger.debug('Backmap moving started');
-                    const self = this;
-                    app.convertParametersFromCurrent(backSrc, (size) => {
-                        const view = app.backMap.getView();
-                        view.setCenter(size[0]);
-                        view.setZoom(size[1]);
-                        view.setRotation(app.noRotate ? 0 : size[2]);
-                        app.logger.debug('Backmap moving ended');
-                        self._backMapMoving = false;
+        // change mouse cursor when over marker
+        const moveHandler = function(evt) {
+            const pixel = this.getEventPixel(evt.originalEvent);
+            const hit = this.hasFeatureAtPixel(pixel);
+            const target = this.getTarget();
+            if (hit) {
+                const feature = this.forEachFeatureAtPixel(evt.pixel,
+                    (feature) => {
+                        if (feature.get('datum')) return feature;
                     });
-                }
-            };
-            app.mapObject.on('postrender', backMapMove);
+                app.mapDivDocument.querySelector(`#${target}`).style.cursor = feature ? 'pointer' : '';
+                return;
+            }
+            app.mapDivDocument.querySelector(`#${target}`).style.cursor = '';
+        };
+        app.mapObject.on('pointermove', moveHandler);
 
-            app.mapObject.on('postrender', (evt) => { // eslint-disable-line no-unused-vars
-                const view = app.mapObject.getView();
-                const center = view.getCenter();
-                const zoom = view.getDecimalZoom();
-                const rotation = normalizeDegree(view.getRotation() * 180 / Math.PI);
-                app.from.size2MercsAsync().then((mercs) => app.mercSrc.mercs2SizeAsync(mercs)).then((size) => {
-                    if (app.mobileMapMoveBuffer && app.mobileMapMoveBuffer[0][0] == size[0][0] &&
-                        app.mobileMapMoveBuffer[0][1] == size[0][1] &&
-                        app.mobileMapMoveBuffer[1] == size[1] &&
-                        app.mobileMapMoveBuffer[2] == size[2]) {
-                        return;
-                    }
-                    app.mobileMapMoveBuffer = size;
-                    const ll = transform(size[0], 'EPSG:3857', 'EPSG:4326');
-                    const direction = normalizeDegree(size[2] * 180 / Math.PI);
-                    app.dispatchEvent(new CustomEvent('changeViewpoint', {
+        const mapOutHandler = function(evt) {
+            let histCoord = evt.frameState.viewState.center;
+            const source = app.from;
+            if (!source.insideCheckHistMapCoords(histCoord)) {
+                histCoord = source.modulateHistMapCoordsInside(histCoord);
+                this.getView().setCenter(histCoord);
+            }
+        };
+        app.mapObject.on('moveend', mapOutHandler);
+    }
+
+    // Async initializer 15: Handle back map's behavior
+    setBackMapBehavior() {
+        const app = this;
+
+        const backMapMove = function(evt) { // eslint-disable-line no-unused-vars
+            if (!app.backMap) return;
+            if (this._backMapMoving) {
+                app.logger.debug('Backmap moving skipped');
+                return;
+            }
+            const backSrc = app.backMap.getSource();
+            if (backSrc) {
+                this._backMapMoving = true;
+                app.logger.debug('Backmap moving started');
+                const self = this;
+                app.convertParametersFromCurrent(backSrc, (size) => {
+                    const view = app.backMap.getView();
+                    view.setCenter(size[0]);
+                    view.setZoom(size[1]);
+                    view.setRotation(app.noRotate ? 0 : size[2]);
+                    app.logger.debug('Backmap moving ended');
+                    self._backMapMoving = false;
+                });
+            }
+        };
+        app.mapObject.on('postrender', backMapMove);
+    }
+
+    // Async initializer 16: Handle back map's behavior
+    raiseChangeViewPoint() {
+        const app = this;
+
+        app.mapObject.on('postrender', (evt) => { // eslint-disable-line no-unused-vars
+            const view = app.mapObject.getView();
+            const center = view.getCenter();
+            const zoom = view.getDecimalZoom();
+            const rotation = normalizeDegree(view.getRotation() * 180 / Math.PI);
+            app.from.size2MercsAsync().then((mercs) => app.mercSrc.mercs2SizeAsync(mercs)).then((size) => {
+                if (app.mobileMapMoveBuffer && app.mobileMapMoveBuffer[0][0] == size[0][0] &&
+                    app.mobileMapMoveBuffer[0][1] == size[0][1] &&
+                    app.mobileMapMoveBuffer[1] == size[1] &&
+                    app.mobileMapMoveBuffer[2] == size[2]) {
+                    return;
+                }
+                app.mobileMapMoveBuffer = size;
+                const ll = transform(size[0], 'EPSG:3857', 'EPSG:4326');
+                const direction = normalizeDegree(size[2] * 180 / Math.PI);
+                app.dispatchEvent(new CustomEvent('changeViewpoint', {
+                    x: center[0],
+                    y: center[1],
+                    longitude: ll[0],
+                    latitude: ll[1],
+                    mercator_x: size[0][0],
+                    mercator_y: size[0][1],
+                    zoom,
+                    mercZoom: size[1],
+                    direction,
+                    rotation
+                }));
+                app.requestUpdateState({
+                    position: {
                         x: center[0],
                         y: center[1],
-                        longitude: ll[0],
-                        latitude: ll[1],
-                        mercator_x: size[0][0],
-                        mercator_y: size[0][1],
                         zoom,
-                        mercZoom: size[1],
-                        direction,
                         rotation
-                    }));
-                    app.requestUpdateState({
-                        position: {
-                            x: center[0],
-                            y: center[1],
-                            zoom,
-                            rotation
-                        }
-                    });
+                    }
                 });
             });
         });
@@ -565,24 +565,6 @@ export class MaplatApp extends EventTarget {
     mapInfo(sourceID) {
         const app = this;
         return createMapInfo(app.cacheHash[sourceID]);
-    }
-
-    addIdToPoi(clusterId) {
-        if (!this.pois[clusterId]) return;
-        const cluster = this.pois[clusterId];
-        const pois = cluster.pois;
-        if (!cluster.__nextId) {
-            cluster.__nextId = 0;
-        }
-        pois.map((poi) => {
-            if (!poi.id) {
-                poi.id = `${clusterId}_${cluster.__nextId}`;
-                cluster.__nextId++;
-            }
-            if (!poi.namespace_id) {
-                poi.namespace_id = poi.id;
-            }
-        });
     }
 
     setMarker(data) {
@@ -666,11 +648,7 @@ export class MaplatApp extends EventTarget {
                     const cluster = app.pois[key];
                     if (!cluster.hide) {
                         cluster.pois.map((data) => {
-                            const dataCopy = Object.assign({}, data);
-                            if (!dataCopy.icon) {
-                                dataCopy.icon = cluster.icon;
-                                dataCopy.selected_icon = cluster.selected_icon;
-                            }
+                            const dataCopy = createIconSet(Object.assign({}, data), cluster.icon_template || app.iconTemplate, cluster);
                             promises.push(app.setMarker(dataCopy));
                         });
                     }
@@ -680,11 +658,7 @@ export class MaplatApp extends EventTarget {
                         const cluster = source.pois[key];
                         if (!cluster.hide) {
                             cluster.pois.map((data) => {
-                                const dataCopy = Object.assign({}, data);
-                                if (!dataCopy.icon) {
-                                    dataCopy.icon = cluster.icon;
-                                    dataCopy.selected_icon = cluster.selected_icon;
-                                }
+                                const dataCopy = createIconSet(Object.assign({}, data), cluster.icon_template || app.iconTemplate, cluster);
                                 promises.push(app.setMarker(dataCopy));
                             });
                         }
@@ -770,8 +744,10 @@ export class MaplatApp extends EventTarget {
         }
         if (clusterId.indexOf('#') < 0) {
             if (this.pois[clusterId]) {
-                this.pois[clusterId]['pois'].push(data);
-                this.addIdToPoi(clusterId);
+                this.pois[clusterId]['pois'].push(normalizePoi(data));
+                addIdToPoi(this.pois, clusterId, {
+                    name: this.appName
+                } );
                 this.dispatchPoiNumber();
                 this.redrawMarkers();
                 return data.namespace_id;
@@ -898,22 +874,9 @@ export class MaplatApp extends EventTarget {
         if (id == 'main') return;
         if (this.pois[id]) return;
         if (id.indexOf('#') < 0) {
-            if (!data) {
-                data = {
-                    namespace_id: id,
-                    name: id,
-                    pois: []
-                };
-            } else {
-                if (!data.name) {
-                    data.name = id;
-                }
-                if (!data.pois) {
-                    data.pois = [];
-                }
-                data.namespace_id = id;
-            }
-            this.pois[id] = data;
+            this.pois[id] = normalizeLayer(data || [], id, {
+                name: this.appName
+            });
             this.redrawMarkers();
         } else {
             const splits = id.split('#');

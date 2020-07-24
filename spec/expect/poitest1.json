@@ -1,0 +1,27 @@
+{
+  "main": {
+    "namespace_id": "main",
+    "name": "Test1",
+    "pois": [
+      {
+        "id": "id1",
+        "namespace_id": "id1",
+        "title": "Title",
+        "lnglat": [
+          135,
+          35
+        ]
+      },
+      {
+        "id": "main_0",
+        "namespace_id": "main_0",
+        "title": "Title2",
+        "lnglat": [
+          136,
+          36
+        ]
+      }
+    ],
+    "__nextId": 1
+  }
+}
