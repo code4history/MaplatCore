@@ -26,7 +26,7 @@ export class MaplatApp extends EventTarget {
         const app = this;
         app.initialRestore = {};
 
-        const appid = app.appid = appOption.appid || 'sample';
+        app.appid = appOption.appid || 'sample';
         if (appOption.mapboxgl) {
             app.mapboxgl = appOption.mapboxgl;
             if (appOption.mapboxToken) {
@@ -45,7 +45,7 @@ export class MaplatApp extends EventTarget {
         if (!app.lang) {
             app.lang = browserLanguage();
         }
-        if (app.lang.toLowerCase() == 'zh-hk' || app.lang.toLowerCase() == 'zh-hant') lang = 'zh-TW';
+        if (app.lang.toLowerCase() == 'zh-hk' || app.lang.toLowerCase() == 'zh-hant') app.lang = 'zh-TW';
 
         if (appOption.restore) {
             if (appOption.restore_session) app.restoreSession = true;
@@ -89,7 +89,7 @@ export class MaplatApp extends EventTarget {
             app.mapDivDocument.classList.add('with-opacity');
         }
 
-        app.waitReady = app.settingLoader(setting).then(x => app.handleSetting(x, appOption));
+        app.waitReady = app.settingLoader(setting).then((x) => app.handleSetting(x, appOption));
     }
 
     // Async initializers 1: Load application setting
@@ -164,7 +164,7 @@ export class MaplatApp extends EventTarget {
             app.lang = app.appData.lang;
         }
 
-        return app.i18nLoader().then(x => app.handleI18n(x, appOption));
+        return app.i18nLoader().then((x) => app.handleI18n(x, appOption));
     }
 
     // Async initializers 4: Handle i18n setting
@@ -175,7 +175,7 @@ export class MaplatApp extends EventTarget {
 
         const mapReturnValue = app.prepareMap(appOption);
 
-        return normalizeLayers(app.appData.pois || [], app).then(x => app.handlePois(x, mapReturnValue));
+        return normalizeLayers(app.appData.pois || [], app).then((x) => app.handlePois(x, mapReturnValue));
     }
 
     // Async initializers 5: Prepare map base elements and objects
@@ -271,7 +271,7 @@ export class MaplatApp extends EventTarget {
 
         app.pois = pois;
 
-        return app.sourcesLoader(mapReturnValue).then(x => app.handleSources(x));
+        return app.sourcesLoader(mapReturnValue).then((x) => app.handleSources(x));
     }
 
     // Async initializer 9: Handle sources loading result

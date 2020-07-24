@@ -60,7 +60,7 @@ export async function normalizeLayers(layers, options) {
         layers = {[key]: normalizeLayer(layers, key, options)};
     // In case current non-geojson layers spec
     } else {
-        Object.keys(layers).map(key => {
+        Object.keys(layers).map((key) => {
             layers[key] = normalizeLayer(layers[key], key, options);
         });
     }
@@ -83,7 +83,7 @@ export function normalizeLayer(layer, key, options) {
         layer = {
             namespace_id: `${options.namespace ? `${options.namespace}#` : ''}${key}`,
             name: key === 'main' ? options.name : key,
-            pois: layer.map(x => normalizePoi(x))
+            pois: layer.map((x) => normalizePoi(x))
         };
     //In case "layer" is FeatureCollection
     } else if (layer.type === 'FeatureCollection') {
@@ -92,8 +92,8 @@ export function normalizeLayer(layer, key, options) {
             (key === 'main' && options.name) || key;
         layer = {
             namespace_id: `${options.namespace ? `${options.namespace}#` : ''}${key}`,
-            name: name,
-            pois: layer.features.map(x => normalizePoi(x))
+            name,
+            pois: layer.features.map((x) => normalizePoi(x))
         };
     }
 
