@@ -29,8 +29,8 @@ export class MaplatApp extends EventTarget {
         app.appid = appOption.appid || 'sample';
         if (appOption.mapboxgl) {
             app.mapboxgl = appOption.mapboxgl;
-            if (appOption.mapboxToken) {
-                app.mapboxgl.accessToken = appOption.mapboxToken;
+            if (appOption.mapbox_token || appOption.mapboxToken) {
+                app.mapboxgl.accessToken = appOption.mapbox_token || appOption.mapboxToken;
             }
         }
         app.mapDiv = appOption.div || 'map_div';
@@ -193,6 +193,7 @@ export class MaplatApp extends EventTarget {
         const fakeRadius = appOption.fake ? app.appData.fake_radius : false;
         app.appLang = app.appData.lang || 'ja';
         app.noRotate = appOption.no_rotate || app.appData.no_rotate || false;
+        app.poiTemplate = appOption.poi_template || app.appData.poi_template || false;
         app.iconTemplate = appOption.icon_template || app.appData.icon_template || false;
         app.currentPosition = null;
         app.backMap = null;

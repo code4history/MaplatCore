@@ -162,9 +162,9 @@ export function setCustomFunction(target) {
 
         goHome() {
             this.setViewpointRadian({
-                longitude: this.home_position[0],
-                latitude: this.home_position[1],
-                mercZoom: this.merc_zoom,
+                longitude: this.homePosition[0],
+                latitude: this.homePosition[1],
+                mercZoom: this.mercZoom,
                 rotation: 0
             });
         }
@@ -458,17 +458,21 @@ export function setCustomFunction(target) {
 export const META_KEYS = ['title', 'officialTitle', 'author', 'createdAt', 'era',
     'contributor', 'mapper', 'license', 'dataLicense', 'attr', 'dataAttr',
     'reference', 'description'];
+const META_KEYS_OPTION = ['title', 'official_title', 'author', 'created_at', 'era',
+    'contributor', 'mapper', 'license', 'data_license', 'attr', 'data_attr',
+    'reference', 'description'];
 
 export function setCustomInitialize(self, options) {
-    self.sourceID = options.sourceID;
-    self.map_option = options.map_option || {};
-    self.home_position = options.home_position;
-    self.merc_zoom = options.merc_zoom;
+    self.sourceID = options.source_id || options.sourceID;
+    self.homePosition = options.home_position;
+    self.mercZoom = options.merc_zoom;
     self.label = options.label;
-    self.maxZoom = options.maxZoom;
-    self.minZoom = options.minZoom;
-    if (options.envelopeLngLats || options.envelopLngLats) {
-        const lngLats = options.envelopeLngLats || options.envelopLngLats;
+    self.maxZoom = options.max_zoom || options.maxZoom;
+    self.minZoom = options.min_zoom || options.minZoom;
+    self.poiTemplate = options.poi_template;
+    self.iconTemplate = options.icon_template;
+    if (options.envelope_lng_lats || options.envelopeLngLats || options.envelopLngLats) {
+        const lngLats = options.envelope_lng_lats || options.envelopeLngLats || options.envelopLngLats;
         const mercs = lngLats.map((lnglat) => transform(lnglat, 'EPSG:4326', 'EPSG:3857'));
         mercs.push(mercs[0]);
         self.envelope = polygon([mercs]);
@@ -477,23 +481,24 @@ export function setCustomInitialize(self, options) {
 
     for (let i = 0; i < META_KEYS.length; i++) {
         const key = META_KEYS[i];
-        self[key] = options[key];
+        const option_key = META_KEYS_OPTION[i];
+        self[key] = options[option_key] || options[key];
     }
 
     const thumbWait = options.thumbnail ? new Promise((resolve) => {
         self.thumbnail = options.thumbnail;
         resolve();
     }) : new Promise((resolve) => {
-        self.thumbnail = `./tmbs/${options.mapID || options.sourceID}.jpg`;
+        self.thumbnail = `./tmbs/${options.map_id || options.mapID || options.source_id || options.sourceID}.jpg`;
         fetch(self.thumbnail).then((response) => { // eslint-disable-line no-undef
             if(response.ok) {
                 resolve();
             } else {
-                self.thumbnail = `./tmbs/${options.mapID || options.sourceID}_menu.jpg`;
+                self.thumbnail = `./tmbs/${options.map_id || options.mapID || options.source_id || options.sourceID}_menu.jpg`;
                 resolve();
             }
         }).catch((error) => { // eslint-disable-line no-unused-vars
-            self.thumbnail = `./tmbs/${options.mapID || options.sourceID}_menu.jpg`;
+            self.thumbnail = `./tmbs/${options.map_id || options.mapID || options.source_id || options.sourceID}_menu.jpg`;
             resolve();
         });
     });
@@ -595,17 +600,17 @@ export function setupTileLoadFunction(target) {
 export class NowMap extends setCustomFunction(OSM) {
     constructor(optOptions) {
         const options = optOptions || {};
-        if (!options.imageExtention) options.imageExtention = 'jpg';
-        if (options.mapID) {
-            if (options.mapID != 'osm') {
+        if (!options.image_extention) options.image_extention = options.imageExtention || 'jpg';
+        if (options.map_id || options.mapID) {
+            if ((options.map_id || options.mapID) != 'osm') {
                 options.url = options.url ||
-                    (options.tms ? `tiles/${options.mapID}/{z}/{x}/{-y}.${options.imageExtention}` :
-                        `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtention}`);
+                    (options.tms ? `tiles/${options.map_id || options.mapID}/{z}/{x}/{-y}.${options.image_extention || options.imageExtention}` :
+                        `tiles/${options.map_id || options.mapID}/{z}/{x}/{y}.${options.image_extention || options.imageExtention}`);
             }
         }
         super(options);
-        if (options.mapID) {
-            this.mapID = options.mapID;
+        if (options.map_id || options.mapID) {
+            this.mapID = options.map_id || options.mapID;
         }
         setCustomInitialize(this, options);
         setupTileLoadFunction(this);
