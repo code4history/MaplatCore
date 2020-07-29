@@ -1,4 +1,4 @@
-const { normalizeLayers } = require('../src/normalizePois');
+const { normalizeLayers } = require('../src/normalize_pois');
 const testHelper = require('./TestHelper');
 const fs = require('fs');
 

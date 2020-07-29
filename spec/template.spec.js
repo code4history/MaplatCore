@@ -1,7 +1,7 @@
 const fs = require('fs');
-const {createIconSet} = require('../src/templateWorks');
+const {createIconSet} = require('../src/template_works');
 
-describe('templateWorks test', function() {
+describe('template_works test', function() {
     for (let i=1; i<=3; i++) {
         const testin = require(`./input/temtest${i}.json`);
         let testex;

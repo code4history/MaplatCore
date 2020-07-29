@@ -15,8 +15,8 @@ import { NowMap, TmsMap, MapboxMap, META_KEYS } from './source_ex';
 import { recursiveRound } from './math_ex';
 import pointer from './pointer_images';
 import locales from './freeze_locales';
-import {normalizeLayers, addIdToPoi, normalizeLayer, normalizePoi} from './normalizePois';
-import {createIconSet} from './templateWorks';
+import {normalizeLayers, addIdToPoi, normalizeLayer, normalizePoi} from './normalize_pois';
+import {createIconSet} from './template_works';
 
 export class MaplatApp extends EventTarget {
     // Maplat App Class
@@ -128,7 +128,7 @@ export class MaplatApp extends EventTarget {
         }));
     }
 
-    // Async initializer 6: Load pois setting => move to normalizePois.js
+    // Async initializer 6: Load pois setting => move to normalize_pois.js
 
     // Async initializer 8: Load sources setting asynchronous
     async sourcesLoader(mapReturnValue) {

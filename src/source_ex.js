@@ -5,7 +5,7 @@ import { polygon, point, lineString } from '@turf/helpers';
 import centroid from '@turf/centroid';
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
 import lineIntersect from '@turf/line-intersect';
-import { normalizeLayers, addIdToPoi, normalizeLayer, normalizePoi } from './normalizePois';
+import { normalizeLayers, addIdToPoi, normalizeLayer, normalizePoi } from './normalize_pois';
 
 export function setCustomFunction(target) {
     class Mixin extends target {
