@@ -1,5 +1,6 @@
 {
   "main": {
+    "id": "main",
     "namespace_id": "main",
     "name": "Test1",
     "pois": [

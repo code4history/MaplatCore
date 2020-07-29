@@ -81,22 +81,22 @@ export function normalizeLayer(layer, key, options) {
     //In case "layer" is array (Old spec)
     if (Array.isArray(layer)) {
         layer = {
-            namespace_id: `${options.namespace ? `${options.namespace}#` : ''}${key}`,
-            name: key === 'main' ? options.name : key,
+
             pois: layer.map((x) => normalizePoi(x))
         };
     //In case "layer" is FeatureCollection
     } else if (layer.type === 'FeatureCollection') {
-        const name = layer.name ||
-            (layer.properties && layer.properties.name) ||
-            (key === 'main' && options.name) || key;
-        layer = {
-            namespace_id: `${options.namespace ? `${options.namespace}#` : ''}${key}`,
-            name,
-            pois: layer.features.map((x) => normalizePoi(x))
-        };
+        const buffer = Object.assign({}, layer.properties || {});
+        if (layer.name) buffer.name = layer.name;
+        buffer.pois = layer.features.map((x) => normalizePoi(x));
+        layer = buffer;
     }
 
+    if (typeof layer.id === 'undefined') {
+        layer.id = key;
+    } else {
+        if (layer.id !== key) throw 'POI layers include bad key setting';
+    }
     if (!layer.namespace_id) layer.namespace_id = `${options.namespace ? `${options.namespace}#` : ''}${key}`;
     if (!layer.name) layer.name = key === 'main' ? options.name : key;
     if (!layer.pois) layer.pois = [];
@@ -108,7 +108,7 @@ export function normalizeLayer(layer, key, options) {
 export function normalizePoi(poi) {
     //In case "poi" is GeoJson(Point)
     if (poi.type === 'Feature') {
-        const buffer = Object.assign({}, poi.properties);
+        const buffer = Object.assign({}, poi.properties || {});
         buffer.lnglat = poi.geometry.coordinates;
         if (!buffer.id) buffer.id = poi.id;
         if (!buffer.name) buffer.name = poi.name;

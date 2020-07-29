@@ -1,6 +1,7 @@
 {
   "main2": {
     "namespace_id": "main2",
+    "id": "main2",
     "name": "main2_name",
     "pois": [
       {
@@ -24,6 +25,7 @@
   },
   "main": {
     "namespace_id": "main",
+    "id": "main",
     "name": "Test3",
     "pois": [
       {

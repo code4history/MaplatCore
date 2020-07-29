@@ -1,9 +1,9 @@
 {
   "title": "GeoJson, FeatureCollection (Single)",
   "data": {
-    "id": "pois",
+    "id": "main2",
     "type": "FeatureCollection",
-    "name": "pois",
+    "name": "main2_name",
     "crs": {
       "type": "name",
       "properties": {
