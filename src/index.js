@@ -194,6 +194,7 @@ export class MaplatApp extends EventTarget {
         app.appLang = app.appData.lang || 'ja';
         app.noRotate = appOption.no_rotate || app.appData.no_rotate || false;
         app.poiTemplate = appOption.poi_template || app.appData.poi_template || false;
+        app.poiStyle = appOption.poi_style || app.appData.poi_style || false;
         app.iconTemplate = appOption.icon_template || app.appData.icon_template || false;
         app.currentPosition = null;
         app.backMap = null;
@@ -650,6 +651,13 @@ export class MaplatApp extends EventTarget {
                     if (!cluster.hide) {
                         cluster.pois.map((data) => {
                             const dataCopy = createIconSet(Object.assign({}, data), cluster.icon_template || app.iconTemplate, cluster);
+                            if (cluster.poi_template) {
+                                dataCopy.poi_template = cluster.poi_template;
+                                dataCopy.poi_style = cluster.poi_style;
+                            } else if (app.poiTemplate) {
+                                dataCopy.poi_template = app.poiTemplate;
+                                dataCopy.poi_style = app.poiStyle;
+                            }
                             promises.push(app.setMarker(dataCopy));
                         });
                     }
@@ -659,7 +667,17 @@ export class MaplatApp extends EventTarget {
                         const cluster = source.pois[key];
                         if (!cluster.hide) {
                             cluster.pois.map((data) => {
-                                const dataCopy = createIconSet(Object.assign({}, data), cluster.icon_template || app.iconTemplate, cluster);
+                                const dataCopy = createIconSet(Object.assign({}, data), cluster.icon_template || source.iconTemplate || app.iconTemplate, cluster);
+                                if (cluster.poi_template) {
+                                    dataCopy.poi_template = cluster.poi_template;
+                                    dataCopy.poi_style = cluster.poi_style;
+                                } else if (source.poiTemplate) {
+                                    dataCopy.poi_template = source.poiTemplate;
+                                    dataCopy.poi_style = source.poiStyle;
+                                } else if (app.poiTemplate) {
+                                    dataCopy.poi_template = app.poiTemplate;
+                                    dataCopy.poi_style = app.poiStyle;
+                                }
                                 promises.push(app.setMarker(dataCopy));
                             });
                         }
