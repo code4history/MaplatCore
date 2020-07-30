@@ -16,7 +16,7 @@ import { recursiveRound } from './math_ex';
 import pointer from './pointer_images';
 import locales from './freeze_locales';
 import {normalizeLayers, addIdToPoi, normalizeLayer, normalizePoi} from './normalize_pois';
-import {createIconSet} from './template_works';
+import {createIconSet, createHtmlFromTemplate} from './template_works';
 
 export class MaplatApp extends EventTarget {
     // Maplat App Class
@@ -652,11 +652,11 @@ export class MaplatApp extends EventTarget {
                         cluster.pois.map((data) => {
                             const dataCopy = createIconSet(Object.assign({}, data), cluster.icon_template || app.iconTemplate, cluster);
                             if (cluster.poi_template) {
-                                dataCopy.poi_template = cluster.poi_template;
-                                dataCopy.poi_style = cluster.poi_style;
+                                dataCopy.html = dataCopy.html || createHtmlFromTemplate(cluster.poi_template, dataCopy);
+                                dataCopy.poi_style = dataCopy.poi_style || cluster.poi_style;
                             } else if (app.poiTemplate) {
-                                dataCopy.poi_template = app.poiTemplate;
-                                dataCopy.poi_style = app.poiStyle;
+                                dataCopy.html = dataCopy.html || createHtmlFromTemplate(app.poiTemplate, dataCopy);
+                                dataCopy.poi_style = dataCopy.poi_style || app.poiStyle;
                             }
                             promises.push(app.setMarker(dataCopy));
                         });
@@ -669,14 +669,14 @@ export class MaplatApp extends EventTarget {
                             cluster.pois.map((data) => {
                                 const dataCopy = createIconSet(Object.assign({}, data), cluster.icon_template || source.iconTemplate || app.iconTemplate, cluster);
                                 if (cluster.poi_template) {
-                                    dataCopy.poi_template = cluster.poi_template;
-                                    dataCopy.poi_style = cluster.poi_style;
+                                    dataCopy.html = dataCopy.html || createHtmlFromTemplate(cluster.poi_template, dataCopy);
+                                    dataCopy.poi_style = dataCopy.poi_style || cluster.poi_style;
                                 } else if (source.poiTemplate) {
-                                    dataCopy.poi_template = source.poiTemplate;
-                                    dataCopy.poi_style = source.poiStyle;
+                                    dataCopy.html = dataCopy.html || createHtmlFromTemplate(source.poiTemplate, dataCopy);
+                                    dataCopy.poi_style = dataCopy.poi_style || source.poiStyle;
                                 } else if (app.poiTemplate) {
-                                    dataCopy.poi_template = app.poiTemplate;
-                                    dataCopy.poi_style = app.poiStyle;
+                                    dataCopy.html = dataCopy.html || createHtmlFromTemplate(app.poiTemplate, dataCopy);
+                                    dataCopy.poi_style = dataCopy.poi_style || app.poiStyle;
                                 }
                                 promises.push(app.setMarker(dataCopy));
                             });

@@ -12,3 +12,7 @@ export function createIconSet(data, iconTemplate, fallback) {
     }
     return data;
 }
+
+export function createHtmlFromTemplate(htmlTemplate, data) {
+    return template(htmlTemplate)(data);
+}
