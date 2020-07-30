@@ -471,8 +471,8 @@ export function setCustomInitialize(self, options) {
     self.minZoom = options.min_zoom || options.minZoom;
     self.poiTemplate = options.poi_template;
     self.iconTemplate = options.icon_template;
-    if (options.envelope_lng_lats || options.envelopeLngLats || options.envelopLngLats) {
-        const lngLats = options.envelope_lng_lats || options.envelopeLngLats || options.envelopLngLats;
+    if (options.envelope_lnglats || options.envelopeLngLats || options.envelopLngLats) {
+        const lngLats = options.envelope_lnglats || options.envelopeLngLats || options.envelopLngLats;
         const mercs = lngLats.map((lnglat) => transform(lnglat, 'EPSG:4326', 'EPSG:3857'));
         mercs.push(mercs[0]);
         self.envelope = polygon([mercs]);

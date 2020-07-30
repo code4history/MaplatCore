@@ -719,6 +719,7 @@ export class MaplatApp extends EventTarget {
         const app = this;
         const poi = app.getMarker(id);
         if (!poi) return;
+        data = normalizePoi(data || {});
         if (overwrite) {
             Object.keys(poi).map((key) => {
                 if (key != 'id' && key != 'namespace_id') {

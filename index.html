@@ -84,8 +84,8 @@
         });
         app.addPoiLayer('main2');
         app.addPoiLayer('morioka_ndl2#main2', {
-//            icon: 'parts/blue_marker.png',
-//            selected_icon: 'parts/red_marker.png'
+            icon: 'parts_test/blue_marker.png',
+            selected_icon: 'parts_test/red_marker.png'
         });
         document.getElementById('show').addEventListener('click', function(e) {
             app.showPoiLayer('main');
@@ -99,9 +99,9 @@
         document.getElementById('move').addEventListener('click', function(e) {
             var data;
             if (moveFlag) {
-                data = {lat: 39.698620, lng: 141.145358};
+                data = {lnglat: [141.145358, 39.698620]};
             } else {
-                data = {lat: 39.694758, lng: 141.146534};
+                data = {lnglat: [141.146534, 39.694758]};
             }
             moveFlag = !moveFlag;
             app.updateMarker('main_1', data);
@@ -115,8 +115,7 @@
                 desc: "寛延２年創建で当時の藩主南部利視が初代藩主南部信直の功績を称え社殿を建立し御霊を勧請したのが始まりとされている。",
                 icon: undefined,
                 image: "sakurayama_jinja.jpg",
-                lat: 39.701599,
-                lng: 141.151995,
+                lnglat: [141.151995, 39.701599],
                 name: "桜山神社",
                 selected_icon: undefined,
                 start: 1749
@@ -131,8 +130,7 @@
                 desc: "南部（盛岡）藩南部氏の居城である。西部を流れる北上川と南東部を流れる中津川の合流地、現在の盛岡市中心部にあった花崗岩丘陵に築城された連郭式平山城。",
                 icon: undefined,
                 image: "moriokajo.jpg",
-                lat: 39.69994722,
-                lng: 141.1501111,
+                lnglat: [141.1501111, 39.69994722],
                 name: {ja: "盛岡城", en: "Morioka Castle"},
                 selected_icon: undefined,
                 start: 1598
