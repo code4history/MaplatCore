@@ -3,9 +3,22 @@
   "data": {
     "boolean": true
   },
-  "template": "{\n  \"icon\": \"<% if (boolean) { %>true<% } else { %>false<% } %>\",\n  \"selected_icon\": \"<% [0,1,2].map((x)=>{ %><%= x %><% }) %>\"\n}",
-  "fallback": {
-    "icon": "d",
-    "selected_icon": "e"
-  }
+  "ancestors": [
+    {
+      "iconTemplate": "{\n  \"icon\": \"<% if (boolean) { %>true<% } else { %>false<% } %>\",\n  \"selected_icon\": \"<% [0,1,2].map((x)=>{ %><%= x %><% }) %>\"\n}",
+      "icon": "f",
+      "selected_icon": "g",
+      "poi_style": "abc"
+    },
+    {
+      "icon": "d",
+      "selected_icon": "e",
+      "poi_template": "<%= !boolean %>",
+      "poiStyle": "def"
+    },
+    {
+      "poi_template": "<%= boolean %>",
+      "poiStyle": "ghi"
+    }
+  ]
 }

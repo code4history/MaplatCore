@@ -650,14 +650,8 @@ export class MaplatApp extends EventTarget {
                     const cluster = app.pois[key];
                     if (!cluster.hide) {
                         cluster.pois.map((data) => {
-                            const dataCopy = createIconSet(Object.assign({}, data), cluster.icon_template || app.iconTemplate, cluster);
-                            if (cluster.poi_template) {
-                                dataCopy.html = dataCopy.html || createHtmlFromTemplate(cluster.poi_template, dataCopy);
-                                dataCopy.poi_style = dataCopy.poi_style || cluster.poi_style;
-                            } else if (app.poiTemplate) {
-                                dataCopy.html = dataCopy.html || createHtmlFromTemplate(app.poiTemplate, dataCopy);
-                                dataCopy.poi_style = dataCopy.poi_style || app.poiStyle;
-                            }
+                            const dataCopy = createIconSet(data, cluster, app);
+                            createHtmlFromTemplate(data, cluster, app);
                             promises.push(app.setMarker(dataCopy));
                         });
                     }
@@ -667,17 +661,8 @@ export class MaplatApp extends EventTarget {
                         const cluster = source.pois[key];
                         if (!cluster.hide) {
                             cluster.pois.map((data) => {
-                                const dataCopy = createIconSet(Object.assign({}, data), cluster.icon_template || source.iconTemplate || app.iconTemplate, cluster);
-                                if (cluster.poi_template) {
-                                    dataCopy.html = dataCopy.html || createHtmlFromTemplate(cluster.poi_template, dataCopy);
-                                    dataCopy.poi_style = dataCopy.poi_style || cluster.poi_style;
-                                } else if (source.poiTemplate) {
-                                    dataCopy.html = dataCopy.html || createHtmlFromTemplate(source.poiTemplate, dataCopy);
-                                    dataCopy.poi_style = dataCopy.poi_style || source.poiStyle;
-                                } else if (app.poiTemplate) {
-                                    dataCopy.html = dataCopy.html || createHtmlFromTemplate(app.poiTemplate, dataCopy);
-                                    dataCopy.poi_style = dataCopy.poi_style || app.poiStyle;
-                                }
+                                const dataCopy = createIconSet(data, cluster, source, app);
+                                createHtmlFromTemplate(data, cluster, source, app);
                                 promises.push(app.setMarker(dataCopy));
                             });
                         }

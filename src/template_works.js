@@ -1,18 +1,36 @@
 import template from 'lodash.template';
 
-export function createIconSet(data, iconTemplate, fallback) {
-    if (!fallback) fallback = {};
-    let fromTemplate;
-    if (iconTemplate) {
-        fromTemplate = JSON.parse(template(iconTemplate)(data));
+export function createIconSet(data, ...ancestors) {
+    const dataCopy = Object.assign({}, data);
+    if (dataCopy.icon) return dataCopy;
+    const fromAncestor = ancestors.reduce((prev, curr) => {
+        if (prev) return prev;
+        const iconTemplate = curr.iconTemplate || curr.icon_template;
+        if (iconTemplate) {
+            return JSON.parse(template(iconTemplate)(dataCopy));
+        } else if (curr.icon) {
+            return {
+                icon: curr.icon,
+                selected_icon: curr.selectedIcon || curr.selected_icon
+            };
+        }
+    }, undefined);
+    if (fromAncestor) {
+        dataCopy.icon = fromAncestor.icon;
+        dataCopy.selected_icon = fromAncestor.selected_icon;
     }
-    if (!data.icon) {
-        data.icon = fromTemplate ? fromTemplate.icon : fallback.icon;
-        data.selected_icon = fromTemplate ? fromTemplate.selected_icon : fallback.selected_icon;
-    }
-    return data;
+    return dataCopy;
 }
 
-export function createHtmlFromTemplate(htmlTemplate, data) {
-    return template(htmlTemplate)(data);
+export function createHtmlFromTemplate(data, ...ancestors) {
+    if (data.html) return data;
+    return ancestors.reduce((prev, curr) => {
+        if (prev) return prev;
+        const poiTemplate = curr.poiTemplate || curr.poi_template;
+        if (poiTemplate) {
+            data.html = template(poiTemplate)(data);
+            data.poi_style = data.poi_style || curr.poiStyle || curr.poi_style;
+            return data;
+        }
+    }, undefined) || data;
 }

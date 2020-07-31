@@ -4,9 +4,19 @@
     "a": "b",
     "b": "c"
   },
-  "template": "{\n  \"icon\": \"<%= a %>\",\n  \"selected_icon\": \"<%= b %>\"\n}",
-  "fallback": {
-    "icon": "d",
-    "selected_icon": "e"
-  }
+  "ancestors": [
+    {
+      "poiTemplate": "<div class=\"<%= b %>\"><%= a %></div>",
+      "poi_style": "abc"
+    },
+    {
+      "icon_template": "{\n  \"icon\": \"<%= a %>\",\n  \"selected_icon\": \"<%= b %>\"\n}"
+    },
+    {
+      "icon": "d",
+      "selected_icon": "e",
+      "poi_template": "<p></p>",
+      "poiStyle": "def"
+    }
+  ]
 }

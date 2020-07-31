@@ -11,7 +11,7 @@ describe('normalizePois test', function() {
         } catch(e) {}
         it(testin.title, testHelper.helperAsync(async () => {
             const testout = await normalizeLayers(testin.data, testin.options);
-            //if (i == 3) fs.writeFileSync(`./spec/expect/poitest${i}.json`, JSON.stringify(testout, null, 2));
+            if (i == 1) fs.writeFileSync(`./spec/expect/poitest${i}.json`, JSON.stringify(testout, null, 2));
             expect(JSON.parse(JSON.stringify(testout))).toEqual(testex);
         }));
     }
