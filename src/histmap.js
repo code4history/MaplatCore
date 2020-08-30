@@ -42,7 +42,7 @@ let baseDict;
 
 export class HistMap extends setCustomFunction(XYZ) {
     constructor(optOptions) {
-        const options = optOptions || {};
+        const options = Object.assign({}, optOptions || {});
 
         options.wrapX = false;
         if (!options.image_extention) options.image_extention = options.imageExtention || 'jpg';
@@ -52,14 +52,14 @@ export class HistMap extends setCustomFunction(XYZ) {
 
         const zW = Math.log2(options.width/tileSize);
         const zH = Math.log2(options.height/tileSize);
-        options.max_zoom = Math.ceil(Math.max(zW, zH));
+        options.maxZoom = Math.ceil(Math.max(zW, zH));
 
         options.tileUrlFunction = options.tileUrlFunction || function(coord) {
             const z = coord[0];
             const x = coord[1];
             const y = coord[2];
-            if (x * tileSize * Math.pow(2, (this.max_zoom || this.maxZoom) - z) >= this.width ||
-                y * tileSize * Math.pow(2, (this.max_zoom || this.maxZoom) - z) >= this.height ||
+            if (x * tileSize * Math.pow(2, this.maxZoom) - z >= this.width ||
+                y * tileSize * Math.pow(2, this.maxZoom) - z >= this.height ||
                 x < 0 || y < 0 ) {
                 return transPng;
             }
@@ -82,8 +82,8 @@ export class HistMap extends setCustomFunction(XYZ) {
 
         this.width = options.width;
         this.height = options.height;
-        this.maxZoom = options.max_zoom || options.maxZoom;
-        this._maxxy = Math.pow(2, (this.max_zoom || this.maxZoom)) * tileSize;
+        this.maxZoom = options.maxZoom;
+        this._maxxy = Math.pow(2, this.maxZoom) * tileSize;
 
         setCustomInitialize(this, options);
         setupTileLoadFunction(this);
