@@ -470,7 +470,7 @@ export function setCustomInitialize(self, options) {
     self.maxZoom = options.max_zoom || options.maxZoom;
     self.minZoom = options.min_zoom || options.minZoom;
     self.poiTemplate = options.poi_template;
-    self.poiStyle = option.poi_style;
+    self.poiStyle = options.poi_style;
     self.iconTemplate = options.icon_template;
     if (options.envelope_lnglats || options.envelopeLngLats || options.envelopLngLats) {
         const lngLats = options.envelope_lnglats || options.envelopeLngLats || options.envelopLngLats;
