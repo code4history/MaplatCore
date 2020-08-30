@@ -58,8 +58,8 @@ export class HistMap extends setCustomFunction(XYZ) {
             const z = coord[0];
             const x = coord[1];
             const y = coord[2];
-            if (x * tileSize * Math.pow(2, this.maxZoom) - z >= this.width ||
-                y * tileSize * Math.pow(2, this.maxZoom) - z >= this.height ||
+            if (x * tileSize * Math.pow(2, this.maxZoom - z) >= this.width ||
+                y * tileSize * Math.pow(2, this.maxZoom - z) >= this.height ||
                 x < 0 || y < 0 ) {
                 return transPng;
             }
