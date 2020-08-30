@@ -25,7 +25,7 @@
     "build_packed": "npm run freeze && npm run less_build_packed && npm run www_build_packed",
     "lint": "eslint src/",
     "test": "jasmine",
-    "preversion": "npm run lint",
+    "preversion": "npm run lint && npm run test",
     "version": "npm run build && npm run build_packed && git add -A",
     "freeze": "node bin/freezer.js -s parts -f src/freeze_images.js -u src/pointer_images.js",
     "preinstall": "npx npm-force-resolutions || echo 'ignore'"
@@ -51,6 +51,7 @@
     "base64-img": "^1.0.4",
     "i18next": "^17.3.1",
     "i18next-xhr-backend": "^3.2.2",
+    "lodash.template": "^4.5.0",
     "ol": "^6.1.1"
   },
   "devDependencies": {

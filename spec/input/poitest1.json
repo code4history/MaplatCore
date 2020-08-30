@@ -1,0 +1,19 @@
+{
+  "title": "Old specification, pois array as single layer",
+  "data": [
+    {
+      "id": "id1",
+      "title": "Title",
+      "latitude": 35.0,
+      "longitude": 135.0
+    },
+    {
+      "title": "Title2",
+      "latitude": 36.0,
+      "longitude": 136.0
+    }
+  ],
+  "options": {
+    "name": "Test1"
+  }
+}

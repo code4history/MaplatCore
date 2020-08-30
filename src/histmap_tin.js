@@ -201,8 +201,8 @@ export class HistMap_tin extends HistMap {
                 const delta1 = Math.sqrt(Math.pow(mercs[0][0] - mercs[1][0], 2) + Math.pow(mercs[0][1] - mercs[1][1], 2));
                 const delta2 = Math.sqrt(Math.pow(mercs[2][0] - mercs[3][0], 2) + Math.pow(mercs[2][1] - mercs[3][1], 2));
                 const delta = (delta1 + delta2) / 2;
-                self.merc_zoom = Math.log(300 * (2*MERC_MAX) / 256 / delta) / Math.log(2) - 3;
-                self.home_position = toLonLat(mercs[4]);
+                self.mercZoom = Math.log(300 * (2*MERC_MAX) / 256 / delta) / Math.log(2) - 3;
+                self.homePosition = toLonLat(mercs[4]);
                 self.envelope = polygon([[mercs[5], mercs[6], mercs[7], mercs[8], mercs[5]]]);
                 callback(self);
             }).catch((err) => {
