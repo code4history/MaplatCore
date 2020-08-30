@@ -600,15 +600,16 @@ export function setupTileLoadFunction(target) {
 
 export class NowMap extends setCustomFunction(OSM) {
     constructor(optOptions) {
-        const options = optOptions || {};
+        const options = Object.assign({}, optOptions || {});
         if (!options.image_extention) options.image_extention = options.imageExtention || 'jpg';
         if (options.map_id || options.mapID) {
             if ((options.map_id || options.mapID) != 'osm') {
                 options.url = options.url ||
-                    (options.tms ? `tiles/${options.map_id || options.mapID}/{z}/{x}/{-y}.${options.image_extention || options.imageExtention}` :
-                        `tiles/${options.map_id || options.mapID}/{z}/{x}/{y}.${options.image_extention || options.imageExtention}`);
+                    (options.tms ? `tiles/${options.map_id || options.mapID}/{z}/{x}/{-y}.${options.image_extention}` :
+                        `tiles/${options.map_id || options.mapID}/{z}/{x}/{y}.${options.image_extention}`);
             }
         }
+        if (!options.maxZoom) options.maxZoom = options.max_zoom;
         super(options);
         if (options.map_id || options.mapID) {
             this.mapID = options.map_id || options.mapID;
