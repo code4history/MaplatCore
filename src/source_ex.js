@@ -472,6 +472,8 @@ export function setCustomInitialize(self, options) {
     self.poiTemplate = options.poi_template;
     self.poiStyle = options.poi_style;
     self.iconTemplate = options.icon_template;
+    self.mercatorXShift = options.mercatorXShift;
+    self.mercatorYShift = options.mercatorYShift;
     if (options.envelope_lnglats || options.envelopeLngLats || options.envelopLngLats) {
         const lngLats = options.envelope_lnglats || options.envelopeLngLats || options.envelopLngLats;
         const mercs = lngLats.map((lnglat) => transform(lnglat, 'EPSG:4326', 'EPSG:3857'));
@@ -513,87 +515,148 @@ export function setupTileLoadFunction(target) {
     target.setTileLoadFunction((function() {
         let numLoadingTiles = 0;
         const tileLoadFn = self.getTileLoadFunction();
-        const tImageLoader = function(image, tile, src, fallback) {
-            let tImage = tile.tImage;
-            if (!tImage) {
-                tImage = document.createElement('img'); // eslint-disable-line no-undef
-                tImage.crossOrigin = 'Anonymous';
-                tile.tImage = tImage;
+        const tImageLoader = function(tileCoord, src, tCanv, sx, sy, sw, sh) {
+            return new Promise((resolve, reject) => { // eslint-disable-line no-unused-vars
+                const loader = function(src, fallback, skipDB) {
+                    if (numLoadingTiles === 0) {
+                        // console.log('loading');
+                    }
+                    ++numLoadingTiles;
+                    const tImage = document.createElement('img'); // eslint-disable-line no-undef
+                    tImage.crossOrigin = 'Anonymous';
+                    tImage.onload = tImage.onerror = function() {
+                        if (tImage.width && tImage.height) {
+                            const ctx = tCanv.getContext('2d');
+                            ctx.drawImage(tImage, sx, sy, sw, sh, sx == 0 ? 256 - sw : 0, sy == 0 ? 256 - sh : 0, sw, sh);
+                            resolve();
+
+                            if (self.cache_db && !skipDB) {
+                                if (sw != 256 || sh != 256) {
+                                    const tmp = document.createElement('div'); // eslint-disable-line no-undef
+                                    tmp.innerHTML = canvBase;
+                                    tCanv = tmp.childNodes[0];
+                                    const ctx = tCanv.getContext('2d');
+                                    ctx.drawImage(tImage, 0, 0);
+                                }
+
+                                const dataUrl = tCanv.toDataURL();
+                                const db = self.cache_db;
+                                const tx = db.transaction(['tileCache'], 'readwrite');
+                                const store = tx.objectStore('tileCache');
+                                const key = `${tileCoord[0]}-${tileCoord[1]}-${tileCoord[2]}`;
+                                const putReq = store.put({
+                                    'z_x_y': key,
+                                    'data': dataUrl,
+                                    'epoch': new Date().getTime()
+                                });
+                                putReq.onsuccess = function() {
+                                };
+                                tx.oncomplete = function() {
+                                };
+                            }
+                        } else {
+                            if (fallback) {
+                                loader(fallback,null, true);
+                            } else {
+                                resolve('tileLoadError');
+                                //reject('tileLoadError');
+                            }
+                        }
+                        --numLoadingTiles;
+                        if (numLoadingTiles === 0) {
+                            // console.log('idle');
+                        }
+                    };
+                    tImage.src = src;
+                }
+
+                if (self.cache_db) {
+                    const db = self.cache_db;
+                    const tx = db.transaction(['tileCache'], 'readonly');
+                    const store = tx.objectStore('tileCache');
+                    const key = `${tileCoord[0]}-${tileCoord[1]}-${tileCoord[2]}`;
+                    const getReq = store.get(key);
+                    getReq.onsuccess = function(event) {
+                        const obj = event.target.result;
+                        if (!obj) {
+                            loader(src);
+                        } else {
+                            const cachedEpoch = obj.epoch;
+                            const nowEpoch = new Date().getTime();
+                            if (!cachedEpoch || nowEpoch - cachedEpoch > 86400000) {
+                                loader(src, obj.data);
+                            } else {
+                                loader(obj.data, null, true);
+                            }
+                        }
+                    };
+                    getReq.onerror = function(event) { // eslint-disable-line no-unused-vars
+                        loader(src);
+                    };
+                } else {
+                    loader(src);
+                }
+            });
+        };
+        return function(tile, src) { // eslint-disable-line no-unused-vars
+            const zoom = tile.tileCoord[0];
+            let tileX = tile.tileCoord[1];
+            let tileY = tile.tileCoord[2];
+
+            let pixelXShift = Math.round((self.mercatorXShift || 0) * 128 * Math.pow(2, zoom) / MERC_MAX);
+            let pixelYShift = Math.round((self.mercatorYShift || 0) * -128 * Math.pow(2, zoom) / MERC_MAX);
+            while (pixelXShift < 0 || pixelXShift >= 256) {
+                if (pixelXShift < 0) {
+                    pixelXShift = pixelXShift + 256;
+                    tileX++;
+                } else {
+                    pixelXShift = pixelXShift - 256;
+                    tileX--;
+                }
             }
-            tImage.onload = tImage.onerror = function() {
-                if (tImage.width && tImage.height) {
-                    const tmp = document.createElement('div'); // eslint-disable-line no-undef
-                    tmp.innerHTML = canvBase;
-                    let tCanv = tmp.childNodes[0];
-                    let ctx = tCanv.getContext('2d');
-                    ctx.drawImage(tImage, 0, 0);
+            while (pixelYShift < 0 || pixelYShift >= 256) {
+                if (pixelYShift < 0) {
+                    pixelYShift = pixelYShift + 256;
+                    tileY++;
+                } else {
+                    pixelYShift = pixelYShift - 256;
+                    tileY--;
+                }
+            }
+
+            const tmp = document.createElement('div'); // eslint-disable-line no-undef
+            tmp.innerHTML = canvBase;
+            const tCanv = tmp.childNodes[0];
+
+            const promises = [
+                [[zoom, tileX, tileY], 0, 0, 256 - pixelXShift, 256 - pixelYShift]
+            ];
+            if (pixelXShift != 0) {
+                promises.push([[zoom, tileX - 1, tileY], 256 - pixelXShift, 0, pixelXShift, 256 - pixelYShift]);
+            }
+            if (pixelYShift != 0) {
+                promises.push([[zoom, tileX, tileY - 1], 0, 256 - pixelYShift, 256 - pixelXShift, pixelYShift]);
+                if (pixelXShift != 0) {
+                    promises.push([[zoom, tileX - 1, tileY - 1], 256 - pixelXShift, 256 - pixelYShift, pixelXShift, pixelYShift]);
+                }
+            }
+
+            Promise.all(promises.map((item) => {
+                const url = self.tileUrlFunction(item[0], self.tilePixelRatio_, self.projection_);
+                return tImageLoader(item[0], url, tCanv, item[1], item[2], item[3], item[4]);
+            })).then((rets) => {
+                const err = rets.reduce((prev, ret) => prev && ret, true);
+                if (err) {
+                    tile.handleImageError_();
+                } else {
                     const dataUrl = tCanv.toDataURL();
+                    const image = tile.getImage();
                     image.crossOrigin=null;
                     tileLoadFn(tile, dataUrl);
-                    tCanv = tImage = ctx = null;
-                    if (self.cache_db) {
-                        const db = self.cache_db;
-                        const tx = db.transaction(['tileCache'], 'readwrite');
-                        const store = tx.objectStore('tileCache');
-                        const key = `${tile.tileCoord[0]}-${tile.tileCoord[1]}-${tile.tileCoord[2]}`;
-                        const putReq = store.put({
-                            'z_x_y': key,
-                            'data': dataUrl,
-                            'epoch': new Date().getTime()
-                        });
-                        putReq.onsuccess = function() {
-                        };
-                        tx.oncomplete = function() {
-                        };
-                    }
-                } else {
-                    if (fallback) {
-                        tileLoadFn(tile, fallback);
-                    } else {
-                        tile.handleImageError_();
-                    }
                 }
-                --numLoadingTiles;
-                if (numLoadingTiles === 0) {
-                    // console.log('idle');
-                }
-            };
-            tImage.src = src;
-        };
-        return function(tile, src) {
-            if (numLoadingTiles === 0) {
-                // console.log('loading');
-            }
-            ++numLoadingTiles;
-            const image = tile.getImage();
-            if (self.cache_db) {
-                const db = self.cache_db;
-                const tx = db.transaction(['tileCache'], 'readonly');
-                const store = tx.objectStore('tileCache');
-                const key = `${tile.tileCoord[0]}-${tile.tileCoord[1]}-${tile.tileCoord[2]}`;
-                const getReq = store.get(key);
-                getReq.onsuccess = function(event) {
-                    const obj = event.target.result;
-                    if (!obj) {
-                        tImageLoader(image, tile, src);
-                    } else {
-                        const cachedEpoch = obj.epoch;
-                        const nowEpoch = new Date().getTime();
-                        if (!cachedEpoch || nowEpoch - cachedEpoch > 86400000) {
-                            tImageLoader(image, tile, src, obj.data);
-                        } else {
-                            const dataUrl = obj.data;
-                            image.crossOrigin=null;
-                            tileLoadFn(tile, dataUrl);
-                        }
-                    }
-                };
-                getReq.onerror = function(event) { // eslint-disable-line no-unused-vars
-                    tImageLoader(image, tile, src);
-                };
-            } else {
-                tImageLoader(image, tile, src);
-            }
+            }).catch((err) => { // eslint-disable-line no-unused-vars
+                tile.handleImageError_();
+            });
         };
     })());
 }
