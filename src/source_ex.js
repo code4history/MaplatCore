@@ -9,103 +9,6 @@ import { normalizeLayers, addIdToPoi, normalizeLayer, normalizePoi } from './nor
 
 export function setCustomFunction(target) {
     class Mixin extends target {
-        setupTileCacheAsnyc() {
-            const self = this;
-            return new Promise((resolve) => {
-                const openDB = indexedDB.open(`MaplatDB_${self.sourceID}`); // eslint-disable-line no-undef
-                openDB.onupgradeneeded = function (event) {
-                    const db = event.target.result;
-                    db.createObjectStore('tileCache', {keyPath: 'z_x_y'});
-                };
-                openDB.onsuccess = function (event) {
-                    const db = event.target.result;
-                    self.cache_db = db;
-                    resolve();
-                };
-                openDB.onerror = function (error) { // eslint-disable-line no-unused-vars
-                    self.cache_db = undefined;
-                    resolve();
-                };
-            });
-        }
-
-        clearTileCacheAsync(reopen) {
-            const self = this;
-            return new Promise((resolve, reject) => {
-                if (!self.cache_db) {
-                    if (reopen) {
-                        self.setupTileCacheAsnyc().then(() => {
-                            resolve();
-                        }).catch((error) => {
-                            reject(error);
-                        });
-                    } else {
-                        resolve();
-                    }
-                    return;
-                }
-                const db = self.cache_db;
-                self.cache_db = undefined;
-                const dbName = `MaplatDB_${self.sourceID}`;
-                db.close();
-
-                const deleteReq = indexedDB.deleteDatabase(dbName); // eslint-disable-line no-undef
-
-                deleteReq.onsuccess = (event) => { // eslint-disable-line no-unused-vars
-                    if (reopen) {
-                        self.setupTileCacheAsnyc().then(() => {
-                            resolve();
-                        }).catch((error) => {
-                            reject(error);
-                        });
-                    } else {
-                        resolve();
-                    }
-                };
-                deleteReq.onerror = function (error) {
-                    reject(error);
-                };
-            });
-        }
-
-        getTileCacheSizeAsync() {
-            const self = this;
-            const toSize = function (items) {
-                let size = 0;
-                for (let i = 0; i < items.length; i++) {
-                    const objectSize = JSON.stringify(items[i]).length;
-                    size += objectSize;
-                }
-                return size;
-            };
-
-            return new Promise(((resolve, reject) => {
-                if (!self.cache_db) {
-                    resolve(0);
-                    return;
-                }
-                const db = self.cache_db;
-                const tx = db.transaction('tileCache', 'readonly');
-                const store = tx.objectStore('tileCache');
-                const items = [];
-                tx.oncomplete = function (evt) { // eslint-disable-line no-unused-vars
-                    const szBytes = toSize(items);
-                    resolve(szBytes);
-                };
-                const cursorRequest = store.openCursor();
-                cursorRequest.onerror = function (error) {
-                    reject(error);
-                };
-                cursorRequest.onsuccess = function (evt) {
-                    const cursor = evt.target.result;
-                    if (cursor) {
-                        items.push(cursor.value);
-                        cursor.continue();
-                    }
-                };
-            }));
-        }
-
         getMap() {
             return this._map;
         }
@@ -505,9 +408,8 @@ export function setCustomInitialize(self, options) {
             resolve();
         });
     });
-    const cacheWait = options.enable_cache ? self.setupTileCacheAsnyc() : Promise.resolve();
     const poisWait = self.resolvePois(options.pois);
-    self.initialWait = Promise.all([cacheWait, poisWait, thumbWait]);
+    self.initialWait = Promise.all([poisWait, thumbWait]);
 }
 
 export function setupTileLoadFunction(target) {
@@ -529,31 +431,6 @@ export function setupTileLoadFunction(target) {
                             const ctx = tCanv.getContext('2d');
                             ctx.drawImage(tImage, sx, sy, sw, sh, sx == 0 ? 256 - sw : 0, sy == 0 ? 256 - sh : 0, sw, sh);
                             resolve();
-
-                            if (self.cache_db && !skipDB) {
-                                if (sw != 256 || sh != 256) {
-                                    const tmp = document.createElement('div'); // eslint-disable-line no-undef
-                                    tmp.innerHTML = canvBase;
-                                    tCanv = tmp.childNodes[0];
-                                    const ctx = tCanv.getContext('2d');
-                                    ctx.drawImage(tImage, 0, 0);
-                                }
-
-                                const dataUrl = tCanv.toDataURL();
-                                const db = self.cache_db;
-                                const tx = db.transaction(['tileCache'], 'readwrite');
-                                const store = tx.objectStore('tileCache');
-                                const key = `${tileCoord[0]}-${tileCoord[1]}-${tileCoord[2]}`;
-                                const putReq = store.put({
-                                    'z_x_y': key,
-                                    'data': dataUrl,
-                                    'epoch': new Date().getTime()
-                                });
-                                putReq.onsuccess = function() {
-                                };
-                                tx.oncomplete = function() {
-                                };
-                            }
                         } else {
                             if (fallback) {
                                 loader(fallback,null, true);
@@ -570,32 +447,7 @@ export function setupTileLoadFunction(target) {
                     tImage.src = src;
                 }
 
-                if (self.cache_db) {
-                    const db = self.cache_db;
-                    const tx = db.transaction(['tileCache'], 'readonly');
-                    const store = tx.objectStore('tileCache');
-                    const key = `${tileCoord[0]}-${tileCoord[1]}-${tileCoord[2]}`;
-                    const getReq = store.get(key);
-                    getReq.onsuccess = function(event) {
-                        const obj = event.target.result;
-                        if (!obj) {
-                            loader(src);
-                        } else {
-                            const cachedEpoch = obj.epoch;
-                            const nowEpoch = new Date().getTime();
-                            if (!cachedEpoch || nowEpoch - cachedEpoch > 86400000) {
-                                loader(src, obj.data);
-                            } else {
-                                loader(obj.data, null, true);
-                            }
-                        }
-                    };
-                    getReq.onerror = function(event) { // eslint-disable-line no-unused-vars
-                        loader(src);
-                    };
-                } else {
-                    loader(src);
-                }
+                loader(src);
             });
         };
         return function(tile, src) { // eslint-disable-line no-unused-vars

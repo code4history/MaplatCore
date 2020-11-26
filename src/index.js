@@ -37,7 +37,6 @@ export class MaplatApp extends EventTarget {
         app.mapDivDocument = document.querySelector(`#${app.mapDiv}`); // eslint-disable-line no-undef
         app.mapDivDocument.classList.add('maplat');
         app.logger = new Logger(appOption.debug ? LoggerLevel.ALL : LoggerLevel.INFO);
-        app.enableCache = appOption.enable_cache || false;
         app.stateBuffer = {};
         app.translateUI = appOption.translate_ui;
         const setting = appOption.setting;
@@ -142,7 +141,6 @@ export class MaplatApp extends EventTarget {
             zoom_restriction: mapReturnValue.zoomRestriction,
             merc_min_zoom: mapReturnValue.mercMinZoom,
             merc_max_zoom: mapReturnValue.mercMaxZoom,
-            enable_cache: app.enableCache,
             translator(fragment) {
                 return app.translate(fragment);
             }
@@ -1129,32 +1127,6 @@ export class MaplatApp extends EventTarget {
             sourceID: source.sourceID,
             label: source.label
         });
-    }
-
-    getMapTileCacheSizeAsync(sourceID) {
-        const app = this;
-        let source;
-        if (!sourceID) {
-            source = app.from;
-        } else {
-            source = app.cacheHash[sourceID];
-        }
-        if (!source) return Promise.resolve(0);
-
-        return source.getTileCacheSizeAsync();
-    }
-
-    clearMapTileCacheAsync(sourceID, reopen) {
-        const app = this;
-        let source;
-        if (!sourceID) {
-            source = app.from;
-        } else {
-            source = app.cacheHash[sourceID];
-        }
-        if (!source) return Promise.resolve();
-
-        return source.clearTileCacheAsync(reopen);
     }
 
     convertParametersFromCurrent(to, callback) {

@@ -73,6 +73,7 @@
     "less": "^3.11.1",
     "less-plugin-clean-css": "^1.5.1",
     "minimist": "^1.2.5",
+    "npx": "^10.2.2",
     "psaux": "^0.4.0",
     "serialize-javascript": "^4.0.0",
     "terminate": "^2.1.2",
