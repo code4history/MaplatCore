@@ -1,4 +1,4 @@
-import { MaplatApp } from "../src";
+import { MaplatApp } from "../src/index_packed";
 
 // eslint-disable-next-line no-undef
 const Maplat = window.Maplat = {};
