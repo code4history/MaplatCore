@@ -1,11 +1,14 @@
-var MaplatApp = require('../src/index').MaplatApp;
+import { MaplatApp } from "../src";
 
-var Maplat = window.Maplat = {};
-Maplat.createObject = function(option) {
-    return new Promise(function(resolve) {
-        var app = new MaplatApp(option);
-        app.waitReady.then(function() {
-            resolve(app);
-        });
+// eslint-disable-next-line no-undef
+const Maplat = window.Maplat = {};
+
+// eslint-disable-next-line arrow-body-style
+Maplat.createObject = (option) => {
+  return new Promise(((resolve) => {
+    const app = new MaplatApp(option);
+    app.waitReady.then(() => {
+      resolve(app);
     });
+  }));
 };
