@@ -156,7 +156,6 @@ export class HistMap extends setCustomFunction(XYZ) {
 
         options = normalizeArg(Object.assign(options, commonOptions));
         options.label = options.label || options.year;
-        options.source_id = options.source_id || options.sourceID || options.map_id;
         if (options.maptype == 'base' || options.maptype == 'overlay' || options.maptype == 'mapbox') {
             const targetSrc = options.maptype == 'base' ? NowMap :
                 options.maptype == 'overlay' ? TmsMap : MapboxMap;

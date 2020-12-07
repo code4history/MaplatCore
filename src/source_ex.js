@@ -368,7 +368,7 @@ const META_KEYS_OPTION = ['title', 'official_title', 'author', 'created_at', 'er
 
 export function setCustomInitialize(self, options) {
     options = normalizeArg(options);
-    self.sourceID = options.source_id || options.sourceID;
+    self.sourceID = options.map_id;
     self.homePosition = options.home_position;
     self.mercZoom = options.merc_zoom;
     self.label = options.label;
