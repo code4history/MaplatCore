@@ -368,7 +368,7 @@ const META_KEYS_OPTION = ['title', 'official_title', 'author', 'created_at', 'er
 
 export function setCustomInitialize(self, options) {
     options = normalizeArg(options);
-    self.sourceID = options.map_id;
+    self.mapID = options.map_id;
     self.homePosition = options.home_position;
     self.mercZoom = options.merc_zoom;
     self.label = options.label;
@@ -377,8 +377,8 @@ export function setCustomInitialize(self, options) {
     self.poiTemplate = options.poi_template;
     self.poiStyle = options.poi_style;
     self.iconTemplate = options.icon_template;
-    self.mercatorXShift = options.mercatorXShift;
-    self.mercatorYShift = options.mercatorYShift;
+    self.mercatorXShift = options.mercator_x_shift;
+    self.mercatorYShift = options.mercator_y_shift;
     if (options.envelope_lnglats || options.envelopeLngLats || options.envelopLngLats) {
         const lngLats = options.envelope_lnglats || options.envelopeLngLats || options.envelopLngLats;
         const mercs = lngLats.map((lnglat) => transform(lnglat, 'EPSG:4326', 'EPSG:3857'));

@@ -53,7 +53,8 @@
     "i18next": "^17.3.1",
     "i18next-xhr-backend": "^3.2.2",
     "lodash.template": "^4.5.0",
-    "ol": "^6.1.1"
+    "ol": "^6.1.1",
+    "weiwudi": "0.0.5"
   },
   "devDependencies": {
     "@babel/cli": "^7.12.8",

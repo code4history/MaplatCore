@@ -54,7 +54,7 @@ export class MaplatApp extends EventTarget {
             const lastEpoch = parseInt(localStorage.getItem('epoch') || 0); // eslint-disable-line no-undef
             const currentTime = Math.floor(new Date().getTime() / 1000);
             if (lastEpoch && currentTime - lastEpoch < 3600) {
-                app.initialRestore.sourceID = localStorage.getItem('sourceID'); // eslint-disable-line no-undef
+                app.initialRestore.mapID = localStorage.getItem('mapID') || localStorage.getItem('sourceID'); // eslint-disable-line no-undef
                 app.initialRestore.backgroundID = localStorage.getItem('backgroundID') || localStorage.getItem('backID'); // eslint-disable-line no-undef
                 app.initialRestore.position = {
                     x: parseFloat(localStorage.getItem('x')), // eslint-disable-line no-undef

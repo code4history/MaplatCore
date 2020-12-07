@@ -68,8 +68,8 @@ export function normalizeArg(options) {
         mercatorXShift: 'mercator_x_shift',
         mercatorYShift: 'mercator_y_shift',
         mapID: 'map_id',
-        sourceID: 'source_id',
-//        source_id: 'source_id'
+        sourceID: 'map_id',
+        source_id: 'map_id'
     }
 
     return Object.keys(table).reduce((opt, key) => {
