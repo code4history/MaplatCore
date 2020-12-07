@@ -397,16 +397,16 @@ export function setCustomInitialize(self, options) {
         self.thumbnail = options.thumbnail;
         resolve();
     }) : new Promise((resolve) => {
-        self.thumbnail = `./tmbs/${options.map_id || options.source_id || options.sourceID}.jpg`;
+        self.thumbnail = `./tmbs/${options.map_id}.jpg`;
         fetch(self.thumbnail).then((response) => { // eslint-disable-line no-undef
             if(response.ok) {
                 resolve();
             } else {
-                self.thumbnail = `./tmbs/${options.map_id || options.source_id || options.sourceID}_menu.jpg`;
+                self.thumbnail = `./tmbs/${options.map_id}_menu.jpg`;
                 resolve();
             }
         }).catch((error) => { // eslint-disable-line no-unused-vars
-            self.thumbnail = `./tmbs/${options.map_id || options.source_id || options.sourceID}_menu.jpg`;
+            self.thumbnail = `./tmbs/${options.map_id}_menu.jpg`;
             resolve();
         });
     });
