@@ -21,7 +21,7 @@ export class HistMap_tin extends HistMap {
         })];
     }
 
-    static createAsync(options) {
+    static async createAsync(options) {
         return new Promise(((resolve, reject) => { // eslint-disable-line no-unused-vars
             const obj = new HistMap_tin(options);
             const proj = new Projection({
