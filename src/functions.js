@@ -48,7 +48,7 @@ export function normalizeDegree(degree) {
 export function createMapInfo(source) {
     if (!source) return;
     const ret = {
-        sourceID: source.sourceID
+        mapID: source.mapID
     };
     for (let i = 0; i < META_KEYS.length; i++) {
         const key = META_KEYS[i];

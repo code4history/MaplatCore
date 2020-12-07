@@ -269,7 +269,7 @@ export function setCustomFunction(target) {
         async resolvePois(pois) {
             this.pois = await normalizeLayers(pois || [], {
                 name: this.officialTitle || this.title,
-                namespace: this.sourceID
+                namespace: this.mapID
             });
         }
 
@@ -295,7 +295,7 @@ export function setCustomFunction(target) {
                 this.pois[clusterId]['pois'].push(data);
                 addIdToPoi(this.pois, clusterId, {
                     name: this.officialTitle || this.title,
-                    namespace: this.sourceID
+                    namespace: this.mapID
                 });
                 return data.namespace_id;
             }
@@ -346,7 +346,7 @@ export function setCustomFunction(target) {
             if (this.pois[id]) return;
             this.pois[id] = normalizeLayer(data || [], id, {
                 name: this.officialTitle || this.title,
-                namespace: this.sourceID
+                namespace: this.mapID
             });
         }
 
