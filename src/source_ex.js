@@ -397,16 +397,16 @@ export function setCustomInitialize(self, options) {
         self.thumbnail = options.thumbnail;
         resolve();
     }) : new Promise((resolve) => {
-        self.thumbnail = `./tmbs/${options.map_id || options.mapID || options.source_id || options.sourceID}.jpg`;
+        self.thumbnail = `./tmbs/${options.map_id || options.source_id || options.sourceID}.jpg`;
         fetch(self.thumbnail).then((response) => { // eslint-disable-line no-undef
             if(response.ok) {
                 resolve();
             } else {
-                self.thumbnail = `./tmbs/${options.map_id || options.mapID || options.source_id || options.sourceID}_menu.jpg`;
+                self.thumbnail = `./tmbs/${options.map_id || options.source_id || options.sourceID}_menu.jpg`;
                 resolve();
             }
         }).catch((error) => { // eslint-disable-line no-unused-vars
-            self.thumbnail = `./tmbs/${options.map_id || options.mapID || options.source_id || options.sourceID}_menu.jpg`;
+            self.thumbnail = `./tmbs/${options.map_id || options.source_id || options.sourceID}_menu.jpg`;
             resolve();
         });
     });
@@ -519,17 +519,17 @@ export class NowMap extends setCustomFunction(OSM) {
     constructor(optOptions) {
         const options = normalizeArg(Object.assign({}, optOptions || {}));
         if (!options.image_extention) options.image_extention = options.imageExtention || 'jpg';
-        if (options.map_id || options.mapID) {
-            if ((options.map_id || options.mapID) != 'osm') {
+        if (options.map_id) {
+            if (options.map_id != 'osm') {
                 options.url = options.url ||
-                    (options.tms ? `tiles/${options.map_id || options.mapID}/{z}/{x}/{-y}.${options.image_extention}` :
-                        `tiles/${options.map_id || options.mapID}/{z}/{x}/{y}.${options.image_extention}`);
+                    (options.tms ? `tiles/${options.map_id}/{z}/{x}/{-y}.${options.image_extention}` :
+                        `tiles/${options.map_id}/{z}/{x}/{y}.${options.image_extention}`);
             }
         }
         if (!options.maxZoom) options.maxZoom = options.max_zoom;
         super(options);
-        if (options.map_id || options.mapID) {
-            this.mapID = options.map_id || options.mapID;
+        if (options.map_id) {
+            this.mapID = options.map_id;
         }
         setCustomInitialize(this, options);
         setupTileLoadFunction(this);
