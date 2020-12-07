@@ -58,3 +58,25 @@ export function createMapInfo(source) {
     }
     return ret;
 }
+
+export function normalizeArg(options) {
+    const table = {
+        maxZoom: 'max_zoom',
+        minZoom: 'min_zoom',
+        envelopeLngLats: 'envelope_lnglats',
+        envelopLngLats: 'envelope_lnglats',
+        mercatorXShift: 'mercator_x_shift',
+        mercatorYShift: 'mercator_y_shift',
+        mapID: 'map_id',
+        sourceID: 'source_id',
+//        source_id: 'source_id'
+    }
+
+    return Object.keys(table).reduce((opt, key) => {
+        if (opt[key]) {
+            opt[table[key]] = opt[key];
+            delete opt[key];
+        }
+        return opt;
+    }, options);
+}

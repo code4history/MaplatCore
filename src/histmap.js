@@ -1,5 +1,6 @@
 import { addProjection, addCoordinateTransforms, Projection } from 'ol/proj';
 import { XYZ } from 'ol/source';
+import { normalizeArg } from "./functions";
 import {setCustomFunction, setCustomInitialize, setupTileLoadFunction, NowMap, TmsMap, MapboxMap} from './source_ex';
 import { createFromTemplates, expandUrl } from 'ol/tileurlfunction';
 import { MERC_MAX, tileSize, transPng } from './const_ex';
@@ -42,7 +43,7 @@ let baseDict;
 
 export class HistMap extends setCustomFunction(XYZ) {
     constructor(optOptions) {
-        const options = Object.assign({}, optOptions || {});
+        const options = normalizeArg(Object.assign({}, optOptions || {}));
 
         options.wrapX = false;
         if (!options.image_extention) options.image_extention = options.imageExtention || 'jpg';
@@ -153,7 +154,7 @@ export class HistMap extends setCustomFunction(XYZ) {
             options = baseDict[options];
         }
 
-        options = Object.assign(options, commonOptions);
+        options = normalizeArg(Object.assign(options, commonOptions));
         options.label = options.label || options.year;
         options.source_id = options.source_id || options.sourceID || options.map_id || options.mapID;
         if (options.maptype == 'base' || options.maptype == 'overlay' || options.maptype == 'mapbox') {

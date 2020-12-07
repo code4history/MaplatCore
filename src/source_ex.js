@@ -6,6 +6,7 @@ import centroid from '@turf/centroid';
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
 import lineIntersect from '@turf/line-intersect';
 import { normalizeLayers, addIdToPoi, normalizeLayer, normalizePoi } from './normalize_pois';
+import { normalizeArg } from "./functions";
 
 export function setCustomFunction(target) {
     class Mixin extends target {
@@ -366,6 +367,7 @@ const META_KEYS_OPTION = ['title', 'official_title', 'author', 'created_at', 'er
     'reference', 'description'];
 
 export function setCustomInitialize(self, options) {
+    options = normalizeArg(options);
     self.sourceID = options.source_id || options.sourceID;
     self.homePosition = options.home_position;
     self.mercZoom = options.merc_zoom;
@@ -515,7 +517,7 @@ export function setupTileLoadFunction(target) {
 
 export class NowMap extends setCustomFunction(OSM) {
     constructor(optOptions) {
-        const options = Object.assign({}, optOptions || {});
+        const options = normalizeArg(Object.assign({}, optOptions || {}));
         if (!options.image_extention) options.image_extention = options.imageExtention || 'jpg';
         if (options.map_id || options.mapID) {
             if ((options.map_id || options.mapID) != 'osm') {
