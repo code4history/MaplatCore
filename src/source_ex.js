@@ -24,7 +24,12 @@ const baseDict = {
         },
         attr: '©︎ OpenStreetMap contributors',
         maptype: 'base',
-        thumbnail: pointer['osm.jpg']
+        thumbnail: pointer['osm.jpg'],
+        urls: [
+            'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png'
+        ]
     },
     gsi: {
         map_id: 'gsi',
@@ -603,6 +608,11 @@ export async function mapSourceFactory(options, commonOptions) {
         if (options.translator) {
             options.url = options.translator(options.url);
         }
+        if (!options.image_extention) options.image_extention = 'jpg';
+        if (options.map_id && !options.url && !options.urls) {
+            options.url = (options.tms ? `tiles/${options.map_id}/{z}/{x}/{-y}.${options.image_extention}` :
+                `tiles/${options.map_id}/{z}/{x}/{y}.${options.image_extention}`);
+        }
         options.weiwudi = await registerMapToSW(options);
         if (options.weiwudi) {
             options.url = options.weiwudi.url;
@@ -643,6 +653,11 @@ export async function mapSourceFactory(options, commonOptions) {
                         }
                         options.zoom_restriction = options.merc_max_zoom = options.merc_min_zoom = undefined;
                         try {
+                            if (!options.image_extention) options.image_extention = 'jpg';
+                            if (options.map_id && !options.url && !options.urls) {
+                                options.url = (options.tms ? `tiles/${options.map_id}/{z}/{x}/{-y}.${options.image_extention}` :
+                                    `tiles/${options.map_id}/{z}/{x}/{y}.${options.image_extention}`);
+                            }
                             options.weiwudi = await registerMapToSW(options);
                             if (options.weiwudi) {
                                 options.url = options.weiwudi.url;
@@ -662,6 +677,10 @@ export async function mapSourceFactory(options, commonOptions) {
                     }
 
                     try {
+                        if (!options.image_extention) options.image_extention = 'jpg';
+                        if (options.map_id && !options.url && !options.urls) {
+                            options.url = `tiles/${options.map_id}/{z}/{x}/{y}.${options.image_extention}`;
+                        }
                         options.weiwudi = await registerMapToSW(options);
                         if (options.weiwudi) {
                             options.url = options.weiwudi.url;

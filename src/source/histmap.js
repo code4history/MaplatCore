@@ -49,9 +49,9 @@ export class HistMap extends setCustomFunction(XYZ) {
         const options = normalizeArg(Object.assign({}, optOptions || {}));
 
         options.wrapX = false;
-        if (!options.image_extention) options.image_extention = options.imageExtention || 'jpg';
-        if (options.map_id) {
-            options.url = options.url || `tiles/${options.map_id}/{z}/{x}/{y}.${options.image_extention || options.imageExtention}`;
+        if (!options.image_extention) options.image_extention = 'jpg';
+        if (options.map_id && !options.url && !options.urls) {
+            options.url = `tiles/${options.map_id}/{z}/{x}/{y}.${options.image_extention}`;
         }
 
         const zW = Math.log2(options.width/tileSize);
