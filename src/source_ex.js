@@ -68,6 +68,17 @@ const baseDict = {
 
 export function setCustomFunction(target) {
     class Mixin extends target {
+        async getTileCacheSizeAsync() {
+            const self = this;
+            if (!self.weiwudi) return 0;
+            try {
+                const stats = await self.weiwudi.stats();
+                return stats.size;
+            } catch(e) {
+                return 0;
+            }
+        }
+
         getMap() {
             return this._map;
         }
@@ -424,34 +435,6 @@ const META_KEYS_OPTION = ['title', 'official_title', 'author', 'created_at', 'er
     'contributor', 'mapper', 'license', 'data_license', 'attr', 'data_attr',
     'reference', 'description'];
 
-export function registerMapToSW(options) {
-    options = normalizeArg(options);
-    const setting = {};
-    setting.type = options.type || 'xyz';
-    const enable_cache = (setting.type === 'xyz' || setting.type === 'wmts') ? options.enable_cache : false;
-    setting.url = options.url;
-    setting.maxZoom = options.max_zoom;
-    setting.minZoom = options.min_zoom;
-    const lngLats = options.envelope_lnglats;
-    if (lngLats) {
-        const minMax = lngLats.reduce((prev, curr) => {
-            prev[0] = prev[0] > curr[0] ? curr[0] : prev[0];
-            prev[1] = prev[1] < curr[0] ? curr[0] : prev[1];
-            prev[2] = prev[2] > curr[1] ? curr[1] : prev[2];
-            prev[3] = prev[3] < curr[1] ? curr[1] : prev[3];
-            return prev;
-        }, [Infinity, -Infinity, Infinity, -Infinity]);
-        ['minLng', 'maxLng', 'minLat', 'maxLat'].map((key, index) => {
-            setting[key] = minMax[index];
-        });
-    }
-    if (!enable_cache) return;
-    try {
-        return Weiwudi.registerMap(options.map_id, setting);
-    } catch (e) { // eslint-disable-line no-empty
-    }
-}
-
 export function setCustomInitialize(self, options) {
     options = normalizeArg(options);
     self.mapID = options.map_id;
@@ -465,6 +448,7 @@ export function setCustomInitialize(self, options) {
     self.iconTemplate = options.icon_template;
     self.mercatorXShift = options.mercator_x_shift;
     self.mercatorYShift = options.mercator_y_shift;
+    self.weiwudi = options.weiwudi;
     if (options.envelope_lnglats) {
         const lngLats = options.envelope_lnglats;
         const mercs = lngLats.map((lnglat) => transform(lnglat, 'EPSG:4326', 'EPSG:3857'));
@@ -619,6 +603,11 @@ export async function mapSourceFactory(options, commonOptions) {
         if (options.translator) {
             options.url = options.translator(options.url);
         }
+        options.weiwudi = await registerMapToSW(options);
+        if (options.weiwudi) {
+            options.url = options.weiwudi.url;
+            delete options.urls;
+        }
         const obj = await targetSrc.createAsync(options);
         await obj.initialWait;
         return obj;
@@ -654,6 +643,11 @@ export async function mapSourceFactory(options, commonOptions) {
                         }
                         options.zoom_restriction = options.merc_max_zoom = options.merc_min_zoom = undefined;
                         try {
+                            options.weiwudi = await registerMapToSW(options);
+                            if (options.weiwudi) {
+                                options.url = options.weiwudi.url;
+                                delete options.urls;
+                            }
                             const obj = await targetSrc.createAsync(options);
                             try {
                                 await obj.initialWait;
@@ -668,6 +662,11 @@ export async function mapSourceFactory(options, commonOptions) {
                     }
 
                     try {
+                        options.weiwudi = await registerMapToSW(options);
+                        if (options.weiwudi) {
+                            options.url = options.weiwudi.url;
+                            delete options.urls;
+                        }
                         const obj = await HistMap_tin.createAsync(options);
                         try {
                             await obj.initialWait;
@@ -688,6 +687,35 @@ export async function mapSourceFactory(options, commonOptions) {
         };
         xhr.send();
     }));
+}
+
+export async function registerMapToSW(options) {
+    const setting = {};
+    if (options.maptype === 'mapbox' || !options.enable_cache) return;
+    else if (options.maptype === 'base' || options.maptype === 'overlay') setting.type = 'wmts';
+    else setting.type = 'xyz';
+    setting.url = options.urls ? options.urls : options.url;
+    setting.width = options.width;
+    setting.height = options.height;
+    setting.maxZoom = options.max_zoom;
+    setting.minZoom = options.min_zoom;
+    const lngLats = options.envelope_lnglats;
+    if (lngLats) {
+        const minMax = lngLats.reduce((prev, curr) => {
+            prev[0] = prev[0] > curr[0] ? curr[0] : prev[0];
+            prev[1] = prev[1] < curr[0] ? curr[0] : prev[1];
+            prev[2] = prev[2] > curr[1] ? curr[1] : prev[2];
+            prev[3] = prev[3] < curr[1] ? curr[1] : prev[3];
+            return prev;
+        }, [Infinity, -Infinity, Infinity, -Infinity]);
+        ['minLng', 'maxLng', 'minLat', 'maxLat'].map((key, index) => {
+            setting[key] = minMax[index];
+        });
+    }
+    try {
+        return Weiwudi.registerMap(options.map_id, setting);
+    } catch (e) { // eslint-disable-line no-empty
+    }
 }
 
 
