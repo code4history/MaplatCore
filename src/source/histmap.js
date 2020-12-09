@@ -56,7 +56,7 @@ export class HistMap extends setCustomFunction(XYZ) {
 
         const zW = Math.log2(options.width/tileSize);
         const zH = Math.log2(options.height/tileSize);
-        options.maxZoom = Math.ceil(Math.max(zW, zH));
+        options.max_zoom = Math.ceil(Math.max(zW, zH));
 
         options.tileUrlFunction = options.tileUrlFunction || function(coord) {
             const z = coord[0];
@@ -86,7 +86,7 @@ export class HistMap extends setCustomFunction(XYZ) {
 
         this.width = options.width;
         this.height = options.height;
-        this.maxZoom = options.maxZoom;
+        this.maxZoom = options.max_zoom;
         this._maxxy = Math.pow(2, this.maxZoom) * tileSize;
 
         setCustomInitialize(this, options);

@@ -16,7 +16,6 @@ export class NowMap extends setCustomFunction(OSM) {
                         `tiles/${options.map_id}/{z}/{x}/{y}.${options.image_extention}`);
             }
         }
-        if (!options.maxZoom) options.maxZoom = options.max_zoom;
         super(options);
         if (options.map_id) {
             this.mapID = options.map_id;

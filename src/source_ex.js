@@ -458,15 +458,15 @@ export function setCustomInitialize(self, options) {
     self.homePosition = options.home_position;
     self.mercZoom = options.merc_zoom;
     self.label = options.label;
-    self.maxZoom = options.max_zoom || options.maxZoom;
-    self.minZoom = options.min_zoom || options.minZoom;
+    self.maxZoom = options.max_zoom;
+    self.minZoom = options.min_zoom;
     self.poiTemplate = options.poi_template;
     self.poiStyle = options.poi_style;
     self.iconTemplate = options.icon_template;
     self.mercatorXShift = options.mercator_x_shift;
     self.mercatorYShift = options.mercator_y_shift;
-    if (options.envelope_lnglats || options.envelopeLngLats || options.envelopLngLats) {
-        const lngLats = options.envelope_lnglats || options.envelopeLngLats || options.envelopLngLats;
+    if (options.envelope_lnglats) {
+        const lngLats = options.envelope_lnglats;
         const mercs = lngLats.map((lnglat) => transform(lnglat, 'EPSG:4326', 'EPSG:3857'));
         mercs.push(mercs[0]);
         self.envelope = polygon([mercs]);
@@ -612,8 +612,8 @@ export async function mapSourceFactory(options, commonOptions) {
         const targetSrc = options.maptype == 'base' ? NowMap :
             options.maptype == 'overlay' ? TmsMap : MapboxMap;
         if (options.zoom_restriction) {
-            options.max_zoom = options.max_zoom || options.maxZoom || options.merc_max_zoom;
-            options.min_zoom = options.min_zoom || options.minZoom || options.merc_min_zoom;
+            options.max_zoom = options.max_zoom || options.merc_max_zoom;
+            options.min_zoom = options.min_zoom || options.merc_min_zoom;
         }
         options.zoom_restriction = options.merc_max_zoom = options.merc_min_zoom = undefined;
         if (options.translator) {
@@ -636,7 +636,7 @@ export async function mapSourceFactory(options, commonOptions) {
                 try {
                     let resp = this.response;
                     if (typeof resp != 'object') resp = JSON.parse(resp);
-                    options = Object.assign(resp, options);
+                    options = normalizeArg(Object.assign(resp, options));
                     options.label = options.label || resp.year;
                     if (options.translator) {
                         options.url = options.translator(options.url);
@@ -647,8 +647,8 @@ export async function mapSourceFactory(options, commonOptions) {
                         const targetSrc = options.maptype == 'base' ? NowMap :
                             options.maptype == 'overlay' ? TmsMap : MapboxMap;
                         if (options.zoom_restriction) {
-                            options.max_zoom = options.max_zoom || options.maxZoom || options.merc_max_zoom;
-                            options.min_zoom = options.min_zoom || options.minZoom || options.merc_min_zoom;
+                            options.max_zoom = options.max_zoom || options.merc_max_zoom;
+                            options.min_zoom = options.min_zoom || options.merc_min_zoom;
                         }
                         options.zoom_restriction = options.merc_max_zoom = options.merc_min_zoom = undefined;
                         targetSrc.createAsync(options).then((obj) => {
