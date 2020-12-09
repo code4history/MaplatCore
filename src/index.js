@@ -14,7 +14,7 @@ import { HistMap } from './source/histmap';
 import { NowMap } from "./source/nowmap";
 import { TmsMap } from "./source/tmsmap";
 import { MapboxMap } from "./source/mapboxmap";
-import { META_KEYS } from './source_ex';
+import {mapSourceFactory, META_KEYS} from './source_ex';
 import { recursiveRound } from './math_ex';
 import pointer from './pointer_images';
 import locales from './freeze_locales';
@@ -150,7 +150,7 @@ export class MaplatApp extends EventTarget {
         };
         for (let i = 0; i < dataSource.length; i++) {
             const option = dataSource[i];
-            sourcePromise.push(HistMap.createAsync(option, commonOption));
+            sourcePromise.push(mapSourceFactory(option, commonOption));
         }
 
         return Promise.all(sourcePromise);
