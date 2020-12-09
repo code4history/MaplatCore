@@ -619,10 +619,12 @@ export async function mapSourceFactory(options, commonOptions) {
         if (options.translator) {
             options.url = options.translator(options.url);
         }
-        return targetSrc.createAsync(options).then((obj) => obj.initialWait.then(() => obj));
+        const obj = await targetSrc.createAsync(options);
+        await obj.initialWait;
+        return obj;
     } else if (options.noload) {
         options.merc_max_zoom = options.merc_min_zoom = undefined;
-        return Promise.resolve(new HistMap_tin(options));
+        return new HistMap_tin(options);
     }
 
     return new Promise(((resolve, reject) => {
@@ -631,7 +633,7 @@ export async function mapSourceFactory(options, commonOptions) {
         xhr.open('GET', url, true);
         xhr.responseType = 'json';
 
-        xhr.onload = function(e) { // eslint-disable-line no-unused-vars
+        xhr.onload = async function(e) { // eslint-disable-line no-unused-vars
             if (this.status == 200 || this.status == 0 ) { // 0 for UIWebView
                 try {
                     let resp = this.response;
@@ -651,27 +653,31 @@ export async function mapSourceFactory(options, commonOptions) {
                             options.min_zoom = options.min_zoom || options.merc_min_zoom;
                         }
                         options.zoom_restriction = options.merc_max_zoom = options.merc_min_zoom = undefined;
-                        targetSrc.createAsync(options).then((obj) => {
-                            obj.initialWait.then(() => {
+                        try {
+                            const obj = await targetSrc.createAsync(options);
+                            try {
+                                await obj.initialWait;
                                 resolve(obj);
-                            }).catch((err) => { // eslint-disable-line no-unused-vars
+                            } catch(e) {
                                 resolve(obj);
-                            });
-                        }).catch((err) => {
-                            reject(err);
-                        });
+                            }
+                        } catch(e) {
+                            reject(e);
+                        }
                         return;
                     }
 
-                    HistMap_tin.createAsync(options).then((obj) => {
-                        obj.initialWait.then(() => {
+                    try {
+                        const obj = await HistMap_tin.createAsync(options);
+                        try {
+                            await obj.initialWait;
                             obj.mapSize2MercSize(resolve);
-                        }).catch((err) => { // eslint-disable-line no-unused-vars
+                        } catch(e) {
                             obj.mapSize2MercSize(resolve);
-                        });
-                    }).catch((err) => {
-                        reject(err);
-                    });
+                        }
+                    } catch(e) {
+                        reject(e);
+                    }
                 } catch(err) {
                     reject(err);
                 }

@@ -25,10 +25,7 @@ export class NowMap extends setCustomFunction(OSM) {
     }
 
     static async createAsync(options) {
-        return new Promise(((resolve, reject) => { // eslint-disable-line no-unused-vars
-            const obj = new NowMap(options);
-            resolve(obj);
-        })).catch((err) => { throw err; });
+        return new NowMap(options);
     }
 
     xy2MercAsync(xy) {

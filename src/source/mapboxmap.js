@@ -9,10 +9,6 @@ export class MapboxMap extends NowMap {
     }
 
     static async createAsync(options) {
-        const promise = new Promise(((resolve, reject) => { // eslint-disable-line no-unused-vars
-            const obj = new MapboxMap(options);
-            resolve(obj);
-        }));
-        return promise.catch((err) => { throw err; });
+        return new MapboxMap(options);
     }
 }
