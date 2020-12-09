@@ -1132,6 +1132,19 @@ export class MaplatApp extends EventTarget {
         });
     }
 
+    async getMapTileCacheSizeAsync(mapID) {
+        const app = this;
+        let source;
+        if (!mapID) {
+            source = app.from;
+        } else {
+            source = app.cacheHash[mapID];
+        }
+        if (!source) return 0;
+
+        return source.getTileCacheSizeAsync();
+    }
+
     convertParametersFromCurrent(to, callback) {
         const app = this;
         const view = app.mapObject.getView();
