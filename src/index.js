@@ -1147,6 +1147,19 @@ export class MaplatApp extends EventTarget {
         return source.getTileCacheSizeAsync();
     }
 
+    async clearMapTileCacheAsync(mapID) {
+        const app = this;
+        let source;
+        if (!mapID) {
+            source = app.from;
+        } else {
+            source = app.cacheHash[mapID];
+        }
+        if (!source) return;
+
+        source.clearTileCacheAsync();
+    }
+
     convertParametersFromCurrent(to, callback) {
         const app = this;
         const view = app.mapObject.getView();

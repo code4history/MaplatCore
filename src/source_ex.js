@@ -84,6 +84,15 @@ export function setCustomFunction(target) {
             }
         }
 
+        async clearTileCacheAsync() {
+            const self = this;
+            if (!self.weiwudi) return;
+            try {
+                await self.weiwudi.clean();
+            } catch(e) {
+            }
+        }
+
         getMap() {
             return this._map;
         }
