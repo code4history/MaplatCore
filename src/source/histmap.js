@@ -4,11 +4,6 @@ import {setCustomFunction, setCustomInitialize, setupTileLoadFunction} from "../
 import {XYZ} from "ol/source";
 import {normalizeArg} from "../functions";
 import {createFromTemplates, expandUrl} from "ol/tileurlfunction";
-import pointer from "../pointer_images";
-import {HistMap_tin} from "./histmap_tin";
-import {MapboxMap} from "./mapboxmap";
-import {NowMap} from "./nowmap";
-import {TmsMap} from "./tmsmap";
 
 for (let z = 0; z < 9; z++) {
     const key = `ZOOM:${z}`;
@@ -42,21 +37,19 @@ for (let z = 0; z < 9; z++) {
     })(key, maxxy);
 }
 
-let baseDict;
-
 export class HistMap extends setCustomFunction(XYZ) {
     constructor(optOptions) {
         const options = normalizeArg(Object.assign({}, optOptions || {}));
 
         options.wrapX = false;
-        if (!options.image_extention) options.image_extention = 'jpg';
-        if (options.map_id && !options.url && !options.urls) {
-            options.url = `tiles/${options.map_id}/{z}/{x}/{y}.${options.image_extention}`;
+        if (!options.imageExtention) options.imageExtention = 'jpg';
+        if (options.mapID && !options.url && !options.urls) {
+            options.url = `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtention}`;
         }
 
         const zW = Math.log2(options.width/tileSize);
         const zH = Math.log2(options.height/tileSize);
-        options.max_zoom = Math.ceil(Math.max(zW, zH));
+        options.maxZoom = Math.ceil(Math.max(zW, zH));
 
         options.tileUrlFunction = options.tileUrlFunction || function(coord) {
             const z = coord[0];
@@ -71,8 +64,8 @@ export class HistMap extends setCustomFunction(XYZ) {
         };
 
         super(options);
-        if (options.map_id) {
-            this.mapID = options.map_id;
+        if (options.mapID) {
+            this.mapID = options.mapID;
         }
         if (options.urls) {
             this._tileUrlFunction =
@@ -86,7 +79,7 @@ export class HistMap extends setCustomFunction(XYZ) {
 
         this.width = options.width;
         this.height = options.height;
-        this.maxZoom = options.max_zoom;
+        this.maxZoom = options.maxZoom;
         this._maxxy = Math.pow(2, this.maxZoom) * tileSize;
 
         setCustomInitialize(this, options);

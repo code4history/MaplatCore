@@ -8,14 +8,14 @@ import {setCustomFunction, setCustomInitialize, setupTileLoadFunction} from "../
 export class NowMap extends setCustomFunction(OSM) {
     constructor(optOptions) {
         const options = normalizeArg(Object.assign({}, optOptions || {}));
-        if (!options.image_extention) options.image_extention = 'jpg';
-        if (options.map_id && !options.url && !options.urls) {
-            options.url = (options.tms ? `tiles/${options.map_id}/{z}/{x}/{-y}.${options.image_extention}` :
-                `tiles/${options.map_id}/{z}/{x}/{y}.${options.image_extention}`);
+        if (!options.imageExtention) options.imageExtention = 'jpg';
+        if (options.mapID && !options.url && !options.urls) {
+            options.url = (options.tms ? `tiles/${options.mapID}/{z}/{x}/{-y}.${options.imageExtention}` :
+                `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtention}`);
         }
         super(options);
-        if (options.map_id) {
-            this.mapID = options.map_id;
+        if (options.mapID) {
+            this.mapID = options.mapID;
         }
         setCustomInitialize(this, options);
         setupTileLoadFunction(this);

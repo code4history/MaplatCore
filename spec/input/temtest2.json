@@ -5,19 +5,19 @@
   },
   "ancestors": [
     {
-      "iconTemplate": "{\n  \"icon\": \"<% if (boolean) { %>true<% } else { %>false<% } %>\",\n  \"selected_icon\": \"<% [0,1,2].map((x)=>{ %><%= x %><% }) %>\"\n}",
+      "iconTemplate": "{\n  \"icon\": \"<% if (boolean) { %>true<% } else { %>false<% } %>\",\n  \"selectedIcon\": \"<% [0,1,2].map((x)=>{ %><%= x %><% }) %>\"\n}",
       "icon": "f",
-      "selected_icon": "g",
-      "poi_style": "abc"
+      "selectedIcon": "g",
+      "poiStyle": "abc"
     },
     {
       "icon": "d",
-      "selected_icon": "e",
-      "poi_template": "<%= !boolean %>",
+      "selectedIcon": "e",
+      "poiTemplate": "<%= !boolean %>",
       "poiStyle": "def"
     },
     {
-      "poi_template": "<%= boolean %>",
+      "poiTemplate": "<%= boolean %>",
       "poiStyle": "ghi"
     }
   ]

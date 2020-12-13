@@ -7,15 +7,15 @@
   "ancestors": [
     {
       "poiTemplate": "<div class=\"<%= b %>\"><%= a %></div>",
-      "poi_style": "abc"
+      "poiStyle": "abc"
     },
     {
-      "icon_template": "{\n  \"icon\": \"<%= a %>\",\n  \"selected_icon\": \"<%= b %>\"\n}"
+      "iconTemplate": "{\n  \"icon\": \"<%= a %>\",\n  \"selectedIcon\": \"<%= b %>\"\n}"
     },
     {
       "icon": "d",
-      "selected_icon": "e",
-      "poi_template": "<p></p>",
+      "selectedIcon": "e",
+      "poiTemplate": "<p></p>",
       "poiStyle": "def"
     }
   ]

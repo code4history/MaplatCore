@@ -6,16 +6,16 @@
   "ancestors": [
     {
       "html": "<hr>",
-      "poi_style": "abc"
+      "poiStyle": "abc"
     },
     {
       "icon": "d",
-      "selected_icon": "e"
+      "selectedIcon": "e"
     },
     {
-      "iconTemplate": "{\n  \"icon\": \"<% if (boolean) { %>true<% } else { %>false<% } %>\",\n  \"selected_icon\": \"<% [0,1,2].map((x)=>{ %><%= x %><% }) %>\"\n}",
+      "iconTemplate": "{\n  \"icon\": \"<% if (boolean) { %>true<% } else { %>false<% } %>\",\n  \"selectedIcon\": \"<% [0,1,2].map((x)=>{ %><%= x %><% }) %>\"\n}",
       "icon": "f",
-      "selected_icon": "g"
+      "selectedIcon": "g"
     }
   ]
 }

@@ -55,8 +55,8 @@
   <script>
     var option = {
         mapboxgl: mapboxgl,
-        //mapbox_token: 'YOUR-ACCESS-TOKEN'
-        mapbox_token: 'pk.eyJ1IjoicmVraXNoaWtva3VkbyIsImEiOiJjazRoMmF3dncwODU2M2ttdzI2aDVqYXVwIn0.8Hb9sekgjfck6Setxk5uVg'
+        //mapboxToken: 'YOUR-ACCESS-TOKEN'
+        mapboxToken: 'pk.eyJ1IjoicmVraXNoaWtva3VkbyIsImEiOiJjazRoMmF3dncwODU2M2ttdzI2aDVqYXVwIn0.8Hb9sekgjfck6Setxk5uVg'
     };
     var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
     for (var i = 0; i < hashes.length; i++) {
@@ -68,7 +68,7 @@
         console.log(app.mapInfo('gsi'));
         var moveFlag = false;
         app.addEventListener('clickMarker', function(evt) {
-            app.selectMarker(evt.detail.namespace_id);
+            app.selectMarker(evt.detail.namespaceID);
             console.log(evt);
         });
         app.addEventListener('clickMap', function (evt) {
@@ -84,7 +84,7 @@
         app.addPoiLayer('main2');
         app.addPoiLayer('morioka_ndl2#main2', {
             icon: 'parts_test/blue_marker.png',
-            selected_icon: 'parts_test/red_marker.png'
+            selectedIcon: 'parts_test/red_marker.png'
         });
         document.getElementById('show').addEventListener('click', function(e) {
             app.showPoiLayer('main');
@@ -116,7 +116,7 @@
                 image: "sakurayama_jinja.jpg",
                 lnglat: [141.151995, 39.701599],
                 name: "桜山神社",
-                selected_icon: undefined,
+                selectedIcon: undefined,
                 start: 1749
             }, 'main2');
         });
@@ -131,7 +131,7 @@
                 image: "moriokajo.jpg",
                 lnglat: [141.1501111, 39.69994722],
                 name: {ja: "盛岡城", en: "Morioka Castle"},
-                selected_icon: undefined,
+                selectedIcon: undefined,
                 start: 1598
             }, 'morioka_ndl2#main2');
         });

@@ -3,7 +3,7 @@ import i18nxhr from 'i18next-xhr-backend';
 import CustomEvent from './customevent';
 import browserLanguage from './browserlanguage';
 import { Logger, LoggerLevel } from './logger';
-import { createElement, normalizeDegree, createMapInfo } from './functions';
+import {createElement, normalizeDegree, createMapInfo, normalizeArg} from './functions';
 import EventTarget from 'ol/events/Target';
 import { transform } from 'ol/proj';
 import { MaplatMap } from './map_ex';
@@ -25,6 +25,7 @@ export class MaplatApp extends EventTarget {
     // Maplat App Class
     constructor(appOption) {
         super();
+        appOption = normalizeArg(appOption);
 
         const app = this;
         app.initialRestore = {};
@@ -32,17 +33,17 @@ export class MaplatApp extends EventTarget {
         app.appid = appOption.appid || 'sample';
         if (appOption.mapboxgl) {
             app.mapboxgl = appOption.mapboxgl;
-            if (appOption.mapbox_token || appOption.mapboxToken) {
-                app.mapboxgl.accessToken = appOption.mapbox_token || appOption.mapboxToken;
+            if (appOption.mapboxToken) {
+                app.mapboxgl.accessToken = appOption.mapboxToken;
             }
         }
         app.mapDiv = appOption.div || 'map_div';
         app.mapDivDocument = document.querySelector(`#${app.mapDiv}`); // eslint-disable-line no-undef
         app.mapDivDocument.classList.add('maplat');
         app.logger = new Logger(appOption.debug ? LoggerLevel.ALL : LoggerLevel.INFO);
-        app.enableCache = appOption.enable_cache || false;
+        app.enableCache = appOption.enableCache || false;
         app.stateBuffer = {};
-        app.translateUI = appOption.translate_ui;
+        app.translateUI = appOption.translateUI;
         const setting = appOption.setting;
         app.lang = appOption.lang;
         if (!app.lang) {
@@ -51,9 +52,9 @@ export class MaplatApp extends EventTarget {
         if (app.lang.toLowerCase() == 'zh-hk' || app.lang.toLowerCase() == 'zh-hant') app.lang = 'zh-TW';
 
         if (appOption.restore) {
-            if (appOption.restore_session) app.restoreSession = true;
+            if (appOption.restoreSession) app.restoreSession = true;
             app.initialRestore = appOption.restore;
-        } else if (appOption.restore_session) {
+        } else if (appOption.restoreSession) {
             app.restoreSession = true;
             const lastEpoch = parseInt(localStorage.getItem('epoch') || 0); // eslint-disable-line no-undef
             const currentTime = Math.floor(new Date().getTime() / 1000);
@@ -140,12 +141,12 @@ export class MaplatApp extends EventTarget {
         const dataSource = app.appData.sources;
         const sourcePromise = [];
         const commonOption = {
-            home_position: mapReturnValue.homePos,
-            merc_zoom: mapReturnValue.defZoom,
-            zoom_restriction: mapReturnValue.zoomRestriction,
-            merc_min_zoom: mapReturnValue.mercMinZoom,
-            merc_max_zoom: mapReturnValue.mercMaxZoom,
-            enable_cache: app.enableCache,
+            homePosition: mapReturnValue.homePos,
+            mercZoom: mapReturnValue.defZoom,
+            zoomRestriction: mapReturnValue.zoomRestriction,
+            mercMinZoom: mapReturnValue.mercMinZoom,
+            mercMaxZoom: mapReturnValue.mercMaxZoom,
+            enableCache: app.enableCache,
             translator(fragment) {
                 return app.translate(fragment);
             }
@@ -184,21 +185,22 @@ export class MaplatApp extends EventTarget {
     // Async initializers 5: Prepare map base elements and objects
     prepareMap(appOption) {
         const app = this;
+        appOption = normalizeArg(appOption);
 
         app.mercBuffer = null;
-        const homePos = app.appData.home_position;
-        const defZoom = app.appData.default_zoom;
-        const zoomRestriction = app.appData.zoom_restriction;
-        const mercMinZoom = app.appData.min_zoom;
-        const mercMaxZoom = app.appData.max_zoom;
-        app.appName = app.appData.app_name;
-        const fakeGps = appOption.fake ? app.appData.fake_gps : false;
-        const fakeRadius = appOption.fake ? app.appData.fake_radius : false;
+        const homePos = app.appData.homePosition;
+        const defZoom = app.appData.defaultZoom;
+        const zoomRestriction = app.appData.zoomRestriction;
+        const mercMinZoom = app.appData.minZoom;
+        const mercMaxZoom = app.appData.maxZoom;
+        app.appName = app.appData.appName;
+        const fakeGps = appOption.fake ? app.appData.fakeGps : false;
+        const fakeRadius = appOption.fake ? app.appData.fakeRadius : false;
         app.appLang = app.appData.lang || 'ja';
-        app.noRotate = appOption.no_rotate || app.appData.no_rotate || false;
-        app.poiTemplate = appOption.poi_template || app.appData.poi_template || false;
-        app.poiStyle = appOption.poi_style || app.appData.poi_style || false;
-        app.iconTemplate = appOption.icon_template || app.appData.icon_template || false;
+        app.noRotate = appOption.noRotate || app.appData.noRotate || false;
+        app.poiTemplate = appOption.poiTemplate || app.appData.poiTemplate || false;
+        app.poiStyle = appOption.poiStyle || app.appData.poiStyle || false;
+        app.iconTemplate = appOption.iconTemplate || app.appData.iconTemplate || false;
         app.currentPosition = null;
         app.backMap = null;
         app.__init = true;
@@ -219,9 +221,9 @@ export class MaplatApp extends EventTarget {
                         condition: altKeyOnly
                     })
                 ]),
-            fake_gps: fakeGps,
-            fake_radius: fakeRadius,
-            home_position: homePos
+            fakeGps,
+            fakeRadius,
+            homePosition: homePos
         });
 
         let backDiv = null;
@@ -258,7 +260,7 @@ export class MaplatApp extends EventTarget {
             });
         }
 
-        app.startFrom = app.appData.start_from;
+        app.startFrom = app.appData.startFrom;
         app.lines = [];
 
         return {
@@ -581,8 +583,8 @@ export class MaplatApp extends EventTarget {
         const coords = data.coordinates;
         const src = app.from;
         const icon = data.icon ?
-            app.__selectedMarker == data.namespace_id && data.selected_icon ? data.selected_icon : data.icon :
-            app.__selectedMarker == data.namespace_id ? pointer['defaultpin_selected.png'] : pointer['defaultpin.png'];
+            app.__selectedMarker == data.namespaceID && data.selectedIcon ? data.selectedIcon : data.icon :
+            app.__selectedMarker == data.namespaceID ? pointer['defaultpin_selected.png'] : pointer['defaultpin.png'];
         const promise = coords ?
             (function() {
                 return src.merc2XyAsync(coords, true);
@@ -728,14 +730,14 @@ export class MaplatApp extends EventTarget {
         data = normalizePoi(data || {});
         if (overwrite) {
             Object.keys(poi).map((key) => {
-                if (key != 'id' && key != 'namespace_id') {
+                if (key != 'id' && key != 'namespaceID') {
                     delete poi[key];
                 }
             });
             Object.assign(poi, data);
         } else {
             Object.keys(data).map((key) => {
-                if (key == 'id' || key == 'namespace_id') return;
+                if (key == 'id' || key == 'namespaceID') return;
                 if (data[key] == '____delete____') {
                     delete poi[key];
                 } else {
@@ -758,7 +760,7 @@ export class MaplatApp extends EventTarget {
                 } );
                 this.dispatchPoiNumber();
                 this.redrawMarkers();
-                return data.namespace_id;
+                return data.namespaceID;
             }
         } else {
             const splits = clusterId.split('#');
@@ -852,7 +854,7 @@ export class MaplatApp extends EventTarget {
         const layer = this.getPoiLayer(id);
         if (layer) {
             delete layer.hide;
-            this.requestUpdateState({hideLayer: this.listPoiLayers(true).map((layer) => layer.namespace_id).join(',')});
+            this.requestUpdateState({hideLayer: this.listPoiLayers(true).map((layer) => layer.namespaceID).join(',')});
             this.redrawMarkers();
         }
     }
@@ -861,7 +863,7 @@ export class MaplatApp extends EventTarget {
         const layer = this.getPoiLayer(id);
         if (layer) {
             layer.hide = true;
-            this.requestUpdateState({hideLayer: this.listPoiLayers(true).map((layer) => layer.namespace_id).join(',')});
+            this.requestUpdateState({hideLayer: this.listPoiLayers(true).map((layer) => layer.namespaceID).join(',')});
             this.redrawMarkers();
         }
     }
@@ -901,7 +903,7 @@ export class MaplatApp extends EventTarget {
         if (!this.pois[id]) return;
         if (id.indexOf('#') < 0) {
             delete this.pois[id];
-            this.requestUpdateState({hideLayer: this.listPoiLayers(true).map((layer) => layer.namespace_id).join(',')});
+            this.requestUpdateState({hideLayer: this.listPoiLayers(true).map((layer) => layer.namespaceID).join(',')});
             this.dispatchPoiNumber();
             this.redrawMarkers();
         } else {
@@ -909,7 +911,7 @@ export class MaplatApp extends EventTarget {
             const source = this.cacheHash[splits[0]];
             if (source) {
                 source.removePoiLayer(splits[1]);
-                this.requestUpdateState({hideLayer: this.listPoiLayers(true).map((layer) => layer.namespace_id).join(',')});
+                this.requestUpdateState({hideLayer: this.listPoiLayers(true).map((layer) => layer.namespaceID).join(',')});
                 this.dispatchPoiNumber();
                 this.redrawMarkers();
             }
@@ -1008,7 +1010,7 @@ export class MaplatApp extends EventTarget {
                     app.dispatchPoiNumber();
 
                     const view = app.mapObject.getView();
-                    if (app.appData.zoom_restriction) {
+                    if (app.appData.zoomRestriction) {
                         view.setMaxZoom(to.maxZoom);
                         view.setMinZoom(to.minZoom || 0);
                     }

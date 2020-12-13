@@ -1,7 +1,7 @@
 {
   "main2": {
     "id": "main2",
-    "namespace_id": "main2",
+    "namespaceID": "main2",
     "name": "main2_name",
 
     "pois": [
@@ -37,7 +37,7 @@
           36.225601902310075
         ],
         "id": "main2_0",
-        "namespace_id": "main2_0"
+        "namespaceID": "main2_0"
       },
       {
         "fid": 2,
@@ -71,14 +71,14 @@
           36.22035448084919
         ],
         "id": "main2_1",
-        "namespace_id": "main2_1"
+        "namespaceID": "main2_1"
       }
     ],
     "__nextId": 2
   },
   "main": {
     "id": "main",
-    "namespace_id": "main",
+    "namespaceID": "main",
     "name": "Test2",
     "pois": [],
     "__nextId": 0

@@ -97,7 +97,7 @@ export function normalizeLayer(layer, key, options) {
     } else {
         if (layer.id !== key) throw 'POI layers include bad key setting';
     }
-    if (!layer.namespace_id) layer.namespace_id = `${options.namespace ? `${options.namespace}#` : ''}${key}`;
+    if (!layer.namespaceID) layer.namespaceID = `${options.namespace ? `${options.namespace}#` : ''}${key}`;
     if (!layer.name) layer.name = key === 'main' ? options.name : key;
     if (!layer.pois) layer.pois = [];
 
@@ -135,8 +135,8 @@ export function addIdToPoi(layers, key, options) {
             poi.id = `${key}_${cluster.__nextId}`;
             cluster.__nextId++;
         }
-        if (!poi.namespace_id) {
-            poi.namespace_id = `${options.namespace ? `${options.namespace}#` : ''}${poi.id}`;
+        if (!poi.namespaceID) {
+            poi.namespaceID = `${options.namespace ? `${options.namespace}#` : ''}${poi.id}`;
         }
     });
 }

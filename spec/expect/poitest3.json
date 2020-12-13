@@ -1,6 +1,6 @@
 {
   "main2": {
-    "namespace_id": "main2",
+    "namespaceID": "main2",
     "id": "main2",
     "name": "main2_name",
     "pois": [
@@ -10,7 +10,7 @@
           139.54590291859614,
           36.225601902310075
         ],
-        "namespace_id": "main_111"
+        "namespaceID": "main_111"
       },
       {
         "id": "main_112",
@@ -18,13 +18,13 @@
           139.54590291859614,
           36.225601902310075
         ],
-        "namespace_id": "main_112"
+        "namespaceID": "main_112"
       }
     ],
     "__nextId": 0
   },
   "main": {
-    "namespace_id": "main",
+    "namespaceID": "main",
     "id": "main",
     "name": "Test3",
     "pois": [
@@ -34,7 +34,7 @@
           36.225601902310075
         ],
         "id": "main_0",
-        "namespace_id": "main_0"
+        "namespaceID": "main_0"
       }
     ],
     "__nextId": 1
