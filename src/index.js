@@ -162,7 +162,7 @@ export class MaplatApp extends EventTarget {
     // Async initializers 2: Handle application setting
     handleSetting(setting, appOption) {
         const app = this;
-        app.appData = setting;
+        app.appData = normalizeArg(setting);
 
         if (!app.lang && app.appData.lang) {
             app.lang = app.appData.lang;
