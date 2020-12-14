@@ -23,7 +23,7 @@
     "zip_build": "gulp zip",
     "build": "npm run freeze && npm run less_build && npm run www_build && npm run zip_build",
     "build_packed": "npm run freeze && npm run less_build_packed && npm run www_build_packed",
-    "lint": "eslint src/",
+    "lint": "eslint '{src,spec}/**/*.js' --fix",
     "test": "jest",
     "preversion": "npm run lint",
     "version": "npm run build && npm run build_packed && git add -A",
