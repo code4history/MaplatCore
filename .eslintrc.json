@@ -2,7 +2,8 @@
     "extends": "eslint:recommended",
     "env": {
         "node": true,
-        "es6": true
+        "es6": true,
+        "jest/globals": true
     },
     "parserOptions": {
         "sourceType": "module",
@@ -27,5 +28,8 @@
         "rest-spread-spacing": "error",
         "template-curly-spacing": "error",
         "yield-star-spacing": "error"
-    }
+    },
+    "plugins": [
+      "jest"
+    ]
 }
