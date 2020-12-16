@@ -28,12 +28,9 @@
     "version": "npm run build && npm run build_packed && git add -A",
     "freeze": "node bin/freezer.js -s parts -f src/freeze_images.js -u src/pointer_images.js",
     "preinstall": "npx npm-force-resolutions || echo 'ignore'",
-    "lint": "run-p lint:*",
-    "lint:eslint": "eslint \"{src,spec}/**/*.js\"",
-    "lint:prettier": "prettier \"./{src,spec}/**/*.js\" --check",
-    "fix": "run-s fix:eslint fix:prettier",
-    "fix:eslint": "npm run lint:eslint --fix",
-    "fix:prettier": "prettier \"./{src,spec}/**/*.js\" --write"
+    "lint": "npm run lint:eslint && npm run lint:prettier",
+    "lint:eslint": "eslint \"{src,spec}/**/*.js\" --fix",
+    "lint:prettier": "prettier \"./{src,spec}/**/*.js\" --write"
   },
   "repository": {
     "type": "git",
