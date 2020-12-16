@@ -13,7 +13,7 @@
   "rules": {
     "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
     "arrow-body-style": "error",
-    "arrow-parens": "error",
+    "arrow-parens": ["warn", "as-needed"],
     "arrow-spacing": "error",
     "generator-star-spacing": "error",
     "no-duplicate-imports": "error",
