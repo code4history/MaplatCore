@@ -1,10 +1,10 @@
-import { View } from 'ol';
+import { View } from "ol";
 
-View.prototype.getDecimalZoom = function() {
-    const resolution = this.getResolution();
+View.prototype.getDecimalZoom = function () {
+  const resolution = this.getResolution();
 
-    const offset = Math.log(this.maxResolution_ / resolution) / Math.log(2);
-    return offset !== undefined ? this.minZoom_ + offset : offset;
+  const offset = Math.log(this.maxResolution_ / resolution) / Math.log(2);
+  return offset !== undefined ? this.minZoom_ + offset : offset;
 };
 
-export { View }
+export { View };
