@@ -17,7 +17,6 @@ export class Logger {
   make() {
     const self = this;
     for (const key in console) {
-      // eslint-disable-line no-undef
       const l = LoggerLevel[key.toUpperCase()];
       if (!l) {
         // l=LoggerLevel.OFF;
@@ -25,17 +24,16 @@ export class Logger {
       }
       if (self.level <= l) {
         if (Function.bind) {
-          Logger.prototype[key] = (function (...args) {
-            // eslint-disable-line no-unused-vars
-            return console.log.bind(console); // eslint-disable-line no-undef
+          Logger.prototype[key] = (function (..._args) {
+            return console.log.bind(console);
           })(key);
         } else {
           Logger.prototype[key] = (function (...args) {
-            return console.log(...args); // eslint-disable-line no-undef
+            return console.log(...args);
           })(key);
         }
       } else {
-        Logger.prototype[key] = function () {};
+        Logger.prototype[key] = function () { };
       }
     }
   }

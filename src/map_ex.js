@@ -263,8 +263,8 @@ export class MaplatMap extends Map {
     const style =
       stroke != null
         ? new Style({
-            stroke: new Stroke(stroke)
-          })
+          stroke: new Stroke(stroke)
+        })
         : null;
     return this.setFeature(
       {
@@ -362,8 +362,7 @@ export class MaplatMap extends Map {
           tracking: true
         }));
         // listen to changes in position
-        geolocation.on("change", evt => {
-          // eslint-disable-line no-unused-vars
+        geolocation.on("change", _evt => {
           const overlayLayer = map.getLayer("overlay").getLayers().item(0);
           const source = overlayLayer
             ? overlayLayer.getSource()
@@ -391,8 +390,7 @@ export class MaplatMap extends Map {
               map.dispatchEvent(new MapEvent("gps_result", map, gpsVal));
             });
         });
-        geolocation.on("error", evt => {
-          // eslint-disable-line no-unused-vars
+        geolocation.on("error", _evt => {
           const source = map.getLayers().item(0).getSource();
           let gpsVal = null;
           if (map.fakeGps) {

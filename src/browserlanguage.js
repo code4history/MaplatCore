@@ -1,5 +1,5 @@
 const browserLanguage = function () {
-  const ua = window.navigator.userAgent.toLowerCase(); // eslint-disable-line no-undef
+  const ua = window.navigator.userAgent.toLowerCase();
   try {
     let lang;
     // Chrome
@@ -9,7 +9,7 @@ const browserLanguage = function () {
         navigator.browserLanguage ||
         navigator.language ||
         navigator.userLanguage
-      ).split(";"); // eslint-disable-line no-undef
+      ).split(";");
       return lang[0];
     }
     // Other
@@ -18,7 +18,7 @@ const browserLanguage = function () {
         navigator.browserLanguage ||
         navigator.language ||
         navigator.userLanguage
-      ).split(";"); // eslint-disable-line no-undef
+      ).split(";");
       return lang[0];
     }
   } catch (e) {

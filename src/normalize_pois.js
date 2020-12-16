@@ -4,12 +4,11 @@ export async function nodesLoader(nodes) {
     return new Promise((resolve, reject) => {
       const url = nodes.match(/\//) ? nodes : `pois/${nodes}`;
 
-      const xhr = new XMLHttpRequest(); // eslint-disable-line no-undef
+      const xhr = new XMLHttpRequest();
       xhr.open("GET", url, true);
       xhr.responseType = "json";
 
-      xhr.onload = function (e) {
-        // eslint-disable-line no-unused-vars
+      xhr.onload = function (_e) {
         if (this.status == 200 || this.status == 0) {
           // 0 for UIWebView
           try {
@@ -99,9 +98,8 @@ export function normalizeLayer(layer, key, options) {
     if (layer.id !== key) throw "POI layers include bad key setting";
   }
   if (!layer.namespaceID)
-    layer.namespaceID = `${
-      options.namespace ? `${options.namespace}#` : ""
-    }${key}`;
+    layer.namespaceID = `${options.namespace ? `${options.namespace}#` : ""
+      }${key}`;
   if (!layer.name) layer.name = key === "main" ? options.name : key;
   if (!layer.pois) layer.pois = [];
 
@@ -141,9 +139,8 @@ export function addIdToPoi(layers, key, options) {
       cluster.__nextId++;
     }
     if (!poi.namespaceID) {
-      poi.namespaceID = `${options.namespace ? `${options.namespace}#` : ""}${
-        poi.id
-      }`;
+      poi.namespaceID = `${options.namespace ? `${options.namespace}#` : ""}${poi.id
+        }`;
     }
   });
 }

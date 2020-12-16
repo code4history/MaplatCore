@@ -1,7 +1,7 @@
 import { META_KEYS } from "./source_ex";
 
 export function createElement(domStr) {
-  const context = document, // eslint-disable-line no-undef
+  const context = document,
     fragment = context.createDocumentFragment(),
     nodes = [];
   let i = 0;
@@ -37,8 +37,8 @@ export function createElement(domStr) {
 }
 
 export function normalizeDegree(degree) {
+  // eslint-disable-next-line no-constant-condition
   while (1) {
-    // eslint-disable-line no-constant-condition
     if (degree <= 180 && degree > -180) break;
     const times = degree > 0 ? -1.0 : 1.0;
     degree = degree + times * 360.0;

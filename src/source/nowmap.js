@@ -31,8 +31,7 @@ export class NowMap extends setCustomFunction(OSM) {
   }
 
   xy2MercAsync(xy) {
-    return new Promise((resolve, reject) => {
-      // eslint-disable-line no-unused-vars
+    return new Promise((resolve, _reject) => {
       resolve(xy);
     }).catch(err => {
       throw err;
@@ -40,8 +39,7 @@ export class NowMap extends setCustomFunction(OSM) {
   }
 
   merc2XyAsync(merc) {
-    return new Promise((resolve, reject) => {
-      // eslint-disable-line no-unused-vars
+    return new Promise((resolve, _reject) => {
       resolve(merc);
     });
   }

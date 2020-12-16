@@ -99,8 +99,7 @@ export class HistMap_tin extends HistMap {
   xy2MercAsync_specifyLayer(xy, layerId) {
     const self = this;
     const layerKey = `Illst:${self.mapID}${layerId ? `#${layerId}` : ""}`;
-    return new Promise((resolve, reject) => {
-      // eslint-disable-line no-unused-vars
+    return new Promise((resolve, _reject) => {
       resolve(transformDirect(xy, layerKey, "EPSG:3857"));
     }).catch(err => {
       throw err;
@@ -110,8 +109,7 @@ export class HistMap_tin extends HistMap {
   merc2XyAsync_specifyLayer(merc, layerId) {
     const self = this;
     const layerKey = `Illst:${self.mapID}${layerId ? `#${layerId}` : ""}`;
-    return new Promise((resolve, reject) => {
-      // eslint-disable-line no-unused-vars
+    return new Promise((resolve, _reject) => {
       resolve(transformDirect(merc, "EPSG:3857", layerKey));
     }).catch(err => {
       throw err;
@@ -200,7 +198,7 @@ export class HistMap_tin extends HistMap {
               ret.push([index, xy, tin]);
               return ret
                 .sort((a, b) => (a[2].importance < b[2].importance ? 1 : -1))
-                .filter((row, i) => (i < 2 ? true : false));
+                .filter((_row, i) => (i < 2 ? true : false));
             }
           }, [])
           .map(row => {
@@ -239,19 +237,19 @@ export class HistMap_tin extends HistMap {
             i < 4
               ? self.xy2MercAsync_specifyLayer(dir4[i], index)
               : i == 4
-              ? Promise.resolve(mercCenter)
-              : self.xy2MercAsync_specifyLayer(envelope[i - 5], 0);
+                ? Promise.resolve(mercCenter)
+                : self.xy2MercAsync_specifyLayer(envelope[i - 5], 0);
           proms.push(prom);
         }
         Promise.all(proms)
           .then(mercs => {
             const delta1 = Math.sqrt(
               Math.pow(mercs[0][0] - mercs[1][0], 2) +
-                Math.pow(mercs[0][1] - mercs[1][1], 2)
+              Math.pow(mercs[0][1] - mercs[1][1], 2)
             );
             const delta2 = Math.sqrt(
               Math.pow(mercs[2][0] - mercs[3][0], 2) +
-                Math.pow(mercs[2][1] - mercs[3][1], 2)
+              Math.pow(mercs[2][1] - mercs[3][1], 2)
             );
             const delta = (delta1 + delta2) / 2;
             self.mercZoom =

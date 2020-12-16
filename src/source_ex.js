@@ -94,7 +94,7 @@ export function setCustomFunction(target) {
       if (!self.weiwudi) return;
       try {
         await self.weiwudi.clean();
-      } catch (e) {} // eslint-disable-line no-empty
+      } catch (e) { } // eslint-disable-line no-empty
     }
 
     getMap() {
@@ -175,8 +175,7 @@ export function setCustomFunction(target) {
       const map = self.getMap();
       const view = map.getView();
       if (!position) {
-        return new Promise((resolve, reject) => {
-          // eslint-disable-line no-unused-vars
+        return new Promise((resolve, _reject) => {
           map.setGPSPosition(null);
           resolve(true);
         });
@@ -201,7 +200,7 @@ export function setCustomFunction(target) {
               prev +
               Math.sqrt(
                 Math.pow(curr[0] - pos.xy[0], 2) +
-                  Math.pow(curr[1] - pos.xy[1], 2)
+                Math.pow(curr[1] - pos.xy[1], 2)
               );
             return index == 3 ? ret / 4.0 : ret;
           }, 0);
@@ -218,7 +217,7 @@ export function setCustomFunction(target) {
     }
 
     setGPSMarker(position, ignoreMove) {
-      this.setGPSMarkerAsync(position, ignoreMove).then(() => {});
+      this.setGPSMarkerAsync(position, ignoreMove).then(() => { });
     }
 
     // size(画面サイズ)とズームから、地図面座標上での半径を得る。zoom無指定の場合は自動取得
@@ -306,11 +305,11 @@ export function setCustomFunction(target) {
       const promises = asMerc
         ? Promise.resolve(mercs)
         : Promise.all(
-            mercs.map((merc, index) => {
-              if (index == 5) return merc;
-              return self.merc2XyAsync(merc);
-            })
-          );
+          mercs.map((merc, index) => {
+            if (index == 5) return merc;
+            return self.merc2XyAsync(merc);
+          })
+        );
       return promises
         .then(xys => self.xys2Size(xys))
         .catch(err => {
@@ -484,8 +483,8 @@ export function setCustomFunction(target) {
               ? layer.pois.length && layer.hide
               : layer.pois.length
             : hideOnly
-            ? layer.hide
-            : true
+              ? layer.hide
+              : true
         );
     }
 
@@ -574,27 +573,25 @@ export function setCustomInitialize(self, options) {
 
   const thumbWait = options.thumbnail
     ? new Promise(resolve => {
-        self.thumbnail = options.thumbnail;
-        resolve();
-      })
+      self.thumbnail = options.thumbnail;
+      resolve();
+    })
     : new Promise(resolve => {
-        self.thumbnail = `./tmbs/${options.mapID}.jpg`;
-        fetch(self.thumbnail)
-          .then(response => {
-            // eslint-disable-line no-undef
-            if (response.ok) {
-              resolve();
-            } else {
-              self.thumbnail = `./tmbs/${options.mapID}_menu.jpg`;
-              resolve();
-            }
-          })
-          .catch(error => {
-            // eslint-disable-line no-unused-vars
+      self.thumbnail = `./tmbs/${options.mapID}.jpg`;
+      fetch(self.thumbnail)
+        .then(response => {
+          if (response.ok) {
+            resolve();
+          } else {
             self.thumbnail = `./tmbs/${options.mapID}_menu.jpg`;
             resolve();
-          });
-      });
+          }
+        })
+        .catch(_error => {
+          self.thumbnail = `./tmbs/${options.mapID}_menu.jpg`;
+          resolve();
+        });
+    });
   const poisWait = self.resolvePois(options.pois);
   self.initialWait = Promise.all([poisWait, thumbWait]);
 }
@@ -606,14 +603,13 @@ export function setupTileLoadFunction(target) {
       let numLoadingTiles = 0;
       const tileLoadFn = self.getTileLoadFunction();
       const tImageLoader = function (tileCoord, src, tCanv, sx, sy, sw, sh) {
-        return new Promise((resolve, reject) => {
-          // eslint-disable-line no-unused-vars
+        return new Promise((resolve, _reject) => {
           const loader = function (src, fallback) {
             if (numLoadingTiles === 0) {
               // console.log('loading');
             }
             ++numLoadingTiles;
-            const tImage = document.createElement("img"); // eslint-disable-line no-undef
+            const tImage = document.createElement("img");
             tImage.crossOrigin = "Anonymous";
             tImage.onload = tImage.onerror = function () {
               if (tImage.width && tImage.height) {
@@ -649,8 +645,7 @@ export function setupTileLoadFunction(target) {
           loader(src);
         });
       };
-      return function (tile, src) {
-        // eslint-disable-line no-unused-vars
+      return function (tile, _src) {
         const zoom = tile.tileCoord[0];
         let tileX = tile.tileCoord[1];
         let tileY = tile.tileCoord[2];
@@ -680,7 +675,7 @@ export function setupTileLoadFunction(target) {
           }
         }
 
-        const tmp = document.createElement("div"); // eslint-disable-line no-undef
+        const tmp = document.createElement("div");
         tmp.innerHTML = canvBase;
         const tCanv = tmp.childNodes[0];
 
@@ -744,8 +739,7 @@ export function setupTileLoadFunction(target) {
               tileLoadFn(tile, dataUrl);
             }
           })
-          .catch(err => {
-            // eslint-disable-line no-unused-vars
+          .catch(_err => {
             tile.handleImageError_();
           });
       };
@@ -769,8 +763,8 @@ export async function mapSourceFactory(options, commonOptions) {
       options.maptype == "base"
         ? NowMap
         : options.maptype == "overlay"
-        ? TmsMap
-        : MapboxMap;
+          ? TmsMap
+          : MapboxMap;
     if (options.zoomRestriction) {
       options.maxZoom = options.maxZoom || options.mercMaxZoom;
       options.minZoom = options.minZoom || options.mercMinZoom;
@@ -800,12 +794,11 @@ export async function mapSourceFactory(options, commonOptions) {
 
   return new Promise((resolve, reject) => {
     const url = options.settingFile || `maps/${options.mapID}.json`;
-    const xhr = new XMLHttpRequest(); // eslint-disable-line no-undef
+    const xhr = new XMLHttpRequest();
     xhr.open("GET", url, true);
     xhr.responseType = "json";
 
-    xhr.onload = async function (e) {
-      // eslint-disable-line no-unused-vars
+    xhr.onload = async function (_e) {
       if (this.status == 200 || this.status == 0) {
         // 0 for UIWebView
         try {
@@ -827,8 +820,8 @@ export async function mapSourceFactory(options, commonOptions) {
               options.maptype == "base"
                 ? NowMap
                 : options.maptype == "overlay"
-                ? TmsMap
-                : MapboxMap;
+                  ? TmsMap
+                  : MapboxMap;
             if (options.zoomRestriction) {
               options.maxZoom = options.maxZoom || options.mercMaxZoom;
               options.minZoom = options.minZoom || options.mercMinZoom;

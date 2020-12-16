@@ -48,7 +48,7 @@ export class MaplatApp extends EventTarget {
       }
     }
     app.mapDiv = appOption.div || "map_div";
-    app.mapDivDocument = document.querySelector(`#${app.mapDiv}`); // eslint-disable-line no-undef
+    app.mapDivDocument = document.querySelector(`#${app.mapDiv}`);
     app.mapDivDocument.classList.add("maplat");
     app.logger = new Logger(
       appOption.debug ? LoggerLevel.ALL : LoggerLevel.INFO
@@ -72,34 +72,34 @@ export class MaplatApp extends EventTarget {
       app.initialRestore = appOption.restore;
     } else if (appOption.restoreSession) {
       app.restoreSession = true;
-      const lastEpoch = parseInt(localStorage.getItem("epoch") || 0); // eslint-disable-line no-undef
+      const lastEpoch = parseInt(localStorage.getItem("epoch") || 0);
       const currentTime = Math.floor(new Date().getTime() / 1000);
       if (lastEpoch && currentTime - lastEpoch < 3600) {
         app.initialRestore.mapID =
-          localStorage.getItem("mapID") || localStorage.getItem("sourceID"); // eslint-disable-line no-undef
+          localStorage.getItem("mapID") || localStorage.getItem("sourceID");
         app.initialRestore.backgroundID =
           localStorage.getItem("backgroundID") ||
-          localStorage.getItem("backID"); // eslint-disable-line no-undef
+          localStorage.getItem("backID");
         app.initialRestore.position = {
-          x: parseFloat(localStorage.getItem("x")), // eslint-disable-line no-undef
-          y: parseFloat(localStorage.getItem("y")), // eslint-disable-line no-undef
-          zoom: parseFloat(localStorage.getItem("zoom")), // eslint-disable-line no-undef
-          rotation: parseFloat(localStorage.getItem("rotation")) // eslint-disable-line no-undef
+          x: parseFloat(localStorage.getItem("x")),
+          y: parseFloat(localStorage.getItem("y")),
+          zoom: parseFloat(localStorage.getItem("zoom")),
+          rotation: parseFloat(localStorage.getItem("rotation"))
         };
         app.initialRestore.transparency = parseFloat(
           localStorage.getItem("transparency") || 0
-        ); // eslint-disable-line no-undef
+        );
         app.initialRestore.hideMarker = parseInt(
           localStorage.getItem("hideMarker") || "0"
         )
           ? true
-          : false; // eslint-disable-line no-undef
-        app.initialRestore.hideLayer = localStorage.getItem("hideLayer"); // eslint-disable-line no-undef
+          : false;
+        app.initialRestore.hideLayer = localStorage.getItem("hideLayer");
       }
     }
 
     // Add UI HTML Element
-    const newElems = createElement(`<img id="center_circle" class="prevent-default" 
+    const newElems = createElement(`<img id="center_circle" class="prevent-default"
             style="position:absolute;top:50%;left:50%;margin-top:-10px;
             margin-left:-10px;" src="${pointer["redcircle.png"]}">`);
     for (let i = newElems.length - 1; i >= 0; i--) {
@@ -131,14 +131,12 @@ export class MaplatApp extends EventTarget {
     const app = this;
     return (
       setting ||
-      new Promise((resolve, reject) => {
-        // eslint-disable-line no-unused-vars
-        const xhr = new XMLHttpRequest(); // eslint-disable-line no-undef
+      new Promise((resolve, _reject) => {
+        const xhr = new XMLHttpRequest();
         xhr.open("GET", `apps/${app.appid}.json`, true);
         xhr.responseType = "json";
 
-        xhr.onload = function (e) {
-          // eslint-disable-line no-unused-vars
+        xhr.onload = function (_e) {
           let value = this.response;
           if (typeof value != "object") value = JSON.parse(value);
           resolve(value);
@@ -151,8 +149,7 @@ export class MaplatApp extends EventTarget {
   // Async initializers 3: Load i18n setting
   async i18nLoader() {
     const app = this;
-    return new Promise((resolve, reject) => {
-      // eslint-disable-line no-unused-vars
+    return new Promise((resolve, _reject) => {
       const localesFlag = Object.keys(locales).length != 0;
       const translib =
         app.translateUI && !localesFlag ? i18n.use(i18nxhr) : i18n;
@@ -165,7 +162,7 @@ export class MaplatApp extends EventTarget {
           },
           resources: localesFlag ? locales : undefined
         },
-        (err, t) => {
+        (_err, t) => {
           resolve([t, i18n]);
         }
       );
@@ -253,7 +250,7 @@ export class MaplatApp extends EventTarget {
     const frontDiv = `${app.mapDiv}_front`;
     let newElem = createElement(
       `<div id="${frontDiv}" class="map" style="top:0; left:0; right:0; bottom:0; ` +
-        `position:absolute;"></div>`
+      `position:absolute;"></div>`
     )[0];
     app.mapDivDocument.insertBefore(newElem, app.mapDivDocument.firstChild);
     app.mapObject = new MaplatMap({
@@ -262,10 +259,10 @@ export class MaplatApp extends EventTarget {
       interactions: app.noRotate
         ? defaults({ altShiftDragRotate: false, pinchRotate: false })
         : defaults().extend([
-            new DragRotateAndZoom({
-              condition: altKeyOnly
-            })
-          ]),
+          new DragRotateAndZoom({
+            condition: altKeyOnly
+          })
+        ]),
       fakeGps,
       fakeRadius,
       homePosition: homePos
@@ -276,7 +273,7 @@ export class MaplatApp extends EventTarget {
       backDiv = `${app.mapDiv}_back`;
       newElem = createElement(
         `<div id="${backDiv}" class="map" style="top:0; left:0; right:0; bottom:0; ` +
-          `position:absolute;"></div>`
+        `position:absolute;"></div>`
       )[0];
       app.mapDivDocument.insertBefore(newElem, app.mapDivDocument.firstChild);
       app.backMap = new MaplatMap({
@@ -290,7 +287,7 @@ export class MaplatApp extends EventTarget {
       const mapboxDiv = `${app.mapDiv}_mapbox`;
       newElem = createElement(
         `<div id="${mapboxDiv}" class="map" style="top:0; left:0; right:0; bottom:0; ` +
-          `position:absolute;visibility:hidden;"></div>`
+        `position:absolute;visibility:hidden;"></div>`
       )[0];
       app.mapDivDocument.insertBefore(newElem, app.mapDivDocument.firstChild);
 
@@ -483,7 +480,7 @@ export class MaplatApp extends EventTarget {
     let timer;
     app.mapObject.on("click", () => {
       if (timer) {
-        clearTimeout(timer); // eslint-disable-line no-undef
+        clearTimeout(timer);
         timer = undefined;
       }
       const ctls = app.mapDivDocument.querySelectorAll(".ol-control");
@@ -493,7 +490,7 @@ export class MaplatApp extends EventTarget {
     });
     app.mapObject.on("pointerdrag", () => {
       if (timer) {
-        clearTimeout(timer); // eslint-disable-line no-undef
+        clearTimeout(timer);
         timer = undefined;
       }
       const ctls = app.mapDivDocument.querySelectorAll(".ol-control");
@@ -503,11 +500,11 @@ export class MaplatApp extends EventTarget {
     });
     app.mapObject.on("moveend", () => {
       if (timer) {
-        clearTimeout(timer); // eslint-disable-line no-undef
+        clearTimeout(timer);
         timer = undefined;
       }
       timer = setTimeout(() => {
-        // eslint-disable-line no-undef
+
         timer = undefined;
         const ctls = app.mapDivDocument.querySelectorAll(".ol-control");
         for (let i = 0; i < ctls.length; i++) {
@@ -554,8 +551,7 @@ export class MaplatApp extends EventTarget {
   setBackMapBehavior() {
     const app = this;
 
-    const backMapMove = function (evt) {
-      // eslint-disable-line no-unused-vars
+    const backMapMove = function (_evt) {
       if (!app.backMap) return;
       if (this._backMapMoving) {
         app.logger.debug("Backmap moving skipped");
@@ -583,8 +579,7 @@ export class MaplatApp extends EventTarget {
   raiseChangeViewPoint() {
     const app = this;
 
-    app.mapObject.on("postrender", evt => {
-      // eslint-disable-line no-unused-vars
+    app.mapObject.on("postrender", _evt => {
       const view = app.mapObject.getView();
       const center = view.getCenter();
       const zoom = view.getDecimalZoom();
@@ -657,17 +652,17 @@ export class MaplatApp extends EventTarget {
         ? data.selectedIcon
         : data.icon
       : app.__selectedMarker == data.namespaceID
-      ? pointer["defaultpin_selected.png"]
-      : pointer["defaultpin.png"];
+        ? pointer["defaultpin_selected.png"]
+        : pointer["defaultpin.png"];
     const promise = coords
       ? (function () {
-          return src.merc2XyAsync(coords, true);
-        })()
+        return src.merc2XyAsync(coords, true);
+      })()
       : x && y
-      ? new Promise(resolve => {
+        ? new Promise(resolve => {
           resolve(src.xy2HistMapCoords([x, y]));
         })
-      : (function () {
+        : (function () {
           const merc = transform(lnglat, "EPSG:4326", "EPSG:3857");
           return src.merc2XyAsync(merc, true);
         })();
@@ -770,13 +765,13 @@ export class MaplatApp extends EventTarget {
       latitude: data.lnglat
         ? data.lnglat[1]
         : data.lat
-        ? data.lat
-        : data.latitude,
+          ? data.lat
+          : data.latitude,
       longitude: data.lnglat
         ? data.lnglat[0]
         : data.lng
-        ? data.lng
-        : data.longitude
+          ? data.lng
+          : data.longitude
     };
     this.setViewpoint(latlng);
     this.redrawMarkers();
@@ -947,8 +942,8 @@ export class MaplatApp extends EventTarget {
             ? layer.pois.length && layer.hide
             : layer.pois.length
           : hideOnly
-          ? layer.hide
-          : true
+            ? layer.hide
+            : true
       );
     const mapPois = app.from.listPoiLayers(hideOnly, nonzero);
     return appPois.concat(mapPois);
@@ -1065,8 +1060,7 @@ export class MaplatApp extends EventTarget {
 
     return (app.changeMapSeq = app.changeMapSeq.then(
       () =>
-        new Promise((resolve, reject) => {
-          // eslint-disable-line no-unused-vars
+        new Promise((resolve, _reject) => {
           app.convertParametersFromCurrent(to, size => {
             let backSrc = null;
             let backTo = null;
@@ -1091,7 +1085,7 @@ export class MaplatApp extends EventTarget {
                         app.from instanceof TmsMap
                           ? app.mapObject.getSource()
                           : // If current foreground is TMS overlay, set current basemap as new background
-                            app.from; // If current foreground source is basemap, set current foreground as new background
+                          app.from; // If current foreground source is basemap, set current foreground as new background
                     }
                     app.backMap.exchangeSource(backTo);
                   } else {
@@ -1213,23 +1207,23 @@ export class MaplatApp extends EventTarget {
     }
     if (app.restoreSession) {
       const currentTime = Math.floor(new Date().getTime() / 1000);
-      localStorage.setItem("epoch", currentTime); // eslint-disable-line no-undef
+      localStorage.setItem("epoch", currentTime);
       const loopSession = function (data) {
         Object.keys(data).map(key => {
           if (key == "position") {
             loopSession(data[key]);
           } else if (key == "backgroundID" && data[key] == "____delete____") {
-            localStorage.removeItem(key); // eslint-disable-line no-undef
+            localStorage.removeItem(key);
           } else {
-            localStorage.setItem(key, data[key]); // eslint-disable-line no-undef
+            localStorage.setItem(key, data[key]);
           }
         });
       };
       loopSession(data);
     }
-    if (app.timer) clearTimeout(app.timer); // eslint-disable-line no-undef
+    if (app.timer) clearTimeout(app.timer);
     app.timer = setTimeout(() => {
-      // eslint-disable-line no-undef
+
       app.timer = undefined;
       app.dispatchEvent(new CustomEvent("updateState", app.stateBuffer));
     }, 50);
@@ -1320,8 +1314,7 @@ export class MaplatApp extends EventTarget {
         app.logger.debug(buffer);
         app.logger.debug(current);
         app.logger.debug("From: Use buffer");
-        fromPromise = new Promise((res, rej) => {
-          // eslint-disable-line no-unused-vars
+        fromPromise = new Promise((res, _rej) => {
           res(app.mercBuffer.mercs);
         });
       } else {
@@ -1348,8 +1341,7 @@ export class MaplatApp extends EventTarget {
         const key = to.mapID;
         if (app.mercBuffer.buffer[key]) {
           app.logger.debug("To: Use buffer");
-          toPromise = new Promise((res, rej) => {
-            // eslint-disable-line no-unused-vars
+          toPromise = new Promise((res, _rej) => {
             res(app.mercBuffer.buffer[key]);
           });
         }
