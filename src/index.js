@@ -250,7 +250,7 @@ export class MaplatApp extends EventTarget {
     const frontDiv = `${app.mapDiv}_front`;
     let newElem = createElement(
       `<div id="${frontDiv}" class="map" style="top:0; left:0; right:0; bottom:0; ` +
-      `position:absolute;"></div>`
+        `position:absolute;"></div>`
     )[0];
     app.mapDivDocument.insertBefore(newElem, app.mapDivDocument.firstChild);
     app.mapObject = new MaplatMap({
@@ -259,10 +259,10 @@ export class MaplatApp extends EventTarget {
       interactions: app.noRotate
         ? defaults({ altShiftDragRotate: false, pinchRotate: false })
         : defaults().extend([
-          new DragRotateAndZoom({
-            condition: altKeyOnly
-          })
-        ]),
+            new DragRotateAndZoom({
+              condition: altKeyOnly
+            })
+          ]),
       fakeGps,
       fakeRadius,
       homePosition: homePos
@@ -273,7 +273,7 @@ export class MaplatApp extends EventTarget {
       backDiv = `${app.mapDiv}_back`;
       newElem = createElement(
         `<div id="${backDiv}" class="map" style="top:0; left:0; right:0; bottom:0; ` +
-        `position:absolute;"></div>`
+          `position:absolute;"></div>`
       )[0];
       app.mapDivDocument.insertBefore(newElem, app.mapDivDocument.firstChild);
       app.backMap = new MaplatMap({
@@ -287,7 +287,7 @@ export class MaplatApp extends EventTarget {
       const mapboxDiv = `${app.mapDiv}_mapbox`;
       newElem = createElement(
         `<div id="${mapboxDiv}" class="map" style="top:0; left:0; right:0; bottom:0; ` +
-        `position:absolute;visibility:hidden;"></div>`
+          `position:absolute;visibility:hidden;"></div>`
       )[0];
       app.mapDivDocument.insertBefore(newElem, app.mapDivDocument.firstChild);
 
@@ -504,7 +504,6 @@ export class MaplatApp extends EventTarget {
         timer = undefined;
       }
       timer = setTimeout(() => {
-
         timer = undefined;
         const ctls = app.mapDivDocument.querySelectorAll(".ol-control");
         for (let i = 0; i < ctls.length; i++) {
@@ -652,17 +651,17 @@ export class MaplatApp extends EventTarget {
         ? data.selectedIcon
         : data.icon
       : app.__selectedMarker == data.namespaceID
-        ? pointer["defaultpin_selected.png"]
-        : pointer["defaultpin.png"];
+      ? pointer["defaultpin_selected.png"]
+      : pointer["defaultpin.png"];
     const promise = coords
       ? (function () {
-        return src.merc2XyAsync(coords, true);
-      })()
+          return src.merc2XyAsync(coords, true);
+        })()
       : x && y
-        ? new Promise(resolve => {
+      ? new Promise(resolve => {
           resolve(src.xy2HistMapCoords([x, y]));
         })
-        : (function () {
+      : (function () {
           const merc = transform(lnglat, "EPSG:4326", "EPSG:3857");
           return src.merc2XyAsync(merc, true);
         })();
@@ -765,13 +764,13 @@ export class MaplatApp extends EventTarget {
       latitude: data.lnglat
         ? data.lnglat[1]
         : data.lat
-          ? data.lat
-          : data.latitude,
+        ? data.lat
+        : data.latitude,
       longitude: data.lnglat
         ? data.lnglat[0]
         : data.lng
-          ? data.lng
-          : data.longitude
+        ? data.lng
+        : data.longitude
     };
     this.setViewpoint(latlng);
     this.redrawMarkers();
@@ -942,8 +941,8 @@ export class MaplatApp extends EventTarget {
             ? layer.pois.length && layer.hide
             : layer.pois.length
           : hideOnly
-            ? layer.hide
-            : true
+          ? layer.hide
+          : true
       );
     const mapPois = app.from.listPoiLayers(hideOnly, nonzero);
     return appPois.concat(mapPois);
@@ -1085,7 +1084,7 @@ export class MaplatApp extends EventTarget {
                         app.from instanceof TmsMap
                           ? app.mapObject.getSource()
                           : // If current foreground is TMS overlay, set current basemap as new background
-                          app.from; // If current foreground source is basemap, set current foreground as new background
+                            app.from; // If current foreground source is basemap, set current foreground as new background
                     }
                     app.backMap.exchangeSource(backTo);
                   } else {
@@ -1223,7 +1222,6 @@ export class MaplatApp extends EventTarget {
     }
     if (app.timer) clearTimeout(app.timer);
     app.timer = setTimeout(() => {
-
       app.timer = undefined;
       app.dispatchEvent(new CustomEvent("updateState", app.stateBuffer));
     }, 50);

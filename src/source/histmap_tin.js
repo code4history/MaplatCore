@@ -237,19 +237,19 @@ export class HistMap_tin extends HistMap {
             i < 4
               ? self.xy2MercAsync_specifyLayer(dir4[i], index)
               : i == 4
-                ? Promise.resolve(mercCenter)
-                : self.xy2MercAsync_specifyLayer(envelope[i - 5], 0);
+              ? Promise.resolve(mercCenter)
+              : self.xy2MercAsync_specifyLayer(envelope[i - 5], 0);
           proms.push(prom);
         }
         Promise.all(proms)
           .then(mercs => {
             const delta1 = Math.sqrt(
               Math.pow(mercs[0][0] - mercs[1][0], 2) +
-              Math.pow(mercs[0][1] - mercs[1][1], 2)
+                Math.pow(mercs[0][1] - mercs[1][1], 2)
             );
             const delta2 = Math.sqrt(
               Math.pow(mercs[2][0] - mercs[3][0], 2) +
-              Math.pow(mercs[2][1] - mercs[3][1], 2)
+                Math.pow(mercs[2][1] - mercs[3][1], 2)
             );
             const delta = (delta1 + delta2) / 2;
             self.mercZoom =

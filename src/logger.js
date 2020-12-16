@@ -33,7 +33,7 @@ export class Logger {
           })(key);
         }
       } else {
-        Logger.prototype[key] = function () { };
+        Logger.prototype[key] = function () {};
       }
     }
   }

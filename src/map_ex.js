@@ -263,8 +263,8 @@ export class MaplatMap extends Map {
     const style =
       stroke != null
         ? new Style({
-          stroke: new Stroke(stroke)
-        })
+            stroke: new Stroke(stroke)
+          })
         : null;
     return this.setFeature(
       {
