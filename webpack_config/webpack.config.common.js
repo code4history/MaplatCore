@@ -46,8 +46,9 @@ module.exports = {
       "Access-Control-Allow-Origin": "*",
       "Pragma": "no-cache",
       "Cache-Control": "no-cache"
+    },
+    before(_app, _server, _compiler) {
+      console.log(`Server running at http://localhost:${port}`);
     }
   }
 };
-
-console.log(`Server running at http://localhost:${port}`);
