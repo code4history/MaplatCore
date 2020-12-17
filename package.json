@@ -13,8 +13,8 @@
     "parts/"
   ],
   "scripts": {
-    "server": "gulp server",
-    "stopserver": "gulp stopserver",
+    "server": "webpack-dev-server --config ./webpack_config/webpack.config.standard.js",
+    "server:packed": "webpack-dev-server --config ./webpack_config/webpack.config.packed.js",
     "less_build": "lessc --clean-css less/core.less dist/maplat_core.css",
     "less_build_packed": "lessc --clean-css less/core.less dist_packed/maplat_core.css",
     "npm_build": "babel src/ --out-dir lib/ --source-maps",
@@ -85,6 +85,7 @@
     "utils-extend": "npm:utils-extend-patched@^1.0.9",
     "webpack": "^4.41.6",
     "webpack-cli": "^3.3.11",
+    "webpack-dev-server": "^3.11.0",
     "webpack-merge": "^5.4.0",
     "yargs-parser": "^18.1.3"
   },
