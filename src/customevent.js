@@ -1,8 +1,8 @@
-import Event from 'ol/events/Event';
+import Event from "ol/events/Event";
 
 export default class CustomEvent extends Event {
-    constructor(type, detail) {
-        super(type);
-        this.detail = detail;
-    }
+  constructor(type, detail) {
+    super(type);
+    this.detail = detail;
+  }
 }
