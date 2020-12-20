@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 import { normalizeLayers } from "../src/normalize_pois";
 
 describe("normalizePois test", () => {

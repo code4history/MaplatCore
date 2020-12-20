@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 import { createIconSet, createHtmlFromTemplate } from "../src/template_works";
 
 describe("template_works test", () => {
