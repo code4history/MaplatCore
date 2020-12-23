@@ -175,7 +175,8 @@ export function setCustomFunction(target) {
       const map = self.getMap();
       const view = map.getView();
       if (!position) {
-        return new Promise((resolve, _reject) => {
+        return new Promise((resolve, reject) => {
+          // eslint-disable-line no-unused-vars
           map.setGPSPosition(null);
           resolve(true);
         });
@@ -555,8 +556,8 @@ export function setCustomInitialize(self, options) {
   self.mercatorXShift = options.mercatorXShift;
   self.mercatorYShift = options.mercatorYShift;
   self.weiwudi = options.weiwudi;
-  if (options.envelopeLnglats) {
-    const lngLats = options.envelopeLnglats;
+  if (options.envelopeLngLats) {
+    const lngLats = options.envelopeLngLats;
     const mercs = lngLats.map(lnglat =>
       transform(lnglat, "EPSG:4326", "EPSG:3857")
     );
@@ -580,6 +581,7 @@ export function setCustomInitialize(self, options) {
         self.thumbnail = `./tmbs/${options.mapID}.jpg`;
         fetch(self.thumbnail)
           .then(response => {
+            // eslint-disable-line no-undef
             if (response.ok) {
               resolve();
             } else {
@@ -587,10 +589,14 @@ export function setCustomInitialize(self, options) {
               resolve();
             }
           })
-          .catch(_error => {
+          .catch(error => {
+            // eslint-disable-line no-unused-vars
             self.thumbnail = `./tmbs/${options.mapID}_menu.jpg`;
             resolve();
           });
+      }).catch(error => {
+        // eslint-disable-line no-unused-vars
+        self.thumbnail = `./tmbs/${options.mapID || options.sourceID}_menu.jpg`;
       });
   const poisWait = self.resolvePois(options.pois);
   self.initialWait = Promise.all([poisWait, thumbWait]);
@@ -603,28 +609,23 @@ export function setupTileLoadFunction(target) {
       let numLoadingTiles = 0;
       const tileLoadFn = self.getTileLoadFunction();
       const tImageLoader = function (tileCoord, src, tCanv, sx, sy, sw, sh) {
-        return new Promise((resolve, _reject) => {
+        return new Promise((resolve, reject) => {
+          // eslint-disable-line no-unused-vars
           const loader = function (src, fallback) {
             if (numLoadingTiles === 0) {
               // console.log('loading');
             }
             ++numLoadingTiles;
-            const tImage = document.createElement("img");
+            const tImage = document.createElement("img"); // eslint-disable-line no-undef
             tImage.crossOrigin = "Anonymous";
             tImage.onload = tImage.onerror = function () {
               if (tImage.width && tImage.height) {
                 const ctx = tCanv.getContext("2d");
-                ctx.drawImage(
-                  tImage,
-                  sx,
-                  sy,
-                  sw,
-                  sh,
-                  sx == 0 ? 256 - sw : 0,
-                  sy == 0 ? 256 - sh : 0,
-                  sw,
-                  sh
-                );
+                const dx = sx == 0 ? 256 - sw : 0;
+                const dy = sy == 0 ? 256 - sh : 0;
+                sw = sx + sw > tImage.width ? tImage.width - sx : sw;
+                sh = sy + sh > tImage.height ? tImage.height - sy : sh;
+                ctx.drawImage(tImage, sx, sy, sw, sh, dx, dy, sw, sh);
                 resolve();
               } else {
                 if (fallback) {
@@ -645,7 +646,8 @@ export function setupTileLoadFunction(target) {
           loader(src);
         });
       };
-      return function (tile, _src) {
+      return function (tile, src) {
+        // eslint-disable-line no-unused-vars
         const zoom = tile.tileCoord[0];
         let tileX = tile.tileCoord[1];
         let tileY = tile.tileCoord[2];
@@ -675,7 +677,7 @@ export function setupTileLoadFunction(target) {
           }
         }
 
-        const tmp = document.createElement("div");
+        const tmp = document.createElement("div"); // eslint-disable-line no-undef
         tmp.innerHTML = canvBase;
         const tCanv = tmp.childNodes[0];
 
@@ -739,7 +741,8 @@ export function setupTileLoadFunction(target) {
               tileLoadFn(tile, dataUrl);
             }
           })
-          .catch(_err => {
+          .catch(err => {
+            // eslint-disable-line no-unused-vars
             tile.handleImageError_();
           });
       };
@@ -794,11 +797,12 @@ export async function mapSourceFactory(options, commonOptions) {
 
   return new Promise((resolve, reject) => {
     const url = options.settingFile || `maps/${options.mapID}.json`;
-    const xhr = new XMLHttpRequest();
+    const xhr = new XMLHttpRequest(); // eslint-disable-line no-undef
     xhr.open("GET", url, true);
     xhr.responseType = "json";
 
-    xhr.onload = async function (_e) {
+    xhr.onload = async function (e) {
+      // eslint-disable-line no-unused-vars
       if (this.status == 200 || this.status == 0) {
         // 0 for UIWebView
         try {
@@ -895,7 +899,7 @@ export async function registerMapToSW(options) {
   setting.height = options.height;
   setting.maxZoom = options.maxZoom;
   setting.minZoom = options.minZoom;
-  const lngLats = options.envelopeLnglats;
+  const lngLats = options.envelopeLngLats;
   if (lngLats) {
     const minMax = lngLats.reduce(
       (prev, curr) => {
