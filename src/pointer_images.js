@@ -5,5 +5,8 @@ export default {
     "defaultpin.png": "parts/defaultpin.png",
     "defaultpin_selected.png": "parts/defaultpin_selected.png",
     "favicon.png": "parts/favicon.png",
+    "gsi.jpg": "parts/gsi.jpg",
+    "gsi_ortho.jpg": "parts/gsi_ortho.jpg",
+    "osm.jpg": "parts/osm.jpg",
     "redcircle.png": "parts/redcircle.png"
 };

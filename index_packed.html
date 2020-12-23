@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
   <link rel="icon" type="image/png" href="parts/favicon.png">
   <link href="https://api.tiles.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.css" rel="stylesheet">
-  <link rel="stylesheet" href="dist/maplat_core.css">
+  <link rel="stylesheet" href="dist_packed/maplat_core.css">
   <style>
     .mainview {
         position: absolute;
@@ -50,9 +50,8 @@
     <button id="mapbox">Mapbox</button>
     <button id="map_remove">Remove Map</button>
   </div>
-</body>
 <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.js"></script>
-<script src="dist/maplat_core_packed.js"></script>
+<script src="dist_packed/maplat_core.js"></script>
 <script>
     var option = {
         mapboxgl: mapboxgl,
@@ -173,4 +172,5 @@
         });
     });
 </script>
+</body>
 </html>
