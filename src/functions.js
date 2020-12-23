@@ -94,8 +94,8 @@ export function normalizeArg(options) {
     default_rotation: "defaultRotation",
     selected_icon: "selectedIcon",
     namespace_id: "namespaceID",
-    mercator_x_shift: 'mercatorXShift',
-    mercator_y_shift: 'mercatorYShift'
+    mercator_x_shift: "mercatorXShift",
+    mercator_y_shift: "mercatorYShift"
     //        maxZoom: 'max_zoom',
     //        minZoom: 'min_zoom',
     //        envelopeLngLats: 'envelope_lnglats',
