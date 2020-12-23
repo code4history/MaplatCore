@@ -47,8 +47,8 @@ export class HistMap extends setCustomFunction(XYZ) {
 
         options.wrapX = false;
         if (!options.image_extention) options.image_extention = options.imageExtention || 'jpg';
-        if (options.map_id || options.mapID) {
-            options.url = options.url || `tiles/${options.map_id || options.mapID}/{z}/{x}/{y}.${options.image_extention || options.imageExtention}`;
+        if (options.map_id) {
+            options.url = options.url || `tiles/${options.map_id}/{z}/{x}/{y}.${options.image_extention || options.imageExtention}`;
         }
 
         const zW = Math.log2(options.width/tileSize);
@@ -68,8 +68,8 @@ export class HistMap extends setCustomFunction(XYZ) {
         };
 
         super(options);
-        if (options.map_id || options.mapID) {
-            this.mapID = options.map_id || options.mapID;
+        if (options.map_id) {
+            this.mapID = options.map_id;
         }
         if (options.urls) {
             this._tileUrlFunction =
@@ -156,7 +156,6 @@ export class HistMap extends setCustomFunction(XYZ) {
 
         options = normalizeArg(Object.assign(options, commonOptions));
         options.label = options.label || options.year;
-        options.source_id = options.source_id || options.sourceID || options.map_id || options.mapID;
         if (options.maptype == 'base' || options.maptype == 'overlay' || options.maptype == 'mapbox') {
             const targetSrc = options.maptype == 'base' ? NowMap :
                 options.maptype == 'overlay' ? TmsMap : MapboxMap;
@@ -175,7 +174,7 @@ export class HistMap extends setCustomFunction(XYZ) {
         }
 
         return new Promise(((resolve, reject) => {
-            const url = options.setting_file || `maps/${options.map_id || options.mapID}.json`;
+            const url = options.setting_file || `maps/${options.map_id}.json`;
             const xhr = new XMLHttpRequest(); // eslint-disable-line no-undef
             xhr.open('GET', url, true);
             xhr.responseType = 'json';

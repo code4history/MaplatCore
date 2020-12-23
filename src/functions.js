@@ -48,7 +48,7 @@ export function normalizeDegree(degree) {
 export function createMapInfo(source) {
     if (!source) return;
     const ret = {
-        sourceID: source.sourceID
+        mapID: source.mapID
     };
     for (let i = 0; i < META_KEYS.length; i++) {
         const key = META_KEYS[i];
@@ -68,8 +68,8 @@ export function normalizeArg(options) {
         mercatorXShift: 'mercator_x_shift',
         mercatorYShift: 'mercator_y_shift',
         mapID: 'map_id',
-        sourceID: 'source_id',
-//        source_id: 'source_id'
+        sourceID: 'map_id',
+        source_id: 'map_id'
     }
 
     return Object.keys(table).reduce((opt, key) => {
