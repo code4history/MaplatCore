@@ -6,6 +6,7 @@
   <meta content="yes" name="apple-mobile-web-app-capable">
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
   <link rel="icon" type="image/png" href="parts/favicon.png">
+  <link href="https://api.tiles.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.css" rel="stylesheet">
   <link rel="stylesheet" href="dist/maplat_core.css">
   <style>
     .mainview {
@@ -41,11 +42,22 @@
     <button id="unSelect">unSelect</button>
     <button id="showAll">showAll</button>
     <button id="hideAll">hideAll</button>
-    <button id="changeMap">changeMap</button>
+    <button id="morioka">盛岡城</button>
+    <button id="maplat">盛岡(Maplat)</button>
+    <button id="tms">盛岡(TMS)</button>
+    <button id="osm">OSM</button>
+    <button id="gsi">地理院</button>
+    <button id="mapbox">Mapbox</button>
+    <button id="map_remove">Remove Map</button>
   </div>
+<script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.js"></script>
 <script src="dist/maplat_core.js"></script>
 <script>
-    var option = {};
+    var option = {
+      mapboxgl: mapboxgl,
+      mapboxToken: 'pk.eyJ1IjoicmVraXNoaWtva3VkbyIsImEiOiJjazRoMmF3dncwODU2M2ttdzI2aDVqYXVwIn0.8Hb9sekgjfck6Setxk5uVg'
+//      mapboxToken: 'YOUR-ACCESS-TOKEN'
+    };
     var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
     for (var i = 0; i < hashes.length; i++) {
         hash = hashes[i].split('=');
@@ -137,11 +149,26 @@
         document.getElementById('hideAll').addEventListener('click', function(e) {
             app.hideAllMarkers();
         });
-        var nowGsi = false;
-        document.getElementById('changeMap').addEventListener('click', function(e) {
-            var nextMap = nowGsi ? 'morioka' : 'osm';
-            nowGsi = !nowGsi;
-            app.changeMap(nextMap);
+        document.getElementById('morioka').addEventListener('click', function(e) {
+            app.changeMap('morioka');
+        });
+        document.getElementById('maplat').addEventListener('click', function(e) {
+            app.changeMap('morioka_ndl2');
+        });
+        document.getElementById('tms').addEventListener('click', function(e) {
+            app.changeMap('morioka_ndl_affine');
+        });
+        document.getElementById('osm').addEventListener('click', function(e) {
+            app.changeMap('osm');
+        });
+        document.getElementById('gsi').addEventListener('click', function(e) {
+            app.changeMap('gsi');
+        });
+        document.getElementById('mapbox').addEventListener('click', function(e) {
+            app.changeMap('mapbox');
+        });
+        document.getElementById('map_remove').addEventListener('click', function(e) {
+            app.remove();
         });
     });
 </script>

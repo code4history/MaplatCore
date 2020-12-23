@@ -4,8 +4,9 @@ import { Group, Tile, Vector as layerVector } from "ol/layer";
 import { Vector as sourceVector } from "ol/source";
 import { Point, Circle, LineString, Polygon } from 'ol/geom';
 import { Style, Icon, Stroke, Fill } from 'ol/style';
-import { NowMap } from './source_ex';
+import {MapboxMap, NowMap} from './source_ex';
 import { getDistance, randomFromCenter } from './math_ex';
+import {MapboxLayer} from "./layer_mapbox";
 
 const gpsStyle = new Style({
     image: new Icon(({
@@ -84,11 +85,7 @@ export class MaplatMap extends Map {
         });
         envelopeLayer.set('name', 'envelope');
 
-        const baseLayer = optOptions.baseLayer ? optOptions.baseLayer :
-            new Tile({
-                source: optOptions.source
-            });
-        baseLayer.set('name', 'base');
+        const baseLayer = MaplatMap.spawnLayer(null, optOptions.source, optOptions.target);
 
         const overlayLayer = new Group();
         overlayLayer.set('name', 'overlay');
@@ -109,7 +106,8 @@ export class MaplatMap extends Map {
             view: new View({
                 center: optOptions.default_center || [0, 0],
                 zoom: optOptions.default_zoom || 2,
-                rotation: optOptions.default_rotation || 0
+                rotation: optOptions.default_rotation || 0,
+                multiWorld: true
             })
         };
         if (optOptions.interactions) {
@@ -135,6 +133,27 @@ export class MaplatMap extends Map {
         self.on('moveend', () => {
             view.on('propertychange', movestart);
         });
+    }
+
+    static spawnLayer(layer, source, container) {
+        if (source instanceof MapboxMap || !(layer instanceof Tile)) {
+            if (source instanceof MapboxMap) {
+                layer = new MapboxLayer({
+                    style: source.style,
+                    accessToken: source.accessToken,
+                    container,
+                    source
+                });
+            } else {
+                layer = new Tile({
+                    source
+                });
+            }
+            layer.set('name', 'base');
+        } else {
+            layer.setSource(source);
+        }
+        return layer;
     }
 
     getLayer(name) {
@@ -267,8 +286,9 @@ export class MaplatMap extends Map {
 
     exchangeSource(source) {
         const layers = this.getLayers();
-        const layer = layers.item(0);
-        layer.setSource(source);
+        const prevLayer = layers.item(0);
+        const layer = MaplatMap.spawnLayer(prevLayer, source, this.getTarget());
+        if (layer != prevLayer) layers.setAt(0, layer);
         if (source) {
             source._map = this;
         }

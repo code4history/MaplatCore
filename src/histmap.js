@@ -1,6 +1,6 @@
 import { addProjection, addCoordinateTransforms, Projection } from 'ol/proj';
 import { XYZ } from 'ol/source';
-import { setCustomFunction, setCustomInitialize, setupTileLoadFunction, NowMap, TmsMap } from './source_ex';
+import {setCustomFunction, setCustomInitialize, setupTileLoadFunction, NowMap, TmsMap, MapboxMap} from './source_ex';
 import { createFromTemplates, expandUrl } from 'ol/tileurlfunction';
 import { MERC_MAX, tileSize, transPng } from './const_ex';
 import { HistMap_tin } from './histmap_tin';
@@ -105,7 +105,7 @@ export class HistMap extends setCustomFunction(XYZ) {
         options.tileUrlFunction = options.tileUrlFunction || function(coord) {
             const z = coord[0];
             const x = coord[1];
-            const y = -1 * coord[2] - 1;
+            const y = coord[2];
             if (x * tileSize * Math.pow(2, this.maxZoom - z) >= this.width ||
                 y * tileSize * Math.pow(2, this.maxZoom - z) >= this.height ||
                 x < 0 || y < 0 ) {
@@ -149,8 +149,9 @@ export class HistMap extends setCustomFunction(XYZ) {
         options = Object.assign(options, commonOptions);
         options.label = options.label || options.year;
         options.sourceID = options.sourceID || options.mapID;
-        if (options.maptype == 'base' || options.maptype == 'overlay') {
-            const targetSrc = options.maptype == 'base' ? NowMap : TmsMap;
+        if (options.maptype == 'base' || options.maptype == 'overlay' || options.maptype == 'mapbox') {
+            const targetSrc = options.maptype == 'base' ? NowMap :
+                options.maptype == 'overlay' ? TmsMap : MapboxMap;
             if (options.zoom_restriction) {
                 options.maxZoom = options.maxZoom || options.merc_max_zoom;
                 options.minZoom = options.minZoom || options.merc_min_zoom;

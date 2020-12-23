@@ -11,7 +11,7 @@ import { defaults, DragRotateAndZoom } from 'ol/interaction';
 import { altKeyOnly } from 'ol/events/condition';
 import { HistMap_tin } from './histmap_tin'; // eslint-disable-line no-unused-vars
 import { HistMap } from './histmap';
-import { NowMap, TmsMap, META_KEYS } from './source_ex';
+import { NowMap, TmsMap, MapboxMap, META_KEYS } from './source_ex';
 import { recursiveRound } from './math_ex';
 
 export class MaplatApp extends EventTarget {
@@ -23,11 +23,18 @@ export class MaplatApp extends EventTarget {
         app.initialRestore = {};
 
         const appid = app.appid = appOption.appid || 'sample';
+        let mapboxgl;
+        if (appOption.mapboxgl) {
+            mapboxgl = appOption.mapboxgl;
+            if (appOption.mapboxToken) {
+                mapboxgl.accessToken = appOption.mapboxToken;
+            }
+        }
         app.mapDiv = appOption.div || 'map_div';
         app.mapDivDocument = document.querySelector(`#${app.mapDiv}`); // eslint-disable-line no-undef
         app.mapDivDocument.classList.add('maplat');
         app.logger = new Logger(appOption.debug ? LoggerLevel.ALL : LoggerLevel.INFO);
-        app.cacheEnable = appOption.cache_enable || false;
+        app.enableCache = appOption.cache_enable || appOption.enable_cache || false;
         app.stateBuffer = {};
         app.translateUI = appOption.translate_ui;
         const setting = appOption.setting;
@@ -168,6 +175,26 @@ export class MaplatApp extends EventTarget {
                         div: backDiv
                     });
                 }
+                if (mapboxgl) {
+                    const mapboxDiv = `${app.mapDiv}_mapbox`;
+                    newElem = createElement(`<div id="${mapboxDiv}" class="map" style="top:0; left:0; right:0; bottom:0; ` +
+                        `position:absolute;visibility:hidden;"></div>`)[0];
+                    app.mapDivDocument.insertBefore(newElem, app.mapDivDocument.firstChild);
+
+                    app.mapboxMap = new mapboxgl.Map({
+                        attributionControl: false,
+                        boxZoom: false,
+                        container: mapboxDiv,
+                        doubleClickZoom: false,
+                        dragPan: false,
+                        dragRotate: false,
+                        interactive: false,
+                        keyboard: false,
+                        pitchWithRotate: false,
+                        scrollZoom: false,
+                        touchZoomRotate: false
+                    });
+                }
 
                 app.startFrom = app.appData.start_from;
                 app.lines = [];
@@ -240,7 +267,7 @@ export class MaplatApp extends EventTarget {
                         zoom_restriction: zoomRestriction,
                         merc_min_zoom: mercMinZoom,
                         merc_max_zoom: mercMaxZoom,
-                        cache_enable: app.cacheEnable,
+                        enable_cache: app.enableCache,
                         translator(fragment) {
                             return app.translate(fragment);
                         }
@@ -261,6 +288,12 @@ export class MaplatApp extends EventTarget {
                         for (let i = 0; i < sources.length; i++) {
                             const source = sources[i];
                             source._map = app.mapObject;
+                            if (source instanceof MapboxMap) {
+                                if (!app.mapboxMap) {
+                                    throw "To use mapbox gl based base map, you have to make Maplat object with specifying 'mapboxgl' option."
+                                }
+                                source.mapboxMap = app.mapboxMap;
+                            }
                             cache.push(source);
                             app.cacheHash[source.sourceID] = source;
                         }
@@ -1193,6 +1226,14 @@ export class MaplatApp extends EventTarget {
             app.i18n.addResource(lang, 'translation', key, dataFragment[lang]);
         }
         return app.t(key, {ns: 'translation', nsSeparator: '__X__yX__X__'});
+    }
+
+    remove() {
+        if (this.mapboxMap) {
+            this.mapboxMap.remove();
+        }
+        this.mapDivDocument.innerHTML = '';
+        this.mapDivDocument.classList.remove('maplat');
     }
 }
 
