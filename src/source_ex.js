@@ -556,8 +556,8 @@ export function setCustomInitialize(self, options) {
   self.mercatorXShift = options.mercatorXShift;
   self.mercatorYShift = options.mercatorYShift;
   self.weiwudi = options.weiwudi;
-  if (options.envelopeLnglats) {
-    const lngLats = options.envelopeLnglats;
+  if (options.envelopeLngLats) {
+    const lngLats = options.envelopeLngLats;
     const mercs = lngLats.map(lnglat =>
       transform(lnglat, "EPSG:4326", "EPSG:3857")
     );
@@ -899,7 +899,7 @@ export async function registerMapToSW(options) {
   setting.height = options.height;
   setting.maxZoom = options.maxZoom;
   setting.minZoom = options.minZoom;
-  const lngLats = options.envelopeLnglats;
+  const lngLats = options.envelopeLngLats;
   if (lngLats) {
     const minMax = lngLats.reduce(
       (prev, curr) => {
