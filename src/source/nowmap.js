@@ -8,13 +8,10 @@ import {setCustomFunction, setCustomInitialize, setupTileLoadFunction} from "../
 export class NowMap extends setCustomFunction(OSM) {
     constructor(optOptions) {
         const options = normalizeArg(Object.assign({}, optOptions || {}));
-        if (!options.image_extention) options.image_extention = options.imageExtention || 'jpg';
-        if (options.map_id) {
-            if (options.map_id != 'osm') {
-                options.url = options.url ||
-                    (options.tms ? `tiles/${options.map_id}/{z}/{x}/{-y}.${options.image_extention}` :
-                        `tiles/${options.map_id}/{z}/{x}/{y}.${options.image_extention}`);
-            }
+        if (!options.image_extention) options.image_extention = 'jpg';
+        if (options.map_id && !options.url && !options.urls) {
+            options.url = (options.tms ? `tiles/${options.map_id}/{z}/{x}/{-y}.${options.image_extention}` :
+                `tiles/${options.map_id}/{z}/{x}/{y}.${options.image_extention}`);
         }
         super(options);
         if (options.map_id) {
@@ -25,10 +22,7 @@ export class NowMap extends setCustomFunction(OSM) {
     }
 
     static async createAsync(options) {
-        return new Promise(((resolve, reject) => { // eslint-disable-line no-unused-vars
-            const obj = new NowMap(options);
-            resolve(obj);
-        })).catch((err) => { throw err; });
+        return new NowMap(options);
     }
 
     xy2MercAsync(xy) {

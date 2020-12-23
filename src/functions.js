@@ -67,6 +67,7 @@ export function normalizeArg(options) {
         envelopLngLats: 'envelope_lnglats',
         mercatorXShift: 'mercator_x_shift',
         mercatorYShift: 'mercator_y_shift',
+        imageExtention: 'image_extention',
         mapID: 'map_id',
         sourceID: 'map_id',
         source_id: 'map_id'

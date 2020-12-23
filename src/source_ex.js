@@ -24,7 +24,12 @@ const baseDict = {
         },
         attr: '©︎ OpenStreetMap contributors',
         maptype: 'base',
-        thumbnail: pointer['osm.jpg']
+        thumbnail: pointer['osm.jpg'],
+        urls: [
+            'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png'
+        ]
     },
     gsi: {
         map_id: 'gsi',
@@ -68,6 +73,26 @@ const baseDict = {
 
 export function setCustomFunction(target) {
     class Mixin extends target {
+        async getTileCacheSizeAsync() {
+            const self = this;
+            if (!self.weiwudi) return 0;
+            try {
+                const stats = await self.weiwudi.stats();
+                return stats.size;
+            } catch(e) {
+                return 0;
+            }
+        }
+
+        async clearTileCacheAsync() {
+            const self = this;
+            if (!self.weiwudi) return;
+            try {
+                await self.weiwudi.clean();
+            } catch(e) {
+            }
+        }
+
         getMap() {
             return this._map;
         }
@@ -424,34 +449,6 @@ const META_KEYS_OPTION = ['title', 'official_title', 'author', 'created_at', 'er
     'contributor', 'mapper', 'license', 'data_license', 'attr', 'data_attr',
     'reference', 'description'];
 
-export function registerMapToSW(options) {
-    options = normalizeArg(options);
-    const setting = {};
-    setting.type = options.type || 'xyz';
-    const enable_cache = (setting.type === 'xyz' || setting.type === 'wmts') ? options.enable_cache : false;
-    setting.url = options.url;
-    setting.maxZoom = options.max_zoom;
-    setting.minZoom = options.min_zoom;
-    const lngLats = options.envelope_lnglats;
-    if (lngLats) {
-        const minMax = lngLats.reduce((prev, curr) => {
-            prev[0] = prev[0] > curr[0] ? curr[0] : prev[0];
-            prev[1] = prev[1] < curr[0] ? curr[0] : prev[1];
-            prev[2] = prev[2] > curr[1] ? curr[1] : prev[2];
-            prev[3] = prev[3] < curr[1] ? curr[1] : prev[3];
-            return prev;
-        }, [Infinity, -Infinity, Infinity, -Infinity]);
-        ['minLng', 'maxLng', 'minLat', 'maxLat'].map((key, index) => {
-            setting[key] = minMax[index];
-        });
-    }
-    if (!enable_cache) return;
-    try {
-        //return Weiwudi.registerMap(options.map_id, setting);
-    } catch (e) { // eslint-disable-line no-empty
-    }
-}
-
 export function setCustomInitialize(self, options) {
     options = normalizeArg(options);
     self.mapID = options.map_id;
@@ -465,6 +462,7 @@ export function setCustomInitialize(self, options) {
     self.iconTemplate = options.icon_template;
     self.mercatorXShift = options.mercator_x_shift;
     self.mercatorYShift = options.mercator_y_shift;
+    self.weiwudi = options.weiwudi;
     if (options.envelope_lnglats) {
         const lngLats = options.envelope_lnglats;
         const mercs = lngLats.map((lnglat) => transform(lnglat, 'EPSG:4326', 'EPSG:3857'));
@@ -625,10 +623,22 @@ export async function mapSourceFactory(options, commonOptions) {
         if (options.translator) {
             options.url = options.translator(options.url);
         }
-        return targetSrc.createAsync(options).then((obj) => obj.initialWait.then(() => obj));
+        if (!options.image_extention) options.image_extention = 'jpg';
+        if (options.map_id && !options.url && !options.urls) {
+            options.url = (options.tms ? `tiles/${options.map_id}/{z}/{x}/{-y}.${options.image_extention}` :
+                `tiles/${options.map_id}/{z}/{x}/{y}.${options.image_extention}`);
+        }
+        options.weiwudi = await registerMapToSW(options);
+        if (options.weiwudi) {
+            options.url = options.weiwudi.url;
+            delete options.urls;
+        }
+        const obj = await targetSrc.createAsync(options);
+        await obj.initialWait;
+        return obj;
     } else if (options.noload) {
         options.merc_max_zoom = options.merc_min_zoom = undefined;
-        return Promise.resolve(new HistMap_tin(options));
+        return new HistMap_tin(options);
     }
 
     return new Promise(((resolve, reject) => {
@@ -637,7 +647,7 @@ export async function mapSourceFactory(options, commonOptions) {
         xhr.open('GET', url, true);
         xhr.responseType = 'json';
 
-        xhr.onload = function(e) { // eslint-disable-line no-unused-vars
+        xhr.onload = async function(e) { // eslint-disable-line no-unused-vars
             if (this.status == 200 || this.status == 0 ) { // 0 for UIWebView
                 try {
                     let resp = this.response;
@@ -657,27 +667,50 @@ export async function mapSourceFactory(options, commonOptions) {
                             options.min_zoom = options.min_zoom || options.merc_min_zoom;
                         }
                         options.zoom_restriction = options.merc_max_zoom = options.merc_min_zoom = undefined;
-                        targetSrc.createAsync(options).then((obj) => {
-                            obj.initialWait.then(() => {
+                        try {
+                            if (!options.image_extention) options.image_extention = 'jpg';
+                            if (options.map_id && !options.url && !options.urls) {
+                                options.url = (options.tms ? `tiles/${options.map_id}/{z}/{x}/{-y}.${options.image_extention}` :
+                                    `tiles/${options.map_id}/{z}/{x}/{y}.${options.image_extention}`);
+                            }
+                            options.weiwudi = await registerMapToSW(options);
+                            if (options.weiwudi) {
+                                options.url = options.weiwudi.url;
+                                delete options.urls;
+                            }
+                            const obj = await targetSrc.createAsync(options);
+                            try {
+                                await obj.initialWait;
                                 resolve(obj);
-                            }).catch((err) => { // eslint-disable-line no-unused-vars
+                            } catch(e) {
                                 resolve(obj);
-                            });
-                        }).catch((err) => {
-                            reject(err);
-                        });
+                            }
+                        } catch(e) {
+                            reject(e);
+                        }
                         return;
                     }
 
-                    HistMap_tin.createAsync(options).then((obj) => {
-                        obj.initialWait.then(() => {
+                    try {
+                        if (!options.image_extention) options.image_extention = 'jpg';
+                        if (options.map_id && !options.url && !options.urls) {
+                            options.url = `tiles/${options.map_id}/{z}/{x}/{y}.${options.image_extention}`;
+                        }
+                        options.weiwudi = await registerMapToSW(options);
+                        if (options.weiwudi) {
+                            options.url = options.weiwudi.url;
+                            delete options.urls;
+                        }
+                        const obj = await HistMap_tin.createAsync(options);
+                        try {
+                            await obj.initialWait;
                             obj.mapSize2MercSize(resolve);
-                        }).catch((err) => { // eslint-disable-line no-unused-vars
+                        } catch(e) {
                             obj.mapSize2MercSize(resolve);
-                        });
-                    }).catch((err) => {
-                        reject(err);
-                    });
+                        }
+                    } catch(e) {
+                        reject(e);
+                    }
                 } catch(err) {
                     reject(err);
                 }
@@ -688,6 +721,35 @@ export async function mapSourceFactory(options, commonOptions) {
         };
         xhr.send();
     }));
+}
+
+export async function registerMapToSW(options) {
+    const setting = {};
+    if (options.maptype === 'mapbox' || !options.enable_cache) return;
+    else if (options.maptype === 'base' || options.maptype === 'overlay') setting.type = 'wmts';
+    else setting.type = 'xyz';
+    setting.url = options.urls ? options.urls : options.url;
+    setting.width = options.width;
+    setting.height = options.height;
+    setting.maxZoom = options.max_zoom;
+    setting.minZoom = options.min_zoom;
+    const lngLats = options.envelope_lnglats;
+    if (lngLats) {
+        const minMax = lngLats.reduce((prev, curr) => {
+            prev[0] = prev[0] > curr[0] ? curr[0] : prev[0];
+            prev[1] = prev[1] < curr[0] ? curr[0] : prev[1];
+            prev[2] = prev[2] > curr[1] ? curr[1] : prev[2];
+            prev[3] = prev[3] < curr[1] ? curr[1] : prev[3];
+            return prev;
+        }, [Infinity, -Infinity, Infinity, -Infinity]);
+        ['minLng', 'maxLng', 'minLat', 'maxLat'].map((key, index) => {
+            setting[key] = minMax[index];
+        });
+    }
+    try {
+        //return Weiwudi.registerMap(options.map_id, setting);
+    } catch (e) { // eslint-disable-line no-empty
+    }
 }
 
 

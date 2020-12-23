@@ -22,74 +22,61 @@ export class HistMap_tin extends HistMap {
     }
 
     static async createAsync(options) {
-        return new Promise(((resolve, reject) => { // eslint-disable-line no-unused-vars
-            const obj = new HistMap_tin(options);
-            const proj = new Projection({
-                code: `Illst:${obj.mapID}`,
-                extent: [0.0, 0.0, obj.width, obj.height],
-                units: 'm'
-            });
-            addProjection(proj);
-            addCoordinateTransforms(proj, 'EPSG:3857', (xy) => obj.tins[0].transform(xy, false), (merc) => obj.tins[0].transform(merc, true));
-            transformDirect('EPSG:4326', proj);
-            let prom;
-            if (options.compiled) {
-                obj.tins[0].setCompiled(options.compiled);
-                prom = Promise.resolve();
-            } else {
-                obj.tins[0].setPoints(options.gcps);
-                obj.tins[0].setEdges(options.edges);
-                prom = obj.tins[0].updateTinAsync();
-            }
-            prom.then(() => {
-                let proms;
-                if (options.sub_maps) {
-                    const promarray = options.sub_maps.map((sub_map, i) => {
-                        let prom;
-                        const index = i + 1;
-                        const projKey = `Illst:${obj.mapID}#${index}`;
-                        const tin = obj.tins[index] = new Tin({
-                            bounds: sub_map.bounds,
-                            strictMode: options.strictMode,
-                            vertexMode: options.vertexMode,
-                            importance: sub_map.importance,
-                            priority: sub_map.priority
-                        });
-                        const proj = new Projection({
-                            code: projKey,
-                            extent: [tin.xy[0], tin.xy[1], tin.wh[0], tin.wh[1]],
-                            units: 'm'
-                        });
-                        addProjection(proj);
-                        addCoordinateTransforms(proj, 'EPSG:3857', (xy) => tin.transform(xy, false, true), (merc) => tin.transform(merc, true, true));
-                        transformDirect('EPSG:4326', proj);
-                        if (sub_map.compiled) {
-                            tin.setCompiled(sub_map.compiled);
-                            prom = Promise.resolve();
-                        } else {
-                            tin.setPoints(sub_map.gcps);
-                            tin.setEdges(sub_map.edges);
-                            prom = tin.updateTinAsync();
-                        }
-                        return prom.then(() => {
-                            const xyBounds = Object.assign([], sub_map.bounds);
-                            xyBounds.push(sub_map.bounds[0]);
-                            const mercBounds = xyBounds.map((xy) => tin.transform(xy, false));
-                            const xyBoundsPolygon = polygon([xyBounds]);
-                            const mercBoundsPolygon = polygon([mercBounds]);
-                            tin.xyBounds = xyBoundsPolygon;
-                            tin.mercBounds = mercBoundsPolygon;
-                        });
-                    });
-                    proms = Promise.all(promarray);
-                } else {
-                    proms = Promise.resolve();
-                }
-                proms.then(() => {
-                    resolve(obj);
+        const obj = new HistMap_tin(options);
+        const proj = new Projection({
+            code: `Illst:${obj.mapID}`,
+            extent: [0.0, 0.0, obj.width, obj.height],
+            units: 'm'
+        });
+        addProjection(proj);
+        addCoordinateTransforms(proj, 'EPSG:3857', (xy) => obj.tins[0].transform(xy, false), (merc) => obj.tins[0].transform(merc, true));
+        transformDirect('EPSG:4326', proj);
+        if (options.compiled) {
+            obj.tins[0].setCompiled(options.compiled);
+        } else {
+            obj.tins[0].setPoints(options.gcps);
+            obj.tins[0].setEdges(options.edges);
+            await obj.tins[0].updateTinAsync();
+        }
+
+        if (options.sub_maps) {
+            const promarray = options.sub_maps.map(async (sub_map, i) => {
+                const index = i + 1;
+                const projKey = `Illst:${obj.mapID}#${index}`;
+                const tin = obj.tins[index] = new Tin({
+                    bounds: sub_map.bounds,
+                    strictMode: options.strictMode,
+                    vertexMode: options.vertexMode,
+                    importance: sub_map.importance,
+                    priority: sub_map.priority
                 });
+                const proj = new Projection({
+                    code: projKey,
+                    extent: [tin.xy[0], tin.xy[1], tin.wh[0], tin.wh[1]],
+                    units: 'm'
+                });
+                addProjection(proj);
+                addCoordinateTransforms(proj, 'EPSG:3857', (xy) => tin.transform(xy, false, true), (merc) => tin.transform(merc, true, true));
+                transformDirect('EPSG:4326', proj);
+                if (sub_map.compiled) {
+                    tin.setCompiled(sub_map.compiled);
+                } else {
+                    tin.setPoints(sub_map.gcps);
+                    tin.setEdges(sub_map.edges);
+                    await tin.updateTinAsync();
+                }
+
+                const xyBounds = Object.assign([], sub_map.bounds);
+                xyBounds.push(sub_map.bounds[0]);
+                const mercBounds = xyBounds.map((xy) => tin.transform(xy, false));
+                const xyBoundsPolygon = polygon([xyBounds]);
+                const mercBoundsPolygon = polygon([mercBounds]);
+                tin.xyBounds = xyBoundsPolygon;
+                tin.mercBounds = mercBoundsPolygon;
             });
-        }));
+            await Promise.all(promarray);
+        }
+        return obj;
     }
 
     xy2MercAsync_specifyLayer(xy, layerId) {
