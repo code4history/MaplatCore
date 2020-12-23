@@ -184,8 +184,14 @@ export class HistMap extends setCustomFunction(XYZ) {
                         }
                         if (!options.maptype) options.maptype = 'maplat';
 
-                        if (options.maptype == 'base' || options.maptype == 'overlay') {
-                            const targetSrc = options.maptype == 'base' ? NowMap : TmsMap;
+                        if (options.maptype == 'base' || options.maptype == 'overlay' || options.maptype == 'mapbox') {
+                            const targetSrc = options.maptype == 'base' ? NowMap :
+                                options.maptype == 'overlay' ? TmsMap : MapboxMap;
+                            if (options.zoom_restriction) {
+                                options.maxZoom = options.maxZoom || options.merc_max_zoom;
+                                options.minZoom = options.minZoom || options.merc_min_zoom;
+                            }
+                            options.zoom_restriction = options.merc_max_zoom = options.merc_min_zoom = undefined;
                             targetSrc.createAsync(options).then((ret) => {
                                 resolve(ret);
                             }).catch((err) => {

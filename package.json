@@ -1,6 +1,6 @@
 {
   "name": "@maplat/core",
-  "version": "0.6.3",
+  "version": "0.6.6-0",
   "description": "Maplat is the cool Historical Map/Illustrated Map Viewer API.\nIt can transform each map coordinates with nonlinear but homeomorphic projection and makes possible that the maps can collaborate with GPS/accurate maps, without distorting original maps.",
   "main": "src/index.js",
   "module": "src/index.js",
@@ -18,7 +18,6 @@
     "build": "npm run less_build && npm run www_build && npm run zip_build",
     "lint": "eslint src/",
     "test": "jasmine",
-    "prepublishOnly": "npm run lint && npm run build",
     "preversion": "npm run lint",
     "version": "npm run build && git add -A"
   },
@@ -41,7 +40,6 @@
     "@turf/turf": "^5.1.6",
     "i18next": "^17.0.14",
     "i18next-xhr-backend": "^3.1.2",
-    "mapbox-gl": "^1.6.1",
     "ol": "^6.1.1"
   },
   "devDependencies": {
