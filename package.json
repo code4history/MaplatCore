@@ -1,6 +1,6 @@
 {
   "name": "@maplat/core",
-  "version": "0.6.6-6",
+  "version": "0.6.6-7",
   "description": "Maplat is the cool Historical Map/Illustrated Map Viewer API.\nIt can transform each map coordinates with nonlinear but homeomorphic projection and makes possible that the maps can collaborate with GPS/accurate maps, without distorting original maps.",
   "main": "src/index.js",
   "module": "src/index.js",
@@ -24,7 +24,7 @@
     "lint": "eslint src/",
     "test": "jasmine",
     "preversion": "npm run lint",
-    "version": "npm run build && git add -A",
+    "version": "npm run build && npm run build_packed && git add -A",
     "freeze": "node bin/freezer.js -s parts -f src/freeze_images.js -u src/pointer_images.js"
   },
   "repository": {
@@ -64,9 +64,9 @@
     "gulp-cli": "^2.2.0",
     "gulp-zip": "^4.2.0",
     "jasmine": "^3.5.0",
-    "less": "^3.11.0",
+    "less": "^3.11.1",
     "less-plugin-clean-css": "^1.5.1",
-    "webpack": "^4.41.5",
-    "webpack-cli": "^3.3.10"
+    "webpack": "^4.41.6",
+    "webpack-cli": "^3.3.11"
   }
 }

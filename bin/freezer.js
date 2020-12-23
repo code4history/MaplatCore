@@ -45,7 +45,7 @@ if (!args.options.source || !args.options.freeze_output ||
 const fromPath = path.resolve(process.cwd(), args.options.source);
 const toFPath = path.resolve(process.cwd(), args.options.freeze_output);
 
-const files = fs.readdirSync(fromPath).filter((file) => file.indexOf('.') !== 0);
+const files = fs.readdirSync(fromPath).filter((file) => file.indexOf('.') !== 0).sort();
 const fLists = {};
 if (!args.options.i18n) {
     const uLists = {};
