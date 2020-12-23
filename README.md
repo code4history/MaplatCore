@@ -48,7 +48,7 @@ npm install @maplat/core
         // Make clicked pin as selected and show click event detail in console.
         var moveFlag = false;
         app.addEventListener('clickMarker', function(evt) {
-            app.selectMarker(evt.detail.namespace_id);
+            app.selectMarker(evt.detail.namespaceID);
             console.log(evt);
         });
         // show detail of map click event in console.
@@ -67,7 +67,7 @@ npm install @maplat/core
         app.addPoiLayer('main2');
         app.addPoiLayer('morioka_ndl2#main2', {
             icon: 'parts/blue_marker.png',
-            selected_icon: 'parts/red_marker.png'
+            selectedIcon: 'parts/red_marker.png'
         });
         // Button function: Show all markers in the layer named 'main'.
         document.getElementById('show').addEventListener('click', function(e) {
@@ -106,7 +106,7 @@ npm install @maplat/core
                 lat: 39.701599,
                 lng: 141.151995,
                 name: "桜山神社",
-                selected_icon: undefined,
+                selectedIcon: undefined,
                 start: 1749
             }, 'main2');
         });
@@ -124,7 +124,7 @@ npm install @maplat/core
                 lat: 39.69994722,
                 lng: 141.1501111,
                 name: {ja: "盛岡城", en: "Morioka Castle"},
-                selected_icon: undefined,
+                selectedIcon: undefined,
                 start: 1598
             }, 'morioka_ndl2#main2');
         });

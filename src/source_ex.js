@@ -13,7 +13,7 @@ import {HistMap_tin} from "./source/histmap_tin";
 
 const baseDict = {
     osm: {
-        map_id: 'osm',
+        mapID: 'osm',
         title: {
             ja: 'オープンストリートマップ',
             en: 'OpenStreetMap'
@@ -32,7 +32,7 @@ const baseDict = {
         ]
     },
     gsi: {
-        map_id: 'gsi',
+        mapID: 'gsi',
         title: {
             ja: '地理院地図',
             en: 'Geospatial Information Authority of Japan Map'
@@ -47,11 +47,11 @@ const baseDict = {
         },
         maptype: 'base',
         url: 'https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',
-        max_zoom: 18,
+        maxZoom: 18,
         thumbnail: pointer['gsi.jpg']
     },
     gsi_ortho: {
-        map_id: 'gsi_ortho',
+        mapID: 'gsi_ortho',
         title: {
             ja: '地理院地図オルソ航空写真',
             en: 'Geospatial Information Authority of Japan Ortho aerial photo'
@@ -66,7 +66,7 @@ const baseDict = {
         },
         maptype: 'base',
         url: 'https://cyberjapandata.gsi.go.jp/xyz/ort/{z}/{x}/{y}.jpg',
-        max_zoom: 18,
+        maxZoom: 18,
         thumbnail: pointer['gsi_ortho.jpg']
     }
 };
@@ -89,8 +89,7 @@ export function setCustomFunction(target) {
             if (!self.weiwudi) return;
             try {
                 await self.weiwudi.clean();
-            } catch(e) {
-            }
+            } catch(e) {} // eslint-disable-line no-empty
         }
 
         getMap() {
@@ -380,7 +379,7 @@ export function setCustomFunction(target) {
                     name: this.officialTitle || this.title,
                     namespace: this.mapID
                 });
-                return data.namespace_id;
+                return data.namespaceID;
             }
         }
 
@@ -451,20 +450,20 @@ const META_KEYS_OPTION = ['title', 'official_title', 'author', 'created_at', 'er
 
 export function setCustomInitialize(self, options) {
     options = normalizeArg(options);
-    self.mapID = options.map_id;
-    self.homePosition = options.home_position;
-    self.mercZoom = options.merc_zoom;
+    self.mapID = options.mapID;
+    self.homePosition = options.homePosition;
+    self.mercZoom = options.mercZoom;
     self.label = options.label;
-    self.maxZoom = options.max_zoom;
-    self.minZoom = options.min_zoom;
-    self.poiTemplate = options.poi_template;
-    self.poiStyle = options.poi_style;
-    self.iconTemplate = options.icon_template;
-    self.mercatorXShift = options.mercator_x_shift;
-    self.mercatorYShift = options.mercator_y_shift;
+    self.maxZoom = options.maxZoom;
+    self.minZoom = options.minZoom;
+    self.poiTemplate = options.poiTemplate;
+    self.poiStyle = options.poiStyle;
+    self.iconTemplate = options.iconTemplate;
+    self.mercatorXShift = options.mercatorXShift;
+    self.mercatorYShift = options.mercatorYShift;
     self.weiwudi = options.weiwudi;
-    if (options.envelope_lnglats) {
-        const lngLats = options.envelope_lnglats;
+    if (options.envelopeLnglats) {
+        const lngLats = options.envelopeLnglats;
         const mercs = lngLats.map((lnglat) => transform(lnglat, 'EPSG:4326', 'EPSG:3857'));
         mercs.push(mercs[0]);
         self.envelope = polygon([mercs]);
@@ -481,16 +480,16 @@ export function setCustomInitialize(self, options) {
         self.thumbnail = options.thumbnail;
         resolve();
     }) : new Promise((resolve) => {
-        self.thumbnail = `./tmbs/${options.map_id}.jpg`;
+        self.thumbnail = `./tmbs/${options.mapID}.jpg`;
         fetch(self.thumbnail).then((response) => { // eslint-disable-line no-undef
             if(response.ok) {
                 resolve();
             } else {
-                self.thumbnail = `./tmbs/${options.map_id}_menu.jpg`;
+                self.thumbnail = `./tmbs/${options.mapID}_menu.jpg`;
                 resolve();
             }
         }).catch((error) => { // eslint-disable-line no-unused-vars
-            self.thumbnail = `./tmbs/${options.map_id}_menu.jpg`;
+            self.thumbnail = `./tmbs/${options.mapID}_menu.jpg`;
             resolve();
         });
     }).catch((error) => { // eslint-disable-line no-unused-vars
@@ -507,7 +506,7 @@ export function setupTileLoadFunction(target) {
         const tileLoadFn = self.getTileLoadFunction();
         const tImageLoader = function(tileCoord, src, tCanv, sx, sy, sw, sh) {
             return new Promise((resolve, reject) => { // eslint-disable-line no-unused-vars
-                const loader = function(src, fallback, skipDB) {
+                const loader = function(src, fallback) {
                     if (numLoadingTiles === 0) {
                         // console.log('loading');
                     }
@@ -615,18 +614,18 @@ export async function mapSourceFactory(options, commonOptions) {
     if (options.maptype == 'base' || options.maptype == 'overlay' || options.maptype == 'mapbox') {
         const targetSrc = options.maptype == 'base' ? NowMap :
             options.maptype == 'overlay' ? TmsMap : MapboxMap;
-        if (options.zoom_restriction) {
-            options.max_zoom = options.max_zoom || options.merc_max_zoom;
-            options.min_zoom = options.min_zoom || options.merc_min_zoom;
+        if (options.zoomRestriction) {
+            options.maxZoom = options.maxZoom || options.mercMaxZoom;
+            options.minZoom = options.minZoom || options.mercMinZoom;
         }
-        options.zoom_restriction = options.merc_max_zoom = options.merc_min_zoom = undefined;
+        options.zoomRestriction = options.mercMaxZoom = options.mercMinZoom = undefined;
         if (options.translator) {
             options.url = options.translator(options.url);
         }
-        if (!options.image_extention) options.image_extention = 'jpg';
-        if (options.map_id && !options.url && !options.urls) {
-            options.url = (options.tms ? `tiles/${options.map_id}/{z}/{x}/{-y}.${options.image_extention}` :
-                `tiles/${options.map_id}/{z}/{x}/{y}.${options.image_extention}`);
+        if (!options.imageExtention) options.imageExtention = 'jpg';
+        if (options.mapID && !options.url && !options.urls) {
+            options.url = (options.tms ? `tiles/${options.mapID}/{z}/{x}/{-y}.${options.imageExtention}` :
+                `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtention}`);
         }
         options.weiwudi = await registerMapToSW(options);
         if (options.weiwudi) {
@@ -637,12 +636,12 @@ export async function mapSourceFactory(options, commonOptions) {
         await obj.initialWait;
         return obj;
     } else if (options.noload) {
-        options.merc_max_zoom = options.merc_min_zoom = undefined;
+        options.mercMaxZoom = options.mercMinZoom = undefined;
         return new HistMap_tin(options);
     }
 
     return new Promise(((resolve, reject) => {
-        const url = options.setting_file || `maps/${options.map_id}.json`;
+        const url = options.settingFile || `maps/${options.mapID}.json`;
         const xhr = new XMLHttpRequest(); // eslint-disable-line no-undef
         xhr.open('GET', url, true);
         xhr.responseType = 'json';
@@ -662,16 +661,16 @@ export async function mapSourceFactory(options, commonOptions) {
                     if (options.maptype == 'base' || options.maptype == 'overlay' || options.maptype == 'mapbox') {
                         const targetSrc = options.maptype == 'base' ? NowMap :
                             options.maptype == 'overlay' ? TmsMap : MapboxMap;
-                        if (options.zoom_restriction) {
-                            options.max_zoom = options.max_zoom || options.merc_max_zoom;
-                            options.min_zoom = options.min_zoom || options.merc_min_zoom;
+                        if (options.zoomRestriction) {
+                            options.maxZoom = options.maxZoom || options.mercMaxZoom;
+                            options.minZoom = options.minZoom || options.mercMinZoom;
                         }
-                        options.zoom_restriction = options.merc_max_zoom = options.merc_min_zoom = undefined;
+                        options.zoomRestriction = options.mercMaxZoom = options.mercMinZoom = undefined;
                         try {
-                            if (!options.image_extention) options.image_extention = 'jpg';
-                            if (options.map_id && !options.url && !options.urls) {
-                                options.url = (options.tms ? `tiles/${options.map_id}/{z}/{x}/{-y}.${options.image_extention}` :
-                                    `tiles/${options.map_id}/{z}/{x}/{y}.${options.image_extention}`);
+                            if (!options.imageExtention) options.imageExtention = 'jpg';
+                            if (options.mapID && !options.url && !options.urls) {
+                                options.url = (options.tms ? `tiles/${options.mapID}/{z}/{x}/{-y}.${options.imageExtention}` :
+                                    `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtention}`);
                             }
                             options.weiwudi = await registerMapToSW(options);
                             if (options.weiwudi) {
@@ -692,9 +691,9 @@ export async function mapSourceFactory(options, commonOptions) {
                     }
 
                     try {
-                        if (!options.image_extention) options.image_extention = 'jpg';
-                        if (options.map_id && !options.url && !options.urls) {
-                            options.url = `tiles/${options.map_id}/{z}/{x}/{y}.${options.image_extention}`;
+                        if (!options.imageExtention) options.imageExtention = 'jpg';
+                        if (options.mapID && !options.url && !options.urls) {
+                            options.url = `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtention}`;
                         }
                         options.weiwudi = await registerMapToSW(options);
                         if (options.weiwudi) {
@@ -725,15 +724,15 @@ export async function mapSourceFactory(options, commonOptions) {
 
 export async function registerMapToSW(options) {
     const setting = {};
-    if (options.maptype === 'mapbox' || !options.enable_cache) return;
+    if (options.maptype === 'mapbox' || !options.enableCache) return;
     else if (options.maptype === 'base' || options.maptype === 'overlay') setting.type = 'wmts';
     else setting.type = 'xyz';
     setting.url = options.urls ? options.urls : options.url;
     setting.width = options.width;
     setting.height = options.height;
-    setting.maxZoom = options.max_zoom;
-    setting.minZoom = options.min_zoom;
-    const lngLats = options.envelope_lnglats;
+    setting.maxZoom = options.maxZoom;
+    setting.minZoom = options.minZoom;
+    const lngLats = options.envelopeLnglats;
     if (lngLats) {
         const minMax = lngLats.reduce((prev, curr) => {
             prev[0] = prev[0] > curr[0] ? curr[0] : prev[0];

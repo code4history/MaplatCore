@@ -8,7 +8,7 @@
           135,
           35
         ],
-        "namespace_id": "id1"
+        "namespaceID": "id1"
       },
       {
         "title": "Title2",
@@ -17,11 +17,11 @@
           36
         ],
         "id": "main_0",
-        "namespace_id": "main_0"
+        "namespaceID": "main_0"
       }
     ],
     "id": "main",
-    "namespace_id": "main",
+    "namespaceID": "main",
     "name": "Test1",
     "__nextId": 1
   }

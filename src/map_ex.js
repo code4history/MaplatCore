@@ -9,6 +9,7 @@ import { NowMap } from "./source/nowmap";
 import { getDistance, randomFromCenter } from './math_ex';
 import {MapboxLayer} from "./layer_mapbox";
 import pointer from './pointer_images';
+import {normalizeArg} from "./functions";
 
 const gpsStyle = new Style({
     image: new Icon(({
@@ -58,7 +59,7 @@ const markerDefaultStyle = new Style({
 
 export class MaplatMap extends Map {
     constructor(optOptions) {
-        optOptions = optOptions || {};
+        optOptions = normalizeArg(optOptions || {});
         const vectorLayer = new layerVector({
             source: new sourceVector({
                 wrapX: false
@@ -106,9 +107,9 @@ export class MaplatMap extends Map {
             ],
             target: optOptions.div,
             view: new View({
-                center: optOptions.default_center || [0, 0],
-                zoom: optOptions.default_zoom || 2,
-                rotation: optOptions.default_rotation || 0,
+                center: optOptions.defaultCenter || [0, 0],
+                zoom: optOptions.defaultZoom || 2,
+                rotation: optOptions.defaultRotation || 0,
                 multiWorld: true
             })
         };
@@ -119,9 +120,9 @@ export class MaplatMap extends Map {
         super(options);
         this._overlay_group = overlayLayer;
 
-        this.fakeGps = optOptions.fake_gps;
-        this.fakeRadius = optOptions.fake_radius;
-        this.homePosition = optOptions.home_position;
+        this.fakeGps = optOptions.fakeGps;
+        this.fakeRadius = optOptions.fakeRadius;
+        this.homePosition = optOptions.homePosition;
 
         const view = this.getView();
         const self = this;
