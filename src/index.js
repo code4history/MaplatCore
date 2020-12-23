@@ -30,7 +30,6 @@ import {
   normalizePoi
 } from "./normalize_pois";
 import { createIconSet, createHtmlFromTemplate } from "./template_works";
-import "../less/core.less";
 
 export class MaplatApp extends EventTarget {
   // Maplat App Class
