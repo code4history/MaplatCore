@@ -9,6 +9,7 @@ module.exports = {
           browsers: ["defaults", "ie 11"]
         }
       }
-    ]
+    ],
+    "@babel/preset-typescript"
   ]
 }
