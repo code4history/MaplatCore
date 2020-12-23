@@ -118,9 +118,9 @@ export class MaplatMap extends Map {
         super(options);
         this._overlay_group = overlayLayer;
 
-        this.fake_gps = optOptions.fake_gps;
-        this.fake_radius = optOptions.fake_radius;
-        this.home_position = optOptions.home_position;
+        this.fakeGps = optOptions.fake_gps;
+        this.fakeRadius = optOptions.fake_radius;
+        this.homePosition = optOptions.home_position;
 
         const view = this.getView();
         const self = this;
@@ -336,9 +336,9 @@ export class MaplatMap extends Map {
                     const source = overlayLayer ? overlayLayer.getSource() : map.getLayers().item(0).getSource();
                     let lnglat = geolocation.getPosition();
                     let acc = geolocation.getAccuracy();
-                    if (map.fake_gps && getDistance(map.home_position, lnglat) > map.fake_gps) {
-                        lnglat = [randomFromCenter(map.home_position[0], 0.001),
-                            randomFromCenter(map.home_position[1], 0.001)];
+                    if (map.fakeGps && getDistance(map.homePosition, lnglat) > map.fakeGps) {
+                        lnglat = [randomFromCenter(map.homePosition[0], 0.001),
+                            randomFromCenter(map.homePosition[1], 0.001)];
                         acc = randomFromCenter(15.0, 10);
                     }
                     let gpsVal = {lnglat, acc};
@@ -354,9 +354,9 @@ export class MaplatMap extends Map {
                 geolocation.on('error', (evt) => { // eslint-disable-line no-unused-vars
                     const source = map.getLayers().item(0).getSource();
                     let gpsVal = null;
-                    if (map.fake_gps) {
-                        const lnglat = [randomFromCenter(map.home_position[0], 0.001),
-                            randomFromCenter(map.home_position[1], 0.001)];
+                    if (map.fakeGps) {
+                        const lnglat = [randomFromCenter(map.homePosition[0], 0.001),
+                            randomFromCenter(map.homePosition[1], 0.001)];
                         const acc = randomFromCenter(15.0, 10);
                         gpsVal = {lnglat, acc};
                     }

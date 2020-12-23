@@ -5,6 +5,7 @@ import { polygon, point, lineString } from '@turf/helpers';
 import centroid from '@turf/centroid';
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
 import lineIntersect from '@turf/line-intersect';
+import { normalizeLayers, addIdToPoi, normalizeLayer, normalizePoi } from './normalize_pois';
 
 export function setCustomFunction(target) {
     class Mixin extends target {
@@ -161,9 +162,9 @@ export function setCustomFunction(target) {
 
         goHome() {
             this.setViewpointRadian({
-                longitude: this.home_position[0],
-                latitude: this.home_position[1],
-                mercZoom: this.merc_zoom,
+                longitude: this.homePosition[0],
+                latitude: this.homePosition[1],
+                mercZoom: this.mercZoom,
                 rotation: 0
             });
         }
@@ -361,87 +362,10 @@ export function setCustomFunction(target) {
             })).then((xys) => [xys]);
         }
 
-        resolvePois(pois) {
-            const self = this;
-            if (!pois) pois = [];
-            let promise;
-            if (typeof pois == 'string') {
-                promise = new Promise(((resolve, reject) => {
-                    const url = pois.match(/\//) ? pois : `pois/${pois}`;
-
-                    const xhr = new XMLHttpRequest(); // eslint-disable-line no-undef
-                    xhr.open('GET', url, true);
-                    xhr.responseType = 'json';
-
-                    xhr.onload = function (e) { // eslint-disable-line no-unused-vars
-                        if (this.status == 200 || this.status == 0) { // 0 for UIWebView
-                            try {
-                                let resp = this.response;
-                                if (typeof resp != 'object') resp = JSON.parse(resp);
-                                self.pois = resp;
-                                resolve();
-                            } catch (err) {
-                                reject(err);
-                            }
-                        } else {
-                            reject('Fail to load poi json');
-                        }
-                    };
-                    xhr.send();
-                }));
-            } else {
-                self.pois = pois;
-                promise = Promise.resolve();
-            }
-
-            return promise.then(() => {
-                if (Array.isArray(self.pois)) {
-                    self.pois = {
-                        main: {
-                            namespace_id: `${self.sourceID}#main`,
-                            name: self.officialTitle || self.title,
-                            pois: self.pois
-                        }
-                    };
-                    self.addIdToPoi('main');
-                } else {
-                    if (!self.pois['main']) {
-                        self.pois['main'] = {};
-                    }
-                    Object.keys(self.pois).map((key) => {
-                        if (!self.pois[key].name) {
-                            if (key == 'main') {
-                                self.pois[key].name = self.officialTitle || self.title;
-                            } else {
-                                self.pois[key].name = key;
-                            }
-                        }
-                        if (!self.pois[key].pois) {
-                            self.pois[key].pois = [];
-                        }
-                        self.pois[key].namespace_id = `${self.sourceID}#${key}`;
-                        self.addIdToPoi(key);
-                    });
-                }
-            });
-        }
-
-        addIdToPoi(clusterId) {
-            const self = this;
-            if (!self.pois[clusterId]) return;
-            const cluster = self.pois[clusterId];
-            const pois = cluster.pois;
-            if (!cluster.__nextId) {
-                cluster.__nextId = 0;
-            }
-            pois.map((poi) => {
-                if (!poi.id) {
-                    poi.id = `${clusterId}_${cluster.__nextId}`;
-                    cluster.__nextId++;
-                }
-                if (!poi.namespace_id) {
-                    poi.namespace_id = `${self.sourceID}#${poi.id}`;
-                }
+        async resolvePois(pois) {
+            this.pois = await normalizeLayers(pois || [], {
+                name: this.officialTitle || this.title,
+                namespace: this.sourceID
             });
         }
 
@@ -463,8 +387,12 @@ export function setCustomFunction(target) {
                 clusterId = 'main';
             }
             if (this.pois[clusterId]) {
+                data = normalizePoi(data);
                 this.pois[clusterId]['pois'].push(data);
-                this.addIdToPoi(clusterId);
+                addIdToPoi(this.pois, clusterId, {
+                    name: this.officialTitle || this.title,
+                    namespace: this.sourceID
+                });
                 return data.namespace_id;
             }
         }
@@ -512,22 +440,10 @@ export function setCustomFunction(target) {
         addPoiLayer(id, data) {
             if (id == 'main') return;
             if (this.pois[id]) return;
-            if (!data) {
-                data = {
-                    namespace_id: `${this.sourceID}#${id}`,
-                    name: id,
-                    pois: []
-                };
-            } else {
-                if (!data.name) {
-                    data.name = id;
-                }
-                if (!data.pois) {
-                    data.pois = [];
-                }
-                data.namespace_id = `${this.sourceID}#${id}`;
-            }
-            this.pois[id] = data;
+            this.pois[id] = normalizeLayer(data || [], id, {
+                name: this.officialTitle || this.title,
+                namespace: this.sourceID
+            });
         }
 
         removePoiLayer(id) {
@@ -542,17 +458,22 @@ export function setCustomFunction(target) {
 export const META_KEYS = ['title', 'officialTitle', 'author', 'createdAt', 'era',
     'contributor', 'mapper', 'license', 'dataLicense', 'attr', 'dataAttr',
     'reference', 'description'];
+const META_KEYS_OPTION = ['title', 'official_title', 'author', 'created_at', 'era',
+    'contributor', 'mapper', 'license', 'data_license', 'attr', 'data_attr',
+    'reference', 'description'];
 
 export function setCustomInitialize(self, options) {
-    self.sourceID = options.sourceID;
-    self.map_option = options.map_option || {};
-    self.home_position = options.home_position;
-    self.merc_zoom = options.merc_zoom;
+    self.sourceID = options.source_id || options.sourceID;
+    self.homePosition = options.home_position;
+    self.mercZoom = options.merc_zoom;
     self.label = options.label;
-    self.maxZoom = options.maxZoom;
-    self.minZoom = options.minZoom;
-    if (options.envelopeLngLats || options.envelopLngLats) {
-        const lngLats = options.envelopeLngLats || options.envelopLngLats;
+    self.maxZoom = options.max_zoom || options.maxZoom;
+    self.minZoom = options.min_zoom || options.minZoom;
+    self.poiTemplate = options.poi_template;
+    self.poiStyle = options.poi_style;
+    self.iconTemplate = options.icon_template;
+    if (options.envelope_lnglats || options.envelopeLngLats || options.envelopLngLats) {
+        const lngLats = options.envelope_lnglats || options.envelopeLngLats || options.envelopLngLats;
         const mercs = lngLats.map((lnglat) => transform(lnglat, 'EPSG:4326', 'EPSG:3857'));
         mercs.push(mercs[0]);
         self.envelope = polygon([mercs]);
@@ -561,23 +482,24 @@ export function setCustomInitialize(self, options) {
 
     for (let i = 0; i < META_KEYS.length; i++) {
         const key = META_KEYS[i];
-        self[key] = options[key];
+        const option_key = META_KEYS_OPTION[i];
+        self[key] = options[option_key] || options[key];
     }
 
     const thumbWait = options.thumbnail ? new Promise((resolve) => {
         self.thumbnail = options.thumbnail;
         resolve();
     }) : new Promise((resolve) => {
-        self.thumbnail = `./tmbs/${options.mapID || options.sourceID}.jpg`;
+        self.thumbnail = `./tmbs/${options.map_id || options.mapID || options.source_id || options.sourceID}.jpg`;
         fetch(self.thumbnail).then((response) => { // eslint-disable-line no-undef
             if(response.ok) {
                 resolve();
             } else {
-                self.thumbnail = `./tmbs/${options.mapID || options.sourceID}_menu.jpg`;
+                self.thumbnail = `./tmbs/${options.map_id || options.mapID || options.source_id || options.sourceID}_menu.jpg`;
                 resolve();
             }
         }).catch((error) => { // eslint-disable-line no-unused-vars
-            self.thumbnail = `./tmbs/${options.mapID || options.sourceID}_menu.jpg`;
+            self.thumbnail = `./tmbs/${options.map_id || options.mapID || options.source_id || options.sourceID}_menu.jpg`;
             resolve();
         });
     }).catch((error) => { // eslint-disable-line no-unused-vars
@@ -680,18 +602,19 @@ export function setupTileLoadFunction(target) {
 
 export class NowMap extends setCustomFunction(OSM) {
     constructor(optOptions) {
-        const options = optOptions || {};
-        if (!options.imageExtention) options.imageExtention = 'jpg';
-        if (options.mapID) {
-            if (options.mapID != 'osm') {
+        const options = Object.assign({}, optOptions || {});
+        if (!options.image_extention) options.image_extention = options.imageExtention || 'jpg';
+        if (options.map_id || options.mapID) {
+            if ((options.map_id || options.mapID) != 'osm') {
                 options.url = options.url ||
-                    (options.tms ? `tiles/${options.mapID}/{z}/{x}/{-y}.${options.imageExtention}` :
-                        `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtention}`);
+                    (options.tms ? `tiles/${options.map_id || options.mapID}/{z}/{x}/{-y}.${options.image_extention}` :
+                        `tiles/${options.map_id || options.mapID}/{z}/{x}/{y}.${options.image_extention}`);
             }
         }
+        if (!options.maxZoom) options.maxZoom = options.max_zoom;
         super(options);
-        if (options.mapID) {
-            this.mapID = options.mapID;
+        if (options.map_id || options.mapID) {
+            this.mapID = options.map_id || options.mapID;
         }
         setCustomInitialize(this, options);
         setupTileLoadFunction(this);

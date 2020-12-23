@@ -42,12 +42,12 @@ let baseDict;
 
 export class HistMap extends setCustomFunction(XYZ) {
     constructor(optOptions) {
-        const options = optOptions || {};
+        const options = Object.assign({}, optOptions || {});
 
         options.wrapX = false;
-        if (!options.imageExtention) options.imageExtention = 'jpg';
-        if (options.mapID) {
-            options.url = options.url || `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtention}`;
+        if (!options.image_extention) options.image_extention = options.imageExtention || 'jpg';
+        if (options.map_id || options.mapID) {
+            options.url = options.url || `tiles/${options.map_id || options.mapID}/{z}/{x}/{y}.${options.image_extention || options.imageExtention}`;
         }
 
         const zW = Math.log2(options.width/tileSize);
@@ -67,8 +67,8 @@ export class HistMap extends setCustomFunction(XYZ) {
         };
 
         super(options);
-        if (options.mapID) {
-            this.mapID = options.mapID;
+        if (options.map_id || options.mapID) {
+            this.mapID = options.map_id || options.mapID;
         }
         if (options.urls) {
             this._tileUrlFunction =
@@ -96,7 +96,7 @@ export class HistMap extends setCustomFunction(XYZ) {
     static createAsync(options, commonOptions) {
         baseDict = {
             osm: {
-                mapID: 'osm',
+                map_id: 'osm',
                 title: {
                     ja: 'オープンストリートマップ',
                     en: 'OpenStreetMap'
@@ -110,7 +110,7 @@ export class HistMap extends setCustomFunction(XYZ) {
                 thumbnail: pointer['osm.jpg']
             },
             gsi: {
-                mapID: 'gsi',
+                map_id: 'gsi',
                 title: {
                     ja: '地理院地図',
                     en: 'Geospatial Information Authority of Japan Map'
@@ -125,11 +125,11 @@ export class HistMap extends setCustomFunction(XYZ) {
                 },
                 maptype: 'base',
                 url: 'https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',
-                maxZoom: 18,
+                max_zoom: 18,
                 thumbnail: pointer['gsi.jpg']
             },
             gsi_ortho: {
-                mapID: 'gsi_ortho',
+                map_id: 'gsi_ortho',
                 title: {
                     ja: '地理院地図オルソ航空写真',
                     en: 'Geospatial Information Authority of Japan Ortho aerial photo'
@@ -144,7 +144,7 @@ export class HistMap extends setCustomFunction(XYZ) {
                 },
                 maptype: 'base',
                 url: 'https://cyberjapandata.gsi.go.jp/xyz/ort/{z}/{x}/{y}.jpg',
-                maxZoom: 18,
+                max_zoom: 18,
                 thumbnail: pointer['gsi_ortho.jpg']
             }
         };
@@ -155,13 +155,13 @@ export class HistMap extends setCustomFunction(XYZ) {
 
         options = Object.assign(options, commonOptions);
         options.label = options.label || options.year;
-        options.sourceID = options.sourceID || options.mapID;
+        options.source_id = options.source_id || options.sourceID || options.map_id || options.mapID;
         if (options.maptype == 'base' || options.maptype == 'overlay' || options.maptype == 'mapbox') {
             const targetSrc = options.maptype == 'base' ? NowMap :
                 options.maptype == 'overlay' ? TmsMap : MapboxMap;
             if (options.zoom_restriction) {
-                options.maxZoom = options.maxZoom || options.merc_max_zoom;
-                options.minZoom = options.minZoom || options.merc_min_zoom;
+                options.max_zoom = options.max_zoom || options.maxZoom || options.merc_max_zoom;
+                options.min_zoom = options.min_zoom || options.minZoom || options.merc_min_zoom;
             }
             options.zoom_restriction = options.merc_max_zoom = options.merc_min_zoom = undefined;
             if (options.translator) {
@@ -174,7 +174,7 @@ export class HistMap extends setCustomFunction(XYZ) {
         }
 
         return new Promise(((resolve, reject) => {
-            const url = options.setting_file || `maps/${options.mapID}.json`;
+            const url = options.setting_file || `maps/${options.map_id || options.mapID}.json`;
             const xhr = new XMLHttpRequest(); // eslint-disable-line no-undef
             xhr.open('GET', url, true);
             xhr.responseType = 'json';
@@ -195,8 +195,8 @@ export class HistMap extends setCustomFunction(XYZ) {
                             const targetSrc = options.maptype == 'base' ? NowMap :
                                 options.maptype == 'overlay' ? TmsMap : MapboxMap;
                             if (options.zoom_restriction) {
-                                options.maxZoom = options.maxZoom || options.merc_max_zoom;
-                                options.minZoom = options.minZoom || options.merc_min_zoom;
+                                options.max_zoom = options.max_zoom || options.maxZoom || options.merc_max_zoom;
+                                options.min_zoom = options.min_zoom || options.minZoom || options.merc_min_zoom;
                             }
                             options.zoom_restriction = options.merc_max_zoom = options.merc_min_zoom = undefined;
                             targetSrc.createAsync(options).then((obj) => {
