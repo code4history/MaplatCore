@@ -15,10 +15,10 @@
     "npm_build": "babel src/ --out-dir lib/ --source-maps",
     "www_build": "webpack",
     "zip_build": "gulp zip",
-    "build": "npm run less_build; npm run www_build; npm run zip_build",
+    "build": "npm run less_build && npm run www_build && npm run zip_build",
     "lint": "eslint src/",
     "test": "jasmine",
-    "prepublish": "npm run lint; npm run build"
+    "prepublish": "npm run lint && npm run build"
   },
   "repository": {
     "type": "git",
