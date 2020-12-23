@@ -4,8 +4,8 @@ import { createIconSet, createHtmlFromTemplate } from "../src/template_works";
 describe("template_works test", () => {
   for (let i = 1; i <= 3; i++) {
     const testin = require(`./input/temtest${i}.json`);
-    let testexIcn;
-    let testexPoi;
+    let testexIcn: any;
+    let testexPoi: any;
     try {
       testexIcn = require(`./expect/temicntest${i}.json`);
       testexPoi = require(`./expect/tempoitest${i}.json`);

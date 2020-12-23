@@ -4,7 +4,7 @@ import { normalizeLayers } from "../src/normalize_pois";
 describe("normalizePois test", () => {
   for (let i = 1; i <= 3; i++) {
     const testin = require(`./input/poitest${i}.json`);
-    let testex;
+    let testex: any;
     try {
       testex = require(`./expect/poitest${i}.json`);
     } catch (e) {
