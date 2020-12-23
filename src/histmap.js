@@ -94,7 +94,7 @@ export class HistMap extends setCustomFunction(XYZ) {
         return transPng;
     }
 
-    static createAsync(options, commonOptions) {
+    static async createAsync(options, commonOptions) {
         baseDict = {
             osm: {
                 map_id: 'osm',

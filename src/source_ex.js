@@ -7,6 +7,7 @@ import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
 import lineIntersect from '@turf/line-intersect';
 import { normalizeLayers, addIdToPoi, normalizeLayer, normalizePoi } from './normalize_pois';
 import { normalizeArg } from "./functions";
+import Weiwudi from "weiwudi";
 
 export function setCustomFunction(target) {
     class Mixin extends target {
@@ -366,6 +367,34 @@ const META_KEYS_OPTION = ['title', 'official_title', 'author', 'created_at', 'er
     'contributor', 'mapper', 'license', 'data_license', 'attr', 'data_attr',
     'reference', 'description'];
 
+export function registerMapToSW(options) {
+    options = normalizeArg(options);
+    const setting = {};
+    setting.type = options.type || 'xyz';
+    const enable_cache = (setting.type === 'xyz' || setting.type === 'wmts') ? options.enable_cache : false;
+    setting.url = options.url;
+    setting.maxZoom = options.max_zoom;
+    setting.minZoom = options.min_zoom;
+    const lngLats = options.envelope_lnglats;
+    if (lngLats) {
+        const minMax = lngLats.reduce((prev, curr) => {
+            prev[0] = prev[0] > curr[0] ? curr[0] : prev[0];
+            prev[1] = prev[1] < curr[0] ? curr[0] : prev[1];
+            prev[2] = prev[2] > curr[1] ? curr[1] : prev[2];
+            prev[3] = prev[3] < curr[1] ? curr[1] : prev[3];
+            return prev;
+        }, [Infinity, -Infinity, Infinity, -Infinity]);
+        ['minLng', 'maxLng', 'minLat', 'maxLat'].map((key, index) => {
+            setting[key] = minMax[index];
+        });
+    }
+    if (!enable_cache) return;
+    try {
+        //return Weiwudi.registerMap(options.map_id, setting);
+    } catch (e) { // eslint-disable-line no-empty
+    }
+}
+
 export function setCustomInitialize(self, options) {
     options = normalizeArg(options);
     self.mapID = options.map_id;
@@ -541,7 +570,7 @@ export class NowMap extends setCustomFunction(OSM) {
         setupTileLoadFunction(this);
     }
 
-    static createAsync(options) {
+    static async createAsync(options) {
         return new Promise(((resolve, reject) => { // eslint-disable-line no-unused-vars
             const obj = new NowMap(options);
             resolve(obj);
@@ -593,7 +622,7 @@ export class TmsMap extends NowMap {
         super(options);
     }
 
-    static createAsync(options) {
+    static async createAsync(options) {
         const promise = new Promise(((resolve, reject) => { // eslint-disable-line no-unused-vars
             const obj = new TmsMap(options);
             resolve(obj);
@@ -610,7 +639,7 @@ export class MapboxMap extends NowMap {
         this.mapboxMap = options.mapboxMap;
     }
 
-    static createAsync(options) {
+    static async createAsync(options) {
         const promise = new Promise(((resolve, reject) => { // eslint-disable-line no-unused-vars
             const obj = new MapboxMap(options);
             resolve(obj);
