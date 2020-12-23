@@ -746,10 +746,12 @@ export async function registerMapToSW(options) {
             setting[key] = minMax[index];
         });
     }
+    let ret;
     try {
-        //return Weiwudi.registerMap(options.map_id, setting);
+        ret = await Weiwudi.registerMap(options.map_id, setting);
     } catch (e) { // eslint-disable-line no-empty
     }
+    return ret;
 }
 
 
