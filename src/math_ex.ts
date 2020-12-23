@@ -2,7 +2,10 @@ export function randomFromCenter(center: number, pow: number): number {
   return center + (Math.random() - 0.5) * pow;
 }
 
+// TODO: recursive `val` type
 export function recursiveRound(val: any, decimal: number): any {
+  // TODO: replace from `instanceof Array` to `Array.isArray`
+  // ref: https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/isArray#instanceof_vs_isArray
   if (val instanceof Array)
     return val.map(item => recursiveRound(item, decimal));
   const decVal = Math.pow(10, decimal);
