@@ -1,25 +1,27 @@
 {
   "name": "@maplat/core",
-  "version": "0.6.6-0",
+  "version": "0.6.6-1",
   "description": "Maplat is the cool Historical Map/Illustrated Map Viewer API.\nIt can transform each map coordinates with nonlinear but homeomorphic projection and makes possible that the maps can collaborate with GPS/accurate maps, without distorting original maps.",
   "main": "src/index.js",
   "module": "src/index.js",
+  "bin": {
+    "freezer": "bin/freezer.js"
+  },
   "files": [
     "src/",
-    "dist/",
-    "less/",
-    "parts/"
+    "dist/"
   ],
   "scripts": {
     "less_build": "lessc --clean-css less/core.less dist/maplat_core.css",
     "npm_build": "babel src/ --out-dir lib/ --source-maps",
     "www_build": "webpack",
     "zip_build": "gulp zip",
-    "build": "npm run less_build && npm run www_build && npm run zip_build",
+    "build": "npm run freeze && npm run less_build && npm run www_build && npm run zip_build",
     "lint": "eslint src/",
     "test": "jasmine",
     "preversion": "npm run lint",
-    "version": "npm run build && git add -A"
+    "version": "npm run build && git add -A",
+    "freeze": "node bin/freezer.js -s parts -o src/freeze_images.js"
   },
   "repository": {
     "type": "git",
@@ -38,27 +40,29 @@
   "dependencies": {
     "@maplat/tin": "^0.6.3",
     "@turf/turf": "^5.1.6",
-    "i18next": "^17.0.14",
-    "i18next-xhr-backend": "^3.1.2",
+    "argv": "0.0.2",
+    "base64-img": "^1.0.4",
+    "i18next": "^17.3.1",
+    "i18next-xhr-backend": "^3.2.2",
     "ol": "^6.1.1"
   },
   "devDependencies": {
-    "@babel/cli": "^7.5.5",
-    "@babel/core": "^7.5.5",
-    "@babel/polyfill": "^7.4.4",
-    "@babel/preset-env": "^7.5.5",
-    "@babel/register": "^7.5.5",
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.8.4",
+    "@babel/polyfill": "^7.8.3",
+    "@babel/preset-env": "^7.8.4",
+    "@babel/register": "^7.8.3",
     "babel-loader": "^8.0.6",
-    "core-js": "^3.2.1",
-    "eslint": "^6.3.0",
+    "core-js": "^3.6.4",
+    "eslint": "^6.8.0",
     "fs-extra": "^8.1.0",
     "gulp": "^4.0.2",
     "gulp-cli": "^2.2.0",
     "gulp-zip": "^4.2.0",
-    "jasmine": "^3.4.0",
-    "less": "^3.10.3",
+    "jasmine": "^3.5.0",
+    "less": "^3.11.0",
     "less-plugin-clean-css": "^1.5.1",
-    "webpack": "^4.39.3",
-    "webpack-cli": "^3.3.7"
+    "webpack": "^4.41.5",
+    "webpack-cli": "^3.3.10"
   }
 }

@@ -7,13 +7,14 @@ import { Style, Icon, Stroke, Fill } from 'ol/style';
 import {MapboxMap, NowMap} from './source_ex';
 import { getDistance, randomFromCenter } from './math_ex';
 import {MapboxLayer} from "./layer_mapbox";
+import freeze from './freeze_images';
 
 const gpsStyle = new Style({
     image: new Icon(({
         anchor: [0.5, 0.5],
         anchorXUnits: 'fraction',
         anchorYUnits: 'fraction',
-        src: 'parts/bluedot.png'
+        src: freeze['bluedot.png']
     }))
 });
 
@@ -22,7 +23,7 @@ const gpsHideStyle = new Style({
         anchor: [0.5, 0.5],
         anchorXUnits: 'fraction',
         anchorYUnits: 'fraction',
-        src: 'parts/bluedot_transparent.png'
+        src: freeze['bluedot_transparent.png']
     }))
 });
 
@@ -31,7 +32,7 @@ const gpsSubStyle = new Style({
         anchor: [0.5, 0.5],
         anchorXUnits: 'fraction',
         anchorYUnits: 'fraction',
-        src: 'parts/bluedot_small.png'
+        src: freeze['bluedot_small.png']
     }))
 });
 
@@ -50,7 +51,7 @@ const markerDefaultStyle = new Style({
         anchor: [0.5, 1.0],
         anchorXUnits: 'fraction',
         anchorYUnits: 'fraction',
-        src: 'parts/defaultpin.png'
+        src: freeze['defaultpin.png']
     }))
 });
 
