@@ -9,9 +9,12 @@ import { transform } from 'ol/proj';
 import { MaplatMap } from './map_ex';
 import { defaults, DragRotateAndZoom } from 'ol/interaction';
 import { altKeyOnly } from 'ol/events/condition';
-import { HistMap_tin } from './histmap_tin'; // eslint-disable-line no-unused-vars
-import { HistMap } from './histmap';
-import { NowMap, TmsMap, MapboxMap, META_KEYS } from './source_ex';
+import { HistMap_tin } from './source/histmap_tin'; // eslint-disable-line no-unused-vars
+import { HistMap } from './source/histmap';
+import { NowMap } from "./source/nowmap";
+import { TmsMap } from "./source/tmsmap";
+import { MapboxMap } from "./source/mapboxmap";
+import { META_KEYS } from './source_ex';
 import { recursiveRound } from './math_ex';
 import pointer from './pointer_images';
 import locales from './freeze_locales';
