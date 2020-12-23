@@ -3,21 +3,20 @@
 
 const path = require("path");
 const { merge } = require("webpack-merge");
-const common = require("./webpack.config.common.js");
+const standard = require("./webpack.config.standard.js");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
-module.exports = merge(common, {
+module.exports = merge(standard, {
+  mode: 'development',
+  devtool: 'eval',
+
   entry: {
-    "maplat_core": path.resolve(__dirname, "../tmpl/web-bridge_packed.js")
+    "maplat_core": path.resolve(__dirname, "../tmpl/web-bridge.js")
   },
 
   output: {
-    path: path.resolve(__dirname, "../dist_packed"),
-    filename: '[name].js'
-  },
-
-  devServer: {
-    openPage: "index_packed.html",
+    path: path.resolve(__dirname, "../dist"),
+    filename: '[name].js',
   },
 
   plugins: [new HtmlWebpackPlugin({ template: "./public/index.html" })],

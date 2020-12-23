@@ -1,4 +1,5 @@
 import { MaplatApp } from "../src/index_packed";
+import "../less/core.less"
 
 const Maplat = window.Maplat = {};
 

@@ -1,8 +1,14 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
 
 const path = require("path");
 const { BannerPlugin } = require("webpack");
 const pjson = require("../package.json");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
+const TerserPlugin = require("terser-webpack-plugin");
 
 const port = process.env.PORT || 8888;
 
@@ -14,19 +20,60 @@ module.exports = {
     new BannerPlugin({
       banner: `${pjson.name} v${pjson.version} | ${pjson.author} | license: ${pjson.license}`
     }),
+    new CleanWebpackPlugin(),
+    new ForkTsCheckerWebpackPlugin({
+      eslint: {
+        files: "./{src,spec}/**/*.{js,ts}"
+      }
+    }),
+    new MiniCssExtractPlugin()
   ],
+
   externals: [
     { mapboxgl: "mapboxgl" }
   ],
 
+
+  resolve: {
+    extensions: [".js", ".ts"],
+  },
+
   module: {
     rules: [
       {
-        test: /\.js$/,
+        enforce: "pre",
+        test: /\.(js|ts)?$/,
+        exclude: /node_modules/,
+        loader: "eslint-loader",
+        options: {
+          cache: true
+        }
+      },
+      {
+        test: /\.(js|ts)$/,
         exclude: /node_modules(?![\/\\](@maplat[\/\\]tin|weiwudi))/,
         loader: 'babel-loader',
-      }
+      },
+      {
+        test: /\.less$/,
+        exclude: /node_modules/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          { loader: "css-loader" },
+          { loader: "less-loader" }
+        ]
+      },
     ]
+  },
+
+  target: "web",
+
+  optimization: {
+    minimize: true,
+    minimizer: [
+      new TerserPlugin(),
+      new CssMinimizerPlugin(),
+    ],
   },
 
   devServer: {
