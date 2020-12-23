@@ -1,7 +1,9 @@
 var gulp = require('gulp'),
     fs = require('fs-extra'),
     spawn = require('child_process').spawn,
-    zip = require('gulp-zip');
+    zip = require('gulp-zip'),
+    psaux = require('psaux'),
+    terminate = require('terminate');
 
 gulp.task('server', function() {
     spawn('node', ['server.js'], {
@@ -9,6 +11,23 @@ gulp.task('server', function() {
         detached: true
     }).unref();
     return Promise.resolve();
+});
+
+gulp.task('stopserver', function() {
+    return psaux().then(list => {
+        list.filter(ps => {
+            return ps.command.match(/server\.js/);
+        }).map(ps => {
+            terminate(ps.pid, (err) => {
+                if (err) {
+                    console.log("Terminate server fail: " + err);
+                }
+                else {
+                    console.log('Terminate server done');
+                }
+            });
+        });
+    });
 });
 
 gulp.task('zip', function() {
