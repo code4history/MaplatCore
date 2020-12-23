@@ -6,7 +6,7 @@ module.exports = {
         useBuiltIns: "usage",
         corejs: 3,
         targets: {
-          browsers: ["defaults", "IE >= 11"]
+          browsers: ["defaults", "ie 11"]
         }
       }
     ]
