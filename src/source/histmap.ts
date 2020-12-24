@@ -1,3 +1,4 @@
+// @ts-expect-error ts-migrate(2459) FIXME: Module '"../../node_modules/@types/ol/proj"' decla... Remove this comment to see the full error message
 import { addCoordinateTransforms, addProjection, Projection } from "ol/proj";
 import { MERC_MAX, tileSize, transPng } from "../const_ex";
 import {
@@ -45,7 +46,7 @@ for (let z = 0; z < 9; z++) {
 }
 
 export class HistMap extends setCustomFunction(XYZ) {
-  constructor(optOptions) {
+  constructor(optOptions: any) {
     const options = normalizeArg(Object.assign({}, optOptions || {}));
 
     options.wrapX = false;
@@ -60,28 +61,34 @@ export class HistMap extends setCustomFunction(XYZ) {
 
     options.tileUrlFunction =
       options.tileUrlFunction ||
-      function (coord) {
+      function (coord: any) {
         const z = coord[0];
         const x = coord[1];
         const y = coord[2];
         if (
+          // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
           x * tileSize * Math.pow(2, this.maxZoom - z) >= this.width ||
+          // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
           y * tileSize * Math.pow(2, this.maxZoom - z) >= this.height ||
           x < 0 ||
           y < 0
         ) {
           return transPng;
         }
+        // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         return this._tileUrlFunction(coord);
       };
 
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 0 arguments, but got 1.
     super(options);
     if (options.mapID) {
       this.mapID = options.mapID;
     }
     if (options.urls) {
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
       this._tileUrlFunction = createFromTemplates(options.urls);
     } else if (options.url) {
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
       this._tileUrlFunction = createFromTemplates(expandUrl(options.url));
     }
 
@@ -94,19 +101,19 @@ export class HistMap extends setCustomFunction(XYZ) {
     setupTileLoadFunction(this);
   }
 
-  histMapCoords2Xy(histCoords) {
+  histMapCoords2Xy(histCoords: any) {
     const x = ((histCoords[0] + MERC_MAX) * this._maxxy) / (2 * MERC_MAX);
     const y = ((-histCoords[1] + MERC_MAX) * this._maxxy) / (2 * MERC_MAX);
     return [x, y];
   }
 
-  xy2HistMapCoords(xy) {
+  xy2HistMapCoords(xy: any) {
     const histX = (xy[0] * (2 * MERC_MAX)) / this._maxxy - MERC_MAX;
     const histY = -1 * ((xy[1] * (2 * MERC_MAX)) / this._maxxy - MERC_MAX);
     return [histX, histY];
   }
 
-  insideCheckXy(xy) {
+  insideCheckXy(xy: any) {
     return !(
       xy[0] < 0 ||
       xy[0] > this.width ||
@@ -115,11 +122,11 @@ export class HistMap extends setCustomFunction(XYZ) {
     );
   }
 
-  insideCheckHistMapCoords(histCoords) {
+  insideCheckHistMapCoords(histCoords: any) {
     return this.insideCheckXy(this.histMapCoords2Xy(histCoords));
   }
 
-  modulateXyInside(xy) {
+  modulateXyInside(xy: any) {
     const dx = xy[0] / (this.width / 2) - 1;
     const dy = xy[1] / (this.height / 2) - 1;
     const da = Math.max(Math.abs(dx), Math.abs(dy));
@@ -129,7 +136,7 @@ export class HistMap extends setCustomFunction(XYZ) {
     ];
   }
 
-  modulateHistMapCoordsInside(histCoords) {
+  modulateHistMapCoordsInside(histCoords: any) {
     const xy = this.histMapCoords2Xy(histCoords);
     const ret = this.modulateXyInside(xy);
     return this.xy2HistMapCoords(ret);

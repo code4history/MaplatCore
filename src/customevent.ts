@@ -1,7 +1,8 @@
 import Event from "ol/events/Event";
 
 export default class CustomEvent extends Event {
-  constructor(type, detail) {
+  detail: any;
+  constructor(type: any, detail: any) {
     super(type);
     this.detail = detail;
   }

@@ -1,5 +1,5 @@
 // Async initializer 6: Load pois setting
-export async function nodesLoader(nodes) {
+export async function nodesLoader(nodes: any) {
   if (typeof nodes == "string") {
     return new Promise((resolve, reject) => {
       const url = nodes.match(/\//) ? nodes : `pois/${nodes}`;
@@ -30,7 +30,7 @@ export async function nodesLoader(nodes) {
 }
 
 //pois: Process layers
-export async function normalizeLayers(layers, options) {
+export async function normalizeLayers(layers: any, options: any) {
   // Resolve url cases
   layers = await nodesLoader(layers);
 
@@ -39,7 +39,7 @@ export async function normalizeLayers(layers, options) {
     layers = await Promise.all(layers.map(async x => await nodesLoader(x)));
     //In case of array of FeatureCollection
     if (layers.length > 0 && layers[0].type === "FeatureCollection") {
-      layers = layers.reduce((prev, layer, index) => {
+      layers = layers.reduce((prev: any, layer: any, index: any) => {
         let key = layer.id || (layer.properties && layer.properties.id);
         if (!key) {
           if (index === 0) key = "main";
@@ -78,7 +78,7 @@ export async function normalizeLayers(layers, options) {
 }
 
 //pois: Process layers
-export function normalizeLayer(layer, key, options) {
+export function normalizeLayer(layer: any, key: any, options: any) {
   //In case "layer" is array (Old spec)
   if (Array.isArray(layer)) {
     layer = {
@@ -88,7 +88,7 @@ export function normalizeLayer(layer, key, options) {
   } else if (layer.type === "FeatureCollection") {
     const buffer = Object.assign({}, layer.properties || {});
     if (layer.name) buffer.name = layer.name;
-    buffer.pois = layer.features.map(x => normalizePoi(x));
+    buffer.pois = layer.features.map((x: any) => normalizePoi(x));
     layer = buffer;
   }
 
@@ -108,7 +108,7 @@ export function normalizeLayer(layer, key, options) {
 }
 
 //pois: Process poi
-export function normalizePoi(poi) {
+export function normalizePoi(poi: any) {
   //In case "poi" is GeoJson(Point)
   if (poi.type === "Feature") {
     const buffer = Object.assign({}, poi.properties || {});
@@ -127,14 +127,14 @@ export function normalizePoi(poi) {
 }
 
 // Add id to every pois
-export function addIdToPoi(layers, key, options) {
+export function addIdToPoi(layers: any, key: any, options: any) {
   if (!layers[key]) return;
   const cluster = layers[key];
   const pois = cluster.pois;
   if (!cluster.__nextId) {
     cluster.__nextId = 0;
   }
-  pois.map(poi => {
+  pois.map((poi: any) => {
     if (!poi.id) {
       poi.id = `${key}_${cluster.__nextId}`;
       cluster.__nextId++;

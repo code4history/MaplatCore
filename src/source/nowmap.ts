@@ -10,7 +10,7 @@ import {
 } from "../source_ex";
 
 export class NowMap extends setCustomFunction(OSM) {
-  constructor(optOptions) {
+  constructor(optOptions: any) {
     const options = normalizeArg(Object.assign({}, optOptions || {}));
     if (!options.imageExtention) options.imageExtention = "jpg";
     if (options.mapID && !options.url && !options.urls) {
@@ -18,6 +18,7 @@ export class NowMap extends setCustomFunction(OSM) {
         ? `tiles/${options.mapID}/{z}/{x}/{-y}.${options.imageExtention}`
         : `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtention}`;
     }
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 0 arguments, but got 1.
     super(options);
     if (options.mapID) {
       this.mapID = options.mapID;
@@ -26,11 +27,11 @@ export class NowMap extends setCustomFunction(OSM) {
     setupTileLoadFunction(this);
   }
 
-  static async createAsync(options) {
+  static async createAsync(options: any) {
     return new NowMap(options);
   }
 
-  xy2MercAsync(xy) {
+  xy2MercAsync(xy: any) {
     return new Promise((resolve, _reject) => {
       resolve(xy);
     }).catch(err => {
@@ -38,23 +39,23 @@ export class NowMap extends setCustomFunction(OSM) {
     });
   }
 
-  merc2XyAsync(merc) {
+  merc2XyAsync(merc: any) {
     return new Promise((resolve, _reject) => {
       resolve(merc);
     });
   }
 
-  insideCheckXy(xy) {
+  insideCheckXy(xy: any) {
     if (!this.envelope) return true;
     const point_ = point(xy);
     return booleanPointInPolygon(point_, this.envelope);
   }
 
-  insideCheckHistMapCoords(histCoords) {
+  insideCheckHistMapCoords(histCoords: any) {
     return this.insideCheckXy(histCoords);
   }
 
-  modulateXyInside(xy) {
+  modulateXyInside(xy: any) {
     if (!this.centroid) return xy;
     const expandLine = lineString([xy, this.centroid]);
     const intersect = lineIntersect(this.envelope, expandLine);
@@ -65,7 +66,7 @@ export class NowMap extends setCustomFunction(OSM) {
     }
   }
 
-  modulateHistMapCoordsInside(histCoords) {
+  modulateHistMapCoordsInside(histCoords: any) {
     return this.modulateXyInside(histCoords);
   }
 }

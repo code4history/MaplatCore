@@ -1,8 +1,10 @@
 import { HistMap } from "./histmap";
+// @ts-expect-error ts-migrate(7016) FIXME: Could not find a declaration file for module '@map... Remove this comment to see the full error message
 import Tin from "@maplat/tin";
 import {
   addCoordinateTransforms,
   addProjection,
+  // @ts-expect-error ts-migrate(2459) FIXME: Module '"../../node_modules/@types/ol/proj"' decla... Remove this comment to see the full error message
   Projection,
   toLonLat
 } from "ol/proj";
@@ -12,7 +14,7 @@ import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
 import { MERC_MAX } from "../const_ex";
 
 export class HistMap_tin extends HistMap {
-  constructor(optOptions) {
+  constructor(optOptions: any) {
     const options = optOptions || {};
 
     super(options);
@@ -28,7 +30,7 @@ export class HistMap_tin extends HistMap {
     ];
   }
 
-  static async createAsync(options) {
+  static async createAsync(options: any) {
     const obj = new HistMap_tin(options);
     const proj = new Projection({
       code: `Illst:${obj.mapID}`,
@@ -42,6 +44,7 @@ export class HistMap_tin extends HistMap {
       xy => obj.tins[0].transform(xy, false),
       merc => obj.tins[0].transform(merc, true)
     );
+    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
     transformDirect("EPSG:4326", proj);
     if (options.compiled) {
       obj.tins[0].setCompiled(options.compiled);
@@ -52,7 +55,7 @@ export class HistMap_tin extends HistMap {
     }
 
     if (options.sub_maps) {
-      const promarray = options.sub_maps.map(async (sub_map, i) => {
+      const promarray = options.sub_maps.map(async (sub_map: any, i: any) => {
         const index = i + 1;
         const projKey = `Illst:${obj.mapID}#${index}`;
         const tin = (obj.tins[index] = new Tin({
@@ -74,6 +77,7 @@ export class HistMap_tin extends HistMap {
           xy => tin.transform(xy, false, true),
           merc => tin.transform(merc, true, true)
         );
+        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
         transformDirect("EPSG:4326", proj);
         if (sub_map.compiled) {
           tin.setCompiled(sub_map.compiled);
@@ -85,7 +89,7 @@ export class HistMap_tin extends HistMap {
 
         const xyBounds = Object.assign([], sub_map.bounds);
         xyBounds.push(sub_map.bounds[0]);
-        const mercBounds = xyBounds.map(xy => tin.transform(xy, false));
+        const mercBounds = xyBounds.map((xy: any) => tin.transform(xy, false));
         const xyBoundsPolygon = polygon([xyBounds]);
         const mercBoundsPolygon = polygon([mercBounds]);
         tin.xyBounds = xyBoundsPolygon;
@@ -96,7 +100,7 @@ export class HistMap_tin extends HistMap {
     return obj;
   }
 
-  xy2MercAsync_specifyLayer(xy, layerId) {
+  xy2MercAsync_specifyLayer(xy: any, layerId: any) {
     const self = this;
     const layerKey = `Illst:${self.mapID}${layerId ? `#${layerId}` : ""}`;
     return new Promise((resolve, _reject) => {
@@ -106,7 +110,7 @@ export class HistMap_tin extends HistMap {
     });
   }
 
-  merc2XyAsync_specifyLayer(merc, layerId) {
+  merc2XyAsync_specifyLayer(merc: any, layerId: any) {
     const self = this;
     const layerKey = `Illst:${self.mapID}${layerId ? `#${layerId}` : ""}`;
     return new Promise((resolve, _reject) => {
@@ -116,12 +120,12 @@ export class HistMap_tin extends HistMap {
     });
   }
 
-  xy2MercAsync_returnLayer(xy) {
+  xy2MercAsync_returnLayer(xy: any) {
     const self = this;
     return new Promise((resolve, reject) => {
       const tinSorted = self.tins
-        .map((tin, index) => [index, tin])
-        .sort((a, b) => (a[1].priority < b[1].priority ? 1 : -1));
+        .map((tin: any, index: any) => [index, tin])
+        .sort((a: any, b: any) => (a[1].priority < b[1].priority ? 1 : -1));
 
       for (let i = 0; i < tinSorted.length; i++) {
         const index = tinSorted[i][0];
@@ -143,15 +147,16 @@ export class HistMap_tin extends HistMap {
     });
   }
 
-  merc2XyAsync_returnLayer(merc) {
+  merc2XyAsync_returnLayer(merc: any) {
     const self = this;
     return Promise.all(
       self.tins.map(
-        (tin, index) =>
+        (tin: any, index: any) =>
           new Promise((resolve, reject) => {
             self
               .merc2XyAsync_specifyLayer(merc, index)
               .then(xy => {
+                // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
                 if (index == 0 || booleanPointInPolygon(xy, tin.xyBounds)) {
                   resolve([tin, index, xy]);
                 } else {
@@ -165,22 +170,32 @@ export class HistMap_tin extends HistMap {
       )
     )
       .then(results =>
+        // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
         results
+          // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
           .sort((a, b) => (a[0].priority < b[0].priority ? 1 : -1))
           .reduce((ret, result, priIndex, arry) => {
+            // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
             const tin = result[0];
+            // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
             const index = result[1];
+            // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
             const xy = result[2];
             if (!xy) return ret;
             for (let i = 0; i < priIndex; i++) {
+              // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
               const targetTin = arry[i][0];
+              // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
               const targetIndex = arry[i][1];
               if (
                 targetIndex == 0 ||
                 booleanPointInPolygon(xy, targetTin.xyBounds)
               ) {
+                // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
                 if (ret.length) {
+                  // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
                   const hide = !ret[0];
+                  // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
                   const storedTin = hide ? ret[1][2] : ret[0][2];
                   if (!hide || tin.importance < storedTin.importance) {
                     return ret;
@@ -192,16 +207,19 @@ export class HistMap_tin extends HistMap {
                 }
               }
             }
+            // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
             if (!ret.length || !ret[0]) {
               return [[index, xy, tin]];
             } else {
+              // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
               ret.push([index, xy, tin]);
+              // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
               return ret
-                .sort((a, b) => (a[2].importance < b[2].importance ? 1 : -1))
-                .filter((_row, i) => (i < 2 ? true : false));
+                .sort((a: any, b: any) => (a[2].importance < b[2].importance ? 1 : -1))
+                .filter((_row: any, i: any) => (i < 2 ? true : false));
             }
           }, [])
-          .map(row => {
+          .map((row: any) => {
             if (!row) return;
             return [row[0], row[1]];
           })
@@ -211,13 +229,15 @@ export class HistMap_tin extends HistMap {
       });
   }
 
-  mapSize2MercSize(callback) {
+  mapSize2MercSize(callback: any) {
     const xy = [this.width / 2, this.height / 2];
     const self = this;
     self
       .xy2MercAsync_returnLayer(xy)
       .then(results => {
+        // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
         const index = results[0];
+        // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
         const mercCenter = results[1];
         const dir4 = [
           [xy[0] - 150, xy[1]],
@@ -244,18 +264,24 @@ export class HistMap_tin extends HistMap {
         Promise.all(proms)
           .then(mercs => {
             const delta1 = Math.sqrt(
+              // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
               Math.pow(mercs[0][0] - mercs[1][0], 2) +
+                // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
                 Math.pow(mercs[0][1] - mercs[1][1], 2)
             );
             const delta2 = Math.sqrt(
+              // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
               Math.pow(mercs[2][0] - mercs[3][0], 2) +
+                // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
                 Math.pow(mercs[2][1] - mercs[3][1], 2)
             );
             const delta = (delta1 + delta2) / 2;
             self.mercZoom =
               Math.log((300 * (2 * MERC_MAX)) / 256 / delta) / Math.log(2) - 3;
+            // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
             self.homePosition = toLonLat(mercs[4]);
             self.envelope = polygon([
+              // @ts-expect-error ts-migrate(2322) FIXME: Type 'unknown' is not assignable to type 'Position... Remove this comment to see the full error message
               [mercs[5], mercs[6], mercs[7], mercs[8], mercs[5]]
             ]);
             callback(self);
@@ -270,7 +296,7 @@ export class HistMap_tin extends HistMap {
   }
 
   // 画面サイズと地図ズームから、メルカトル座標上での5座標を取得する。zoom, rotate無指定の場合は自動取得
-  size2MercsAsync(center, zoom, rotate) {
+  size2MercsAsync(center: any, zoom: any, rotate: any) {
     const self = this;
     const cross = this.size2Xys(center, zoom, rotate).map((xy, index) => {
       if (index == 5) return xy;
@@ -279,7 +305,9 @@ export class HistMap_tin extends HistMap {
     const promise = self.xy2MercAsync_returnLayer(cross[0]);
     return promise
       .then(results => {
+        // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
         const index = results[0];
+        // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
         const centerMerc = results[1];
         const promises = cross.map((val, i) => {
           if (i == 5) return val;
@@ -296,7 +324,7 @@ export class HistMap_tin extends HistMap {
   }
 
   // メルカトル5地点情報から地図サイズ情報（中心座標、サイズ、回転）を得る
-  mercs2SizeAsync(mercs, asMerc) {
+  mercs2SizeAsync(mercs: any, asMerc: any) {
     const self = this;
     let promises;
     if (asMerc) {
@@ -307,7 +335,7 @@ export class HistMap_tin extends HistMap {
         const index = result[0];
         const centerXy = result[1];
         return Promise.all(
-          mercs.map((merc, i) => {
+          mercs.map((merc: any, i: any) => {
             if (i == 5) return merc;
             if (i == 0) return Promise.resolve(centerXy);
             return self.merc2XyAsync_specifyLayer(merc, index);
@@ -318,7 +346,7 @@ export class HistMap_tin extends HistMap {
     return promises
       .then(xys => {
         if (!asMerc) {
-          xys = xys.map((xy, i) => {
+          xys = xys.map((xy: any, i: any) => {
             if (i == 5) return xy;
             return self.xy2HistMapCoords(xy);
           });
@@ -330,12 +358,12 @@ export class HistMap_tin extends HistMap {
       });
   }
 
-  mercs2XysAsync(mercs) {
+  mercs2XysAsync(mercs: any) {
     const self = this;
     const promises = self.merc2XyAsync_returnLayer(mercs[0]).then(results => {
       let hide = false;
       return Promise.all(
-        results.map((result, i) => {
+        results.map((result: any, i: any) => {
           if (!result) {
             hide = true;
             return;
@@ -344,7 +372,7 @@ export class HistMap_tin extends HistMap {
           const centerXy = result[1];
           if (i != 0 && !hide) return Promise.resolve([centerXy]);
           return Promise.all(
-            mercs.map((merc, j) => {
+            mercs.map((merc: any, j: any) => {
               if (j == 5) return merc;
               if (j == 0) return Promise.resolve(centerXy);
               return self.merc2XyAsync_specifyLayer(merc, index);
@@ -359,7 +387,8 @@ export class HistMap_tin extends HistMap {
           if (!result) {
             return;
           }
-          return result.map((xy, i) => {
+          // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
+          return result.map((xy: any, i: any) => {
             if (i == 5) return xy;
             return self.xy2HistMapCoords(xy);
           });
@@ -370,12 +399,13 @@ export class HistMap_tin extends HistMap {
       });
   }
 
-  xy2MercAsync(xy) {
+  xy2MercAsync(xy: any) {
     const convertXy = this.histMapCoords2Xy(xy);
+    // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
     return this.xy2MercAsync_returnLayer(convertXy).then(ret => ret[1]);
   }
 
-  merc2XyAsync(merc, ignoreBackside) {
+  merc2XyAsync(merc: any, ignoreBackside: any) {
     const self = this;
     return this.merc2XyAsync_returnLayer(merc)
       .then(ret => {

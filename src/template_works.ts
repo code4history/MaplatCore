@@ -1,7 +1,8 @@
 import template from "lodash.template";
 import { normalizeArg } from "./functions";
 
-export function createIconSet(data, ...ancestors) {
+// @ts-expect-error ts-migrate(7019) FIXME: Rest parameter 'ancestors' implicitly has an 'any[... Remove this comment to see the full error message
+export function createIconSet(data: any, ...ancestors) {
   const dataCopy = normalizeArg(Object.assign({}, data));
   if (dataCopy.icon) return dataCopy;
   const fromAncestor = ancestors.reduce((prev, curr) => {
@@ -23,7 +24,8 @@ export function createIconSet(data, ...ancestors) {
   return dataCopy;
 }
 
-export function createHtmlFromTemplate(data, ...ancestors) {
+// @ts-expect-error ts-migrate(7019) FIXME: Rest parameter 'ancestors' implicitly has an 'any[... Remove this comment to see the full error message
+export function createHtmlFromTemplate(data: any, ...ancestors) {
   data = normalizeArg(data);
   if (data.html) return data;
   return (

@@ -6,7 +6,7 @@ import {
 } from "ol/proj";
 
 // Direct transforamation between 2 projection
-export function transformDirect(xy, src, dist) {
+export function transformDirect(xy: any, src: any, dist: any) {
   if (!dist) {
     dist = src;
     src = xy;
@@ -25,7 +25,7 @@ export function transformDirect(xy, src, dist) {
     func = function (xy) {
       return transform(transform(xy, src, "EPSG:3857"), "EPSG:3857", dist);
     };
-    const invFunc = function (xy) {
+    const invFunc = function (xy: any) {
       return transform(transform(xy, dist, "EPSG:3857"), "EPSG:3857", src);
     };
     addCoordinateTransforms(src, dist, func, invFunc);

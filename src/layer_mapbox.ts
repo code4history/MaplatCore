@@ -2,17 +2,20 @@ import Layer from "ol/layer/Layer";
 import { toLonLat } from "ol/proj";
 
 export class MapboxLayer extends Layer {
-  constructor(options) {
-    const render = function (frameState) {
+  constructor(options: any) {
+    const render = function (frameState: any) {
+      // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
       const source = this.getSource();
       const mbMap = source.mapboxMap;
       mbMap.setStyle(source.style);
       const canvas = mbMap.getCanvas();
       const viewState = frameState.viewState;
 
+      // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
       const visible = this.getVisible();
       canvas.style.display = visible ? "block" : "none";
 
+      // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
       const opacity = this.getOpacity();
       canvas.style.opacity = opacity;
 
