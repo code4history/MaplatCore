@@ -27,8 +27,8 @@
     "freeze": "node bin/freezer.js -s parts -f src/freeze_images.js -u src/pointer_images.js",
     "preinstall": "npx npm-force-resolutions || echo 'ignore'",
     "lint": "npm run lint:eslint && npm run lint:prettier",
-    "lint:eslint": "eslint \"{src,spec}/**/*.js\" --fix",
-    "lint:prettier": "prettier \"./{src,spec}/**/*.js\" --write",
+    "lint:eslint": "eslint \"{src,spec}/**/*.{js,ts}\" --fix",
+    "lint:prettier": "prettier \"./{src,spec}/**/*.{js,ts}\" --write",
     "typecheck": "tsc --noEmit"
   },
   "repository": {
