@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-expect-error ts-migrate(2459) FIXME: Module '"../../node_modules/@types/ol/proj"' decla... Remove this comment to see the full error message
 import { addCoordinateTransforms, addProjection, Projection } from "ol/proj";
 import { MERC_MAX, tileSize, transPng } from "../const_ex";
@@ -79,7 +80,7 @@ export class HistMap extends setCustomFunction(XYZ) {
         return this._tileUrlFunction(coord);
       };
 
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 0 arguments, but got 1.
+    // @ts-expect-error
     super(options);
     if (options.mapID) {
       this.mapID = options.mapID;

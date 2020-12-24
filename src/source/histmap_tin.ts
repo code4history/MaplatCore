@@ -215,7 +215,9 @@ export class HistMap_tin extends HistMap {
               ret.push([index, xy, tin]);
               // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
               return ret
-                .sort((a: any, b: any) => (a[2].importance < b[2].importance ? 1 : -1))
+                .sort((a: any, b: any) =>
+                  a[2].importance < b[2].importance ? 1 : -1
+                )
                 .filter((_row: any, i: any) => (i < 2 ? true : false));
             }
           }, [])

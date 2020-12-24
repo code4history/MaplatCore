@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { OSM } from "ol/source";
 import { normalizeArg } from "../functions";
 import { lineString, point } from "@turf/helpers";
@@ -18,7 +19,7 @@ export class NowMap extends setCustomFunction(OSM) {
         ? `tiles/${options.mapID}/{z}/{x}/{-y}.${options.imageExtention}`
         : `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtention}`;
     }
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 0 arguments, but got 1.
+    // @ts-expect-error
     super(options);
     if (options.mapID) {
       this.mapID = options.mapID;
