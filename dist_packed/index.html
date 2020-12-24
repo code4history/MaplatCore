@@ -25,7 +25,10 @@
       option[hash[0]] =
         hash[1] == "true" ? true : hash[1] == "false" ? false : hash[1];
     }
+
+    // new MaplatApp(option).waitReady.then(function (app) {
     Maplat.createObject(option).then(function (app) {
+      console.log(app);
       console.log(app.currentMapInfo());
       console.log(app.mapInfo("gsi"));
       var moveFlag = false;
