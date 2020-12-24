@@ -55,7 +55,8 @@
     "i18next-xhr-backend": "^3.2.2",
     "lodash.template": "^4.5.0",
     "ol": "^6.1.1",
-    "weiwudi": "^0.1.2"
+    "weiwudi": "^0.1.2",
+    "whatwg-fetch": "^3.5.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.12.8",

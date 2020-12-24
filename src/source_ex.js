@@ -15,6 +15,7 @@ import { NowMap } from "./source/nowmap";
 import { TmsMap } from "./source/tmsmap";
 import { MapboxMap } from "./source/mapboxmap";
 import { HistMap_tin } from "./source/histmap_tin";
+import "whatwg-fetch";
 
 const baseDict = {
   osm: {
