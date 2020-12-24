@@ -62,7 +62,7 @@ export function createMapInfo(source: any) {
   return ret;
 }
 
-export function normalizeArg(options: Record<string, string>) {
+export function normalizeArg(options: Record<string, any>) {
   const table = {
     max_zoom: "maxZoom",
     min_zoom: "minZoom",
