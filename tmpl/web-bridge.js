@@ -1,5 +1,5 @@
 import { MaplatApp } from "../src";
-
+import "../less/core.less"
 
 const Maplat = window.Maplat = {};
 

@@ -6,9 +6,21 @@ module.exports = {
         useBuiltIns: "usage",
         corejs: 3,
         targets: {
-          browsers: ["defaults", "IE >= 11"]
+          browsers: ["defaults", "ie 11"]
         }
       }
-    ]
-  ]
+    ],
+    "@babel/preset-typescript"
+  ],
+  env: {
+    test: {
+      presets: [
+        ["@babel/preset-env", {
+          targets: {
+            node: "current"
+          }
+        }]
+      ]
+    }
+  }
 }

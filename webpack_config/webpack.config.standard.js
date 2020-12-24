@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 "use strict";
 
 const path = require("path");
 const { merge } = require("webpack-merge");
 const common = require("./webpack.config.common.js");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = merge(common, {
   entry: {
@@ -13,4 +15,6 @@ module.exports = merge(common, {
     path: path.resolve(__dirname, "../dist"),
     filename: '[name].js'
   },
+
+  plugins: [new HtmlWebpackPlugin({ template: "./public/index.html" })],
 });

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable no-empty */
 const gulp = require("gulp");
 const fs = require("fs-extra");
@@ -31,7 +32,7 @@ gulp.task("zip", async () => {
   });
 
   fs.moveSync("./distribution", "./example");
-  fs.copySync("./index.html", "./example/index.html");
+  fs.copySync("./dist/index.html", "./example/index.html");
   fs.copySync("./apps", "./example/apps");
   fs.copySync("./maps", "./example/maps");
   fs.copySync("./pois", "./example/pois");

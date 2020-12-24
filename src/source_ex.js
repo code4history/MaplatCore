@@ -176,8 +176,7 @@ export function setCustomFunction(target) {
       const map = self.getMap();
       const view = map.getView();
       if (!position) {
-        return new Promise((resolve, reject) => {
-          // eslint-disable-line no-unused-vars
+        return new Promise((resolve, _reject) => {
           map.setGPSPosition(null);
           resolve(true);
         });
@@ -219,6 +218,7 @@ export function setCustomFunction(target) {
     }
 
     setGPSMarker(position, ignoreMove) {
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       this.setGPSMarkerAsync(position, ignoreMove).then(() => {});
     }
 
@@ -582,7 +582,6 @@ export function setCustomInitialize(self, options) {
         self.thumbnail = `./tmbs/${options.mapID}.jpg`;
         fetch(self.thumbnail)
           .then(response => {
-            // eslint-disable-line no-undef
             if (response.ok) {
               resolve();
             } else {
@@ -590,13 +589,11 @@ export function setCustomInitialize(self, options) {
               resolve();
             }
           })
-          .catch(error => {
-            // eslint-disable-line no-unused-vars
+          .catch(_error => {
             self.thumbnail = `./tmbs/${options.mapID}_menu.jpg`;
             resolve();
           });
-      }).catch(error => {
-        // eslint-disable-line no-unused-vars
+      }).catch(_error => {
         self.thumbnail = `./tmbs/${options.mapID || options.sourceID}_menu.jpg`;
       });
   const poisWait = self.resolvePois(options.pois);
@@ -609,9 +606,8 @@ export function setupTileLoadFunction(target) {
     (function () {
       let numLoadingTiles = 0;
       const tileLoadFn = self.getTileLoadFunction();
-      const tImageLoader = function (tileCoord, src, tCanv, sx, sy, sw, sh) {
-        return new Promise((resolve, reject) => {
-          // eslint-disable-line no-unused-vars
+      const tImageLoader = function (_tileCoord, src, tCanv, sx, sy, sw, sh) {
+        return new Promise((resolve, _reject) => {
           const loader = function (src, fallback) {
             if (numLoadingTiles === 0) {
               // console.log('loading');
@@ -647,8 +643,7 @@ export function setupTileLoadFunction(target) {
           loader(src);
         });
       };
-      return function (tile, src) {
-        // eslint-disable-line no-unused-vars
+      return function (tile, _src) {
         const zoom = tile.tileCoord[0];
         let tileX = tile.tileCoord[1];
         let tileY = tile.tileCoord[2];
@@ -678,7 +673,7 @@ export function setupTileLoadFunction(target) {
           }
         }
 
-        const tmp = document.createElement("div"); // eslint-disable-line no-undef
+        const tmp = document.createElement("div");
         tmp.innerHTML = canvBase;
         const tCanv = tmp.childNodes[0];
 
@@ -742,8 +737,7 @@ export function setupTileLoadFunction(target) {
               tileLoadFn(tile, dataUrl);
             }
           })
-          .catch(err => {
-            // eslint-disable-line no-unused-vars
+          .catch(_err => {
             tile.handleImageError_();
           });
       };
@@ -802,8 +796,7 @@ export async function mapSourceFactory(options, commonOptions) {
     xhr.open("GET", url, true);
     xhr.responseType = "json";
 
-    xhr.onload = async function (e) {
-      // eslint-disable-line no-unused-vars
+    xhr.onload = async function (_e) {
       if (this.status == 200 || this.status == 0) {
         // 0 for UIWebView
         try {
