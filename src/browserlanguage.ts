@@ -1,25 +1,28 @@
-const browserLanguage = function () {
-    const ua = window.navigator.userAgent.toLowerCase();
-    try {
-        let lang;
-        // Chrome
-        if (ua.indexOf("chrome") != -1) {
-            lang = (navigator.languages[0] ||
-                (navigator as any).browserLanguage ||
-                navigator.language ||
-                (navigator as any).userLanguage).split(";");
-            return lang[0];
-        }
-        // Other
-        else {
-            lang = ((navigator as any).browserLanguage ||
-                navigator.language ||
-                (navigator as any).userLanguage).split(";");
-            return lang[0];
-        }
+const browserLanguage = (): string | undefined => {
+  const ua = window.navigator.userAgent.toLowerCase();
+  try {
+    let lang;
+    // Chrome
+    if (ua.indexOf("chrome") != -1) {
+      lang = (
+        navigator.languages[0] ||
+        (navigator as any).browserLanguage ||
+        navigator.language ||
+        (navigator as any).userLanguage
+      ).split(";");
+      return lang[0];
     }
-    catch (e) {
-        return undefined;
+    // Other
+    else {
+      lang = (
+        (navigator as any).browserLanguage ||
+        navigator.language ||
+        (navigator as any).userLanguage
+      ).split(";");
+      return lang[0];
     }
+  } catch (e) {
+    return undefined;
+  }
 };
 export default browserLanguage;
