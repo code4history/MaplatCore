@@ -403,8 +403,8 @@ export class MaplatMap extends Map {
       const source = (this.getLayers().item(0) as any).getSource();
       source.setGPSMarker();
       if (!avoidEventForOff)
-        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type '{ error: string; }' is not assig... Remove this comment to see the full error message
         this.dispatchEvent(
+          // @ts-expect-error ts-migrate(2345) FIXME: Argument of type '{ error: string; }' is not assig... Remove this comment to see the full error message
           new MapEvent("gps_result", map, { error: "gps_off" })
         );
     }

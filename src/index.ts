@@ -99,8 +99,8 @@ export class MaplatApp extends EventTarget {
           // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string | null' is not assignable... Remove this comment to see the full error message
           rotation: parseFloat(localStorage.getItem("rotation"))
         };
-        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string | 0' is not assignable to... Remove this comment to see the full error message
         (app as any).initialRestore.transparency = parseFloat(
+          // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string | 0' is not assignable to... Remove this comment to see the full error message
           localStorage.getItem("transparency") || 0
         );
         (app as any).initialRestore.hideMarker = parseInt(
@@ -161,8 +161,8 @@ export class MaplatApp extends EventTarget {
     const app = this;
     return new Promise((resolve, _reject) => {
       const localesFlag = Object.keys(locales).length != 0;
-      // @ts-expect-error ts-migrate(2551) FIXME: Property 'translateUI' does not exist on type 'Map... Remove this comment to see the full error message
       const translib =
+        // @ts-expect-error ts-migrate(2551) FIXME: Property 'translateUI' does not exist on type 'Map... Remove this comment to see the full error message
         app.translateUI && !localesFlag ? i18n.use(i18nxhr) : i18n;
       translib.init(
         {
