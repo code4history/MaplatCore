@@ -45,7 +45,7 @@ if (!args.options.source || !args.options.freeze_output ||
 const fromPath = path.resolve(process.cwd(), args.options.source);
 const toFPath = path.resolve(process.cwd(), args.options.freeze_output);
 
-const files = fs.readdirSync(fromPath).filter((file) => file.indexOf('.') !== 0).sort();
+const files = fs.readdirSync(fromPath).filter(file => file.indexOf('.') !== 0).sort();
 const fLists = {};
 if (!args.options.i18n) {
     const uLists = {};
@@ -57,16 +57,16 @@ if (!args.options.i18n) {
     }
 
     const fOutput = args.options.less ?
-        Object.keys(fLists).map((key) => {
+        Object.keys(fLists).map(key => {
             const body = (key.split("."))[0];
             return `@${body}: "${fLists[key]}"`;
         }).join("\n") :
-        `export default ${JSON.stringify(fLists, null, 4)};`;
+        `export default ${JSON.stringify(fLists, null, 2)};`;
     fs.writeFileSync(toFPath, fOutput, {});
 
     if (!args.options.less) {
         const toUPath = path.resolve(process.cwd(), args.options.url_output);
-        const uOutput = `export default ${JSON.stringify(uLists, null, 4)};`;
+        const uOutput = `export default ${JSON.stringify(uLists, null, 2)};`;
         fs.writeFileSync(toUPath, uOutput, {});
     }
 } else {
@@ -77,6 +77,6 @@ if (!args.options.i18n) {
             translation: json
         };
     }
-    fs.writeFileSync(toFPath, `export default ${JSON.stringify(fLists, null, 4)};`, {});
+    fs.writeFileSync(toFPath, `export default ${JSON.stringify(fLists, null, 2)};`, {});
 }
 

@@ -14,7 +14,6 @@ import { transform } from "ol/proj";
 import { MaplatMap } from "./map_ex";
 import { defaults, DragRotateAndZoom } from "ol/interaction";
 import { altKeyOnly } from "ol/events/condition";
-import { HistMap_tin } from "./source/histmap_tin"; // eslint-disable-line no-unused-vars
 import { HistMap } from "./source/histmap";
 import { NowMap } from "./source/nowmap";
 import { TmsMap } from "./source/tmsmap";
