@@ -92,7 +92,6 @@
     "ts-jest": "^26.4.4",
     "typescript": "^4.1.3",
     "url-loader": "^4.1.1",
-    "utils-extend": "npm:utils-extend-patched@^1.0.9",
     "webpack": "^4.41.6",
     "webpack-cli": "^3.3.11",
     "webpack-dev-server": "^3.11.0",
