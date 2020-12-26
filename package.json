@@ -47,7 +47,6 @@
     "@maplat/tin": "^0.6.7",
     "@turf/turf": "^5.1.6",
     "argv": "0.0.2",
-    "caniuse-lite": "^1.0.30001120",
     "i18next": "^17.3.1",
     "i18next-xhr-backend": "^3.2.2",
     "lodash.template": "^4.5.0",
