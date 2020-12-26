@@ -96,11 +96,5 @@
     "webpack-cli": "^3.3.11",
     "webpack-dev-server": "^3.11.0",
     "webpack-merge": "^5.4.0"
-  },
-  "resolutions": {
-    "clean-css": "^4.2.3",
-    "minimist": "^1.2.5",
-    "yargs-parser": "^18.1.3",
-    "utils-extend": "npm:utils-extend-patched@^1.0.9"
   }
 }
