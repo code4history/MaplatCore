@@ -8,8 +8,13 @@ import { MapboxMap } from "./source/mapboxmap";
 import { NowMap } from "./source/nowmap";
 import { getDistance, randomFromCenter } from "./math_ex";
 import { MapboxLayer } from "./layer_mapbox";
-import pointer from "./pointer_images";
 import { normalizeArg } from "./functions";
+
+import bluedot from "../parts/bluedot.png";
+import bluedot_transparent from "../parts/bluedot_transparent.png";
+import bluedot_small from "../parts/bluedot_small.png";
+import defaultpin from "../parts/defaultpin.png";
+
 const gpsStyle = new Style({
   image: new Icon({
     anchor: [0.5, 0.5],
@@ -17,7 +22,7 @@ const gpsStyle = new Style({
     anchorXUnits: "fraction",
     // @ts-expect-error ts-migrate(2322) FIXME: Type '"fraction"' is not assignable to type 'IconA... Remove this comment to see the full error message
     anchorYUnits: "fraction",
-    src: pointer["bluedot.png"]
+    src: bluedot
   })
 });
 const gpsHideStyle = new Style({
@@ -27,7 +32,7 @@ const gpsHideStyle = new Style({
     anchorXUnits: "fraction",
     // @ts-expect-error ts-migrate(2322) FIXME: Type '"fraction"' is not assignable to type 'IconA... Remove this comment to see the full error message
     anchorYUnits: "fraction",
-    src: pointer["bluedot_transparent.png"]
+    src: bluedot_transparent
   })
 });
 const gpsSubStyle = new Style({
@@ -37,7 +42,7 @@ const gpsSubStyle = new Style({
     anchorXUnits: "fraction",
     // @ts-expect-error ts-migrate(2322) FIXME: Type '"fraction"' is not assignable to type 'IconA... Remove this comment to see the full error message
     anchorYUnits: "fraction",
-    src: pointer["bluedot_small.png"]
+    src: bluedot_small
   })
 });
 const accCircleStyle = new Style({
@@ -56,7 +61,7 @@ const markerDefaultStyle = new Style({
     anchorXUnits: "fraction",
     // @ts-expect-error ts-migrate(2322) FIXME: Type '"fraction"' is not assignable to type 'IconA... Remove this comment to see the full error message
     anchorYUnits: "fraction",
-    src: pointer["defaultpin.png"]
+    src: defaultpin
   })
 });
 export class MaplatMap extends Map {

@@ -20,7 +20,6 @@ import { TmsMap } from "./source/tmsmap";
 import { MapboxMap } from "./source/mapboxmap";
 import { mapSourceFactory, META_KEYS } from "./source_ex";
 import { recursiveRound } from "./math_ex";
-import pointer from "./pointer_images";
 import locales from "./freeze_locales";
 import {
   normalizeLayers,
@@ -29,6 +28,11 @@ import {
   normalizePoi
 } from "./normalize_pois";
 import { createIconSet, createHtmlFromTemplate } from "./template_works";
+
+import redcircle from "../parts/redcircle.png";
+import defaultpin_selected from "../parts/defaultpin_selected.png";
+import defaultpin from "../parts/defaultpin.png";
+
 export class MaplatApp extends EventTarget {
   __selectedMarker: any;
   appName: any;
@@ -115,7 +119,7 @@ export class MaplatApp extends EventTarget {
     // Add UI HTML Element
     const newElems = createElement(`<img id="center_circle" class="prevent-default"
             style="position:absolute;top:50%;left:50%;margin-top:-10px;
-            margin-left:-10px;" src="${pointer["redcircle.png"]}">`);
+            margin-left:-10px;" src="${redcircle}">`);
     for (let i = newElems.length - 1; i >= 0; i--) {
       app.mapDivDocument.insertBefore(
         newElems[i],
@@ -635,8 +639,8 @@ export class MaplatApp extends EventTarget {
         ? data.selectedIcon
         : data.icon
       : app.__selectedMarker == data.namespaceID
-      ? pointer["defaultpin_selected.png"]
-      : pointer["defaultpin.png"];
+      ? defaultpin_selected
+      : defaultpin;
     const promise = coords
       ? (function () {
           return src.merc2XyAsync(coords, true);

@@ -7,6 +7,7 @@ const pjson = require("../package.json");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const TerserPlugin = require("terser-webpack-plugin");
 
@@ -15,6 +16,10 @@ const port = process.env.PORT || 8888;
 module.exports = {
   mode: 'production',
   devtool: 'source-map',
+
+  entry: {
+    "maplat_core": path.resolve(__dirname, "../tmpl/web-bridge.js")
+  },
 
   plugins: [
     new BannerPlugin({
@@ -26,7 +31,8 @@ module.exports = {
         files: "./{src,spec}/**/*.{js,ts}"
       }
     }),
-    new MiniCssExtractPlugin()
+    new MiniCssExtractPlugin(),
+    new HtmlWebpackPlugin({ template: "./public/index.html" })
   ],
 
   externals: [
