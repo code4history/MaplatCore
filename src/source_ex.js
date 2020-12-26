@@ -10,12 +10,15 @@ import {
 } from "./normalize_pois";
 import { normalizeArg } from "./functions";
 import Weiwudi from "weiwudi";
-import pointer from "./pointer_images";
 import { NowMap } from "./source/nowmap";
 import { TmsMap } from "./source/tmsmap";
 import { MapboxMap } from "./source/mapboxmap";
 import { HistMap_tin } from "./source/histmap_tin";
 import "whatwg-fetch";
+
+import osm from "../parts/osm.jpg";
+import gsi from "../parts/gsi.jpg";
+import gsi_ortho from "../parts/gsi_ortho.jpg";
 
 const baseDict = {
   osm: {
@@ -30,7 +33,7 @@ const baseDict = {
     },
     attr: "©︎ OpenStreetMap contributors",
     maptype: "base",
-    thumbnail: pointer["osm.jpg"],
+    thumbnail: osm,
     urls: [
       "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png",
       "https://b.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -54,7 +57,7 @@ const baseDict = {
     maptype: "base",
     url: "https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png",
     maxZoom: 18,
-    thumbnail: pointer["gsi.jpg"]
+    thumbnail: gsi,
   },
   gsi_ortho: {
     mapID: "gsi_ortho",
@@ -73,7 +76,7 @@ const baseDict = {
     maptype: "base",
     url: "https://cyberjapandata.gsi.go.jp/xyz/ort/{z}/{x}/{y}.jpg",
     maxZoom: 18,
-    thumbnail: pointer["gsi_ortho.jpg"]
+    thumbnail: gsi_ortho
   }
 };
 
@@ -95,7 +98,7 @@ export function setCustomFunction(target) {
       if (!self.weiwudi) return;
       try {
         await self.weiwudi.clean();
-      } catch (e) {} // eslint-disable-line no-empty
+      } catch (e) { } // eslint-disable-line no-empty
     }
 
     getMap() {
@@ -201,7 +204,7 @@ export function setCustomFunction(target) {
               prev +
               Math.sqrt(
                 Math.pow(curr[0] - pos.xy[0], 2) +
-                  Math.pow(curr[1] - pos.xy[1], 2)
+                Math.pow(curr[1] - pos.xy[1], 2)
               );
             return index == 3 ? ret / 4.0 : ret;
           }, 0);
@@ -219,7 +222,7 @@ export function setCustomFunction(target) {
 
     setGPSMarker(position, ignoreMove) {
       // eslint-disable-next-line @typescript-eslint/no-empty-function
-      this.setGPSMarkerAsync(position, ignoreMove).then(() => {});
+      this.setGPSMarkerAsync(position, ignoreMove).then(() => { });
     }
 
     // size(画面サイズ)とズームから、地図面座標上での半径を得る。zoom無指定の場合は自動取得
@@ -307,11 +310,11 @@ export function setCustomFunction(target) {
       const promises = asMerc
         ? Promise.resolve(mercs)
         : Promise.all(
-            mercs.map((merc, index) => {
-              if (index == 5) return merc;
-              return self.merc2XyAsync(merc);
-            })
-          );
+          mercs.map((merc, index) => {
+            if (index == 5) return merc;
+            return self.merc2XyAsync(merc);
+          })
+        );
       return promises
         .then(xys => self.xys2Size(xys))
         .catch(err => {
@@ -485,8 +488,8 @@ export function setCustomFunction(target) {
               ? layer.pois.length && layer.hide
               : layer.pois.length
             : hideOnly
-            ? layer.hide
-            : true
+              ? layer.hide
+              : true
         );
     }
 
@@ -575,27 +578,27 @@ export function setCustomInitialize(self, options) {
 
   const thumbWait = options.thumbnail
     ? new Promise(resolve => {
-        self.thumbnail = options.thumbnail;
-        resolve();
-      })
+      self.thumbnail = options.thumbnail;
+      resolve();
+    })
     : new Promise(resolve => {
-        self.thumbnail = `./tmbs/${options.mapID}.jpg`;
-        fetch(self.thumbnail)
-          .then(response => {
-            if (response.ok) {
-              resolve();
-            } else {
-              self.thumbnail = `./tmbs/${options.mapID}_menu.jpg`;
-              resolve();
-            }
-          })
-          .catch(_error => {
+      self.thumbnail = `./tmbs/${options.mapID}.jpg`;
+      fetch(self.thumbnail)
+        .then(response => {
+          if (response.ok) {
+            resolve();
+          } else {
             self.thumbnail = `./tmbs/${options.mapID}_menu.jpg`;
             resolve();
-          });
-      }).catch(_error => {
-        self.thumbnail = `./tmbs/${options.mapID || options.sourceID}_menu.jpg`;
-      });
+          }
+        })
+        .catch(_error => {
+          self.thumbnail = `./tmbs/${options.mapID}_menu.jpg`;
+          resolve();
+        });
+    }).catch(_error => {
+      self.thumbnail = `./tmbs/${options.mapID || options.sourceID}_menu.jpg`;
+    });
   const poisWait = self.resolvePois(options.pois);
   self.initialWait = Promise.all([poisWait, thumbWait]);
 }
@@ -761,8 +764,8 @@ export async function mapSourceFactory(options, commonOptions) {
       options.maptype == "base"
         ? NowMap
         : options.maptype == "overlay"
-        ? TmsMap
-        : MapboxMap;
+          ? TmsMap
+          : MapboxMap;
     if (options.zoomRestriction) {
       options.maxZoom = options.maxZoom || options.mercMaxZoom;
       options.minZoom = options.minZoom || options.mercMinZoom;
@@ -818,8 +821,8 @@ export async function mapSourceFactory(options, commonOptions) {
               options.maptype == "base"
                 ? NowMap
                 : options.maptype == "overlay"
-                ? TmsMap
-                : MapboxMap;
+                  ? TmsMap
+                  : MapboxMap;
             if (options.zoomRestriction) {
               options.maxZoom = options.maxZoom || options.mercMaxZoom;
               options.minZoom = options.minZoom || options.mercMinZoom;
