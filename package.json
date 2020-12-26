@@ -23,7 +23,6 @@
     "test": "jest",
     "preversion": "npm run lint & npm run test",
     "version": "npm run build && npm run build_packed && git add -A",
-    "preinstall": "npx npm-force-resolutions || echo 'ignore'",
     "lint": "npm run lint:eslint && npm run lint:prettier",
     "lint:eslint": "eslint \"{src,spec}/**/*.{js,ts}\" --fix",
     "lint:prettier": "prettier \"./{src,spec}/**/*.{js,ts}\" --write",
