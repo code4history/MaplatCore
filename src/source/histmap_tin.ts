@@ -295,12 +295,11 @@ export class HistMap_tin extends HistMap {
 
   // メルカトル5地点情報から地図サイズ情報（中心座標、サイズ、回転）を得る
   mercs2SizeAsync(mercs: any, asMerc: any) {
-    const self = this;
     let promises;
     if (asMerc) {
       promises = Promise.resolve(mercs);
     } else {
-      promises = self.merc2XyAsync_returnLayer(mercs[0]).then(results => {
+      promises = this.merc2XyAsync_returnLayer(mercs[0]).then(results => {
         const result = results[0] || results[1];
         const index = result[0];
         const centerXy = result[1];
@@ -308,7 +307,7 @@ export class HistMap_tin extends HistMap {
           mercs.map((merc: any, i: any) => {
             if (i == 5) return merc;
             if (i == 0) return Promise.resolve(centerXy);
-            return self.merc2XyAsync_specifyLayer(merc, index);
+            return this.merc2XyAsync_specifyLayer(merc, index);
           })
         );
       });
@@ -318,10 +317,10 @@ export class HistMap_tin extends HistMap {
         if (!asMerc) {
           xys = xys.map((xy: any, i: any) => {
             if (i == 5) return xy;
-            return self.xy2HistMapCoords(xy);
+            return this.xy2HistMapCoords(xy);
           });
         }
-        return self.xys2Size(xys);
+        return this.xys2Size(xys);
       })
       .catch(err => {
         throw err;
