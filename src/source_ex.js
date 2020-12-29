@@ -396,11 +396,10 @@ export function setCustomFunction(target) {
     }
 
     mercs2XysAsync(mercs) {
-      const self = this;
       return Promise.all(
         mercs.map((merc, index) => {
-          if (index == 5) return merc;
-          return self.merc2XyAsync(merc);
+          if (index === 5) return merc;
+          return this.merc2XyAsync(merc);
         })
       ).then(xys => [xys]);
     }
@@ -413,12 +412,11 @@ export function setCustomFunction(target) {
     }
 
     getPoi(id) {
-      const self = this;
-      let ret;
-      Object.keys(self.pois).map(key => {
-        self.pois[key].pois.map((poi, i) => {
-          if (poi.id == id) {
-            ret = self.pois[key].pois[i];
+      let ret = undefined;
+      Object.keys(this.pois).map(key => {
+        this.pois[key].pois.map((poi, i) => {
+          if (poi.id === id) {
+            ret = this.pois[key].pois[i];
           }
         });
       });
@@ -441,27 +439,25 @@ export function setCustomFunction(target) {
     }
 
     removePoi(id) {
-      const self = this;
-      Object.keys(self.pois).map(key => {
-        self.pois[key].pois.map((poi, i) => {
-          if (poi.id == id) {
-            delete self.pois[key].pois[i];
+      Object.keys(this.pois).map(key => {
+        this.pois[key].pois.map((poi, i) => {
+          if (poi.id === id) {
+            delete this.pois[key].pois[i];
           }
         });
       });
     }
 
     clearPoi(clusterId) {
-      const self = this;
       if (!clusterId) {
         clusterId = "main";
       }
-      if (clusterId == "all") {
-        Object.keys(self.pois).map(key => {
-          self.pois[key]["pois"] = [];
+      if (clusterId === "all") {
+        Object.keys(this.pois).map(key => {
+          this.pois[key]["pois"] = [];
         });
-      } else if (self.pois[clusterId]) {
-        self.pois[clusterId]["pois"] = [];
+      } else if (this.pois[clusterId]) {
+        this.pois[clusterId]["pois"] = [];
       }
     }
 
