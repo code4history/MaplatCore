@@ -56,6 +56,8 @@ export class MaplatApp extends EventTarget {
   mercBuffer: any;
   __selectedMarker: any;
   __init = true;
+  __redrawMarkerBlock = false;
+  __redrawMarkerThrottle:(NowMap | HistMap)[] = [];
   appName: any;
   cacheHash: any;
   currentPosition: any;
@@ -651,52 +653,51 @@ export class MaplatApp extends EventTarget {
     this.mapObject.resetMarker();
   }
   setLine(data: any) {
-    const app = this;
-    (app as any).logger.debug(data);
+    // @ts-expect-error ts-migrate(7053)
+    this.logger.debug(data);
     let xyPromises;
     if (data.coordinates) {
       xyPromises = data.coordinates.map((coord: any) =>
-        app.from!.merc2XyAsync(coord)
+        this.from!.merc2XyAsync(coord)
       );
     } else {
       xyPromises = data.lnglats.map((lnglat: any) => {
         const merc = transform(lnglat, "EPSG:4326", "EPSG:3857");
-        return app.from!.merc2XyAsync(merc);
+        return this.from!.merc2XyAsync(merc);
       });
     }
     Promise.all(xyPromises).then(xys => {
-      app.mapObject.setLine(xys, data.stroke);
+      this.mapObject.setLine(xys, data.stroke);
     });
   }
   resetLine() {
     this.mapObject.resetLine();
   }
   redrawMarkers(source: any) {
-    const app = this;
     if (!source) {
-      source = app.from;
+      source = this.from;
     }
-    if ((app as any).__redrawMarkerBlock) {
-      if (!(app as any).__redrawMarkerThrottle)
-        (app as any).__redrawMarkerThrottle = [];
-      const throttle = (app as any).__redrawMarkerThrottle;
+    if (this.__redrawMarkerBlock) {
+      if (!this.__redrawMarkerThrottle)
+        this.__redrawMarkerThrottle = [];
+      const throttle = this.__redrawMarkerThrottle;
       if (throttle.length == 0 || throttle[throttle.length - 1] !== source) {
         throttle.push(source);
         return;
       }
     }
-    (app as any).__redrawMarkerBlock = true;
+    this.__redrawMarkerBlock = true;
     const redrawLogic = (source: any) => {
       const promises: any = [];
-      app.resetMarker();
-      if (!(app as any).stateBuffer.hideMarker) {
-        Object.keys(app.pois).map(key => {
-          const cluster = app.pois[key];
+      this.resetMarker();
+      if (!this.stateBuffer.hideMarker) {
+        Object.keys(this.pois).map(key => {
+          const cluster = this.pois[key];
           if (!cluster.hide) {
             cluster.pois.map((data: any) => {
-              const dataCopy = createIconSet(data, cluster, app);
-              createHtmlFromTemplate(data, cluster, app);
-              promises.push(app.setMarker(dataCopy));
+              const dataCopy = createIconSet(data, cluster, this);
+              createHtmlFromTemplate(data, cluster, this);
+              promises.push(this.setMarker(dataCopy));
             });
           }
         });
@@ -705,9 +706,9 @@ export class MaplatApp extends EventTarget {
             const cluster = source.pois[key];
             if (!cluster.hide) {
               cluster.pois.map((data: any) => {
-                const dataCopy = createIconSet(data, cluster, source, app);
-                createHtmlFromTemplate(data, cluster, source, app);
-                promises.push(app.setMarker(dataCopy));
+                const dataCopy = createIconSet(data, cluster, source, this);
+                createHtmlFromTemplate(data, cluster, source, this);
+                promises.push(this.setMarker(dataCopy));
               });
             }
           });
@@ -715,12 +716,12 @@ export class MaplatApp extends EventTarget {
       }
       Promise.all(promises).then(() => {
         if (
-          (app as any).__redrawMarkerThrottle &&
-          (app as any).__redrawMarkerThrottle.length > 0
+          this.__redrawMarkerThrottle &&
+          this.__redrawMarkerThrottle.length > 0
         ) {
-          redrawLogic((app as any).__redrawMarkerThrottle.shift());
+          redrawLogic(this.__redrawMarkerThrottle.shift());
         } else {
-          (app as any).__redrawMarkerBlock = false;
+          this.__redrawMarkerBlock = false;
         }
       });
     };
