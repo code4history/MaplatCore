@@ -55,6 +55,7 @@ export class MaplatApp extends EventTarget {
   backMap: MaplatMap | undefined = undefined;
   mercSrc: NowMap | undefined = undefined;
   mercBuffer: any;
+  timer: any = undefined;
   __selectedMarker: any;
   __init = true;
   __redrawMarkerBlock = false;
@@ -1142,15 +1143,13 @@ export class MaplatApp extends EventTarget {
     ));
   }
   requestUpdateState(data: any) {
-    const app = this;
-    (app as any).stateBuffer = Object.assign((app as any).stateBuffer, data);
-    if ((app as any).stateBuffer.backgroundID == "____delete____") {
-      delete (app as any).stateBuffer.backgroundID;
+    this.stateBuffer = Object.assign(this.stateBuffer, data);
+    if (this.stateBuffer.backgroundID == "____delete____") {
+      delete this.stateBuffer.backgroundID;
     }
-    if ((app as any).restoreSession) {
+    if (this.restoreSession) {
       const currentTime = Math.floor(new Date().getTime() / 1000);
-      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
-      localStorage.setItem("epoch", currentTime);
+      localStorage.setItem("epoch", `${currentTime}`);
       const loopSession = function (data: any) {
         Object.keys(data).map(key => {
           if (key == "position") {
@@ -1164,11 +1163,11 @@ export class MaplatApp extends EventTarget {
       };
       loopSession(data);
     }
-    if ((app as any).timer) clearTimeout((app as any).timer);
-    (app as any).timer = setTimeout(() => {
-      (app as any).timer = undefined;
-      app.dispatchEvent(
-        new CustomEvent("updateState", (app as any).stateBuffer)
+    if (this.timer) clearTimeout(this.timer);
+    this.timer = setTimeout(() => {
+      this.timer = undefined;
+      this.dispatchEvent(
+        new CustomEvent("updateState", this.stateBuffer)
       );
     }, 50);
   }
@@ -1184,18 +1183,16 @@ export class MaplatApp extends EventTarget {
     this.from!.setViewpoint(cond);
   }
   getMapMeta(mapID: any) {
-    const app = this;
-    let source: any;
+    let source: NowMap | HistMap | undefined;
     if (!mapID) {
-      source = app.from;
+      source = this.from;
     } else {
-      source = app.cacheHash[mapID];
+      source = this.cacheHash[mapID];
     }
     if (!source) return;
     return META_KEYS.reduce(
-      (prev, curr) => {
-        // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        prev[curr] = source[curr];
+      (prev: any, curr: string) => {
+        prev[curr] = (source as HistMap | NowMap)[curr];
         return prev;
       },
       {
