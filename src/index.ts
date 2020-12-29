@@ -43,6 +43,7 @@ export class MaplatApp extends EventTarget {
   restoreSession = false;
   enableCache: false;
   stateBuffer: any = {};
+  mobileMapMoveBuffer: any = undefined;
   overlay = true;
   waitReady: Promise<any>;
   i18n: any;
@@ -557,29 +558,28 @@ export class MaplatApp extends EventTarget {
   }
   // Async initializer 16: Handle back map's behavior
   raiseChangeViewPoint() {
-    const app = this;
-    app.mapObject.on("postrender", (_evt: any) => {
-      const view = app.mapObject.getView();
+    this.mapObject.on("postrender", (_evt: any) => {
+      const view = this.mapObject.getView();
       const center = view.getCenter();
       const zoom = view.getDecimalZoom();
       const rotation = normalizeDegree((view.getRotation() * 180) / Math.PI);
-      app.from!
+      this.from!
         .size2MercsAsync()
         .then((mercs: any) => this.mercSrc!.mercs2SizeAsync(mercs))
         .then((size: any) => {
           if (
-            (app as any).mobileMapMoveBuffer &&
-            (app as any).mobileMapMoveBuffer[0][0] == size[0][0] &&
-            (app as any).mobileMapMoveBuffer[0][1] == size[0][1] &&
-            (app as any).mobileMapMoveBuffer[1] == size[1] &&
-            (app as any).mobileMapMoveBuffer[2] == size[2]
+            this.mobileMapMoveBuffer &&
+            this.mobileMapMoveBuffer[0][0] == size[0][0] &&
+            this.mobileMapMoveBuffer[0][1] == size[0][1] &&
+            this.mobileMapMoveBuffer[1] == size[1] &&
+            this.mobileMapMoveBuffer[2] == size[2]
           ) {
             return;
           }
-          (app as any).mobileMapMoveBuffer = size;
+          this.mobileMapMoveBuffer = size;
           const ll = transform(size[0], "EPSG:3857", "EPSG:4326");
           const direction = normalizeDegree((size[2] * 180) / Math.PI);
-          app.dispatchEvent(
+          this.dispatchEvent(
             new CustomEvent("changeViewpoint", {
               x: center[0],
               y: center[1],
@@ -593,7 +593,7 @@ export class MaplatApp extends EventTarget {
               rotation
             })
           );
-          app.requestUpdateState({
+          this.requestUpdateState({
             position: {
               x: center[0],
               y: center[1],
