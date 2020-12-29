@@ -216,10 +216,8 @@ export class HistMap_tin extends HistMap {
     const self = this;
     self
       .xy2MercAsync_returnLayer(xy)
-      .then(results => {
-        // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
+      .then((results: any) => {
         const index = results[0];
-        // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
         const mercCenter = results[1];
         const dir4 = [
           [xy[0] - 150, xy[1]],
