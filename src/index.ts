@@ -1262,7 +1262,7 @@ export class MaplatApp extends EventTarget {
       `From: Center: ${current[0]} Zoom: ${current[1]} Rotation: ${current[2]}`
     );
     // @ts-expect-error ts-migrate(7053)
-    this.logger.debug(`From: ${(app.from as HistMap | NowMap).mapID}`);
+    this.logger.debug(`From: ${(this.from as HistMap | NowMap).mapID}`);
     fromPromise
       .then((mercs: any) => {
         this.mercBuffer.mercs = mercs;
