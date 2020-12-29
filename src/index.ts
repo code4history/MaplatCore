@@ -498,41 +498,35 @@ export class MaplatApp extends EventTarget {
   }
   // Async initializer 14: Handle mouse cursor
   setMouseCursor() {
-    const app = this;
     // change mouse cursor when over marker
-    const moveHandler = function (evt: any) {
-      // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-      const pixel = this.getEventPixel(evt.originalEvent);
-      // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-      const hit = this.hasFeatureAtPixel(pixel);
-      // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-      const target = this.getTarget();
+    const moveHandler = (evt: any) => {
+      const pixel = evt.target.getEventPixel(evt.originalEvent);
+      const hit = evt.target.hasFeatureAtPixel(pixel);
+      const target = evt.target.getTarget();
       if (hit) {
-        // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const feature = this.forEachFeatureAtPixel(
+        const feature = evt.target.forEachFeatureAtPixel(
           evt.pixel,
           (feature: any) => {
             if (feature.get("datum")) return feature;
           }
         );
-        app.mapDivDocument.querySelector(`#${target}`).style.cursor = feature
+        this.mapDivDocument.querySelector(`#${target}`).style.cursor = feature
           ? "pointer"
           : "";
         return;
       }
-      app.mapDivDocument.querySelector(`#${target}`).style.cursor = "";
+      this.mapDivDocument.querySelector(`#${target}`).style.cursor = "";
     };
-    app.mapObject.on("pointermove", moveHandler);
-    const mapOutHandler = function (evt: any) {
+    this.mapObject.on("pointermove", moveHandler);
+    const mapOutHandler = (evt: any) => {
       let histCoord = evt.frameState.viewState.center;
-      const source = app.from;
+      const source = this.from;
       if (!source!.insideCheckHistMapCoords(histCoord)) {
         histCoord = source!.modulateHistMapCoordsInside(histCoord);
-        // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        this.getView().setCenter(histCoord);
+        evt.target.getView().setCenter(histCoord);
       }
     };
-    app.mapObject.on("moveend", mapOutHandler);
+    this.mapObject.on("moveend", mapOutHandler);
   }
   // Async initializer 15: Handle back map's behavior
   setBackMapBehavior() {
