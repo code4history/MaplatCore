@@ -605,16 +605,14 @@ export class MaplatApp extends EventTarget {
     });
   }
   currentMapInfo() {
-    const app = this;
-    return createMapInfo(app.from);
+    return createMapInfo(this.from);
   }
-  mapInfo(mapID: any) {
-    const app = this;
-    return createMapInfo(app.cacheHash[mapID]);
+  mapInfo(mapID: string) {
+    return createMapInfo(this.cacheHash[mapID]);
   }
   setMarker(data: any) {
-    const app = this;
-    (app as any).logger.debug(data);
+    // @ts-expect-error ts-migrate(7053)
+    this.logger.debug(data);
     const lnglat = data.lnglat || [
       data.lng || data.longitude,
       data.lat || data.latitude
@@ -622,12 +620,12 @@ export class MaplatApp extends EventTarget {
     const x = data.x;
     const y = data.y;
     const coords = data.coordinates;
-    const src = app.from;
+    const src = this.from;
     const icon = data.icon
-      ? app.__selectedMarker == data.namespaceID && data.selectedIcon
+      ? this.__selectedMarker == data.namespaceID && data.selectedIcon
         ? data.selectedIcon
         : data.icon
-      : app.__selectedMarker == data.namespaceID
+      : this.__selectedMarker == data.namespaceID
       ? defaultpin_selected
       : defaultpin;
     const promise = coords
@@ -645,7 +643,7 @@ export class MaplatApp extends EventTarget {
     return promise.then((xy: any) => {
       if (!xy) return;
       if (src!.insideCheckHistMapCoords(xy)) {
-        app.mapObject.setMarker(xy, { datum: data }, icon);
+        this.mapObject.setMarker(xy, { datum: data }, icon);
       }
     });
   }
