@@ -375,25 +375,23 @@ export class MaplatApp extends EventTarget {
   }
   // Async initializer 11: Handle map click event
   setMapClick() {
-    const app = this;
-    this.mapObject.on("click", function (evt: any) {
+    this.mapObject.on("click", (evt: any) => {
       // @ts-expect-error ts-migrate(7053)
-      app.logger.debug(evt.pixel);
-      // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-      const feature = this.forEachFeatureAtPixel(evt.pixel, (feature: any) => {
+      this.logger.debug(evt.pixel);
+      const feature = evt.target.forEachFeatureAtPixel(evt.pixel, (feature: any) => {
         // @ts-expect-error ts-migrate(7053)
-        app.logger.debug(evt.pixel);
+        this.logger.debug(evt.pixel);
         if (feature.get("datum")) return feature;
       });
       if (feature) {
-        app.dispatchEvent(new CustomEvent("clickMarker", feature.get("datum")));
+        this.dispatchEvent(new CustomEvent("clickMarker", feature.get("datum")));
       } else {
         const xy = evt.coordinate;
-        app.dispatchEvent(new CustomEvent("clickMapXy", xy));
-        app.from!.xy2MercAsync(xy).then((merc: any) => {
-          app.dispatchEvent(new CustomEvent("clickMapMerc", merc));
+        this.dispatchEvent(new CustomEvent("clickMapXy", xy));
+        this.from!.xy2MercAsync(xy).then((merc: any) => {
+          this.dispatchEvent(new CustomEvent("clickMapMerc", merc));
           const lnglat = transform(merc, "EPSG:3857", "EPSG:4326");
-          app.dispatchEvent(
+          this.dispatchEvent(
             new CustomEvent("clickMap", {
               longitude: lnglat[0],
               latitude: lnglat[1]
