@@ -164,8 +164,7 @@ export class MaplatMap extends Map {
     }
     return layer;
   }
-  getLayer(name: any) {
-    if (!name) name = "base";
+  getLayer(name = "base") {
     const recur = (layers: any) => {
       const filtered = layers
         .getArray()
@@ -180,7 +179,7 @@ export class MaplatMap extends Map {
     };
     return recur(this.getLayers());
   }
-  getSource(name: any) {
+  getSource(name = "base") {
     const layer = this.getLayer(name);
     if (!layer) return;
     return layer.getSource();
@@ -303,7 +302,7 @@ export class MaplatMap extends Map {
       layer
     );
   }
-  exchangeSource(source: any) {
+  exchangeSource(source: any = undefined) {
     const layers = this.getLayers();
     const prevLayer = layers.item(0);
     const layer = MaplatMap.spawnLayer(prevLayer, source, this.getTarget());
@@ -324,7 +323,6 @@ export class MaplatMap extends Map {
   }
   setTransparency(percentage: any) {
     const opacity = (100 - percentage) / 100;
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
     const source = this.getSource();
     if (source instanceof NowMap) {
       this.getLayers().item(0).setOpacity(1);

@@ -1,4 +1,4 @@
-const browserLanguage = (): string | undefined => {
+const browserLanguage = (): string => {
   const ua = window.navigator.userAgent.toLowerCase();
   try {
     let lang;
@@ -22,7 +22,7 @@ const browserLanguage = (): string | undefined => {
       return lang[0];
     }
   } catch (e) {
-    return undefined;
+    return "";
   }
 };
 export default browserLanguage;

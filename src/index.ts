@@ -34,7 +34,24 @@ import defaultpin_selected from "../parts/defaultpin_selected.png";
 import defaultpin from "../parts/defaultpin.png";
 
 export class MaplatApp extends EventTarget {
+  appid: string;
+  translateUI = false;
+  noRotate = false;
+  initialRestore: any = {};
+  mapboxgl: any;
+  mapDiv = "map_div";
+  restoreSession = false;
+  enableCache: false;
+  stateBuffer: any = {};
+  overlay = true;
+  waitReady: Promise<any>;
+  i18n: any;
+  t: any;
+  lang: string;
+  appData: any;
+  backMap: MaplatMap | null = null;
   __selectedMarker: any;
+  __init = true;
   appName: any;
   cacheHash: any;
   currentPosition: any;
@@ -44,74 +61,67 @@ export class MaplatApp extends EventTarget {
   mapObject: any;
   mapboxMap: any;
   pois: any;
+  poiTemplate: string | boolean = false;
   transparency_: any;
+  logger: Logger;
+  _backMapMoving = false;
   // Maplat App Class
   constructor(appOption: any) {
     super();
     appOption = normalizeArg(appOption);
-    const app = this;
-    (app as any).initialRestore = {};
-    (app as any).appid = appOption.appid || "sample";
+    //const app = this;
+    this.appid = appOption.appid || "sample";
     if (appOption.mapboxgl) {
-      (app as any).mapboxgl = appOption.mapboxgl;
+      this.mapboxgl = appOption.mapboxgl;
       if (appOption.mapboxToken) {
-        (app as any).mapboxgl.accessToken = appOption.mapboxToken;
+        this.mapboxgl.accessToken = appOption.mapboxToken;
       }
     }
-    (app as any).mapDiv = appOption.div || "map_div";
-    app.mapDivDocument = document.querySelector(`#${(app as any).mapDiv}`);
-    app.mapDivDocument.classList.add("maplat");
-    (app as any).logger = new Logger(
+    this.mapDiv = appOption.div || "map_div";
+    this.mapDivDocument = document.querySelector(`#${this.mapDiv}`);
+    this.mapDivDocument.classList.add("maplat");
+    this.logger = new Logger(
       appOption.debug ? LoggerLevel.ALL : LoggerLevel.INFO
     );
-    (app as any).enableCache = appOption.enableCache || false;
-    (app as any).stateBuffer = {};
-    // @ts-expect-error ts-migrate(2551) FIXME: Property 'translateUI' does not exist on type 'Map... Remove this comment to see the full error message
-    app.translateUI = appOption.translateUI;
+    this.enableCache = appOption.enableCache || false;
+    this.translateUI = appOption.translateUI;
     const setting = appOption.setting;
-    (app as any).lang = appOption.lang;
-    if (!(app as any).lang) {
-      (app as any).lang = browserLanguage();
+    this.lang = appOption.lang;
+    if (!this.lang) {
+      this.lang = browserLanguage();
     }
     if (
-      (app as any).lang.toLowerCase() == "zh-hk" ||
-      (app as any).lang.toLowerCase() == "zh-hant"
+      this.lang.toLowerCase() == "zh-hk" ||
+      this.lang.toLowerCase() == "zh-hant"
     )
-      (app as any).lang = "zh-TW";
+      this.lang = "zh-TW";
     if (appOption.restore) {
-      if (appOption.restoreSession) (app as any).restoreSession = true;
-      (app as any).initialRestore = appOption.restore;
+      if (appOption.restoreSession) this.restoreSession = true;
+      this.initialRestore = appOption.restore;
     } else if (appOption.restoreSession) {
-      (app as any).restoreSession = true;
+      this.restoreSession = true;
       // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string | 0' is not assignable to... Remove this comment to see the full error message
       const lastEpoch = parseInt(localStorage.getItem("epoch") || 0);
       const currentTime = Math.floor(new Date().getTime() / 1000);
       if (lastEpoch && currentTime - lastEpoch < 3600) {
-        (app as any).initialRestore.mapID =
+        this.initialRestore.mapID =
           localStorage.getItem("mapID") || localStorage.getItem("sourceID");
-        (app as any).initialRestore.backgroundID =
+        this.initialRestore.backgroundID =
           localStorage.getItem("backgroundID") ||
           localStorage.getItem("backID");
-        (app as any).initialRestore.position = {
-          // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string | null' is not assignable... Remove this comment to see the full error message
-          x: parseFloat(localStorage.getItem("x")),
-          // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string | null' is not assignable... Remove this comment to see the full error message
-          y: parseFloat(localStorage.getItem("y")),
-          // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string | null' is not assignable... Remove this comment to see the full error message
-          zoom: parseFloat(localStorage.getItem("zoom")),
-          // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string | null' is not assignable... Remove this comment to see the full error message
-          rotation: parseFloat(localStorage.getItem("rotation"))
+        this.initialRestore.position = {
+          x: parseFloat(localStorage.getItem("x") || "0"),
+          y: parseFloat(localStorage.getItem("y") || "0"),
+          zoom: parseFloat(localStorage.getItem("zoom") || "0"),
+          rotation: parseFloat(localStorage.getItem("rotation") || "0")
         };
-        (app as any).initialRestore.transparency = parseFloat(
-          // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string | 0' is not assignable to... Remove this comment to see the full error message
-          localStorage.getItem("transparency") || 0
+        this.initialRestore.transparency = parseFloat(
+          localStorage.getItem("transparency") || "0"
         );
-        (app as any).initialRestore.hideMarker = parseInt(
+        this.initialRestore.hideMarker = !!parseInt(
           localStorage.getItem("hideMarker") || "0"
-        )
-          ? true
-          : false;
-        (app as any).initialRestore.hideLayer = localStorage.getItem(
+        );
+        this.initialRestore.hideLayer = localStorage.getItem(
           "hideLayer"
         );
       }
@@ -121,34 +131,33 @@ export class MaplatApp extends EventTarget {
             style="position:absolute;top:50%;left:50%;margin-top:-10px;
             margin-left:-10px;" src="${redcircle}">`);
     for (let i = newElems.length - 1; i >= 0; i--) {
-      app.mapDivDocument.insertBefore(
+      this.mapDivDocument.insertBefore(
         newElems[i],
-        app.mapDivDocument.firstChild
+        this.mapDivDocument.firstChild
       );
     }
-    const prevDefs = app.mapDivDocument.querySelectorAll(".prevent-default");
+    const prevDefs = this.mapDivDocument.querySelectorAll(".prevent-default");
     for (let i = 0; i < prevDefs.length; i++) {
       const target = prevDefs[i];
       target.addEventListener("touchstart", (evt: any) => {
         evt.preventDefault();
       });
     }
-    (app as any).overlay = "overlay" in appOption ? appOption.overlay : true;
-    if ((app as any).overlay) {
-      app.mapDivDocument.classList.add("with-opacity");
+    this.overlay = "overlay" in appOption ? appOption.overlay : true;
+    if (this.overlay) {
+      this.mapDivDocument.classList.add("with-opacity");
     }
-    (app as any).waitReady = app
+    this.waitReady = this
       .settingLoader(setting)
-      .then(x => app.handleSetting(x, appOption));
+      .then(x => this.handleSetting(x, appOption));
   }
   // Async initializers 1: Load application setting
   async settingLoader(setting: any) {
-    const app = this;
     return (
       setting ||
       new Promise((resolve, _reject) => {
         const xhr = new XMLHttpRequest();
-        xhr.open("GET", `apps/${(app as any).appid}.json`, true);
+        xhr.open("GET", `apps/${this.appid}.json`, true);
         xhr.responseType = "json";
         xhr.onload = function (_e) {
           let value = this.response;
@@ -161,15 +170,13 @@ export class MaplatApp extends EventTarget {
   }
   // Async initializers 3: Load i18n setting
   async i18nLoader() {
-    const app = this;
     return new Promise((resolve, _reject) => {
       const localesFlag = Object.keys(locales).length != 0;
       const translib =
-        // @ts-expect-error ts-migrate(2551) FIXME: Property 'translateUI' does not exist on type 'Map... Remove this comment to see the full error message
-        app.translateUI && !localesFlag ? i18n.use(i18nxhr) : i18n;
+        this.translateUI && !localesFlag ? i18n.use(i18nxhr) : i18n;
       translib.init(
         {
-          lng: (app as any).lang,
+          lng: this.lang,
           fallbackLng: ["en"],
           backend: {
             loadPath: "locales/{{lng}}/{{ns}}.json"
@@ -185,8 +192,8 @@ export class MaplatApp extends EventTarget {
   // Async initializer 6: Load pois setting => move to normalize_pois.js
   // Async initializer 8: Load sources setting asynchronous
   async sourcesLoader(mapReturnValue: any) {
-    const app = this;
-    const dataSource = (app as any).appData.sources;
+    const translate = this.translate;
+    const dataSource = this.appData.sources;
     const sourcePromise = [];
     const commonOption = {
       homePosition: mapReturnValue.homePos,
@@ -194,9 +201,9 @@ export class MaplatApp extends EventTarget {
       zoomRestriction: mapReturnValue.zoomRestriction,
       mercMinZoom: mapReturnValue.mercMinZoom,
       mercMaxZoom: mapReturnValue.mercMaxZoom,
-      enableCache: (app as any).enableCache,
+      enableCache: this.enableCache,
       translator(fragment: any) {
-        return app.translate(fragment);
+        return translate(fragment);
       }
     };
     for (let i = 0; i < dataSource.length; i++) {
@@ -207,21 +214,19 @@ export class MaplatApp extends EventTarget {
   }
   // Async initializers 2: Handle application setting
   handleSetting(setting: any, appOption: any) {
-    const app = this;
-    (app as any).appData = normalizeArg(setting);
-    if (!(app as any).lang && (app as any).appData.lang) {
-      (app as any).lang = (app as any).appData.lang;
+    this.appData = normalizeArg(setting);
+    if (!this.lang && this.appData.lang) {
+      this.lang = this.appData.lang;
     }
-    return app.i18nLoader().then(x => app.handleI18n(x, appOption));
+    return this.i18nLoader().then(x => this.handleI18n(x, appOption));
   }
   // Async initializers 4: Handle i18n setting
   handleI18n(i18nObj: any, appOption: any) {
-    const app = this;
-    (app as any).i18n = i18nObj[1];
-    (app as any).t = i18nObj[0];
-    const mapReturnValue = app.prepareMap(appOption);
-    return normalizeLayers((app as any).appData.pois || [], app).then(x =>
-      app.handlePois(x, mapReturnValue)
+    this.i18n = i18nObj[1];
+    this.t = i18nObj[0];
+    const mapReturnValue = this.prepareMap(appOption);
+    return normalizeLayers(this.appData.pois || [], this).then(x =>
+      this.handlePois(x, mapReturnValue)
     );
   }
   // Async initializers 5: Prepare map base elements and objects
@@ -229,26 +234,24 @@ export class MaplatApp extends EventTarget {
     const app = this;
     appOption = normalizeArg(appOption);
     (app as any).mercBuffer = null;
-    const homePos = (app as any).appData.homePosition;
-    const defZoom = (app as any).appData.defaultZoom;
-    const zoomRestriction = (app as any).appData.zoomRestriction;
-    const mercMinZoom = (app as any).appData.minZoom;
-    const mercMaxZoom = (app as any).appData.maxZoom;
-    app.appName = (app as any).appData.appName;
-    const fakeGps = appOption.fake ? (app as any).appData.fakeGps : false;
-    const fakeRadius = appOption.fake ? (app as any).appData.fakeRadius : false;
-    (app as any).appLang = (app as any).appData.lang || "ja";
-    (app as any).noRotate =
-      appOption.noRotate || (app as any).appData.noRotate || false;
-    (app as any).poiTemplate =
-      appOption.poiTemplate || (app as any).appData.poiTemplate || false;
+    const homePos = this.appData.homePosition;
+    const defZoom = this.appData.defaultZoom;
+    const zoomRestriction = this.appData.zoomRestriction;
+    const mercMinZoom = this.appData.minZoom;
+    const mercMaxZoom = this.appData.maxZoom;
+    app.appName = this.appData.appName;
+    const fakeGps = appOption.fake ? this.appData.fakeGps : false;
+    const fakeRadius = appOption.fake ? this.appData.fakeRadius : false;
+    (app as any).appLang = this.appData.lang || "ja";
+    this.noRotate = appOption.noRotate || this.appData.noRotate || false;
+    this.poiTemplate =
+      appOption.poiTemplate || this.appData.poiTemplate || false;
     (app as any).poiStyle =
-      appOption.poiStyle || (app as any).appData.poiStyle || false;
+      appOption.poiStyle || this.appData.poiStyle || false;
     (app as any).iconTemplate =
-      appOption.iconTemplate || (app as any).appData.iconTemplate || false;
+      appOption.iconTemplate || this.appData.iconTemplate || false;
     app.currentPosition = null;
-    (app as any).backMap = null;
-    (app as any).__init = true;
+    this.__init = true;
     // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
     app.dispatchEvent(new CustomEvent("uiPrepare"));
     const frontDiv = `${(app as any).mapDiv}_front`;
@@ -259,8 +262,8 @@ export class MaplatApp extends EventTarget {
     app.mapDivDocument.insertBefore(newElem, app.mapDivDocument.firstChild);
     app.mapObject = new MaplatMap({
       div: frontDiv,
-      controls: (app as any).appData.controls || [],
-      interactions: (app as any).noRotate
+      controls: this.appData.controls || [],
+      interactions: this.noRotate
         ? defaults({ altShiftDragRotate: false, pinchRotate: false })
         : defaults().extend([
             new DragRotateAndZoom({
@@ -279,7 +282,7 @@ export class MaplatApp extends EventTarget {
           `position:absolute;"></div>`
       )[0];
       app.mapDivDocument.insertBefore(newElem, app.mapDivDocument.firstChild);
-      (app as any).backMap = new MaplatMap({
+      this.backMap = new MaplatMap({
         off_control: true,
         div: backDiv
       });
@@ -307,7 +310,7 @@ export class MaplatApp extends EventTarget {
         touchZoomRotate: false
       });
     }
-    (app as any).startFrom = (app as any).appData.startFrom;
+    (app as any).startFrom = this.appData.startFrom;
     app.lines = [];
     return {
       homePos,
@@ -374,11 +377,13 @@ export class MaplatApp extends EventTarget {
   // Async initializer 11: Handle map click event
   setMapClick() {
     const app = this;
-    app.mapObject.on("click", function (evt: any) {
-      (app as any).logger.debug(evt.pixel);
+    this.mapObject.on("click", function (evt: any) {
+      // @ts-expect-error ts-migrate(7053)
+      app.logger.debug(evt.pixel);
       // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
       const feature = this.forEachFeatureAtPixel(evt.pixel, (feature: any) => {
-        (app as any).logger.debug(evt.pixel);
+        // @ts-expect-error ts-migrate(7053)
+        app.logger.debug(evt.pixel);
         if (feature.get("datum")) return feature;
       });
       if (feature) {
@@ -539,32 +544,30 @@ export class MaplatApp extends EventTarget {
   }
   // Async initializer 15: Handle back map's behavior
   setBackMapBehavior() {
-    const app = this;
-    const backMapMove = function (_evt: any) {
-      if (!(app as any).backMap) return;
-      // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+    const backMapMove = (_evt: any) => {
+      if (!this.backMap) return;
       if (this._backMapMoving) {
-        (app as any).logger.debug("Backmap moving skipped");
+        // @ts-expect-error ts-migrate(7053)
+        this.logger.debug("Backmap moving skipped");
         return;
       }
-      const backSrc = (app as any).backMap.getSource();
+      const backSrc = this.backMap!.getSource();
       if (backSrc) {
-        // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         this._backMapMoving = true;
-        (app as any).logger.debug("Backmap moving started");
-        // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const self = this;
-        app.convertParametersFromCurrent(backSrc, (size: any) => {
-          const view = (app as any).backMap.getView();
+        // @ts-expect-error ts-migrate(7053)
+        this.logger.debug("Backmap moving started");
+        this.convertParametersFromCurrent(backSrc, (size: any) => {
+          const view = this.backMap!.getView();
           view.setCenter(size[0]);
           view.setZoom(size[1]);
-          view.setRotation((app as any).noRotate ? 0 : size[2]);
-          (app as any).logger.debug("Backmap moving ended");
-          self._backMapMoving = false;
+          view.setRotation(this.noRotate ? 0 : size[2]);
+          // @ts-expect-error ts-migrate(7053)
+          this.logger.debug("Backmap moving ended");
+          this._backMapMoving = false;
         });
       }
     };
-    app.mapObject.on("postrender", backMapMove);
+    this.mapObject.on("postrender", backMapMove);
   }
   // Async initializer 16: Handle back map's behavior
   raiseChangeViewPoint() {
@@ -1049,14 +1052,14 @@ export class MaplatApp extends EventTarget {
             const backRestore = restore.backgroundID
               ? app.cacheHash[restore.backgroundID]
               : undefined;
-            if ((app as any).backMap) {
+            if (this.backMap) {
               // Overlay = true case:
-              backSrc = (app as any).backMap.getSource(); // Get current source of background map
+              backSrc = this.backMap.getSource(); // Get current source of background map
               if (!(to instanceof NowMap)) {
                 // If new foreground source is nonlinear map:
                 if (backRestore) {
                   backTo = backRestore;
-                  (app as any).backMap.exchangeSource(backTo);
+                  this.backMap.exchangeSource(backTo);
                 } else {
                   if (!backSrc) {
                     // If current background source is not set, specify it
@@ -1068,7 +1071,7 @@ export class MaplatApp extends EventTarget {
                           : // If current foreground is TMS overlay, set current basemap as new background
                             app.from; // If current foreground source is basemap, set current foreground as new background
                     }
-                    (app as any).backMap.exchangeSource(backTo);
+                    this.backMap.exchangeSource(backTo);
                   } else {
                     // If current background source is set, use it again
                     backTo = backSrc;
@@ -1077,7 +1080,7 @@ export class MaplatApp extends EventTarget {
                 app.requestUpdateState({ backgroundID: backTo.mapID });
               } else if (to instanceof NowMap) {
                 // If new foreground source is basemap or TMS overlay, remove source from background map
-                (app as any).backMap.exchangeSource();
+                this.backMap.exchangeSource();
               }
               // Overlay = true case: end
             }
@@ -1111,15 +1114,15 @@ export class MaplatApp extends EventTarget {
             app.from = to;
             app.dispatchPoiNumber();
             const view = app.mapObject.getView();
-            if ((app as any).appData.zoomRestriction) {
+            if (this.appData.zoomRestriction) {
               view.setMaxZoom(to.maxZoom);
               view.setMinZoom(to.minZoom || 0);
             }
             if (to.insideCheckHistMapCoords(size[0])) {
               view.setCenter(size[0]);
               view.setZoom(size[1]);
-              view.setRotation((app as any).noRotate ? 0 : size[2]);
-            } else if (!(app as any).__init) {
+              view.setRotation(this.noRotate ? 0 : size[2]);
+            } else if (!this.__init) {
               app.dispatchEvent(new CustomEvent("outOfMap", {}));
               to.goHome();
             }
@@ -1152,23 +1155,23 @@ export class MaplatApp extends EventTarget {
             app.mapObject.updateSize();
             app.mapObject.renderSync();
             if (restore.position) {
-              (app as any).__init = false;
+              this.__init = false;
               to.setViewpoint(restore.position);
             }
             if (restore.transparency) {
               app.setTransparency(restore.transparency);
             }
-            if ((app as any).__init == true) {
-              (app as any).__init = false;
+            if (this.__init == true) {
+              this.__init = false;
               to.goHome();
-            } else if ((app as any).backMap && backTo) {
+            } else if (this.backMap && backTo) {
               app.convertParametersFromCurrent(backTo, (size: any) => {
-                const view = (app as any).backMap.getView();
+                const view = this.backMap!.getView();
                 view.setCenter(size[0]);
                 view.setZoom(size[1]);
-                view.setRotation((app as any).noRotate ? 0 : size[2]);
-                (app as any).backMap.updateSize();
-                (app as any).backMap.renderSync();
+                view.setRotation(this.noRotate ? 0 : size[2]);
+                this.backMap!.updateSize();
+                this.backMap!.renderSync();
               });
             }
             // @ts-expect-error ts-migrate(2794) FIXME: Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
