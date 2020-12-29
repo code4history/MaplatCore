@@ -460,37 +460,36 @@ export class MaplatApp extends EventTarget {
   }
   // Async initializer 13: Handle map UI on/off
   setMapOnOff() {
-    const app = this;
     // MapUI on off
     let timer: any;
-    app.mapObject.on("click", () => {
+    this.mapObject.on("click", () => {
       if (timer) {
         clearTimeout(timer);
         timer = undefined;
       }
-      const ctls = app.mapDivDocument.querySelectorAll(".ol-control");
+      const ctls = this.mapDivDocument.querySelectorAll(".ol-control");
       for (let i = 0; i < ctls.length; i++) {
         ctls[i].classList.remove("fade");
       }
     });
-    app.mapObject.on("pointerdrag", () => {
+    this.mapObject.on("pointerdrag", () => {
       if (timer) {
         clearTimeout(timer);
         timer = undefined;
       }
-      const ctls = app.mapDivDocument.querySelectorAll(".ol-control");
+      const ctls = this.mapDivDocument.querySelectorAll(".ol-control");
       for (let i = 0; i < ctls.length; i++) {
         ctls[i].classList.add("fade");
       }
     });
-    app.mapObject.on("moveend", () => {
+    this.mapObject.on("moveend", () => {
       if (timer) {
         clearTimeout(timer);
         timer = undefined;
       }
       timer = setTimeout(() => {
         timer = undefined;
-        const ctls = app.mapDivDocument.querySelectorAll(".ol-control");
+        const ctls = this.mapDivDocument.querySelectorAll(".ol-control");
         for (let i = 0; i < ctls.length; i++) {
           ctls[i].classList.remove("fade");
         }
