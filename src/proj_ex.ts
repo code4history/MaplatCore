@@ -6,7 +6,7 @@ import {
 } from "ol/proj";
 
 // Direct transforamation between 2 projection
-export function transformDirect(xy: any, src: any, dist: any) {
+export function transformDirect(xy: any, src: any, dist: any = undefined) {
   if (!dist) {
     dist = src;
     src = xy;

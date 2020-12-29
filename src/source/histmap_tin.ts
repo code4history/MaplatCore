@@ -1,10 +1,10 @@
 import { HistMap } from "./histmap";
-// @ts-expect-error ts-migrate(7016) FIXME: Could not find a declaration file for module '@map... Remove this comment to see the full error message
+// @ts-expect-error ts-migrate(7016)
 import Tin from "@maplat/tin";
 import {
   addCoordinateTransforms,
   addProjection,
-  // @ts-expect-error ts-migrate(2459) FIXME: Module '"../../node_modules/@types/ol/proj"' decla... Remove this comment to see the full error message
+  // @ts-expect-error ts-migrate(2459)
   Projection,
   toLonLat
 } from "ol/proj";
@@ -44,7 +44,6 @@ export class HistMap_tin extends HistMap {
       xy => obj.tins[0].transform(xy, false),
       merc => obj.tins[0].transform(merc, true)
     );
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
     transformDirect("EPSG:4326", proj);
     if (options.compiled) {
       obj.tins[0].setCompiled(options.compiled);
@@ -77,7 +76,6 @@ export class HistMap_tin extends HistMap {
           xy => tin.transform(xy, false, true),
           merc => tin.transform(merc, true, true)
         );
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
         transformDirect("EPSG:4326", proj);
         if (sub_map.compiled) {
           tin.setCompiled(sub_map.compiled);
