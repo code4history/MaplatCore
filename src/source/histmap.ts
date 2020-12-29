@@ -67,16 +67,16 @@ export class HistMap extends setCustomFunction(XYZ) {
         const x = coord[1];
         const y = coord[2];
         if (
-          // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+          // @ts-expect-error ts-migrate(2683)
           x * tileSize * Math.pow(2, this.maxZoom - z) >= this.width ||
-          // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+          // @ts-expect-error ts-migrate(2683)
           y * tileSize * Math.pow(2, this.maxZoom - z) >= this.height ||
           x < 0 ||
           y < 0
         ) {
           return transPng;
         }
-        // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+        // @ts-expect-error ts-migrate(2683)
         return this._tileUrlFunction(coord);
       };
 
@@ -86,10 +86,10 @@ export class HistMap extends setCustomFunction(XYZ) {
       this.mapID = options.mapID;
     }
     if (options.urls) {
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
+      // @ts-expect-error ts-migrate(2554)
       this._tileUrlFunction = createFromTemplates(options.urls);
     } else if (options.url) {
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
+      // @ts-expect-error ts-migrate(2554)
       this._tileUrlFunction = createFromTemplates(expandUrl(options.url));
     }
 
