@@ -770,8 +770,7 @@ export class MaplatApp extends EventTarget {
     }
   }
   updateMarker(id: any, data: any, overwrite: any) {
-    const app = this;
-    const poi = app.getMarker(id);
+    const poi = this.getMarker(id);
     if (!poi) return;
     data = normalizePoi(data || {});
     if (overwrite) {
@@ -791,7 +790,7 @@ export class MaplatApp extends EventTarget {
         }
       });
     }
-    app.redrawMarkers();
+    this.redrawMarkers();
   }
   addMarker(data: any, clusterId: any) {
     if (!clusterId) {
@@ -819,49 +818,47 @@ export class MaplatApp extends EventTarget {
     }
   }
   removeMarker(id: any) {
-    const app = this;
     if (id.indexOf("#") < 0) {
-      Object.keys(app.pois).map(key => {
-        app.pois[key].pois.map((poi: any, i: any) => {
+      Object.keys(this.pois).map(key => {
+        this.pois[key].pois.map((poi: any, i: any) => {
           if (poi.id == id) {
-            delete app.pois[key].pois[i];
-            app.dispatchPoiNumber();
-            app.redrawMarkers();
+            delete this.pois[key].pois[i];
+            this.dispatchPoiNumber();
+            this.redrawMarkers();
           }
         });
       });
     } else {
       const splits = id.split("#");
-      const source = app.cacheHash[splits[0]];
+      const source = this.cacheHash[splits[0]];
       if (source) {
         source.removePoi(splits[1]);
-        app.dispatchPoiNumber();
-        app.redrawMarkers();
+        this.dispatchPoiNumber();
+        this.redrawMarkers();
       }
     }
   }
   clearMarker(clusterId: any) {
-    const app = this;
     if (!clusterId) {
       clusterId = "main";
     }
     if (clusterId.indexOf("#") < 0) {
       if (clusterId == "all") {
-        Object.keys(app.pois).map(key => {
-          app.pois[key]["pois"] = [];
+        Object.keys(this.pois).map(key => {
+          this.pois[key]["pois"] = [];
         });
-      } else if (app.pois[clusterId]) {
-        app.pois[clusterId]["pois"] = [];
+      } else if (this.pois[clusterId]) {
+        this.pois[clusterId]["pois"] = [];
       } else return;
-      app.dispatchPoiNumber();
-      app.redrawMarkers();
+      this.dispatchPoiNumber();
+      this.redrawMarkers();
     } else {
       const splits = clusterId.split("#");
-      const source = app.cacheHash[splits[0]];
+      const source = this.cacheHash[splits[0]];
       if (source) {
         source.clearPoi(splits[1]);
-        app.dispatchPoiNumber();
-        app.redrawMarkers();
+        this.dispatchPoiNumber();
+        this.redrawMarkers();
       }
     }
   }
