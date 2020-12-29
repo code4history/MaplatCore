@@ -213,7 +213,6 @@ export class HistMap_tin extends HistMap {
 
   mapSize2MercSize(callback: any) {
     const xy = [this.width / 2, this.height / 2];
-    const self = this;
     this
       .xy2MercAsync_returnLayer(xy)
       .then((results: any) => {
@@ -271,22 +270,19 @@ export class HistMap_tin extends HistMap {
 
   // 画面サイズと地図ズームから、メルカトル座標上での5座標を取得する。zoom, rotate無指定の場合は自動取得
   size2MercsAsync(center: any, zoom: any, rotate: any) {
-    const self = this;
     const cross = this.size2Xys(center, zoom, rotate).map((xy, index) => {
       if (index == 5) return xy;
-      return self.histMapCoords2Xy(xy);
+      return this.histMapCoords2Xy(xy);
     });
-    const promise = self.xy2MercAsync_returnLayer(cross[0]);
+    const promise = this.xy2MercAsync_returnLayer(cross[0]);
     return promise
-      .then(results => {
-        // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
+      .then((results : any) => {
         const index = results[0];
-        // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
         const centerMerc = results[1];
         const promises = cross.map((val, i) => {
           if (i == 5) return val;
           if (i == 0) return Promise.resolve(centerMerc);
-          return self.xy2MercAsync_specifyLayer(val, index);
+          return this.xy2MercAsync_specifyLayer(val, index);
         });
         return Promise.all(promises).catch(err => {
           throw err;
