@@ -99,8 +99,7 @@ export class HistMap_tin extends HistMap {
   }
 
   xy2MercAsync_specifyLayer(xy: any, layerId: any) {
-    const self = this;
-    const layerKey = `Illst:${self.mapID}${layerId ? `#${layerId}` : ""}`;
+    const layerKey = `Illst:${this.mapID}${layerId ? `#${layerId}` : ""}`;
     return new Promise((resolve, _reject) => {
       resolve(transformDirect(xy, layerKey, "EPSG:3857"));
     }).catch(err => {
@@ -109,8 +108,7 @@ export class HistMap_tin extends HistMap {
   }
 
   merc2XyAsync_specifyLayer(merc: any, layerId: any) {
-    const self = this;
-    const layerKey = `Illst:${self.mapID}${layerId ? `#${layerId}` : ""}`;
+    const layerKey = `Illst:${this.mapID}${layerId ? `#${layerId}` : ""}`;
     return new Promise((resolve, _reject) => {
       resolve(transformDirect(merc, "EPSG:3857", layerKey));
     }).catch(err => {
@@ -119,9 +117,8 @@ export class HistMap_tin extends HistMap {
   }
 
   xy2MercAsync_returnLayer(xy: any) {
-    const self = this;
     return new Promise((resolve, reject) => {
-      const tinSorted = self.tins
+      const tinSorted = this.tins
         .map((tin: any, index: any) => [index, tin])
         .sort((a: any, b: any) => (a[1].priority < b[1].priority ? 1 : -1));
 
@@ -129,7 +126,7 @@ export class HistMap_tin extends HistMap {
         const index = tinSorted[i][0];
         const tin = tinSorted[i][1];
         if (index == 0 || booleanPointInPolygon(xy, tin.xyBounds)) {
-          self
+          this
             .xy2MercAsync_specifyLayer(xy, index)
             .then(merc => {
               resolve([index, merc]);
@@ -146,15 +143,13 @@ export class HistMap_tin extends HistMap {
   }
 
   merc2XyAsync_returnLayer(merc: any) {
-    const self = this;
     return Promise.all(
-      self.tins.map(
+      this.tins.map(
         (tin: any, index: any) =>
           new Promise((resolve, reject) => {
-            self
+            this
               .merc2XyAsync_specifyLayer(merc, index)
-              .then(xy => {
-                // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
+              .then((xy: any) => {
                 if (index == 0 || booleanPointInPolygon(xy, tin.xyBounds)) {
                   resolve([tin, index, xy]);
                 } else {
