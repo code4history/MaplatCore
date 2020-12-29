@@ -328,8 +328,7 @@ export class HistMap_tin extends HistMap {
   }
 
   mercs2XysAsync(mercs: any) {
-    const self = this;
-    const promises = self.merc2XyAsync_returnLayer(mercs[0]).then(results => {
+    const promises = this.merc2XyAsync_returnLayer(mercs[0]).then(results => {
       let hide = false;
       return Promise.all(
         results.map((result: any, i: any) => {
@@ -344,7 +343,7 @@ export class HistMap_tin extends HistMap {
             mercs.map((merc: any, j: any) => {
               if (j == 5) return merc;
               if (j == 0) return Promise.resolve(centerXy);
-              return self.merc2XyAsync_specifyLayer(merc, index);
+              return this.merc2XyAsync_specifyLayer(merc, index);
             })
           );
         })
@@ -352,14 +351,13 @@ export class HistMap_tin extends HistMap {
     });
     return promises
       .then(results =>
-        results.map(result => {
+        results.map((result: any) => {
           if (!result) {
             return;
           }
-          // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
           return result.map((xy: any, i: any) => {
             if (i == 5) return xy;
-            return self.xy2HistMapCoords(xy);
+            return this.xy2HistMapCoords(xy);
           });
         })
       )
