@@ -1,49 +1,43 @@
-import { Map, Feature, Geolocation, MapEvent } from "ol";
-import { View } from "./view_ex";
-import { Group, Tile, Vector as layerVector } from "ol/layer";
-import { Vector as sourceVector } from "ol/source";
-import { Point, Circle, LineString, Polygon } from "ol/geom";
-import { Style, Icon, Stroke, Fill } from "ol/style";
-import { MapboxMap } from "./source/mapboxmap";
-import { NowMap } from "./source/nowmap";
-import { getDistance, randomFromCenter } from "./math_ex";
-import { MapboxLayer } from "./layer_mapbox";
-import { normalizeArg } from "./functions";
+import {Feature, Geolocation, Map, MapEvent} from "ol";
+import {View} from "./view_ex";
+import {Group, Tile, Vector as layerVector} from "ol/layer";
+import {Vector as sourceVector} from "ol/source";
+import {Circle, LineString, Point, Polygon} from "ol/geom";
+import {Fill, Icon, Stroke, Style} from "ol/style";
+import {MapboxMap} from "./source/mapboxmap";
+import {NowMap} from "./source/nowmap";
+import {getDistance, randomFromCenter} from "./math_ex";
+import {MapboxLayer} from "./layer_mapbox";
+import {normalizeArg} from "./functions";
 
 import bluedot from "../parts/bluedot.png";
 import bluedot_transparent from "../parts/bluedot_transparent.png";
 import bluedot_small from "../parts/bluedot_small.png";
 import defaultpin from "../parts/defaultpin.png";
+import IconAnchorUnits from "ol/style/IconAnchorUnits";
 import {HistMap} from "./source/histmap";
-import TileSource from "ol/source/Tile";
 
 const gpsStyle = new Style({
   image: new Icon({
     anchor: [0.5, 0.5],
-    // @ts-expect-error ts-migrate(2322) FIXME: Type '"fraction"' is not assignable to type 'IconA... Remove this comment to see the full error message
-    anchorXUnits: "fraction",
-    // @ts-expect-error ts-migrate(2322) FIXME: Type '"fraction"' is not assignable to type 'IconA... Remove this comment to see the full error message
-    anchorYUnits: "fraction",
+    anchorXUnits: IconAnchorUnits.FRACTION,
+    anchorYUnits: IconAnchorUnits.FRACTION,
     src: bluedot
   })
 });
 const gpsHideStyle = new Style({
   image: new Icon({
     anchor: [0.5, 0.5],
-    // @ts-expect-error ts-migrate(2322) FIXME: Type '"fraction"' is not assignable to type 'IconA... Remove this comment to see the full error message
-    anchorXUnits: "fraction",
-    // @ts-expect-error ts-migrate(2322) FIXME: Type '"fraction"' is not assignable to type 'IconA... Remove this comment to see the full error message
-    anchorYUnits: "fraction",
+    anchorXUnits: IconAnchorUnits.FRACTION,
+    anchorYUnits: IconAnchorUnits.FRACTION,
     src: bluedot_transparent
   })
 });
 const gpsSubStyle = new Style({
   image: new Icon({
     anchor: [0.5, 0.5],
-    // @ts-expect-error ts-migrate(2322) FIXME: Type '"fraction"' is not assignable to type 'IconA... Remove this comment to see the full error message
-    anchorXUnits: "fraction",
-    // @ts-expect-error ts-migrate(2322) FIXME: Type '"fraction"' is not assignable to type 'IconA... Remove this comment to see the full error message
-    anchorYUnits: "fraction",
+    anchorXUnits: IconAnchorUnits.FRACTION,
+    anchorYUnits: IconAnchorUnits.FRACTION,
     src: bluedot_small
   })
 });
@@ -59,10 +53,8 @@ const accCircleStyle = new Style({
 const markerDefaultStyle = new Style({
   image: new Icon({
     anchor: [0.5, 1.0],
-    // @ts-expect-error ts-migrate(2322) FIXME: Type '"fraction"' is not assignable to type 'IconA... Remove this comment to see the full error message
-    anchorXUnits: "fraction",
-    // @ts-expect-error ts-migrate(2322) FIXME: Type '"fraction"' is not assignable to type 'IconA... Remove this comment to see the full error message
-    anchorYUnits: "fraction",
+    anchorXUnits: IconAnchorUnits.FRACTION,
+    anchorYUnits: IconAnchorUnits.FRACTION,
     src: defaultpin
   })
 });
@@ -73,6 +65,7 @@ export class MaplatMap extends Map {
   fakeRadius: any;
   geolocation: any;
   homePosition: any;
+  __AvoidFirstMoveStart: boolean;
   constructor(optOptions: any) {
     optOptions = normalizeArg(optOptions || {});
     const vectorLayer = new layerVector({
@@ -134,15 +127,14 @@ export class MaplatMap extends Map {
     this.fakeRadius = optOptions.fakeRadius;
     this.homePosition = optOptions.homePosition;
     const view = this.getView();
-    const self = this;
-    (self as any).__AvoidFirstMoveStart = true;
+    this.__AvoidFirstMoveStart = true;
     const movestart = () => {
-      if (!(self as any).__AvoidFirstMoveStart) self.dispatchEvent("movestart");
-      (self as any).__AvoidFirstMoveStart = false;
+      if (!this.__AvoidFirstMoveStart) this.dispatchEvent("movestart");
+      this.__AvoidFirstMoveStart = false;
       view.un("propertychange", movestart);
     };
     view.on("propertychange", movestart);
-    self.on("moveend", () => {
+    this.on("moveend", () => {
       view.on("propertychange", movestart);
     });
   }
@@ -236,10 +228,8 @@ export class MaplatMap extends Map {
       markerStyle = new Style({
         image: new Icon({
           anchor: [0.5, 1.0],
-          // @ts-expect-error ts-migrate(2322) FIXME: Type '"fraction"' is not assignable to type 'IconA... Remove this comment to see the full error message
-          anchorXUnits: "fraction",
-          // @ts-expect-error ts-migrate(2322) FIXME: Type '"fraction"' is not assignable to type 'IconA... Remove this comment to see the full error message
-          anchorYUnits: "fraction",
+          anchorXUnits: IconAnchorUnits.FRACTION,
+          anchorYUnits: IconAnchorUnits.FRACTION,
           src: markerStyle
         })
       });
@@ -339,7 +329,7 @@ export class MaplatMap extends Map {
     source.setGPSMarker(position, ignoreMove);
   }
   handleGPS(launch: any, avoidEventForOff: any) {
-    const map = this;
+    //const map = this;
     if (launch) {
       this.dispatchEvent("gps_request");
       this._first_gps_request = true;
@@ -349,55 +339,52 @@ export class MaplatMap extends Map {
         }));
         // listen to changes in position
         geolocation.on("change", _evt => {
-          const overlayLayer = map.getLayer("overlay").getLayers().item(0);
+          const overlayLayer = this.getLayer("overlay").getLayers().item(0);
           const source = overlayLayer
             ? overlayLayer.getSource()
-            : (map.getLayers().item(0) as any).getSource();
+            : (this.getLayers().item(0) as any).getSource();
           let lnglat = geolocation.getPosition();
           let acc = geolocation.getAccuracy();
           if (
-            map.fakeGps &&
-            // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'Coordinate | undefined' is not a... Remove this comment to see the full error message
-            getDistance(map.homePosition, lnglat) > map.fakeGps
+            this.fakeGps &&
+            getDistance(this.homePosition, lnglat as [number, number]) > this.fakeGps
           ) {
             lnglat = [
-              randomFromCenter(map.homePosition[0], 0.001),
-              randomFromCenter(map.homePosition[1], 0.001)
+              randomFromCenter(this.homePosition[0], 0.001),
+              randomFromCenter(this.homePosition[1], 0.001)
             ];
             acc = randomFromCenter(15.0, 10);
           }
-          let gpsVal = { lnglat, acc };
+          let gpsVal: any = { lnglat, acc };
           source
-            .setGPSMarkerAsync(gpsVal, !map._first_gps_request)
+            .setGPSMarkerAsync(gpsVal, !this._first_gps_request)
             .then((result: any) => {
               if (!result) {
-                // @ts-expect-error ts-migrate(2322) FIXME: Type '{ error: string; }' is not assignable to typ... Remove this comment to see the full error message
                 gpsVal = { error: "gps_out" };
               }
-              map._first_gps_request = false;
-              // @ts-expect-error ts-migrate(2345) FIXME: Argument of type '{ lnglat: Coordinate | undefined... Remove this comment to see the full error message
-              map.dispatchEvent(new MapEvent("gps_result", map, gpsVal));
+              this._first_gps_request = false;
+              this.dispatchEvent(new MapEvent("gps_result", this, gpsVal));
             });
         });
         geolocation.on("error", _evt => {
-          const source = (map.getLayers().item(0) as any).getSource();
+          const source = (this.getLayers().item(0) as any).getSource();
           let gpsVal: any = null;
-          if (map.fakeGps) {
+          if (this.fakeGps) {
             const lnglat = [
-              randomFromCenter(map.homePosition[0], 0.001),
-              randomFromCenter(map.homePosition[1], 0.001)
+              randomFromCenter(this.homePosition[0], 0.001),
+              randomFromCenter(this.homePosition[1], 0.001)
             ];
             const acc = randomFromCenter(15.0, 10);
             gpsVal = { lnglat, acc };
           }
-          source
-            .setGPSMarkerAsync(gpsVal, !map._first_gps_request)
+          (source as NowMap | HistMap)
+            .setGPSMarkerAsync(gpsVal, !this._first_gps_request)
             .then((result: any) => {
               if (!result) {
                 gpsVal = { error: "gps_out" };
               }
-              map._first_gps_request = false;
-              map.dispatchEvent(new MapEvent("gps_result", map, gpsVal));
+              this._first_gps_request = false;
+              this.dispatchEvent(new MapEvent("gps_result", this, gpsVal));
             });
         });
       } else {
@@ -409,8 +396,7 @@ export class MaplatMap extends Map {
       source.setGPSMarker();
       if (!avoidEventForOff)
         this.dispatchEvent(
-          // @ts-expect-error ts-migrate(2345) FIXME: Argument of type '{ error: string; }' is not assig... Remove this comment to see the full error message
-          new MapEvent("gps_result", map, { error: "gps_off" })
+          new MapEvent("gps_result", this, { error: "gps_off" } as any)
         );
     }
   }
