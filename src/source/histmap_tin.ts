@@ -214,7 +214,7 @@ export class HistMap_tin extends HistMap {
   mapSize2MercSize(callback: any) {
     const xy = [this.width / 2, this.height / 2];
     const self = this;
-    self
+    this
       .xy2MercAsync_returnLayer(xy)
       .then((results: any) => {
         const index = results[0];
@@ -227,18 +227,18 @@ export class HistMap_tin extends HistMap {
         ];
         const envelope = [
           [0, 0],
-          [self.width, 0],
-          [self.width, self.height],
-          [0, self.height]
+          [this.width, 0],
+          [this.width, this.height],
+          [0, this.height]
         ];
         const proms = [];
         for (let i = 0; i < 9; i++) {
           const prom =
             i < 4
-              ? self.xy2MercAsync_specifyLayer(dir4[i], index)
+              ? this.xy2MercAsync_specifyLayer(dir4[i], index)
               : i == 4
               ? Promise.resolve(mercCenter)
-              : self.xy2MercAsync_specifyLayer(envelope[i - 5], 0);
+              : this.xy2MercAsync_specifyLayer(envelope[i - 5], 0);
           proms.push(prom);
         }
         Promise.all(proms)
