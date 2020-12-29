@@ -368,17 +368,15 @@ export class HistMap_tin extends HistMap {
 
   xy2MercAsync(xy: any) {
     const convertXy = this.histMapCoords2Xy(xy);
-    // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
-    return this.xy2MercAsync_returnLayer(convertXy).then(ret => ret[1]);
+    return this.xy2MercAsync_returnLayer(convertXy).then((ret : any) => ret[1]);
   }
 
   merc2XyAsync(merc: any, ignoreBackside: any) {
-    const self = this;
     return this.merc2XyAsync_returnLayer(merc)
       .then(ret => {
         if (ignoreBackside && !ret[0]) return;
         const convertXy = !ret[0] ? ret[1][1] : ret[0][1];
-        return self.xy2HistMapCoords(convertXy);
+        return this.xy2HistMapCoords(convertXy);
       })
       .catch(err => {
         throw err;
