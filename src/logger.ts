@@ -8,13 +8,12 @@ export const LoggerLevel = {
 } as const;
 
 export class Logger {
+  level: number;
   constructor(level: any) {
-    const self = this;
-    (self as any).level = isNaN(level) ? LoggerLevel.INFO : level;
-    self.make();
+    this.level = isNaN(level) ? LoggerLevel.INFO : level;
+    this.make();
   }
   make() {
-    const self = this;
     for (const key in console) {
       // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
       const l = LoggerLevel[key.toUpperCase()];
@@ -22,7 +21,7 @@ export class Logger {
         // l=LoggerLevel.OFF;
         continue;
       }
-      if ((self as any).level <= l) {
+      if (this.level <= l) {
         // @ts-expect-error ts-migrate(2774) FIXME: This condition will always return true since the f... Remove this comment to see the full error message
         if (Function.bind) {
           // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
