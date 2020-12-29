@@ -83,10 +83,9 @@ const baseDict = {
 export function setCustomFunction(target) {
   class Mixin extends target {
     async getTileCacheSizeAsync() {
-      const self = this;
-      if (!self.weiwudi) return 0;
+      if (!this.weiwudi) return 0;
       try {
-        const stats = await self.weiwudi.stats();
+        const stats = await this.weiwudi.stats();
         return stats.size;
       } catch (e) {
         return 0;
@@ -94,10 +93,9 @@ export function setCustomFunction(target) {
     }
 
     async clearTileCacheAsync() {
-      const self = this;
-      if (!self.weiwudi) return;
+      if (!this.weiwudi) return;
       try {
-        await self.weiwudi.clean();
+        await this.weiwudi.clean();
       } catch (e) {} // eslint-disable-line no-empty
     }
 
@@ -107,7 +105,6 @@ export function setCustomFunction(target) {
 
     // 経緯度lnglat、メルカトルズームmercZoom、地図ズームzoom、方角direction、地図回転rotation等を指定し地図移動
     setViewpointRadian(cond) {
-      const self = this;
       let merc;
       let xy;
       const mercZoom = cond.mercZoom;
@@ -126,16 +123,16 @@ export function setCustomFunction(target) {
       if (cond.x != null && cond.y != null) {
         xy = [cond.x, cond.y];
       }
-      self
+      this
         .size2MercsAsync()
-        .then(mercs => self.mercs2MercSizeAsync(mercs))
+        .then(mercs => this.mercs2MercSizeAsync(mercs))
         .then(mercSize => {
-          const mercs = self.mercsFromGivenMercZoom(
+          const mercs = this.mercsFromGivenMercZoom(
             merc || mercSize[0],
             mercZoom || mercSize[1],
             direction != null ? direction : mercSize[2]
           );
-          self.mercs2SizeAsync(mercs).then(size => {
+          this.mercs2SizeAsync(mercs).then(size => {
             if (merc != null) {
               view.setCenter(size[0]);
             } else if (xy != null) {
