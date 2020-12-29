@@ -195,7 +195,7 @@ export class MaplatMap extends Map {
     const src = this.getSource(layer);
     src.clear();
   }
-  setGPSPosition(pos: any, type: any) {
+  setGPSPosition(pos: any, type: any = undefined) {
     const style =
       type == "sub" ? gpsSubStyle : type == "hide" ? gpsHideStyle : gpsStyle;
     if (type != "sub") {

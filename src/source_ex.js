@@ -172,8 +172,7 @@ export function setCustomFunction(target) {
     }
 
     setGPSMarkerAsync(position, ignoreMove) {
-      const self = this;
-      const map = self.getMap();
+      const map = this.getMap();
       const view = map.getView();
       if (!position) {
         return new Promise((resolve, _reject) => {
@@ -181,16 +180,16 @@ export function setCustomFunction(target) {
           resolve(true);
         });
       }
-      const mercs = self.mercsFromGPSValue(position.lnglat, position.acc);
+      const mercs = this.mercsFromGPSValue(position.lnglat, position.acc);
 
-      return self
+      return this
         .mercs2XysAsync(mercs)
         .then(results => {
           const hide = !results[0];
           const xys = hide ? results[1] : results[0];
           const sub = !hide ? results[1] : null;
           const pos = { xy: xys[0] };
-          if (!self.insideCheckHistMapCoords(xys[0])) {
+          if (!this.insideCheckHistMapCoords(xys[0])) {
             map.handleGPS(false, true);
             return false;
           }
@@ -203,7 +202,7 @@ export function setCustomFunction(target) {
                 Math.pow(curr[0] - pos.xy[0], 2) +
                   Math.pow(curr[1] - pos.xy[1], 2)
               );
-            return index == 3 ? ret / 4.0 : ret;
+            return index === 3 ? ret / 4.0 : ret;
           }, 0);
           if (!ignoreMove) view.setCenter(pos.xy);
           map.setGPSPosition(pos, hide ? "hide" : null);
@@ -260,7 +259,7 @@ export function setCustomFunction(target) {
     // 与えられた差分行列を回転。theta無指定の場合は自動取得
     rotateMatrix(xys, theta) {
       if (theta == null) {
-        theta = 1.0 * this._map.getView().getRotation();
+        theta = this._map.getView().getRotation();
       }
       const result = [];
       for (let i = 0; i < xys.length; i++) {
@@ -291,10 +290,9 @@ export function setCustomFunction(target) {
     // 画面サイズと地図ズームから、メルカトル座標上での5座標を取得する。zoom, rotate無指定の場合は自動取得
     size2MercsAsync(center, zoom, rotate) {
       const cross = this.size2Xys(center, zoom, rotate);
-      const self = this;
       const promises = cross.map((val, index) => {
-        if (index == 5) return val;
-        return self.xy2MercAsync(val);
+        if (index === 5) return val;
+        return this.xy2MercAsync(val);
       });
       return Promise.all(promises).catch(err => {
         throw err;
@@ -303,17 +301,16 @@ export function setCustomFunction(target) {
 
     // メルカトル5地点情報から地図サイズ情報（中心座標、サイズ、回転）を得る
     mercs2SizeAsync(mercs, asMerc) {
-      const self = this;
       const promises = asMerc
         ? Promise.resolve(mercs)
         : Promise.all(
             mercs.map((merc, index) => {
-              if (index == 5) return merc;
-              return self.merc2XyAsync(merc);
+              if (index === 5) return merc;
+              return this.merc2XyAsync(merc);
             })
           );
       return promises
-        .then(xys => self.xys2Size(xys))
+        .then(xys => this.xys2Size(xys))
         .catch(err => {
           throw err;
         });
