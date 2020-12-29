@@ -46,6 +46,7 @@ export class MaplatApp extends EventTarget {
   mobileMapMoveBuffer: any = undefined;
   overlay = true;
   waitReady: Promise<any>;
+  changeMapSeq: Promise<any> | undefined = undefined;
   i18n: any;
   t: any;
   lang: string;
@@ -391,7 +392,7 @@ export class MaplatApp extends EventTarget {
       } else {
         const xy = evt.coordinate;
         this.dispatchEvent(new CustomEvent("clickMapXy", xy));
-        this.from!.xy2MercAsync(xy).then((merc: any) => {
+        (this.from as NowMap | HistMap).xy2MercAsync(xy).then((merc: any) => {
           this.dispatchEvent(new CustomEvent("clickMapMerc", merc));
           const lnglat = transform(merc, "EPSG:3857", "EPSG:4326");
           this.dispatchEvent(
@@ -881,9 +882,8 @@ export class MaplatApp extends EventTarget {
       )
     );
   }
-  listPoiLayers(hideOnly: any, nonzero: any) {
-    const app = this;
-    const appPois = Object.keys(app.pois)
+  listPoiLayers(hideOnly: boolean, nonzero: boolean) {
+    const appPois = Object.keys(this.pois)
       .sort((a, b) => {
         if (a == "main") return -1;
         else if (b == "main") return 1;
@@ -891,7 +891,7 @@ export class MaplatApp extends EventTarget {
         else if (a > b) return 1;
         else return 0;
       })
-      .map(key => app.pois[key])
+      .map(key => this.pois[key])
       .filter(layer =>
         nonzero
           ? hideOnly
@@ -901,7 +901,7 @@ export class MaplatApp extends EventTarget {
           ? layer.hide
           : true
       );
-    const mapPois = app.from!.listPoiLayers(hideOnly, nonzero);
+    const mapPois = this.from!.listPoiLayers(hideOnly, nonzero);
     return appPois.concat(mapPois);
   }
   showPoiLayer(id: any) {
@@ -1000,21 +1000,20 @@ export class MaplatApp extends EventTarget {
     this.from!.setGPSMarker(position, true);
   }
   changeMap(mapID: any, restore: any) {
-    const app = this;
     if (!restore) restore = {};
-    const now = app.cacheHash["osm"];
-    const to = app.cacheHash[mapID];
-    if (!(app as any).changeMapSeq) {
-      (app as any).changeMapSeq = Promise.resolve();
+    const now = this.cacheHash["osm"];
+    const to: NowMap | HistMap = this.cacheHash[mapID];
+    if (!this.changeMapSeq) {
+      this.changeMapSeq = Promise.resolve();
     }
-    return ((app as any).changeMapSeq = (app as any).changeMapSeq.then(
+    return (this.changeMapSeq = this.changeMapSeq.then(
       () =>
         new Promise((resolve, _reject) => {
-          app.convertParametersFromCurrent(to, (size: any) => {
+          this.convertParametersFromCurrent(to, (size: any) => {
             let backSrc = null;
             let backTo = null;
             const backRestore = restore.backgroundID
-              ? app.cacheHash[restore.backgroundID]
+              ? this.cacheHash[restore.backgroundID]
               : undefined;
             if (this.backMap) {
               // Overlay = true case:
@@ -1028,12 +1027,12 @@ export class MaplatApp extends EventTarget {
                   if (!backSrc) {
                     // If current background source is not set, specify it
                     backTo = now;
-                    if (app.from instanceof NowMap) {
+                    if (this.from instanceof NowMap) {
                       backTo =
-                        app.from instanceof TmsMap
-                          ? app.mapObject.getSource()
+                        this.from instanceof TmsMap
+                          ? this.mapObject.getSource()
                           : // If current foreground is TMS overlay, set current basemap as new background
-                            app.from; // If current foreground source is basemap, set current foreground as new background
+                            this.from; // If current foreground source is basemap, set current foreground as new background
                     }
                     this.backMap.exchangeSource(backTo);
                   } else {
@@ -1041,7 +1040,7 @@ export class MaplatApp extends EventTarget {
                     backTo = backSrc;
                   }
                 }
-                app.requestUpdateState({ backgroundID: backTo.mapID });
+                this.requestUpdateState({ backgroundID: backTo.mapID });
               } else if (to instanceof NowMap) {
                 // If new foreground source is basemap or TMS overlay, remove source from background map
                 this.backMap.exchangeSource();
@@ -1050,21 +1049,21 @@ export class MaplatApp extends EventTarget {
             }
             if (to instanceof TmsMap) {
               // Foreground is TMS overlay case: set TMS as Layer
-              app.mapObject.setLayer(to);
+              this.mapObject.setLayer(to);
               // If current foreground is basemap then set it as basemap layer
               if (backRestore) {
-                app.mapObject.exchangeSource(backRestore);
-              } else if (!(app.from instanceof NowMap)) {
+                this.mapObject.exchangeSource(backRestore);
+              } else if (!(this.from instanceof NowMap)) {
                 const backToLocal = backSrc || now;
-                app.mapObject.exchangeSource(backToLocal);
+                this.mapObject.exchangeSource(backToLocal);
               }
-              app.requestUpdateState({
-                backgroundID: app.mapObject.getSource().mapID
+              this.requestUpdateState({
+                backgroundID: this.mapObject.getSource().mapID
               });
             } else {
               // Remove overlay from foreground and set current source to foreground
-              app.mapObject.setLayer();
-              app.mapObject.exchangeSource(to);
+              this.mapObject.setLayer();
+              this.mapObject.exchangeSource(to);
             }
             const updateState = {
               mapID: to.mapID
@@ -1072,12 +1071,12 @@ export class MaplatApp extends EventTarget {
             if (to instanceof NowMap && !(to instanceof TmsMap)) {
               (updateState as any).backgroundID = "____delete____";
             }
-            app.requestUpdateState(updateState);
+            this.requestUpdateState(updateState);
             // This must be here: Because, render process works after view.setCenter,
             // and Changing "from" content must be finished before "postrender" event
-            app.from = to;
-            app.dispatchPoiNumber();
-            const view = app.mapObject.getView();
+            this.from = to;
+            this.dispatchPoiNumber();
+            const view = this.mapObject.getView();
             if (this.appData.zoomRestriction) {
               view.setMaxZoom(to.maxZoom);
               view.setMinZoom(to.minZoom || 0);
@@ -1087,48 +1086,48 @@ export class MaplatApp extends EventTarget {
               view.setZoom(size[1]);
               view.setRotation(this.noRotate ? 0 : size[2]);
             } else if (!this.__init) {
-              app.dispatchEvent(new CustomEvent("outOfMap", {}));
+              this.dispatchEvent(new CustomEvent("outOfMap", {}));
               to.goHome();
             }
-            to.setGPSMarker(app.currentPosition, true);
+            to.setGPSMarker(this.currentPosition, true);
             if (restore.hideLayer) {
               const layers = restore.hideLayer.split(",");
               layers.map((key: any) => {
-                const layer = app.getPoiLayer(key);
+                const layer = this.getPoiLayer(key);
                 if (layer) {
                   layer.hide = true;
                 }
               });
-              app.requestUpdateState({ hideLayer: restore.hideLayer });
+              this.requestUpdateState({ hideLayer: restore.hideLayer });
             }
             if (restore.hideMarker) {
-              app.hideAllMarkers();
+              this.hideAllMarkers();
             } else {
-              app.redrawMarkers();
+              this.redrawMarkers();
             }
-            app.resetLine();
-            for (let i = 0; i < app.lines.length; i++) {
-              (function (data) {
-                app.setLine(data);
-              })(app.lines[i]);
+            this.resetLine();
+            for (let i = 0; i < this.lines.length; i++) {
+              (data => {
+                this.setLine(data);
+              })(this.lines[i]);
             }
-            app.dispatchEvent(
-              new CustomEvent("mapChanged", app.getMapMeta(to.mapID))
+            this.dispatchEvent(
+              new CustomEvent("mapChanged", this.getMapMeta(to.mapID))
             );
-            app.mapObject.updateSize();
-            app.mapObject.renderSync();
+            this.mapObject.updateSize();
+            this.mapObject.renderSync();
             if (restore.position) {
               this.__init = false;
               to.setViewpoint(restore.position);
             }
             if (restore.transparency) {
-              app.setTransparency(restore.transparency);
+              this.setTransparency(restore.transparency);
             }
             if (this.__init == true) {
               this.__init = false;
               to.goHome();
             } else if (this.backMap && backTo) {
-              app.convertParametersFromCurrent(backTo, (size: any) => {
+              this.convertParametersFromCurrent(backTo, (size: any) => {
                 const view = this.backMap!.getView();
                 view.setCenter(size[0]);
                 view.setZoom(size[1]);
@@ -1137,8 +1136,7 @@ export class MaplatApp extends EventTarget {
                 this.backMap!.renderSync();
               });
             }
-            // @ts-expect-error ts-migrate(2794) FIXME: Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
-            resolve();
+            resolve(undefined);
           });
         })
     ));
