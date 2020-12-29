@@ -462,16 +462,15 @@ export function setCustomFunction(target) {
     }
 
     listPoiLayers(hideOnly, nonzero) {
-      const self = this;
-      return Object.keys(self.pois)
+      return Object.keys(this.pois)
         .sort((a, b) => {
-          if (a == "main") return -1;
-          else if (b == "main") return 1;
+          if (a === "main") return -1;
+          else if (b === "main") return 1;
           else if (a < b) return -1;
           else if (a > b) return 1;
           else return 0;
         })
-        .map(key => self.pois[key])
+        .map(key => this.pois[key])
         .filter(layer =>
           nonzero
             ? hideOnly
@@ -488,7 +487,7 @@ export function setCustomFunction(target) {
     }
 
     addPoiLayer(id, data) {
-      if (id == "main") return;
+      if (id === "main") return;
       if (this.pois[id]) return;
       this.pois[id] = normalizeLayer(data || [], id, {
         name: this.officialTitle || this.title,
@@ -497,7 +496,7 @@ export function setCustomFunction(target) {
     }
 
     removePoiLayer(id) {
-      if (id == "main") return;
+      if (id === "main") return;
       if (!this.pois[id]) return;
       delete this.pois[id];
     }
@@ -611,8 +610,8 @@ export function setupTileLoadFunction(target) {
             tImage.onload = tImage.onerror = function () {
               if (tImage.width && tImage.height) {
                 const ctx = tCanv.getContext("2d");
-                const dx = sx == 0 ? 256 - sw : 0;
-                const dy = sy == 0 ? 256 - sh : 0;
+                const dx = sx === 0 ? 256 - sw : 0;
+                const dy = sy === 0 ? 256 - sh : 0;
                 sw = sx + sw > tImage.width ? tImage.width - sx : sw;
                 sh = sy + sh > tImage.height ? tImage.height - sy : sh;
                 ctx.drawImage(tImage, sx, sy, sw, sh, dx, dy, sw, sh);
@@ -673,7 +672,7 @@ export function setupTileLoadFunction(target) {
         const promises = [
           [[zoom, tileX, tileY], 0, 0, 256 - pixelXShift, 256 - pixelYShift]
         ];
-        if (pixelXShift != 0) {
+        if (pixelXShift !== 0) {
           promises.push([
             [zoom, tileX - 1, tileY],
             256 - pixelXShift,
@@ -682,7 +681,7 @@ export function setupTileLoadFunction(target) {
             256 - pixelYShift
           ]);
         }
-        if (pixelYShift != 0) {
+        if (pixelYShift !== 0) {
           promises.push([
             [zoom, tileX, tileY - 1],
             0,
@@ -690,7 +689,7 @@ export function setupTileLoadFunction(target) {
             256 - pixelXShift,
             pixelYShift
           ]);
-          if (pixelXShift != 0) {
+          if (pixelXShift !== 0) {
             promises.push([
               [zoom, tileX - 1, tileY - 1],
               256 - pixelXShift,
@@ -746,14 +745,14 @@ export async function mapSourceFactory(options, commonOptions) {
   options = normalizeArg(Object.assign(options, commonOptions));
   options.label = options.label || options.year;
   if (
-    options.maptype == "base" ||
-    options.maptype == "overlay" ||
-    options.maptype == "mapbox"
+    options.maptype === "base" ||
+    options.maptype === "overlay" ||
+    options.maptype === "mapbox"
   ) {
     const targetSrc =
-      options.maptype == "base"
+      options.maptype === "base"
         ? NowMap
-        : options.maptype == "overlay"
+        : options.maptype === "overlay"
         ? TmsMap
         : MapboxMap;
     if (options.zoomRestriction) {
@@ -790,7 +789,7 @@ export async function mapSourceFactory(options, commonOptions) {
     xhr.responseType = "json";
 
     xhr.onload = async function (_e) {
-      if (this.status == 200 || this.status == 0) {
+      if (this.status === 200 || this.status === 0) {
         // 0 for UIWebView
         try {
           let resp = this.response;
@@ -803,14 +802,14 @@ export async function mapSourceFactory(options, commonOptions) {
           if (!options.maptype) options.maptype = "maplat";
 
           if (
-            options.maptype == "base" ||
-            options.maptype == "overlay" ||
-            options.maptype == "mapbox"
+            options.maptype === "base" ||
+            options.maptype === "overlay" ||
+            options.maptype === "mapbox"
           ) {
             const targetSrc =
-              options.maptype == "base"
+              options.maptype === "base"
                 ? NowMap
-                : options.maptype == "overlay"
+                : options.maptype === "overlay"
                 ? TmsMap
                 : MapboxMap;
             if (options.zoomRestriction) {
