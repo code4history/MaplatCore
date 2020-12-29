@@ -162,33 +162,23 @@ export class HistMap_tin extends HistMap {
           })
       )
     )
-      .then(results =>
-        // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
+      .then((results: any) =>
         results
-          // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
-          .sort((a, b) => (a[0].priority < b[0].priority ? 1 : -1))
-          .reduce((ret, result, priIndex, arry) => {
-            // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
+          .sort((a: any, b: any) => (a[0].priority < b[0].priority ? 1 : -1))
+          .reduce((ret: any, result: any, priIndex: number, arry: any) => {
             const tin = result[0];
-            // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
             const index = result[1];
-            // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
             const xy = result[2];
             if (!xy) return ret;
             for (let i = 0; i < priIndex; i++) {
-              // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
               const targetTin = arry[i][0];
-              // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
               const targetIndex = arry[i][1];
               if (
                 targetIndex == 0 ||
                 booleanPointInPolygon(xy, targetTin.xyBounds)
               ) {
-                // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
                 if (ret.length) {
-                  // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
                   const hide = !ret[0];
-                  // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
                   const storedTin = hide ? ret[1][2] : ret[0][2];
                   if (!hide || tin.importance < storedTin.importance) {
                     return ret;
@@ -200,18 +190,15 @@ export class HistMap_tin extends HistMap {
                 }
               }
             }
-            // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
             if (!ret.length || !ret[0]) {
               return [[index, xy, tin]];
             } else {
-              // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
               ret.push([index, xy, tin]);
-              // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
               return ret
                 .sort((a: any, b: any) =>
                   a[2].importance < b[2].importance ? 1 : -1
                 )
-                .filter((_row: any, i: any) => (i < 2 ? true : false));
+                .filter((_row: any, i: any) => (i < 2));
             }
           }, [])
           .map((row: any) => {
