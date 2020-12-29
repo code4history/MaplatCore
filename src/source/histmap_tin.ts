@@ -242,26 +242,20 @@ export class HistMap_tin extends HistMap {
           proms.push(prom);
         }
         Promise.all(proms)
-          .then(mercs => {
+          .then((mercs: any) => {
             const delta1 = Math.sqrt(
-              // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
               Math.pow(mercs[0][0] - mercs[1][0], 2) +
-                // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
                 Math.pow(mercs[0][1] - mercs[1][1], 2)
             );
             const delta2 = Math.sqrt(
-              // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
               Math.pow(mercs[2][0] - mercs[3][0], 2) +
-                // @ts-expect-error ts-migrate(2571) FIXME: Object is of type 'unknown'.
                 Math.pow(mercs[2][1] - mercs[3][1], 2)
             );
             const delta = (delta1 + delta2) / 2;
             self.mercZoom =
               Math.log((300 * (2 * MERC_MAX)) / 256 / delta) / Math.log(2) - 3;
-            // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
             self.homePosition = toLonLat(mercs[4]);
             self.envelope = polygon([
-              // @ts-expect-error ts-migrate(2322) FIXME: Type 'unknown' is not assignable to type 'Position... Remove this comment to see the full error message
               [mercs[5], mercs[6], mercs[7], mercs[8], mercs[5]]
             ]);
             callback(self);
