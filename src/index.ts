@@ -49,19 +49,25 @@ export class MaplatApp extends EventTarget {
   t: any;
   lang: string;
   appData: any;
-  backMap: MaplatMap | null = null;
+  appLang = "ja";
+  backMap: MaplatMap | undefined = undefined;
+  mercSrc: NowMap | undefined = undefined;
+  mercBuffer: any;
   __selectedMarker: any;
   __init = true;
   appName: any;
   cacheHash: any;
   currentPosition: any;
-  from: any;
-  lines: any;
+  startFrom = "";
+  from: NowMap | HistMap | undefined = undefined;
+  lines: any = [];
   mapDivDocument: any;
   mapObject: any;
   mapboxMap: any;
   pois: any;
   poiTemplate: string | boolean = false;
+  poiStyle: string | boolean = false;
+  iconTemplate: string | boolean = false;
   transparency_: any;
   logger: Logger;
   _backMapMoving = false;
@@ -69,7 +75,6 @@ export class MaplatApp extends EventTarget {
   constructor(appOption: any) {
     super();
     appOption = normalizeArg(appOption);
-    //const app = this;
     this.appid = appOption.appid || "sample";
     if (appOption.mapboxgl) {
       this.mapboxgl = appOption.mapboxgl;
@@ -100,8 +105,7 @@ export class MaplatApp extends EventTarget {
       this.initialRestore = appOption.restore;
     } else if (appOption.restoreSession) {
       this.restoreSession = true;
-      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string | 0' is not assignable to... Remove this comment to see the full error message
-      const lastEpoch = parseInt(localStorage.getItem("epoch") || 0);
+      const lastEpoch = parseInt(localStorage.getItem("epoch") || "0");
       const currentTime = Math.floor(new Date().getTime() / 1000);
       if (lastEpoch && currentTime - lastEpoch < 3600) {
         this.initialRestore.mapID =
@@ -231,36 +235,35 @@ export class MaplatApp extends EventTarget {
   }
   // Async initializers 5: Prepare map base elements and objects
   prepareMap(appOption: any) {
-    const app = this;
     appOption = normalizeArg(appOption);
-    (app as any).mercBuffer = null;
+    this.mercBuffer = null;
     const homePos = this.appData.homePosition;
     const defZoom = this.appData.defaultZoom;
     const zoomRestriction = this.appData.zoomRestriction;
     const mercMinZoom = this.appData.minZoom;
     const mercMaxZoom = this.appData.maxZoom;
-    app.appName = this.appData.appName;
+    this.appName = this.appData.appName;
     const fakeGps = appOption.fake ? this.appData.fakeGps : false;
     const fakeRadius = appOption.fake ? this.appData.fakeRadius : false;
-    (app as any).appLang = this.appData.lang || "ja";
+    this.appLang = this.appData.lang || "ja";
     this.noRotate = appOption.noRotate || this.appData.noRotate || false;
     this.poiTemplate =
       appOption.poiTemplate || this.appData.poiTemplate || false;
-    (app as any).poiStyle =
+    this.poiStyle =
       appOption.poiStyle || this.appData.poiStyle || false;
-    (app as any).iconTemplate =
+    this.iconTemplate =
       appOption.iconTemplate || this.appData.iconTemplate || false;
-    app.currentPosition = null;
+    this.currentPosition = null;
     this.__init = true;
     // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
-    app.dispatchEvent(new CustomEvent("uiPrepare"));
-    const frontDiv = `${(app as any).mapDiv}_front`;
+    this.dispatchEvent(new CustomEvent("uiPrepare"));
+    const frontDiv = `${this.mapDiv}_front`;
     let newElem = createElement(
       `<div id="${frontDiv}" class="map" style="top:0; left:0; right:0; bottom:0; ` +
         `position:absolute;"></div>`
     )[0];
-    app.mapDivDocument.insertBefore(newElem, app.mapDivDocument.firstChild);
-    app.mapObject = new MaplatMap({
+    this.mapDivDocument.insertBefore(newElem, this.mapDivDocument.firstChild);
+    this.mapObject = new MaplatMap({
       div: frontDiv,
       controls: this.appData.controls || [],
       interactions: this.noRotate
@@ -275,28 +278,28 @@ export class MaplatApp extends EventTarget {
       homePosition: homePos
     });
     let backDiv = null;
-    if ((app as any).overlay) {
-      backDiv = `${(app as any).mapDiv}_back`;
+    if (this.overlay) {
+      backDiv = `${this.mapDiv}_back`;
       newElem = createElement(
         `<div id="${backDiv}" class="map" style="top:0; left:0; right:0; bottom:0; ` +
           `position:absolute;"></div>`
       )[0];
-      app.mapDivDocument.insertBefore(newElem, app.mapDivDocument.firstChild);
+      this.mapDivDocument.insertBefore(newElem, this.mapDivDocument.firstChild);
       this.backMap = new MaplatMap({
         off_control: true,
         div: backDiv
       });
     }
-    if ((app as any).mapboxgl) {
-      const mapboxgl = (app as any).mapboxgl;
-      delete (app as any).mapboxgl;
-      const mapboxDiv = `${(app as any).mapDiv}_mapbox`;
+    if (this.mapboxgl) {
+      const mapboxgl = this.mapboxgl;
+      delete this.mapboxgl;
+      const mapboxDiv = `${this.mapDiv}_mapbox`;
       newElem = createElement(
         `<div id="${mapboxDiv}" class="map" style="top:0; left:0; right:0; bottom:0; ` +
           `position:absolute;visibility:hidden;"></div>`
       )[0];
-      app.mapDivDocument.insertBefore(newElem, app.mapDivDocument.firstChild);
-      app.mapboxMap = new mapboxgl.Map({
+      this.mapDivDocument.insertBefore(newElem, this.mapDivDocument.firstChild);
+      this.mapboxMap = new mapboxgl.Map({
         attributionControl: false,
         boxZoom: false,
         container: mapboxDiv,
@@ -310,8 +313,7 @@ export class MaplatApp extends EventTarget {
         touchZoomRotate: false
       });
     }
-    (app as any).startFrom = this.appData.startFrom;
-    app.lines = [];
+    this.startFrom = this.appData.startFrom;
     return {
       homePos,
       defZoom,
@@ -322,48 +324,45 @@ export class MaplatApp extends EventTarget {
   }
   // Async initializer 7: Handle pois loading result
   handlePois(pois: any, mapReturnValue: any) {
-    const app = this;
-    app.pois = pois;
-    return app.sourcesLoader(mapReturnValue).then(x => app.handleSources(x));
+    this.pois = pois;
+    return this.sourcesLoader(mapReturnValue).then(x => this.handleSources(x));
   }
   // Async initializer 9: Handle sources loading result
   handleSources(sources: any) {
-    const app = this;
-    (app as any).mercSrc = sources.reduce((prev: any, curr: any) => {
+    this.mercSrc = sources.reduce((prev: any, curr: any) => {
       if (prev) return prev;
       if (curr instanceof NowMap) return curr;
     }, null);
     const cache = [];
-    app.cacheHash = {};
+    this.cacheHash = {};
     for (let i = 0; i < sources.length; i++) {
       const source = sources[i];
-      source._map = app.mapObject;
+      source._map = this.mapObject;
       if (source instanceof MapboxMap) {
-        if (!app.mapboxMap) {
+        if (!this.mapboxMap) {
           throw "To use mapbox gl based base map, you have to make Maplat object with specifying 'mapboxgl' option.";
         }
-        source.mapboxMap = app.mapboxMap;
+        source.mapboxMap = this.mapboxMap;
       }
       cache.push(source);
-      app.cacheHash[source.mapID] = source;
+      this.cacheHash[source.mapID] = source;
     }
-    app.dispatchEvent(new CustomEvent("sourceLoaded", sources));
-    app.setInitialMap(cache);
-    app.setMapClick();
-    app.setPointerEvents();
-    app.setMapOnOff();
-    app.setMouseCursor();
-    app.setBackMapBehavior();
-    app.raiseChangeViewPoint();
+    this.dispatchEvent(new CustomEvent("sourceLoaded", sources));
+    this.setInitialMap(cache);
+    this.setMapClick();
+    this.setPointerEvents();
+    this.setMapOnOff();
+    this.setMouseCursor();
+    this.setBackMapBehavior();
+    this.raiseChangeViewPoint();
   }
   // Async initializer 10: Handle initial map
   setInitialMap(cache: any) {
-    const app = this;
-    const initial =
-      (app as any).initialRestore.mapID ||
-      (app as any).startFrom ||
+    const initial: string =
+      this.initialRestore.mapID ||
+      this.startFrom ||
       cache[cache.length - 1].mapID;
-    app.from = cache.reduce((prev: any, curr: any) => {
+    this.from = cache.reduce((prev: any, curr: any) => {
       if (prev) {
         return !(prev instanceof HistMap) && curr.mapID != initial
           ? curr
@@ -372,7 +371,7 @@ export class MaplatApp extends EventTarget {
       if (curr.mapID != initial) return curr;
       return prev;
     }, null);
-    app.changeMap(initial, (app as any).initialRestore);
+    this.changeMap(initial, this.initialRestore);
   }
   // Async initializer 11: Handle map click event
   setMapClick() {
@@ -391,7 +390,7 @@ export class MaplatApp extends EventTarget {
       } else {
         const xy = evt.coordinate;
         app.dispatchEvent(new CustomEvent("clickMapXy", xy));
-        app.from.xy2MercAsync(xy).then((merc: any) => {
+        app.from!.xy2MercAsync(xy).then((merc: any) => {
           app.dispatchEvent(new CustomEvent("clickMapMerc", merc));
           const lnglat = transform(merc, "EPSG:3857", "EPSG:4326");
           app.dispatchEvent(
@@ -413,7 +412,7 @@ export class MaplatApp extends EventTarget {
     const pointerCounter = {};
     const pointermoveHandler = function (xy: any) {
       app.dispatchEvent(new CustomEvent("pointerMoveOnMapXy", xy));
-      app.from.xy2MercAsync(xy).then((merc: any) => {
+      app.from!.xy2MercAsync(xy).then((merc: any) => {
         app.dispatchEvent(new CustomEvent("pointerMoveOnMapMerc", merc));
         if (xyBuffer) {
           const next = xyBuffer;
@@ -534,8 +533,8 @@ export class MaplatApp extends EventTarget {
     const mapOutHandler = function (evt: any) {
       let histCoord = evt.frameState.viewState.center;
       const source = app.from;
-      if (!source.insideCheckHistMapCoords(histCoord)) {
-        histCoord = source.modulateHistMapCoordsInside(histCoord);
+      if (!source!.insideCheckHistMapCoords(histCoord)) {
+        histCoord = source!.modulateHistMapCoordsInside(histCoord);
         // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         this.getView().setCenter(histCoord);
       }
@@ -577,9 +576,9 @@ export class MaplatApp extends EventTarget {
       const center = view.getCenter();
       const zoom = view.getDecimalZoom();
       const rotation = normalizeDegree((view.getRotation() * 180) / Math.PI);
-      app.from
+      app.from!
         .size2MercsAsync()
-        .then((mercs: any) => (app as any).mercSrc.mercs2SizeAsync(mercs))
+        .then((mercs: any) => this.mercSrc!.mercs2SizeAsync(mercs))
         .then((size: any) => {
           if (
             (app as any).mobileMapMoveBuffer &&
@@ -646,19 +645,19 @@ export class MaplatApp extends EventTarget {
       : defaultpin;
     const promise = coords
       ? (function () {
-          return src.merc2XyAsync(coords, true);
+          return src!.merc2XyAsync(coords, true);
         })()
       : x && y
       ? new Promise(resolve => {
-          resolve(src.xy2HistMapCoords([x, y]));
+          resolve(src!.xy2HistMapCoords([x, y]));
         })
       : (function () {
           const merc = transform(lnglat, "EPSG:4326", "EPSG:3857");
-          return src.merc2XyAsync(merc, true);
+          return src!.merc2XyAsync(merc, true);
         })();
     return promise.then((xy: any) => {
       if (!xy) return;
-      if (src.insideCheckHistMapCoords(xy)) {
+      if (src!.insideCheckHistMapCoords(xy)) {
         app.mapObject.setMarker(xy, { datum: data }, icon);
       }
     });
@@ -672,12 +671,12 @@ export class MaplatApp extends EventTarget {
     let xyPromises;
     if (data.coordinates) {
       xyPromises = data.coordinates.map((coord: any) =>
-        app.from.merc2XyAsync(coord)
+        app.from!.merc2XyAsync(coord)
       );
     } else {
       xyPromises = data.lnglats.map((lnglat: any) => {
         const merc = transform(lnglat, "EPSG:4326", "EPSG:3857");
-        return app.from.merc2XyAsync(merc);
+        return app.from!.merc2XyAsync(merc);
       });
     }
     Promise.all(xyPromises).then(xys => {
@@ -931,7 +930,7 @@ export class MaplatApp extends EventTarget {
           ? layer.hide
           : true
       );
-    const mapPois = app.from.listPoiLayers(hideOnly, nonzero);
+    const mapPois = app.from!.listPoiLayers(hideOnly, nonzero);
     return appPois.concat(mapPois);
   }
   showPoiLayer(id: any) {
@@ -1033,7 +1032,7 @@ export class MaplatApp extends EventTarget {
   }
   setGPSMarker(position: any) {
     this.currentPosition = position;
-    this.from.setGPSMarker(position, true);
+    this.from!.setGPSMarker(position, true);
   }
   changeMap(mapID: any, restore: any) {
     const app = this;
@@ -1220,7 +1219,7 @@ export class MaplatApp extends EventTarget {
     return this.transparency_ == null ? 0 : this.transparency_;
   }
   setViewpoint(cond: any) {
-    this.from.setViewpoint(cond);
+    this.from!.setViewpoint(cond);
   }
   getMapMeta(mapID: any) {
     const app = this;
@@ -1268,17 +1267,17 @@ export class MaplatApp extends EventTarget {
   convertParametersFromCurrent(to: any, callback: any) {
     const app = this;
     const view = app.mapObject.getView();
-    let fromPromise = app.from.size2MercsAsync();
+    let fromPromise = app.from!.size2MercsAsync();
     const current = recursiveRound(
       [view.getCenter(), view.getZoom(), view.getRotation()],
       10
     );
     if (
-      (app as any).mercBuffer &&
-      (app as any).mercBuffer.mercs &&
-      (app as any).mercBuffer.buffer[app.from.mapID]
+      this.mercBuffer &&
+      this.mercBuffer.mercs &&
+      this.mercBuffer.buffer[app.from!.mapID]
     ) {
-      const buffer = (app as any).mercBuffer.buffer[app.from.mapID];
+      const buffer = this.mercBuffer.buffer[app.from!.mapID];
       if (
         buffer[0][0] == current[0][0] &&
         buffer[0][1] == current[0][1] &&
@@ -1289,34 +1288,34 @@ export class MaplatApp extends EventTarget {
         (app as any).logger.debug(current);
         (app as any).logger.debug("From: Use buffer");
         fromPromise = new Promise((res, _rej) => {
-          res((app as any).mercBuffer.mercs);
+          res(this.mercBuffer.mercs);
         });
       } else {
-        (app as any).mercBuffer = {
+        this.mercBuffer = {
           buffer: {}
         };
-        (app as any).mercBuffer.buffer[app.from.mapID] = current;
+        this.mercBuffer.buffer[app.from!.mapID] = current;
       }
     } else {
-      (app as any).mercBuffer = {
+      this.mercBuffer = {
         buffer: {}
       };
-      (app as any).mercBuffer.buffer[app.from.mapID] = current;
+      this.mercBuffer.buffer[app.from!.mapID] = current;
     }
     (app as any).logger.debug(
       `From: Center: ${current[0]} Zoom: ${current[1]} Rotation: ${current[2]}`
     );
-    (app as any).logger.debug(`From: ${app.from.mapID}`);
+    (app as any).logger.debug(`From: ${app.from!.mapID}`);
     fromPromise
       .then((mercs: any) => {
-        (app as any).mercBuffer.mercs = mercs;
+        this.mercBuffer.mercs = mercs;
         (app as any).logger.debug(`Mercs: ${mercs}`);
         let toPromise = to.mercs2SizeAsync(mercs);
         const key = to.mapID;
-        if ((app as any).mercBuffer.buffer[key]) {
+        if (this.mercBuffer.buffer[key]) {
           (app as any).logger.debug("To: Use buffer");
           toPromise = new Promise((res, _rej) => {
-            res((app as any).mercBuffer.buffer[key]);
+            res(this.mercBuffer.buffer[key]);
           });
         }
         toPromise
@@ -1325,7 +1324,7 @@ export class MaplatApp extends EventTarget {
               `To: Center: ${size[0]} Zoom: ${size[1]} Rotation: ${size[2]}`
             );
             (app as any).logger.debug(`To: ${to.mapID}`);
-            (app as any).mercBuffer.buffer[to.mapID] = recursiveRound(size, 10);
+            this.mercBuffer.buffer[to.mapID] = recursiveRound(size, 10);
             callback(size);
           })
           .catch((err: any) => {
