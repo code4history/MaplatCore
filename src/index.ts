@@ -403,15 +403,14 @@ export class MaplatApp extends EventTarget {
   }
   // Async initializer 12: Handle pointer event
   setPointerEvents() {
-    const app = this;
     let xyBuffer: any;
     let waiting = false;
     let dragging = false;
-    const pointerCounter = {};
-    const pointermoveHandler = function (xy: any) {
-      app.dispatchEvent(new CustomEvent("pointerMoveOnMapXy", xy));
-      app.from!.xy2MercAsync(xy).then((merc: any) => {
-        app.dispatchEvent(new CustomEvent("pointerMoveOnMapMerc", merc));
+    const pointerCounter: any = {};
+    const pointermoveHandler = (xy: any) => {
+      this.dispatchEvent(new CustomEvent("pointerMoveOnMapXy", xy));
+      this.from!.xy2MercAsync(xy).then((merc: any) => {
+        this.dispatchEvent(new CustomEvent("pointerMoveOnMapMerc", merc));
         if (xyBuffer) {
           const next = xyBuffer;
           xyBuffer = false;
@@ -421,7 +420,7 @@ export class MaplatApp extends EventTarget {
         }
       });
     };
-    app.mapObject.on("pointermove", (evt: any) => {
+    this.mapObject.on("pointermove", (evt: any) => {
       if (dragging) return;
       if (waiting) {
         xyBuffer = evt.coordinate;
@@ -430,24 +429,21 @@ export class MaplatApp extends EventTarget {
         pointermoveHandler(evt.coordinate);
       }
     });
-    app.mapObject.on("pointerdown", (evt: any) => {
+    this.mapObject.on("pointerdown", (evt: any) => {
       if (evt.originalEvent && evt.originalEvent.pointerId != null) {
-        // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         pointerCounter[evt.originalEvent.pointerId] = true;
       }
       dragging = true;
     });
-    app.mapObject.on("pointerdrag", (evt: any) => {
+    this.mapObject.on("pointerdrag", (evt: any) => {
       if (evt.originalEvent && evt.originalEvent.pointerId != null) {
-        // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         pointerCounter[evt.originalEvent.pointerId] = true;
       }
       dragging = true;
     });
-    app.mapObject.on("pointerup", (evt: any) => {
+    this.mapObject.on("pointerup", (evt: any) => {
       // Android
       if (evt.originalEvent && evt.originalEvent.pointerId != null) {
-        // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         delete pointerCounter[evt.originalEvent.pointerId];
         if (Object.keys(pointerCounter).length == 0) {
           dragging = false;
