@@ -673,7 +673,7 @@ export class MaplatApp extends EventTarget {
   resetLine() {
     this.mapObject.resetLine();
   }
-  redrawMarkers(source: any) {
+  redrawMarkers(source: HistMap | NowMap | undefined = undefined) {
     if (!source) {
       source = this.from;
     }
@@ -682,7 +682,7 @@ export class MaplatApp extends EventTarget {
         this.__redrawMarkerThrottle = [];
       const throttle = this.__redrawMarkerThrottle;
       if (throttle.length == 0 || throttle[throttle.length - 1] !== source) {
-        throttle.push(source);
+        throttle.push(source!);
         return;
       }
     }
@@ -744,29 +744,26 @@ export class MaplatApp extends EventTarget {
         : data.longitude
     };
     this.setViewpoint(latlng);
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
     this.redrawMarkers();
   }
   unselectMarker() {
     delete this.__selectedMarker;
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
     this.redrawMarkers();
   }
   getMarker(id: any) {
-    const app = this;
     if (id.indexOf("#") < 0) {
       let ret;
-      Object.keys(app.pois).map(key => {
-        app.pois[key].pois.map((poi: any, i: any) => {
+      Object.keys(this.pois).map(key => {
+        this.pois[key].pois.map((poi: any, i: any) => {
           if (poi.id == id) {
-            ret = app.pois[key].pois[i];
+            ret = this.pois[key].pois[i];
           }
         });
       });
       return ret;
     } else {
       const splits = id.split("#");
-      const source = app.cacheHash[splits[0]];
+      const source = this.cacheHash[splits[0]];
       if (source) {
         return source.getPoi(splits[1]);
       }
@@ -794,7 +791,6 @@ export class MaplatApp extends EventTarget {
         }
       });
     }
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
     app.redrawMarkers();
   }
   addMarker(data: any, clusterId: any) {
@@ -808,7 +804,6 @@ export class MaplatApp extends EventTarget {
           name: this.appName
         });
         this.dispatchPoiNumber();
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
         this.redrawMarkers();
         return data.namespaceID;
       }
@@ -818,7 +813,6 @@ export class MaplatApp extends EventTarget {
       if (source) {
         const ret = source.addPoi(data, splits[1]);
         this.dispatchPoiNumber();
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
         this.redrawMarkers();
         return ret;
       }
@@ -832,7 +826,6 @@ export class MaplatApp extends EventTarget {
           if (poi.id == id) {
             delete app.pois[key].pois[i];
             app.dispatchPoiNumber();
-            // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
             app.redrawMarkers();
           }
         });
@@ -843,7 +836,6 @@ export class MaplatApp extends EventTarget {
       if (source) {
         source.removePoi(splits[1]);
         app.dispatchPoiNumber();
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
         app.redrawMarkers();
       }
     }
@@ -862,7 +854,6 @@ export class MaplatApp extends EventTarget {
         app.pois[clusterId]["pois"] = [];
       } else return;
       app.dispatchPoiNumber();
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
       app.redrawMarkers();
     } else {
       const splits = clusterId.split("#");
@@ -870,19 +861,16 @@ export class MaplatApp extends EventTarget {
       if (source) {
         source.clearPoi(splits[1]);
         app.dispatchPoiNumber();
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
         app.redrawMarkers();
       }
     }
   }
   showAllMarkers() {
     this.requestUpdateState({ hideMarker: 0 });
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
     this.redrawMarkers();
   }
   hideAllMarkers() {
     this.requestUpdateState({ hideMarker: 1 });
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
     this.redrawMarkers();
   }
   dispatchPoiNumber() {
@@ -929,7 +917,6 @@ export class MaplatApp extends EventTarget {
           .map(layer => layer.namespaceID)
           .join(",")
       });
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
       this.redrawMarkers();
     }
   }
@@ -943,7 +930,6 @@ export class MaplatApp extends EventTarget {
           .map(layer => layer.namespaceID)
           .join(",")
       });
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
       this.redrawMarkers();
     }
   }
@@ -965,14 +951,12 @@ export class MaplatApp extends EventTarget {
       this.pois[id] = normalizeLayer(data || [], id, {
         name: this.appName
       });
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
       this.redrawMarkers();
     } else {
       const splits = id.split("#");
       const source = this.cacheHash[splits[0]];
       if (source) {
         source.addPoiLayer(splits[1], data);
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
         this.redrawMarkers();
       }
     }
@@ -989,7 +973,6 @@ export class MaplatApp extends EventTarget {
           .join(",")
       });
       this.dispatchPoiNumber();
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
       this.redrawMarkers();
     } else {
       const splits = id.split("#");
@@ -1003,7 +986,6 @@ export class MaplatApp extends EventTarget {
             .join(",")
         });
         this.dispatchPoiNumber();
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
         this.redrawMarkers();
       }
     }
@@ -1125,7 +1107,6 @@ export class MaplatApp extends EventTarget {
             if (restore.hideMarker) {
               app.hideAllMarkers();
             } else {
-              // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 0.
               app.redrawMarkers();
             }
             app.resetLine();
