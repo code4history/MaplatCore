@@ -14,6 +14,8 @@ import bluedot from "../parts/bluedot.png";
 import bluedot_transparent from "../parts/bluedot_transparent.png";
 import bluedot_small from "../parts/bluedot_small.png";
 import defaultpin from "../parts/defaultpin.png";
+import {HistMap} from "./source/histmap";
+import TileSource from "ol/source/Tile";
 
 const gpsStyle = new Style({
   image: new Icon({
@@ -311,7 +313,7 @@ export class MaplatMap extends Map {
       source._map = this;
     }
   }
-  setLayer(source: any) {
+  setLayer(source: any = undefined) {
     const layers = this.getLayer("overlay").getLayers();
     layers.clear();
     if (source) {

@@ -136,7 +136,7 @@ export class MaplatApp extends EventTarget {
       }
     }
     // Add UI HTML Element
-    const newElems = createElement(`<img id="center_circle" class="prevent-default"
+    const newElems = createElement(`<img id="center_circle" class="prevent-default" alt=""
             style="position:absolute;top:50%;left:50%;margin-top:-10px;
             margin-left:-10px;" src="${redcircle}">`);
     for (let i = newElems.length - 1; i >= 0; i--) {
@@ -362,7 +362,7 @@ export class MaplatApp extends EventTarget {
     this.raiseChangeViewPoint();
   }
   // Async initializer 10: Handle initial map
-  setInitialMap(cache: any) {
+  async setInitialMap(cache: any) {
     const initial: string =
       this.initialRestore.mapID ||
       this.startFrom ||
@@ -376,7 +376,7 @@ export class MaplatApp extends EventTarget {
       if (curr.mapID != initial) return curr;
       return prev;
     }, null);
-    this.changeMap(initial, this.initialRestore);
+    await this.changeMap(initial, this.initialRestore);
   }
   // Async initializer 11: Handle map click event
   setMapClick() {
@@ -414,7 +414,7 @@ export class MaplatApp extends EventTarget {
     const pointerCounter: any = {};
     const pointermoveHandler = (xy: any) => {
       this.dispatchEvent(new CustomEvent("pointerMoveOnMapXy", xy));
-      this.from!.xy2MercAsync(xy).then((merc: any) => {
+      (this.from as HistMap | NowMap).xy2MercAsync(xy).then((merc: any) => {
         this.dispatchEvent(new CustomEvent("pointerMoveOnMapMerc", merc));
         if (xyBuffer) {
           const next = xyBuffer;
@@ -526,8 +526,8 @@ export class MaplatApp extends EventTarget {
     const mapOutHandler = (evt: any) => {
       let histCoord = evt.frameState.viewState.center;
       const source = this.from;
-      if (!source!.insideCheckHistMapCoords(histCoord)) {
-        histCoord = source!.modulateHistMapCoordsInside(histCoord);
+      if (!(source as HistMap | NowMap).insideCheckHistMapCoords(histCoord)) {
+        histCoord = (source as HistMap | NowMap).modulateHistMapCoordsInside(histCoord);
         evt.target.getView().setCenter(histCoord);
       }
     };
@@ -542,13 +542,13 @@ export class MaplatApp extends EventTarget {
         this.logger.debug("Backmap moving skipped");
         return;
       }
-      const backSrc = this.backMap!.getSource();
+      const backSrc = (this.backMap as MaplatMap).getSource();
       if (backSrc) {
         this._backMapMoving = true;
         // @ts-expect-error ts-migrate(7053)
         this.logger.debug("Backmap moving started");
         this.convertParametersFromCurrent(backSrc, (size: any) => {
-          const view = this.backMap!.getView();
+          const view = (this.backMap as MaplatMap).getView();
           view.setCenter(size[0]);
           view.setZoom(size[1]);
           view.setRotation(this.noRotate ? 0 : size[2]);
@@ -567,9 +567,9 @@ export class MaplatApp extends EventTarget {
       const center = view.getCenter();
       const zoom = view.getDecimalZoom();
       const rotation = normalizeDegree((view.getRotation() * 180) / Math.PI);
-      this.from!
+      (this.from as HistMap | NowMap)
         .size2MercsAsync()
-        .then((mercs: any) => this.mercSrc!.mercs2SizeAsync(mercs))
+        .then((mercs: any) => (this.mercSrc as NowMap).mercs2SizeAsync(mercs))
         .then((size: any) => {
           if (
             this.mobileMapMoveBuffer &&
@@ -634,19 +634,19 @@ export class MaplatApp extends EventTarget {
       : defaultpin;
     const promise = coords
       ? (function () {
-          return src!.merc2XyAsync(coords, true);
+          return (src as HistMap | NowMap).merc2XyAsync(coords, true);
         })()
       : x && y
       ? new Promise(resolve => {
-          resolve(src!.xy2HistMapCoords([x, y]));
+          resolve((src as HistMap | NowMap).xy2HistMapCoords([x, y]));
         })
       : (function () {
           const merc = transform(lnglat, "EPSG:4326", "EPSG:3857");
-          return src!.merc2XyAsync(merc, true);
+          return (src as HistMap | NowMap).merc2XyAsync(merc, true);
         })();
     return promise.then((xy: any) => {
       if (!xy) return;
-      if (src!.insideCheckHistMapCoords(xy)) {
+      if ((src as HistMap | NowMap).insideCheckHistMapCoords(xy)) {
         this.mapObject.setMarker(xy, { datum: data }, icon);
       }
     });
@@ -660,12 +660,12 @@ export class MaplatApp extends EventTarget {
     let xyPromises;
     if (data.coordinates) {
       xyPromises = data.coordinates.map((coord: any) =>
-        this.from!.merc2XyAsync(coord)
+        (this.from as HistMap | NowMap).merc2XyAsync(coord)
       );
     } else {
       xyPromises = data.lnglats.map((lnglat: any) => {
         const merc = transform(lnglat, "EPSG:4326", "EPSG:3857");
-        return this.from!.merc2XyAsync(merc);
+        return (this.from as HistMap | NowMap).merc2XyAsync(merc);
       });
     }
     Promise.all(xyPromises).then(xys => {
@@ -684,7 +684,7 @@ export class MaplatApp extends EventTarget {
         this.__redrawMarkerThrottle = [];
       const throttle = this.__redrawMarkerThrottle;
       if (throttle.length == 0 || throttle[throttle.length - 1] !== source) {
-        throttle.push(source!);
+        throttle.push(source as HistMap | NowMap);
         return;
       }
     }
@@ -754,7 +754,7 @@ export class MaplatApp extends EventTarget {
   }
   getMarker(id: any) {
     if (id.indexOf("#") < 0) {
-      let ret;
+      let ret: any = undefined;
       Object.keys(this.pois).map(key => {
         this.pois[key].pois.map((poi: any, i: any) => {
           if (poi.id == id) {
@@ -883,7 +883,7 @@ export class MaplatApp extends EventTarget {
       )
     );
   }
-  listPoiLayers(hideOnly: boolean, nonzero: boolean) {
+  listPoiLayers(hideOnly = false, nonzero = false) {
     const appPois = Object.keys(this.pois)
       .sort((a, b) => {
         if (a == "main") return -1;
@@ -902,7 +902,7 @@ export class MaplatApp extends EventTarget {
           ? layer.hide
           : true
       );
-    const mapPois = this.from!.listPoiLayers(hideOnly, nonzero);
+    const mapPois = (this.from as HistMap | NowMap).listPoiLayers(hideOnly, nonzero);
     return appPois.concat(mapPois);
   }
   showPoiLayer(id: any) {
@@ -910,7 +910,6 @@ export class MaplatApp extends EventTarget {
     if (layer) {
       delete layer.hide;
       this.requestUpdateState({
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
         hideLayer: this.listPoiLayers(true)
           .map(layer => layer.namespaceID)
           .join(",")
@@ -923,7 +922,6 @@ export class MaplatApp extends EventTarget {
     if (layer) {
       layer.hide = true;
       this.requestUpdateState({
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
         hideLayer: this.listPoiLayers(true)
           .map(layer => layer.namespaceID)
           .join(",")
@@ -965,7 +963,6 @@ export class MaplatApp extends EventTarget {
     if (id.indexOf("#") < 0) {
       delete this.pois[id];
       this.requestUpdateState({
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
         hideLayer: this.listPoiLayers(true)
           .map(layer => layer.namespaceID)
           .join(",")
@@ -978,7 +975,6 @@ export class MaplatApp extends EventTarget {
       if (source) {
         source.removePoiLayer(splits[1]);
         this.requestUpdateState({
-          // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
           hideLayer: this.listPoiLayers(true)
             .map(layer => layer.namespaceID)
             .join(",")
@@ -998,7 +994,7 @@ export class MaplatApp extends EventTarget {
   }
   setGPSMarker(position: any) {
     this.currentPosition = position;
-    this.from!.setGPSMarker(position, true);
+    (this.from as HistMap | NowMap).setGPSMarker(position, true);
   }
   changeMap(mapID: any, restore: any) {
     if (!restore) restore = {};
@@ -1042,7 +1038,7 @@ export class MaplatApp extends EventTarget {
                   }
                 }
                 this.requestUpdateState({ backgroundID: backTo.mapID });
-              } else if (to instanceof NowMap) {
+              } else {
                 // If new foreground source is basemap or TMS overlay, remove source from background map
                 this.backMap.exchangeSource();
               }
@@ -1124,17 +1120,17 @@ export class MaplatApp extends EventTarget {
             if (restore.transparency) {
               this.setTransparency(restore.transparency);
             }
-            if (this.__init == true) {
+            if (this.__init) {
               this.__init = false;
               to.goHome();
             } else if (this.backMap && backTo) {
               this.convertParametersFromCurrent(backTo, (size: any) => {
-                const view = this.backMap!.getView();
+                const view = (this.backMap as MaplatMap).getView();
                 view.setCenter(size[0]);
                 view.setZoom(size[1]);
                 view.setRotation(this.noRotate ? 0 : size[2]);
-                this.backMap!.updateSize();
-                this.backMap!.renderSync();
+                (this.backMap as MaplatMap).updateSize();
+                (this.backMap as MaplatMap).renderSync();
               });
             }
             resolve(undefined);
@@ -1180,7 +1176,7 @@ export class MaplatApp extends EventTarget {
     return this.transparency_ == null ? 0 : this.transparency_;
   }
   setViewpoint(cond: any) {
-    this.from!.setViewpoint(cond);
+    (this.from as HistMap | NowMap).setViewpoint(cond);
   }
   getMapMeta(mapID: any) {
     let source: NowMap | HistMap | undefined;
@@ -1201,32 +1197,29 @@ export class MaplatApp extends EventTarget {
       }
     );
   }
-  async getMapTileCacheSizeAsync(mapID: any) {
-    const app = this;
-    let source;
+  async getMapTileCacheSizeAsync(mapID: string) {
+    let source: NowMap | HistMap | undefined;
     if (!mapID) {
-      source = app.from;
+      source = this.from;
     } else {
-      source = app.cacheHash[mapID];
+      source = this.cacheHash[mapID];
     }
     if (!source) return 0;
     return source.getTileCacheSizeAsync();
   }
   async clearMapTileCacheAsync(mapID: any) {
-    const app = this;
-    let source;
+    let source: NowMap | HistMap | undefined;
     if (!mapID) {
-      source = app.from;
+      source = this.from;
     } else {
-      source = app.cacheHash[mapID];
+      source = this.cacheHash[mapID];
     }
     if (!source) return;
-    source.clearTileCacheAsync();
+    await source.clearTileCacheAsync();
   }
   convertParametersFromCurrent(to: any, callback: any) {
-    const app = this;
-    const view = app.mapObject.getView();
-    let fromPromise = app.from!.size2MercsAsync();
+    const view = this.mapObject.getView();
+    let fromPromise = (this.from as HistMap | NowMap).size2MercsAsync();
     const current = recursiveRound(
       [view.getCenter(), view.getZoom(), view.getRotation()],
       10
@@ -1234,18 +1227,21 @@ export class MaplatApp extends EventTarget {
     if (
       this.mercBuffer &&
       this.mercBuffer.mercs &&
-      this.mercBuffer.buffer[app.from!.mapID]
+      this.mercBuffer.buffer[(this.from as HistMap | NowMap).mapID]
     ) {
-      const buffer = this.mercBuffer.buffer[app.from!.mapID];
+      const buffer = this.mercBuffer.buffer[(this.from as HistMap | NowMap).mapID];
       if (
         buffer[0][0] == current[0][0] &&
         buffer[0][1] == current[0][1] &&
         buffer[1] == current[1] &&
         buffer[2] == current[2]
       ) {
-        (app as any).logger.debug(buffer);
-        (app as any).logger.debug(current);
-        (app as any).logger.debug("From: Use buffer");
+        // @ts-expect-error ts-migrate(7053)
+        this.logger.debug(buffer);
+        // @ts-expect-error ts-migrate(7053)
+        this.logger.debug(current);
+        // @ts-expect-error ts-migrate(7053)
+        this.logger.debug("From: Use buffer");
         fromPromise = new Promise((res, _rej) => {
           res(this.mercBuffer.mercs);
         });
@@ -1253,36 +1249,42 @@ export class MaplatApp extends EventTarget {
         this.mercBuffer = {
           buffer: {}
         };
-        this.mercBuffer.buffer[app.from!.mapID] = current;
+        this.mercBuffer.buffer[(this.from as HistMap | NowMap).mapID] = current;
       }
     } else {
       this.mercBuffer = {
         buffer: {}
       };
-      this.mercBuffer.buffer[app.from!.mapID] = current;
+      this.mercBuffer.buffer[(this.from as HistMap | NowMap).mapID] = current;
     }
-    (app as any).logger.debug(
+    // @ts-expect-error ts-migrate(7053)
+    this.logger.debug(
       `From: Center: ${current[0]} Zoom: ${current[1]} Rotation: ${current[2]}`
     );
-    (app as any).logger.debug(`From: ${app.from!.mapID}`);
+    // @ts-expect-error ts-migrate(7053)
+    this.logger.debug(`From: ${(app.from as HistMap | NowMap).mapID}`);
     fromPromise
       .then((mercs: any) => {
         this.mercBuffer.mercs = mercs;
-        (app as any).logger.debug(`Mercs: ${mercs}`);
+        // @ts-expect-error ts-migrate(7053)
+        this.logger.debug(`Mercs: ${mercs}`);
         let toPromise = to.mercs2SizeAsync(mercs);
         const key = to.mapID;
         if (this.mercBuffer.buffer[key]) {
-          (app as any).logger.debug("To: Use buffer");
+          // @ts-expect-error ts-migrate(7053)
+          this.logger.debug("To: Use buffer");
           toPromise = new Promise((res, _rej) => {
             res(this.mercBuffer.buffer[key]);
           });
         }
         toPromise
           .then((size: any) => {
-            (app as any).logger.debug(
+            // @ts-expect-error ts-migrate(7053)
+            this.logger.debug(
               `To: Center: ${size[0]} Zoom: ${size[1]} Rotation: ${size[2]}`
             );
-            (app as any).logger.debug(`To: ${to.mapID}`);
+            // @ts-expect-error ts-migrate(7053)
+            this.logger.debug(`To: ${to.mapID}`);
             this.mercBuffer.buffer[to.mapID] = recursiveRound(size, 10);
             callback(size);
           })
@@ -1295,46 +1297,40 @@ export class MaplatApp extends EventTarget {
       });
   }
   translate(dataFragment: any) {
-    const app = this;
     if (!dataFragment || typeof dataFragment != "object") return dataFragment;
     const langs = Object.keys(dataFragment);
-    let key = langs.reduce((prev, curr, idx, arr) => {
-      if (curr == (app as any).appLang) {
-        // @ts-expect-error ts-migrate(2322) FIXME: Type 'any[]' is not assignable to type 'null'.
+    let key = langs.reduce((prev: any, curr, idx, arr) => {
+      if (curr == this.appLang) {
         prev = [dataFragment[curr], true];
       }
-      // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
       else if (!prev || (curr == "en" && !prev[1])) {
-        // @ts-expect-error ts-migrate(2322) FIXME: Type 'any[]' is not assignable to type 'null'.
         prev = [dataFragment[curr], false];
       }
       if (idx == arr.length - 1)
-        // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
         return prev[0];
       return prev;
     }, null);
-    // @ts-expect-error ts-migrate(2322) FIXME: Type 'string' is not assignable to type 'null'.
     key = typeof key == "string" ? key : `${key}`;
     if (
-      (app as any).i18n.exists(key, {
+      this.i18n.exists(key, {
         ns: "translation",
         nsSeparator: "__X__yX__X__"
       })
     )
-      return (app as any).t(key, {
+      return this.t(key, {
         ns: "translation",
         nsSeparator: "__X__yX__X__"
       });
     for (let i = 0; i < langs.length; i++) {
       const lang = langs[i];
-      (app as any).i18n.addResource(
+      this.i18n.addResource(
         lang,
         "translation",
         key,
         dataFragment[lang]
       );
     }
-    return (app as any).t(key, {
+    return this.t(key, {
       ns: "translation",
       nsSeparator: "__X__yX__X__"
     });
