@@ -11,7 +11,8 @@
   "files": [
     "src/",
     "dist/",
-    "parts/"
+    "parts/",
+    "lib/"
   ],
   "scripts": {
     "server": "webpack-dev-server --config ./webpack_config/webpack.config.standard.dev.js --mode=development --devtool=inline-source-map",
