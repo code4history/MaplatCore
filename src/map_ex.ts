@@ -1,21 +1,21 @@
-import {Feature, Geolocation, Map, MapEvent} from "ol";
-import {View} from "./view_ex";
-import {Group, Tile, Vector as layerVector} from "ol/layer";
-import {Vector as sourceVector} from "ol/source";
-import {Circle, LineString, Point, Polygon} from "ol/geom";
-import {Fill, Icon, Stroke, Style} from "ol/style";
-import {MapboxMap} from "./source/mapboxmap";
-import {NowMap} from "./source/nowmap";
-import {getDistance, randomFromCenter} from "./math_ex";
-import {MapboxLayer} from "./layer_mapbox";
-import {normalizeArg} from "./functions";
+import { Feature, Geolocation, Map, MapEvent } from "ol";
+import { View } from "./view_ex";
+import { Group, Tile, Vector as layerVector } from "ol/layer";
+import { Vector as sourceVector } from "ol/source";
+import { Circle, LineString, Point, Polygon } from "ol/geom";
+import { Fill, Icon, Stroke, Style } from "ol/style";
+import { MapboxMap } from "./source/mapboxmap";
+import { NowMap } from "./source/nowmap";
+import { getDistance, randomFromCenter } from "./math_ex";
+import { MapboxLayer } from "./layer_mapbox";
+import { normalizeArg } from "./functions";
 
 import bluedot from "../parts/bluedot.png";
 import bluedot_transparent from "../parts/bluedot_transparent.png";
 import bluedot_small from "../parts/bluedot_small.png";
 import defaultpin from "../parts/defaultpin.png";
 import IconAnchorUnits from "ol/style/IconAnchorUnits";
-import {HistMap} from "./source/histmap";
+import { HistMap } from "./source/histmap";
 
 const gpsStyle = new Style({
   image: new Icon({
@@ -347,7 +347,8 @@ export class MaplatMap extends Map {
           let acc = geolocation.getAccuracy();
           if (
             this.fakeGps &&
-            getDistance(this.homePosition, lnglat as [number, number]) > this.fakeGps
+            getDistance(this.homePosition, lnglat as [number, number]) >
+              this.fakeGps
           ) {
             lnglat = [
               randomFromCenter(this.homePosition[0], 0.001),

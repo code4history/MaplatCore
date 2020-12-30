@@ -126,8 +126,7 @@ export class HistMap_tin extends HistMap {
         const index = tinSorted[i][0];
         const tin = tinSorted[i][1];
         if (index == 0 || booleanPointInPolygon(xy, tin.xyBounds)) {
-          this
-            .xy2MercAsync_specifyLayer(xy, index)
+          this.xy2MercAsync_specifyLayer(xy, index)
             .then(merc => {
               resolve([index, merc]);
             })
@@ -147,8 +146,7 @@ export class HistMap_tin extends HistMap {
       this.tins.map(
         (tin: any, index: any) =>
           new Promise((resolve, reject) => {
-            this
-              .merc2XyAsync_specifyLayer(merc, index)
+            this.merc2XyAsync_specifyLayer(merc, index)
               .then((xy: any) => {
                 if (index == 0 || booleanPointInPolygon(xy, tin.xyBounds)) {
                   resolve([tin, index, xy]);
@@ -198,7 +196,7 @@ export class HistMap_tin extends HistMap {
                 .sort((a: any, b: any) =>
                   a[2].importance < b[2].importance ? 1 : -1
                 )
-                .filter((_row: any, i: any) => (i < 2));
+                .filter((_row: any, i: any) => i < 2);
             }
           }, [])
           .map((row: any) => {
@@ -213,8 +211,7 @@ export class HistMap_tin extends HistMap {
 
   mapSize2MercSize(callback: any) {
     const xy = [this.width / 2, this.height / 2];
-    this
-      .xy2MercAsync_returnLayer(xy)
+    this.xy2MercAsync_returnLayer(xy)
       .then((results: any) => {
         const index = results[0];
         const mercCenter = results[1];
@@ -276,7 +273,7 @@ export class HistMap_tin extends HistMap {
     });
     const promise = this.xy2MercAsync_returnLayer(cross[0]);
     return promise
-      .then((results : any) => {
+      .then((results: any) => {
         const index = results[0];
         const centerMerc = results[1];
         const promises = cross.map((val, i) => {
@@ -368,7 +365,7 @@ export class HistMap_tin extends HistMap {
 
   xy2MercAsync(xy: any) {
     const convertXy = this.histMapCoords2Xy(xy);
-    return this.xy2MercAsync_returnLayer(convertXy).then((ret : any) => ret[1]);
+    return this.xy2MercAsync_returnLayer(convertXy).then((ret: any) => ret[1]);
   }
 
   merc2XyAsync(merc: any, ignoreBackside: any) {

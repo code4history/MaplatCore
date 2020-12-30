@@ -59,7 +59,7 @@ export class MaplatApp extends EventTarget {
   __selectedMarker: any;
   __init = true;
   __redrawMarkerBlock = false;
-  __redrawMarkerThrottle:(NowMap | HistMap)[] = [];
+  __redrawMarkerThrottle: (NowMap | HistMap)[] = [];
   appName: any;
   cacheHash: any;
   currentPosition: any;
@@ -130,9 +130,7 @@ export class MaplatApp extends EventTarget {
         this.initialRestore.hideMarker = !!parseInt(
           localStorage.getItem("hideMarker") || "0"
         );
-        this.initialRestore.hideLayer = localStorage.getItem(
-          "hideLayer"
-        );
+        this.initialRestore.hideLayer = localStorage.getItem("hideLayer");
       }
     }
     // Add UI HTML Element
@@ -156,9 +154,9 @@ export class MaplatApp extends EventTarget {
     if (this.overlay) {
       this.mapDivDocument.classList.add("with-opacity");
     }
-    this.waitReady = this
-      .settingLoader(setting)
-      .then(x => this.handleSetting(x, appOption));
+    this.waitReady = this.settingLoader(setting).then(x =>
+      this.handleSetting(x, appOption)
+    );
   }
   // Async initializers 1: Load application setting
   async settingLoader(setting: any) {
@@ -254,8 +252,7 @@ export class MaplatApp extends EventTarget {
     this.noRotate = appOption.noRotate || this.appData.noRotate || false;
     this.poiTemplate =
       appOption.poiTemplate || this.appData.poiTemplate || false;
-    this.poiStyle =
-      appOption.poiStyle || this.appData.poiStyle || false;
+    this.poiStyle = appOption.poiStyle || this.appData.poiStyle || false;
     this.iconTemplate =
       appOption.iconTemplate || this.appData.iconTemplate || false;
     this.currentPosition = null;
@@ -383,13 +380,18 @@ export class MaplatApp extends EventTarget {
     this.mapObject.on("click", (evt: any) => {
       // @ts-expect-error ts-migrate(7053)
       this.logger.debug(evt.pixel);
-      const feature = evt.target.forEachFeatureAtPixel(evt.pixel, (feature: any) => {
-        // @ts-expect-error ts-migrate(7053)
-        this.logger.debug(evt.pixel);
-        if (feature.get("datum")) return feature;
-      });
+      const feature = evt.target.forEachFeatureAtPixel(
+        evt.pixel,
+        (feature: any) => {
+          // @ts-expect-error ts-migrate(7053)
+          this.logger.debug(evt.pixel);
+          if (feature.get("datum")) return feature;
+        }
+      );
       if (feature) {
-        this.dispatchEvent(new CustomEvent("clickMarker", feature.get("datum")));
+        this.dispatchEvent(
+          new CustomEvent("clickMarker", feature.get("datum"))
+        );
       } else {
         const xy = evt.coordinate;
         this.dispatchEvent(new CustomEvent("clickMapXy", xy));
@@ -527,7 +529,9 @@ export class MaplatApp extends EventTarget {
       let histCoord = evt.frameState.viewState.center;
       const source = this.from;
       if (!(source as HistMap | NowMap).insideCheckHistMapCoords(histCoord)) {
-        histCoord = (source as HistMap | NowMap).modulateHistMapCoordsInside(histCoord);
+        histCoord = (source as HistMap | NowMap).modulateHistMapCoordsInside(
+          histCoord
+        );
         evt.target.getView().setCenter(histCoord);
       }
     };
@@ -680,8 +684,7 @@ export class MaplatApp extends EventTarget {
       source = this.from;
     }
     if (this.__redrawMarkerBlock) {
-      if (!this.__redrawMarkerThrottle)
-        this.__redrawMarkerThrottle = [];
+      if (!this.__redrawMarkerThrottle) this.__redrawMarkerThrottle = [];
       const throttle = this.__redrawMarkerThrottle;
       if (throttle.length == 0 || throttle[throttle.length - 1] !== source) {
         throttle.push(source as HistMap | NowMap);
@@ -902,7 +905,10 @@ export class MaplatApp extends EventTarget {
           ? layer.hide
           : true
       );
-    const mapPois = (this.from as HistMap | NowMap).listPoiLayers(hideOnly, nonzero);
+    const mapPois = (this.from as HistMap | NowMap).listPoiLayers(
+      hideOnly,
+      nonzero
+    );
     return appPois.concat(mapPois);
   }
   showPoiLayer(id: any) {
@@ -1162,9 +1168,7 @@ export class MaplatApp extends EventTarget {
     if (this.timer) clearTimeout(this.timer);
     this.timer = setTimeout(() => {
       this.timer = undefined;
-      this.dispatchEvent(
-        new CustomEvent("updateState", this.stateBuffer)
-      );
+      this.dispatchEvent(new CustomEvent("updateState", this.stateBuffer));
     }, 50);
   }
   setTransparency(percentage: any) {
@@ -1229,7 +1233,9 @@ export class MaplatApp extends EventTarget {
       this.mercBuffer.mercs &&
       this.mercBuffer.buffer[(this.from as HistMap | NowMap).mapID]
     ) {
-      const buffer = this.mercBuffer.buffer[(this.from as HistMap | NowMap).mapID];
+      const buffer = this.mercBuffer.buffer[
+        (this.from as HistMap | NowMap).mapID
+      ];
       if (
         buffer[0][0] == current[0][0] &&
         buffer[0][1] == current[0][1] &&
@@ -1302,12 +1308,10 @@ export class MaplatApp extends EventTarget {
     let key = langs.reduce((prev: any, curr, idx, arr) => {
       if (curr == this.appLang) {
         prev = [dataFragment[curr], true];
-      }
-      else if (!prev || (curr == "en" && !prev[1])) {
+      } else if (!prev || (curr == "en" && !prev[1])) {
         prev = [dataFragment[curr], false];
       }
-      if (idx == arr.length - 1)
-        return prev[0];
+      if (idx == arr.length - 1) return prev[0];
       return prev;
     }, null);
     key = typeof key == "string" ? key : `${key}`;
@@ -1323,12 +1327,7 @@ export class MaplatApp extends EventTarget {
       });
     for (let i = 0; i < langs.length; i++) {
       const lang = langs[i];
-      this.i18n.addResource(
-        lang,
-        "translation",
-        key,
-        dataFragment[lang]
-      );
+      this.i18n.addResource(lang, "translation", key, dataFragment[lang]);
     }
     return this.t(key, {
       ns: "translation",

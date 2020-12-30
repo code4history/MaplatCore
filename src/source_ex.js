@@ -123,8 +123,7 @@ export function setCustomFunction(target) {
       if (cond.x != null && cond.y != null) {
         xy = [cond.x, cond.y];
       }
-      this
-        .size2MercsAsync()
+      this.size2MercsAsync()
         .then(mercs => this.mercs2MercSizeAsync(mercs))
         .then(mercSize => {
           const mercs = this.mercsFromGivenMercZoom(
@@ -182,8 +181,7 @@ export function setCustomFunction(target) {
       }
       const mercs = this.mercsFromGPSValue(position.lnglat, position.acc);
 
-      return this
-        .mercs2XysAsync(mercs)
+      return this.mercs2XysAsync(mercs)
         .then(results => {
           const hide = !results[0];
           const xys = hide ? results[1] : results[0];
