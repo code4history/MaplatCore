@@ -3,7 +3,6 @@
 
 const path = require("path");
 const { merge } = require("webpack-merge");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
 const prod = require("./webpack.config.standard.js");
 
 module.exports = merge(prod, {
@@ -11,8 +10,4 @@ module.exports = merge(prod, {
     path: path.resolve(__dirname, "../dev"),
     filename: '[name].js'
   },
-
-  plugins: [
-    new HtmlWebpackPlugin({ template: "./public/index.html" })
-  ],
 });

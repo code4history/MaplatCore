@@ -5,6 +5,7 @@ const path = require("path");
 const { BannerPlugin } = require("webpack");
 const pjson = require("../package.json");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
@@ -25,6 +26,7 @@ module.exports = {
       banner: `${pjson.name} v${pjson.version} | ${pjson.author} | license: ${pjson.license}`
     }),
     new CleanWebpackPlugin(),
+    new HtmlWebpackPlugin({ template: "./public/index.html" }),
     new ForkTsCheckerWebpackPlugin({
       eslint: {
         files: "./{src,spec}/**/*.{js,ts}"
