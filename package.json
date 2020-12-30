@@ -13,8 +13,8 @@
     "parts/"
   ],
   "scripts": {
-    "server": "webpack-dev-server --config ./webpack_config/webpack.config.standard.js --mode=development --devtool=inline-source-map",
-    "server:packed": "webpack-dev-server --config ./webpack_config/webpack.config.packed.js  --mode=development --devtool=inline-source-map",
+    "server": "webpack-dev-server --config ./webpack_config/webpack.config.standard.dev.js --mode=development --devtool=inline-source-map",
+    "server:packed": "webpack-dev-server --config ./webpack_config/webpack.config.packed.dev.js  --mode=development --devtool=inline-source-map",
     "www_build": "webpack --color --progress --config ./webpack_config/webpack.config.standard.js",
     "www_build:packed": "webpack --config ./webpack_config/webpack.config.packed.js",
     "zip_build": "gulp zip",
@@ -43,7 +43,7 @@
   },
   "homepage": "https://github.com/code4history/MaplatCore/wiki",
   "dependencies": {
-    "@maplat/tin": "^0.6.7",
+    "@maplat/tin": "^0.7.0",
     "@turf/turf": "^5.1.6",
     "argv": "0.0.2",
     "i18next": "^17.3.1",

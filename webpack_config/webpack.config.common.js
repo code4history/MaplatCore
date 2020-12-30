@@ -7,7 +7,6 @@ const pjson = require("../package.json");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const TerserPlugin = require("terser-webpack-plugin");
 
@@ -31,8 +30,7 @@ module.exports = {
         files: "./{src,spec}/**/*.{js,ts}"
       }
     }),
-    new MiniCssExtractPlugin(),
-    new HtmlWebpackPlugin({ template: "./public/index.html" })
+    new MiniCssExtractPlugin()
   ],
 
   externals: [
@@ -57,7 +55,7 @@ module.exports = {
       },
       {
         test: /\.(js|ts)$/,
-        exclude: /node_modules(?![\/\\](@maplat[\/\\]tin|weiwudi))/,
+        exclude: /node_modules(?![/\\](@maplat[/\\]tin|weiwudi))/,
         loader: 'babel-loader',
       },
       {
