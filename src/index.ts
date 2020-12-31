@@ -199,7 +199,6 @@ export class MaplatApp extends EventTarget {
   // Async initializer 6: Load pois setting => move to normalize_pois.js
   // Async initializer 8: Load sources setting asynchronous
   async sourcesLoader(mapReturnValue: any) {
-    const translate = this.translate;
     const dataSource = this.appData.sources;
     const sourcePromise = [];
     const commonOption = {
@@ -209,9 +208,7 @@ export class MaplatApp extends EventTarget {
       mercMinZoom: mapReturnValue.mercMinZoom,
       mercMaxZoom: mapReturnValue.mercMaxZoom,
       enableCache: this.enableCache,
-      translator(fragment: any) {
-        return translate(fragment);
-      }
+      translator: (fragment: any) => this.translate(fragment)
     };
     for (let i = 0; i < dataSource.length; i++) {
       const option = dataSource[i];
