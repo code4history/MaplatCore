@@ -18,7 +18,8 @@ import { HistMap } from "./source/histmap";
 import { NowMap } from "./source/nowmap";
 import { TmsMap } from "./source/tmsmap";
 import { MapboxMap } from "./source/mapboxmap";
-import { mapSourceFactory, META_KEYS } from "./source_ex";
+import { mapSourceFactory } from "./source_ex";
+import { META_KEYS } from "./source/maplatsource";
 import { recursiveRound } from "./math_ex";
 import locales from "./freeze_locales";
 import {
@@ -639,7 +640,7 @@ export class MaplatApp extends EventTarget {
         })()
       : x && y
       ? new Promise(resolve => {
-          resolve((src as HistMap | NowMap).xy2HistMapCoords([x, y]));
+          resolve((src as HistMap).xy2HistMapCoords([x, y]));
         })
       : (function () {
           const merc = transform(lnglat, "EPSG:4326", "EPSG:3857");
@@ -1189,7 +1190,7 @@ export class MaplatApp extends EventTarget {
     if (!source) return;
     return META_KEYS.reduce(
       (prev: any, curr: string) => {
-        prev[curr] = (source as HistMap | NowMap)[curr];
+        prev[curr] = (source as any)[curr];
         return prev;
       },
       {

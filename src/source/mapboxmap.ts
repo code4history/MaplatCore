@@ -1,6 +1,9 @@
 import { NowMap } from "./nowmap";
 
 export class MapboxMap extends NowMap {
+  style: any;
+  mapboxMap: any;
+  accessToken: any;
   constructor(optOptions: any) {
     const options = optOptions || {};
     super(options);

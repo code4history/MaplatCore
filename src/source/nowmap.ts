@@ -4,7 +4,7 @@ import { normalizeArg } from "../functions";
 import { lineString, point } from "@turf/helpers";
 import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
 import lineIntersect from "@turf/line-intersect";
-import { MaplatSource, applyMixins } from "../source_ex";
+import { MaplatSource, applyMixins } from "./maplatsource";
 import { MaplatMap } from "../map_ex";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -32,8 +32,8 @@ export class NowMap extends OSM implements MaplatSource {
   centroid: any;
   thumbnail: any;
   initialWait: Promise<any> | undefined = undefined;
-  private tilePixelRatio_: any;
-  private projection_: any;
+  tilePixelRatio_: any;
+  projection_: any;
 
   // @ts-ignore
   constructor(optOptions: any) {
@@ -96,36 +96,30 @@ export class NowMap extends OSM implements MaplatSource {
 
   // For Mixin
   // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
-  addPoi(data: any, clusterId: string): any {
-  }
+  addPoi(data: any, clusterId: string): any {}
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
-  addPoiLayer(id: string, data: any): void {
-  }
+  addPoiLayer(id: string, data: any): void {}
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
-  clearPoi(clusterId?: string): void {
-  }
+  clearPoi(clusterId?: string): void {}
 
   async clearTileCacheAsync(): Promise<void> {
     return Promise.resolve(undefined);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
-  customInitialize(options: any): void {
-  }
+  customInitialize(options: any): void {}
 
   getMap(): MaplatMap | undefined {
     return undefined;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
-  getPoi(id: string): any {
-  }
+  getPoi(id: string): any {}
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
-  getPoiLayer(id: string): any {
-  }
+  getPoiLayer(id: string): any {}
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getRadius(size: any, zoom: any): number {
@@ -137,8 +131,7 @@ export class NowMap extends OSM implements MaplatSource {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
-  goHome(): void {
-  }
+  goHome(): void {}
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   listPoiLayers(hideOnly = false, nonzero = false): any[] {
@@ -151,32 +144,25 @@ export class NowMap extends OSM implements MaplatSource {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
-  mercs2MercSizeAsync(mercs: any): any {
-  }
+  mercs2MercSizeAsync(mercs: any): any {}
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
-  mercs2SizeAsync(mercs?: any, asMerc?: any): any {
-  }
+  mercs2SizeAsync(mercs?: any, asMerc?: any): any {}
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
-  mercs2XysAsync(mercs: any): any {
-  }
+  mercs2XysAsync(mercs: any): any {}
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
-  mercsFromGPSValue(lnglat: any, acc: any): any {
-  }
+  mercsFromGPSValue(lnglat: any, acc: any): any {}
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
-  mercsFromGivenMercZoom(center: any, mercZoom: any, direction: any): any {
-  }
+  mercsFromGivenMercZoom(center: any, mercZoom: any, direction: any): any {}
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  removePoi(id: string): void {
-  }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
+  removePoi(id: string): void {}
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  removePoiLayer(id: string): void {
-  }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
+  removePoiLayer(id: string): void {}
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async resolvePois(pois: any): Promise<void> {
@@ -184,35 +170,27 @@ export class NowMap extends OSM implements MaplatSource {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
-  rotateMatrix(xys: any, theta: any): any {
-  }
+  rotateMatrix(xys: any, theta: any): any {}
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
-  setGPSMarker(position: any, ignoreMove: boolean): void {
-  }
+  setGPSMarker(position: any, ignoreMove: boolean): void {}
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
-  setGPSMarkerAsync(position: any, ignoreMove: boolean): any {
-  }
+  setGPSMarkerAsync(position: any, ignoreMove: boolean): any {}
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
-  setViewpoint(cond: any): void {
-  }
+  setViewpoint(cond: any): void {}
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
-  setViewpointRadian(cond: any): void {
-  }
+  setViewpointRadian(cond: any): void {}
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
-  size2MercsAsync(center?: any, zoom?: any, rotate?: any): any {
-  }
+  size2MercsAsync(center?: any, zoom?: any, rotate?: any): any {}
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
-  size2Xys(center?: any, zoom?: any, rotate?: any): any {
-  }
+  size2Xys(center?: any, zoom?: any, rotate?: any): any {}
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
-  xys2Size(xys: any): any {
-  }
+  xys2Size(xys: any): any {}
 }
 applyMixins(NowMap, [MaplatSource]);

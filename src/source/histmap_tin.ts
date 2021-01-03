@@ -269,10 +269,12 @@ export class HistMap_tin extends HistMap {
 
   // 画面サイズと地図ズームから、メルカトル座標上での5座標を取得する。zoom, rotate無指定の場合は自動取得
   size2MercsAsync(center: any, zoom: any, rotate: any) {
-    const cross = this.size2Xys(center, zoom, rotate).map((xy: any, index: number) => {
-      if (index == 5) return xy;
-      return this.histMapCoords2Xy(xy);
-    });
+    const cross = this.size2Xys(center, zoom, rotate).map(
+      (xy: any, index: number) => {
+        if (index == 5) return xy;
+        return this.histMapCoords2Xy(xy);
+      }
+    );
     const promise = this.xy2MercAsync_returnLayer(cross[0]);
     return promise
       .then((results: any) => {
