@@ -2,14 +2,14 @@
 // @ts-expect-error ts-migrate(2459) FIXME: Module '"../../node_modules/@types/ol/proj"' decla... Remove this comment to see the full error message
 import { addCoordinateTransforms, addProjection, Projection } from "ol/proj";
 import { MERC_MAX, tileSize, transPng } from "../const_ex";
-import {
-  setCustomFunction,
-  setCustomInitialize,
-  setupTileLoadFunction
-} from "../source_ex";
+import { MaplatSource, applyMixins } from "../source_ex";
 import { XYZ } from "ol/source";
 import { normalizeArg } from "../functions";
 import { createFromTemplates, expandUrl } from "ol/tileurlfunction";
+import { MaplatMap } from "../map_ex";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import Weiwudi from "weiwudi";
 
 for (let z = 0; z < 9; z++) {
   const key = `ZOOM:${z}`;
@@ -46,7 +46,35 @@ for (let z = 0; z < 9; z++) {
   })(key, maxxy);
 }
 
-export class HistMap extends setCustomFunction(XYZ) {
+// @ts-ignore
+export class HistMap extends XYZ implements MaplatSource  {
+  weiwudi: Weiwudi | undefined = undefined;
+  _map: MaplatMap | undefined = undefined;
+  homePosition: any;
+  mercZoom: any;
+  pois: any;
+  officialTitle = "";
+  title = "";
+  mapID = "";
+  label = "";
+  maxZoom: number | undefined = undefined;
+  minZoom: number | undefined = undefined;
+  poiTemplate = "";
+  poiStyle = "";
+  iconTemplate = "";
+  mercatorXShift = 0;
+  mercatorYShift = 0;
+  envelope: any;
+  centroid: any;
+  thumbnail: any;
+  initialWait: Promise<any> | undefined = undefined;
+  private tilePixelRatio_: any;
+  private projection_: any;
+  width: number;
+  height: number;
+  _maxxy: number;
+
+  // @ts-ignore
   constructor(optOptions: any) {
     const options = normalizeArg(Object.assign({}, optOptions || {}));
 
@@ -80,7 +108,6 @@ export class HistMap extends setCustomFunction(XYZ) {
         return this._tileUrlFunction(coord);
       };
 
-    // @ts-expect-error
     super(options);
     if (options.mapID) {
       this.mapID = options.mapID;
@@ -96,10 +123,9 @@ export class HistMap extends setCustomFunction(XYZ) {
     this.width = options.width;
     this.height = options.height;
     this.maxZoom = options.maxZoom;
-    this._maxxy = Math.pow(2, this.maxZoom) * tileSize;
+    this._maxxy = Math.pow(2, this.maxZoom as number) * tileSize;
 
-    setCustomInitialize(this, options);
-    setupTileLoadFunction(this);
+    this.customInitialize(options);
   }
 
   histMapCoords2Xy(histCoords: any) {
@@ -142,4 +168,134 @@ export class HistMap extends setCustomFunction(XYZ) {
     const ret = this.modulateXyInside(xy);
     return this.xy2HistMapCoords(ret);
   }
+
+  // For Mixin
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
+  addPoi(data: any, clusterId: string): any {
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
+  addPoiLayer(id: string, data: any): void {
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
+  clearPoi(clusterId?: string): void {
+  }
+
+  async clearTileCacheAsync(): Promise<void> {
+    return Promise.resolve(undefined);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
+  customInitialize(options: any): void {
+  }
+
+  getMap(): MaplatMap | undefined {
+    return undefined;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
+  getPoi(id: string): any {
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
+  getPoiLayer(id: string): any {
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getRadius(size: any, zoom: any): number {
+    return 0;
+  }
+
+  async getTileCacheSizeAsync(): Promise<number> {
+    return Promise.resolve(0);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
+  goHome(): void {
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  listPoiLayers(hideOnly = false, nonzero = false): any[] {
+    return [];
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  mercs2MercRotation(xys: any): number {
+    return 0;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
+  mercs2MercSizeAsync(mercs: any): any {
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
+  mercs2SizeAsync(mercs?: any, asMerc?: any): any {
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
+  mercs2XysAsync(mercs: any): any {
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
+  mercsFromGPSValue(lnglat: any, acc: any): any {
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
+  mercsFromGivenMercZoom(center: any, mercZoom: any, direction: any): any {
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  removePoi(id: string): void {
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  removePoiLayer(id: string): void {
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async resolvePois(pois: any): Promise<void> {
+    return Promise.resolve(undefined);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
+  rotateMatrix(xys: any, theta: any): any {
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
+  setGPSMarker(position: any, ignoreMove: boolean): void {
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
+  setGPSMarkerAsync(position: any, ignoreMove: boolean): any {
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
+  setViewpoint(cond: any): void {
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
+  setViewpointRadian(cond: any): void {
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
+  size2MercsAsync(center?: any, zoom?: any, rotate?: any): any {
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
+  size2Xys(center?: any, zoom?: any, rotate?: any): any {
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
+  xys2Size(xys: any): any {
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
+  merc2XyAsync(val: any, ignoreBackside = false): any {
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
+  xy2MercAsync(val: any): any {
+  }
 }
+applyMixins(HistMap, [MaplatSource]);
