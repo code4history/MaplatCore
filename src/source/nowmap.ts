@@ -11,16 +11,20 @@ import {
 } from "../source_ex";
 
 export class NowMap extends setCustomFunction(OSM) {
-  constructor(optOptions: any) {
-    const options = normalizeArg(Object.assign({}, optOptions || {}));
-    if (!options.imageExtention) options.imageExtention = "jpg";
-    if (options.mapID && !options.url && !options.urls) {
-      options.url = options.tms
-        ? `tiles/${options.mapID}/{z}/{x}/{-y}.${options.imageExtention}`
-        : `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtention}`;
-    }
+  constructor(options: any = {}) {
+    super(
+      (options = (() => {
+        options = normalizeArg(options);
+        if (!options.imageExtention) options.imageExtention = "jpg";
+        if (options.mapID && !options.url && !options.urls) {
+          options.url = options.tms
+            ? `tiles/${options.mapID}/{z}/{x}/{-y}.${options.imageExtention}`
+            : `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtention}`;
+        }
+        return options;
+      })() as any)
+    );
 
-    super(options);
     if (options.mapID) {
       this.mapID = options.mapID;
     }

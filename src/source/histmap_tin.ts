@@ -16,9 +16,7 @@ import { MERC_MAX } from "../const_ex";
 export class HistMap_tin extends HistMap {
   tins: Tin[];
 
-  constructor(optOptions: any) {
-    const options = optOptions || {};
-
+  constructor(options: any = {}) {
     super(options);
 
     this.tins = [

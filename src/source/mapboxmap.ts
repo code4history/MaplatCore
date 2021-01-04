@@ -5,10 +5,10 @@ export class MapboxMap extends NowMap {
   accessToken = "";
   mapboxMap: any;
 
-  constructor(optOptions: any) {
-    super(optOptions || {});
-    this.style = optOptions.style;
-    this.mapboxMap = optOptions.mapboxMap;
+  constructor(options: any = {}) {
+    super(options);
+    this.style = options.style;
+    this.mapboxMap = options.mapboxMap;
   }
 
   static async createAsync(options: any) {

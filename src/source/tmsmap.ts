@@ -1,10 +1,8 @@
 import { NowMap } from "./nowmap";
 
 export class TmsMap extends NowMap {
-  constructor(optOptions: any) {
-    const options = optOptions || {};
-    options.opaque = false;
-    super(options);
+  constructor(options: any = {}) {
+    super(Object.assign(options, { opaque: false }));
   }
 
   static async createAsync(options: any) {

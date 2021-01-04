@@ -9,8 +9,6 @@ import {
   normalizePoi
 } from "./normalize_pois";
 import { normalizeArg } from "./functions";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import Weiwudi from "weiwudi";
 import { NowMap } from "./source/nowmap";
 import { TmsMap } from "./source/tmsmap";
@@ -21,8 +19,8 @@ import "whatwg-fetch";
 import osm from "../parts/osm.jpg";
 import gsi from "../parts/gsi.jpg";
 import gsi_ortho from "../parts/gsi_ortho.jpg";
-import {MaplatMap} from "./map_ex";
-import {Coordinate} from "ol/coordinate";
+import { MaplatMap } from "./map_ex";
+import { Coordinate } from "ol/coordinate";
 
 const baseDict = {
   osm: {
@@ -104,8 +102,8 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
     envelope: any;
     centroid?: number[];
 
-    abstract xy2MercAsync(val: any) : Promise<any>;
-    abstract merc2XyAsync(merc: any, ignoreBackside?: boolean) : Promise<any>;
+    abstract xy2MercAsync(val: any): Promise<any>;
+    abstract merc2XyAsync(merc: any, ignoreBackside?: boolean): Promise<any>;
     abstract insideCheckHistMapCoords(coord: any): boolean;
 
     async getTileCacheSizeAsync() {
@@ -255,7 +253,11 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
     }
 
     // メルカトルの中心座標とメルカトルズームから、メルカトル5座標値に変換
-    mercsFromGivenMercZoom(center: any, mercZoom: any = undefined, direction: any) {
+    mercsFromGivenMercZoom(
+      center: any,
+      mercZoom: any = undefined,
+      direction: any
+    ) {
       if (mercZoom === undefined) {
         mercZoom = 17;
       }
@@ -623,7 +625,15 @@ export function setupTileLoadFunction(target: any) {
     (function () {
       let numLoadingTiles = 0;
       const tileLoadFn = self.getTileLoadFunction();
-      const tImageLoader = function (_tileCoord: any, src: any, tCanv: any, sx: any, sy: any, sw: any, sh: any) {
+      const tImageLoader = function (
+        _tileCoord: any,
+        src: any,
+        tCanv: any,
+        sx: any,
+        sy: any,
+        sw: any,
+        sh: any
+      ) {
         return new Promise((resolve, _reject) => {
           const loader = function (src: any, fallback: any = undefined) {
             if (numLoadingTiles === 0) {

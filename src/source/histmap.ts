@@ -51,40 +51,44 @@ export abstract class HistMap extends setCustomFunction(XYZ) {
   height: number;
   _maxxy: number;
 
-  constructor(optOptions: any) {
-    const options = normalizeArg(Object.assign({}, optOptions || {}));
+  constructor(options: any = {}) {
+    super(
+      (options = (() => {
+        options = normalizeArg(options);
 
-    options.wrapX = false;
-    if (!options.imageExtention) options.imageExtention = "jpg";
-    if (options.mapID && !options.url && !options.urls) {
-      options.url = `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtention}`;
-    }
-
-    const zW = Math.log2(options.width / tileSize);
-    const zH = Math.log2(options.height / tileSize);
-    options.maxZoom = Math.ceil(Math.max(zW, zH));
-
-    options.tileUrlFunction =
-      options.tileUrlFunction ||
-      function (coord: any) {
-        const z = coord[0];
-        const x = coord[1];
-        const y = coord[2];
-        if (
-          // @ts-expect-error ts-migrate(2683)
-          x * tileSize * Math.pow(2, this.maxZoom - z) >= this.width ||
-          // @ts-expect-error ts-migrate(2683)
-          y * tileSize * Math.pow(2, this.maxZoom - z) >= this.height ||
-          x < 0 ||
-          y < 0
-        ) {
-          return transPng;
+        options.wrapX = false;
+        if (!options.imageExtention) options.imageExtention = "jpg";
+        if (options.mapID && !options.url && !options.urls) {
+          options.url = `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtention}`;
         }
-        // @ts-expect-error ts-migrate(2683)
-        return this._tileUrlFunction(coord);
-      };
 
-    super(options);
+        const zW = Math.log2(options.width / tileSize);
+        const zH = Math.log2(options.height / tileSize);
+        options.maxZoom = Math.ceil(Math.max(zW, zH));
+
+        options.tileUrlFunction =
+          options.tileUrlFunction ||
+          function (coord: any) {
+            const z = coord[0];
+            const x = coord[1];
+            const y = coord[2];
+            if (
+              // @ts-expect-error ts-migrate(2683)
+              x * tileSize * Math.pow(2, this.maxZoom - z) >= this.width ||
+              // @ts-expect-error ts-migrate(2683)
+              y * tileSize * Math.pow(2, this.maxZoom - z) >= this.height ||
+              x < 0 ||
+              y < 0
+            ) {
+              return transPng;
+            }
+            // @ts-expect-error ts-migrate(2683)
+            return this._tileUrlFunction(coord);
+          };
+        return options;
+      })() as any)
+    );
+
     if (options.mapID) {
       this.mapID = options.mapID;
     }
