@@ -14,6 +14,8 @@ import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
 import { MERC_MAX } from "../const_ex";
 
 export class HistMap_tin extends HistMap {
+  tins: any;
+
   constructor(optOptions: any) {
     const options = optOptions || {};
 
@@ -267,16 +269,18 @@ export class HistMap_tin extends HistMap {
 
   // 画面サイズと地図ズームから、メルカトル座標上での5座標を取得する。zoom, rotate無指定の場合は自動取得
   size2MercsAsync(center: any, zoom: any, rotate: any) {
-    const cross = this.size2Xys(center, zoom, rotate).map((xy, index) => {
-      if (index == 5) return xy;
-      return this.histMapCoords2Xy(xy);
-    });
+    const cross = this.size2Xys(center, zoom, rotate).map(
+      (xy: any, index: number) => {
+        if (index == 5) return xy;
+        return this.histMapCoords2Xy(xy);
+      }
+    );
     const promise = this.xy2MercAsync_returnLayer(cross[0]);
     return promise
       .then((results: any) => {
         const index = results[0];
         const centerMerc = results[1];
-        const promises = cross.map((val, i) => {
+        const promises = cross.map((val: any, i: number) => {
           if (i == 5) return val;
           if (i == 0) return Promise.resolve(centerMerc);
           return this.xy2MercAsync_specifyLayer(val, index);
@@ -368,7 +372,7 @@ export class HistMap_tin extends HistMap {
     return this.xy2MercAsync_returnLayer(convertXy).then((ret: any) => ret[1]);
   }
 
-  merc2XyAsync(merc: any, ignoreBackside: any) {
+  merc2XyAsync(merc: any, ignoreBackside = false): any {
     return this.merc2XyAsync_returnLayer(merc)
       .then(ret => {
         if (ignoreBackside && !ret[0]) return;

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { META_KEYS } from "./source_ex";
+import { META_KEYS } from "./source/maplatsource";
 
 export function createElement(domStr: string) {
   const context = document;

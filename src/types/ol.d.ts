@@ -1,3 +1,5 @@
+export * as ol from "ol";
+
 declare module "ol" {
   export class View {
     getDecimalZoom(): number;
