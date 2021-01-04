@@ -1,11 +1,14 @@
 import { NowMap } from "./nowmap";
 
 export class MapboxMap extends NowMap {
+  style = "";
+  accessToken = "";
+  mapboxMap: any;
+
   constructor(optOptions: any) {
-    const options = optOptions || {};
-    super(options);
-    this.style = options.style;
-    this.mapboxMap = options.mapboxMap;
+    super(optOptions || {});
+    this.style = optOptions.style;
+    this.mapboxMap = optOptions.mapboxMap;
   }
 
   static async createAsync(options: any) {

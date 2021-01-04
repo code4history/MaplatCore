@@ -639,7 +639,7 @@ export class MaplatApp extends EventTarget {
         })()
       : x && y
       ? new Promise(resolve => {
-          resolve((src as HistMap | NowMap).xy2HistMapCoords([x, y]));
+          resolve((src as HistMap).xy2HistMapCoords([x, y]));
         })
       : (function () {
           const merc = transform(lnglat, "EPSG:4326", "EPSG:3857");
@@ -1189,7 +1189,7 @@ export class MaplatApp extends EventTarget {
     if (!source) return;
     return META_KEYS.reduce(
       (prev: any, curr: string) => {
-        prev[curr] = (source as HistMap | NowMap)[curr];
+        prev[curr] = (source as any)[curr];
         return prev;
       },
       {

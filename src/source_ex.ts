@@ -9,6 +9,8 @@ import {
   normalizePoi
 } from "./normalize_pois";
 import { normalizeArg } from "./functions";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import Weiwudi from "weiwudi";
 import { NowMap } from "./source/nowmap";
 import { TmsMap } from "./source/tmsmap";
@@ -19,6 +21,8 @@ import "whatwg-fetch";
 import osm from "../parts/osm.jpg";
 import gsi from "../parts/gsi.jpg";
 import gsi_ortho from "../parts/gsi_ortho.jpg";
+import {MaplatMap} from "./map_ex";
+import {Coordinate} from "ol/coordinate";
 
 const baseDict = {
   osm: {
@@ -80,8 +84,30 @@ const baseDict = {
   }
 };
 
-export function setCustomFunction(target) {
-  class Mixin extends target {
+// eslint-disable-next-line @typescript-eslint/ban-types
+type Constructor<T = {}> = new (...args: any[]) => T;
+
+export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
+  abstract class Mixin extends Base {
+    weiwudi?: Weiwudi;
+    _map?: MaplatMap;
+    homePosition: any;
+    mercZoom: any;
+    pois: any;
+    officialTitle = "";
+    title = "";
+    mapID = "";
+    label = "";
+    initialWait?: Promise<any>;
+    maxZoom?: number;
+    minZoom?: number;
+    envelope: any;
+    centroid?: number[];
+
+    abstract xy2MercAsync(val: any) : Promise<any>;
+    abstract merc2XyAsync(merc: any, ignoreBackside?: boolean) : Promise<any>;
+    abstract insideCheckHistMapCoords(coord: any): boolean;
+
     async getTileCacheSizeAsync() {
       if (!this.weiwudi) return 0;
       try {
@@ -104,15 +130,15 @@ export function setCustomFunction(target) {
     }
 
     // 経緯度lnglat、メルカトルズームmercZoom、地図ズームzoom、方角direction、地図回転rotation等を指定し地図移動
-    setViewpointRadian(cond) {
-      let merc;
-      let xy;
+    setViewpointRadian(cond: any) {
+      let merc: any;
+      let xy: any;
       const mercZoom = cond.mercZoom;
       const zoom = cond.zoom;
       const direction = cond.direction;
       const rotation = cond.rotation;
       const map = this._map;
-      const view = map.getView();
+      const view = map?.getView();
       if (cond.latitude != null && cond.longitude != null) {
         merc = transform(
           [cond.longitude, cond.latitude],
@@ -133,25 +159,25 @@ export function setCustomFunction(target) {
           );
           this.mercs2SizeAsync(mercs).then(size => {
             if (merc != null) {
-              view.setCenter(size[0]);
+              view?.setCenter(size[0]);
             } else if (xy != null) {
-              view.setCenter(xy);
+              view?.setCenter(xy);
             }
             if (mercZoom != null) {
-              view.setZoom(size[1]);
+              view?.setZoom(size[1]);
             } else if (zoom != null) {
-              view.setZoom(zoom);
+              view?.setZoom(zoom);
             }
             if (direction != null) {
-              view.setRotation(size[2]);
+              view?.setRotation(size[2]);
             } else if (rotation != null) {
-              view.setRotation(rotation);
+              view?.setRotation(rotation);
             }
           });
         });
     }
 
-    setViewpoint(cond) {
+    setViewpoint(cond: any) {
       if (cond.rotation) {
         cond.rotation = (cond.rotation * Math.PI) / 180;
       }
@@ -170,12 +196,12 @@ export function setCustomFunction(target) {
       });
     }
 
-    setGPSMarkerAsync(position, ignoreMove) {
+    setGPSMarkerAsync(position: any, ignoreMove = false) {
       const map = this.getMap();
-      const view = map.getView();
+      const view = map?.getView();
       if (!position) {
         return new Promise((resolve, _reject) => {
-          map.setGPSPosition(null);
+          map?.setGPSPosition(null);
           resolve(true);
         });
       }
@@ -186,14 +212,14 @@ export function setCustomFunction(target) {
           const hide = !results[0];
           const xys = hide ? results[1] : results[0];
           const sub = !hide ? results[1] : null;
-          const pos = { xy: xys[0] };
+          const pos: any = { xy: xys[0] };
           if (!this.insideCheckHistMapCoords(xys[0])) {
-            map.handleGPS(false, true);
+            map?.handleGPS(false, true);
             return false;
           }
           const news = xys.slice(1);
 
-          pos.rad = news.reduce((prev, curr, index) => {
+          pos.rad = news.reduce((prev: number, curr: any, index: number) => {
             const ret =
               prev +
               Math.sqrt(
@@ -202,10 +228,10 @@ export function setCustomFunction(target) {
               );
             return index === 3 ? ret / 4.0 : ret;
           }, 0);
-          if (!ignoreMove) view.setCenter(pos.xy);
-          map.setGPSPosition(pos, hide ? "hide" : null);
+          if (!ignoreMove) view?.setCenter(pos.xy);
+          map?.setGPSPosition(pos, hide ? "hide" : null);
           if (sub) {
-            map.setGPSPosition({ xy: sub[0] }, "sub");
+            map?.setGPSPosition({ xy: sub[0] }, "sub");
           }
           return true;
         })
@@ -214,26 +240,26 @@ export function setCustomFunction(target) {
         });
     }
 
-    setGPSMarker(position, ignoreMove) {
+    setGPSMarker(position: any, ignoreMove = false) {
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       this.setGPSMarkerAsync(position, ignoreMove).then(() => {});
     }
 
     // size(画面サイズ)とズームから、地図面座標上での半径を得る。zoom無指定の場合は自動取得
-    getRadius(size, zoom) {
+    getRadius(size: any, zoom?: any) {
       const radius = Math.floor(Math.min(size[0], size[1]) / 4);
-      if (zoom == null) {
-        zoom = this._map.getView().getDecimalZoom();
+      if (zoom === undefined) {
+        zoom = this._map?.getView().getDecimalZoom();
       }
       return (radius * MERC_MAX) / 128 / Math.pow(2, zoom);
     }
 
     // メルカトルの中心座標とメルカトルズームから、メルカトル5座標値に変換
-    mercsFromGivenMercZoom(center, mercZoom, direction) {
-      if (mercZoom == null) {
+    mercsFromGivenMercZoom(center: any, mercZoom: any = undefined, direction: any) {
+      if (mercZoom === undefined) {
         mercZoom = 17;
       }
-      const size = this._map.getSize();
+      const size = this._map?.getSize() as number[];
       const pixel = Math.floor(Math.min(size[0], size[1]) / 4);
 
       const delta = (pixel * MERC_MAX) / 128 / Math.pow(2, mercZoom);
@@ -244,7 +270,7 @@ export function setCustomFunction(target) {
       ]);
     }
 
-    mercsFromGPSValue(lnglat, acc) {
+    mercsFromGPSValue(lnglat: Coordinate, acc: number) {
       const merc = transform(lnglat, "EPSG:4326", "EPSG:3857");
       const latrad = (lnglat[1] * Math.PI) / 180;
       const delta = acc / Math.cos(latrad);
@@ -255,9 +281,9 @@ export function setCustomFunction(target) {
     }
 
     // 与えられた差分行列を回転。theta無指定の場合は自動取得
-    rotateMatrix(xys, theta) {
-      if (theta == null) {
-        theta = this._map.getView().getRotation();
+    rotateMatrix(xys: number[][], theta?: number) {
+      if (theta === undefined) {
+        theta = this._map?.getView().getRotation() as number;
       }
       const result = [];
       for (let i = 0; i < xys.length; i++) {
@@ -270,11 +296,11 @@ export function setCustomFunction(target) {
     }
 
     // 画面サイズと地図ズームから、地図面座標上での5座標を取得する。zoom, rotate無指定の場合は自動取得
-    size2Xys(center, zoom, rotate) {
+    size2Xys(center?: any, zoom?: any, rotate?: any) {
       if (!center) {
-        center = this._map.getView().getCenter();
+        center = this._map?.getView().getCenter();
       }
-      const size = this._map.getSize();
+      const size: any = this._map?.getSize();
       const radius = this.getRadius(size, zoom);
       const crossDelta = this.rotateMatrix(MERC_CROSSMATRIX, rotate);
       const cross = crossDelta.map(xy => [
@@ -286,7 +312,7 @@ export function setCustomFunction(target) {
     }
 
     // 画面サイズと地図ズームから、メルカトル座標上での5座標を取得する。zoom, rotate無指定の場合は自動取得
-    size2MercsAsync(center, zoom, rotate) {
+    size2MercsAsync(center?: any, zoom?: any, rotate?: any) {
       const cross = this.size2Xys(center, zoom, rotate);
       const promises = cross.map((val, index) => {
         if (index === 5) return val;
@@ -298,11 +324,11 @@ export function setCustomFunction(target) {
     }
 
     // メルカトル5地点情報から地図サイズ情報（中心座標、サイズ、回転）を得る
-    mercs2SizeAsync(mercs, asMerc) {
+    mercs2SizeAsync(mercs: any, asMerc = false) {
       const promises = asMerc
         ? Promise.resolve(mercs)
         : Promise.all(
-            mercs.map((merc, index) => {
+            mercs.map((merc: any, index: number) => {
               if (index === 5) return merc;
               return this.merc2XyAsync(merc);
             })
@@ -315,12 +341,12 @@ export function setCustomFunction(target) {
     }
 
     // メルカトル5地点情報からメルカトル地図でのサイズ情報（中心座標、サイズ、回転）を得る
-    mercs2MercSizeAsync(mercs) {
+    mercs2MercSizeAsync(mercs: any) {
       return this.mercs2SizeAsync(mercs, true);
     }
 
     // 地図座標5地点情報から地図サイズ情報（中心座標、サイズ、回転）を得る
-    xys2Size(xys) {
+    xys2Size(xys: any[]) {
       const center = xys[0];
       let size = xys[5];
       const nesw = xys.slice(1, 5);
@@ -353,14 +379,14 @@ export function setCustomFunction(target) {
       const scale = abss / 4.0;
       const omega = Math.atan2(sinx, cosx);
 
-      if (!size) size = this._map.getSize();
+      if (!size) size = this._map?.getSize();
       const radius = Math.floor(Math.min(size[0], size[1]) / 4);
       const zoom = Math.log((radius * MERC_MAX) / 128 / scale) / Math.log(2);
 
       return [center, zoom, omega];
     }
 
-    mercs2MercRotation(xys) {
+    mercs2MercRotation(xys: any[]) {
       const center = xys[0];
       const nesw = xys.slice(1, 5);
       const neswDelta = nesw.map(val => [
@@ -393,7 +419,7 @@ export function setCustomFunction(target) {
       return Math.atan2(sinx, cosx);
     }
 
-    mercs2XysAsync(mercs) {
+    mercs2XysAsync(mercs: any[]) {
       return Promise.all(
         mercs.map((merc, index) => {
           if (index === 5) return merc;
@@ -402,17 +428,17 @@ export function setCustomFunction(target) {
       ).then(xys => [xys]);
     }
 
-    async resolvePois(pois) {
+    async resolvePois(pois?: any) {
       this.pois = await normalizeLayers(pois || [], {
         name: this.officialTitle || this.title,
         namespace: this.mapID
       });
     }
 
-    getPoi(id) {
+    getPoi(id: string) {
       let ret = undefined;
       Object.keys(this.pois).map(key => {
-        this.pois[key].pois.map((poi, i) => {
+        this.pois[key].pois.map((poi: any, i: number) => {
           if (poi.id === id) {
             ret = this.pois[key].pois[i];
           }
@@ -421,7 +447,7 @@ export function setCustomFunction(target) {
       return ret;
     }
 
-    addPoi(data, clusterId) {
+    addPoi(data: any, clusterId?: string) {
       if (!clusterId) {
         clusterId = "main";
       }
@@ -436,9 +462,9 @@ export function setCustomFunction(target) {
       }
     }
 
-    removePoi(id) {
+    removePoi(id: string) {
       Object.keys(this.pois).map(key => {
-        this.pois[key].pois.map((poi, i) => {
+        this.pois[key].pois.map((poi: any, i: number) => {
           if (poi.id === id) {
             delete this.pois[key].pois[i];
           }
@@ -446,7 +472,7 @@ export function setCustomFunction(target) {
       });
     }
 
-    clearPoi(clusterId) {
+    clearPoi(clusterId?: string) {
       if (!clusterId) {
         clusterId = "main";
       }
@@ -459,7 +485,7 @@ export function setCustomFunction(target) {
       }
     }
 
-    listPoiLayers(hideOnly, nonzero) {
+    listPoiLayers(hideOnly = false, nonzero = false) {
       return Object.keys(this.pois)
         .sort((a, b) => {
           if (a === "main") return -1;
@@ -480,11 +506,11 @@ export function setCustomFunction(target) {
         );
     }
 
-    getPoiLayer(id) {
+    getPoiLayer(id: string) {
       return this.pois[id];
     }
 
-    addPoiLayer(id, data) {
+    addPoiLayer(id: string, data: any) {
       if (id === "main") return;
       if (this.pois[id]) return;
       this.pois[id] = normalizeLayer(data || [], id, {
@@ -493,12 +519,13 @@ export function setCustomFunction(target) {
       });
     }
 
-    removePoiLayer(id) {
+    removePoiLayer(id: string) {
       if (id === "main") return;
       if (!this.pois[id]) return;
       delete this.pois[id];
     }
   }
+
   return Mixin;
 }
 
@@ -533,7 +560,7 @@ const META_KEYS_OPTION = [
   "description"
 ];
 
-export function setCustomInitialize(self, options) {
+export function setCustomInitialize(self: any, options: any) {
   options = normalizeArg(options);
   self.mapID = options.mapID;
   self.homePosition = options.homePosition;
@@ -549,12 +576,12 @@ export function setCustomInitialize(self, options) {
   self.weiwudi = options.weiwudi;
   if (options.envelopeLngLats) {
     const lngLats = options.envelopeLngLats;
-    const mercs = lngLats.map(lnglat =>
+    const mercs = lngLats.map((lnglat: Coordinate) =>
       transform(lnglat, "EPSG:4326", "EPSG:3857")
     );
     mercs.push(mercs[0]);
     self.envelope = polygon([mercs]);
-    self.centroid = centroid(self.envelope).geometry.coordinates;
+    self.centroid = centroid(self.envelope).geometry?.coordinates;
   }
 
   for (let i = 0; i < META_KEYS.length; i++) {
@@ -566,22 +593,22 @@ export function setCustomInitialize(self, options) {
   const thumbWait = options.thumbnail
     ? new Promise(resolve => {
         self.thumbnail = options.thumbnail;
-        resolve();
+        resolve(undefined);
       })
     : new Promise(resolve => {
         self.thumbnail = `./tmbs/${options.mapID}.jpg`;
         fetch(self.thumbnail)
           .then(response => {
             if (response.ok) {
-              resolve();
+              resolve(undefined);
             } else {
               self.thumbnail = `./tmbs/${options.mapID}_menu.jpg`;
-              resolve();
+              resolve(undefined);
             }
           })
           .catch(_error => {
             self.thumbnail = `./tmbs/${options.mapID}_menu.jpg`;
-            resolve();
+            resolve(undefined);
           });
       }).catch(_error => {
         self.thumbnail = `./tmbs/${options.mapID || options.sourceID}_menu.jpg`;
@@ -590,15 +617,15 @@ export function setCustomInitialize(self, options) {
   self.initialWait = Promise.all([poisWait, thumbWait]);
 }
 
-export function setupTileLoadFunction(target) {
+export function setupTileLoadFunction(target: any) {
   const self = target;
   target.setTileLoadFunction(
     (function () {
       let numLoadingTiles = 0;
       const tileLoadFn = self.getTileLoadFunction();
-      const tImageLoader = function (_tileCoord, src, tCanv, sx, sy, sw, sh) {
+      const tImageLoader = function (_tileCoord: any, src: any, tCanv: any, sx: any, sy: any, sw: any, sh: any) {
         return new Promise((resolve, _reject) => {
-          const loader = function (src, fallback) {
+          const loader = function (src: any, fallback: any = undefined) {
             if (numLoadingTiles === 0) {
               // console.log('loading');
             }
@@ -613,10 +640,10 @@ export function setupTileLoadFunction(target) {
                 sw = sx + sw > tImage.width ? tImage.width - sx : sw;
                 sh = sy + sh > tImage.height ? tImage.height - sy : sh;
                 ctx.drawImage(tImage, sx, sy, sw, sh, dx, dy, sw, sh);
-                resolve();
+                resolve(undefined);
               } else {
                 if (fallback) {
-                  loader(fallback, null, true);
+                  loader(fallback);
                 } else {
                   resolve("tileLoadError");
                   //reject('tileLoadError');
@@ -633,7 +660,7 @@ export function setupTileLoadFunction(target) {
           loader(src);
         });
       };
-      return function (tile, _src) {
+      return function (tile: any, _src: any) {
         const zoom = tile.tileCoord[0];
         let tileX = tile.tileCoord[1];
         let tileY = tile.tileCoord[2];
@@ -665,7 +692,7 @@ export function setupTileLoadFunction(target) {
 
         const tmp = document.createElement("div");
         tmp.innerHTML = canvBase;
-        const tCanv = tmp.childNodes[0];
+        const tCanv = tmp.childNodes[0] as HTMLCanvasElement;
 
         const promises = [
           [[zoom, tileX, tileY], 0, 0, 256 - pixelXShift, 256 - pixelYShift]
@@ -735,9 +762,9 @@ export function setupTileLoadFunction(target) {
   );
 }
 
-export async function mapSourceFactory(options, commonOptions) {
+export async function mapSourceFactory(options: any, commonOptions: any) {
   if (typeof options === "string") {
-    options = baseDict[options];
+    options = (baseDict as any)[options];
   }
 
   options = normalizeArg(Object.assign(options, commonOptions));
@@ -872,8 +899,8 @@ export async function mapSourceFactory(options, commonOptions) {
   });
 }
 
-export async function registerMapToSW(options) {
-  const setting = {};
+export async function registerMapToSW(options: any) {
+  const setting: any = {};
   if (options.maptype === "mapbox" || !options.enableCache) return;
   else if (options.maptype === "base" || options.maptype === "overlay")
     setting.type = "wmts";
@@ -886,7 +913,7 @@ export async function registerMapToSW(options) {
   const lngLats = options.envelopeLngLats;
   if (lngLats) {
     const minMax = lngLats.reduce(
-      (prev, curr) => {
+      (prev: number[], curr: number[]) => {
         prev[0] = prev[0] > curr[0] ? curr[0] : prev[0];
         prev[1] = prev[1] < curr[0] ? curr[0] : prev[1];
         prev[2] = prev[2] > curr[1] ? curr[1] : prev[2];

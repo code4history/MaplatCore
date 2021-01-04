@@ -1,6 +1,12 @@
 import { View } from "ol";
 
-(View.prototype as any).getDecimalZoom = function (): number {
+declare module "ol" {
+  interface View {
+    getDecimalZoom(): number;
+  }
+}
+
+View.prototype.getDecimalZoom = function (): number {
   const resolution = (this as View).getResolution();
   const offset =
     // NOTE: `resolution` maybe `undefined`

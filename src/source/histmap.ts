@@ -46,7 +46,11 @@ for (let z = 0; z < 9; z++) {
   })(key, maxxy);
 }
 
-export class HistMap extends setCustomFunction(XYZ) {
+export abstract class HistMap extends setCustomFunction(XYZ) {
+  width: number;
+  height: number;
+  _maxxy: number;
+
   constructor(optOptions: any) {
     const options = normalizeArg(Object.assign({}, optOptions || {}));
 
@@ -80,7 +84,6 @@ export class HistMap extends setCustomFunction(XYZ) {
         return this._tileUrlFunction(coord);
       };
 
-    // @ts-expect-error
     super(options);
     if (options.mapID) {
       this.mapID = options.mapID;
@@ -96,7 +99,7 @@ export class HistMap extends setCustomFunction(XYZ) {
     this.width = options.width;
     this.height = options.height;
     this.maxZoom = options.maxZoom;
-    this._maxxy = Math.pow(2, this.maxZoom) * tileSize;
+    this._maxxy = Math.pow(2, this.maxZoom as number) * tileSize;
 
     setCustomInitialize(this, options);
     setupTileLoadFunction(this);

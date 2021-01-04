@@ -19,7 +19,7 @@ export class NowMap extends setCustomFunction(OSM) {
         ? `tiles/${options.mapID}/{z}/{x}/{-y}.${options.imageExtention}`
         : `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtention}`;
     }
-    // @ts-expect-error
+
     super(options);
     if (options.mapID) {
       this.mapID = options.mapID;
