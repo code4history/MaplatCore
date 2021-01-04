@@ -1,15 +1,13 @@
 import { View } from "ol";
 
-(View.prototype as any).getDecimalZoom = function (): number {
-  const resolution = (this as View).getResolution();
+View.prototype.getDecimalZoom = function (this: View): number {
+  const resolution = this.getResolution();
   const offset =
     // NOTE: `resolution` maybe `undefined`
     // NOTE: `offset` maybe `NaN`
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    Math.log((this as any).maxResolution_ / resolution!) / Math.log(2);
-  return offset !== undefined
-    ? ((this as View) as any).minZoom_ + offset
-    : offset;
+    Math.log(this.maxResolution_ / resolution!) / Math.log(2);
+  return offset !== undefined ? this.minZoom_ + offset : offset;
 };
 
 export { View };
