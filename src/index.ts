@@ -84,8 +84,8 @@ export class MaplatApp extends EventTarget {
   lang: string;
   appData?: AppData;
   appLang = "ja";
-  backMap: MaplatMap | undefined = undefined;
-  mercSrc: NowMap | undefined = undefined;
+  backMap?: MaplatMap;
+  mercSrc?: NowMap;
   mercBuffer: any;
   timer: any = undefined;
   __selectedMarker: any;
@@ -96,18 +96,18 @@ export class MaplatApp extends EventTarget {
   cacheHash: any;
   currentPosition: any;
   startFrom? = "";
-  from: NowMap | HistMap | undefined = undefined;
+  from?: NowMap | HistMap;
   lines: any = [];
-  mapDivDocument: any;
+  mapDivDocument: HTMLElement | null;
   mapObject: any;
   mapboxMap: any;
   pois: any;
-  poiTemplate: string | boolean = false;
-  poiStyle: string | boolean = false;
-  iconTemplate: string | boolean = false;
-  transparency_: any;
+  poiTemplate?: string;
+  poiStyle?: string;
+  iconTemplate?: string;
+  __transparency: any;
   logger: Logger;
-  _backMapMoving = false;
+  __backMapMoving = false;
   // Maplat App Class
   constructor(appOption: any) {
     super();
@@ -121,7 +121,7 @@ export class MaplatApp extends EventTarget {
     }
     this.mapDiv = appOption.div || "map_div";
     this.mapDivDocument = document.querySelector(`#${this.mapDiv}`);
-    this.mapDivDocument.classList.add("maplat");
+    this.mapDivDocument!.classList.add("maplat");
     this.logger = new Logger(
       appOption.debug ? LoggerLevel.ALL : LoggerLevel.INFO
     );
@@ -170,12 +170,12 @@ export class MaplatApp extends EventTarget {
             style="position:absolute;top:50%;left:50%;margin-top:-10px;
             margin-left:-10px;" src="${redcircle}">`);
     for (let i = newElems.length - 1; i >= 0; i--) {
-      this.mapDivDocument.insertBefore(
+      this.mapDivDocument!.insertBefore(
         newElems[i],
-        this.mapDivDocument.firstChild
+        this.mapDivDocument!.firstChild
       );
     }
-    const prevDefs = this.mapDivDocument.querySelectorAll(".prevent-default");
+    const prevDefs = this.mapDivDocument!.querySelectorAll(".prevent-default");
     for (let i = 0; i < prevDefs.length; i++) {
       const target = prevDefs[i];
       target.addEventListener("touchstart", (evt: any) => {
@@ -184,7 +184,7 @@ export class MaplatApp extends EventTarget {
     }
     this.overlay = "overlay" in appOption ? appOption.overlay : true;
     if (this.overlay) {
-      this.mapDivDocument.classList.add("with-opacity");
+      this.mapDivDocument!.classList.add("with-opacity");
     }
     this.waitReady = this.settingLoader(setting).then(x =>
       this.handleSetting(x, appOption)
@@ -293,7 +293,7 @@ export class MaplatApp extends EventTarget {
       `<div id="${frontDiv}" class="map" style="top:0; left:0; right:0; bottom:0; ` +
         `position:absolute;"></div>`
     )[0];
-    this.mapDivDocument.insertBefore(newElem, this.mapDivDocument.firstChild);
+    this.mapDivDocument!.insertBefore(newElem, this.mapDivDocument!.firstChild);
     this.mapObject = new MaplatMap({
       div: frontDiv,
       controls: this.appData!.controls || [],
@@ -315,7 +315,7 @@ export class MaplatApp extends EventTarget {
         `<div id="${backDiv}" class="map" style="top:0; left:0; right:0; bottom:0; ` +
           `position:absolute;"></div>`
       )[0];
-      this.mapDivDocument.insertBefore(newElem, this.mapDivDocument.firstChild);
+      this.mapDivDocument!.insertBefore(newElem, this.mapDivDocument!.firstChild);
       this.backMap = new MaplatMap({
         off_control: true,
         div: backDiv
@@ -329,7 +329,7 @@ export class MaplatApp extends EventTarget {
         `<div id="${mapboxDiv}" class="map" style="top:0; left:0; right:0; bottom:0; ` +
           `position:absolute;visibility:hidden;"></div>`
       )[0];
-      this.mapDivDocument.insertBefore(newElem, this.mapDivDocument.firstChild);
+      this.mapDivDocument!.insertBefore(newElem, this.mapDivDocument!.firstChild);
       this.mapboxMap = new mapboxgl.Map({
         attributionControl: false,
         boxZoom: false,
@@ -388,12 +388,12 @@ export class MaplatApp extends EventTarget {
     this.raiseChangeViewPoint();
   }
   // Async initializer 10: Handle initial map
-  async setInitialMap(cache: any) {
+  async setInitialMap(cache: (HistMap | NowMap)[]) {
     const initial: string =
       this.initialRestore.mapID ||
       this.startFrom ||
       cache[cache.length - 1].mapID;
-    this.from = cache.reduce((prev: any, curr: any) => {
+    this.from = cache.reduce((prev: HistMap | NowMap | undefined, curr: HistMap | NowMap) => {
       if (prev) {
         return !(prev instanceof HistMap) && curr.mapID != initial
           ? curr
@@ -401,7 +401,7 @@ export class MaplatApp extends EventTarget {
       }
       if (curr.mapID != initial) return curr;
       return prev;
-    }, null);
+    }, undefined);
     await this.changeMap(initial, this.initialRestore);
   }
   // Async initializer 11: Handle map click event
@@ -503,7 +503,7 @@ export class MaplatApp extends EventTarget {
         clearTimeout(timer);
         timer = undefined;
       }
-      const ctls = this.mapDivDocument.querySelectorAll(".ol-control");
+      const ctls = this.mapDivDocument!.querySelectorAll(".ol-control");
       for (let i = 0; i < ctls.length; i++) {
         ctls[i].classList.remove("fade");
       }
@@ -513,7 +513,7 @@ export class MaplatApp extends EventTarget {
         clearTimeout(timer);
         timer = undefined;
       }
-      const ctls = this.mapDivDocument.querySelectorAll(".ol-control");
+      const ctls = this.mapDivDocument!.querySelectorAll(".ol-control");
       for (let i = 0; i < ctls.length; i++) {
         ctls[i].classList.add("fade");
       }
@@ -525,7 +525,7 @@ export class MaplatApp extends EventTarget {
       }
       timer = setTimeout(() => {
         timer = undefined;
-        const ctls = this.mapDivDocument.querySelectorAll(".ol-control");
+        const ctls = this.mapDivDocument!.querySelectorAll(".ol-control");
         for (let i = 0; i < ctls.length; i++) {
           ctls[i].classList.remove("fade");
         }
@@ -546,12 +546,12 @@ export class MaplatApp extends EventTarget {
             if (feature.get("datum")) return feature;
           }
         );
-        this.mapDivDocument.querySelector(`#${target}`).style.cursor = feature
+        (this.mapDivDocument!.querySelector(`#${target}`)! as HTMLElement).style.cursor = feature
           ? "pointer"
           : "";
         return;
       }
-      this.mapDivDocument.querySelector(`#${target}`).style.cursor = "";
+      (this.mapDivDocument!.querySelector(`#${target}`)! as HTMLElement).style.cursor = "";
     };
     this.mapObject.on("pointermove", moveHandler);
     const mapOutHandler = (evt: any) => {
@@ -570,14 +570,14 @@ export class MaplatApp extends EventTarget {
   setBackMapBehavior() {
     const backMapMove = (_evt: any) => {
       if (!this.backMap) return;
-      if (this._backMapMoving) {
+      if (this.__backMapMoving) {
         // @ts-expect-error ts-migrate(7053)
         this.logger.debug("Backmap moving skipped");
         return;
       }
       const backSrc = (this.backMap as MaplatMap).getSource();
       if (backSrc) {
-        this._backMapMoving = true;
+        this.__backMapMoving = true;
         // @ts-expect-error ts-migrate(7053)
         this.logger.debug("Backmap moving started");
         this.convertParametersFromCurrent(backSrc, (size: any) => {
@@ -587,7 +587,7 @@ export class MaplatApp extends EventTarget {
           view.setRotation(this.noRotate ? 0 : size[2]);
           // @ts-expect-error ts-migrate(7053)
           this.logger.debug("Backmap moving ended");
-          this._backMapMoving = false;
+          this.__backMapMoving = false;
         });
       }
     };
@@ -1031,8 +1031,8 @@ export class MaplatApp extends EventTarget {
     this.currentPosition = position;
     (this.from as HistMap | NowMap).setGPSMarker(position, true);
   }
-  changeMap(mapID: any, restore: any) {
-    if (!restore) restore = {};
+  changeMap(mapID: string, restore?: Restore) {
+    if (restore === undefined) restore = {};
     const now = this.cacheHash["osm"];
     const to: NowMap | HistMap = this.cacheHash[mapID];
     if (!this.changeMapSeq) {
@@ -1044,8 +1044,8 @@ export class MaplatApp extends EventTarget {
           this.convertParametersFromCurrent(to, (size: any) => {
             let backSrc = null;
             let backTo = null;
-            const backRestore = restore.backgroundID
-              ? this.cacheHash[restore.backgroundID]
+            const backRestore = restore!.backgroundID
+              ? this.cacheHash[restore!.backgroundID]
               : undefined;
             if (this.backMap) {
               // Overlay = true case:
@@ -1122,17 +1122,17 @@ export class MaplatApp extends EventTarget {
               to.goHome();
             }
             to.setGPSMarker(this.currentPosition, true);
-            if (restore.hideLayer) {
-              const layers = restore.hideLayer.split(",");
+            if (restore!.hideLayer) {
+              const layers = restore!.hideLayer.split(",");
               layers.map((key: any) => {
                 const layer = this.getPoiLayer(key);
                 if (layer) {
                   layer.hide = true;
                 }
               });
-              this.requestUpdateState({ hideLayer: restore.hideLayer });
+              this.requestUpdateState({ hideLayer: restore!.hideLayer });
             }
-            if (restore.hideMarker) {
+            if (restore!.hideMarker) {
               this.hideAllMarkers();
             } else {
               this.redrawMarkers();
@@ -1148,12 +1148,12 @@ export class MaplatApp extends EventTarget {
             );
             this.mapObject.updateSize();
             this.mapObject.renderSync();
-            if (restore.position) {
+            if (restore!.position) {
               this.__init = false;
-              to.setViewpoint(restore.position);
+              to.setViewpoint(restore!.position);
             }
-            if (restore.transparency) {
-              this.setTransparency(restore.transparency);
+            if (restore!.transparency) {
+              this.setTransparency(restore!.transparency);
             }
             if (this.__init) {
               this.__init = false;
@@ -1201,12 +1201,12 @@ export class MaplatApp extends EventTarget {
     }, 50);
   }
   setTransparency(percentage: any) {
-    this.transparency_ = percentage;
+    this.__transparency = percentage;
     this.mapObject.setTransparency(percentage);
     this.requestUpdateState({ transparency: percentage });
   }
   getTransparency() {
-    return this.transparency_ == null ? 0 : this.transparency_;
+    return this.__transparency == null ? 0 : this.__transparency;
   }
   setViewpoint(cond: any) {
     (this.from as HistMap | NowMap).setViewpoint(cond);
@@ -1367,8 +1367,8 @@ export class MaplatApp extends EventTarget {
     if (this.mapboxMap) {
       this.mapboxMap.remove();
     }
-    this.mapDivDocument.innerHTML = "";
-    this.mapDivDocument.classList.remove("maplat");
+    this.mapDivDocument!.innerHTML = "";
+    this.mapDivDocument!.classList.remove("maplat");
   }
 }
 export { createElement };
