@@ -35,6 +35,26 @@ import defaultpin_selected from "../parts/defaultpin_selected.png";
 import defaultpin from "../parts/defaultpin.png";
 import {Coordinate} from "ol/coordinate";
 
+interface AppData {
+  sources: string[];
+  lang?: string;
+  pois?: any;
+  homePosition?: Coordinate;
+  defaultZoom?: number;
+  zoomRestriction?: boolean;
+  minZoom?: number;
+  maxZoom?: number;
+  appName?: string;
+  fakeGps?: Coordinate;
+  fakeRadius?: number;
+  noRotate?: boolean;
+  poiTemplate?: string;
+  poiStyle?: string;
+  iconTemplate?: string;
+  startFrom?: string;
+  controls?: any[];
+}
+
 type PositionSet = { x: number, y: number, zoom: number, rotation: number };
 interface Restore {
   mapID?: string;
@@ -62,7 +82,7 @@ export class MaplatApp extends EventTarget {
   i18n?: i18n.i18n;
   t?: i18n.TFunction;
   lang: string;
-  appData: any;
+  appData?: AppData;
   appLang = "ja";
   backMap: MaplatMap | undefined = undefined;
   mercSrc: NowMap | undefined = undefined;
@@ -75,7 +95,7 @@ export class MaplatApp extends EventTarget {
   appName: any;
   cacheHash: any;
   currentPosition: any;
-  startFrom = "";
+  startFrom? = "";
   from: NowMap | HistMap | undefined = undefined;
   lines: any = [];
   mapDivDocument: any;
@@ -211,7 +231,7 @@ export class MaplatApp extends EventTarget {
   // Async initializer 6: Load pois setting => move to normalize_pois.js
   // Async initializer 8: Load sources setting asynchronous
   async sourcesLoader(mapReturnValue: any) {
-    const dataSource = this.appData.sources;
+    const dataSource = this.appData!.sources;
     const sourcePromise = [];
     const commonOption = {
       homePosition: mapReturnValue.homePos,
@@ -230,7 +250,7 @@ export class MaplatApp extends EventTarget {
   }
   // Async initializers 2: Handle application setting
   handleSetting(setting: any, appOption: any) {
-    this.appData = normalizeArg(setting);
+    this.appData = normalizeArg(setting as Record<string, any>) as AppData;
     if (!this.lang && this.appData.lang) {
       this.lang = this.appData.lang;
     }
@@ -241,7 +261,7 @@ export class MaplatApp extends EventTarget {
     this.i18n = i18nObj[1];
     this.t = i18nObj[0];
     const mapReturnValue = this.prepareMap(appOption);
-    return normalizeLayers(this.appData.pois || [], this).then(x =>
+    return normalizeLayers(this.appData!.pois || [], this).then(x =>
       this.handlePois(x, mapReturnValue)
     );
   }
@@ -249,21 +269,21 @@ export class MaplatApp extends EventTarget {
   prepareMap(appOption: any) {
     appOption = normalizeArg(appOption);
     this.mercBuffer = null;
-    const homePos = this.appData.homePosition;
-    const defZoom = this.appData.defaultZoom;
-    const zoomRestriction = this.appData.zoomRestriction;
-    const mercMinZoom = this.appData.minZoom;
-    const mercMaxZoom = this.appData.maxZoom;
-    this.appName = this.appData.appName;
-    const fakeGps = appOption.fake ? this.appData.fakeGps : false;
-    const fakeRadius = appOption.fake ? this.appData.fakeRadius : false;
-    this.appLang = this.appData.lang || "ja";
-    this.noRotate = appOption.noRotate || this.appData.noRotate || false;
+    const homePos = this.appData!.homePosition;
+    const defZoom = this.appData!.defaultZoom;
+    const zoomRestriction = this.appData!.zoomRestriction;
+    const mercMinZoom = this.appData!.minZoom;
+    const mercMaxZoom = this.appData!.maxZoom;
+    this.appName = this.appData!.appName;
+    const fakeGps = appOption.fake ? this.appData!.fakeGps : false;
+    const fakeRadius = appOption.fake ? this.appData!.fakeRadius : false;
+    this.appLang = this.appData!.lang || "ja";
+    this.noRotate = appOption.noRotate || this.appData!.noRotate || false;
     this.poiTemplate =
-      appOption.poiTemplate || this.appData.poiTemplate || false;
-    this.poiStyle = appOption.poiStyle || this.appData.poiStyle || false;
+      appOption.poiTemplate || this.appData!.poiTemplate || false;
+    this.poiStyle = appOption.poiStyle || this.appData!.poiStyle || false;
     this.iconTemplate =
-      appOption.iconTemplate || this.appData.iconTemplate || false;
+      appOption.iconTemplate || this.appData!.iconTemplate || false;
     this.currentPosition = null;
     this.__init = true;
     // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
@@ -276,7 +296,7 @@ export class MaplatApp extends EventTarget {
     this.mapDivDocument.insertBefore(newElem, this.mapDivDocument.firstChild);
     this.mapObject = new MaplatMap({
       div: frontDiv,
-      controls: this.appData.controls || [],
+      controls: this.appData!.controls || [],
       interactions: this.noRotate
         ? defaults({ altShiftDragRotate: false, pinchRotate: false })
         : defaults().extend([
@@ -324,7 +344,7 @@ export class MaplatApp extends EventTarget {
         touchZoomRotate: false
       });
     }
-    this.startFrom = this.appData.startFrom;
+    this.startFrom = this.appData!.startFrom;
     return {
       homePos,
       defZoom,
@@ -1089,7 +1109,7 @@ export class MaplatApp extends EventTarget {
             this.from = to;
             this.dispatchPoiNumber();
             const view = this.mapObject.getView();
-            if (this.appData.zoomRestriction) {
+            if (this.appData!.zoomRestriction) {
               view.setMaxZoom(to.maxZoom!);
               view.setMinZoom(to.minZoom || 0);
             }
