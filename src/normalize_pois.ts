@@ -1,6 +1,6 @@
 // Async initializer 6: Load pois setting
-export async function nodesLoader(nodes: any) {
-  if (typeof nodes == "string") {
+export async function nodesLoader(nodes: string | Record<string, unknown>) : Promise<Record<string, unknown>> {
+  if (typeof nodes === "string") {
     return new Promise((resolve, reject) => {
       const url = nodes.match(/\//) ? nodes : `pois/${nodes}`;
 
@@ -12,9 +12,9 @@ export async function nodesLoader(nodes: any) {
         if (this.status == 200 || this.status == 0) {
           // 0 for UIWebView
           try {
-            let resp = this.response;
-            if (typeof resp != "object") resp = JSON.parse(resp);
-            resolve(resp);
+            let resp: string | Record<string, unknown> = this.response;
+            if (typeof resp === "string") resp = JSON.parse(resp);
+            resolve(resp as Record<string, unknown>);
           } catch (err) {
             reject(err);
           }

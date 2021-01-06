@@ -9,6 +9,7 @@ import {
   setCustomInitialize,
   setupTileLoadFunction
 } from "../source_ex";
+import {Coordinate} from "ol/coordinate";
 
 export class NowMap extends setCustomFunction(OSM) {
   constructor(options: any = {}) {
@@ -36,15 +37,13 @@ export class NowMap extends setCustomFunction(OSM) {
     return new NowMap(options);
   }
 
-  xy2MercAsync(xy: any) {
+  xy2MercAsync(xy: Coordinate): Promise<Coordinate> {
     return new Promise((resolve, _reject) => {
       resolve(xy);
-    }).catch(err => {
-      throw err;
     });
   }
 
-  merc2XyAsync(merc: any) {
+  merc2XyAsync(merc: Coordinate): Promise<Coordinate | undefined> {
     return new Promise((resolve, _reject) => {
       resolve(merc);
     });

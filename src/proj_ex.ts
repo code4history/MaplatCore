@@ -2,18 +2,14 @@ import {
   getTransform,
   identityTransform,
   transform,
-  addCoordinateTransforms
+  addCoordinateTransforms, ProjectionLike
 } from "ol/proj";
+import {Coordinate} from "ol/coordinate";
 
-// Direct transforamation between 2 projection
-export function transformDirect(xy: any, src: any, dist: any = undefined) {
-  if (!dist) {
-    dist = src;
-    src = xy;
-    xy = null;
-  }
-  const srcCode = src.getCode ? src.getCode() : src;
-  const distCode = dist.getCode ? dist.getCode() : dist;
+// Direct transformation between 2 projection
+export function transformDirect(src: ProjectionLike, dist: ProjectionLike, xy?: Coordinate): Coordinate | void {
+  const srcCode = typeof src === "string" ? src : src.getCode();
+  const distCode = typeof dist === "string" ? dist : dist.getCode();
   let func = getTransform(src, dist);
   if (func == identityTransform && srcCode != distCode) {
     const srcFunc = getTransform(src, "EPSG:3857");
@@ -22,10 +18,10 @@ export function transformDirect(xy: any, src: any, dist: any = undefined) {
       throw "Transform of Source projection is not defined.";
     if (distFunc == identityTransform && distCode != "EPSG:3857")
       throw "Transform of Distination projection is not defined.";
-    func = function (xy) {
+    func = function (xy: Coordinate): Coordinate {
       return transform(transform(xy, src, "EPSG:3857"), "EPSG:3857", dist);
     };
-    const invFunc = function (xy: any) {
+    const invFunc = function (xy: Coordinate): Coordinate {
       return transform(transform(xy, dist, "EPSG:3857"), "EPSG:3857", src);
     };
     addCoordinateTransforms(src, dist, func, invFunc);

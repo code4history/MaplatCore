@@ -1,17 +1,16 @@
 import { HistMap } from "./histmap";
-// @ts-expect-error ts-migrate(7016)
 import Tin from "@maplat/tin";
 import {
   addCoordinateTransforms,
   addProjection,
-  // @ts-expect-error ts-migrate(2459)
-  Projection,
   toLonLat
 } from "ol/proj";
+import Projection from "ol/proj/Projection";
 import { transformDirect } from "../proj_ex";
 import { polygon } from "@turf/helpers";
 import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
 import { MERC_MAX } from "../const_ex";
+import {Coordinate} from "ol/coordinate";
 
 export class HistMap_tin extends HistMap {
   tins: Tin[];
@@ -41,8 +40,8 @@ export class HistMap_tin extends HistMap {
     addCoordinateTransforms(
       proj,
       "EPSG:3857",
-      xy => obj.tins[0].transform(xy, false),
-      merc => obj.tins[0].transform(merc, true)
+      xy => obj.tins[0].transform(xy, false) as Coordinate,
+      merc => obj.tins[0].transform(merc, true) as Coordinate
     );
     transformDirect("EPSG:4326", proj);
     if (options.compiled) {
@@ -66,15 +65,15 @@ export class HistMap_tin extends HistMap {
         }));
         const proj = new Projection({
           code: projKey,
-          extent: [tin.xy[0], tin.xy[1], tin.wh[0], tin.wh[1]],
+          extent: [tin.xy![0], tin.xy![1], tin.wh![0], tin.wh![1]],
           units: "m"
         });
         addProjection(proj);
         addCoordinateTransforms(
           proj,
           "EPSG:3857",
-          xy => tin.transform(xy, false, true),
-          merc => tin.transform(merc, true, true)
+          xy => tin.transform(xy, false, true) as Coordinate,
+          merc => tin.transform(merc, true, true) as Coordinate
         );
         transformDirect("EPSG:4326", proj);
         if (sub_map.compiled) {
@@ -101,7 +100,7 @@ export class HistMap_tin extends HistMap {
   xy2MercAsync_specifyLayer(xy: any, layerId: any) {
     const layerKey = `Illst:${this.mapID}${layerId ? `#${layerId}` : ""}`;
     return new Promise((resolve, _reject) => {
-      resolve(transformDirect(xy, layerKey, "EPSG:3857"));
+      resolve(transformDirect(layerKey, "EPSG:3857", xy));
     }).catch(err => {
       throw err;
     });
@@ -110,7 +109,7 @@ export class HistMap_tin extends HistMap {
   merc2XyAsync_specifyLayer(merc: any, layerId: any) {
     const layerKey = `Illst:${this.mapID}${layerId ? `#${layerId}` : ""}`;
     return new Promise((resolve, _reject) => {
-      resolve(transformDirect(merc, "EPSG:3857", layerKey));
+      resolve(transformDirect("EPSG:3857", layerKey, merc));
     }).catch(err => {
       throw err;
     });
@@ -363,12 +362,12 @@ export class HistMap_tin extends HistMap {
       });
   }
 
-  xy2MercAsync(xy: any) {
+  xy2MercAsync(xy: Coordinate) : Promise<Coordinate> {
     const convertXy = this.histMapCoords2Xy(xy);
     return this.xy2MercAsync_returnLayer(convertXy).then((ret: any) => ret[1]);
   }
 
-  merc2XyAsync(merc: any, ignoreBackside: any) {
+  merc2XyAsync(merc: Coordinate, ignoreBackside: any) : Promise<Coordinate | undefined> {
     return this.merc2XyAsync_returnLayer(merc)
       .then(ret => {
         if (ignoreBackside && !ret[0]) return;

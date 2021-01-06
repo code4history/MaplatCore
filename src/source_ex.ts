@@ -89,8 +89,8 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
   abstract class Mixin extends Base {
     weiwudi?: Weiwudi;
     _map?: MaplatMap;
-    homePosition: any;
-    mercZoom: any;
+    homePosition?: Coordinate;
+    mercZoom?: number;
     pois: any;
     officialTitle = "";
     title = "";
@@ -102,8 +102,8 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
     envelope: any;
     centroid?: number[];
 
-    abstract xy2MercAsync(val: any): Promise<any>;
-    abstract merc2XyAsync(merc: any, ignoreBackside?: boolean): Promise<any>;
+    abstract xy2MercAsync(val: Coordinate): Promise<Coordinate>;
+    abstract merc2XyAsync(merc: Coordinate, ignoreBackside?: boolean): Promise<Coordinate | undefined>;
     abstract insideCheckHistMapCoords(coord: any): boolean;
 
     async getTileCacheSizeAsync() {
@@ -187,8 +187,8 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
 
     goHome() {
       this.setViewpointRadian({
-        longitude: this.homePosition[0],
-        latitude: this.homePosition[1],
+        longitude: this.homePosition![0],
+        latitude: this.homePosition![1],
         mercZoom: this.mercZoom,
         rotation: 0
       });
@@ -254,15 +254,15 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
 
     // メルカトルの中心座標とメルカトルズームから、メルカトル5座標値に変換
     mercsFromGivenMercZoom(
-      center: any,
-      mercZoom: any = undefined,
-      direction: any
+      center: Coordinate,
+      mercZoom?: number,
+      direction?: number
     ) {
       if (mercZoom === undefined) {
         mercZoom = 17;
       }
-      const size = this._map?.getSize() as number[];
-      const pixel = Math.floor(Math.min(size[0], size[1]) / 4);
+      const size = this._map!.getSize();
+      const pixel = Math.floor(Math.min(size![0], size![1]) / 4);
 
       const delta = (pixel * MERC_MAX) / 128 / Math.pow(2, mercZoom);
       const crossDelta = this.rotateMatrix(MERC_CROSSMATRIX, direction);
@@ -285,7 +285,7 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
     // 与えられた差分行列を回転。theta無指定の場合は自動取得
     rotateMatrix(xys: number[][], theta?: number) {
       if (theta === undefined) {
-        theta = this._map?.getView().getRotation() as number;
+        theta = this._map!.getView().getRotation();
       }
       const result = [];
       for (let i = 0; i < xys.length; i++) {
@@ -298,26 +298,26 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
     }
 
     // 画面サイズと地図ズームから、地図面座標上での5座標を取得する。zoom, rotate無指定の場合は自動取得
-    size2Xys(center?: any, zoom?: any, rotate?: any) {
-      if (!center) {
-        center = this._map?.getView().getCenter();
+    size2Xys(center?: Coordinate, zoom?: number, rotate?: number) {
+      if (center === undefined) {
+        center = this._map!.getView().getCenter();
       }
-      const size: any = this._map?.getSize();
+      const size = this._map!.getSize()!;
       const radius = this.getRadius(size, zoom);
       const crossDelta = this.rotateMatrix(MERC_CROSSMATRIX, rotate);
       const cross = crossDelta.map(xy => [
-        xy[0] * radius + center[0],
-        xy[1] * radius + center[1]
+        xy[0] * radius + center![0],
+        xy[1] * radius + center![1]
       ]);
       cross.push(size);
       return cross;
     }
 
     // 画面サイズと地図ズームから、メルカトル座標上での5座標を取得する。zoom, rotate無指定の場合は自動取得
-    size2MercsAsync(center?: any, zoom?: any, rotate?: any) {
+    size2MercsAsync(center?: Coordinate, zoom?: number, rotate?: number) {
       const cross = this.size2Xys(center, zoom, rotate);
       const promises = cross.map((val, index) => {
-        if (index === 5) return val;
+        if (index === 5) return Promise.resolve(val);
         return this.xy2MercAsync(val);
       });
       return Promise.all(promises).catch(err => {
@@ -326,29 +326,29 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
     }
 
     // メルカトル5地点情報から地図サイズ情報（中心座標、サイズ、回転）を得る
-    mercs2SizeAsync(mercs: any, asMerc = false) {
+    mercs2SizeAsync(mercs: Coordinate[], asMerc = false) {
       const promises = asMerc
         ? Promise.resolve(mercs)
         : Promise.all(
-            mercs.map((merc: any, index: number) => {
+            mercs.map((merc: Coordinate, index: number) => {
               if (index === 5) return merc;
               return this.merc2XyAsync(merc);
             })
           );
       return promises
-        .then(xys => this.xys2Size(xys))
+        .then(xys => this.xys2Size(xys as Coordinate[]))
         .catch(err => {
           throw err;
         });
     }
 
     // メルカトル5地点情報からメルカトル地図でのサイズ情報（中心座標、サイズ、回転）を得る
-    mercs2MercSizeAsync(mercs: any) {
+    mercs2MercSizeAsync(mercs: Coordinate[]) {
       return this.mercs2SizeAsync(mercs, true);
     }
 
     // 地図座標5地点情報から地図サイズ情報（中心座標、サイズ、回転）を得る
-    xys2Size(xys: any[]) {
+    xys2Size(xys: Coordinate[]): [Coordinate, number, number] {
       const center = xys[0];
       let size = xys[5];
       const nesw = xys.slice(1, 5);
@@ -381,14 +381,14 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
       const scale = abss / 4.0;
       const omega = Math.atan2(sinx, cosx);
 
-      if (!size) size = this._map?.getSize();
+      if (!size) size = this._map!.getSize()!;
       const radius = Math.floor(Math.min(size[0], size[1]) / 4);
       const zoom = Math.log((radius * MERC_MAX) / 128 / scale) / Math.log(2);
 
       return [center, zoom, omega];
     }
 
-    mercs2MercRotation(xys: any[]) {
+    mercs2MercRotation(xys: Coordinate[]) {
       const center = xys[0];
       const nesw = xys.slice(1, 5);
       const neswDelta = nesw.map(val => [
@@ -421,7 +421,7 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
       return Math.atan2(sinx, cosx);
     }
 
-    mercs2XysAsync(mercs: any[]) {
+    mercs2XysAsync(mercs: Coordinate[]) {
       return Promise.all(
         mercs.map((merc, index) => {
           if (index === 5) return merc;
