@@ -6,7 +6,7 @@ import {
   setCustomFunction,
   setCustomInitialize,
   setupTileLoadFunction
-} from "../source_ex";
+} from "./mixin";
 import { XYZ } from "ol/source";
 import { normalizeArg } from "../functions";
 import { createFromTemplates, expandUrl } from "ol/tileurlfunction";

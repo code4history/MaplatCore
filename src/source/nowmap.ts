@@ -8,8 +8,8 @@ import {
   setCustomFunction,
   setCustomInitialize,
   setupTileLoadFunction
-} from "../source_ex";
-import {Coordinate} from "ol/coordinate";
+} from "./mixin";
+import { Coordinate } from "ol/coordinate";
 
 export class NowMap extends setCustomFunction(OSM) {
   constructor(options: any = {}) {

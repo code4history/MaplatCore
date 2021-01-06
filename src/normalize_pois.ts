@@ -1,5 +1,7 @@
 // Async initializer 6: Load pois setting
-export async function nodesLoader(nodes: string | Record<string, unknown>) : Promise<Record<string, unknown>> {
+export async function nodesLoader(
+  nodes: string | Record<string, unknown>
+): Promise<Record<string, unknown>> {
   if (typeof nodes === "string") {
     return new Promise((resolve, reject) => {
       const url = nodes.match(/\//) ? nodes : `pois/${nodes}`;

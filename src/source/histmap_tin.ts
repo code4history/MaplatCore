@@ -1,16 +1,12 @@
 import { HistMap } from "./histmap";
 import Tin from "@maplat/tin";
-import {
-  addCoordinateTransforms,
-  addProjection,
-  toLonLat
-} from "ol/proj";
+import { addCoordinateTransforms, addProjection, toLonLat } from "ol/proj";
 import Projection from "ol/proj/Projection";
 import { transformDirect } from "../proj_ex";
 import { polygon } from "@turf/helpers";
 import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
 import { MERC_MAX } from "../const_ex";
-import {Coordinate} from "ol/coordinate";
+import { Coordinate } from "ol/coordinate";
 
 export class HistMap_tin extends HistMap {
   tins: Tin[];
@@ -362,12 +358,15 @@ export class HistMap_tin extends HistMap {
       });
   }
 
-  xy2MercAsync(xy: Coordinate) : Promise<Coordinate> {
+  xy2MercAsync(xy: Coordinate): Promise<Coordinate> {
     const convertXy = this.histMapCoords2Xy(xy);
     return this.xy2MercAsync_returnLayer(convertXy).then((ret: any) => ret[1]);
   }
 
-  merc2XyAsync(merc: Coordinate, ignoreBackside: any) : Promise<Coordinate | undefined> {
+  merc2XyAsync(
+    merc: Coordinate,
+    ignoreBackside: any
+  ): Promise<Coordinate | undefined> {
     return this.merc2XyAsync_returnLayer(merc)
       .then(ret => {
         if (ignoreBackside && !ret[0]) return;

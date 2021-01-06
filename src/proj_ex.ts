@@ -2,12 +2,17 @@ import {
   getTransform,
   identityTransform,
   transform,
-  addCoordinateTransforms, ProjectionLike
+  addCoordinateTransforms,
+  ProjectionLike
 } from "ol/proj";
-import {Coordinate} from "ol/coordinate";
+import { Coordinate } from "ol/coordinate";
 
 // Direct transformation between 2 projection
-export function transformDirect(src: ProjectionLike, dist: ProjectionLike, xy?: Coordinate): Coordinate | void {
+export function transformDirect(
+  src: ProjectionLike,
+  dist: ProjectionLike,
+  xy?: Coordinate
+): Coordinate | void {
   const srcCode = typeof src === "string" ? src : src.getCode();
   const distCode = typeof dist === "string" ? dist : dist.getCode();
   let func = getTransform(src, dist);
