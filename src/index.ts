@@ -33,23 +33,34 @@ import { createIconSet, createHtmlFromTemplate } from "./template_works";
 import redcircle from "../parts/redcircle.png";
 import defaultpin_selected from "../parts/defaultpin_selected.png";
 import defaultpin from "../parts/defaultpin.png";
+import {Coordinate} from "ol/coordinate";
+
+type PositionSet = { x: number, y: number, zoom: number, rotation: number };
+interface Restore {
+  mapID?: string;
+  backgroundID?: string;
+  position?: PositionSet;
+  transparency?: number;
+  hideMarker?: number;
+  hideLayer?: string;
+}
 
 export class MaplatApp extends EventTarget {
   appid: string;
   translateUI = false;
   noRotate = false;
-  initialRestore: any = {};
+  initialRestore: Restore = {};
   mapboxgl: any;
   mapDiv = "map_div";
   restoreSession = false;
   enableCache: false;
-  stateBuffer: any = {};
-  mobileMapMoveBuffer: any = undefined;
+  stateBuffer: Restore = {};
+  mobileMapMoveBuffer?: [Coordinate, number, number];
   overlay = true;
-  waitReady: Promise<any>;
-  changeMapSeq: Promise<any> | undefined = undefined;
-  i18n: any;
-  t: any;
+  waitReady: Promise<void>;
+  changeMapSeq?: Promise<void>;
+  i18n?: i18n.i18n;
+  t?: i18n.TFunction;
   lang: string;
   appData: any;
   appLang = "ja";
@@ -115,10 +126,10 @@ export class MaplatApp extends EventTarget {
       const currentTime = Math.floor(new Date().getTime() / 1000);
       if (lastEpoch && currentTime - lastEpoch < 3600) {
         this.initialRestore.mapID =
-          localStorage.getItem("mapID") || localStorage.getItem("sourceID");
+          localStorage.getItem("mapID") || localStorage.getItem("sourceID") || undefined;
         this.initialRestore.backgroundID =
           localStorage.getItem("backgroundID") ||
-          localStorage.getItem("backID");
+          localStorage.getItem("backID") || undefined;
         this.initialRestore.position = {
           x: parseFloat(localStorage.getItem("x") || "0"),
           y: parseFloat(localStorage.getItem("y") || "0"),
@@ -128,10 +139,10 @@ export class MaplatApp extends EventTarget {
         this.initialRestore.transparency = parseFloat(
           localStorage.getItem("transparency") || "0"
         );
-        this.initialRestore.hideMarker = !!parseInt(
+        this.initialRestore.hideMarker = parseInt(
           localStorage.getItem("hideMarker") || "0"
         );
-        this.initialRestore.hideLayer = localStorage.getItem("hideLayer");
+        this.initialRestore.hideLayer = localStorage.getItem("hideLayer") || undefined;
       }
     }
     // Add UI HTML Element
@@ -1079,7 +1090,7 @@ export class MaplatApp extends EventTarget {
             this.dispatchPoiNumber();
             const view = this.mapObject.getView();
             if (this.appData.zoomRestriction) {
-              view.setMaxZoom(to.maxZoom);
+              view.setMaxZoom(to.maxZoom!);
               view.setMinZoom(to.minZoom || 0);
             }
             if (to.insideCheckHistMapCoords(size[0])) {
@@ -1142,7 +1153,7 @@ export class MaplatApp extends EventTarget {
         })
     ));
   }
-  requestUpdateState(data: any) {
+  requestUpdateState(data: Restore) {
     this.stateBuffer = Object.assign(this.stateBuffer, data);
     if (this.stateBuffer.backgroundID == "____delete____") {
       delete this.stateBuffer.backgroundID;
@@ -1300,8 +1311,8 @@ export class MaplatApp extends EventTarget {
         throw err;
       });
   }
-  translate(dataFragment: any) {
-    if (!dataFragment || typeof dataFragment != "object") return dataFragment;
+  translate(dataFragment?: Record<string, string> | string): string | undefined {
+    if (!dataFragment || typeof dataFragment === "string") return dataFragment;
     const langs = Object.keys(dataFragment);
     let key = langs.reduce((prev: any, curr, idx, arr) => {
       if (curr == this.appLang) {
@@ -1311,23 +1322,23 @@ export class MaplatApp extends EventTarget {
       }
       if (idx == arr.length - 1) return prev[0];
       return prev;
-    }, null);
-    key = typeof key == "string" ? key : `${key}`;
+    }, undefined);
+    key = typeof key === "string" ? key : `${key}`;
     if (
-      this.i18n.exists(key, {
+      this.i18n!.exists(key, {
         ns: "translation",
         nsSeparator: "__X__yX__X__"
       })
     )
-      return this.t(key, {
+      return this.t!(key, {
         ns: "translation",
         nsSeparator: "__X__yX__X__"
       });
     for (let i = 0; i < langs.length; i++) {
       const lang = langs[i];
-      this.i18n.addResource(lang, "translation", key, dataFragment[lang]);
+      this.i18n!.addResource(lang, "translation", key, dataFragment[lang]);
     }
-    return this.t(key, {
+    return this.t!(key, {
       ns: "translation",
       nsSeparator: "__X__yX__X__"
     });

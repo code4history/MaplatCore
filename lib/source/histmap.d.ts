@@ -1,0 +1,64 @@
+/// <reference path="../../src/types/weiwudi.d.ts" />
+import { XYZ } from "ol/source";
+declare const HistMap_base: {
+    new (...args: any[]): {
+        weiwudi?: import("weiwudi").default | undefined;
+        _map?: import("../map_ex").MaplatMap | undefined;
+        homePosition?: import("ol/coordinate").Coordinate | undefined;
+        mercZoom?: number | undefined;
+        pois: any;
+        officialTitle: string;
+        title: string;
+        mapID: string;
+        label: string;
+        initialWait?: Promise<any> | undefined;
+        maxZoom?: number | undefined;
+        minZoom?: number | undefined;
+        envelope: any;
+        centroid?: number[] | undefined;
+        xy2MercAsync(val: import("ol/coordinate").Coordinate): Promise<import("ol/coordinate").Coordinate>;
+        merc2XyAsync(merc: import("ol/coordinate").Coordinate, ignoreBackside?: boolean | undefined): Promise<import("ol/coordinate").Coordinate | undefined>;
+        insideCheckHistMapCoords(coord: any): boolean;
+        getTileCacheSizeAsync(): Promise<number>;
+        clearTileCacheAsync(): Promise<void>;
+        getMap(): import("../map_ex").MaplatMap | undefined;
+        setViewpointRadian(cond: any): void;
+        setViewpoint(cond: any): void;
+        goHome(): void;
+        setGPSMarkerAsync(position: any, ignoreMove?: boolean): Promise<unknown>;
+        setGPSMarker(position: any, ignoreMove?: boolean): void;
+        getRadius(size: any, zoom?: any): number;
+        mercsFromGivenMercZoom(center: import("ol/coordinate").Coordinate, mercZoom?: number | undefined, direction?: number | undefined): number[][];
+        mercsFromGPSValue(lnglat: import("ol/coordinate").Coordinate, acc: number): number[][];
+        rotateMatrix(xys: number[][], theta?: number | undefined): number[][];
+        size2Xys(center?: import("ol/coordinate").Coordinate | undefined, zoom?: number | undefined, rotate?: number | undefined): number[][];
+        size2MercsAsync(center?: import("ol/coordinate").Coordinate | undefined, zoom?: number | undefined, rotate?: number | undefined): Promise<import("ol/coordinate").Coordinate[]>;
+        mercs2SizeAsync(mercs: import("ol/coordinate").Coordinate[], asMerc?: boolean): Promise<[import("ol/coordinate").Coordinate, number, number]>;
+        mercs2MercSizeAsync(mercs: import("ol/coordinate").Coordinate[]): Promise<[import("ol/coordinate").Coordinate, number, number]>;
+        xys2Size(xys: import("ol/coordinate").Coordinate[]): [import("ol/coordinate").Coordinate, number, number];
+        mercs2MercRotation(xys: import("ol/coordinate").Coordinate[]): number;
+        mercs2XysAsync(mercs: import("ol/coordinate").Coordinate[]): Promise<(import("ol/coordinate").Coordinate | undefined)[][]>;
+        resolvePois(pois?: any): Promise<void>;
+        getPoi(id: string): undefined;
+        addPoi(data: any, clusterId?: string | undefined): any;
+        removePoi(id: string): void;
+        clearPoi(clusterId?: string | undefined): void;
+        listPoiLayers(hideOnly?: boolean, nonzero?: boolean): any[];
+        getPoiLayer(id: string): any;
+        addPoiLayer(id: string, data: any): void;
+        removePoiLayer(id: string): void;
+    };
+} & typeof XYZ;
+export declare abstract class HistMap extends HistMap_base {
+    width: number;
+    height: number;
+    _maxxy: number;
+    constructor(options?: any);
+    histMapCoords2Xy(histCoords: any): number[];
+    xy2HistMapCoords(xy: any): number[];
+    insideCheckXy(xy: any): boolean;
+    insideCheckHistMapCoords(histCoords: any): boolean;
+    modulateXyInside(xy: any): number[];
+    modulateHistMapCoordsInside(histCoords: any): number[];
+}
+export {};

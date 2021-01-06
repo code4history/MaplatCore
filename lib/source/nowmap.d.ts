@@ -1,0 +1,63 @@
+/// <reference path="../../src/types/weiwudi.d.ts" />
+import { OSM } from "ol/source";
+import { Coordinate } from "ol/coordinate";
+declare const NowMap_base: {
+    new (...args: any[]): {
+        weiwudi?: import("weiwudi").default | undefined;
+        _map?: import("../map_ex").MaplatMap | undefined;
+        homePosition?: Coordinate | undefined;
+        mercZoom?: number | undefined;
+        pois: any;
+        officialTitle: string;
+        title: string;
+        mapID: string;
+        label: string;
+        initialWait?: Promise<any> | undefined;
+        maxZoom?: number | undefined;
+        minZoom?: number | undefined;
+        envelope: any;
+        centroid?: number[] | undefined;
+        xy2MercAsync(val: Coordinate): Promise<Coordinate>;
+        merc2XyAsync(merc: Coordinate, ignoreBackside?: boolean | undefined): Promise<Coordinate | undefined>;
+        insideCheckHistMapCoords(coord: any): boolean;
+        getTileCacheSizeAsync(): Promise<number>;
+        clearTileCacheAsync(): Promise<void>;
+        getMap(): import("../map_ex").MaplatMap | undefined;
+        setViewpointRadian(cond: any): void;
+        setViewpoint(cond: any): void;
+        goHome(): void;
+        setGPSMarkerAsync(position: any, ignoreMove?: boolean): Promise<unknown>;
+        setGPSMarker(position: any, ignoreMove?: boolean): void;
+        getRadius(size: any, zoom?: any): number;
+        mercsFromGivenMercZoom(center: Coordinate, mercZoom?: number | undefined, direction?: number | undefined): number[][];
+        mercsFromGPSValue(lnglat: Coordinate, acc: number): number[][];
+        rotateMatrix(xys: number[][], theta?: number | undefined): number[][];
+        size2Xys(center?: Coordinate | undefined, zoom?: number | undefined, rotate?: number | undefined): number[][];
+        size2MercsAsync(center?: Coordinate | undefined, zoom?: number | undefined, rotate?: number | undefined): Promise<Coordinate[]>;
+        mercs2SizeAsync(mercs: Coordinate[], asMerc?: boolean): Promise<[Coordinate, number, number]>;
+        mercs2MercSizeAsync(mercs: Coordinate[]): Promise<[Coordinate, number, number]>;
+        xys2Size(xys: Coordinate[]): [Coordinate, number, number];
+        mercs2MercRotation(xys: Coordinate[]): number;
+        mercs2XysAsync(mercs: Coordinate[]): Promise<(Coordinate | undefined)[][]>;
+        resolvePois(pois?: any): Promise<void>;
+        getPoi(id: string): undefined;
+        addPoi(data: any, clusterId?: string | undefined): any;
+        removePoi(id: string): void;
+        clearPoi(clusterId?: string | undefined): void;
+        listPoiLayers(hideOnly?: boolean, nonzero?: boolean): any[];
+        getPoiLayer(id: string): any;
+        addPoiLayer(id: string, data: any): void;
+        removePoiLayer(id: string): void;
+    };
+} & typeof OSM;
+export declare class NowMap extends NowMap_base {
+    constructor(options?: any);
+    static createAsync(options: any): Promise<NowMap>;
+    xy2MercAsync(xy: Coordinate): Promise<Coordinate>;
+    merc2XyAsync(merc: Coordinate): Promise<Coordinate | undefined>;
+    insideCheckXy(xy: any): boolean;
+    insideCheckHistMapCoords(histCoords: any): boolean;
+    modulateXyInside(xy: any): any;
+    modulateHistMapCoordsInside(histCoords: any): any;
+}
+export {};
