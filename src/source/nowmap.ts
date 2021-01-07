@@ -49,20 +49,20 @@ export class NowMap extends setCustomFunction(OSM) {
     });
   }
 
-  insideCheckXy(xy: any) {
+  insideCheckXy(xy: Coordinate) {
     if (!this.envelope) return true;
     const point_ = point(xy);
     return booleanPointInPolygon(point_, this.envelope);
   }
 
-  insideCheckHistMapCoords(histCoords: any) {
+  insideCheckHistMapCoords(histCoords: Coordinate) {
     return this.insideCheckXy(histCoords);
   }
 
   modulateXyInside(xy: any) {
     if (!this.centroid) return xy;
     const expandLine = lineString([xy, this.centroid]);
-    const intersect = lineIntersect(this.envelope, expandLine);
+    const intersect = lineIntersect(this.envelope as any, expandLine as any);
     if (intersect.features.length > 0 && intersect.features[0].geometry) {
       return intersect.features[0].geometry.coordinates;
     } else {

@@ -122,7 +122,7 @@ export abstract class HistMap extends setCustomFunction(XYZ) {
     return [histX, histY];
   }
 
-  insideCheckXy(xy: any) {
+  insideCheckXy(xy: Coordinate) {
     return !(
       xy[0] < 0 ||
       xy[0] > this.width ||
@@ -131,7 +131,7 @@ export abstract class HistMap extends setCustomFunction(XYZ) {
     );
   }
 
-  insideCheckHistMapCoords(histCoords: any) {
+  insideCheckHistMapCoords(histCoords: Coordinate) {
     return this.insideCheckXy(this.histMapCoords2Xy(histCoords));
   }
 

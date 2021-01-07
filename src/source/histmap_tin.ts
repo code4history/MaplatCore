@@ -7,6 +7,7 @@ import { polygon } from "@turf/helpers";
 import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
 import { MERC_MAX } from "../const_ex";
 import { Coordinate } from "ol/coordinate";
+import { Feature, Polygon } from "@turf/turf";
 
 export class HistMap_tin extends HistMap {
   tins: Tin[];
@@ -239,7 +240,7 @@ export class HistMap_tin extends HistMap {
             this.homePosition = toLonLat(mercs[4]);
             this.envelope = polygon([
               [mercs[5], mercs[6], mercs[7], mercs[8], mercs[5]]
-            ]);
+            ]) as Feature<Polygon>;
             callback(this);
           })
           .catch(err => {

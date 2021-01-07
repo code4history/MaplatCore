@@ -12,6 +12,7 @@ import {
 import { normalizeArg } from "../functions";
 import { polygon } from "@turf/helpers";
 import centroid from "@turf/centroid";
+import { Feature, Polygon } from "@turf/turf";
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 type Constructor<T = {}> = new (...args: any[]) => T;
@@ -30,7 +31,7 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
     initialWait?: Promise<any>;
     maxZoom?: number;
     minZoom?: number;
-    envelope: any;
+    envelope?: Feature<Polygon>;
     centroid?: number[];
 
     abstract xy2MercAsync(val: Coordinate): Promise<Coordinate>;
@@ -38,7 +39,7 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
       merc: Coordinate,
       ignoreBackside?: boolean
     ): Promise<Coordinate | undefined>;
-    abstract insideCheckHistMapCoords(coord: any): boolean;
+    abstract insideCheckHistMapCoords(coord: Coordinate): boolean;
 
     async getTileCacheSizeAsync() {
       if (!this.weiwudi) return 0;
@@ -145,7 +146,7 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
           const xys = hide ? results[1] : results[0];
           const sub = !hide ? results[1] : null;
           const pos: any = { xy: xys[0] };
-          if (!this.insideCheckHistMapCoords(xys[0])) {
+          if (!this.insideCheckHistMapCoords(xys[0]!)) {
             map?.handleGPS(false, true);
             return false;
           }
