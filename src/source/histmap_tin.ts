@@ -93,13 +93,11 @@ export class HistMap_tin extends HistMap {
     return obj;
   }
 
-  xy2MercAsync_specifyLayer(xy: any, layerId: any) {
+  xy2MercAsync_specifyLayer(xy: Coordinate, layerId: number) {
     const layerKey = `Illst:${this.mapID}${layerId ? `#${layerId}` : ""}`;
     return new Promise((resolve, _reject) => {
-      resolve(transformDirect(layerKey, "EPSG:3857", xy));
-    }).catch(err => {
-      throw err;
-    });
+      resolve(transformDirect(layerKey, "EPSG:3857", xy)!);
+    }) as Promise<Coordinate>;
   }
 
   merc2XyAsync_specifyLayer(merc: any, layerId: any) {
@@ -111,11 +109,11 @@ export class HistMap_tin extends HistMap {
     });
   }
 
-  xy2MercAsync_returnLayer(xy: any) {
+  xy2MercAsync_returnLayer(xy: Coordinate) {
     return new Promise((resolve, reject) => {
       const tinSorted = this.tins
-        .map((tin: any, index: any) => [index, tin])
-        .sort((a: any, b: any) => (a[1].priority < b[1].priority ? 1 : -1));
+        .map((tin, index) => [index, tin] as [number, Tin])
+        .sort((a, b) => (a[1].priority < b[1].priority ? 1 : -1));
 
       for (let i = 0; i < tinSorted.length; i++) {
         const index = tinSorted[i][0];
@@ -123,7 +121,7 @@ export class HistMap_tin extends HistMap {
         if (index == 0 || booleanPointInPolygon(xy, tin.xyBounds)) {
           this.xy2MercAsync_specifyLayer(xy, index)
             .then(merc => {
-              resolve([index, merc]);
+              resolve([index, merc] as [number, Coordinate]);
             })
             .catch(err => {
               reject(err);
@@ -131,9 +129,7 @@ export class HistMap_tin extends HistMap {
           break;
         }
       }
-    }).catch(err => {
-      throw err;
-    });
+    }) as Promise<[number, Coordinate]>;
   }
 
   merc2XyAsync_returnLayer(merc: any) {
@@ -360,7 +356,7 @@ export class HistMap_tin extends HistMap {
 
   xy2MercAsync(xy: Coordinate): Promise<Coordinate> {
     const convertXy = this.histMapCoords2Xy(xy);
-    return this.xy2MercAsync_returnLayer(convertXy).then((ret: any) => ret[1]);
+    return this.xy2MercAsync_returnLayer(convertXy).then(ret => ret[1]);
   }
 
   merc2XyAsync(

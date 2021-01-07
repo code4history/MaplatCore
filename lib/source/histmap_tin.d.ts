@@ -5,9 +5,9 @@ export declare class HistMap_tin extends HistMap {
     tins: Tin[];
     constructor(options?: any);
     static createAsync(options: any): Promise<HistMap_tin>;
-    xy2MercAsync_specifyLayer(xy: any, layerId: any): Promise<unknown>;
+    xy2MercAsync_specifyLayer(xy: Coordinate, layerId: number): Promise<Coordinate>;
     merc2XyAsync_specifyLayer(merc: any, layerId: any): Promise<unknown>;
-    xy2MercAsync_returnLayer(xy: any): Promise<unknown>;
+    xy2MercAsync_returnLayer(xy: Coordinate): Promise<[number, Coordinate]>;
     merc2XyAsync_returnLayer(merc: any): Promise<any>;
     mapSize2MercSize(callback: any): void;
     size2MercsAsync(center: any, zoom: any, rotate: any): Promise<any[]>;

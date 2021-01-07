@@ -1,10 +1,11 @@
 /// <reference path="../../src/types/weiwudi.d.ts" />
 import { XYZ } from "ol/source";
+import { Coordinate } from "ol/coordinate";
 declare const HistMap_base: {
     new (...args: any[]): {
         weiwudi?: import("weiwudi").default | undefined;
         _map?: import("../map_ex").MaplatMap | undefined;
-        homePosition?: import("ol/coordinate").Coordinate | undefined;
+        homePosition?: Coordinate | undefined;
         mercZoom?: number | undefined;
         pois: any;
         officialTitle: string;
@@ -16,8 +17,8 @@ declare const HistMap_base: {
         minZoom?: number | undefined;
         envelope: any;
         centroid?: number[] | undefined;
-        xy2MercAsync(val: import("ol/coordinate").Coordinate): Promise<import("ol/coordinate").Coordinate>;
-        merc2XyAsync(merc: import("ol/coordinate").Coordinate, ignoreBackside?: boolean | undefined): Promise<import("ol/coordinate").Coordinate | undefined>;
+        xy2MercAsync(val: Coordinate): Promise<Coordinate>;
+        merc2XyAsync(merc: Coordinate, ignoreBackside?: boolean | undefined): Promise<Coordinate | undefined>;
         insideCheckHistMapCoords(coord: any): boolean;
         getTileCacheSizeAsync(): Promise<number>;
         clearTileCacheAsync(): Promise<void>;
@@ -28,16 +29,16 @@ declare const HistMap_base: {
         setGPSMarkerAsync(position: any, ignoreMove?: boolean): Promise<unknown>;
         setGPSMarker(position: any, ignoreMove?: boolean): void;
         getRadius(size: any, zoom?: any): number;
-        mercsFromGivenMercZoom(center: import("ol/coordinate").Coordinate, mercZoom?: number | undefined, direction?: number | undefined): number[][];
-        mercsFromGPSValue(lnglat: import("ol/coordinate").Coordinate, acc: number): number[][];
+        mercsFromGivenMercZoom(center: Coordinate, mercZoom?: number | undefined, direction?: number | undefined): number[][];
+        mercsFromGPSValue(lnglat: Coordinate, acc: number): number[][];
         rotateMatrix(xys: number[][], theta?: number | undefined): number[][];
-        size2Xys(center?: import("ol/coordinate").Coordinate | undefined, zoom?: number | undefined, rotate?: number | undefined): number[][];
-        size2MercsAsync(center?: import("ol/coordinate").Coordinate | undefined, zoom?: number | undefined, rotate?: number | undefined): Promise<import("ol/coordinate").Coordinate[]>;
-        mercs2SizeAsync(mercs: import("ol/coordinate").Coordinate[], asMerc?: boolean): Promise<[import("ol/coordinate").Coordinate, number, number]>;
-        mercs2MercSizeAsync(mercs: import("ol/coordinate").Coordinate[]): Promise<[import("ol/coordinate").Coordinate, number, number]>;
-        xys2Size(xys: import("ol/coordinate").Coordinate[]): [import("ol/coordinate").Coordinate, number, number];
-        mercs2MercRotation(xys: import("ol/coordinate").Coordinate[]): number;
-        mercs2XysAsync(mercs: import("ol/coordinate").Coordinate[]): Promise<(import("ol/coordinate").Coordinate | undefined)[][]>;
+        size2Xys(center?: Coordinate | undefined, zoom?: number | undefined, rotate?: number | undefined): number[][];
+        size2MercsAsync(center?: Coordinate | undefined, zoom?: number | undefined, rotate?: number | undefined): Promise<Coordinate[]>;
+        mercs2SizeAsync(mercs: Coordinate[], asMerc?: boolean): Promise<[Coordinate, number, number]>;
+        mercs2MercSizeAsync(mercs: Coordinate[]): Promise<[Coordinate, number, number]>;
+        xys2Size(xys: Coordinate[]): [Coordinate, number, number];
+        mercs2MercRotation(xys: Coordinate[]): number;
+        mercs2XysAsync(mercs: Coordinate[]): Promise<(Coordinate | undefined)[][]>;
         resolvePois(pois?: any): Promise<void>;
         getPoi(id: string): undefined;
         addPoi(data: any, clusterId?: string | undefined): any;
@@ -54,7 +55,7 @@ export declare abstract class HistMap extends HistMap_base {
     height: number;
     _maxxy: number;
     constructor(options?: any);
-    histMapCoords2Xy(histCoords: any): number[];
+    histMapCoords2Xy(histCoords: Coordinate): Coordinate;
     xy2HistMapCoords(xy: any): number[];
     insideCheckXy(xy: any): boolean;
     insideCheckHistMapCoords(histCoords: any): boolean;

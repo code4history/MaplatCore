@@ -88,10 +88,6 @@ export class MaplatApp extends EventTarget {
   mercSrc?: NowMap;
   mercBuffer: any;
   timer: any = undefined;
-  __selectedMarker: any;
-  __init = true;
-  __redrawMarkerBlock = false;
-  __redrawMarkerThrottle: (NowMap | HistMap)[] = [];
   appName: any;
   cacheHash: any;
   currentPosition: any;
@@ -105,9 +101,13 @@ export class MaplatApp extends EventTarget {
   poiTemplate?: string;
   poiStyle?: string;
   iconTemplate?: string;
-  __transparency: any;
   logger: Logger;
   __backMapMoving = false;
+  __selectedMarker: any;
+  __init = true;
+  __redrawMarkerBlock = false;
+  __redrawMarkerThrottle: (NowMap | HistMap)[] = [];
+  __transparency: any;
   // Maplat App Class
   constructor(appOption: any) {
     super();

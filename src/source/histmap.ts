@@ -10,6 +10,7 @@ import {
 import { XYZ } from "ol/source";
 import { normalizeArg } from "../functions";
 import { createFromTemplates, expandUrl } from "ol/tileurlfunction";
+import {Coordinate} from "ol/coordinate";
 
 for (let z = 0; z < 9; z++) {
   const key = `ZOOM:${z}`;
@@ -109,7 +110,7 @@ export abstract class HistMap extends setCustomFunction(XYZ) {
     setupTileLoadFunction(this);
   }
 
-  histMapCoords2Xy(histCoords: any) {
+  histMapCoords2Xy(histCoords: Coordinate): Coordinate {
     const x = ((histCoords[0] + MERC_MAX) * this._maxxy) / (2 * MERC_MAX);
     const y = ((-histCoords[1] + MERC_MAX) * this._maxxy) / (2 * MERC_MAX);
     return [x, y];

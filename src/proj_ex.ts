@@ -12,7 +12,7 @@ export function transformDirect(
   src: ProjectionLike,
   dist: ProjectionLike,
   xy?: Coordinate
-): Coordinate | void {
+): Coordinate | undefined {
   const srcCode = typeof src === "string" ? src : src.getCode();
   const distCode = typeof dist === "string" ? dist : dist.getCode();
   let func = getTransform(src, dist);
