@@ -100,13 +100,11 @@ export class HistMap_tin extends HistMap {
     }) as Promise<Coordinate>;
   }
 
-  merc2XyAsync_specifyLayer(merc: any, layerId: any) {
+  merc2XyAsync_specifyLayer(merc: Coordinate, layerId: number) {
     const layerKey = `Illst:${this.mapID}${layerId ? `#${layerId}` : ""}`;
     return new Promise((resolve, _reject) => {
-      resolve(transformDirect("EPSG:3857", layerKey, merc));
-    }).catch(err => {
-      throw err;
-    });
+      resolve(transformDirect("EPSG:3857", layerKey, merc)!);
+    }) as Promise<Coordinate>;
   }
 
   xy2MercAsync_returnLayer(xy: Coordinate) {
@@ -132,29 +130,29 @@ export class HistMap_tin extends HistMap {
     }) as Promise<[number, Coordinate]>;
   }
 
-  merc2XyAsync_returnLayer(merc: any) {
+  merc2XyAsync_returnLayer(merc: Coordinate) {
     return Promise.all(
       this.tins.map(
-        (tin: any, index: any) =>
+        (tin, index) =>
           new Promise((resolve, reject) => {
             this.merc2XyAsync_specifyLayer(merc, index)
-              .then((xy: any) => {
-                if (index == 0 || booleanPointInPolygon(xy, tin.xyBounds)) {
-                  resolve([tin, index, xy]);
+              .then(xy => {
+                if (index === 0 || booleanPointInPolygon(xy, tin.xyBounds)) {
+                  resolve([tin, index, xy] as [Tin, number, Coordinate?]);
                 } else {
-                  resolve([tin, index]);
+                  resolve([tin, index] as [Tin, number, Coordinate?]);
                 }
               })
               .catch(err => {
                 reject(err);
               });
-          })
+          }) as Promise<[Tin, number, Coordinate?]>
       )
     )
-      .then((results: any) =>
+      .then(results =>
         results
-          .sort((a: any, b: any) => (a[0].priority < b[0].priority ? 1 : -1))
-          .reduce((ret: any, result: any, priIndex: number, arry: any) => {
+          .sort((a, b) => (a[0].priority < b[0].priority ? 1 : -1))
+          .reduce((ret: (undefined | [number, Coordinate, Tin])[], result, priIndex: number, arry) => {
             const tin = result[0];
             const index = result[1];
             const xy = result[2];
@@ -163,41 +161,38 @@ export class HistMap_tin extends HistMap {
               const targetTin = arry[i][0];
               const targetIndex = arry[i][1];
               if (
-                targetIndex == 0 ||
+                targetIndex === 0 ||
                 booleanPointInPolygon(xy, targetTin.xyBounds)
               ) {
                 if (ret.length) {
                   const hide = !ret[0];
-                  const storedTin = hide ? ret[1][2] : ret[0][2];
+                  const storedTin = hide ? ret[1]![2] : ret[0]![2];
                   if (!hide || tin.importance < storedTin.importance) {
                     return ret;
                   } else {
-                    return [undefined, [index, xy, tin]];
+                    return [undefined, [index, xy, tin]] as (undefined | [number, Coordinate, Tin])[];
                   }
                 } else {
-                  return [undefined, [index, xy, tin]];
+                  return [undefined, [index, xy, tin]] as (undefined | [number, Coordinate, Tin])[];
                 }
               }
             }
             if (!ret.length || !ret[0]) {
-              return [[index, xy, tin]];
+              return [[index, xy, tin]] as (undefined | [number, Coordinate, Tin])[];
             } else {
               ret.push([index, xy, tin]);
               return ret
-                .sort((a: any, b: any) =>
-                  a[2].importance < b[2].importance ? 1 : -1
+                .sort((a, b) =>
+                  a![2].importance < b![2].importance ? 1 : -1
                 )
-                .filter((_row: any, i: any) => i < 2);
+                .filter((_row, i) => i < 2);
             }
           }, [])
-          .map((row: any) => {
+          .map(row => {
             if (!row) return;
-            return [row[0], row[1]];
+            return [row[0], row[1]] as [number, Coordinate];
           })
-      )
-      .catch(err => {
-        throw err;
-      });
+      );
   }
 
   mapSize2MercSize(callback: any) {
@@ -289,8 +284,8 @@ export class HistMap_tin extends HistMap {
     } else {
       promises = this.merc2XyAsync_returnLayer(mercs[0]).then(results => {
         const result = results[0] || results[1];
-        const index = result[0];
-        const centerXy = result[1];
+        const index = result![0];
+        const centerXy = result![1];
         return Promise.all(
           mercs.map((merc: any, i: any) => {
             if (i == 5) return merc;
@@ -361,16 +356,13 @@ export class HistMap_tin extends HistMap {
 
   merc2XyAsync(
     merc: Coordinate,
-    ignoreBackside: any
+    ignoreBackside = false
   ): Promise<Coordinate | undefined> {
     return this.merc2XyAsync_returnLayer(merc)
       .then(ret => {
         if (ignoreBackside && !ret[0]) return;
-        const convertXy = !ret[0] ? ret[1][1] : ret[0][1];
+        const convertXy = !ret[0] ? ret[1]![1] : ret[0][1];
         return this.xy2HistMapCoords(convertXy);
-      })
-      .catch(err => {
-        throw err;
       });
   }
 }

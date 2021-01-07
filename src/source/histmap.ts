@@ -116,7 +116,7 @@ export abstract class HistMap extends setCustomFunction(XYZ) {
     return [x, y];
   }
 
-  xy2HistMapCoords(xy: any) {
+  xy2HistMapCoords(xy: Coordinate): Coordinate {
     const histX = (xy[0] * (2 * MERC_MAX)) / this._maxxy - MERC_MAX;
     const histY = -1 * ((xy[1] * (2 * MERC_MAX)) / this._maxxy - MERC_MAX);
     return [histX, histY];

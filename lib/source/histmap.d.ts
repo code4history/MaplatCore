@@ -56,10 +56,10 @@ export declare abstract class HistMap extends HistMap_base {
     _maxxy: number;
     constructor(options?: any);
     histMapCoords2Xy(histCoords: Coordinate): Coordinate;
-    xy2HistMapCoords(xy: any): number[];
+    xy2HistMapCoords(xy: Coordinate): Coordinate;
     insideCheckXy(xy: any): boolean;
     insideCheckHistMapCoords(histCoords: any): boolean;
     modulateXyInside(xy: any): number[];
-    modulateHistMapCoordsInside(histCoords: any): number[];
+    modulateHistMapCoordsInside(histCoords: any): Coordinate;
 }
 export {};
