@@ -46,6 +46,8 @@
   "dependencies": {
     "@maplat/tin": "^0.7.2",
     "@turf/line-intersect": "^6.0.2",
+    "@turf/nearest-point-to-line": "^6.0.0",
+    "@turf/point-to-line-distance": "^6.0.0",
     "@turf/turf": "^5.1.6",
     "argv": "0.0.2",
     "i18next": "^17.3.1",
