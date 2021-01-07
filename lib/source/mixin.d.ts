@@ -1,7 +1,19 @@
 import Weiwudi from "weiwudi";
 import { MaplatMap } from "../map_ex";
 import { Coordinate } from "ol/coordinate";
+import { Feature, Polygon } from "@turf/turf";
+import { Size } from "ol/size";
 declare type Constructor<T = {}> = new (...args: any[]) => T;
+declare type Condition = {
+    x?: number;
+    y?: number;
+    latitude?: number;
+    longitude?: number;
+    mercZoom?: number;
+    zoom?: number;
+    direction?: number;
+    rotation?: number;
+};
 export declare function setCustomFunction<TBase extends Constructor>(Base: TBase): {
     new (...args: any[]): {
         weiwudi?: Weiwudi | undefined;
@@ -16,23 +28,23 @@ export declare function setCustomFunction<TBase extends Constructor>(Base: TBase
         initialWait?: Promise<any> | undefined;
         maxZoom?: number | undefined;
         minZoom?: number | undefined;
-        envelope: any;
+        envelope?: Feature<Polygon, import("@turf/helpers").Properties> | undefined;
         centroid?: number[] | undefined;
         xy2MercAsync(val: Coordinate): Promise<Coordinate>;
         merc2XyAsync(merc: Coordinate, ignoreBackside?: boolean | undefined): Promise<Coordinate | undefined>;
-        insideCheckHistMapCoords(coord: any): boolean;
+        insideCheckHistMapCoords(coord: Coordinate): boolean;
         getTileCacheSizeAsync(): Promise<number>;
         clearTileCacheAsync(): Promise<void>;
         getMap(): MaplatMap | undefined;
-        setViewpointRadian(cond: any): void;
-        setViewpoint(cond: any): void;
+        setViewpointRadian(cond: Condition): void;
+        setViewpoint(cond: Condition): void;
         goHome(): void;
         setGPSMarkerAsync(position: any, ignoreMove?: boolean): Promise<unknown>;
         setGPSMarker(position: any, ignoreMove?: boolean): void;
-        getRadius(size: any, zoom?: any): number;
-        mercsFromGivenMercZoom(center: Coordinate, mercZoom?: number | undefined, direction?: number | undefined): number[][];
+        getRadius(size: Size, zoom?: number | undefined): number;
+        mercsFromGivenMercZoom(center: Coordinate, mercZoom?: number | undefined, direction?: number | undefined): Coordinate[];
         mercsFromGPSValue(lnglat: Coordinate, acc: number): number[][];
-        rotateMatrix(xys: number[][], theta?: number | undefined): number[][];
+        rotateMatrix(xys: number[][], theta?: number | undefined): Coordinate[];
         size2Xys(center?: Coordinate | undefined, zoom?: number | undefined, rotate?: number | undefined): number[][];
         size2MercsAsync(center?: Coordinate | undefined, zoom?: number | undefined, rotate?: number | undefined): Promise<Coordinate[]>;
         mercs2SizeAsync(mercs: Coordinate[], asMerc?: boolean): Promise<[Coordinate, number, number]>;

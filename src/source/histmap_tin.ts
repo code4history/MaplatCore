@@ -253,14 +253,14 @@ export class HistMap_tin extends HistMap {
   }
 
   // 画面サイズと地図ズームから、メルカトル座標上での5座標を取得する。zoom, rotate無指定の場合は自動取得
-  size2MercsAsync(center: any, zoom: any, rotate: any) {
+  size2MercsAsync(center?: Coordinate, zoom?: number, rotate?: number) {
     const cross = this.size2Xys(center, zoom, rotate).map((xy, index) => {
       if (index == 5) return xy;
       return this.histMapCoords2Xy(xy);
     });
     const promise = this.xy2MercAsync_returnLayer(cross[0]);
     return promise
-      .then((results: any) => {
+      .then(results => {
         const index = results[0];
         const centerMerc = results[1];
         const promises = cross.map((val, i) => {
@@ -271,14 +271,11 @@ export class HistMap_tin extends HistMap {
         return Promise.all(promises).catch(err => {
           throw err;
         });
-      })
-      .catch(err => {
-        throw err;
       });
   }
 
   // メルカトル5地点情報から地図サイズ情報（中心座標、サイズ、回転）を得る
-  mercs2SizeAsync(mercs: any, asMerc: any) {
+  mercs2SizeAsync(mercs: Coordinate[], asMerc = false) {
     let promises;
     if (asMerc) {
       promises = Promise.resolve(mercs);
@@ -288,9 +285,9 @@ export class HistMap_tin extends HistMap {
         const index = result![0];
         const centerXy = result![1];
         return Promise.all(
-          mercs.map((merc: any, i: any) => {
+          mercs.map((merc, i) => {
             if (i == 5) return merc;
-            if (i == 0) return Promise.resolve(centerXy);
+            if (i == 0) return centerXy;
             return this.merc2XyAsync_specifyLayer(merc, index);
           })
         );
@@ -299,15 +296,12 @@ export class HistMap_tin extends HistMap {
     return promises
       .then(xys => {
         if (!asMerc) {
-          xys = xys.map((xy: any, i: any) => {
+          xys = xys.map((xy, i) => {
             if (i == 5) return xy;
             return this.xy2HistMapCoords(xy);
           });
         }
         return this.xys2Size(xys);
-      })
-      .catch(err => {
-        throw err;
       });
   }
 

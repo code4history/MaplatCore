@@ -13,9 +13,11 @@ import { normalizeArg } from "../functions";
 import { polygon } from "@turf/helpers";
 import centroid from "@turf/centroid";
 import { Feature, Polygon } from "@turf/turf";
+import {Size} from "ol/size";
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 type Constructor<T = {}> = new (...args: any[]) => T;
+type Condition = { x?: number, y?: number, latitude?: number, longitude?: number, mercZoom?: number, zoom?: number, direction?: number, rotation?: number };
 
 export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
   abstract class Mixin extends Base {
@@ -63,23 +65,23 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
     }
 
     // 経緯度lnglat、メルカトルズームmercZoom、地図ズームzoom、方角direction、地図回転rotation等を指定し地図移動
-    setViewpointRadian(cond: any) {
-      let merc: any;
-      let xy: any;
+    setViewpointRadian(cond: Condition) {
+      let merc: Coordinate;
+      let xy: Coordinate;
       const mercZoom = cond.mercZoom;
       const zoom = cond.zoom;
       const direction = cond.direction;
       const rotation = cond.rotation;
       const map = this._map;
       const view = map?.getView();
-      if (cond.latitude != null && cond.longitude != null) {
+      if (cond.latitude !== undefined && cond.longitude !== undefined) {
         merc = transform(
           [cond.longitude, cond.latitude],
           "EPSG:4326",
           "EPSG:3857"
         );
       }
-      if (cond.x != null && cond.y != null) {
+      if (cond.x !== undefined && cond.y != undefined) {
         xy = [cond.x, cond.y];
       }
       this.size2MercsAsync()
@@ -110,7 +112,7 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
         });
     }
 
-    setViewpoint(cond: any) {
+    setViewpoint(cond: Condition) {
       if (cond.rotation) {
         cond.rotation = (cond.rotation * Math.PI) / 180;
       }
@@ -179,12 +181,12 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
     }
 
     // size(画面サイズ)とズームから、地図面座標上での半径を得る。zoom無指定の場合は自動取得
-    getRadius(size: any, zoom?: any) {
+    getRadius(size: Size, zoom?: number) {
       const radius = Math.floor(Math.min(size[0], size[1]) / 4);
       if (zoom === undefined) {
         zoom = this._map?.getView().getDecimalZoom();
       }
-      return (radius * MERC_MAX) / 128 / Math.pow(2, zoom);
+      return (radius * MERC_MAX) / 128 / Math.pow(2, zoom!);
     }
 
     // メルカトルの中心座標とメルカトルズームから、メルカトル5座標値に変換
@@ -192,7 +194,7 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
       center: Coordinate,
       mercZoom?: number,
       direction?: number
-    ) {
+    ): Coordinate[] {
       if (mercZoom === undefined) {
         mercZoom = 17;
       }
@@ -218,7 +220,7 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
     }
 
     // 与えられた差分行列を回転。theta無指定の場合は自動取得
-    rotateMatrix(xys: number[][], theta?: number) {
+    rotateMatrix(xys: number[][], theta?: number): Coordinate[] {
       if (theta === undefined) {
         theta = this._map!.getView().getRotation();
       }
@@ -255,9 +257,7 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
         if (index === 5) return Promise.resolve(val);
         return this.xy2MercAsync(val);
       });
-      return Promise.all(promises).catch(err => {
-        throw err;
-      });
+      return Promise.all(promises);
     }
 
     // メルカトル5地点情報から地図サイズ情報（中心座標、サイズ、回転）を得る
@@ -267,14 +267,11 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
         : Promise.all(
             mercs.map((merc: Coordinate, index: number) => {
               if (index === 5) return merc;
-              return this.merc2XyAsync(merc);
+              return this.merc2XyAsync(merc).then(val => val!);
             })
           );
       return promises
-        .then(xys => this.xys2Size(xys as Coordinate[]))
-        .catch(err => {
-          throw err;
-        });
+        .then(xys => this.xys2Size(xys as Coordinate[]));
     }
 
     // メルカトル5地点情報からメルカトル地図でのサイズ情報（中心座標、サイズ、回転）を得る
