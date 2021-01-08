@@ -3,6 +3,35 @@
 const gulp = require("gulp");
 const fs = require("fs-extra");
 const zip = require("gulp-zip");
+const spawn = require("child_process").spawn;
+const psaux = require("psaux");
+const terminate = require("terminate");
+
+gulp.task("server", () => {
+  spawn("npm", ["run", "server"], {
+    stdio: "ignore",
+    detached: true
+  }).unref();
+  return Promise.resolve();
+});
+
+gulp.task("stopserver", () =>
+  psaux().then(list => {
+    list.filter(ps => {
+      console.log(ps);
+      return ps.command.match(/webpack-dev-server/)
+    }).map(ps => {
+      terminate(ps.pid, err => {
+        if (err) {
+          console.log(`Terminate server fail:${err}`);
+        }
+        else {
+          console.log("Terminate server done");
+        }
+      });
+    });
+  })
+);
 
 gulp.task("zip", async () => {
   try {
