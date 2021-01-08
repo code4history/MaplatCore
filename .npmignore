@@ -9,7 +9,7 @@ index_packed.html
 webpack_config
 gulpfile.js
 server.js
-jest.config.js
+jest_config
 babel.config.js
 .eslintrc.json
 .prettierrc

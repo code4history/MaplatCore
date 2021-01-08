@@ -34,10 +34,10 @@
       var moveFlag = false;
       app.addEventListener("clickMarker", function (evt) {
         app.selectMarker(evt.detail.namespaceID);
-        console.log(evt);
+        console.log(`####Message ${JSON.stringify(evt.detail)}`);
       });
       app.addEventListener("clickMap", function (evt) {
-        console.log(evt);
+        console.log(`####Message ${JSON.stringify(evt.detail)}`);
       });
       app.addLine({
         lnglats: [
