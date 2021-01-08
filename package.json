@@ -101,6 +101,7 @@
     "prettier": "^2.2.1",
     "psaux": "^0.4.0",
     "puppeteer": "^5.5.0",
+    "sleep-promise": "^9.1.0",
     "terminate": "^2.1.2",
     "terser-webpack-plugin": "^4.2.3",
     "ts-jest": "^26.4.4",
