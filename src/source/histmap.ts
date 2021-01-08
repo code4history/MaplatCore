@@ -10,7 +10,7 @@ import {
 import { XYZ } from "ol/source";
 import { normalizeArg } from "../functions";
 import { createFromTemplates, expandUrl } from "ol/tileurlfunction";
-import {Coordinate} from "ol/coordinate";
+import { Coordinate } from "ol/coordinate";
 
 for (let z = 0; z < 9; z++) {
   const key = `ZOOM:${z}`;

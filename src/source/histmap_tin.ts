@@ -149,11 +149,16 @@ export class HistMap_tin extends HistMap {
               });
           }) as Promise<[Tin, number, Coordinate?]>
       )
-    )
-      .then(results =>
-        results
-          .sort((a, b) => (a[0].priority < b[0].priority ? 1 : -1))
-          .reduce((ret: (undefined | [number, Coordinate, Tin])[], result, priIndex: number, arry) => {
+    ).then(results =>
+      results
+        .sort((a, b) => (a[0].priority < b[0].priority ? 1 : -1))
+        .reduce(
+          (
+            ret: (undefined | [number, Coordinate, Tin])[],
+            result,
+            priIndex: number,
+            arry
+          ) => {
             const tin = result[0];
             const index = result[1];
             const xy = result[2];
@@ -171,29 +176,38 @@ export class HistMap_tin extends HistMap {
                   if (!hide || tin.importance < storedTin.importance) {
                     return ret;
                   } else {
-                    return [undefined, [index, xy, tin]] as (undefined | [number, Coordinate, Tin])[];
+                    return [undefined, [index, xy, tin]] as (
+                      | undefined
+                      | [number, Coordinate, Tin]
+                    )[];
                   }
                 } else {
-                  return [undefined, [index, xy, tin]] as (undefined | [number, Coordinate, Tin])[];
+                  return [undefined, [index, xy, tin]] as (
+                    | undefined
+                    | [number, Coordinate, Tin]
+                  )[];
                 }
               }
             }
             if (!ret.length || !ret[0]) {
-              return [[index, xy, tin]] as (undefined | [number, Coordinate, Tin])[];
+              return [[index, xy, tin]] as (
+                | undefined
+                | [number, Coordinate, Tin]
+              )[];
             } else {
               ret.push([index, xy, tin]);
               return ret
-                .sort((a, b) =>
-                  a![2].importance < b![2].importance ? 1 : -1
-                )
+                .sort((a, b) => (a![2].importance < b![2].importance ? 1 : -1))
                 .filter((_row, i) => i < 2);
             }
-          }, [])
-          .map(row => {
-            if (!row) return;
-            return [row[0], row[1]] as [number, Coordinate];
-          })
-      );
+          },
+          []
+        )
+        .map(row => {
+          if (!row) return;
+          return [row[0], row[1]] as [number, Coordinate];
+        })
+    );
   }
 
   mapSize2MercSize(callback: any) {
@@ -259,19 +273,18 @@ export class HistMap_tin extends HistMap {
       return this.histMapCoords2Xy(xy);
     });
     const promise = this.xy2MercAsync_returnLayer(cross[0]);
-    return promise
-      .then(results => {
-        const index = results[0];
-        const centerMerc = results[1];
-        const promises = cross.map((val, i) => {
-          if (i == 5) return val;
-          if (i == 0) return Promise.resolve(centerMerc);
-          return this.xy2MercAsync_specifyLayer(val, index);
-        });
-        return Promise.all(promises).catch(err => {
-          throw err;
-        });
+    return promise.then(results => {
+      const index = results[0];
+      const centerMerc = results[1];
+      const promises = cross.map((val, i) => {
+        if (i == 5) return val;
+        if (i == 0) return Promise.resolve(centerMerc);
+        return this.xy2MercAsync_specifyLayer(val, index);
       });
+      return Promise.all(promises).catch(err => {
+        throw err;
+      });
+    });
   }
 
   // メルカトル5地点情報から地図サイズ情報（中心座標、サイズ、回転）を得る
@@ -293,16 +306,15 @@ export class HistMap_tin extends HistMap {
         );
       });
     }
-    return promises
-      .then(xys => {
-        if (!asMerc) {
-          xys = xys.map((xy, i) => {
-            if (i == 5) return xy;
-            return this.xy2HistMapCoords(xy);
-          });
-        }
-        return this.xys2Size(xys);
-      });
+    return promises.then(xys => {
+      if (!asMerc) {
+        xys = xys.map((xy, i) => {
+          if (i == 5) return xy;
+          return this.xy2HistMapCoords(xy);
+        });
+      }
+      return this.xys2Size(xys);
+    });
   }
 
   mercs2XysAsync(mercs: any) {
@@ -353,11 +365,10 @@ export class HistMap_tin extends HistMap {
     merc: Coordinate,
     ignoreBackside = false
   ): Promise<Coordinate | undefined> {
-    return this.merc2XyAsync_returnLayer(merc)
-      .then(ret => {
-        if (ignoreBackside && !ret[0]) return;
-        const convertXy = !ret[0] ? ret[1]![1] : ret[0][1];
-        return this.xy2HistMapCoords(convertXy);
-      });
+    return this.merc2XyAsync_returnLayer(merc).then(ret => {
+      if (ignoreBackside && !ret[0]) return;
+      const convertXy = !ret[0] ? ret[1]![1] : ret[0][1];
+      return this.xy2HistMapCoords(convertXy);
+    });
   }
 }

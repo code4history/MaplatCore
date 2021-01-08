@@ -28,16 +28,17 @@
 
     // new MaplatApp(option).waitReady.then(function (app) {
     Maplat.createObject(option).then(function (app) {
+      console.log("####Message appReady");
       console.log(app);
       console.log(app.currentMapInfo());
       console.log(app.mapInfo("gsi"));
       var moveFlag = false;
       app.addEventListener("clickMarker", function (evt) {
         app.selectMarker(evt.detail.namespaceID);
-        console.log(evt);
+        console.log(`####Message clickMarker ${JSON.stringify(evt.detail)}`);
       });
       app.addEventListener("clickMap", function (evt) {
-        console.log(evt);
+        console.log(`####Message clickMap ${JSON.stringify(evt.detail)}`);
       });
       app.addLine({
         lnglats: [

@@ -5,15 +5,15 @@ describe("Puppeteer test", () => {
   }, 100000);
 
   it("Click and check latlong", async done => {
-    page.on('console', async msg => {
+    page.on("console", async msg => {
       const result = msg.text().match(/^####Message (\w+)(?: (.+))?$/);
       if (result) {
         const type = result[1];
         const json = result[2] ? treeWalk(JSON.parse(result[2]), 5) : undefined;
-        switch(type) {
+        switch (type) {
           case "appReady":
             setTimeout(async () => {
-              await page.mouse.click(132, 103, { button: 'left' });
+              await page.mouse.click(132, 103, { button: "left" });
             }, 2000);
             break;
           case "clickMap":
@@ -23,7 +23,7 @@ describe("Puppeteer test", () => {
         }
       }
     });
-  },120000);
+  }, 120000);
 });
 
 function treeWalk(obj, depth) {

@@ -13,11 +13,20 @@ import { normalizeArg } from "../functions";
 import { polygon } from "@turf/helpers";
 import centroid from "@turf/centroid";
 import { Feature, Polygon } from "@turf/turf";
-import {Size} from "ol/size";
+import { Size } from "ol/size";
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 type Constructor<T = {}> = new (...args: any[]) => T;
-type Condition = { x?: number, y?: number, latitude?: number, longitude?: number, mercZoom?: number, zoom?: number, direction?: number, rotation?: number };
+type Condition = {
+  x?: number;
+  y?: number;
+  latitude?: number;
+  longitude?: number;
+  mercZoom?: number;
+  zoom?: number;
+  direction?: number;
+  rotation?: number;
+};
 
 export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
   abstract class Mixin extends Base {
@@ -270,8 +279,7 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
               return this.merc2XyAsync(merc).then(val => val!);
             })
           );
-      return promises
-        .then(xys => this.xys2Size(xys as Coordinate[]));
+      return promises.then(xys => this.xys2Size(xys as Coordinate[]));
     }
 
     // メルカトル5地点情報からメルカトル地図でのサイズ情報（中心座標、サイズ、回転）を得る

@@ -33,7 +33,7 @@ import { createIconSet, createHtmlFromTemplate } from "./template_works";
 import redcircle from "../parts/redcircle.png";
 import defaultpin_selected from "../parts/defaultpin_selected.png";
 import defaultpin from "../parts/defaultpin.png";
-import {Coordinate} from "ol/coordinate";
+import { Coordinate } from "ol/coordinate";
 
 interface AppData {
   sources: string[];
@@ -55,7 +55,7 @@ interface AppData {
   controls?: any[];
 }
 
-type PositionSet = { x: number, y: number, zoom: number, rotation: number };
+type PositionSet = { x: number; y: number; zoom: number; rotation: number };
 interface Restore {
   mapID?: string;
   backgroundID?: string;
@@ -146,10 +146,13 @@ export class MaplatApp extends EventTarget {
       const currentTime = Math.floor(new Date().getTime() / 1000);
       if (lastEpoch && currentTime - lastEpoch < 3600) {
         this.initialRestore.mapID =
-          localStorage.getItem("mapID") || localStorage.getItem("sourceID") || undefined;
+          localStorage.getItem("mapID") ||
+          localStorage.getItem("sourceID") ||
+          undefined;
         this.initialRestore.backgroundID =
           localStorage.getItem("backgroundID") ||
-          localStorage.getItem("backID") || undefined;
+          localStorage.getItem("backID") ||
+          undefined;
         this.initialRestore.position = {
           x: parseFloat(localStorage.getItem("x") || "0"),
           y: parseFloat(localStorage.getItem("y") || "0"),
@@ -162,7 +165,8 @@ export class MaplatApp extends EventTarget {
         this.initialRestore.hideMarker = parseInt(
           localStorage.getItem("hideMarker") || "0"
         );
-        this.initialRestore.hideLayer = localStorage.getItem("hideLayer") || undefined;
+        this.initialRestore.hideLayer =
+          localStorage.getItem("hideLayer") || undefined;
       }
     }
     // Add UI HTML Element
@@ -315,7 +319,10 @@ export class MaplatApp extends EventTarget {
         `<div id="${backDiv}" class="map" style="top:0; left:0; right:0; bottom:0; ` +
           `position:absolute;"></div>`
       )[0];
-      this.mapDivDocument!.insertBefore(newElem, this.mapDivDocument!.firstChild);
+      this.mapDivDocument!.insertBefore(
+        newElem,
+        this.mapDivDocument!.firstChild
+      );
       this.backMap = new MaplatMap({
         off_control: true,
         div: backDiv
@@ -329,7 +336,10 @@ export class MaplatApp extends EventTarget {
         `<div id="${mapboxDiv}" class="map" style="top:0; left:0; right:0; bottom:0; ` +
           `position:absolute;visibility:hidden;"></div>`
       )[0];
-      this.mapDivDocument!.insertBefore(newElem, this.mapDivDocument!.firstChild);
+      this.mapDivDocument!.insertBefore(
+        newElem,
+        this.mapDivDocument!.firstChild
+      );
       this.mapboxMap = new mapboxgl.Map({
         attributionControl: false,
         boxZoom: false,
@@ -393,15 +403,18 @@ export class MaplatApp extends EventTarget {
       this.initialRestore.mapID ||
       this.startFrom ||
       cache[cache.length - 1].mapID;
-    this.from = cache.reduce((prev: HistMap | NowMap | undefined, curr: HistMap | NowMap) => {
-      if (prev) {
-        return !(prev instanceof HistMap) && curr.mapID != initial
-          ? curr
-          : prev;
-      }
-      if (curr.mapID != initial) return curr;
-      return prev;
-    }, undefined);
+    this.from = cache.reduce(
+      (prev: HistMap | NowMap | undefined, curr: HistMap | NowMap) => {
+        if (prev) {
+          return !(prev instanceof HistMap) && curr.mapID != initial
+            ? curr
+            : prev;
+        }
+        if (curr.mapID != initial) return curr;
+        return prev;
+      },
+      undefined
+    );
     await this.changeMap(initial, this.initialRestore);
   }
   // Async initializer 11: Handle map click event
@@ -546,12 +559,14 @@ export class MaplatApp extends EventTarget {
             if (feature.get("datum")) return feature;
           }
         );
-        (this.mapDivDocument!.querySelector(`#${target}`)! as HTMLElement).style.cursor = feature
-          ? "pointer"
-          : "";
+        (this.mapDivDocument!.querySelector(
+          `#${target}`
+        )! as HTMLElement).style.cursor = feature ? "pointer" : "";
         return;
       }
-      (this.mapDivDocument!.querySelector(`#${target}`)! as HTMLElement).style.cursor = "";
+      (this.mapDivDocument!.querySelector(
+        `#${target}`
+      )! as HTMLElement).style.cursor = "";
     };
     this.mapObject.on("pointermove", moveHandler);
     const mapOutHandler = (evt: any) => {
@@ -1331,7 +1346,9 @@ export class MaplatApp extends EventTarget {
         throw err;
       });
   }
-  translate(dataFragment?: Record<string, string> | string): string | undefined {
+  translate(
+    dataFragment?: Record<string, string> | string
+  ): string | undefined {
     if (!dataFragment || typeof dataFragment === "string") return dataFragment;
     const langs = Object.keys(dataFragment);
     let key = langs.reduce((prev: any, curr, idx, arr) => {
