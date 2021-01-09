@@ -2,24 +2,16 @@
 "use strict";
 
 const path = require("path");
-const { merge } = require("webpack-merge");
-const prod = require("./webpack.config.standard.js");
-
 const port = process.env.PORT || 8888;
 
-module.exports = merge(prod, {
-  output: {
-    path: path.resolve(__dirname, "../dev"),
-    filename: '[name].js'
-  },
-
+module.exports = {
   devServer: {
     host: "0.0.0.0",
     public: `localhost:${port}`,
     port,
     disableHostCheck: true,
     contentBase: path.resolve(__dirname, '../'),
-    watchContentBase: true,
+    watchContentBase: false,
     noInfo: true,
     hot: true,
     open: false,
@@ -35,4 +27,4 @@ module.exports = merge(prod, {
       console.log(`Server running at http://localhost:${port}`);
     }
   }
-});
+};

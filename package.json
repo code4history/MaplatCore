@@ -27,7 +27,7 @@
     "test": "npm run test:functions && npm run test:e2e",
     "test:functions": "jest --config jest_config/jest.config.functions.js",
     "test:puppeteer": "jest --config jest_config/jest.config.puppeteer.js",
-    "test:e2e": "npm run server:e2e:start && npm run test:puppeteer & npm run server:e2e:stop",
+    "test:e2e": "npm run server:e2e:start && npm run test:puppeteer && npm run server:e2e:stop",
     "preversion": "npm run lint & npm run test",
     "version": "npm run build && npm run build:packed && npm run build:es6 && npm run zip && git add -A",
     "lint": "npm run lint:eslint && npm run lint:prettier",

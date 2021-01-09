@@ -4,7 +4,7 @@ const sleep = require("sleep-promise");
 
 describe("Puppeteer test", () => {
   beforeAll(async () => {
-    await page.goto("http://localhost:8888/index.html", { timeout: 100000 });
+    await page.goto("http://localhost:8888/test.html", { timeout: 100000 });
   }, 100000);
 
   it("Click and check latlong", async done => {
