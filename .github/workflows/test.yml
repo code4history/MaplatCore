@@ -6,8 +6,6 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-    container: 
-      ports: [8888]
     steps:
       - uses: actions/checkout@v2
       - name: Setup NodeJs
