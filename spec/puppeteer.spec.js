@@ -4,6 +4,7 @@ const sleep = require("sleep-promise");
 
 describe("Puppeteer test", () => {
   beforeAll(async () => {
+    await page.setViewport({ width: 1440, height: 900 });
     await page.goto("http://localhost:8888/test.html", { timeout: 100000 });
   }, 100000);
 
@@ -19,26 +20,53 @@ describe("Puppeteer test", () => {
             await sleep(2000);
             await page.mouse.click(132, 103, { button: "left" });
             break;
+          case "clickMarker":
+            expect(json.name).toMatch("盛岡銀行本店本館");
+            expect(json.address).toMatch("岩手県盛岡市中ノ橋通1-2-20");
+            expect(json.desc).toMatch("明治期に岩手県盛岡で設立された銀行。1896年盛岡の財界人の尽力により、商業銀行として創設された。");
+            expect(json.image).toMatch("moriokaginko.jpg");
+            expect(`${json.start}`).toMatch("1896");
+            expect(`${json.lnglat[0]}`).toMatch("141.15296");
+            expect(`${json.lnglat[1]}`).toMatch("39.7006");
+            expect(json.id).toMatch("main_1");
+            expect(json.namespaceID).toMatch("main_1");
+            done();
+            break;
           case "clickMap":
-            if (status === 0) {
-              expect(`${json.longitude}`).toMatch("141.10398");
-              expect(`${json.latitude}`).toMatch("39.72597");
-              status = 1;
-              await page.mouse.down();
-              await sleep(3000);
-              await page.mouse.move(0, 0);
-              await page.mouse.move(132, 103);
-              await page.mouse.down();
-              await sleep(1000);
-              await page.mouse.move(250, 250);
-              await sleep(1000);
-              await page.mouse.up();
-              await sleep(2000);
-              await page.mouse.click(132, 103, { button: "left" });
-            } else if (status === 1) {
-              expect(`${json.longitude}`).toMatch("141.08653");
-              expect(`${json.latitude}`).toMatch("39.7415");
-              done();
+            switch (status) {
+              case 0:
+                expect(`${json.longitude}`).toMatch("141.04905");
+                expect(`${json.latitude}`).toMatch("39.74577");
+                status = 1;
+                await page.mouse.down();
+                await sleep(3000);
+                await page.mouse.move(0, 0);
+                await page.mouse.move(132, 103);
+                await page.mouse.down();
+                await sleep(1000);
+                await page.mouse.move(250, 250);
+                await sleep(1000);
+                await page.mouse.up();
+                await sleep(2000);
+                await page.mouse.click(132, 103, { button: "left" });
+                break;
+              case 1:
+                expect(`${json.longitude}`).toMatch("141.0316");
+                expect(`${json.latitude}`).toMatch("39.7613");
+                status = 2;
+                await page.evaluate(() => {
+                  const element = document.getElementById("morioka");
+                  element.click();
+                });
+                await sleep(3000);
+                await page.mouse.click(132, 103, { button: "left" });
+                break;
+              case 2:
+                expect(`${json.longitude}`).toMatch("141.16322");
+                expect(`${json.latitude}`).toMatch("39.70777");
+                //await page.screenshot({ path: 'screenshot.png' });
+                await page.mouse.click(645, 277, { button: "left" });
+                break;
             }
         }
       }
