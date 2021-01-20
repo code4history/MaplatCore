@@ -1,7 +1,7 @@
 import { default as ObjectTin, Compiled, PointSet, Edge, StrictMode, VertexMode, YaxisMode } from "@maplat/tin";
 
 type LangResource = string | Record<string, string>;
-type Tin = string | ObjectTin;
+type Tin = string | ObjectTin | Compiled;
 
 interface HistMapStore {
   title: LangResource;
@@ -60,7 +60,7 @@ const keys: (keyof HistMapStore)[] = [
   "imageExtension"
 ];
 
-export async function store2HistMap(store: HistMapStore): Promise<[HistMapStore, Tin[]]> {
+export async function store2HistMap(store: HistMapStore, byCompiled = false): Promise<[HistMapStore, Tin[]]> {
   const ret:any = {};
   const tins:Tin[] = [];
   keys.forEach(key => {
@@ -68,8 +68,11 @@ export async function store2HistMap(store: HistMapStore): Promise<[HistMapStore,
   });
   if ((store as any)["imageExtention"]) ret["imageExtension"] = (store as any)["imageExtention"];
   if (store.compiled) {
-    const tin = new ObjectTin({});
+    let tin: Tin = new ObjectTin({});
     tin.setCompiled(store.compiled);
+    if (byCompiled) {
+      tin = tin.getCompiled();
+    }
     ret.strictMode = tin.strictMode;
     ret.vertexMode = tin.vertexMode;
     ret.width = tin.wh![0];
@@ -78,7 +81,8 @@ export async function store2HistMap(store: HistMapStore): Promise<[HistMapStore,
     ret.edges = tin.edges;
     tins.push(tin);
   } else {
-    const tin = await createTinFromGcpsAsync(store.strictMode!, store.vertexMode!, store.gcps, store.edges, [store.width!, store.height!]);
+    let tin = await createTinFromGcpsAsync(store.strictMode!, store.vertexMode!, store.gcps, store.edges, [store.width!, store.height!]);
+    if (byCompiled && typeof tin !== "string") tin = (tin as ObjectTin).getCompiled();
     tins.push(tin);
   }
 
@@ -89,14 +93,18 @@ export async function store2HistMap(store: HistMapStore): Promise<[HistMapStore,
       sub.importance = sub_map.importance;
       sub.priority = sub_map.priority;
       if (sub_map.compiled) {
-        const tin = new ObjectTin({});
+        let tin: Tin = new ObjectTin({});
         tin.setCompiled(sub_map.compiled);
+        if (byCompiled) {
+          tin = tin.getCompiled();
+        }
         sub.bounds = tin.bounds;
         sub.gcps = tin.points;
         sub.edges = tin.edges;
         tins.push(tin);
       } else {
-        const tin = await createTinFromGcpsAsync(store.strictMode!, store.vertexMode!, sub_map.gcps, sub_map.edges, undefined, sub_map.bounds);
+        let tin = await createTinFromGcpsAsync(store.strictMode!, store.vertexMode!, sub_map.gcps, sub_map.edges, undefined, sub_map.bounds);
+        if (byCompiled && typeof tin !== "string") tin = (tin as ObjectTin).getCompiled();
         tins.push(tin);
       }
       ret.sub_maps!.push(sub as SubMap);
@@ -121,7 +129,7 @@ export async function histMap2Store(histmap: HistMapStore, tins: Tin[]): Promise
     ret.strictMode = histmap.strictMode;
     ret.vertexMode = histmap.vertexMode;
   } else {
-    ret.compiled = tin!.getCompiled();
+    ret.compiled = (tin as any).getCompiled ? (tin as ObjectTin).getCompiled() : tin;
   }
 
   ret.sub_maps = tins.length > 0 ? tins.map((tin, index) => {
@@ -135,7 +143,7 @@ export async function histMap2Store(histmap: HistMapStore, tins: Tin[]): Promise
       sub.edges = sub_map.edges;
       sub.bounds = sub_map.bounds;
     } else {
-      sub.compiled = tin.getCompiled();
+      sub.compiled = (tin as any).getCompiled ? (tin as ObjectTin).getCompiled() : tin;
     }
     return sub as SubMap;
   }) : [];
