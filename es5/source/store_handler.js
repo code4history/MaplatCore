@@ -72,7 +72,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     function store2HistMap(store, byCompiled) {
         if (byCompiled === void 0) { byCompiled = false; }
         return __awaiter(this, void 0, void 0, function () {
-            var ret, tins, tin, tin;
+            var ret, tins, opt, tin, tin;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -85,7 +85,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         if (store["imageExtention"])
                             ret["imageExtension"] = store["imageExtention"];
                         if (!store.compiled) return [3, 1];
-                        tin = new tin_1.default({});
+                        opt = {};
+                        if (!store.compiled.wh)
+                            opt.wh = [store.width, store.height];
+                        if (!store.compiled.strictMode)
+                            opt.strictMode = store.strictMode;
+                        if (!store.compiled.vertexMode)
+                            opt.vertexMode = store.vertexMode;
+                        tin = new tin_1.default(opt);
                         tin.setCompiled(store.compiled);
                         if (byCompiled) {
                             tin = tin.getCompiled();
@@ -116,7 +123,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         if (!store.sub_maps) return [3, 5];
                         ret.sub_maps = [];
                         return [4, Promise.all(store.sub_maps.map(function (sub_map) { return __awaiter(_this, void 0, void 0, function () {
-                                var sub, tin, tin;
+                                var sub, opt, tin, tin;
                                 return __generator(this, function (_a) {
                                     switch (_a.label) {
                                         case 0:
@@ -124,7 +131,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                                             sub.importance = sub_map.importance;
                                             sub.priority = sub_map.priority;
                                             if (!sub_map.compiled) return [3, 1];
-                                            tin = new tin_1.default({});
+                                            opt = {};
+                                            if (!sub_map.compiled.strictMode)
+                                                opt.strictMode = store.strictMode;
+                                            if (!sub_map.compiled.vertexMode)
+                                                opt.vertexMode = store.vertexMode;
+                                            tin = new tin_1.default(opt);
                                             tin.setCompiled(sub_map.compiled);
                                             if (byCompiled) {
                                                 tin = tin.getCompiled();

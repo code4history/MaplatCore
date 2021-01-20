@@ -1,6 +1,7 @@
 "use strict";
 
 import ObjectTin, {
+  Options,
   Compiled,
   PointSet,
   Edge,
@@ -81,7 +82,11 @@ export async function store2HistMap(
   if ((store as any)["imageExtention"])
     ret["imageExtension"] = (store as any)["imageExtention"];
   if (store.compiled) {
-    let tin: Tin = new ObjectTin({});
+    const opt: Partial<Options> = {} as Options;
+    if (!store.compiled.wh) opt.wh = [store.width!, store.height!];
+    if (!store.compiled.strictMode) opt.strictMode = store.strictMode;
+    if (!store.compiled.vertexMode) opt.vertexMode = store.vertexMode;
+    let tin: Tin = new ObjectTin(opt);
     tin.setCompiled(store.compiled);
     if (byCompiled) {
       tin = tin.getCompiled();
@@ -120,7 +125,10 @@ export async function store2HistMap(
         sub.importance = sub_map.importance;
         sub.priority = sub_map.priority;
         if (sub_map.compiled) {
-          let tin: Tin = new ObjectTin({});
+          const opt: Partial<Options> = {} as Options;
+          if (!sub_map.compiled.strictMode) opt.strictMode = store.strictMode;
+          if (!sub_map.compiled.vertexMode) opt.vertexMode = store.vertexMode;
+          let tin: Tin = new ObjectTin(opt);
           tin.setCompiled(sub_map.compiled);
           if (byCompiled) {
             tin = tin.getCompiled();
