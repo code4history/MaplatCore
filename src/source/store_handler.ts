@@ -55,7 +55,6 @@ const keys: (keyof HistMapStore)[] = [
   "attr",
   "officialTitle",
   "dataAttr",
-  "yaxisMode",
   "author",
   "createdAt",
   "era",
@@ -86,6 +85,7 @@ export async function store2HistMap(
     if (!store.compiled.wh) opt.wh = [store.width!, store.height!];
     if (!store.compiled.strictMode) opt.strictMode = store.strictMode;
     if (!store.compiled.vertexMode) opt.vertexMode = store.vertexMode;
+    if (!store.compiled.yaxisMode) opt.yaxisMode = store.yaxisMode;
     let tin: Tin = new ObjectTin(opt);
     tin.setCompiled(store.compiled);
     if (byCompiled) {
@@ -93,6 +93,7 @@ export async function store2HistMap(
     }
     ret.strictMode = tin.strictMode;
     ret.vertexMode = tin.vertexMode;
+    ret.yaxisMode = tin.yaxisMode;
     ret.width = tin.wh![0];
     ret.height = tin.wh![1];
     ret.gcps = tin.points;
@@ -101,6 +102,7 @@ export async function store2HistMap(
   } else {
     ret.strictMode = store.strictMode;
     ret.vertexMode = store.vertexMode;
+    ret.yaxisMode = store.yaxisMode;
     ret.width = store.width;
     ret.height = store.height;
     ret.gcps = store.gcps;
@@ -108,6 +110,7 @@ export async function store2HistMap(
     let tin = await createTinFromGcpsAsync(
       store.strictMode!,
       store.vertexMode!,
+      store.yaxisMode,
       store.gcps,
       store.edges,
       [store.width!, store.height!]
@@ -128,6 +131,7 @@ export async function store2HistMap(
           const opt: Partial<Options> = {} as Options;
           if (!sub_map.compiled.strictMode) opt.strictMode = store.strictMode;
           if (!sub_map.compiled.vertexMode) opt.vertexMode = store.vertexMode;
+          if (!sub_map.compiled.yaxisMode) opt.yaxisMode = store.yaxisMode;
           let tin: Tin = new ObjectTin(opt);
           tin.setCompiled(sub_map.compiled);
           if (byCompiled) {
@@ -144,6 +148,7 @@ export async function store2HistMap(
           let tin = await createTinFromGcpsAsync(
             store.strictMode!,
             store.vertexMode!,
+            store.yaxisMode,
             sub_map.gcps,
             sub_map.edges,
             undefined,
@@ -179,6 +184,7 @@ export async function histMap2Store(
     ret.edges = histmap.edges;
     ret.strictMode = histmap.strictMode;
     ret.vertexMode = histmap.vertexMode;
+    ret.yaxisMode = histmap.yaxisMode;
   } else {
     ret.compiled = (tin as any).getCompiled
       ? (tin as ObjectTin).getCompiled()
@@ -212,6 +218,7 @@ export async function histMap2Store(
 async function createTinFromGcpsAsync(
   strict: StrictMode,
   vertex: VertexMode,
+  yaxis?: YaxisMode,
   gcps: PointSet[] = [],
   edges: Edge[] = [],
   wh?: number[],
@@ -219,7 +226,9 @@ async function createTinFromGcpsAsync(
 ): Promise<Tin> {
   if (gcps.length < 3) return "tooLessGcps";
   //return new Promise((resolve, reject) => {
-  const tin = new ObjectTin({});
+  const tin = new ObjectTin({
+    yaxisMode: yaxis
+  });
   if (wh) {
     tin.setWh(wh);
   } else if (bounds) {

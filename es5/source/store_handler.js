@@ -55,7 +55,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         "attr",
         "officialTitle",
         "dataAttr",
-        "yaxisMode",
         "author",
         "createdAt",
         "era",
@@ -92,6 +91,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                             opt.strictMode = store.strictMode;
                         if (!store.compiled.vertexMode)
                             opt.vertexMode = store.vertexMode;
+                        if (!store.compiled.yaxisMode)
+                            opt.yaxisMode = store.yaxisMode;
                         tin = new tin_1.default(opt);
                         tin.setCompiled(store.compiled);
                         if (byCompiled) {
@@ -99,6 +100,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         }
                         ret.strictMode = tin.strictMode;
                         ret.vertexMode = tin.vertexMode;
+                        ret.yaxisMode = tin.yaxisMode;
                         ret.width = tin.wh[0];
                         ret.height = tin.wh[1];
                         ret.gcps = tin.points;
@@ -108,11 +110,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                     case 1:
                         ret.strictMode = store.strictMode;
                         ret.vertexMode = store.vertexMode;
+                        ret.yaxisMode = store.yaxisMode;
                         ret.width = store.width;
                         ret.height = store.height;
                         ret.gcps = store.gcps;
                         ret.edges = store.edges;
-                        return [4, createTinFromGcpsAsync(store.strictMode, store.vertexMode, store.gcps, store.edges, [store.width, store.height])];
+                        return [4, createTinFromGcpsAsync(store.strictMode, store.vertexMode, store.yaxisMode, store.gcps, store.edges, [store.width, store.height])];
                     case 2:
                         tin = _a.sent();
                         if (byCompiled && typeof tin !== "string")
@@ -136,6 +139,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                                                 opt.strictMode = store.strictMode;
                                             if (!sub_map.compiled.vertexMode)
                                                 opt.vertexMode = store.vertexMode;
+                                            if (!sub_map.compiled.yaxisMode)
+                                                opt.yaxisMode = store.yaxisMode;
                                             tin = new tin_1.default(opt);
                                             tin.setCompiled(sub_map.compiled);
                                             if (byCompiled) {
@@ -150,7 +155,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                                             sub.bounds = sub_map.bounds;
                                             sub.gcps = sub_map.gcps;
                                             sub.edges = sub_map.edges;
-                                            return [4, createTinFromGcpsAsync(store.strictMode, store.vertexMode, sub_map.gcps, sub_map.edges, undefined, sub_map.bounds)];
+                                            return [4, createTinFromGcpsAsync(store.strictMode, store.vertexMode, store.yaxisMode, sub_map.gcps, sub_map.edges, undefined, sub_map.bounds)];
                                         case 2:
                                             tin = _a.sent();
                                             if (byCompiled && typeof tin !== "string")
@@ -190,6 +195,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                     ret.edges = histmap.edges;
                     ret.strictMode = histmap.strictMode;
                     ret.vertexMode = histmap.vertexMode;
+                    ret.yaxisMode = histmap.yaxisMode;
                 }
                 else {
                     ret.compiled = tin.getCompiled
@@ -222,7 +228,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         });
     }
     exports.histMap2Store = histMap2Store;
-    function createTinFromGcpsAsync(strict, vertex, gcps, edges, wh, bounds) {
+    function createTinFromGcpsAsync(strict, vertex, yaxis, gcps, edges, wh, bounds) {
         if (gcps === void 0) { gcps = []; }
         if (edges === void 0) { edges = []; }
         return __awaiter(this, void 0, void 0, function () {
@@ -232,7 +238,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                     case 0:
                         if (gcps.length < 3)
                             return [2, "tooLessGcps"];
-                        tin = new tin_1.default({});
+                        tin = new tin_1.default({
+                            yaxisMode: yaxis
+                        });
                         if (wh) {
                             tin.setWh(wh);
                         }
