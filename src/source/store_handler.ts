@@ -1,4 +1,13 @@
-import ObjectTin, { Compiled, PointSet, Edge, StrictMode, VertexMode, YaxisMode } from "@maplat/tin";
+"use strict";
+
+import ObjectTin, {
+  Compiled,
+  PointSet,
+  Edge,
+  StrictMode,
+  VertexMode,
+  YaxisMode
+} from "@maplat/tin";
 
 type LangResource = string | Record<string, string>;
 type Tin = string | ObjectTin | Compiled;
@@ -60,13 +69,17 @@ const keys: (keyof HistMapStore)[] = [
   "imageExtension"
 ];
 
-export async function store2HistMap(store: HistMapStore, byCompiled = false): Promise<[HistMapStore, Tin[]]> {
-  const ret:any = {};
-  const tins:Tin[] = [];
+export async function store2HistMap(
+  store: HistMapStore,
+  byCompiled = false
+): Promise<[HistMapStore, Tin[]]> {
+  const ret: any = {};
+  const tins: Tin[] = [];
   keys.forEach(key => {
     ret[key] = store[key];
   });
-  if ((store as any)["imageExtention"]) ret["imageExtension"] = (store as any)["imageExtention"];
+  if ((store as any)["imageExtention"])
+    ret["imageExtension"] = (store as any)["imageExtention"];
   if (store.compiled) {
     let tin: Tin = new ObjectTin({});
     tin.setCompiled(store.compiled);
@@ -81,45 +94,66 @@ export async function store2HistMap(store: HistMapStore, byCompiled = false): Pr
     ret.edges = tin.edges;
     tins.push(tin);
   } else {
-    let tin = await createTinFromGcpsAsync(store.strictMode!, store.vertexMode!, store.gcps, store.edges, [store.width!, store.height!]);
-    if (byCompiled && typeof tin !== "string") tin = (tin as ObjectTin).getCompiled();
+    let tin = await createTinFromGcpsAsync(
+      store.strictMode!,
+      store.vertexMode!,
+      store.gcps,
+      store.edges,
+      [store.width!, store.height!]
+    );
+    if (byCompiled && typeof tin !== "string")
+      tin = (tin as ObjectTin).getCompiled();
     tins.push(tin);
   }
 
   if (store.sub_maps) {
     ret.sub_maps = [] as SubMap[];
-    await Promise.all(store.sub_maps.map(async sub_map => {
-      const sub: any = {};
-      sub.importance = sub_map.importance;
-      sub.priority = sub_map.priority;
-      if (sub_map.compiled) {
-        let tin: Tin = new ObjectTin({});
-        tin.setCompiled(sub_map.compiled);
-        if (byCompiled) {
-          tin = tin.getCompiled();
+    await Promise.all(
+      store.sub_maps.map(async sub_map => {
+        const sub: any = {};
+        sub.importance = sub_map.importance;
+        sub.priority = sub_map.priority;
+        if (sub_map.compiled) {
+          let tin: Tin = new ObjectTin({});
+          tin.setCompiled(sub_map.compiled);
+          if (byCompiled) {
+            tin = tin.getCompiled();
+          }
+          sub.bounds = tin.bounds;
+          sub.gcps = tin.points;
+          sub.edges = tin.edges;
+          tins.push(tin);
+        } else {
+          let tin = await createTinFromGcpsAsync(
+            store.strictMode!,
+            store.vertexMode!,
+            sub_map.gcps,
+            sub_map.edges,
+            undefined,
+            sub_map.bounds
+          );
+          if (byCompiled && typeof tin !== "string")
+            tin = (tin as ObjectTin).getCompiled();
+          tins.push(tin);
         }
-        sub.bounds = tin.bounds;
-        sub.gcps = tin.points;
-        sub.edges = tin.edges;
-        tins.push(tin);
-      } else {
-        let tin = await createTinFromGcpsAsync(store.strictMode!, store.vertexMode!, sub_map.gcps, sub_map.edges, undefined, sub_map.bounds);
-        if (byCompiled && typeof tin !== "string") tin = (tin as ObjectTin).getCompiled();
-        tins.push(tin);
-      }
-      ret.sub_maps!.push(sub as SubMap);
-    }));
+        ret.sub_maps!.push(sub as SubMap);
+      })
+    );
   }
 
   return [ret as HistMapStore, tins];
 }
 
-export async function histMap2Store(histmap: HistMapStore, tins: Tin[]): Promise<HistMapStore> {
+export async function histMap2Store(
+  histmap: HistMapStore,
+  tins: Tin[]
+): Promise<HistMapStore> {
   const ret: any = {};
   keys.forEach(key => {
     ret[key] = histmap[key];
   });
-  if ((histmap as any)["imageExtention"]) ret["imageExtension"] = (histmap as any)["imageExtention"];
+  if ((histmap as any)["imageExtention"])
+    ret["imageExtension"] = (histmap as any)["imageExtention"];
   const tin = tins.shift();
   if (typeof tin === "string") {
     ret.width = histmap.width;
@@ -129,29 +163,43 @@ export async function histMap2Store(histmap: HistMapStore, tins: Tin[]): Promise
     ret.strictMode = histmap.strictMode;
     ret.vertexMode = histmap.vertexMode;
   } else {
-    ret.compiled = (tin as any).getCompiled ? (tin as ObjectTin).getCompiled() : tin;
+    ret.compiled = (tin as any).getCompiled
+      ? (tin as ObjectTin).getCompiled()
+      : tin;
   }
 
-  ret.sub_maps = tins.length > 0 ? tins.map((tin, index) => {
-    const sub_map = histmap.sub_maps[index];
-    const sub: any = {
-      priority: sub_map.priority,
-      importance: sub_map.importance
-    };
-    if (typeof tin === "string") {
-      sub.gcps = sub_map.gcps;
-      sub.edges = sub_map.edges;
-      sub.bounds = sub_map.bounds;
-    } else {
-      sub.compiled = (tin as any).getCompiled ? (tin as ObjectTin).getCompiled() : tin;
-    }
-    return sub as SubMap;
-  }) : [];
+  ret.sub_maps =
+    tins.length > 0
+      ? tins.map((tin, index) => {
+          const sub_map = histmap.sub_maps[index];
+          const sub: any = {
+            priority: sub_map.priority,
+            importance: sub_map.importance
+          };
+          if (typeof tin === "string") {
+            sub.gcps = sub_map.gcps;
+            sub.edges = sub_map.edges;
+            sub.bounds = sub_map.bounds;
+          } else {
+            sub.compiled = (tin as any).getCompiled
+              ? (tin as ObjectTin).getCompiled()
+              : tin;
+          }
+          return sub as SubMap;
+        })
+      : [];
 
   return ret as HistMapStore;
 }
 
-async function createTinFromGcpsAsync(strict: StrictMode, vertex: VertexMode, gcps: PointSet[] = [], edges: Edge[] = [], wh?: number[], bounds?: number[][]): Promise<Tin> {
+async function createTinFromGcpsAsync(
+  strict: StrictMode,
+  vertex: VertexMode,
+  gcps: PointSet[] = [],
+  edges: Edge[] = [],
+  wh?: number[],
+  bounds?: number[][]
+): Promise<Tin> {
   if (gcps.length < 3) return "tooLessGcps";
   //return new Promise((resolve, reject) => {
   const tin = new ObjectTin({});
@@ -169,14 +217,17 @@ async function createTinFromGcpsAsync(strict: StrictMode, vertex: VertexMode, gc
   try {
     await tin.updateTinAsync();
     return tin;
-  } catch(err) {
+  } catch (err) {
     console.log(err); // eslint-disable-line no-console,no-undef
     if (err == "SOME POINTS OUTSIDE") {
       return "pointsOutside";
     } else if (err.indexOf("TOO LINEAR") == 0) {
       return "tooLinear";
-    } else if (err.indexOf("Vertex indices of edge") > -1 || err.indexOf("is degenerate!") > -1 ||
-        err.indexOf("already exists or intersects with an existing edge!") > -1) {
+    } else if (
+      err.indexOf("Vertex indices of edge") > -1 ||
+      err.indexOf("is degenerate!") > -1 ||
+      err.indexOf("already exists or intersects with an existing edge!") > -1
+    ) {
       return "edgeError";
     } else {
       throw err;

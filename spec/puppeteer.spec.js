@@ -23,7 +23,9 @@ describe("Puppeteer test", () => {
           case "clickMarker":
             expect(json.name).toMatch("盛岡銀行本店本館");
             expect(json.address).toMatch("岩手県盛岡市中ノ橋通1-2-20");
-            expect(json.desc).toMatch("明治期に岩手県盛岡で設立された銀行。1896年盛岡の財界人の尽力により、商業銀行として創設された。");
+            expect(json.desc).toMatch(
+              "明治期に岩手県盛岡で設立された銀行。1896年盛岡の財界人の尽力により、商業銀行として創設された。"
+            );
             expect(json.image).toMatch("moriokaginko.jpg");
             expect(`${json.start}`).toMatch("1896");
             expect(`${json.lnglat[0]}`).toMatch("141.15296");
