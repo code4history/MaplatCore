@@ -21,6 +21,8 @@ interface HistMapStore {
   reference: string;
   description: LangResource;
   url: LangResource;
+  lang: string;
+  imageExtension: string;
   width?: number;
   height?: number;
   gcps?: PointSet[];
@@ -53,7 +55,9 @@ const keys: (keyof HistMapStore)[] = [
   "mapper",
   "reference",
   "description",
-  "url"
+  "url",
+  "lang",
+  "imageExtension"
 ];
 
 export async function store2HistMap(store: HistMapStore): Promise<[HistMapStore, Tin[]]> {
@@ -62,6 +66,7 @@ export async function store2HistMap(store: HistMapStore): Promise<[HistMapStore,
   keys.forEach(key => {
     ret[key] = store[key];
   });
+  if ((store as any)["imageExtention"]) ret["imageExtension"] = (store as any)["imageExtention"];
   if (store.compiled) {
     const tin = new ObjectTin({});
     tin.setCompiled(store.compiled);
@@ -106,6 +111,7 @@ export async function histMap2Store(histmap: HistMapStore, tins: Tin[]): Promise
   keys.forEach(key => {
     ret[key] = histmap[key];
   });
+  if ((histmap as any)["imageExtention"]) ret["imageExtension"] = (histmap as any)["imageExtention"];
   const tin = tins.shift();
   if (typeof tin === "string") {
     ret.width = histmap.width;

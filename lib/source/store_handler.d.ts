@@ -19,6 +19,8 @@ interface HistMapStore {
     reference: string;
     description: LangResource;
     url: LangResource;
+    lang: string;
+    imageExtension: string;
     width?: number;
     height?: number;
     gcps?: PointSet[];
