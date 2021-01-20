@@ -1,4 +1,4 @@
-import { default as ObjectTin, Compiled, PointSet, Edge, StrictMode, VertexMode, YaxisMode } from "@maplat/tin";
+import ObjectTin, { Compiled, PointSet, Edge, StrictMode, VertexMode, YaxisMode } from "@maplat/tin";
 declare type LangResource = string | Record<string, string>;
 declare type Tin = string | ObjectTin | Compiled;
 interface HistMapStore {

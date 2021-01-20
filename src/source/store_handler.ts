@@ -1,4 +1,4 @@
-import { default as ObjectTin, Compiled, PointSet, Edge, StrictMode, VertexMode, YaxisMode } from "@maplat/tin";
+import ObjectTin, { Compiled, PointSet, Edge, StrictMode, VertexMode, YaxisMode } from "@maplat/tin";
 
 type LangResource = string | Record<string, string>;
 type Tin = string | ObjectTin | Compiled;
