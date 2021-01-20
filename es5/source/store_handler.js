@@ -98,7 +98,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         ret.edges = tin.edges;
                         tins.push(tin);
                         return [3, 3];
-                    case 1: return [4, createTinFromGcpsAsync(store.strictMode, store.vertexMode, store.gcps, store.edges, [store.width, store.height])];
+                    case 1:
+                        ret.strictMode = store.strictMode;
+                        ret.vertexMode = store.vertexMode;
+                        ret.width = store.width;
+                        ret.height = store.height;
+                        ret.gcps = store.gcps;
+                        ret.edges = store.edges;
+                        return [4, createTinFromGcpsAsync(store.strictMode, store.vertexMode, store.gcps, store.edges, [store.width, store.height])];
                     case 2:
                         tin = _a.sent();
                         if (byCompiled && typeof tin !== "string")
@@ -127,7 +134,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                                             sub.edges = tin.edges;
                                             tins.push(tin);
                                             return [3, 3];
-                                        case 1: return [4, createTinFromGcpsAsync(store.strictMode, store.vertexMode, sub_map.gcps, sub_map.edges, undefined, sub_map.bounds)];
+                                        case 1:
+                                            sub.bounds = sub_map.bounds;
+                                            sub.gcps = sub_map.gcps;
+                                            sub.edges = sub_map.edges;
+                                            return [4, createTinFromGcpsAsync(store.strictMode, store.vertexMode, sub_map.gcps, sub_map.edges, undefined, sub_map.bounds)];
                                         case 2:
                                             tin = _a.sent();
                                             if (byCompiled && typeof tin !== "string")

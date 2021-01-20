@@ -94,6 +94,12 @@ export async function store2HistMap(
     ret.edges = tin.edges;
     tins.push(tin);
   } else {
+    ret.strictMode = store.strictMode;
+    ret.vertexMode = store.vertexMode;
+    ret.width = store.width;
+    ret.height = store.height;
+    ret.gcps = store.gcps;
+    ret.edges = store.edges;
     let tin = await createTinFromGcpsAsync(
       store.strictMode!,
       store.vertexMode!,
@@ -124,6 +130,9 @@ export async function store2HistMap(
           sub.edges = tin.edges;
           tins.push(tin);
         } else {
+          sub.bounds = sub_map.bounds;
+          sub.gcps = sub_map.gcps;
+          sub.edges = sub_map.edges;
           let tin = await createTinFromGcpsAsync(
             store.strictMode!,
             store.vertexMode!,
