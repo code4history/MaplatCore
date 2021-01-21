@@ -74,12 +74,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             if (options === void 0) { options = {}; }
             var _this = _super.call(this, (options = (function () {
                 options = functions_1.normalizeArg(options);
-                if (!options.imageExtention)
-                    options.imageExtention = "jpg";
+                if (!options.imageExtension)
+                    options.imageExtension = "jpg";
                 if (options.mapID && !options.url && !options.urls) {
                     options.url = options.tms
-                        ? "tiles/" + options.mapID + "/{z}/{x}/{-y}." + options.imageExtention
-                        : "tiles/" + options.mapID + "/{z}/{x}/{y}." + options.imageExtention;
+                        ? "tiles/" + options.mapID + "/{z}/{x}/{-y}." + options.imageExtension
+                        : "tiles/" + options.mapID + "/{z}/{x}/{y}." + options.imageExtension;
                 }
                 return options;
             })())) || this;

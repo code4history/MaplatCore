@@ -57,10 +57,10 @@ var __extends = (this && this.__extends) || (function () {
             var _this = _super.call(this, (options = (function () {
                 options = functions_1.normalizeArg(options);
                 options.wrapX = false;
-                if (!options.imageExtention)
-                    options.imageExtention = "jpg";
+                if (!options.imageExtension)
+                    options.imageExtension = "jpg";
                 if (options.mapID && !options.url && !options.urls) {
-                    options.url = "tiles/" + options.mapID + "/{z}/{x}/{y}." + options.imageExtention;
+                    options.url = "tiles/" + options.mapID + "/{z}/{x}/{y}." + options.imageExtension;
                 }
                 var zW = Math.log2(options.width / const_ex_1.tileSize);
                 var zH = Math.log2(options.height / const_ex_1.tileSize);

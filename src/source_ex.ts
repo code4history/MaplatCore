@@ -96,11 +96,11 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
     if (options.translator) {
       options.url = options.translator(options.url);
     }
-    if (!options.imageExtention) options.imageExtention = "jpg";
+    if (!options.imageExtension) options.imageExtension = "jpg";
     if (options.mapID && !options.url && !options.urls) {
       options.url = options.tms
-        ? `tiles/${options.mapID}/{z}/{x}/{-y}.${options.imageExtention}`
-        : `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtention}`;
+        ? `tiles/${options.mapID}/{z}/{x}/{-y}.${options.imageExtension}`
+        : `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtension}`;
     }
     options.weiwudi = await registerMapToSW(options);
     if (options.weiwudi) {
@@ -151,11 +151,11 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
             }
             options.zoomRestriction = options.mercMaxZoom = options.mercMinZoom = undefined;
             try {
-              if (!options.imageExtention) options.imageExtention = "jpg";
+              if (!options.imageExtension) options.imageExtension = "jpg";
               if (options.mapID && !options.url && !options.urls) {
                 options.url = options.tms
-                  ? `tiles/${options.mapID}/{z}/{x}/{-y}.${options.imageExtention}`
-                  : `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtention}`;
+                  ? `tiles/${options.mapID}/{z}/{x}/{-y}.${options.imageExtension}`
+                  : `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtension}`;
               }
               options.weiwudi = await registerMapToSW(options);
               if (options.weiwudi) {
@@ -176,9 +176,9 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
           }
 
           try {
-            if (!options.imageExtention) options.imageExtention = "jpg";
+            if (!options.imageExtension) options.imageExtension = "jpg";
             if (options.mapID && !options.url && !options.urls) {
-              options.url = `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtention}`;
+              options.url = `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtension}`;
             }
             options.weiwudi = await registerMapToSW(options);
             if (options.weiwudi) {

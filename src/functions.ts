@@ -68,7 +68,9 @@ export function normalizeArg(options: Record<string, any>) {
     min_zoom: "minZoom",
     envelope_lnglats: "envelopeLngLats",
     envelopLngLats: "envelopeLngLats",
-    image_extention: "imageExtention",
+    image_extention: "imageExtension",
+    image_extension: "imageExtension",
+    imageExtention: "imageExtension",
     map_id: "mapID",
     sourceID: "mapID",
     source_id: "mapID",
@@ -98,16 +100,6 @@ export function normalizeArg(options: Record<string, any>) {
     namespace_id: "namespaceID",
     mercator_x_shift: "mercatorXShift",
     mercator_y_shift: "mercatorYShift"
-    //        maxZoom: 'max_zoom',
-    //        minZoom: 'min_zoom',
-    //        envelopeLngLats: 'envelope_lnglats',
-    //        envelopLngLats: 'envelope_lnglats',
-    //        mercatorXShift: 'mercator_x_shift',
-    //        mercatorYShift: 'mercator_y_shift',
-    //        imageExtention: 'image_extention',
-    //        mapID: 'map_id',
-    //        sourceID: 'map_id',
-    //        source_id: 'map_id'
   } as const;
   return (Object.keys(table) as (keyof typeof table)[]).reduce((opt, key) => {
     if (opt[key]) {

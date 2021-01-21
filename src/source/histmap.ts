@@ -58,9 +58,9 @@ export abstract class HistMap extends setCustomFunction(XYZ) {
         options = normalizeArg(options);
 
         options.wrapX = false;
-        if (!options.imageExtention) options.imageExtention = "jpg";
+        if (!options.imageExtension) options.imageExtension = "jpg";
         if (options.mapID && !options.url && !options.urls) {
-          options.url = `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtention}`;
+          options.url = `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtension}`;
         }
 
         const zW = Math.log2(options.width / tileSize);

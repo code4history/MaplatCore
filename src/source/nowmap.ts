@@ -16,11 +16,11 @@ export class NowMap extends setCustomFunction(OSM) {
     super(
       (options = (() => {
         options = normalizeArg(options);
-        if (!options.imageExtention) options.imageExtention = "jpg";
+        if (!options.imageExtension) options.imageExtension = "jpg";
         if (options.mapID && !options.url && !options.urls) {
           options.url = options.tms
-            ? `tiles/${options.mapID}/{z}/{x}/{-y}.${options.imageExtention}`
-            : `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtention}`;
+            ? `tiles/${options.mapID}/{z}/{x}/{-y}.${options.imageExtension}`
+            : `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtension}`;
         }
         return options;
       })() as any)

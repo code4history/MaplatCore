@@ -145,12 +145,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         if (options.translator) {
                             options.url = options.translator(options.url);
                         }
-                        if (!options.imageExtention)
-                            options.imageExtention = "jpg";
+                        if (!options.imageExtension)
+                            options.imageExtension = "jpg";
                         if (options.mapID && !options.url && !options.urls) {
                             options.url = options.tms
-                                ? "tiles/" + options.mapID + "/{z}/{x}/{-y}." + options.imageExtention
-                                : "tiles/" + options.mapID + "/{z}/{x}/{y}." + options.imageExtention;
+                                ? "tiles/" + options.mapID + "/{z}/{x}/{-y}." + options.imageExtension
+                                : "tiles/" + options.mapID + "/{z}/{x}/{y}." + options.imageExtension;
                         }
                         _a = options;
                         return [4, registerMapToSW(options)];
@@ -214,12 +214,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                                                 _c.label = 2;
                                             case 2:
                                                 _c.trys.push([2, 9, , 10]);
-                                                if (!options.imageExtention)
-                                                    options.imageExtention = "jpg";
+                                                if (!options.imageExtension)
+                                                    options.imageExtension = "jpg";
                                                 if (options.mapID && !options.url && !options.urls) {
                                                     options.url = options.tms
-                                                        ? "tiles/" + options.mapID + "/{z}/{x}/{-y}." + options.imageExtention
-                                                        : "tiles/" + options.mapID + "/{z}/{x}/{y}." + options.imageExtention;
+                                                        ? "tiles/" + options.mapID + "/{z}/{x}/{-y}." + options.imageExtension
+                                                        : "tiles/" + options.mapID + "/{z}/{x}/{y}." + options.imageExtension;
                                                 }
                                                 _a = options;
                                                 return [4, registerMapToSW(options)];
@@ -252,10 +252,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                                             case 10: return [2];
                                             case 11:
                                                 _c.trys.push([11, 18, , 19]);
-                                                if (!options.imageExtention)
-                                                    options.imageExtention = "jpg";
+                                                if (!options.imageExtension)
+                                                    options.imageExtension = "jpg";
                                                 if (options.mapID && !options.url && !options.urls) {
-                                                    options.url = "tiles/" + options.mapID + "/{z}/{x}/{y}." + options.imageExtention;
+                                                    options.url = "tiles/" + options.mapID + "/{z}/{x}/{y}." + options.imageExtension;
                                                 }
                                                 _b = options;
                                                 return [4, registerMapToSW(options)];
