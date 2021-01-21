@@ -35,7 +35,7 @@
     "lint": "npm run lint:eslint && npm run lint:prettier",
     "lint:eslint": "eslint \"{src,spec}/**/*.{js,ts}\" --fix",
     "lint:prettier": "prettier \"./{src,spec}/**/*.{js,ts}\" --write",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit --project ts_config/tsconfig.es6.json"
   },
   "repository": {
     "type": "git",
