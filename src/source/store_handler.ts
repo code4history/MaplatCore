@@ -1,6 +1,6 @@
 "use strict";
 
-import ObjectTin, {
+import Tin, {
   Options,
   Compiled,
   PointSet,
@@ -11,7 +11,7 @@ import ObjectTin, {
 } from "@maplat/tin";
 
 type LangResource = string | Record<string, string>;
-type Tin = string | ObjectTin | Compiled;
+type TinLike = string | Tin | Compiled;
 
 interface HistMapStore {
   title: LangResource;
@@ -72,9 +72,9 @@ const keys: (keyof HistMapStore)[] = [
 export async function store2HistMap(
   store: HistMapStore,
   byCompiled = false
-): Promise<[HistMapStore, Tin[]]> {
+): Promise<[HistMapStore, TinLike[]]> {
   const ret: any = {};
-  const tins: Tin[] = [];
+  const tins: TinLike[] = [];
   keys.forEach(key => {
     ret[key] = store[key];
   });
@@ -86,7 +86,7 @@ export async function store2HistMap(
     if (!store.compiled.strictMode) opt.strictMode = store.strictMode;
     if (!store.compiled.vertexMode) opt.vertexMode = store.vertexMode;
     if (!store.compiled.yaxisMode) opt.yaxisMode = store.yaxisMode;
-    let tin: Tin = new ObjectTin(opt);
+    let tin: TinLike = new Tin(opt);
     tin.setCompiled(store.compiled);
     if (byCompiled) {
       tin = tin.getCompiled();
@@ -116,7 +116,7 @@ export async function store2HistMap(
       [store.width!, store.height!]
     );
     if (byCompiled && typeof tin !== "string")
-      tin = (tin as ObjectTin).getCompiled();
+      tin = (tin as Tin).getCompiled();
     tins.push(tin);
   }
 
@@ -132,7 +132,7 @@ export async function store2HistMap(
           if (!sub_map.compiled.strictMode) opt.strictMode = store.strictMode;
           if (!sub_map.compiled.vertexMode) opt.vertexMode = store.vertexMode;
           if (!sub_map.compiled.yaxisMode) opt.yaxisMode = store.yaxisMode;
-          let tin: Tin = new ObjectTin(opt);
+          let tin: TinLike = new Tin(opt);
           tin.setCompiled(sub_map.compiled);
           if (byCompiled) {
             tin = tin.getCompiled();
@@ -155,7 +155,7 @@ export async function store2HistMap(
             sub_map.bounds
           );
           if (byCompiled && typeof tin !== "string")
-            tin = (tin as ObjectTin).getCompiled();
+            tin = (tin as Tin).getCompiled();
           tins.push(tin);
         }
         ret.sub_maps!.push(sub as SubMap);
@@ -168,7 +168,7 @@ export async function store2HistMap(
 
 export async function histMap2Store(
   histmap: HistMapStore,
-  tins: Tin[]
+  tins: TinLike[]
 ): Promise<HistMapStore> {
   const ret: any = {};
   keys.forEach(key => {
@@ -187,7 +187,7 @@ export async function histMap2Store(
     ret.yaxisMode = histmap.yaxisMode;
   } else {
     ret.compiled = (tin as any).getCompiled
-      ? (tin as ObjectTin).getCompiled()
+      ? (tin as Tin).getCompiled()
       : tin;
   }
 
@@ -205,7 +205,7 @@ export async function histMap2Store(
             sub.bounds = sub_map.bounds;
           } else {
             sub.compiled = (tin as any).getCompiled
-              ? (tin as ObjectTin).getCompiled()
+              ? (tin as Tin).getCompiled()
               : tin;
           }
           return sub as SubMap;
@@ -223,10 +223,10 @@ async function createTinFromGcpsAsync(
   edges: Edge[] = [],
   wh?: number[],
   bounds?: number[][]
-): Promise<Tin> {
+): Promise<TinLike> {
   if (gcps.length < 3) return "tooLessGcps";
   //return new Promise((resolve, reject) => {
-  const tin = new ObjectTin({
+  const tin = new Tin({
     yaxisMode: yaxis
   });
   if (wh) {

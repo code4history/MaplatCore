@@ -56,44 +56,39 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "./histmap", "@maplat/tin", "ol/proj", "ol/proj/Projection", "../proj_ex", "@turf/helpers", "@turf/boolean-point-in-polygon", "../const_ex"], factory);
+        define(["require", "exports", "./histmap", "ol/proj", "ol/proj/Projection", "../proj_ex", "@turf/helpers", "@turf/boolean-point-in-polygon", "../const_ex", "./store_handler"], factory);
     }
 })(function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.HistMap_tin = void 0;
     var histmap_1 = require("./histmap");
-    var tin_1 = __importDefault(require("@maplat/tin"));
     var proj_1 = require("ol/proj");
     var Projection_1 = __importDefault(require("ol/proj/Projection"));
     var proj_ex_1 = require("../proj_ex");
     var helpers_1 = require("@turf/helpers");
     var boolean_point_in_polygon_1 = __importDefault(require("@turf/boolean-point-in-polygon"));
     var const_ex_1 = require("../const_ex");
+    var store_handler_1 = require("./store_handler");
     var HistMap_tin = (function (_super) {
         __extends(HistMap_tin, _super);
         function HistMap_tin(options) {
             if (options === void 0) { options = {}; }
             var _this = _super.call(this, options) || this;
-            _this.tins = [
-                new tin_1.default({
-                    wh: [_this.width, _this.height],
-                    strictMode: options.strictMode,
-                    vertexMode: options.vertexMode,
-                    importance: 0,
-                    priority: 0
-                })
-            ];
+            _this.tins = [];
             return _this;
         }
         HistMap_tin.createAsync = function (options) {
             return __awaiter(this, void 0, void 0, function () {
-                var obj, proj, promarray;
-                var _this = this;
+                var histmaps, obj, proj;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
-                        case 0:
+                        case 0: return [4, store_handler_1.store2HistMap(options)];
+                        case 1:
+                            histmaps = _a.sent();
+                            options = histmaps[0];
                             obj = new HistMap_tin(options);
+                            obj.tins = histmaps[1];
                             proj = new Projection_1.default({
                                 code: "Illst:" + obj.mapID,
                                 extent: [0.0, 0.0, obj.width, obj.height],
@@ -102,67 +97,29 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                             proj_1.addProjection(proj);
                             proj_1.addCoordinateTransforms(proj, "EPSG:3857", function (xy) { return obj.tins[0].transform(xy, false); }, function (merc) { return obj.tins[0].transform(merc, true); });
                             proj_ex_1.transformDirect("EPSG:4326", proj);
-                            if (!options.compiled) return [3, 1];
-                            obj.tins[0].setCompiled(options.compiled);
-                            return [3, 3];
-                        case 1:
-                            obj.tins[0].setPoints(options.gcps);
-                            obj.tins[0].setEdges(options.edges);
-                            return [4, obj.tins[0].updateTinAsync()];
-                        case 2:
-                            _a.sent();
-                            _a.label = 3;
-                        case 3:
-                            if (!options.sub_maps) return [3, 5];
-                            promarray = options.sub_maps.map(function (sub_map, i) { return __awaiter(_this, void 0, void 0, function () {
-                                var index, projKey, tin, proj, xyBounds, mercBounds, xyBoundsPolygon, mercBoundsPolygon;
-                                return __generator(this, function (_a) {
-                                    switch (_a.label) {
-                                        case 0:
-                                            index = i + 1;
-                                            projKey = "Illst:" + obj.mapID + "#" + index;
-                                            tin = (obj.tins[index] = new tin_1.default({
-                                                bounds: sub_map.bounds,
-                                                strictMode: options.strictMode,
-                                                vertexMode: options.vertexMode,
-                                                importance: sub_map.importance,
-                                                priority: sub_map.priority
-                                            }));
-                                            proj = new Projection_1.default({
-                                                code: projKey,
-                                                extent: [tin.xy[0], tin.xy[1], tin.wh[0], tin.wh[1]],
-                                                units: "m"
-                                            });
-                                            proj_1.addProjection(proj);
-                                            proj_1.addCoordinateTransforms(proj, "EPSG:3857", function (xy) { return tin.transform(xy, false, true); }, function (merc) { return tin.transform(merc, true, true); });
-                                            proj_ex_1.transformDirect("EPSG:4326", proj);
-                                            if (!sub_map.compiled) return [3, 1];
-                                            tin.setCompiled(sub_map.compiled);
-                                            return [3, 3];
-                                        case 1:
-                                            tin.setPoints(sub_map.gcps);
-                                            tin.setEdges(sub_map.edges);
-                                            return [4, tin.updateTinAsync()];
-                                        case 2:
-                                            _a.sent();
-                                            _a.label = 3;
-                                        case 3:
-                                            xyBounds = Object.assign([], sub_map.bounds);
-                                            xyBounds.push(sub_map.bounds[0]);
-                                            mercBounds = xyBounds.map(function (xy) { return tin.transform(xy, false); });
-                                            xyBoundsPolygon = helpers_1.polygon([xyBounds]);
-                                            mercBoundsPolygon = helpers_1.polygon([mercBounds]);
-                                            tin.xyBounds = xyBoundsPolygon;
-                                            tin.mercBounds = mercBoundsPolygon;
-                                            return [2];
-                                    }
+                            if (options.sub_maps) {
+                                options.sub_maps.map(function (sub_map, i) {
+                                    var index = i + 1;
+                                    var projKey = "Illst:" + obj.mapID + "#" + index;
+                                    var tin = obj.tins[index];
+                                    var proj = new Projection_1.default({
+                                        code: projKey,
+                                        extent: [tin.xy[0], tin.xy[1], tin.wh[0], tin.wh[1]],
+                                        units: "m"
+                                    });
+                                    proj_1.addProjection(proj);
+                                    proj_1.addCoordinateTransforms(proj, "EPSG:3857", function (xy) { return tin.transform(xy, false, true); }, function (merc) { return tin.transform(merc, true, true); });
+                                    proj_ex_1.transformDirect("EPSG:4326", proj);
+                                    var xyBounds = Object.assign([], sub_map.bounds);
+                                    xyBounds.push(sub_map.bounds[0]);
+                                    var mercBounds = xyBounds.map(function (xy) { return tin.transform(xy, false); });
+                                    var xyBoundsPolygon = helpers_1.polygon([xyBounds]);
+                                    var mercBoundsPolygon = helpers_1.polygon([mercBounds]);
+                                    tin.xyBounds = xyBoundsPolygon;
+                                    tin.mercBounds = mercBoundsPolygon;
                                 });
-                            }); });
-                            return [4, Promise.all(promarray)];
-                        case 4:
-                            _a.sent();
-                            _a.label = 5;
-                        case 5: return [2, obj];
+                            }
+                            return [2, obj];
                     }
                 });
             });

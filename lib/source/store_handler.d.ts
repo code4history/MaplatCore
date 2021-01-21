@@ -1,6 +1,6 @@
-import ObjectTin, { Compiled, PointSet, Edge, StrictMode, VertexMode, YaxisMode } from "@maplat/tin";
+import Tin, { Compiled, PointSet, Edge, StrictMode, VertexMode, YaxisMode } from "@maplat/tin";
 declare type LangResource = string | Record<string, string>;
-declare type Tin = string | ObjectTin | Compiled;
+declare type TinLike = string | Tin | Compiled;
 interface HistMapStore {
     title: LangResource;
     attr: LangResource;
@@ -36,6 +36,6 @@ interface SubMap {
     importance: number;
     bounds?: number[][];
 }
-export declare function store2HistMap(store: HistMapStore, byCompiled?: boolean): Promise<[HistMapStore, Tin[]]>;
-export declare function histMap2Store(histmap: HistMapStore, tins: Tin[]): Promise<HistMapStore>;
+export declare function store2HistMap(store: HistMapStore, byCompiled?: boolean): Promise<[HistMapStore, TinLike[]]>;
+export declare function histMap2Store(histmap: HistMapStore, tins: TinLike[]): Promise<HistMapStore>;
 export {};

@@ -8,26 +8,25 @@ import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
 import { MERC_MAX } from "../const_ex";
 import { Coordinate } from "ol/coordinate";
 import { Feature, Polygon } from "@turf/turf";
+import {store2HistMap} from "./store_handler";
 
 export class HistMap_tin extends HistMap {
   tins: Tin[];
 
   constructor(options: any = {}) {
     super(options);
-
-    this.tins = [
-      new Tin({
-        wh: [this.width, this.height],
-        strictMode: options.strictMode,
-        vertexMode: options.vertexMode,
-        importance: 0,
-        priority: 0
-      })
-    ];
+    this.tins = [];
   }
 
   static async createAsync(options: any) {
+    console.log("Before:");
+    console.log(options);
+    const histmaps = await store2HistMap(options);
+    options = histmaps[0];
+    console.log("After:");
+    console.log(options);
     const obj = new HistMap_tin(options);
+    obj.tins = histmaps[1] as Tin[];
     const proj = new Projection({
       code: `Illst:${obj.mapID}`,
       extent: [0.0, 0.0, obj.width, obj.height],
@@ -41,25 +40,12 @@ export class HistMap_tin extends HistMap {
       merc => obj.tins[0].transform(merc, true) as Coordinate
     );
     transformDirect("EPSG:4326", proj);
-    if (options.compiled) {
-      obj.tins[0].setCompiled(options.compiled);
-    } else {
-      obj.tins[0].setPoints(options.gcps);
-      obj.tins[0].setEdges(options.edges);
-      await obj.tins[0].updateTinAsync();
-    }
 
     if (options.sub_maps) {
-      const promarray = options.sub_maps.map(async (sub_map: any, i: any) => {
+      options.sub_maps.map((sub_map: any, i: any) => {
         const index = i + 1;
         const projKey = `Illst:${obj.mapID}#${index}`;
-        const tin = (obj.tins[index] = new Tin({
-          bounds: sub_map.bounds,
-          strictMode: options.strictMode,
-          vertexMode: options.vertexMode,
-          importance: sub_map.importance,
-          priority: sub_map.priority
-        }));
+        const tin = obj.tins[index];
         const proj = new Projection({
           code: projKey,
           extent: [tin.xy![0], tin.xy![1], tin.wh![0], tin.wh![1]],
@@ -73,13 +59,6 @@ export class HistMap_tin extends HistMap {
           merc => tin.transform(merc, true, true) as Coordinate
         );
         transformDirect("EPSG:4326", proj);
-        if (sub_map.compiled) {
-          tin.setCompiled(sub_map.compiled);
-        } else {
-          tin.setPoints(sub_map.gcps);
-          tin.setEdges(sub_map.edges);
-          await tin.updateTinAsync();
-        }
 
         const xyBounds = Object.assign([], sub_map.bounds);
         xyBounds.push(sub_map.bounds[0]);
@@ -89,7 +68,6 @@ export class HistMap_tin extends HistMap {
         tin.xyBounds = xyBoundsPolygon;
         tin.mercBounds = mercBoundsPolygon;
       });
-      await Promise.all(promarray);
     }
     return obj;
   }
