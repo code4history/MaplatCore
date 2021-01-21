@@ -28,6 +28,9 @@ module.exports = {
     new ForkTsCheckerWebpackPlugin({
       eslint: {
         files: "./{src,spec}/**/*.{js,ts}"
+      },
+      typescript: {
+        configFile: "ts_config/tsconfig.es6.json"
       }
     }),
     new MiniCssExtractPlugin()
