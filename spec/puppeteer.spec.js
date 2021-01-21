@@ -12,6 +12,7 @@ describe("Puppeteer test", () => {
     let status = 0;
     page.on("console", async msg => {
       const result = msg.text().match(/^####Message (\w+)(?: (.+))?$/);
+      //console.log(result);
       if (result) {
         const type = result[1];
         const json = result[2] ? treeWalk(JSON.parse(result[2]), 5) : undefined;
@@ -51,6 +52,7 @@ describe("Puppeteer test", () => {
                 await page.mouse.up();
                 await sleep(2000);
                 await page.mouse.click(132, 103, { button: "left" });
+                console.log("clicked!!");
                 break;
               case 1:
                 expect(`${json.longitude}`).toMatch("141.0316");

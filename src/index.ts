@@ -35,6 +35,8 @@ import defaultpin_selected from "../parts/defaultpin_selected.png";
 import defaultpin from "../parts/defaultpin.png";
 import { Coordinate } from "ol/coordinate";
 
+export { store2HistMap, histMap2Store } from "./source/store_handler";
+
 interface AppData {
   sources: string[];
   lang?: string;

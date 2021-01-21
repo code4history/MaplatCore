@@ -73,7 +73,19 @@ export async function store2HistMap(
   store: HistMapStore,
   byCompiled = false
 ): Promise<[HistMapStore, TinLike[]]> {
-  const ret: any = {};
+  return store2HistMap_internal(store, byCompiled, false);
+}
+
+export async function store2HistMap4Core(store: HistMapStore): Promise<[HistMapStore, TinLike[]]> {
+  return store2HistMap_internal(store, false, true);
+}
+
+async function store2HistMap_internal(
+  store: HistMapStore,
+  byCompiled: boolean,
+  coreLogic: boolean
+): Promise<[HistMapStore, TinLike[]]> {
+  const ret: any = coreLogic ? store : {};
   const tins: TinLike[] = [];
   keys.forEach(key => {
     ret[key] = store[key];
