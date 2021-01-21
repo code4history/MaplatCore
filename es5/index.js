@@ -56,12 +56,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "i18next", "i18next-xhr-backend", "./customevent", "./browserlanguage", "./logger", "./functions", "ol/events/Target", "ol/proj", "./map_ex", "ol/interaction", "ol/events/condition", "./source/histmap", "./source/nowmap", "./source/tmsmap", "./source/mapboxmap", "./source_ex", "./source/mixin", "./math_ex", "./freeze_locales", "./normalize_pois", "./template_works", "../parts/redcircle.png", "../parts/defaultpin_selected.png", "../parts/defaultpin.png", "./source/store_handler"], factory);
+        define(["require", "exports", "i18next", "i18next-xhr-backend", "./customevent", "./browserlanguage", "./logger", "./functions", "ol/events/Target", "ol/proj", "./map_ex", "ol/interaction", "ol/events/condition", "./source/histmap", "./source/nowmap", "./source/tmsmap", "./source/mapboxmap", "./source_ex", "./source/mixin", "./math_ex", "./freeze_locales", "./normalize_pois", "./template_works", "../parts/redcircle.png", "../parts/defaultpin_selected.png", "../parts/defaultpin.png"], factory);
     }
 })(function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.CustomEvent = exports.createElement = exports.MaplatApp = exports.histMap2Store = exports.store2HistMap = void 0;
+    exports.CustomEvent = exports.createElement = exports.MaplatApp = void 0;
     var i18next_1 = __importDefault(require("i18next"));
     var i18next_xhr_backend_1 = __importDefault(require("i18next-xhr-backend"));
     var customevent_1 = __importDefault(require("./customevent"));
@@ -88,9 +88,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     var redcircle_png_1 = __importDefault(require("../parts/redcircle.png"));
     var defaultpin_selected_png_1 = __importDefault(require("../parts/defaultpin_selected.png"));
     var defaultpin_png_1 = __importDefault(require("../parts/defaultpin.png"));
-    var store_handler_1 = require("./source/store_handler");
-    Object.defineProperty(exports, "store2HistMap", { enumerable: true, get: function () { return store_handler_1.store2HistMap; } });
-    Object.defineProperty(exports, "histMap2Store", { enumerable: true, get: function () { return store_handler_1.histMap2Store; } });
     var MaplatApp = (function (_super) {
         __extends(MaplatApp, _super);
         function MaplatApp(appOption) {
