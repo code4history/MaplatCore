@@ -37,5 +37,6 @@ interface SubMap {
     bounds?: number[][];
 }
 export declare function store2HistMap(store: HistMapStore, byCompiled?: boolean): Promise<[HistMapStore, TinLike[]]>;
+export declare function store2HistMap4Core(store: HistMapStore): Promise<[HistMapStore, TinLike[]]>;
 export declare function histMap2Store(histmap: HistMapStore, tins: TinLike[]): Promise<HistMapStore>;
 export {};

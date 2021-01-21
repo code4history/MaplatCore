@@ -8,7 +8,7 @@ import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
 import { MERC_MAX } from "../const_ex";
 import { Coordinate } from "ol/coordinate";
 import { Feature, Polygon } from "@turf/turf";
-import {store2HistMap4Core} from "./store_handler";
+import { store2HistMap4Core } from "./store_handler";
 
 export class HistMap_tin extends HistMap {
   tins: Tin[];

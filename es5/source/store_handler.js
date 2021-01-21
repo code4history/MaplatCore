@@ -48,7 +48,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 })(function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.histMap2Store = exports.store2HistMap = void 0;
+    exports.histMap2Store = exports.store2HistMap4Core = exports.store2HistMap = void 0;
     var tin_1 = __importDefault(require("@maplat/tin"));
     var keys = [
         "title",
@@ -71,12 +71,28 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     function store2HistMap(store, byCompiled) {
         if (byCompiled === void 0) { byCompiled = false; }
         return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2, store2HistMap_internal(store, byCompiled, false)];
+            });
+        });
+    }
+    exports.store2HistMap = store2HistMap;
+    function store2HistMap4Core(store) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2, store2HistMap_internal(store, false, true)];
+            });
+        });
+    }
+    exports.store2HistMap4Core = store2HistMap4Core;
+    function store2HistMap_internal(store, byCompiled, coreLogic) {
+        return __awaiter(this, void 0, void 0, function () {
             var ret, tins, opt, tin, tin;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        ret = {};
+                        ret = coreLogic ? store : {};
                         tins = [];
                         keys.forEach(function (key) {
                             ret[key] = store[key];
@@ -176,7 +192,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             });
         });
     }
-    exports.store2HistMap = store2HistMap;
     function histMap2Store(histmap, tins) {
         return __awaiter(this, void 0, void 0, function () {
             var ret, tin;
@@ -198,9 +213,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                     ret.yaxisMode = histmap.yaxisMode;
                 }
                 else {
-                    ret.compiled = tin.getCompiled
-                        ? tin.getCompiled()
-                        : tin;
+                    ret.compiled = tin.getCompiled ? tin.getCompiled() : tin;
                 }
                 ret.sub_maps =
                     tins.length > 0

@@ -76,7 +76,9 @@ export async function store2HistMap(
   return store2HistMap_internal(store, byCompiled, false);
 }
 
-export async function store2HistMap4Core(store: HistMapStore): Promise<[HistMapStore, TinLike[]]> {
+export async function store2HistMap4Core(
+  store: HistMapStore
+): Promise<[HistMapStore, TinLike[]]> {
   return store2HistMap_internal(store, false, true);
 }
 
@@ -127,8 +129,7 @@ async function store2HistMap_internal(
       store.edges,
       [store.width!, store.height!]
     );
-    if (byCompiled && typeof tin !== "string")
-      tin = (tin as Tin).getCompiled();
+    if (byCompiled && typeof tin !== "string") tin = (tin as Tin).getCompiled();
     tins.push(tin);
   }
 
@@ -198,9 +199,7 @@ export async function histMap2Store(
     ret.vertexMode = histmap.vertexMode;
     ret.yaxisMode = histmap.yaxisMode;
   } else {
-    ret.compiled = (tin as any).getCompiled
-      ? (tin as Tin).getCompiled()
-      : tin;
+    ret.compiled = (tin as any).getCompiled ? (tin as Tin).getCompiled() : tin;
   }
 
   ret.sub_maps =

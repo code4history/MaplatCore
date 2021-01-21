@@ -7,6 +7,7 @@ import { MaplatMap } from "./map_ex";
 import { HistMap } from "./source/histmap";
 import { NowMap } from "./source/nowmap";
 import { Coordinate } from "ol/coordinate";
+export { store2HistMap, histMap2Store } from "./source/store_handler";
 interface AppData {
     sources: string[];
     lang?: string;
