@@ -135,45 +135,44 @@ async function store2HistMap_internal(
 
   if (store.sub_maps) {
     ret.sub_maps = [] as SubMap[];
-    await Promise.all(
-      store.sub_maps.map(async sub_map => {
-        const sub: any = {};
-        sub.importance = sub_map.importance;
-        sub.priority = sub_map.priority;
-        if (sub_map.compiled) {
-          const opt: Partial<Options> = {} as Options;
-          if (!sub_map.compiled.strictMode) opt.strictMode = store.strictMode;
-          if (!sub_map.compiled.vertexMode) opt.vertexMode = store.vertexMode;
-          if (!sub_map.compiled.yaxisMode) opt.yaxisMode = store.yaxisMode;
-          let tin: TinLike = new Tin(opt);
-          tin.setCompiled(sub_map.compiled);
-          if (byCompiled) {
-            tin = tin.getCompiled();
-          }
-          sub.bounds = tin.bounds;
-          sub.gcps = tin.points;
-          sub.edges = tin.edges;
-          tins.push(tin);
-        } else {
-          sub.bounds = sub_map.bounds;
-          sub.gcps = sub_map.gcps;
-          sub.edges = sub_map.edges;
-          let tin = await createTinFromGcpsAsync(
-            store.strictMode!,
-            store.vertexMode!,
-            store.yaxisMode,
-            sub_map.gcps,
-            sub_map.edges,
-            undefined,
-            sub_map.bounds
-          );
-          if (byCompiled && typeof tin !== "string")
-            tin = (tin as Tin).getCompiled();
-          tins.push(tin);
+    for (let i = 0; i < store.sub_maps.length; i++) {
+      const sub_map = store.sub_maps[i];
+      const sub: any = {};
+      sub.importance = sub_map.importance;
+      sub.priority = sub_map.priority;
+      if (sub_map.compiled) {
+        const opt: Partial<Options> = {} as Options;
+        if (!sub_map.compiled.strictMode) opt.strictMode = store.strictMode;
+        if (!sub_map.compiled.vertexMode) opt.vertexMode = store.vertexMode;
+        if (!sub_map.compiled.yaxisMode) opt.yaxisMode = store.yaxisMode;
+        let tin: TinLike = new Tin(opt);
+        tin.setCompiled(sub_map.compiled);
+        if (byCompiled) {
+          tin = tin.getCompiled();
         }
-        ret.sub_maps!.push(sub as SubMap);
-      })
-    );
+        sub.bounds = tin.bounds;
+        sub.gcps = tin.points;
+        sub.edges = tin.edges;
+        tins.push(tin);
+      } else {
+        sub.bounds = sub_map.bounds;
+        sub.gcps = sub_map.gcps;
+        sub.edges = sub_map.edges;
+        let tin = await createTinFromGcpsAsync(
+          store.strictMode!,
+          store.vertexMode!,
+          store.yaxisMode,
+          sub_map.gcps,
+          sub_map.edges,
+          undefined,
+          sub_map.bounds
+        );
+        if (byCompiled && typeof tin !== "string")
+          tin = (tin as Tin).getCompiled();
+        tins.push(tin);
+      }
+      ret.sub_maps!.push(sub as SubMap);
+    }
   }
 
   return [ret as HistMapStore, tins];

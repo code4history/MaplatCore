@@ -87,8 +87,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     exports.store2HistMap4Core = store2HistMap4Core;
     function store2HistMap_internal(store, byCompiled, coreLogic) {
         return __awaiter(this, void 0, void 0, function () {
-            var ret, tins, opt, tin, tin;
-            var _this = this;
+            var ret, tins, opt, tin, tin, i, sub_map, sub, opt, tin, tin;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -139,55 +138,52 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         tins.push(tin);
                         _a.label = 3;
                     case 3:
-                        if (!store.sub_maps) return [3, 5];
+                        if (!store.sub_maps) return [3, 9];
                         ret.sub_maps = [];
-                        return [4, Promise.all(store.sub_maps.map(function (sub_map) { return __awaiter(_this, void 0, void 0, function () {
-                                var sub, opt, tin, tin;
-                                return __generator(this, function (_a) {
-                                    switch (_a.label) {
-                                        case 0:
-                                            sub = {};
-                                            sub.importance = sub_map.importance;
-                                            sub.priority = sub_map.priority;
-                                            if (!sub_map.compiled) return [3, 1];
-                                            opt = {};
-                                            if (!sub_map.compiled.strictMode)
-                                                opt.strictMode = store.strictMode;
-                                            if (!sub_map.compiled.vertexMode)
-                                                opt.vertexMode = store.vertexMode;
-                                            if (!sub_map.compiled.yaxisMode)
-                                                opt.yaxisMode = store.yaxisMode;
-                                            tin = new tin_1.default(opt);
-                                            tin.setCompiled(sub_map.compiled);
-                                            if (byCompiled) {
-                                                tin = tin.getCompiled();
-                                            }
-                                            sub.bounds = tin.bounds;
-                                            sub.gcps = tin.points;
-                                            sub.edges = tin.edges;
-                                            tins.push(tin);
-                                            return [3, 3];
-                                        case 1:
-                                            sub.bounds = sub_map.bounds;
-                                            sub.gcps = sub_map.gcps;
-                                            sub.edges = sub_map.edges;
-                                            return [4, createTinFromGcpsAsync(store.strictMode, store.vertexMode, store.yaxisMode, sub_map.gcps, sub_map.edges, undefined, sub_map.bounds)];
-                                        case 2:
-                                            tin = _a.sent();
-                                            if (byCompiled && typeof tin !== "string")
-                                                tin = tin.getCompiled();
-                                            tins.push(tin);
-                                            _a.label = 3;
-                                        case 3:
-                                            ret.sub_maps.push(sub);
-                                            return [2];
-                                    }
-                                });
-                            }); }))];
+                        i = 0;
+                        _a.label = 4;
                     case 4:
-                        _a.sent();
-                        _a.label = 5;
-                    case 5: return [2, [ret, tins]];
+                        if (!(i < store.sub_maps.length)) return [3, 9];
+                        sub_map = store.sub_maps[i];
+                        sub = {};
+                        sub.importance = sub_map.importance;
+                        sub.priority = sub_map.priority;
+                        if (!sub_map.compiled) return [3, 5];
+                        opt = {};
+                        if (!sub_map.compiled.strictMode)
+                            opt.strictMode = store.strictMode;
+                        if (!sub_map.compiled.vertexMode)
+                            opt.vertexMode = store.vertexMode;
+                        if (!sub_map.compiled.yaxisMode)
+                            opt.yaxisMode = store.yaxisMode;
+                        tin = new tin_1.default(opt);
+                        tin.setCompiled(sub_map.compiled);
+                        if (byCompiled) {
+                            tin = tin.getCompiled();
+                        }
+                        sub.bounds = tin.bounds;
+                        sub.gcps = tin.points;
+                        sub.edges = tin.edges;
+                        tins.push(tin);
+                        return [3, 7];
+                    case 5:
+                        sub.bounds = sub_map.bounds;
+                        sub.gcps = sub_map.gcps;
+                        sub.edges = sub_map.edges;
+                        return [4, createTinFromGcpsAsync(store.strictMode, store.vertexMode, store.yaxisMode, sub_map.gcps, sub_map.edges, undefined, sub_map.bounds)];
+                    case 6:
+                        tin = _a.sent();
+                        if (byCompiled && typeof tin !== "string")
+                            tin = tin.getCompiled();
+                        tins.push(tin);
+                        _a.label = 7;
+                    case 7:
+                        ret.sub_maps.push(sub);
+                        _a.label = 8;
+                    case 8:
+                        i++;
+                        return [3, 4];
+                    case 9: return [2, [ret, tins]];
                 }
             });
         });
