@@ -87,7 +87,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     exports.store2HistMap4Core = store2HistMap4Core;
     function store2HistMap_internal(store, byCompiled, coreLogic) {
         return __awaiter(this, void 0, void 0, function () {
-            var ret, tins, opt, tin, tin, i, sub_map, sub, opt, tin, tin;
+            var ret, tins, opt, tin, tin, sub_maps, i, sub_map, sub, opt, tin, tin;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -138,8 +138,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         tins.push(tin);
                         _a.label = 3;
                     case 3:
-                        if (!store.sub_maps) return [3, 9];
-                        ret.sub_maps = [];
+                        if (!store.sub_maps) return [3, 10];
+                        sub_maps = [];
                         i = 0;
                         _a.label = 4;
                     case 4:
@@ -178,12 +178,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         tins.push(tin);
                         _a.label = 7;
                     case 7:
-                        ret.sub_maps.push(sub);
+                        sub_maps.push(sub);
                         _a.label = 8;
                     case 8:
                         i++;
                         return [3, 4];
-                    case 9: return [2, [ret, tins]];
+                    case 9:
+                        ret.sub_maps = sub_maps;
+                        _a.label = 10;
+                    case 10: return [2, [ret, tins]];
                 }
             });
         });
