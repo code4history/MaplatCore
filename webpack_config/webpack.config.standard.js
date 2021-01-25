@@ -18,7 +18,10 @@ module.exports = merge(common, {
         exclude: /node_modules/,
         loader: 'file-loader',
         options: {
-          outputPath: "images"
+          outputPath: "assets/images",
+          publicPath(path) {
+            return `assets/images/${path}`;
+          }
         }
       }
     ]
