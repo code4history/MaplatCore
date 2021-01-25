@@ -8,7 +8,7 @@ const common = require("./webpack.config.common.js");
 module.exports = merge(common, {
   output: {
     path: path.resolve(__dirname, "../dist"),
-    filename: '[name].js'
+    filename: './assets/[name].js'
   },
 
   module: {

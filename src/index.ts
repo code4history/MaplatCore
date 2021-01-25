@@ -222,7 +222,7 @@ export class MaplatApp extends EventTarget {
           lng: this.lang,
           fallbackLng: ["en"],
           backend: {
-            loadPath: "locales/{{lng}}/{{ns}}.json"
+            loadPath: "assets/locales/{{lng}}/{{ns}}.json"
           },
           resources: localesFlag ? locales : undefined
         },

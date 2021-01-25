@@ -10,7 +10,7 @@ const port = process.env.PORT || 8888;
 module.exports = merge(prod, {
   output: {
     path: path.resolve(__dirname, "../dev"),
-    filename: '[name].js'
+    filename: './assets/[name].js'
   },
 
   devServer: {

@@ -24,7 +24,9 @@ module.exports = {
       banner: `${pjson.name} v${pjson.version} | ${pjson.author} | license: ${pjson.license}`
     }),
     new CleanWebpackPlugin(),
-    new HtmlWebpackPlugin({ template: "./public/index.html" }),
+    new HtmlWebpackPlugin({
+      template: "./public/index.html"
+    }),
     new ForkTsCheckerWebpackPlugin({
       eslint: {
         files: "./{src,spec}/**/*.{js,ts}"
@@ -33,7 +35,9 @@ module.exports = {
         configFile: "ts_config/tsconfig.es6.json"
       }
     }),
-    new MiniCssExtractPlugin()
+    new MiniCssExtractPlugin({
+      filename: "./assets/[name].css"
+    })
   ],
 
   externals: [

@@ -210,7 +210,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                                 lng: _this.lang,
                                 fallbackLng: ["en"],
                                 backend: {
-                                    loadPath: "locales/{{lng}}/{{ns}}.json"
+                                    loadPath: "assets/locales/{{lng}}/{{ns}}.json"
                                 },
                                 resources: localesFlag ? freeze_locales_1.default : undefined
                             }, function (_err, t) {
