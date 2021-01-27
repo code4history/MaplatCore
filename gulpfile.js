@@ -46,9 +46,7 @@ gulp.task("zip", async () => {
     fs.removeSync("./example");
   } catch (e) { }
 
-  fs.ensureDirSync("./distribution");
-  fs.copySync("./dist", "./distribution/dist");
-  fs.copySync("./parts", "./distribution/parts");
+  fs.copySync("./dist/assets", "./distribution");
 
   await new Promise((resolve, reject) => {
     gulp
@@ -58,13 +56,14 @@ gulp.task("zip", async () => {
       .pipe(gulp.dest("./"))
       .on("end", resolve);
   });
+  fs.removeSync("./distribution");
 
-  fs.moveSync("./distribution", "./example");
-  fs.copySync("./dist/index.html", "./example/index.html");
+  fs.copySync("./dist", "./example");
   fs.copySync("./apps", "./example/apps");
   fs.copySync("./maps", "./example/maps");
   fs.copySync("./pois", "./example/pois");
   fs.copySync("./tiles", "./example/tiles");
+  fs.copySync("./parts_test", "./example/parts_test");
 
   await new Promise((resolve, reject) => {
     gulp

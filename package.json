@@ -53,7 +53,7 @@
   },
   "homepage": "https://github.com/code4history/MaplatCore/wiki",
   "dependencies": {
-    "@maplat/tin": "github:code4history/MaplatTin#master",
+    "@maplat/tin": "^0.7.3",
     "@turf/line-intersect": "^6.0.2",
     "@turf/nearest-point-to-line": "^6.0.0",
     "@turf/point-to-line-distance": "^6.0.0",
