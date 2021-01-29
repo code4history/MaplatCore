@@ -5,7 +5,10 @@ export function createElement(domStr: string) {
   const context = document;
   const fragment = context.createDocumentFragment();
   const nodes = [];
-  domStr = domStr.replace(/(<\/?)d([ >])/g, "$1div$2");
+  domStr = domStr.replace(/(<\/?)d([ >])/g, "$1div$2")
+    .replace(/(<\/?)s([ >])/g, "$1span$2")
+    .replace(/ din="/g, " data-i18n=\"")
+    .replace(/ dinh="/g, " data-i18n-html=\"");
 
   // ダミーのDIV要素を作成して中にテキストを挿入
   const tmp = fragment.appendChild(context.createElement("div"));

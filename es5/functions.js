@@ -15,7 +15,10 @@
         var context = document;
         var fragment = context.createDocumentFragment();
         var nodes = [];
-        domStr = domStr.replace(/(<\/?)d([ >])/g, "$1div$2");
+        domStr = domStr.replace(/(<\/?)d([ >])/g, "$1div$2")
+            .replace(/(<\/?)s([ >])/g, "$1span$2")
+            .replace(/ din="/g, " data-i18n=\"")
+            .replace(/ dinh="/g, " data-i18n-html=\"");
         var tmp = fragment.appendChild(context.createElement("div"));
         tmp.innerHTML = domStr;
         for (var i = 0; i < tmp.childNodes.length; i++) {
