@@ -8,8 +8,8 @@ export function createElement(domStr: string) {
   domStr = domStr.replace(/(<\/?)d([ >])/g, "$1div$2")
     .replace(/(<\/?)s([ >])/g, "$1span$2")
     .replace(/ din="/g, " data-i18n=\"")
-    .replace(/ dinh="/g, " data-i18n-html=\"");
-
+    .replace(/ dinh="/g, " data-i18n-html=\"")
+    .replace(/ c="/g, " class=\"");
   // ダミーのDIV要素を作成して中にテキストを挿入
   const tmp = fragment.appendChild(context.createElement("div"));
   tmp.innerHTML = domStr;
@@ -53,13 +53,12 @@ export function normalizeDegree(degree: number) {
 
 export function createMapInfo(source: any) {
   if (!source) return;
-  const ret = {
+  const ret: any = {
     mapID: source.mapID
   };
   for (let i = 0; i < META_KEYS.length; i++) {
     const key = META_KEYS[i];
     if (source[key]) {
-      // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
       ret[key] = source[key];
     }
   }
