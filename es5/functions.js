@@ -15,6 +15,7 @@
         var context = document;
         var fragment = context.createDocumentFragment();
         var nodes = [];
+        domStr = domStr.replace(/(<\/?)d([ >])/g, "$1div$2");
         var tmp = fragment.appendChild(context.createElement("div"));
         tmp.innerHTML = domStr;
         for (var i = 0; i < tmp.childNodes.length; i++) {
