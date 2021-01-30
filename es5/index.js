@@ -120,6 +120,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             _this.mapDivDocument.classList.add("maplat");
             _this.logger = new logger_1.Logger(appOption.debug ? logger_1.LoggerLevel.ALL : logger_1.LoggerLevel.INFO);
             _this.enableCache = appOption.enableCache || false;
+            _this.icon = appOption.icon;
+            _this.selectedIcon = appOption.selectedIcon;
             _this.translateUI = appOption.translateUI;
             var setting = appOption.setting;
             _this.lang = appOption.lang;

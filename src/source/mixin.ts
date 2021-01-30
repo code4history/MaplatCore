@@ -513,6 +513,8 @@ export function setCustomInitialize(self: any, options: any) {
   self.poiTemplate = options.poiTemplate;
   self.poiStyle = options.poiStyle;
   self.iconTemplate = options.iconTemplate;
+  self.icon = options.icon;
+  self.selectedIcon = options.selectedIcon;
   self.mercatorXShift = options.mercatorXShift;
   self.mercatorYShift = options.mercatorYShift;
   self.weiwudi = options.weiwudi;

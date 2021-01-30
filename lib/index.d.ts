@@ -77,6 +77,8 @@ export declare class MaplatApp extends EventTarget {
     poiStyle?: string;
     iconTemplate?: string;
     logger: Logger;
+    icon?: string;
+    selectedIcon?: string;
     __backMapMoving: boolean;
     __selectedMarker: any;
     __init: boolean;

@@ -102,6 +102,8 @@ export class MaplatApp extends EventTarget {
   poiStyle?: string;
   iconTemplate?: string;
   logger: Logger;
+  icon?: string;
+  selectedIcon?: string;
   __backMapMoving = false;
   __selectedMarker: any;
   __init = true;
@@ -126,6 +128,9 @@ export class MaplatApp extends EventTarget {
       appOption.debug ? LoggerLevel.ALL : LoggerLevel.INFO
     );
     this.enableCache = appOption.enableCache || false;
+    this.icon = appOption.icon;
+    this.selectedIcon = appOption.selectedIcon;
+
     this.translateUI = appOption.translateUI;
     const setting = appOption.setting;
     this.lang = appOption.lang;
