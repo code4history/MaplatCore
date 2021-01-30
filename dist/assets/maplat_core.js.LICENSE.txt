@@ -10,7 +10,7 @@
  * @license  MIT
  */
 
-/*! @maplat/core v0.8.6 | Kohei Otsuka, Code for History | license: Apache-2.0 */
+/*! @maplat/core v0.8.7 | Kohei Otsuka, Code for History | license: Apache-2.0 */
 
 /**
  * @license
