@@ -427,17 +427,21 @@ export class MaplatApp extends EventTarget {
     this.mapObject.on("click", (evt: any) => {
       // @ts-expect-error ts-migrate(7053)
       this.logger.debug(evt.pixel);
-      const feature = evt.target.forEachFeatureAtPixel(
+      const features = [];
+      evt.target.forEachFeatureAtPixel(
         evt.pixel,
         (feature: any) => {
           // @ts-expect-error ts-migrate(7053)
           this.logger.debug(evt.pixel);
-          if (feature.get("datum")) return feature;
+          if (feature.get("datum")) features.push(feature.get("datum"));
         }
       );
-      if (feature) {
+      if (features.length > 0) {
         this.dispatchEvent(
-          new CustomEvent("clickMarker", feature.get("datum"))
+          new CustomEvent("clickMarker", features[0])
+        );
+        this.dispatchEvent(
+          new CustomEvent("clickMarkers", features)
         );
       } else {
         const xy = evt.coordinate;
