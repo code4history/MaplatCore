@@ -409,13 +409,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             var _this = this;
             this.mapObject.on("click", function (evt) {
                 _this.logger.debug(evt.pixel);
-                var feature = evt.target.forEachFeatureAtPixel(evt.pixel, function (feature) {
+                var features = [];
+                evt.target.forEachFeatureAtPixel(evt.pixel, function (feature) {
                     _this.logger.debug(evt.pixel);
                     if (feature.get("datum"))
-                        return feature;
+                        features.push(feature.get("datum"));
                 });
-                if (feature) {
-                    _this.dispatchEvent(new customevent_1.default("clickMarker", feature.get("datum")));
+                if (features.length > 0) {
+                    _this.dispatchEvent(new customevent_1.default("clickMarker", features[0]));
+                    _this.dispatchEvent(new customevent_1.default("clickMarkers", features));
                 }
                 else {
                     var xy = evt.coordinate;
