@@ -409,6 +409,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             var _this = this;
             this.mapObject.on("click", function (evt) {
                 _this.logger.debug(evt.pixel);
+                _this.lastClickEvent = evt;
                 var features = [];
                 evt.target.forEachFeatureAtPixel(evt.pixel, function (feature) {
                     _this.logger.debug(evt.pixel);

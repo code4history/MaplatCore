@@ -85,6 +85,7 @@ export declare class MaplatApp extends EventTarget {
     __redrawMarkerBlock: boolean;
     __redrawMarkerThrottle: (NowMap | HistMap)[];
     __transparency: any;
+    lastClickEvent: any;
     constructor(appOption: any);
     settingLoader(setting: any): Promise<any>;
     i18nLoader(): Promise<unknown>;

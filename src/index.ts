@@ -110,6 +110,7 @@ export class MaplatApp extends EventTarget {
   __redrawMarkerBlock = false;
   __redrawMarkerThrottle: (NowMap | HistMap)[] = [];
   __transparency: any;
+  lastClickEvent: any;
   // Maplat App Class
   constructor(appOption: any) {
     super();
@@ -427,6 +428,7 @@ export class MaplatApp extends EventTarget {
     this.mapObject.on("click", (evt: any) => {
       // @ts-expect-error ts-migrate(7053)
       this.logger.debug(evt.pixel);
+      this.lastClickEvent = evt;
       const features: any[] = [];
       evt.target.forEachFeatureAtPixel(evt.pixel, (feature: any) => {
         // @ts-expect-error ts-migrate(7053)
