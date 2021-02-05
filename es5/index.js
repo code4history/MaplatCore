@@ -715,14 +715,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             var redrawLogic = function (source) {
                 var promises = [];
                 _this.resetMarker();
+                var selected;
                 if (!_this.stateBuffer.hideMarker) {
                     Object.keys(_this.pois).map(function (key) {
                         var cluster = _this.pois[key];
                         if (!cluster.hide) {
                             cluster.pois.map(function (data) {
                                 var dataCopy = template_works_1.createIconSet(data, cluster, _this);
-                                template_works_1.createHtmlFromTemplate(data, cluster, _this);
-                                promises.push(_this.setMarker(dataCopy));
+                                template_works_1.createHtmlFromTemplate(dataCopy, cluster, _this);
+                                if (_this.__selectedMarker == dataCopy.namespaceID) {
+                                    selected = dataCopy;
+                                }
+                                else {
+                                    promises.push(_this.setMarker(dataCopy));
+                                }
                             });
                         }
                     });
@@ -732,14 +738,23 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                             if (!cluster.hide) {
                                 cluster.pois.map(function (data) {
                                     var dataCopy = template_works_1.createIconSet(data, cluster, source, _this);
-                                    template_works_1.createHtmlFromTemplate(data, cluster, source, _this);
-                                    promises.push(_this.setMarker(dataCopy));
+                                    template_works_1.createHtmlFromTemplate(dataCopy, cluster, source, _this);
+                                    if (_this.__selectedMarker == dataCopy.namespaceID) {
+                                        selected = dataCopy;
+                                    }
+                                    else {
+                                        promises.push(_this.setMarker(dataCopy));
+                                    }
                                 });
                             }
                         });
                     }
                 }
-                Promise.all(promises).then(function () {
+                var promise_var = Promise.all(promises);
+                if (selected) {
+                    promise_var = promise_var.then(function () { return _this.setMarker(selected); });
+                }
+                promise_var.then(function () {
                     if (_this.__redrawMarkerThrottle &&
                         _this.__redrawMarkerThrottle.length > 0) {
                         redrawLogic(_this.__redrawMarkerThrottle.shift());

@@ -743,14 +743,19 @@ export class MaplatApp extends EventTarget {
     const redrawLogic = (source: any) => {
       const promises: any = [];
       this.resetMarker();
+      let selected: any;
       if (!this.stateBuffer.hideMarker) {
         Object.keys(this.pois).map(key => {
           const cluster = this.pois[key];
           if (!cluster.hide) {
             cluster.pois.map((data: any) => {
               const dataCopy = createIconSet(data, cluster, this);
-              createHtmlFromTemplate(data, cluster, this);
-              promises.push(this.setMarker(dataCopy));
+              createHtmlFromTemplate(dataCopy, cluster, this);
+              if (this.__selectedMarker == dataCopy.namespaceID) {
+                selected = dataCopy;
+              } else {
+                promises.push(this.setMarker(dataCopy));
+              }
             });
           }
         });
@@ -760,14 +765,22 @@ export class MaplatApp extends EventTarget {
             if (!cluster.hide) {
               cluster.pois.map((data: any) => {
                 const dataCopy = createIconSet(data, cluster, source, this);
-                createHtmlFromTemplate(data, cluster, source, this);
-                promises.push(this.setMarker(dataCopy));
+                createHtmlFromTemplate(dataCopy, cluster, source, this);
+                if (this.__selectedMarker == dataCopy.namespaceID) {
+                  selected = dataCopy;
+                } else {
+                  promises.push(this.setMarker(dataCopy));
+                }
               });
             }
           });
         }
       }
-      Promise.all(promises).then(() => {
+      let promise_var = Promise.all(promises);
+      if (selected) {
+        promise_var = promise_var.then(() => this.setMarker(selected)) as any;
+      }
+      promise_var.then(() => {
         if (
           this.__redrawMarkerThrottle &&
           this.__redrawMarkerThrottle.length > 0
