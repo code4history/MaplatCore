@@ -103,7 +103,8 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
         : `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtension}`;
     }
     console.log("#### 105");
-    console.log(options);
+    console.log(options.width);
+    console.log(options.height);
     options.weiwudi = await registerMapToSW(options);
     if (options.weiwudi) {
       options.url = options.weiwudi.url;
@@ -160,7 +161,8 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
                   : `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtension}`;
               }
               console.log("#### 162");
-              console.log(options);
+              console.log(options.width);
+              console.log(options.height);
               options.weiwudi = await registerMapToSW(options);
               if (options.weiwudi) {
                 options.url = options.weiwudi.url;
@@ -185,7 +187,8 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
               options.url = `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtension}`;
             }
             console.log("#### 187");
-            console.log(options);
+            console.log(options.width);
+            console.log(options.height);
             options.weiwudi = await registerMapToSW(options);
             if (options.weiwudi) {
               options.url = options.weiwudi.url;

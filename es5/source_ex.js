@@ -153,7 +153,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                                 : "tiles/" + options.mapID + "/{z}/{x}/{y}." + options.imageExtension;
                         }
                         console.log("#### 105");
-                        console.log(options);
+                        console.log(options.width);
+                        console.log(options.height);
                         _a = options;
                         return [4, registerMapToSW(options)];
                     case 1:
@@ -224,7 +225,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                                                         : "tiles/" + options.mapID + "/{z}/{x}/{y}." + options.imageExtension;
                                                 }
                                                 console.log("#### 162");
-                                                console.log(options);
+                                                console.log(options.width);
+                                                console.log(options.height);
                                                 _a = options;
                                                 return [4, registerMapToSW(options)];
                                             case 3:
@@ -262,7 +264,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                                                     options.url = "tiles/" + options.mapID + "/{z}/{x}/{y}." + options.imageExtension;
                                                 }
                                                 console.log("#### 187");
-                                                console.log(options);
+                                                console.log(options.width);
+                                                console.log(options.height);
                                                 _b = options;
                                                 return [4, registerMapToSW(options)];
                                             case 12:
