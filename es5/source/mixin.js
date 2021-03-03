@@ -79,25 +79,39 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 _this.label = "";
                 return _this;
             }
-            Mixin.prototype.getTileCacheSizeAsync = function () {
+            Mixin.prototype.getCacheEnable = function () {
+                return !!this.weiwudi;
+            };
+            Mixin.prototype.getTileCacheStatsAsync = function () {
                 return __awaiter(this, void 0, void 0, function () {
-                    var stats, e_1;
+                    var e_1;
                     return __generator(this, function (_a) {
                         switch (_a.label) {
                             case 0:
                                 if (!this.weiwudi)
-                                    return [2, 0];
+                                    return [2, {}];
                                 _a.label = 1;
                             case 1:
                                 _a.trys.push([1, 3, , 4]);
                                 return [4, this.weiwudi.stats()];
-                            case 2:
-                                stats = _a.sent();
-                                return [2, stats.size];
+                            case 2: return [2, _a.sent()];
                             case 3:
                                 e_1 = _a.sent();
-                                return [2, 0];
+                                return [2, {}];
                             case 4: return [2];
+                        }
+                    });
+                });
+            };
+            Mixin.prototype.getTileCacheSizeAsync = function () {
+                return __awaiter(this, void 0, void 0, function () {
+                    var stats;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0: return [4, this.getTileCacheStatsAsync()];
+                            case 1:
+                                stats = _a.sent();
+                                return [2, stats.size || 0];
                         }
                     });
                 });

@@ -1253,19 +1253,48 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 label: source.label
             });
         };
-        MaplatApp.prototype.getMapTileCacheSizeAsync = function (mapID) {
+        MaplatApp.prototype.getMapCacheEnable = function (mapID) {
+            var source;
+            if (!mapID) {
+                source = this.from;
+            }
+            else {
+                source = this.cacheHash[mapID];
+            }
+            if (!source)
+                return false;
+            return source.getCacheEnable();
+        };
+        MaplatApp.prototype.getMapTileCacheStatsAsync = function (mapID) {
             return __awaiter(this, void 0, void 0, function () {
                 var source;
                 return __generator(this, function (_a) {
-                    if (!mapID) {
-                        source = this.from;
+                    switch (_a.label) {
+                        case 0:
+                            if (!mapID) {
+                                source = this.from;
+                            }
+                            else {
+                                source = this.cacheHash[mapID];
+                            }
+                            if (!source)
+                                return [2, {}];
+                            return [4, source.getTileCacheStatsAsync()];
+                        case 1: return [2, _a.sent()];
                     }
-                    else {
-                        source = this.cacheHash[mapID];
+                });
+            });
+        };
+        MaplatApp.prototype.getMapTileCacheSizeAsync = function (mapID) {
+            return __awaiter(this, void 0, void 0, function () {
+                var stats;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0: return [4, this.getMapTileCacheStatsAsync(mapID)];
+                        case 1:
+                            stats = _a.sent();
+                            return [2, stats.size || 0];
                     }
-                    if (!source)
-                        return [2, 0];
-                    return [2, source.getTileCacheSizeAsync()];
                 });
             });
         };

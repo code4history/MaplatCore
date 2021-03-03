@@ -1262,15 +1262,29 @@ export class MaplatApp extends EventTarget {
       }
     );
   }
-  async getMapTileCacheSizeAsync(mapID: string) {
+  getMapCacheEnable(mapID: string) {
     let source: NowMap | HistMap | undefined;
     if (!mapID) {
       source = this.from;
     } else {
       source = this.cacheHash[mapID];
     }
-    if (!source) return 0;
-    return source.getTileCacheSizeAsync();
+    if (!source) return false;
+    return source.getCacheEnable();
+  }
+  async getMapTileCacheStatsAsync(mapID: string) {
+    let source: NowMap | HistMap | undefined;
+    if (!mapID) {
+      source = this.from;
+    } else {
+      source = this.cacheHash[mapID];
+    }
+    if (!source) return {};
+    return await source.getTileCacheStatsAsync();
+  }
+  async getMapTileCacheSizeAsync(mapID: string) {
+    const stats: any = await this.getMapTileCacheStatsAsync(mapID);
+    return stats.size || 0;
   }
   async clearMapTileCacheAsync(mapID: any) {
     let source: NowMap | HistMap | undefined;

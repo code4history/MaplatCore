@@ -52,14 +52,22 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
     ): Promise<Coordinate | undefined>;
     abstract insideCheckHistMapCoords(coord: Coordinate): boolean;
 
-    async getTileCacheSizeAsync() {
-      if (!this.weiwudi) return 0;
+    getCacheEnable() {
+      return !!this.weiwudi;
+    }
+
+    async getTileCacheStatsAsync() {
+      if (!this.weiwudi) return {};
       try {
-        const stats = await this.weiwudi.stats();
-        return stats.size;
+        return await this.weiwudi.stats();
       } catch (e) {
-        return 0;
+        return {};
       }
+    }
+
+    async getTileCacheSizeAsync() {
+      const stats = await this.getTileCacheStatsAsync();
+      return stats.size || 0;
     }
 
     async clearTileCacheAsync() {

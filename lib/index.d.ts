@@ -140,7 +140,14 @@ export declare class MaplatApp extends EventTarget {
     getTransparency(): any;
     setViewpoint(cond: any): void;
     getMapMeta(mapID: any): any;
-    getMapTileCacheSizeAsync(mapID: string): Promise<number>;
+    getMapCacheEnable(mapID: string): boolean;
+    getMapTileCacheStatsAsync(mapID: string): Promise<{
+        size?: number | undefined;
+        count?: number | undefined;
+        total?: number | undefined;
+        percent?: number | undefined;
+    }>;
+    getMapTileCacheSizeAsync(mapID: string): Promise<any>;
     clearMapTileCacheAsync(mapID: any): Promise<void>;
     convertParametersFromCurrent(to: any, callback: any): void;
     translate(dataFragment?: Record<string, string> | string): string | undefined;

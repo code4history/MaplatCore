@@ -20,6 +20,13 @@ declare const NowMap_base: {
         xy2MercAsync(val: Coordinate): Promise<Coordinate>;
         merc2XyAsync(merc: Coordinate, ignoreBackside?: boolean | undefined): Promise<Coordinate | undefined>;
         insideCheckHistMapCoords(coord: Coordinate): boolean;
+        getCacheEnable(): boolean;
+        getTileCacheStatsAsync(): Promise<{
+            size?: number | undefined;
+            count?: number | undefined;
+            total?: number | undefined;
+            percent?: number | undefined;
+        }>;
         getTileCacheSizeAsync(): Promise<number>;
         clearTileCacheAsync(): Promise<void>;
         getMap(): import("../map_ex").MaplatMap | undefined;
