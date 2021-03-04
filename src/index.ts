@@ -1286,7 +1286,7 @@ export class MaplatApp extends EventTarget {
     const stats: any = await this.getMapTileCacheStatsAsync(mapID);
     return stats.size || 0;
   }
-  async clearMapTileCacheAsync(mapID: any) {
+  async clearMapTileCacheAsync(mapID: string) {
     let source: NowMap | HistMap | undefined;
     if (!mapID) {
       source = this.from;
@@ -1295,6 +1295,29 @@ export class MaplatApp extends EventTarget {
     }
     if (!source) return;
     await source.clearTileCacheAsync();
+  }
+  async fetchAllMapTileCacheAsync(mapID: string, callback: any) {
+    let source: NowMap | HistMap | undefined;
+    if (!mapID) {
+      source = this.from;
+    } else {
+      source = this.cacheHash[mapID];
+    }
+    if (!source) {
+      callback("stop", {});
+      return;
+    }
+    await source.fetchAllTileCacheAsync(callback);
+  }
+  async cancelMapTileCacheAsync(mapID: string) {
+    let source: NowMap | HistMap | undefined;
+    if (!mapID) {
+      source = this.from;
+    } else {
+      source = this.cacheHash[mapID];
+    }
+    if (!source) return;
+    await source.cancelTileCacheAsync();
   }
   convertParametersFromCurrent(to: any, callback: any) {
     const view = this.mapObject.getView();

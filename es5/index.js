@@ -1320,6 +1320,52 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 });
             });
         };
+        MaplatApp.prototype.fetchAllMapTileCacheAsync = function (mapID, callback) {
+            return __awaiter(this, void 0, void 0, function () {
+                var source;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            if (!mapID) {
+                                source = this.from;
+                            }
+                            else {
+                                source = this.cacheHash[mapID];
+                            }
+                            if (!source) {
+                                callback("stop", {});
+                                return [2];
+                            }
+                            return [4, source.fetchAllTileCacheAsync(callback)];
+                        case 1:
+                            _a.sent();
+                            return [2];
+                    }
+                });
+            });
+        };
+        MaplatApp.prototype.cancelMapTileCacheAsync = function (mapID) {
+            return __awaiter(this, void 0, void 0, function () {
+                var source;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            if (!mapID) {
+                                source = this.from;
+                            }
+                            else {
+                                source = this.cacheHash[mapID];
+                            }
+                            if (!source)
+                                return [2];
+                            return [4, source.cancelTileCacheAsync()];
+                        case 1:
+                            _a.sent();
+                            return [2];
+                    }
+                });
+            });
+        };
         MaplatApp.prototype.convertParametersFromCurrent = function (to, callback) {
             var _this = this;
             var view = this.mapObject.getView();

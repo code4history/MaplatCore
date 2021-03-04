@@ -28,6 +28,8 @@ declare const NowMap_base: {
             percent?: number | undefined;
         }>;
         getTileCacheSizeAsync(): Promise<number>;
+        fetchAllTileCacheAsync(callback: any): Promise<void>;
+        cancelTileCacheAsync(): Promise<void>;
         clearTileCacheAsync(): Promise<void>;
         getMap(): import("../map_ex").MaplatMap | undefined;
         setViewpointRadian(cond: {

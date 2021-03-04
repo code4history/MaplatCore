@@ -116,9 +116,70 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                     });
                 });
             };
+            Mixin.prototype.fetchAllTileCacheAsync = function (callback) {
+                return __awaiter(this, void 0, void 0, function () {
+                    var listner_1, deleteListner_1, e_2;
+                    var _this = this;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                if (!this.weiwudi)
+                                    return [2];
+                                _a.label = 1;
+                            case 1:
+                                _a.trys.push([1, 3, , 4]);
+                                listner_1 = function (e) {
+                                    callback(e.type, e.detail);
+                                };
+                                deleteListner_1 = function (e) {
+                                    _this.weiwudi.removeEventListener("proceed", listner_1);
+                                    _this.weiwudi.removeEventListener("finish", deleteListner_1);
+                                    _this.weiwudi.removeEventListener("stop", deleteListner_1);
+                                    _this.weiwudi.removeEventListener("canceled", deleteListner_1);
+                                    listner_1(e);
+                                };
+                                this.weiwudi.addEventListener("proceed", listner_1);
+                                this.weiwudi.addEventListener("finish", deleteListner_1);
+                                this.weiwudi.addEventListener("stop", deleteListner_1);
+                                this.weiwudi.addEventListener("canceled", deleteListner_1);
+                                return [4, this.weiwudi.fetchAll()];
+                            case 2:
+                                _a.sent();
+                                return [3, 4];
+                            case 3:
+                                e_2 = _a.sent();
+                                return [3, 4];
+                            case 4: return [2];
+                        }
+                    });
+                });
+            };
+            Mixin.prototype.cancelTileCacheAsync = function () {
+                return __awaiter(this, void 0, void 0, function () {
+                    var e_3;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                if (!this.weiwudi)
+                                    return [2];
+                                _a.label = 1;
+                            case 1:
+                                _a.trys.push([1, 3, , 4]);
+                                return [4, this.weiwudi.cancel()];
+                            case 2:
+                                _a.sent();
+                                return [3, 4];
+                            case 3:
+                                e_3 = _a.sent();
+                                return [3, 4];
+                            case 4: return [2];
+                        }
+                    });
+                });
+            };
             Mixin.prototype.clearTileCacheAsync = function () {
                 return __awaiter(this, void 0, void 0, function () {
-                    var e_2;
+                    var e_4;
                     return __generator(this, function (_a) {
                         switch (_a.label) {
                             case 0:
@@ -132,7 +193,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                                 _a.sent();
                                 return [3, 4];
                             case 3:
-                                e_2 = _a.sent();
+                                e_4 = _a.sent();
                                 return [3, 4];
                             case 4: return [2];
                         }

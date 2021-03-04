@@ -41,6 +41,8 @@ export declare function setCustomFunction<TBase extends Constructor>(Base: TBase
             percent?: number | undefined;
         }>;
         getTileCacheSizeAsync(): Promise<number>;
+        fetchAllTileCacheAsync(callback: any): Promise<void>;
+        cancelTileCacheAsync(): Promise<void>;
         clearTileCacheAsync(): Promise<void>;
         getMap(): MaplatMap | undefined;
         setViewpointRadian(cond: Condition): void;

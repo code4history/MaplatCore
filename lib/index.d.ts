@@ -148,7 +148,9 @@ export declare class MaplatApp extends EventTarget {
         percent?: number | undefined;
     }>;
     getMapTileCacheSizeAsync(mapID: string): Promise<any>;
-    clearMapTileCacheAsync(mapID: any): Promise<void>;
+    clearMapTileCacheAsync(mapID: string): Promise<void>;
+    fetchAllMapTileCacheAsync(mapID: string, callback: any): Promise<void>;
+    cancelMapTileCacheAsync(mapID: string): Promise<void>;
     convertParametersFromCurrent(to: any, callback: any): void;
     translate(dataFragment?: Record<string, string> | string): string | undefined;
     remove(): void;

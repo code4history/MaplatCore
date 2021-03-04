@@ -70,6 +70,34 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
       return stats.size || 0;
     }
 
+    async fetchAllTileCacheAsync(callback: any) {
+      if (!this.weiwudi) return;
+      try {
+        const listner = (e: any) => {
+          callback(e.type, e.detail);
+        };
+        const deleteListner = (e: any) => {
+          this.weiwudi!.removeEventListener("proceed", listner);
+          this.weiwudi!.removeEventListener("finish", deleteListner);
+          this.weiwudi!.removeEventListener("stop", deleteListner);
+          this.weiwudi!.removeEventListener("canceled", deleteListner);
+          listner(e);
+        };
+        this.weiwudi.addEventListener("proceed", listner);
+        this.weiwudi.addEventListener("finish", deleteListner);
+        this.weiwudi.addEventListener("stop", deleteListner);
+        this.weiwudi.addEventListener("canceled", deleteListner);
+        await this.weiwudi.fetchAll();
+      } catch (e) {} // eslint-disable-line no-empty
+    }
+
+    async cancelTileCacheAsync() {
+      if (!this.weiwudi) return;
+      try {
+        await this.weiwudi.cancel();
+      } catch (e) {} // eslint-disable-line no-empty
+    }
+
     async clearTileCacheAsync() {
       if (!this.weiwudi) return;
       try {
