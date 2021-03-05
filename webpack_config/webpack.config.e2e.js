@@ -5,6 +5,10 @@ const path = require("path");
 const port = process.env.PORT || 8888;
 
 module.exports = {
+  entry: {
+    "dummy": path.resolve(__dirname, "../public/dummy.js")
+  },
+
   devServer: {
     host: "0.0.0.0",
     public: `localhost:${port}`,

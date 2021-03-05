@@ -8,6 +8,7 @@ const psaux = require("psaux");
 const terminate = require("terminate");
 
 gulp.task("e2e:start", () => {
+  console.log("Hoge");
   spawn("npm", ["run", "server:e2e"], {
     stdio: "ignore",
     detached: true

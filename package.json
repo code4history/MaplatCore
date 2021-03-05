@@ -27,7 +27,7 @@
     "build:es6": "tsc --build ts_config/tsconfig.es6.json",
     "build:es5": "tsc --build ts_config/tsconfig.es5.json",
     "zip": "gulp zip",
-    "test": "npm run test:functions && npm run test:e2e",
+    "test": "npm run test:functions",
     "test:functions": "jest --config jest_config/jest.config.functions.js",
     "test:puppeteer": "jest --config jest_config/jest.config.puppeteer.js",
     "test:e2e": "npm run server:e2e:start && npm run test:puppeteer && npm run server:e2e:stop",
