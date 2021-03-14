@@ -3,7 +3,7 @@
  * Copyright jQuery Foundation and other contributors | http://jquery.org/license
  */
 
-/*! @maplat/core v0.8.9 | Kohei Otsuka, Code for History | license: Apache-2.0 */
+/*! @maplat/core v0.9.0 | Kohei Otsuka, Code for History | license: Maplat Limited License 1.1 */
 
 /**
  * @license
