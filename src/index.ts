@@ -706,26 +706,43 @@ export class MaplatApp extends EventTarget {
   resetMarker() {
     this.mapObject.resetMarker();
   }
-  setLine(data: any) {
+  setLine(data: any) { // Ready for Polygon
+    const data_ = Object.assign({}, data);
+    if (!data_.style && data_.stroke) {
+      data_.style = {
+        stroke: data_.stroke
+      }
+    }
+    this.setVector(data_, "Line");
+  }
+  setVector(data: any, type = "Line") { // Ready for Polygon
     // @ts-expect-error ts-migrate(7053)
     this.logger.debug(data);
     let xyPromises;
+    const merc2XyRecurse = (coords: any, isLnglat = false) =>
+      Promise.all(coords.map((coord: any) => {
+        if (Array.isArray(coord[0])) {
+          return merc2XyRecurse(coord, isLnglat);
+        } else {
+          if (isLnglat) coord = transform(coord, "EPSG:4326", "EPSG:3857");
+          return (this.from as HistMap | NowMap).merc2XyAsync(coord);
+        }
+      }));
+
     if (data.coordinates) {
-      xyPromises = data.coordinates.map((coord: any) =>
-        (this.from as HistMap | NowMap).merc2XyAsync(coord)
-      );
+      xyPromises = merc2XyRecurse(data.coordinates);
     } else {
-      xyPromises = data.lnglats.map((lnglat: any) => {
-        const merc = transform(lnglat, "EPSG:4326", "EPSG:3857");
-        return (this.from as HistMap | NowMap).merc2XyAsync(merc);
-      });
+      xyPromises = merc2XyRecurse(data.lnglats, true);
     }
-    Promise.all(xyPromises).then(xys => {
-      this.mapObject.setLine(xys, data.stroke);
+    xyPromises.then(xys => {
+      this.mapObject.setVector(xys, type, data.style);
     });
   }
-  resetLine() {
-    this.mapObject.resetLine();
+  resetLine() { // Ready for Polygon
+    this.resetVector();
+  }
+  resetVector() { // Ready for Polygon
+    this.mapObject.resetVector();
   }
   redrawMarkers(source: HistMap | NowMap | undefined = undefined) {
     if (!source) {
