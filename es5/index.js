@@ -102,7 +102,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             _this.appLang = "ja";
             _this.timer = undefined;
             _this.startFrom = "";
-            _this.lines = [];
+            _this.vectors = [];
             _this.__backMapMoving = false;
             _this.__init = true;
             _this.__redrawMarkerBlock = false;
@@ -675,26 +675,46 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             this.mapObject.resetMarker();
         };
         MaplatApp.prototype.setLine = function (data) {
+            data.type = "Line";
+            if (!data.style && data.stroke) {
+                data.style = {
+                    stroke: data.stroke
+                };
+            }
+            this.setVector(data);
+        };
+        MaplatApp.prototype.setVector = function (data) {
             var _this = this;
             this.logger.debug(data);
             var xyPromises;
+            var merc2XyRecurse = function (coords, isLnglat) {
+                if (isLnglat === void 0) { isLnglat = false; }
+                return Promise.all(coords.map(function (coord) {
+                    if (Array.isArray(coord[0])) {
+                        return merc2XyRecurse(coord, isLnglat);
+                    }
+                    else {
+                        if (isLnglat)
+                            coord = proj_1.transform(coord, "EPSG:4326", "EPSG:3857");
+                        return _this.from.merc2XyAsync(coord);
+                    }
+                }));
+            };
             if (data.coordinates) {
-                xyPromises = data.coordinates.map(function (coord) {
-                    return _this.from.merc2XyAsync(coord);
-                });
+                xyPromises = merc2XyRecurse(data.coordinates);
             }
             else {
-                xyPromises = data.lnglats.map(function (lnglat) {
-                    var merc = proj_1.transform(lnglat, "EPSG:4326", "EPSG:3857");
-                    return _this.from.merc2XyAsync(merc);
-                });
+                xyPromises = merc2XyRecurse(data.lnglats, true);
             }
-            Promise.all(xyPromises).then(function (xys) {
-                _this.mapObject.setLine(xys, data.stroke);
+            xyPromises.then(function (xys) {
+                _this.mapObject.setVector(xys, data.type, data.style);
             });
         };
         MaplatApp.prototype.resetLine = function () {
-            this.mapObject.resetLine();
+            this.resetVector();
+        };
+        MaplatApp.prototype.resetVector = function () {
+            this.mapObject.resetVector();
         };
         MaplatApp.prototype.redrawMarkers = function (source) {
             var _this = this;
@@ -1044,12 +1064,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             }
         };
         MaplatApp.prototype.addLine = function (data) {
-            this.lines.push(data);
+            this.vectors.push(data);
             this.setLine(data);
         };
+        MaplatApp.prototype.addVector = function (data) {
+            this.vectors.push(data);
+            this.setVector(data);
+        };
         MaplatApp.prototype.clearLine = function () {
-            this.lines = [];
+            this.vectors = [];
             this.resetLine();
+        };
+        MaplatApp.prototype.clearVector = function () {
+            this.vectors = [];
+            this.resetVector();
         };
         MaplatApp.prototype.setGPSMarker = function (position) {
             this.currentPosition = position;
@@ -1158,11 +1186,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         else {
                             _this.redrawMarkers();
                         }
-                        _this.resetLine();
-                        for (var i = 0; i < _this.lines.length; i++) {
+                        _this.resetVector();
+                        for (var i = 0; i < _this.vectors.length; i++) {
                             (function (data) {
-                                _this.setLine(data);
-                            })(_this.lines[i]);
+                                _this.setVector(data);
+                            })(_this.vectors[i]);
                         }
                         _this.dispatchEvent(new customevent_1.default("mapChanged", _this.getMapMeta(to.mapID)));
                         _this.mapObject.updateSize();

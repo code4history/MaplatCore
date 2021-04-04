@@ -248,18 +248,12 @@ export class MaplatMap extends Map {
     return this.setVector(xys, "Line", stroke ? { stroke } : null, layer);
   }
   setVector(coords: any, type = "Line", style: any, layer: any) { // Ready for Polygon
-    console.log("Check");
-    console.log(coords);
-    console.log(style);
-    console.log(type);
     if (!layer) layer = "feature";
     const option = {};
     if (style.stroke != null) (option as any).stroke = new Stroke(style.stroke);
     if (style.fill != null) (option as any).fill = new Fill(style.fill);
     const styleObj = new Style(option);
-    console.log(styleObj);
     const geometry = type === "Line" ? new LineString(coords) : new Polygon(coords);
-    console.log(geometry);
     return this.setFeature({
       geometry,
       name: type

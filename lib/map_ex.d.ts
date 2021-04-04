@@ -18,7 +18,9 @@ export declare class MaplatMap extends Map {
     setMarker(xy: any, data: any, markerStyle: any, layer: any): Feature<any>;
     resetMarker(layer: any): void;
     setLine(xys: any, stroke: any, layer: any): Feature<any>;
+    setVector(coords: any, type: string | undefined, style: any, layer: any): Feature<any>;
     resetLine(layer: any): void;
+    resetVector(layer: any): void;
     setEnvelope(xys: any, stroke: any, layer: any): Feature<any>;
     removeEnvelope(feature: any, layer: any): void;
     resetEnvelope(layer: any): void;

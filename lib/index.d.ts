@@ -68,7 +68,7 @@ export declare class MaplatApp extends EventTarget {
     currentPosition: any;
     startFrom?: string | undefined;
     from?: NowMap | HistMap;
-    lines: any;
+    vectors: any;
     mapDivDocument: HTMLElement | null;
     mapObject: any;
     mapboxMap: any;
@@ -113,7 +113,9 @@ export declare class MaplatApp extends EventTarget {
     setMarker(data: any): Promise<void>;
     resetMarker(): void;
     setLine(data: any): void;
+    setVector(data: any): void;
     resetLine(): void;
+    resetVector(): void;
     redrawMarkers(source?: HistMap | NowMap | undefined): void;
     selectMarker(id: any): void;
     unselectMarker(): void;
@@ -132,7 +134,9 @@ export declare class MaplatApp extends EventTarget {
     addPoiLayer(id: any, data: any): void;
     removePoiLayer(id: any): void;
     addLine(data: any): void;
+    addVector(data: any): void;
     clearLine(): void;
+    clearVector(): void;
     setGPSMarker(position: any): void;
     changeMap(mapID: string, restore?: Restore): Promise<void>;
     requestUpdateState(data: Restore): void;

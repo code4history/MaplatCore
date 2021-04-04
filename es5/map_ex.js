@@ -267,19 +267,28 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             this.resetFeature(layer);
         };
         MaplatMap.prototype.setLine = function (xys, stroke, layer) {
+            return this.setVector(xys, "Line", stroke ? { stroke: stroke } : null, layer);
+        };
+        MaplatMap.prototype.setVector = function (coords, type, style, layer) {
+            if (type === void 0) { type = "Line"; }
             if (!layer)
                 layer = "feature";
-            var style = stroke != null
-                ? new style_1.Style({
-                    stroke: new style_1.Stroke(stroke)
-                })
-                : null;
+            var option = {};
+            if (style.stroke != null)
+                option.stroke = new style_1.Stroke(style.stroke);
+            if (style.fill != null)
+                option.fill = new style_1.Fill(style.fill);
+            var styleObj = new style_1.Style(option);
+            var geometry = type === "Line" ? new geom_1.LineString(coords) : new geom_1.Polygon(coords);
             return this.setFeature({
-                geometry: new geom_1.LineString(xys),
-                name: "Line"
-            }, style, layer);
+                geometry: geometry,
+                name: type
+            }, styleObj, layer);
         };
         MaplatMap.prototype.resetLine = function (layer) {
+            this.resetVector(layer);
+        };
+        MaplatMap.prototype.resetVector = function (layer) {
             if (!layer)
                 layer = "feature";
             this.resetFeature(layer);

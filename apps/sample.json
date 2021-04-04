@@ -15,7 +15,7 @@
     "zoomRestriction" : true,
     "minZoom" : 10,
     "maxZoom" : 18,
-    "startFrom" : "morioka_ndl_affine",
+    "startFrom" : "morioka_ndl2",
     "sources" : [
         {
             "label" : "1644 (TMS)",

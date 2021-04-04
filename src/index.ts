@@ -707,14 +707,15 @@ export class MaplatApp extends EventTarget {
     this.mapObject.resetMarker();
   }
   setLine(data: any) { // Ready for Polygon
+    data.type = "Line";
     if (!data.style && data.stroke) {
       data.style = {
         stroke: data.stroke
       }
     }
-    this.setVector(data, "Line");
+    this.setVector(data);
   }
-  setVector(data: any, type = "Line") { // Ready for Polygon
+  setVector(data: any) { // Ready for Polygon
     // @ts-expect-error ts-migrate(7053)
     this.logger.debug(data);
     let xyPromises;
@@ -734,7 +735,7 @@ export class MaplatApp extends EventTarget {
       xyPromises = merc2XyRecurse(data.lnglats, true);
     }
     xyPromises.then(xys => {
-      this.mapObject.setVector(xys, type, data.style);
+      this.mapObject.setVector(xys, data.type, data.style);
     });
   }
   resetLine() { // Ready for Polygon
@@ -1071,9 +1072,17 @@ export class MaplatApp extends EventTarget {
     this.vectors.push(data);
     this.setLine(data);
   }
+  addVector(data: any) {
+    this.vectors.push(data);
+    this.setVector(data);
+  }
   clearLine() {
     this.vectors = [];
     this.resetLine();
+  }
+  clearVector() {
+    this.vectors = [];
+    this.resetVector();
   }
   setGPSMarker(position: any) {
     this.currentPosition = position;
@@ -1185,10 +1194,10 @@ export class MaplatApp extends EventTarget {
             } else {
               this.redrawMarkers();
             }
-            this.resetLine();
+            this.resetVector();
             for (let i = 0; i < this.vectors.length; i++) {
               (data => {
-                this.setLine(data);
+                this.setVector(data);
               })(this.vectors[i]);
             }
             this.dispatchEvent(
