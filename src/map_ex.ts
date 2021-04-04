@@ -253,7 +253,10 @@ export class MaplatMap extends Map {
     console.log(style);
     console.log(type);
     if (!layer) layer = "feature";
-    const styleObj = style != null ? new Style(style) : null;
+    const option = {};
+    if (style.stroke != null) (option as any).stroke = new Stroke(style.stroke);
+    if (style.fill != null) (option as any).fill = new Fill(style.fill);
+    const styleObj = new Style(option);
     console.log(styleObj);
     const geometry = type === "Line" ? new LineString(coords) : new Polygon(coords);
     console.log(geometry);

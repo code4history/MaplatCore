@@ -93,7 +93,7 @@ export class MaplatApp extends EventTarget {
   currentPosition: any;
   startFrom? = "";
   from?: NowMap | HistMap;
-  lines: any = [];
+  vectors: any = [];
   mapDivDocument: HTMLElement | null;
   mapObject: any;
   mapboxMap: any;
@@ -707,13 +707,12 @@ export class MaplatApp extends EventTarget {
     this.mapObject.resetMarker();
   }
   setLine(data: any) { // Ready for Polygon
-    const data_ = Object.assign({}, data);
-    if (!data_.style && data_.stroke) {
-      data_.style = {
-        stroke: data_.stroke
+    if (!data.style && data.stroke) {
+      data.style = {
+        stroke: data.stroke
       }
     }
-    this.setVector(data_, "Line");
+    this.setVector(data, "Line");
   }
   setVector(data: any, type = "Line") { // Ready for Polygon
     // @ts-expect-error ts-migrate(7053)
@@ -1069,11 +1068,11 @@ export class MaplatApp extends EventTarget {
     }
   }
   addLine(data: any) {
-    this.lines.push(data);
+    this.vectors.push(data);
     this.setLine(data);
   }
   clearLine() {
-    this.lines = [];
+    this.vectors = [];
     this.resetLine();
   }
   setGPSMarker(position: any) {
@@ -1187,10 +1186,10 @@ export class MaplatApp extends EventTarget {
               this.redrawMarkers();
             }
             this.resetLine();
-            for (let i = 0; i < this.lines.length; i++) {
+            for (let i = 0; i < this.vectors.length; i++) {
               (data => {
                 this.setLine(data);
-              })(this.lines[i]);
+              })(this.vectors[i]);
             }
             this.dispatchEvent(
               new CustomEvent("mapChanged", this.getMapMeta(to.mapID))
