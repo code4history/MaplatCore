@@ -352,7 +352,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             this.mercSrc = sources.reduce(function (prev, curr) {
                 if (prev)
                     return prev;
-                if (curr instanceof nowmap_1.NowMap)
+                if (curr instanceof nowmap_1.NowMap && !(curr instanceof tmsmap_1.TmsMap))
                     return curr;
             }, null);
             var cache = [];
@@ -1087,7 +1087,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             var _this = this;
             if (restore === undefined)
                 restore = {};
-            var now = this.cacheHash["osm"];
+            var now = this.mercSrc;
             var to = this.cacheHash[mapID];
             if (!this.changeMapSeq) {
                 this.changeMapSeq = Promise.resolve();

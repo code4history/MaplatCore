@@ -378,7 +378,7 @@ export class MaplatApp extends EventTarget {
   handleSources(sources: any) {
     this.mercSrc = sources.reduce((prev: any, curr: any) => {
       if (prev) return prev;
-      if (curr instanceof NowMap) return curr;
+      if (curr instanceof NowMap && !(curr instanceof TmsMap)) return curr;
     }, null);
     const cache = [];
     this.cacheHash = {};
@@ -1090,7 +1090,7 @@ export class MaplatApp extends EventTarget {
   }
   changeMap(mapID: string, restore?: Restore) {
     if (restore === undefined) restore = {};
-    const now = this.cacheHash["osm"];
+    const now = this.mercSrc;
     const to: NowMap | HistMap = this.cacheHash[mapID];
     if (!this.changeMapSeq) {
       this.changeMapSeq = Promise.resolve();
@@ -1428,7 +1428,7 @@ export class MaplatApp extends EventTarget {
   translate(
     dataFragment?: Record<string, string> | string
   ): string | undefined {
-    if (!dataFragment || typeof dataFragment === "string") return dataFragment;
+    if (!dataFragment || typeof dataFragment === "string") return dataFragment as any;
     const langs = Object.keys(dataFragment);
     let key = langs.reduce((prev: any, curr, idx, arr) => {
       if (curr == this.appLang) {

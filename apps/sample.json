@@ -31,6 +31,7 @@
         {
             "mapID" : "morioka"
         },
+        "gsi",
         "osm",
         {
             "mapID" : "mapbox",
