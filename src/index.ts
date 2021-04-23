@@ -244,8 +244,10 @@ export class MaplatApp extends EventTarget {
     const dataSource = this.appData!.sources;
     const sourcePromise = [];
     const commonOption = {
-      homePosition: mapReturnValue.homePos,
-      mercZoom: mapReturnValue.defZoom,
+      //homePosition: mapReturnValue.homePos,
+      //mercZoom: mapReturnValue.defZoom,
+      homePos: mapReturnValue.homePos,
+      defZoom: mapReturnValue.defZoom,
       zoomRestriction: mapReturnValue.zoomRestriction,
       mercMinZoom: mapReturnValue.mercMinZoom,
       mercMaxZoom: mapReturnValue.mercMaxZoom,

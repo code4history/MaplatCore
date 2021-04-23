@@ -261,9 +261,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                     var delta2 = Math.sqrt(Math.pow(mercs[2][0] - mercs[3][0], 2) +
                         Math.pow(mercs[2][1] - mercs[3][1], 2));
                     var delta = (delta1 + delta2) / 2;
-                    _this.mercZoom =
-                        Math.log((300 * (2 * const_ex_1.MERC_MAX)) / 256 / delta) / Math.log(2) - 3;
-                    _this.homePosition = proj_1.toLonLat(mercs[4]);
+                    if (!_this.mercZoom)
+                        _this.mercZoom =
+                            Math.log((300 * (2 * const_ex_1.MERC_MAX)) / 256 / delta) / Math.log(2) - 3;
+                    if (!_this.homePosition)
+                        _this.homePosition = proj_1.toLonLat(mercs[4]);
                     _this.envelope = helpers_1.polygon([
                         [mercs[5], mercs[6], mercs[7], mercs[8], mercs[5]]
                     ]);

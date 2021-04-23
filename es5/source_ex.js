@@ -137,6 +137,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                             : options.maptype === "overlay"
                                 ? tmsmap_1.TmsMap
                                 : mapboxmap_1.MapboxMap;
+                        if (targetSrc instanceof tmsmap_1.TmsMap) {
+                            if (!options.homePosition)
+                                options.homePosition = options.homePos;
+                            if (!options.mercZoom)
+                                options.mercZoom = options.defZoom;
+                        }
+                        else {
+                            options.homePosition = options.homePos;
+                            options.mercZoom = options.defZoom;
+                        }
+                        delete options.homePos;
+                        delete options.defZoom;
                         if (options.zoomRestriction) {
                             options.maxZoom = options.maxZoom || options.mercMaxZoom;
                             options.minZoom = options.minZoom || options.mercMinZoom;
@@ -206,6 +218,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                                                     : options.maptype === "overlay"
                                                         ? tmsmap_1.TmsMap
                                                         : mapboxmap_1.MapboxMap;
+                                                if (targetSrc instanceof tmsmap_1.TmsMap) {
+                                                    if (!options.homePosition)
+                                                        options.homePosition = options.homePos;
+                                                    if (!options.mercZoom)
+                                                        options.mercZoom = options.defZoom;
+                                                }
+                                                else {
+                                                    options.homePosition = options.homePos;
+                                                    options.mercZoom = options.defZoom;
+                                                }
+                                                delete options.homePos;
+                                                delete options.defZoom;
                                                 if (options.zoomRestriction) {
                                                     options.maxZoom = options.maxZoom || options.mercMaxZoom;
                                                     options.minZoom = options.minZoom || options.mercMinZoom;
@@ -252,6 +276,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                                             case 10: return [2];
                                             case 11:
                                                 _c.trys.push([11, 18, , 19]);
+                                                delete options.homePos;
+                                                delete options.defZoom;
                                                 if (!options.imageExtension)
                                                     options.imageExtension = "jpg";
                                                 if (options.mapID && !options.url && !options.urls) {

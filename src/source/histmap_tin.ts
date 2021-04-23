@@ -223,9 +223,9 @@ export class HistMap_tin extends HistMap {
                 Math.pow(mercs[2][1] - mercs[3][1], 2)
             );
             const delta = (delta1 + delta2) / 2;
-            this.mercZoom =
+            if (!this.mercZoom) this.mercZoom =
               Math.log((300 * (2 * MERC_MAX)) / 256 / delta) / Math.log(2) - 3;
-            this.homePosition = toLonLat(mercs[4]);
+            if (!this.homePosition) this.homePosition = toLonLat(mercs[4]);
             this.envelope = polygon([
               [mercs[5], mercs[6], mercs[7], mercs[8], mercs[5]]
             ]) as Feature<Polygon>;

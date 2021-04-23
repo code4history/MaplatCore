@@ -88,6 +88,15 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
         : options.maptype === "overlay"
         ? TmsMap
         : MapboxMap;
+    if (targetSrc instanceof TmsMap) {
+      if (!options.homePosition) options.homePosition = options.homePos;
+      if (!options.mercZoom) options.mercZoom = options.defZoom;
+    } else {
+      options.homePosition = options.homePos;
+      options.mercZoom = options.defZoom;
+    }
+    delete options.homePos;
+    delete options.defZoom;
     if (options.zoomRestriction) {
       options.maxZoom = options.maxZoom || options.mercMaxZoom;
       options.minZoom = options.minZoom || options.mercMinZoom;
@@ -145,6 +154,15 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
                 : options.maptype === "overlay"
                 ? TmsMap
                 : MapboxMap;
+            if (targetSrc instanceof TmsMap) {
+              if (!options.homePosition) options.homePosition = options.homePos;
+              if (!options.mercZoom) options.mercZoom = options.defZoom;
+            } else {
+              options.homePosition = options.homePos;
+              options.mercZoom = options.defZoom;
+            }
+            delete options.homePos;
+            delete options.defZoom;
             if (options.zoomRestriction) {
               options.maxZoom = options.maxZoom || options.mercMaxZoom;
               options.minZoom = options.minZoom || options.mercMinZoom;
@@ -176,6 +194,8 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
           }
 
           try {
+            delete options.homePos;
+            delete options.defZoom;
             if (!options.imageExtension) options.imageExtension = "jpg";
             if (options.mapID && !options.url && !options.urls) {
               options.url = `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtension}`;

@@ -230,8 +230,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                     dataSource = this.appData.sources;
                     sourcePromise = [];
                     commonOption = {
-                        homePosition: mapReturnValue.homePos,
-                        mercZoom: mapReturnValue.defZoom,
+                        homePos: mapReturnValue.homePos,
+                        defZoom: mapReturnValue.defZoom,
                         zoomRestriction: mapReturnValue.zoomRestriction,
                         mercMinZoom: mapReturnValue.mercMinZoom,
                         mercMaxZoom: mapReturnValue.mercMaxZoom,
