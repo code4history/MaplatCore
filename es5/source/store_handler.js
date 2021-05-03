@@ -66,7 +66,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         "description",
         "url",
         "lang",
-        "imageExtension"
+        "imageExtension",
+        "homePosition",
+        "mercZoom"
     ];
     function store2HistMap(store, byCompiled) {
         if (byCompiled === void 0) { byCompiled = false; }

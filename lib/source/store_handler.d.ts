@@ -1,4 +1,5 @@
 import Tin, { Compiled, PointSet, Edge, StrictMode, VertexMode, YaxisMode } from "@maplat/tin";
+import { Position } from "@turf/turf";
 declare type LangResource = string | Record<string, string>;
 declare type TinLike = string | Tin | Compiled;
 interface HistMapStore {
@@ -27,6 +28,8 @@ interface HistMapStore {
     edges?: Edge[];
     compiled?: Compiled;
     sub_maps: SubMap[];
+    homePosition: Position;
+    mercZoom: number;
 }
 interface SubMap {
     gcps?: PointSet[];
