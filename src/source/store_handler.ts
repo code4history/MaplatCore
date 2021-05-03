@@ -9,7 +9,9 @@ import Tin, {
   VertexMode,
   YaxisMode
 } from "@maplat/tin";
-
+import {
+  Position
+} from "@turf/turf";
 type LangResource = string | Record<string, string>;
 type TinLike = string | Tin | Compiled;
 
@@ -39,6 +41,8 @@ interface HistMapStore {
   edges?: Edge[];
   compiled?: Compiled;
   sub_maps: SubMap[];
+  homePosition: Position;
+  mercZoom: number;
 }
 
 interface SubMap {
@@ -66,7 +70,9 @@ const keys: (keyof HistMapStore)[] = [
   "description",
   "url",
   "lang",
-  "imageExtension"
+  "imageExtension",
+  "homePosition",
+  "mercZoom"
 ];
 
 export async function store2HistMap(
