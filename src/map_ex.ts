@@ -244,25 +244,34 @@ export class MaplatMap extends Map {
     if (!layer) layer = "marker";
     this.resetFeature(layer);
   }
-  setLine(xys: any, stroke: any, layer: any) { // Ready for Polygon
+  setLine(xys: any, stroke: any, layer: any) {
+    // Ready for Polygon
     return this.setVector(xys, "Line", stroke ? { stroke } : null, layer);
   }
-  setVector(coords: any, type = "Line", style: any, layer: any) { // Ready for Polygon
+  setVector(coords: any, type = "Line", style: any, layer: any) {
+    // Ready for Polygon
     if (!layer) layer = "feature";
     const option = {};
     if (style.stroke != null) (option as any).stroke = new Stroke(style.stroke);
     if (style.fill != null) (option as any).fill = new Fill(style.fill);
     const styleObj = new Style(option);
-    const geometry = type === "Line" ? new LineString(coords) : new Polygon(coords);
-    return this.setFeature({
-      geometry,
-      name: type
-    }, styleObj, layer);
+    const geometry =
+      type === "Line" ? new LineString(coords) : new Polygon(coords);
+    return this.setFeature(
+      {
+        geometry,
+        name: type
+      },
+      styleObj,
+      layer
+    );
   }
-  resetLine(layer: any) { // Ready for Polygon
+  resetLine(layer: any) {
+    // Ready for Polygon
     this.resetVector(layer);
   }
-  resetVector(layer:any) { // Ready for Polygon
+  resetVector(layer: any) {
+    // Ready for Polygon
     if (!layer) layer = "feature";
     this.resetFeature(layer);
   }

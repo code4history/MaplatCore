@@ -708,28 +708,32 @@ export class MaplatApp extends EventTarget {
   resetMarker() {
     this.mapObject.resetMarker();
   }
-  setLine(data: any) { // Ready for Polygon
+  setLine(data: any) {
+    // Ready for Polygon
     data.type = "Line";
     if (!data.style && data.stroke) {
       data.style = {
         stroke: data.stroke
-      }
+      };
     }
     this.setVector(data);
   }
-  setVector(data: any) { // Ready for Polygon
+  setVector(data: any) {
+    // Ready for Polygon
     // @ts-expect-error ts-migrate(7053)
     this.logger.debug(data);
     let xyPromises;
     const merc2XyRecurse = (coords: any, isLnglat = false) =>
-      Promise.all(coords.map((coord: any) => {
-        if (Array.isArray(coord[0])) {
-          return merc2XyRecurse(coord, isLnglat);
-        } else {
-          if (isLnglat) coord = transform(coord, "EPSG:4326", "EPSG:3857");
-          return (this.from as HistMap | NowMap).merc2XyAsync(coord);
-        }
-      }));
+      Promise.all(
+        coords.map((coord: any) => {
+          if (Array.isArray(coord[0])) {
+            return merc2XyRecurse(coord, isLnglat);
+          } else {
+            if (isLnglat) coord = transform(coord, "EPSG:4326", "EPSG:3857");
+            return (this.from as HistMap | NowMap).merc2XyAsync(coord);
+          }
+        })
+      );
 
     if (data.coordinates) {
       xyPromises = merc2XyRecurse(data.coordinates);
@@ -740,10 +744,12 @@ export class MaplatApp extends EventTarget {
       this.mapObject.setVector(xys, data.type, data.style);
     });
   }
-  resetLine() { // Ready for Polygon
+  resetLine() {
+    // Ready for Polygon
     this.resetVector();
   }
-  resetVector() { // Ready for Polygon
+  resetVector() {
+    // Ready for Polygon
     this.mapObject.resetVector();
   }
   redrawMarkers(source: HistMap | NowMap | undefined = undefined) {
@@ -1430,7 +1436,8 @@ export class MaplatApp extends EventTarget {
   translate(
     dataFragment?: Record<string, string> | string
   ): string | undefined {
-    if (!dataFragment || typeof dataFragment === "string") return dataFragment as any;
+    if (!dataFragment || typeof dataFragment === "string")
+      return dataFragment as any;
     const langs = Object.keys(dataFragment);
     let key = langs.reduce((prev: any, curr, idx, arr) => {
       if (curr == this.appLang) {

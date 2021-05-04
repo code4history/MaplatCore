@@ -263,7 +263,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                     var delta = (delta1 + delta2) / 2;
                     if (!_this.mercZoom)
                         _this.mercZoom =
-                            Math.log((300 * (2 * const_ex_1.MERC_MAX)) / 256 / delta) / Math.log(2) - 3;
+                            Math.log((300 * (2 * const_ex_1.MERC_MAX)) / 256 / delta) / Math.log(2) -
+                                3;
                     if (!_this.homePosition)
                         _this.homePosition = proj_1.toLonLat(mercs[4]);
                     _this.envelope = helpers_1.polygon([

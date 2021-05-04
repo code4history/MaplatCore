@@ -9,9 +9,7 @@ import Tin, {
   VertexMode,
   YaxisMode
 } from "@maplat/tin";
-import {
-  Position
-} from "@turf/turf";
+import { Position } from "@turf/turf";
 type LangResource = string | Record<string, string>;
 type TinLike = string | Tin | Compiled;
 
