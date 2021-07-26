@@ -1,0 +1,42 @@
+{
+  "main2": {
+    "namespaceID": "main2",
+    "id": "main2",
+    "name": "main2_name",
+    "pois": [
+      {
+        "id": "main_111",
+        "lnglat": [
+          139.54590291859614,
+          36.225601902310075
+        ],
+        "namespaceID": "main_111"
+      },
+      {
+        "id": "main_112",
+        "lnglat": [
+          139.54590291859614,
+          36.225601902310075
+        ],
+        "namespaceID": "main_112"
+      }
+    ],
+    "__nextId": 0
+  },
+  "main": {
+    "namespaceID": "main",
+    "id": "main",
+    "name": "Test3",
+    "pois": [
+      {
+        "lnglat": [
+          139.54590291859614,
+          36.225601902310075
+        ],
+        "id": "main_0",
+        "namespaceID": "main_0"
+      }
+    ],
+    "__nextId": 1
+  }
+}

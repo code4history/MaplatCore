@@ -1,0 +1,86 @@
+{
+  "main2": {
+    "id": "main2",
+    "namespaceID": "main2",
+    "name": "main2_name",
+
+    "pois": [
+      {
+        "fid": 1,
+        "name": "聖観音",
+        "year": null,
+        "japanese_calendar": "不明",
+        "shape": "立像",
+        "inscription": "なし",
+        "note": "本尊",
+        "place": "上赤生田観音堂",
+        "type": "聖観音像",
+        "table_id": 1,
+        "book_id": 2,
+        "book_page": 4,
+        "confirmed": null,
+        "map_page": null,
+        "color": null,
+        "material": "木像",
+        "whole_height": 24,
+        "statue_height": 35,
+        "contradiction": "像高より総高の方が低い",
+        "width": null,
+        "depth": null,
+        "need_action": null,
+        "files": [],
+        "path": null,
+        "small_thumbnail": null,
+        "mid_thumbnail": null,
+        "lnglat": [
+          139.54590291859614,
+          36.225601902310075
+        ],
+        "id": "main2_0",
+        "namespaceID": "main2_0"
+      },
+      {
+        "fid": 2,
+        "name": "聖徳太子像",
+        "year": null,
+        "japanese_calendar": "不明",
+        "shape": "立像 御厨子に安置 両手両足の一部欠損",
+        "inscription": "なし",
+        "note": "田沼家守護神",
+        "place": "赤生田町谷 田沼氏宅",
+        "type": "聖徳太子像",
+        "table_id": 1,
+        "book_id": 2,
+        "book_page": 4,
+        "confirmed": null,
+        "map_page": null,
+        "color": null,
+        "material": "木像",
+        "whole_height": 39.7,
+        "statue_height": null,
+        "contradiction": "付表では所在が中新田 田沼家となっている",
+        "width": null,
+        "depth": null,
+        "need_action": null,
+        "files": [],
+        "path": null,
+        "small_thumbnail": null,
+        "mid_thumbnail": null,
+        "lnglat": [
+          139.56154806371708,
+          36.22035448084919
+        ],
+        "id": "main2_1",
+        "namespaceID": "main2_1"
+      }
+    ],
+    "__nextId": 2
+  },
+  "main": {
+    "id": "main",
+    "namespaceID": "main",
+    "name": "Test2",
+    "pois": [],
+    "__nextId": 0
+  }
+}

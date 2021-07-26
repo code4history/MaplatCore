@@ -1,0 +1,61 @@
+{
+  "title": "GeoJson, FeatureCollection (Array)",
+  "data": [
+    {
+      "type": "FeatureCollection",
+      "properties": {
+        "id": "main2",
+        "name": "main2_name"
+      },
+      "features": [
+        {
+          "type": "Feature",
+          "properties": {
+            "id": "main_111"
+          },
+          "geometry": {
+            "type": "Point",
+            "coordinates": [
+              139.54590291859614,
+              36.225601902310075
+            ]
+          }
+        },
+        {
+          "type": "Feature",
+          "properties": {
+            "id": "main_112"
+          },
+          "geometry": {
+            "type": "Point",
+            "coordinates": [
+              139.54590291859614,
+              36.225601902310075
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "type": "FeatureCollection",
+      "id": "main",
+      "features": [
+        {
+          "type": "Feature",
+          "properties": {
+          },
+          "geometry": {
+            "type": "Point",
+            "coordinates": [
+              139.54590291859614,
+              36.225601902310075
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "options": {
+    "name": "Test3"
+  }
+}

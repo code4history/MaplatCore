@@ -1,0 +1,1 @@
+{"version":3,"file":"customevent.js","sourceRoot":"","sources":["../src/customevent.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,MAAM,iBAAiB,CAAC;AAEpC,MAAM,CAAC,OAAO,OAAO,WAAY,SAAQ,KAAK;IAE5C,YAAY,IAAY,EAAE,MAAW;QACnC,KAAK,CAAC,IAAI,CAAC,CAAC;QACZ,IAAI,CAAC,MAAM,GAAG,MAAM,CAAC;IACvB,CAAC;CACF"}

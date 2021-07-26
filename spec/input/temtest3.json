@@ -1,0 +1,21 @@
+{
+  "title": "No template test",
+  "data": {
+    "html": "<br>"
+  },
+  "ancestors": [
+    {
+      "html": "<hr>",
+      "poiStyle": "abc"
+    },
+    {
+      "icon": "d",
+      "selectedIcon": "e"
+    },
+    {
+      "iconTemplate": "{\n  \"icon\": \"<% if (boolean) { %>true<% } else { %>false<% } %>\",\n  \"selectedIcon\": \"<% [0,1,2].map((x)=>{ %><%= x %><% }) %>\"\n}",
+      "icon": "f",
+      "selectedIcon": "g"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "title": "Logic test",
+  "data": {
+    "boolean": true
+  },
+  "ancestors": [
+    {
+      "iconTemplate": "{\n  \"icon\": \"<% if (boolean) { %>true<% } else { %>false<% } %>\",\n  \"selectedIcon\": \"<% [0,1,2].map((x)=>{ %><%= x %><% }) %>\"\n}",
+      "icon": "f",
+      "selectedIcon": "g",
+      "poiStyle": "abc"
+    },
+    {
+      "icon": "d",
+      "selectedIcon": "e",
+      "poiTemplate": "<%= !boolean %>",
+      "poiStyle": "def"
+    },
+    {
+      "poiTemplate": "<%= boolean %>",
+      "poiStyle": "ghi"
+    }
+  ]
+}

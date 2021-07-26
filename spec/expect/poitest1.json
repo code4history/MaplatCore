@@ -1,0 +1,28 @@
+{
+  "main": {
+    "pois": [
+      {
+        "id": "id1",
+        "title": "Title",
+        "lnglat": [
+          135,
+          35
+        ],
+        "namespaceID": "id1"
+      },
+      {
+        "title": "Title2",
+        "lnglat": [
+          136,
+          36
+        ],
+        "id": "main_0",
+        "namespaceID": "main_0"
+      }
+    ],
+    "id": "main",
+    "namespaceID": "main",
+    "name": "Test1",
+    "__nextId": 1
+  }
+}
