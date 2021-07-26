@@ -14,7 +14,7 @@ declare const HistMap_base: (abstract new (...args: any[]) => {
     initialWait?: Promise<any> | undefined;
     maxZoom?: number | undefined;
     minZoom?: number | undefined;
-    envelope?: import("@turf/helpers").Feature<import("@turf/helpers").Polygon, import("@turf/helpers").Properties> | undefined;
+    envelope?: import("@turf/turf").Feature<import("@turf/turf").Polygon, import("@turf/turf").Properties> | undefined;
     centroid?: number[] | undefined;
     insideCheckSysCoord(sysCoord: Coordinate): boolean;
     getCacheEnable(): boolean;

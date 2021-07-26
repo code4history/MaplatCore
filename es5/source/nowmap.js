@@ -102,8 +102,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         NowMap.prototype.insideCheckXy = function (xy) {
             if (!this.envelope)
                 return true;
-            var point_ = helpers_1.point(xy);
-            return boolean_point_in_polygon_1.default(point_, this.envelope);
+            return boolean_point_in_polygon_1.default(xy, this.envelope);
         };
         NowMap.prototype.insideCheckSysCoord = function (histCoords) {
             return this.insideCheckXy(histCoords);

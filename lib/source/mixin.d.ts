@@ -32,7 +32,7 @@ export declare function setCustomFunction<TBase extends Constructor>(Base: TBase
     initialWait?: Promise<any> | undefined;
     maxZoom?: number | undefined;
     minZoom?: number | undefined;
-    envelope?: Feature<Polygon, import("@turf/helpers").Properties> | undefined;
+    envelope?: Feature<Polygon, import("@turf/turf").Properties> | undefined;
     centroid?: number[] | undefined;
     insideCheckSysCoord(sysCoord: Coordinate): boolean;
     getCacheEnable(): boolean;

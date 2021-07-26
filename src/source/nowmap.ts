@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { OSM } from "ol/source";
 import { normalizeArg } from "../functions";
-import { lineString, point } from "@turf/helpers";
+import { lineString } from "@turf/helpers";
 import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
 import lineIntersect from "@turf/line-intersect";
 import {
@@ -42,8 +42,7 @@ export class NowMap extends setCustomFunction(OSM) {
 
   insideCheckXy(xy: Coordinate) {
     if (!this.envelope) return true;
-    const point_ = point(xy);
-    return booleanPointInPolygon(point_, this.envelope);
+    return booleanPointInPolygon(xy, this.envelope);
   }
 
   insideCheckSysCoord(histCoords: Coordinate) {
