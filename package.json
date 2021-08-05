@@ -1,6 +1,6 @@
 {
   "name": "@maplat/core",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "Maplat is the cool Historical Map/Illustrated Map Viewer API.\nIt can transform each map coordinates with nonlinear but homeomorphic projection and makes possible that the maps can collaborate with GPS/accurate maps, without distorting original maps.",
   "main": "es5/index.js",
   "module": "lib/index.js",
@@ -36,7 +36,8 @@
     "lint": "npm run lint:eslint && npm run lint:prettier",
     "lint:eslint": "eslint \"{src,spec}/**/*.{js,ts}\" --fix",
     "lint:prettier": "prettier \"./{src,spec}/**/*.{js,ts}\" --write",
-    "typecheck": "tsc --noEmit --project ts_config/tsconfig.es6.json"
+    "typecheck": "tsc --noEmit --project ts_config/tsconfig.es6.json",
+    "git_switch": "gulp git_switch"
   },
   "repository": {
     "type": "git",
@@ -53,7 +54,7 @@
   },
   "homepage": "https://github.com/code4history/MaplatCore/wiki",
   "dependencies": {
-    "@maplat/tin": "^0.9.0",
+    "@maplat/tin": "^0.9.1",
     "@turf/line-intersect": "^6.5.0",
     "@turf/turf": "^6.5.0",
     "argv": "0.0.2",
@@ -81,6 +82,7 @@
     "babel-jest": "^26.6.3",
     "babel-loader": "^8.2.2",
     "clean-webpack-plugin": "^3.0.0",
+    "concaveman": "https://github.com/grassick/concaveman#patch-1",
     "core-js": "^3.15.1",
     "css-loader": "^5.2.6",
     "css-minimizer-webpack-plugin": "^1.3.0",
@@ -113,5 +115,8 @@
     "webpack": "^5.40.0",
     "webpack-cli": "^4.7.2",
     "webpack-dev-server": "^3.11.2"
+  },
+  "resolutions": {
+    "concaveman": "https://github.com/grassick/concaveman#patch-1"
   }
 }

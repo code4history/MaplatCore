@@ -1,4 +1,4 @@
-/*! @maplat/core v0.10.0 | Kohei Otsuka, Code for History | license: Maplat Limited License 1.1 */
+/*! @maplat/core v0.10.1 | Kohei Otsuka, Code for History | license: Maplat Limited License 1.1 */
 
 /**
    * splaytree v3.1.0
