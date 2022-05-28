@@ -36,6 +36,7 @@ export function transformDirect(
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   if (xy) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     return func(xy);
   }

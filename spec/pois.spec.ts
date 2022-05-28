@@ -12,13 +12,9 @@ describe("normalizePois test", () => {
     }
 
     it(testin.title, async () => {
-      try {
-        const testout = await normalizeLayers(testin.data, testin.options);
-        //if (i == 1) fs.writeFileSync(`./spec/expect/poitest${i}.json`, JSON.stringify(testout, null, 2));
-        expect(JSON.parse(JSON.stringify(testout))).toEqual(testex);
-      } catch (error) {
-        throw error;
-      }
+      const testout = await normalizeLayers(testin.data, testin.options);
+      //if (i == 1) fs.writeFileSync(`./spec/expect/poitest${i}.json`, JSON.stringify(testout, null, 2));
+      expect(JSON.parse(JSON.stringify(testout))).toEqual(testex);
     });
   }
 });
