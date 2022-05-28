@@ -14,10 +14,14 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 (function (factory) {
     if (typeof module === "object" && typeof module.exports === "object") {
@@ -66,7 +70,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from) {
                             for (var _i = 0; _i < arguments.length; _i++) {
                                 args[_i] = arguments[_i];
                             }
-                            return console.log.apply(console, __spreadArray([], __read(args)));
+                            return console.log.apply(console, __spreadArray([], __read(args), false));
                         })(key);
                     }
                 }

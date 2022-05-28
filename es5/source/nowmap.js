@@ -75,21 +75,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         function NowMap(options) {
             if (options === void 0) { options = {}; }
             var _this = _super.call(this, (options = (function () {
-                options = functions_1.normalizeArg(options);
+                options = (0, functions_1.normalizeArg)(options);
                 if (!options.imageExtension)
                     options.imageExtension = "jpg";
                 if (options.mapID && !options.url && !options.urls) {
                     options.url = options.tms
-                        ? "tiles/" + options.mapID + "/{z}/{x}/{-y}." + options.imageExtension
-                        : "tiles/" + options.mapID + "/{z}/{x}/{y}." + options.imageExtension;
+                        ? "tiles/".concat(options.mapID, "/{z}/{x}/{-y}.").concat(options.imageExtension)
+                        : "tiles/".concat(options.mapID, "/{z}/{x}/{y}.").concat(options.imageExtension);
                 }
                 return options;
             })())) || this;
             if (options.mapID) {
                 _this.mapID = options.mapID;
             }
-            mixin_1.setCustomInitialize(_this, options);
-            mixin_1.setupTileLoadFunction(_this);
+            (0, mixin_1.setCustomInitialize)(_this, options);
+            (0, mixin_1.setupTileLoadFunction)(_this);
             return _this;
         }
         NowMap.createAsync = function (options) {
@@ -102,7 +102,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         NowMap.prototype.insideCheckXy = function (xy) {
             if (!this.envelope)
                 return true;
-            return boolean_point_in_polygon_1.default(xy, this.envelope);
+            return (0, boolean_point_in_polygon_1.default)(xy, this.envelope);
         };
         NowMap.prototype.insideCheckSysCoord = function (histCoords) {
             return this.insideCheckXy(histCoords);
@@ -110,8 +110,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         NowMap.prototype.modulateXyInside = function (xy) {
             if (!this.centroid)
                 return xy;
-            var expandLine = helpers_1.lineString([xy, this.centroid]);
-            var intersect = line_intersect_1.default(this.envelope, expandLine);
+            var expandLine = (0, helpers_1.lineString)([xy, this.centroid]);
+            var intersect = (0, line_intersect_1.default)(this.envelope, expandLine);
             if (intersect.features.length > 0 && intersect.features[0].geometry) {
                 return intersect.features[0].geometry.coordinates;
             }
@@ -154,7 +154,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             return Promise.all(mercs[0].map(function (merc) { return _this.merc2SysCoordAsync(merc); })).then(function (xys) { return [[xys, mercs[1]]]; });
         };
         return NowMap;
-    }(mixin_1.setCustomFunction(source_1.OSM)));
+    }((0, mixin_1.setCustomFunction)(source_1.OSM)));
     exports.NowMap = NowMap;
 });
 //# sourceMappingURL=nowmap.js.map

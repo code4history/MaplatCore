@@ -1,4 +1,3 @@
-import i18n from "i18next";
 import CustomEvent from "./customevent";
 import { Logger } from "./logger";
 import { createElement } from "./functions";
@@ -55,8 +54,8 @@ export declare class MaplatApp extends EventTarget {
     overlay: boolean;
     waitReady: Promise<void>;
     changeMapSeq?: Promise<void>;
-    i18n?: i18n.i18n;
-    t?: i18n.TFunction;
+    i18n?: any;
+    t?: any;
     lang: string;
     appData?: AppData;
     appLang: string;

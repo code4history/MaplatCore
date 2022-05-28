@@ -13,8 +13,8 @@ export function transformDirect(
   dist: ProjectionLike,
   xy?: Coordinate
 ): Coordinate | undefined {
-  const srcCode = typeof src === "string" ? src : src.getCode();
-  const distCode = typeof dist === "string" ? dist : dist.getCode();
+  const srcCode = typeof src === "string" ? src : src!.getCode();
+  const distCode = typeof dist === "string" ? dist : dist!.getCode();
   let func = getTransform(src, dist);
   if (func == identityTransform && srcCode != distCode) {
     const srcFunc = getTransform(src, "EPSG:3857");
@@ -29,8 +29,13 @@ export function transformDirect(
     const invFunc = function (xy: Coordinate): Coordinate {
       return transform(transform(xy, dist, "EPSG:3857"), "EPSG:3857", src);
     };
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     addCoordinateTransforms(src, dist, func, invFunc);
   }
 
-  if (xy) return func(xy);
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  if (xy) { // @ts-ignore
+    return func(xy);
+  }
 }

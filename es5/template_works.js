@@ -20,7 +20,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         for (var _i = 1; _i < arguments.length; _i++) {
             ancestors[_i - 1] = arguments[_i];
         }
-        var dataCopy = functions_1.normalizeArg(Object.assign({}, data));
+        var dataCopy = (0, functions_1.normalizeArg)(Object.assign({}, data));
         if (dataCopy.icon)
             return dataCopy;
         var fromAncestor = ancestors.reduce(function (prev, curr) {
@@ -28,7 +28,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 return prev;
             var iconTemplate = curr.iconTemplate || curr.iconTemplate;
             if (iconTemplate) {
-                return JSON.parse(lodash_template_1.default(iconTemplate)(dataCopy));
+                return JSON.parse((0, lodash_template_1.default)(iconTemplate)(dataCopy));
             }
             else if (curr.icon) {
                 return {
@@ -49,7 +49,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         for (var _i = 1; _i < arguments.length; _i++) {
             ancestors[_i - 1] = arguments[_i];
         }
-        data = functions_1.normalizeArg(data);
+        data = (0, functions_1.normalizeArg)(data);
         if (data.html)
             return data;
         return (ancestors.reduce(function (prev, curr) {
@@ -57,7 +57,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 return prev;
             var poiTemplate = curr.poiTemplate;
             if (poiTemplate) {
-                data.html = lodash_template_1.default(poiTemplate)(data);
+                data.html = (0, lodash_template_1.default)(poiTemplate)(data);
                 data.poiStyle = data.poiStyle || curr.poiStyle;
                 return data;
             }

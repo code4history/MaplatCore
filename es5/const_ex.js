@@ -25,6 +25,6 @@
         "r+4ICgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
         "AAAAAAAAAAAAABgBDwABHHIJwwAAAABJRU5ErkJggg==";
     exports.tileSize = 256;
-    exports.canvBase = "<canvas width=\"" + exports.tileSize + "\" height=\"" + exports.tileSize + "\" src=\"" + exports.transPng + "\"></canvas>";
+    exports.canvBase = "<canvas width=\"".concat(exports.tileSize, "\" height=\"").concat(exports.tileSize, "\" src=\"").concat(exports.transPng, "\"></canvas>");
 });
 //# sourceMappingURL=const_ex.js.map

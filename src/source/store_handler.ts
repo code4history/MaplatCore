@@ -257,7 +257,7 @@ async function createTinFromGcpsAsync(
   try {
     await tin.updateTinAsync();
     return tin;
-  } catch (err) {
+  } catch (err: any) {
     console.log(err); // eslint-disable-line no-console,no-undef
     if (err == "SOME POINTS OUTSIDE") {
       return "pointsOutside";

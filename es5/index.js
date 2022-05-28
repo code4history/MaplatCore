@@ -109,7 +109,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             _this.__init = true;
             _this.__redrawMarkerBlock = false;
             _this.__redrawMarkerThrottle = [];
-            appOption = functions_1.normalizeArg(appOption);
+            appOption = (0, functions_1.normalizeArg)(appOption);
             _this.appid = appOption.appid || "sample";
             if (appOption.mapboxgl) {
                 _this.mapboxgl = appOption.mapboxgl;
@@ -118,7 +118,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 }
             }
             _this.mapDiv = appOption.div || "map_div";
-            _this.mapDivDocument = document.querySelector("#" + _this.mapDiv);
+            _this.mapDivDocument = document.querySelector("#".concat(_this.mapDiv));
             _this.mapDivDocument.classList.add("maplat");
             _this.logger = new logger_1.Logger(appOption.debug ? logger_1.LoggerLevel.ALL : logger_1.LoggerLevel.INFO);
             _this.enableCache = appOption.enableCache || false;
@@ -128,7 +128,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             var setting = appOption.setting;
             _this.lang = appOption.lang;
             if (!_this.lang) {
-                _this.lang = browserlanguage_1.default();
+                _this.lang = (0, browserlanguage_1.default)();
             }
             if (_this.lang.toLowerCase() == "zh-hk" ||
                 _this.lang.toLowerCase() == "zh-hant")
@@ -163,7 +163,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         localStorage.getItem("hideLayer") || undefined;
                 }
             }
-            var newElems = functions_1.createElement("<img id=\"center_circle\" class=\"prevent-default\" alt=\"\"\n            style=\"position:absolute;top:50%;left:50%;margin-top:-10px;\n            margin-left:-10px;\" src=\"" + redcircle_png_1.default + "\">");
+            var newElems = (0, functions_1.createElement)("<img id=\"center_circle\" class=\"prevent-default\" alt=\"\"\n            style=\"position:absolute;top:50%;left:50%;margin-top:-10px;\n            margin-left:-10px;\" src=\"".concat(redcircle_png_1.default, "\">"));
             for (var i = newElems.length - 1; i >= 0; i--) {
                 _this.mapDivDocument.insertBefore(newElems[i], _this.mapDivDocument.firstChild);
             }
@@ -190,7 +190,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                     return [2, (setting ||
                             new Promise(function (resolve, _reject) {
                                 var xhr = new XMLHttpRequest();
-                                xhr.open("GET", "apps/" + _this.appid + ".json", true);
+                                xhr.open("GET", "apps/".concat(_this.appid, ".json"), true);
                                 xhr.responseType = "json";
                                 xhr.onload = function (_e) {
                                     var value = this.response;
@@ -242,7 +242,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                     };
                     for (i = 0; i < dataSource.length; i++) {
                         option = dataSource[i];
-                        sourcePromise.push(source_ex_1.mapSourceFactory(option, commonOption));
+                        sourcePromise.push((0, source_ex_1.mapSourceFactory)(option, commonOption));
                     }
                     return [2, Promise.all(sourcePromise)];
                 });
@@ -250,7 +250,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         };
         MaplatApp.prototype.handleSetting = function (setting, appOption) {
             var _this = this;
-            this.appData = functions_1.normalizeArg(setting);
+            this.appData = (0, functions_1.normalizeArg)(setting);
             if (!this.lang && this.appData.lang) {
                 this.lang = this.appData.lang;
             }
@@ -261,12 +261,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             this.i18n = i18nObj[1];
             this.t = i18nObj[0];
             var mapReturnValue = this.prepareMap(appOption);
-            return normalize_pois_1.normalizeLayers(this.appData.pois || [], this).then(function (x) {
+            return (0, normalize_pois_1.normalizeLayers)(this.appData.pois || [], this).then(function (x) {
                 return _this.handlePois(x, mapReturnValue);
             });
         };
         MaplatApp.prototype.prepareMap = function (appOption) {
-            appOption = functions_1.normalizeArg(appOption);
+            appOption = (0, functions_1.normalizeArg)(appOption);
             this.mercBuffer = null;
             var homePos = this.appData.homePosition;
             var defZoom = this.appData.defaultZoom;
@@ -286,16 +286,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             this.currentPosition = null;
             this.__init = true;
             this.dispatchEvent(new customevent_1.default("uiPrepare"));
-            var frontDiv = this.mapDiv + "_front";
-            var newElem = functions_1.createElement("<div id=\"" + frontDiv + "\" class=\"map\" style=\"top:0; left:0; right:0; bottom:0; " +
+            var frontDiv = "".concat(this.mapDiv, "_front");
+            var newElem = (0, functions_1.createElement)("<div id=\"".concat(frontDiv, "\" class=\"map\" style=\"top:0; left:0; right:0; bottom:0; ") +
                 "position:absolute;\"></div>")[0];
             this.mapDivDocument.insertBefore(newElem, this.mapDivDocument.firstChild);
             this.mapObject = new map_ex_1.MaplatMap({
                 div: frontDiv,
                 controls: this.appData.controls || [],
                 interactions: this.noRotate
-                    ? interaction_1.defaults({ altShiftDragRotate: false, pinchRotate: false })
-                    : interaction_1.defaults().extend([
+                    ? (0, interaction_1.defaults)({ altShiftDragRotate: false, pinchRotate: false })
+                    : (0, interaction_1.defaults)().extend([
                         new interaction_1.DragRotateAndZoom({
                             condition: condition_1.altKeyOnly
                         })
@@ -306,8 +306,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             });
             var backDiv = null;
             if (this.overlay) {
-                backDiv = this.mapDiv + "_back";
-                newElem = functions_1.createElement("<div id=\"" + backDiv + "\" class=\"map\" style=\"top:0; left:0; right:0; bottom:0; " +
+                backDiv = "".concat(this.mapDiv, "_back");
+                newElem = (0, functions_1.createElement)("<div id=\"".concat(backDiv, "\" class=\"map\" style=\"top:0; left:0; right:0; bottom:0; ") +
                     "position:absolute;\"></div>")[0];
                 this.mapDivDocument.insertBefore(newElem, this.mapDivDocument.firstChild);
                 this.backMap = new map_ex_1.MaplatMap({
@@ -318,8 +318,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             if (this.mapboxgl) {
                 var mapboxgl = this.mapboxgl;
                 delete this.mapboxgl;
-                var mapboxDiv = this.mapDiv + "_mapbox";
-                newElem = functions_1.createElement("<div id=\"" + mapboxDiv + "\" class=\"map\" style=\"top:0; left:0; right:0; bottom:0; " +
+                var mapboxDiv = "".concat(this.mapDiv, "_mapbox");
+                newElem = (0, functions_1.createElement)("<div id=\"".concat(mapboxDiv, "\" class=\"map\" style=\"top:0; left:0; right:0; bottom:0; ") +
                     "position:absolute;visibility:hidden;\"></div>")[0];
                 this.mapDivDocument.insertBefore(newElem, this.mapDivDocument.firstChild);
                 this.mapboxMap = new mapboxgl.Map({
@@ -429,7 +429,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         .sysCoord2MercAsync(xy)
                         .then(function (merc) {
                         _this.dispatchEvent(new customevent_1.default("clickMapMerc", merc));
-                        var lnglat = proj_1.transform(merc, "EPSG:3857", "EPSG:4326");
+                        var lnglat = (0, proj_1.transform)(merc, "EPSG:3857", "EPSG:4326");
                         _this.dispatchEvent(new customevent_1.default("clickMap", {
                             longitude: lnglat[0],
                             latitude: lnglat[1]
@@ -548,10 +548,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         if (feature.get("datum"))
                             return feature;
                     });
-                    _this.mapDivDocument.querySelector("#" + target).style.cursor = feature ? "pointer" : "";
+                    _this.mapDivDocument.querySelector("#".concat(target)).style.cursor = feature ? "pointer" : "";
                     return;
                 }
-                _this.mapDivDocument.querySelector("#" + target).style.cursor = "";
+                _this.mapDivDocument.querySelector("#".concat(target)).style.cursor = "";
             };
             this.mapObject.on("pointermove", moveHandler);
             var mapOutHandler = function (evt) {
@@ -595,7 +595,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 var view = _this.mapObject.getView();
                 var center = view.getCenter();
                 var zoom = view.getDecimalZoom();
-                var rotation = functions_1.normalizeDegree((view.getRotation() * 180) / Math.PI);
+                var rotation = (0, functions_1.normalizeDegree)((view.getRotation() * 180) / Math.PI);
                 _this.from
                     .viewpoint2MercsAsync()
                     .then(function (mercs) { return _this.mercSrc.mercs2ViewpointAsync(mercs); })
@@ -608,8 +608,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         return;
                     }
                     _this.mobileMapMoveBuffer = viewpoint;
-                    var ll = proj_1.transform(viewpoint[0], "EPSG:3857", "EPSG:4326");
-                    var direction = functions_1.normalizeDegree((viewpoint[2] * 180) / Math.PI);
+                    var ll = (0, proj_1.transform)(viewpoint[0], "EPSG:3857", "EPSG:4326");
+                    var direction = (0, functions_1.normalizeDegree)((viewpoint[2] * 180) / Math.PI);
                     _this.dispatchEvent(new customevent_1.default("changeViewpoint", {
                         x: center[0],
                         y: center[1],
@@ -634,10 +634,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             });
         };
         MaplatApp.prototype.currentMapInfo = function () {
-            return functions_1.createMapInfo(this.from);
+            return (0, functions_1.createMapInfo)(this.from);
         };
         MaplatApp.prototype.mapInfo = function (mapID) {
-            return functions_1.createMapInfo(this.cacheHash[mapID]);
+            return (0, functions_1.createMapInfo)(this.cacheHash[mapID]);
         };
         MaplatApp.prototype.setMarker = function (data) {
             var _this = this;
@@ -666,7 +666,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         resolve(src.xy2SysCoord([x, y]));
                     })
                     : (function () {
-                        var merc = proj_1.transform(lnglat, "EPSG:4326", "EPSG:3857");
+                        var merc = (0, proj_1.transform)(lnglat, "EPSG:4326", "EPSG:3857");
                         return src.merc2SysCoordAsync_ignoreBackground(merc);
                     })();
             return promise.then(function (xy) {
@@ -701,7 +701,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                     }
                     else {
                         if (isLnglat)
-                            coord = proj_1.transform(coord, "EPSG:4326", "EPSG:3857");
+                            coord = (0, proj_1.transform)(coord, "EPSG:4326", "EPSG:3857");
                         return _this.from.merc2SysCoordAsync(coord);
                     }
                 }));
@@ -747,8 +747,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         var cluster = _this.pois[key];
                         if (!cluster.hide) {
                             cluster.pois.map(function (data) {
-                                var dataCopy = template_works_1.createIconSet(data, cluster, _this);
-                                template_works_1.createHtmlFromTemplate(dataCopy, cluster, _this);
+                                var dataCopy = (0, template_works_1.createIconSet)(data, cluster, _this);
+                                (0, template_works_1.createHtmlFromTemplate)(dataCopy, cluster, _this);
                                 if (_this.__selectedMarker == dataCopy.namespaceID) {
                                     selected = dataCopy;
                                 }
@@ -763,8 +763,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                             var cluster = source.pois[key];
                             if (!cluster.hide) {
                                 cluster.pois.map(function (data) {
-                                    var dataCopy = template_works_1.createIconSet(data, cluster, source, _this);
-                                    template_works_1.createHtmlFromTemplate(dataCopy, cluster, source, _this);
+                                    var dataCopy = (0, template_works_1.createIconSet)(data, cluster, source, _this);
+                                    (0, template_works_1.createHtmlFromTemplate)(dataCopy, cluster, source, _this);
                                     if (_this.__selectedMarker == dataCopy.namespaceID) {
                                         selected = dataCopy;
                                     }
@@ -841,7 +841,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             var poi = this.getMarker(id);
             if (!poi)
                 return;
-            data = normalize_pois_1.normalizePoi(data || {});
+            data = (0, normalize_pois_1.normalizePoi)(data || {});
             if (overwrite) {
                 Object.keys(poi).map(function (key) {
                     if (key != "id" && key != "namespaceID") {
@@ -870,8 +870,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             }
             if (clusterId.indexOf("#") < 0) {
                 if (this.pois[clusterId]) {
-                    this.pois[clusterId]["pois"].push(normalize_pois_1.normalizePoi(data));
-                    normalize_pois_1.addIdToPoi(this.pois, clusterId, {
+                    this.pois[clusterId]["pois"].push((0, normalize_pois_1.normalizePoi)(data));
+                    (0, normalize_pois_1.addIdToPoi)(this.pois, clusterId, {
                         name: this.appName
                     });
                     this.dispatchPoiNumber();
@@ -1025,7 +1025,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             if (this.pois[id])
                 return;
             if (id.indexOf("#") < 0) {
-                this.pois[id] = normalize_pois_1.normalizeLayer(data || [], id, {
+                this.pois[id] = (0, normalize_pois_1.normalizeLayer)(data || [], id, {
                     name: this.appName
                 });
                 this.redrawMarkers();
@@ -1235,7 +1235,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             }
             if (this.restoreSession) {
                 var currentTime = Math.floor(new Date().getTime() / 1000);
-                localStorage.setItem("epoch", "" + currentTime);
+                localStorage.setItem("epoch", "".concat(currentTime));
                 var loopSession_1 = function (data) {
                     Object.keys(data).map(function (key) {
                         if (key == "position") {
@@ -1404,7 +1404,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             var _this = this;
             var view = this.mapObject.getView();
             var fromPromise = this.from.viewpoint2MercsAsync();
-            var current = math_ex_1.recursiveRound([view.getCenter(), view.getZoom(), view.getRotation()], 10);
+            var current = (0, math_ex_1.recursiveRound)([view.getCenter(), view.getZoom(), view.getRotation()], 10);
             if (this.mercBuffer &&
                 this.mercBuffer.mercs &&
                 this.mercBuffer.buffer[this.from.mapID]) {
@@ -1433,12 +1433,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 };
                 this.mercBuffer.buffer[this.from.mapID] = current;
             }
-            this.logger.debug("From: Center: " + current[0] + " Zoom: " + current[1] + " Rotation: " + current[2]);
-            this.logger.debug("From: " + this.from.mapID);
+            this.logger.debug("From: Center: ".concat(current[0], " Zoom: ").concat(current[1], " Rotation: ").concat(current[2]));
+            this.logger.debug("From: ".concat(this.from.mapID));
             fromPromise
                 .then(function (mercs) {
                 _this.mercBuffer.mercs = mercs;
-                _this.logger.debug("Mercs: " + mercs);
+                _this.logger.debug("Mercs: ".concat(mercs));
                 var toPromise = to.mercs2ViewpointAsync(mercs);
                 var key = to.mapID;
                 if (_this.mercBuffer.buffer[key]) {
@@ -1449,9 +1449,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 }
                 toPromise
                     .then(function (size) {
-                    _this.logger.debug("To: Center: " + size[0] + " Zoom: " + size[1] + " Rotation: " + size[2]);
-                    _this.logger.debug("To: " + to.mapID);
-                    _this.mercBuffer.buffer[to.mapID] = math_ex_1.recursiveRound(size, 10);
+                    _this.logger.debug("To: Center: ".concat(size[0], " Zoom: ").concat(size[1], " Rotation: ").concat(size[2]));
+                    _this.logger.debug("To: ".concat(to.mapID));
+                    _this.mercBuffer.buffer[to.mapID] = (0, math_ex_1.recursiveRound)(size, 10);
                     callback(size);
                 })
                     .catch(function (err) {
@@ -1478,7 +1478,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                     return prev[0];
                 return prev;
             }, undefined);
-            key = typeof key === "string" ? key : "" + key;
+            key = typeof key === "string" ? key : "".concat(key);
             if (this.i18n.exists(key, {
                 ns: "translation",
                 nsSeparator: "__X__yX__X__"

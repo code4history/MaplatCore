@@ -85,38 +85,38 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 var histmaps, obj, proj;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
-                        case 0: return [4, store_handler_1.store2HistMap4Core(options)];
+                        case 0: return [4, (0, store_handler_1.store2HistMap4Core)(options)];
                         case 1:
                             histmaps = _a.sent();
                             options = histmaps[0];
                             obj = new HistMap_tin(options);
                             obj.tins = histmaps[1];
                             proj = new Projection_1.default({
-                                code: "Illst:" + obj.mapID,
+                                code: "Illst:".concat(obj.mapID),
                                 extent: [0.0, 0.0, obj.width, obj.height],
                                 units: "m"
                             });
-                            proj_1.addProjection(proj);
-                            proj_1.addCoordinateTransforms(proj, "EPSG:3857", function (xy) { return obj.tins[0].transform(xy, false); }, function (merc) { return obj.tins[0].transform(merc, true); });
-                            proj_ex_1.transformDirect("EPSG:4326", proj);
+                            (0, proj_1.addProjection)(proj);
+                            (0, proj_1.addCoordinateTransforms)(proj, "EPSG:3857", function (xy) { return obj.tins[0].transform(xy, false); }, function (merc) { return obj.tins[0].transform(merc, true); });
+                            (0, proj_ex_1.transformDirect)("EPSG:4326", proj);
                             if (options.sub_maps) {
                                 options.sub_maps.map(function (sub_map, i) {
                                     var index = i + 1;
-                                    var projKey = "Illst:" + obj.mapID + "#" + index;
+                                    var projKey = "Illst:".concat(obj.mapID, "#").concat(index);
                                     var tin = obj.tins[index];
                                     var proj = new Projection_1.default({
                                         code: projKey,
                                         extent: [tin.xy[0], tin.xy[1], tin.wh[0], tin.wh[1]],
                                         units: "m"
                                     });
-                                    proj_1.addProjection(proj);
-                                    proj_1.addCoordinateTransforms(proj, "EPSG:3857", function (xy) { return tin.transform(xy, false, true); }, function (merc) { return tin.transform(merc, true, true); });
-                                    proj_ex_1.transformDirect("EPSG:4326", proj);
+                                    (0, proj_1.addProjection)(proj);
+                                    (0, proj_1.addCoordinateTransforms)(proj, "EPSG:3857", function (xy) { return tin.transform(xy, false, true); }, function (merc) { return tin.transform(merc, true, true); });
+                                    (0, proj_ex_1.transformDirect)("EPSG:4326", proj);
                                     var xyBounds = Object.assign([], sub_map.bounds);
                                     xyBounds.push(sub_map.bounds[0]);
                                     var mercBounds = xyBounds.map(function (xy) { return tin.transform(xy, false); });
-                                    var xyBoundsPolygon = helpers_1.polygon([xyBounds]);
-                                    var mercBoundsPolygon = helpers_1.polygon([mercBounds]);
+                                    var xyBoundsPolygon = (0, helpers_1.polygon)([xyBounds]);
+                                    var mercBoundsPolygon = (0, helpers_1.polygon)([mercBounds]);
                                     tin.xyBounds = xyBoundsPolygon;
                                     tin.mercBounds = mercBoundsPolygon;
                                 });
@@ -127,15 +127,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             });
         };
         HistMap_tin.prototype.xy2MercAsync_specifyLayer = function (xy, layerId) {
-            var layerKey = "Illst:" + this.mapID + (layerId ? "#" + layerId : "");
+            var layerKey = "Illst:".concat(this.mapID).concat(layerId ? "#".concat(layerId) : "");
             return new Promise(function (resolve, _reject) {
-                resolve(proj_ex_1.transformDirect(layerKey, "EPSG:3857", xy));
+                resolve((0, proj_ex_1.transformDirect)(layerKey, "EPSG:3857", xy));
             });
         };
         HistMap_tin.prototype.merc2XyAsync_specifyLayer = function (merc, layerId) {
-            var layerKey = "Illst:" + this.mapID + (layerId ? "#" + layerId : "");
+            var layerKey = "Illst:".concat(this.mapID).concat(layerId ? "#".concat(layerId) : "");
             return new Promise(function (resolve, _reject) {
-                resolve(proj_ex_1.transformDirect("EPSG:3857", layerKey, merc));
+                resolve((0, proj_ex_1.transformDirect)("EPSG:3857", layerKey, merc));
             });
         };
         HistMap_tin.prototype.xy2MercAsync_returnLayer = function (xy) {
@@ -147,7 +147,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 var _loop_1 = function (i) {
                     var index = tinSorted[i][0];
                     var tin = tinSorted[i][1];
-                    if (index == 0 || boolean_point_in_polygon_1.default(xy, tin.xyBounds)) {
+                    if (index == 0 || (0, boolean_point_in_polygon_1.default)(xy, tin.xyBounds)) {
                         _this.xy2MercAsync_specifyLayer(xy, index)
                             .then(function (merc) {
                             resolve([index, merc]);
@@ -171,7 +171,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 return new Promise(function (resolve, reject) {
                     _this.merc2XyAsync_specifyLayer(merc, index)
                         .then(function (xy) {
-                        if (index === 0 || boolean_point_in_polygon_1.default(xy, tin.xyBounds)) {
+                        if (index === 0 || (0, boolean_point_in_polygon_1.default)(xy, tin.xyBounds)) {
                             resolve([tin, index, xy]);
                         }
                         else {
@@ -195,7 +195,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         var targetTin = arry[i][0];
                         var targetIndex = arry[i][1];
                         if (targetIndex === 0 ||
-                            boolean_point_in_polygon_1.default(xy, targetTin.xyBounds)) {
+                            (0, boolean_point_in_polygon_1.default)(xy, targetTin.xyBounds)) {
                             if (ret.length) {
                                 var hide = !ret[0];
                                 var storedTin = hide ? ret[1][2] : ret[0][2];
@@ -268,8 +268,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                             Math.log((300 * (2 * const_ex_1.MERC_MAX)) / 256 / delta) / Math.log(2) -
                                 3;
                     if (!_this.homePosition)
-                        _this.homePosition = proj_1.toLonLat(mercs[4]);
-                    _this.envelope = helpers_1.polygon([
+                        _this.homePosition = (0, proj_1.toLonLat)(mercs[4]);
+                    _this.envelope = (0, helpers_1.polygon)([
                         [mercs[5], mercs[6], mercs[7], mercs[8], mercs[5]]
                     ]);
                     callback(_this);

@@ -32,7 +32,7 @@ var __extends = (this && this.__extends) || (function () {
     var functions_1 = require("../functions");
     var tileurlfunction_1 = require("ol/tileurlfunction");
     for (var z = 0; z < 9; z++) {
-        var key = "ZOOM:" + z;
+        var key = "ZOOM:".concat(z);
         var maxxy = 256 * Math.pow(2, z);
         (function (key, maxxy) {
             var projection = new proj_1.Projection({
@@ -40,8 +40,8 @@ var __extends = (this && this.__extends) || (function () {
                 extent: [0.0, 0.0, maxxy, maxxy],
                 units: "m"
             });
-            proj_1.addProjection(projection);
-            proj_1.addCoordinateTransforms("EPSG:3857", projection, function (coordinate) {
+            (0, proj_1.addProjection)(projection);
+            (0, proj_1.addCoordinateTransforms)("EPSG:3857", projection, function (coordinate) {
                 var x = ((coordinate[0] + const_ex_1.MERC_MAX) * maxxy) / (2 * const_ex_1.MERC_MAX);
                 var y = ((-coordinate[1] + const_ex_1.MERC_MAX) * maxxy) / (2 * const_ex_1.MERC_MAX);
                 return [x, y];
@@ -57,12 +57,12 @@ var __extends = (this && this.__extends) || (function () {
         function HistMap(options) {
             if (options === void 0) { options = {}; }
             var _this = _super.call(this, (options = (function () {
-                options = functions_1.normalizeArg(options);
+                options = (0, functions_1.normalizeArg)(options);
                 options.wrapX = false;
                 if (!options.imageExtension)
                     options.imageExtension = "jpg";
                 if (options.mapID && !options.url && !options.urls) {
-                    options.url = "tiles/" + options.mapID + "/{z}/{x}/{y}." + options.imageExtension;
+                    options.url = "tiles/".concat(options.mapID, "/{z}/{x}/{y}.").concat(options.imageExtension);
                 }
                 var zW = Math.log2(options.width / const_ex_1.tileSize);
                 var zH = Math.log2(options.height / const_ex_1.tileSize);
@@ -87,17 +87,17 @@ var __extends = (this && this.__extends) || (function () {
                 _this.mapID = options.mapID;
             }
             if (options.urls) {
-                _this._tileUrlFunction = tileurlfunction_1.createFromTemplates(options.urls);
+                _this._tileUrlFunction = (0, tileurlfunction_1.createFromTemplates)(options.urls);
             }
             else if (options.url) {
-                _this._tileUrlFunction = tileurlfunction_1.createFromTemplates(tileurlfunction_1.expandUrl(options.url));
+                _this._tileUrlFunction = (0, tileurlfunction_1.createFromTemplates)((0, tileurlfunction_1.expandUrl)(options.url));
             }
             _this.width = options.width;
             _this.height = options.height;
             _this.maxZoom = options.maxZoom;
             _this._maxxy = Math.pow(2, _this.maxZoom) * const_ex_1.tileSize;
-            mixin_1.setCustomInitialize(_this, options);
-            mixin_1.setupTileLoadFunction(_this);
+            (0, mixin_1.setCustomInitialize)(_this, options);
+            (0, mixin_1.setupTileLoadFunction)(_this);
             return _this;
         }
         HistMap.prototype.insideCheckXy = function (xy) {
@@ -134,7 +134,7 @@ var __extends = (this && this.__extends) || (function () {
             return [x, y];
         };
         return HistMap;
-    }(mixin_1.setCustomFunction(source_1.XYZ)));
+    }((0, mixin_1.setCustomFunction)(source_1.XYZ)));
     exports.HistMap = HistMap;
 });
 //# sourceMappingURL=histmap.js.map

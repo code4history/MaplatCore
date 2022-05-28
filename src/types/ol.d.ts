@@ -4,7 +4,7 @@ declare module "ol" {
   export interface View {
     getDecimalZoom(): number;
     getResolution(): number;
-    minZoom_: number;
-    maxResolution_: number;
+    //minZoom_: number;
+    //maxResolution_: number;
   }
 }

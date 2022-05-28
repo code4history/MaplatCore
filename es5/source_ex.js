@@ -127,7 +127,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         if (typeof options === "string") {
                             options = baseDict[options];
                         }
-                        options = functions_1.normalizeArg(Object.assign(options, commonOptions));
+                        options = (0, functions_1.normalizeArg)(Object.assign(options, commonOptions));
                         options.label = options.label || options.year;
                         if (!(options.maptype === "base" ||
                             options.maptype === "overlay" ||
@@ -164,8 +164,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                             options.imageExtension = "jpg";
                         if (options.mapID && !options.url && !options.urls) {
                             options.url = options.tms
-                                ? "tiles/" + options.mapID + "/{z}/{x}/{-y}." + options.imageExtension
-                                : "tiles/" + options.mapID + "/{z}/{x}/{y}." + options.imageExtension;
+                                ? "tiles/".concat(options.mapID, "/{z}/{x}/{-y}.").concat(options.imageExtension)
+                                : "tiles/".concat(options.mapID, "/{z}/{x}/{y}.").concat(options.imageExtension);
                         }
                         _a = options;
                         return [4, registerMapToSW(options)];
@@ -189,7 +189,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         }
                         _b.label = 5;
                     case 5: return [2, new Promise(function (resolve, reject) {
-                            var url = options.settingFile || "maps/" + options.mapID + ".json";
+                            var url = options.settingFile || "maps/".concat(options.mapID, ".json");
                             var xhr = new XMLHttpRequest();
                             xhr.open("GET", url, true);
                             xhr.responseType = "json";
@@ -206,7 +206,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                                                 resp = this.response;
                                                 if (typeof resp != "object")
                                                     resp = JSON.parse(resp);
-                                                options = functions_1.normalizeArg(Object.assign(resp, options));
+                                                options = (0, functions_1.normalizeArg)(Object.assign(resp, options));
                                                 options.label = options.label || resp.year;
                                                 if (options.translator) {
                                                     options.url = options.translator(options.url);
@@ -248,8 +248,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                                                     options.imageExtension = "jpg";
                                                 if (options.mapID && !options.url && !options.urls) {
                                                     options.url = options.tms
-                                                        ? "tiles/" + options.mapID + "/{z}/{x}/{-y}." + options.imageExtension
-                                                        : "tiles/" + options.mapID + "/{z}/{x}/{y}." + options.imageExtension;
+                                                        ? "tiles/".concat(options.mapID, "/{z}/{x}/{-y}.").concat(options.imageExtension)
+                                                        : "tiles/".concat(options.mapID, "/{z}/{x}/{y}.").concat(options.imageExtension);
                                                 }
                                                 _a = options;
                                                 return [4, registerMapToSW(options)];
@@ -287,7 +287,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                                                 if (!options.imageExtension)
                                                     options.imageExtension = "jpg";
                                                 if (options.mapID && !options.url && !options.urls) {
-                                                    options.url = "tiles/" + options.mapID + "/{z}/{x}/{y}." + options.imageExtension;
+                                                    options.url = "tiles/".concat(options.mapID, "/{z}/{x}/{y}.").concat(options.imageExtension);
                                                 }
                                                 options.width = options.width || options.compiled.wh[0];
                                                 options.height = options.height || options.compiled.wh[1];

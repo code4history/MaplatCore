@@ -216,7 +216,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 var map = this._map;
                 var view = map === null || map === void 0 ? void 0 : map.getView();
                 if (cond.latitude !== undefined && cond.longitude !== undefined) {
-                    merc = proj_1.transform([cond.longitude, cond.latitude], "EPSG:4326", "EPSG:3857");
+                    merc = (0, proj_1.transform)([cond.longitude, cond.latitude], "EPSG:4326", "EPSG:3857");
                 }
                 if (cond.x !== undefined && cond.y != undefined) {
                     xy = [cond.x, cond.y];
@@ -314,7 +314,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 this.setGPSMarkerAsync(position, ignoreMove).then(function () { });
             };
             Mixin.prototype.mercsFromGPSValue = function (lnglat, acc) {
-                var merc = proj_1.transform(lnglat, "EPSG:4326", "EPSG:3857");
+                var merc = (0, proj_1.transform)(lnglat, "EPSG:4326", "EPSG:3857");
                 var latrad = (lnglat[1] * Math.PI) / 180;
                 var delta = acc / Math.cos(latrad);
                 return const_ex_1.MERC_CROSSMATRIX.map(function (xy) { return [
@@ -342,7 +342,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         switch (_b.label) {
                             case 0:
                                 _a = this;
-                                return [4, normalize_pois_1.normalizeLayers(pois || [], {
+                                return [4, (0, normalize_pois_1.normalizeLayers)(pois || [], {
                                         name: this.officialTitle || this.title,
                                         namespace: this.mapID
                                     })];
@@ -370,9 +370,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                     clusterId = "main";
                 }
                 if (this.pois[clusterId]) {
-                    data = normalize_pois_1.normalizePoi(data);
+                    data = (0, normalize_pois_1.normalizePoi)(data);
                     this.pois[clusterId]["pois"].push(data);
-                    normalize_pois_1.addIdToPoi(this.pois, clusterId, {
+                    (0, normalize_pois_1.addIdToPoi)(this.pois, clusterId, {
                         name: this.officialTitle || this.title,
                         namespace: this.mapID
                     });
@@ -439,7 +439,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                     return;
                 if (this.pois[id])
                     return;
-                this.pois[id] = normalize_pois_1.normalizeLayer(data || [], id, {
+                this.pois[id] = (0, normalize_pois_1.normalizeLayer)(data || [], id, {
                     name: this.officialTitle || this.title,
                     namespace: this.mapID
                 });
@@ -591,7 +591,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     ];
     function setCustomInitialize(self, options) {
         var _a;
-        options = functions_1.normalizeArg(options);
+        options = (0, functions_1.normalizeArg)(options);
         self.mapID = options.mapID;
         self.homePosition = options.homePosition;
         self.mercZoom = options.mercZoom;
@@ -609,11 +609,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         if (options.envelopeLngLats) {
             var lngLats = options.envelopeLngLats;
             var mercs = lngLats.map(function (lnglat) {
-                return proj_1.transform(lnglat, "EPSG:4326", "EPSG:3857");
+                return (0, proj_1.transform)(lnglat, "EPSG:4326", "EPSG:3857");
             });
             mercs.push(mercs[0]);
-            self.envelope = helpers_1.polygon([mercs]);
-            self.centroid = (_a = centroid_1.default(self.envelope).geometry) === null || _a === void 0 ? void 0 : _a.coordinates;
+            self.envelope = (0, helpers_1.polygon)([mercs]);
+            self.centroid = (_a = (0, centroid_1.default)(self.envelope).geometry) === null || _a === void 0 ? void 0 : _a.coordinates;
         }
         for (var i = 0; i < exports.META_KEYS.length; i++) {
             var key = exports.META_KEYS[i];
@@ -626,23 +626,23 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 resolve(undefined);
             })
             : new Promise(function (resolve) {
-                self.thumbnail = "./tmbs/" + options.mapID + ".jpg";
+                self.thumbnail = "./tmbs/".concat(options.mapID, ".jpg");
                 fetch(self.thumbnail)
                     .then(function (response) {
                     if (response.ok) {
                         resolve(undefined);
                     }
                     else {
-                        self.thumbnail = "./tmbs/" + options.mapID + "_menu.jpg";
+                        self.thumbnail = "./tmbs/".concat(options.mapID, "_menu.jpg");
                         resolve(undefined);
                     }
                 })
                     .catch(function (_error) {
-                    self.thumbnail = "./tmbs/" + options.mapID + "_menu.jpg";
+                    self.thumbnail = "./tmbs/".concat(options.mapID, "_menu.jpg");
                     resolve(undefined);
                 });
             }).catch(function (_error) {
-                self.thumbnail = "./tmbs/" + (options.mapID || options.sourceID) + "_menu.jpg";
+                self.thumbnail = "./tmbs/".concat(options.mapID || options.sourceID, "_menu.jpg");
             });
         var poisWait = self.resolvePois(options.pois);
         self.initialWait = Promise.all([poisWait, thumbWait]);

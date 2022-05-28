@@ -89,7 +89,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         __extends(MaplatMap, _super);
         function MaplatMap(optOptions) {
             var _this = this;
-            optOptions = functions_1.normalizeArg(optOptions || {});
+            optOptions = (0, functions_1.normalizeArg)(optOptions || {});
             var vectorLayer = new layer_1.Vector({
                 source: new source_1.Vector({
                     wrapX: false
@@ -380,13 +380,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         var lnglat = geolocation_1.getPosition();
                         var acc = geolocation_1.getAccuracy();
                         if (_this.fakeGps &&
-                            math_ex_1.getDistance(_this.homePosition, lnglat) >
+                            (0, math_ex_1.getDistance)(_this.homePosition, lnglat) >
                                 _this.fakeGps) {
                             lnglat = [
-                                math_ex_1.randomFromCenter(_this.homePosition[0], 0.001),
-                                math_ex_1.randomFromCenter(_this.homePosition[1], 0.001)
+                                (0, math_ex_1.randomFromCenter)(_this.homePosition[0], 0.001),
+                                (0, math_ex_1.randomFromCenter)(_this.homePosition[1], 0.001)
                             ];
-                            acc = math_ex_1.randomFromCenter(15.0, 10);
+                            acc = (0, math_ex_1.randomFromCenter)(15.0, 10);
                         }
                         var gpsVal = { lnglat: lnglat, acc: acc };
                         source
@@ -404,10 +404,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         var gpsVal = null;
                         if (_this.fakeGps) {
                             var lnglat = [
-                                math_ex_1.randomFromCenter(_this.homePosition[0], 0.001),
-                                math_ex_1.randomFromCenter(_this.homePosition[1], 0.001)
+                                (0, math_ex_1.randomFromCenter)(_this.homePosition[0], 0.001),
+                                (0, math_ex_1.randomFromCenter)(_this.homePosition[1], 0.001)
                             ];
-                            var acc = math_ex_1.randomFromCenter(15.0, 10);
+                            var acc = (0, math_ex_1.randomFromCenter)(15.0, 10);
                             gpsVal = { lnglat: lnglat, acc: acc };
                         }
                         source

@@ -51,7 +51,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
             return __generator(this, function (_a) {
                 if (typeof nodes === "string") {
                     return [2, new Promise(function (resolve, reject) {
-                            var url = nodes.match(/\//) ? nodes : "pois/" + nodes;
+                            var url = nodes.match(/\//) ? nodes : "pois/".concat(nodes);
                             var xhr = new XMLHttpRequest();
                             xhr.open("GET", url, true);
                             xhr.responseType = "json";
@@ -165,7 +165,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
                 throw "POI layers include bad key setting";
         }
         if (!layer.namespaceID)
-            layer.namespaceID = "" + (options.namespace ? options.namespace + "#" : "") + key;
+            layer.namespaceID = "".concat(options.namespace ? "".concat(options.namespace, "#") : "").concat(key);
         if (!layer.name)
             layer.name = key === "main" ? options.name : key;
         if (!layer.pois)
@@ -202,11 +202,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         }
         pois.map(function (poi) {
             if (!poi.id) {
-                poi.id = key + "_" + cluster.__nextId;
+                poi.id = "".concat(key, "_").concat(cluster.__nextId);
                 cluster.__nextId++;
             }
             if (!poi.namespaceID) {
-                poi.namespaceID = "" + (options.namespace ? options.namespace + "#" : "") + poi.id;
+                poi.namespaceID = "".concat(options.namespace ? "".concat(options.namespace, "#") : "").concat(poi.id);
             }
         });
     }

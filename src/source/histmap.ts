@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-expect-error ts-migrate(2459) FIXME: Module '"../../node_modules/@types/ol/proj"' decla... Remove this comment to see the full error message
 import { addCoordinateTransforms, addProjection, Projection } from "ol/proj";
 import { MERC_MAX, tileSize, transPng } from "../const_ex";
 import {
@@ -90,9 +89,11 @@ export abstract class HistMap extends setCustomFunction(XYZ) {
             const x = coord[1];
             const y = coord[2];
             if (
-              // @ts-expect-error ts-migrate(2683)
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
               x * tileSize * Math.pow(2, this.maxZoom - z) >= this.width ||
-              // @ts-expect-error ts-migrate(2683)
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
               y * tileSize * Math.pow(2, this.maxZoom - z) >= this.height ||
               x < 0 ||
               y < 0

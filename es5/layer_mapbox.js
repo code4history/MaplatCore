@@ -33,7 +33,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     var MapboxLayer = (function (_super) {
         __extends(MapboxLayer, _super);
         function MapboxLayer(options) {
-            var _this = this;
             var render = function (frameState) {
                 var source = this.getSource();
                 var mbMap = source.mapboxMap;
@@ -45,7 +44,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 var opacity = this.getOpacity();
                 canvas.style.opacity = opacity;
                 var newBearing = (viewState.rotation * -180) / Math.PI;
-                var newLonLat = proj_1.toLonLat(viewState.center);
+                var newLonLat = (0, proj_1.toLonLat)(viewState.center);
                 var newZoom = viewState.zoom - 1;
                 var nowBearing = mbMap.getBearing();
                 var nowLonLat = mbMap.getCenter().toArray();
@@ -77,11 +76,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 mbMap._render();
                 return canvas;
             };
-            _this = _super.call(this, {
+            return _super.call(this, {
                 render: render,
                 source: options.source
             }) || this;
-            return _this;
         }
         return MapboxLayer;
     }(Layer_1.default));
