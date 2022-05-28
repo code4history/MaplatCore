@@ -35,7 +35,8 @@ export function transformDirect(
   }
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  if (xy) { // @ts-ignore
+  if (xy) {
+    // @ts-ignore
     return func(xy);
   }
 }

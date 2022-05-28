@@ -5,7 +5,8 @@ module.exports = {
   ],
   preset: "ts-jest/presets/js-with-babel",
   transform: {
-    "^.+\\.ts$": "ts-jest"
+    "^.+\\.ts$": "ts-jest",
+    "^.+\\.js$": "babel-jest"
   },
   globals: {
     "ts-jest": {
@@ -13,5 +14,5 @@ module.exports = {
     }
   },
   roots: ["<rootDir>/.."],
-  testMatch: [ '**/spec/(pois|template)*spec.ts' ],
+  testMatch: [ '**/spec/(pois)*spec.ts' ],
 };

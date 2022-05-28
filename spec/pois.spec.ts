@@ -11,14 +11,13 @@ describe("normalizePois test", () => {
       console.error(e);
     }
 
-    it(testin.title, async done => {
+    it(testin.title, async () => {
       try {
         const testout = await normalizeLayers(testin.data, testin.options);
         //if (i == 1) fs.writeFileSync(`./spec/expect/poitest${i}.json`, JSON.stringify(testout, null, 2));
         expect(JSON.parse(JSON.stringify(testout))).toEqual(testex);
-        done();
       } catch (error) {
-        done(error);
+        throw error;
       }
     });
   }
