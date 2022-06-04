@@ -1,6 +1,9 @@
-type LoggerLevelKeys = "ALL" | "DEBUG" | "INFO" | "WARN" | "ERROR" | "OFF";
+type AllLoggerLevelKeys = "ALL" | "DEBUG" | "INFO" | "WARN" | "ERROR" | "OFF";
+const excludeKeys = ["ALL", "OFF"] as const;
+type LoggerLevelKeys = Exclude<AllLoggerLevelKeys, typeof excludeKeys[number]>;
+type TLogger = { [key in Lowercase<LoggerLevelKeys>]: Console["log"] };
 
-export const LOGGER_LEVEL: Record<LoggerLevelKeys, number> = {
+export const LOGGER_LEVEL = {
   ALL: -99,
   DEBUG: -1,
   INFO: 0,
@@ -9,28 +12,28 @@ export const LOGGER_LEVEL: Record<LoggerLevelKeys, number> = {
   OFF: 99
 } as const;
 
-type TLogger = { [key in Lowercase<LoggerLevelKeys>]: Console["log"] };
 // eslint-disable-next-line
 export interface Logger extends TLogger {}
 
 export class Logger {
   constructor(
-    public level: typeof LOGGER_LEVEL[LoggerLevelKeys] = LOGGER_LEVEL.INFO
+    public level: typeof LOGGER_LEVEL[AllLoggerLevelKeys] = LOGGER_LEVEL.INFO
   ) {
     this.make();
   }
 
   private make() {
-    for (const key of Object.keys(LOGGER_LEVEL) as Array<LoggerLevelKeys>) {
+    const keys = (Object.keys(LOGGER_LEVEL) as AllLoggerLevelKeys[]).filter(
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
+      key => !excludeKeys.includes(key)
+    ) as LoggerLevelKeys[];
+
+    for (const key of keys) {
       const l = LOGGER_LEVEL[key];
       const lowerCaseKey = key.toLowerCase() as Lowercase<LoggerLevelKeys>;
-
-      if (this.level <= l) {
-        this[lowerCaseKey] = console.log;
-      } else {
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        this[lowerCaseKey] = () => {};
-      }
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      this[lowerCaseKey] = this.level <= l ? console.log : () => {};
     }
   }
 }
