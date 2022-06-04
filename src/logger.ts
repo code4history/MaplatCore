@@ -1,4 +1,9 @@
-export const LoggerLevel = {
+type AllLoggerLevelKeys = "ALL" | "DEBUG" | "INFO" | "WARN" | "ERROR" | "OFF";
+const excludeKeys = ["ALL", "OFF"] as const;
+type LoggerLevelKeys = Exclude<AllLoggerLevelKeys, typeof excludeKeys[number]>;
+type TLogger = { [key in Lowercase<LoggerLevelKeys>]: Console["log"] };
+
+export const LOGGER_LEVEL = {
   ALL: -99,
   DEBUG: -1,
   INFO: 0,
@@ -7,38 +12,28 @@ export const LoggerLevel = {
   OFF: 99
 } as const;
 
+// eslint-disable-next-line
+export interface Logger extends TLogger {}
+
 export class Logger {
-  level: number;
-  constructor(level: any) {
-    this.level = isNaN(level) ? LoggerLevel.INFO : level;
+  constructor(
+    public level: typeof LOGGER_LEVEL[AllLoggerLevelKeys] = LOGGER_LEVEL.INFO
+  ) {
     this.make();
   }
-  make() {
-    for (const key in console) {
-      // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-      const l = LoggerLevel[key.toUpperCase()];
-      if (!l) {
-        // l=LoggerLevel.OFF;
-        continue;
-      }
-      if (this.level <= l) {
-        // @ts-expect-error ts-migrate(2774) FIXME: This condition will always return true since the f... Remove this comment to see the full error message
-        if (Function.bind) {
-          // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-          Logger.prototype[key] = (function (..._args) {
-            return console.log.bind(console);
-          })(key);
-        } else {
-          // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-          Logger.prototype[key] = (function (...args) {
-            return console.log(...args);
-          })(key);
-        }
-      } else {
-        // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        Logger.prototype[key] = function () {};
-      }
+
+  private make() {
+    const keys = (Object.keys(LOGGER_LEVEL) as AllLoggerLevelKeys[]).filter(
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
+      key => !excludeKeys.includes(key)
+    ) as LoggerLevelKeys[];
+
+    for (const key of keys) {
+      const l = LOGGER_LEVEL[key];
+      const lowerCaseKey = key.toLowerCase() as Lowercase<LoggerLevelKeys>;
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      this[lowerCaseKey] = this.level <= l ? console.log : () => {};
     }
   }
 }
