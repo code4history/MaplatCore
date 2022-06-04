@@ -3,7 +3,7 @@ import i18n from "i18next";
 import i18nxhr from "i18next-xhr-backend";
 import CustomEvent from "./customevent";
 import browserLanguage from "./browserlanguage";
-import { Logger, LoggerLevel } from "./logger";
+import { Logger, LOGGER_LEVEL } from "./logger";
 import {
   createElement,
   normalizeDegree,
@@ -127,7 +127,7 @@ export class MaplatApp extends EventTarget {
     this.mapDivDocument = document.querySelector(`#${this.mapDiv}`);
     this.mapDivDocument!.classList.add("maplat");
     this.logger = new Logger(
-      appOption.debug ? LoggerLevel.ALL : LoggerLevel.INFO
+      appOption.debug ? LOGGER_LEVEL.ALL : LOGGER_LEVEL.INFO
     );
     this.enableCache = appOption.enableCache || false;
     this.icon = appOption.icon;
@@ -430,12 +430,10 @@ export class MaplatApp extends EventTarget {
   // Async initializer 11: Handle map click event
   setMapClick() {
     this.mapObject.on("click", (evt: any) => {
-      // @ts-expect-error ts-migrate(7053)
       this.logger.debug(evt.pixel);
       this.lastClickEvent = evt;
       const features: any[] = [];
       evt.target.forEachFeatureAtPixel(evt.pixel, (feature: any) => {
-        // @ts-expect-error ts-migrate(7053)
         this.logger.debug(evt.pixel);
         if (feature.get("datum")) features.push(feature.get("datum"));
       });
@@ -598,21 +596,18 @@ export class MaplatApp extends EventTarget {
     const backMapMove = (_evt: any) => {
       if (!this.backMap) return;
       if (this.__backMapMoving) {
-        // @ts-expect-error ts-migrate(7053)
         this.logger.debug("Backmap moving skipped");
         return;
       }
       const backSrc = (this.backMap as MaplatMap).getSource();
       if (backSrc) {
         this.__backMapMoving = true;
-        // @ts-expect-error ts-migrate(7053)
         this.logger.debug("Backmap moving started");
         this.convertParametersFromCurrent(backSrc, (size: any) => {
           const view = (this.backMap as MaplatMap).getView();
           view.setCenter(size[0]);
           view.setZoom(size[1]);
           view.setRotation(this.noRotate ? 0 : size[2]);
-          // @ts-expect-error ts-migrate(7053)
           this.logger.debug("Backmap moving ended");
           this.__backMapMoving = false;
         });
@@ -675,7 +670,6 @@ export class MaplatApp extends EventTarget {
     return createMapInfo(this.cacheHash[mapID]);
   }
   setMarker(data: any) {
-    // @ts-expect-error ts-migrate(7053)
     this.logger.debug(data);
     const lnglat = data.lnglat || [
       data.lng || data.longitude,
@@ -730,7 +724,6 @@ export class MaplatApp extends EventTarget {
   }
   setVector(data: any) {
     // Ready for Polygon
-    // @ts-expect-error ts-migrate(7053)
     this.logger.debug(data);
     let xyPromises;
     const merc2XyRecurse = (coords: any, isLnglat = false) =>
@@ -1382,11 +1375,8 @@ export class MaplatApp extends EventTarget {
         buffer[1] == current[1] &&
         buffer[2] == current[2]
       ) {
-        // @ts-expect-error ts-migrate(7053)
         this.logger.debug(buffer);
-        // @ts-expect-error ts-migrate(7053)
         this.logger.debug(current);
-        // @ts-expect-error ts-migrate(7053)
         this.logger.debug("From: Use buffer");
         fromPromise = new Promise((res, _rej) => {
           res(this.mercBuffer.mercs);
@@ -1403,21 +1393,17 @@ export class MaplatApp extends EventTarget {
       };
       this.mercBuffer.buffer[(this.from as HistMap | NowMap).mapID] = current;
     }
-    // @ts-expect-error ts-migrate(7053)
     this.logger.debug(
       `From: Center: ${current[0]} Zoom: ${current[1]} Rotation: ${current[2]}`
     );
-    // @ts-expect-error ts-migrate(7053)
     this.logger.debug(`From: ${(this.from as HistMap | NowMap).mapID}`);
     fromPromise
       .then((mercs: any) => {
         this.mercBuffer.mercs = mercs;
-        // @ts-expect-error ts-migrate(7053)
         this.logger.debug(`Mercs: ${mercs}`);
         let toPromise = to.mercs2ViewpointAsync(mercs);
         const key = to.mapID;
         if (this.mercBuffer.buffer[key]) {
-          // @ts-expect-error ts-migrate(7053)
           this.logger.debug("To: Use buffer");
           toPromise = new Promise((res, _rej) => {
             res(this.mercBuffer.buffer[key]);
@@ -1425,11 +1411,9 @@ export class MaplatApp extends EventTarget {
         }
         toPromise
           .then((size: any) => {
-            // @ts-expect-error ts-migrate(7053)
             this.logger.debug(
               `To: Center: ${size[0]} Zoom: ${size[1]} Rotation: ${size[2]}`
             );
-            // @ts-expect-error ts-migrate(7053)
             this.logger.debug(`To: ${to.mapID}`);
             this.mercBuffer.buffer[to.mapID] = recursiveRound(size, 10);
             callback(size);
