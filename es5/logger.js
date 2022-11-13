@@ -1,27 +1,13 @@
-var __read = (this && this.__read) || function (o, n) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator];
-    if (!m) return o;
-    var i = m.call(o), r, ar = [], e;
-    try {
-        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
-    }
-    catch (error) { e = { error: error }; }
-    finally {
-        try {
-            if (r && !r.done && (m = i["return"])) m.call(i);
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
+    if (m) return m.call(o);
+    if (o && typeof o.length === "number") return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
         }
-        finally { if (e) throw e.error; }
-    }
-    return ar;
-};
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
+    };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 (function (factory) {
     if (typeof module === "object" && typeof module.exports === "object") {
@@ -34,8 +20,9 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
 })(function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Logger = exports.LoggerLevel = void 0;
-    exports.LoggerLevel = {
+    exports.Logger = exports.LOGGER_LEVEL = void 0;
+    var excludeKeys = ["ALL", "OFF"];
+    exports.LOGGER_LEVEL = {
         ALL: -99,
         DEBUG: -1,
         INFO: 0,
@@ -45,38 +32,27 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     };
     var Logger = (function () {
         function Logger(level) {
-            this.level = isNaN(level) ? exports.LoggerLevel.INFO : level;
+            if (level === void 0) { level = exports.LOGGER_LEVEL.INFO; }
+            this.level = level;
             this.make();
         }
         Logger.prototype.make = function () {
-            for (var key in console) {
-                var l = exports.LoggerLevel[key.toUpperCase()];
-                if (!l) {
-                    continue;
+            var e_1, _a;
+            var keys = Object.keys(exports.LOGGER_LEVEL).filter(function (key) { return !excludeKeys.includes(key); });
+            try {
+                for (var keys_1 = __values(keys), keys_1_1 = keys_1.next(); !keys_1_1.done; keys_1_1 = keys_1.next()) {
+                    var key = keys_1_1.value;
+                    var l = exports.LOGGER_LEVEL[key];
+                    var lowerCaseKey = key.toLowerCase();
+                    this[lowerCaseKey] = this.level <= l ? console.log : function () { };
                 }
-                if (this.level <= l) {
-                    if (Function.bind) {
-                        Logger.prototype[key] = (function () {
-                            var _args = [];
-                            for (var _i = 0; _i < arguments.length; _i++) {
-                                _args[_i] = arguments[_i];
-                            }
-                            return console.log.bind(console);
-                        })(key);
-                    }
-                    else {
-                        Logger.prototype[key] = (function () {
-                            var args = [];
-                            for (var _i = 0; _i < arguments.length; _i++) {
-                                args[_i] = arguments[_i];
-                            }
-                            return console.log.apply(console, __spreadArray([], __read(args), false));
-                        })(key);
-                    }
+            }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (keys_1_1 && !keys_1_1.done && (_a = keys_1.return)) _a.call(keys_1);
                 }
-                else {
-                    Logger.prototype[key] = function () { };
-                }
+                finally { if (e_1) throw e_1.error; }
             }
         };
         return Logger;
