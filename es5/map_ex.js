@@ -22,7 +22,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "ol", "./view_ex", "ol/layer", "ol/source", "ol/geom", "ol/style", "./source/mapboxmap", "./source/nowmap", "./math_ex", "./layer_mapbox", "./functions", "../parts/bluedot.png", "../parts/bluedot_transparent.png", "../parts/bluedot_small.png", "../parts/defaultpin.png", "ol/style/IconAnchorUnits"], factory);
+        define(["require", "exports", "ol", "./view_ex", "ol/layer", "ol/source", "ol/geom", "ol/style", "./source/mapboxmap", "./source/nowmap", "./math_ex", "./layer_mapbox", "./functions", "../parts/bluedot.png", "../parts/bluedot_transparent.png", "../parts/bluedot_small.png", "../parts/defaultpin.png"], factory);
     }
 })(function (require, exports) {
     "use strict";
@@ -43,28 +43,27 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     var bluedot_transparent_png_1 = __importDefault(require("../parts/bluedot_transparent.png"));
     var bluedot_small_png_1 = __importDefault(require("../parts/bluedot_small.png"));
     var defaultpin_png_1 = __importDefault(require("../parts/defaultpin.png"));
-    var IconAnchorUnits_1 = __importDefault(require("ol/style/IconAnchorUnits"));
     var gpsStyle = new style_1.Style({
         image: new style_1.Icon({
             anchor: [0.5, 0.5],
-            anchorXUnits: IconAnchorUnits_1.default.FRACTION,
-            anchorYUnits: IconAnchorUnits_1.default.FRACTION,
+            anchorXUnits: "fraction",
+            anchorYUnits: "fraction",
             src: bluedot_png_1.default
         })
     });
     var gpsHideStyle = new style_1.Style({
         image: new style_1.Icon({
             anchor: [0.5, 0.5],
-            anchorXUnits: IconAnchorUnits_1.default.FRACTION,
-            anchorYUnits: IconAnchorUnits_1.default.FRACTION,
+            anchorXUnits: "fraction",
+            anchorYUnits: "fraction",
             src: bluedot_transparent_png_1.default
         })
     });
     var gpsSubStyle = new style_1.Style({
         image: new style_1.Icon({
             anchor: [0.5, 0.5],
-            anchorXUnits: IconAnchorUnits_1.default.FRACTION,
-            anchorYUnits: IconAnchorUnits_1.default.FRACTION,
+            anchorXUnits: "fraction",
+            anchorYUnits: "fraction",
             src: bluedot_small_png_1.default
         })
     });
@@ -80,8 +79,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     var markerDefaultStyle = new style_1.Style({
         image: new style_1.Icon({
             anchor: [0.5, 1.0],
-            anchorXUnits: IconAnchorUnits_1.default.FRACTION,
-            anchorYUnits: IconAnchorUnits_1.default.FRACTION,
+            anchorXUnits: "fraction",
+            anchorYUnits: "fraction",
             src: defaultpin_png_1.default
         })
     });
@@ -250,8 +249,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 markerStyle = new style_1.Style({
                     image: new style_1.Icon({
                         anchor: [0.5, 1.0],
-                        anchorXUnits: IconAnchorUnits_1.default.FRACTION,
-                        anchorYUnits: IconAnchorUnits_1.default.FRACTION,
+                        anchorXUnits: "fraction",
+                        anchorYUnits: "fraction",
                         src: markerStyle
                     })
                 });
