@@ -54,7 +54,7 @@
   },
   "homepage": "https://github.com/code4history/MaplatCore/wiki",
   "dependencies": {
-    "@maplat/tin": "github:code4history/MaplatTin#delaunator_test",
+    "@maplat/tin": "^0.9.3",
     "@turf/line-intersect": "^6.5.0",
     "@turf/turf": "^6.5.0",
     "argv": "^0.0.2",
