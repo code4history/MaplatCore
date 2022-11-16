@@ -54,10 +54,11 @@
   },
   "homepage": "https://github.com/code4history/MaplatCore/wiki",
   "dependencies": {
-    "@maplat/tin": "^0.9.3",
+    "@maplat/tin": "github:code4history/MaplatTin#same_library",
     "@turf/line-intersect": "^6.5.0",
     "@turf/turf": "^6.5.0",
     "argv": "^0.0.2",
+    "caniuse-lite": "^1.0.30001431",
     "i18next": "^21.8.4",
     "i18next-xhr-backend": "^3.2.2",
     "lodash.template": "^4.5.0",
@@ -83,7 +84,7 @@
     "clean-webpack-plugin": "^4.0.0",
     "core-js": "^3.22.7",
     "css-loader": "^6.7.1",
-    "css-minimizer-webpack-plugin": "^4.0.0",
+    "css-minimizer-webpack-plugin": "^4.2.2",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-loader": "^4.0.2",
@@ -112,6 +113,6 @@
     "url-loader": "^4.1.1",
     "webpack": "^5.72.1",
     "webpack-cli": "^4.9.2",
-    "webpack-dev-server": "^4.9.0"
+    "webpack-dev-server": "^4.11.1"
   }
 }
