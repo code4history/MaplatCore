@@ -68,7 +68,8 @@ module.exports = {
       },
       {
         test: /\.(js|ts)$/,
-        exclude: /node_modules(?![/\\](@maplat[/\\]tin|weiwudi))/,
+        //exclude: /node_modules(?![/\\](@maplat[/\\]tin|weiwudi))/,
+        exclude: /node_modules/,
         loader: 'babel-loader',
       },
       {
