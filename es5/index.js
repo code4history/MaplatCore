@@ -302,7 +302,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                     ]),
                 fakeGps: fakeGps,
                 fakeRadius: fakeRadius,
-                homePosition: homePos
+                homePosition: homePos,
+                northUp: appOption.northUp || this.appData.northUp || false
             });
             var backDiv = null;
             if (this.overlay) {
@@ -1173,9 +1174,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         }
                         else if (!_this.__init) {
                             _this.dispatchEvent(new customevent_1.default("outOfMap", {}));
-                            var ratio = window.devicePixelRatio;
-                            var div = _this.mapDivDocument.firstChild;
-                            to.goHome([div.clientWidth * ratio, div.clientHeight * ratio]);
+                            _this.goHome(to);
                         }
                         to.setGPSMarker(_this.currentPosition, true);
                         if (restore.hideLayer) {
@@ -1212,9 +1211,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         }
                         if (_this.__init) {
                             _this.__init = false;
-                            var ratio = window.devicePixelRatio;
-                            var div = _this.mapDivDocument.firstChild;
-                            to.goHome([div.clientWidth * ratio, div.clientHeight * ratio]);
+                            _this.goHome(to);
                         }
                         else if (_this.backMap && backTo) {
                             _this.convertParametersFromCurrent(backTo, function (size) {
@@ -1272,6 +1269,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         };
         MaplatApp.prototype.setViewpoint = function (cond) {
             this.from.setViewpoint(cond);
+        };
+        MaplatApp.prototype.goHome = function (useTo) {
+            var src = useTo || this.from;
+            var ratio = window.devicePixelRatio;
+            var div = this.mapDivDocument.firstChild;
+            src.goHome([div.clientWidth * ratio, div.clientHeight * ratio]);
+        };
+        MaplatApp.prototype.resetRotation = function () {
+            this.from.resetRotation();
+        };
+        MaplatApp.prototype.resetDirection = function () {
+            this.from.resetDirection();
+        };
+        MaplatApp.prototype.resetCirculation = function () {
+            this.from.resetCirculation();
         };
         MaplatApp.prototype.getMapMeta = function (mapID) {
             var source;

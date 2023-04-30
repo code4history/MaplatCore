@@ -11,10 +11,11 @@
         bottom: 0%;
         left: 5%;
         right: 5%;
-      }</style><script defer="defer" src="./assets/maplat_core.js"></script><link href="./assets/maplat_core.css" rel="stylesheet"></head><body><div class="mainview"><div id="map_div"></div></div><div class="button"><button id="show">showLayer(Main)</button> <button id="hide">hideLayer(Main)</button> <button id="clear">clearMarker(Main)</button> <button id="move">moveMarker(Main)</button> <button id="remove">removeMarker(Main)</button> <button id="add2">addMarker(Main2)</button> <button id="clear2">clearMarker(Main2)</button> <button id="addMap">addMarker(Map)</button> <button id="clearMap">clearMarker(Map)</button> <button id="unSelect">unSelect</button> <button id="showAll">showAll</button> <button id="hideAll">hideAll</button> <button id="morioka">盛岡城</button> <button id="maplat">盛岡(Maplat)</button> <button id="tms">盛岡(TMS)</button> <button id="osm">OSM</button> <button id="gsi">地理院</button> <button id="mapbox">Mapbox</button> <button id="map_remove">Remove Map</button></div><script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.js"></script></body><script>document.addEventListener('DOMContentLoaded', () => {
+      }</style><script defer="defer" src="./assets/maplat_core.js"></script><link href="./assets/maplat_core.css" rel="stylesheet"></head><body><div class="mainview"><div id="map_div"></div></div><div class="button"><button id="show">showLayer(Main)</button> <button id="hide">hideLayer(Main)</button> <button id="clear">clearMarker(Main)</button> <button id="move">moveMarker(Main)</button> <button id="remove">removeMarker(Main)</button> <button id="add2">addMarker(Main2)</button> <button id="clear2">clearMarker(Main2)</button> <button id="addMap">addMarker(Map)</button> <button id="clearMap">clearMarker(Map)</button> <button id="unSelect">unSelect</button> <button id="showAll">showAll</button> <button id="hideAll">hideAll</button> <button id="morioka">盛岡城</button> <button id="maplat">盛岡(Maplat)</button> <button id="tms">盛岡(TMS)</button> <button id="osm">OSM</button> <button id="gsi">地理院</button> <button id="mapbox">Mapbox</button> <button id="go_home">ホームへ</button> <button id="reset_rotation">回転オフ</button> <button id="reset_direction">北を上に</button> <button id="reset_circulation">北を上に（northUp）</button></div><script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.js"></script></body><script>document.addEventListener('DOMContentLoaded', () => {
       var option = {
         mapboxgl: mapboxgl,
-        mapboxToken: 'YOUR-ACCESS-TOKEN'
+        mapboxToken: 'YOUR-ACCESS-TOKEN',
+        northUp: true
       };
       var hashes = window.location.href
         .slice(window.location.href.indexOf("?") + 1)
@@ -192,6 +193,18 @@
         });
         document.getElementById("mapbox").addEventListener("click", function (e) {
           app.changeMap("mapbox");
+        });
+        document.getElementById("go_home").addEventListener("click", function (e) {
+          app.goHome();
+        });
+        document.getElementById("reset_rotation").addEventListener("click", function (e) {
+          app.resetRotation();
+        });
+        document.getElementById("reset_direction").addEventListener("click", function (e) {
+          app.resetDirection();
+        });
+        document.getElementById("reset_circulation").addEventListener("click", function (e) {
+          app.resetCirculation();
         });
         document
           .getElementById("map_remove")

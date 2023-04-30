@@ -51,6 +51,9 @@ export declare function setCustomFunction<TBase extends Constructor>(Base: TBase
     setViewpoint(cond: ViewpointObject): void;
     defZoom(screenSize?: Size): number;
     goHome(screenSize?: Size): void;
+    resetRotation(): void;
+    resetDirection(): void;
+    resetCirculation(): void;
     setGPSMarkerAsync(position: any, ignoreMove?: boolean): Promise<unknown>;
     setGPSMarker(position: any, ignoreMove?: boolean): void;
     mercsFromGPSValue(lnglat: Coordinate, acc: number): number[][];

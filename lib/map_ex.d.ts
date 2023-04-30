@@ -7,6 +7,7 @@ export declare class MaplatMap extends Map {
     geolocation: any;
     homePosition: any;
     __AvoidFirstMoveStart: boolean;
+    northUp: boolean;
     constructor(optOptions: any);
     static spawnLayer(layer: any, source: any, container: any): any;
     getLayer(name?: string): any;

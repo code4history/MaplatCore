@@ -170,12 +170,27 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
     abstract defZoom(screenSize?: Size): number;
 
     goHome(screenSize?: Size) {
-      this.setViewpointRadian({
+      const options = {
         longitude: this.homePosition![0],
         latitude: this.homePosition![1],
-        zoom: this.defZoom(screenSize),
-        rotation: 0
-      });
+        zoom: this.defZoom(screenSize)
+      } as ViewpointObject;
+      if (this._map!.northUp) options.direction = 0;
+      else options.rotation = 0;
+      this.setViewpointRadian(options);
+    }
+
+    resetRotation() {
+      this.setViewpointRadian({rotation: 0});
+    }
+
+    resetDirection() {
+      this.setViewpointRadian({direction: 0});
+    }
+
+    resetCirculation() {
+      if (this._map!.northUp) this.resetDirection();
+      else this.resetRotation();
     }
 
     setGPSMarkerAsync(position: any, ignoreMove = false) {

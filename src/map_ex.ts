@@ -66,6 +66,7 @@ export class MaplatMap extends Map {
   geolocation: any;
   homePosition: any;
   __AvoidFirstMoveStart: boolean;
+  northUp: boolean;
   constructor(optOptions: any) {
     optOptions = normalizeArg(optOptions || {});
     const vectorLayer = new layerVector({
@@ -126,6 +127,7 @@ export class MaplatMap extends Map {
     this.fakeGps = optOptions.fakeGps;
     this.fakeRadius = optOptions.fakeRadius;
     this.homePosition = optOptions.homePosition;
+    this.northUp = optOptions.northUp;
     const view = this.getView();
     this.__AvoidFirstMoveStart = true;
     const movestart = () => {

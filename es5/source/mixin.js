@@ -261,12 +261,28 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 this.setViewpointRadian(cond);
             };
             Mixin.prototype.goHome = function (screenSize) {
-                this.setViewpointRadian({
+                var options = {
                     longitude: this.homePosition[0],
                     latitude: this.homePosition[1],
-                    zoom: this.defZoom(screenSize),
-                    rotation: 0
-                });
+                    zoom: this.defZoom(screenSize)
+                };
+                if (this._map.northUp)
+                    options.direction = 0;
+                else
+                    options.rotation = 0;
+                this.setViewpointRadian(options);
+            };
+            Mixin.prototype.resetRotation = function () {
+                this.setViewpointRadian({ rotation: 0 });
+            };
+            Mixin.prototype.resetDirection = function () {
+                this.setViewpointRadian({ direction: 0 });
+            };
+            Mixin.prototype.resetCirculation = function () {
+                if (this._map.northUp)
+                    this.resetDirection();
+                else
+                    this.resetRotation();
             };
             Mixin.prototype.setGPSMarkerAsync = function (position, ignoreMove) {
                 var _this = this;

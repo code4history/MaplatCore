@@ -25,6 +25,7 @@ interface AppData {
     iconTemplate?: string;
     startFrom?: string;
     controls?: any[];
+    northUp?: boolean;
 }
 declare type PositionSet = {
     x: number;
@@ -143,6 +144,10 @@ export declare class MaplatApp extends EventTarget {
     setTransparency(percentage: any): void;
     getTransparency(): any;
     setViewpoint(cond: any): void;
+    goHome(useTo?: HistMap | NowMap): void;
+    resetRotation(): void;
+    resetDirection(): void;
+    resetCirculation(): void;
     getMapMeta(mapID: any): any;
     getMapCacheEnable(mapID: string): boolean;
     getMapTileCacheStatsAsync(mapID: string): Promise<{

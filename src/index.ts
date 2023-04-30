@@ -54,6 +54,7 @@ interface AppData {
   iconTemplate?: string;
   startFrom?: string;
   controls?: any[];
+  northUp?: boolean;
 }
 
 type PositionSet = { x: number; y: number; zoom: number; rotation: number };
@@ -320,7 +321,8 @@ export class MaplatApp extends EventTarget {
           ]),
       fakeGps,
       fakeRadius,
-      homePosition: homePos
+      homePosition: homePos,
+      northUp: appOption.northUp || this.appData!.northUp || false
     });
     let backDiv = null;
     if (this.overlay) {
@@ -1187,9 +1189,7 @@ export class MaplatApp extends EventTarget {
               view.setRotation(this.noRotate ? 0 : size[2]);
             } else if (!this.__init) {
               this.dispatchEvent(new CustomEvent("outOfMap", {}));
-              const ratio = window.devicePixelRatio;
-              const div = this.mapDivDocument!.firstChild as any;
-              to.goHome([div.clientWidth * ratio, div.clientHeight * ratio]);
+              this.goHome(to);
             }
             to.setGPSMarker(this.currentPosition, true);
             if (restore!.hideLayer) {
@@ -1227,9 +1227,7 @@ export class MaplatApp extends EventTarget {
             }
             if (this.__init) {
               this.__init = false;
-              const ratio = window.devicePixelRatio;
-              const div = this.mapDivDocument!.firstChild as any;
-              to.goHome([div.clientWidth * ratio, div.clientHeight * ratio]);
+              this.goHome(to);
             } else if (this.backMap && backTo) {
               this.convertParametersFromCurrent(backTo, (size: any) => {
                 const view = (this.backMap as MaplatMap).getView();
@@ -1282,6 +1280,21 @@ export class MaplatApp extends EventTarget {
   }
   setViewpoint(cond: any) {
     (this.from as HistMap | NowMap).setViewpoint(cond);
+  }
+  goHome(useTo?: HistMap | NowMap) {
+    const src = useTo || this.from!;
+    const ratio = window.devicePixelRatio;
+    const div = this.mapDivDocument!.firstChild as any;
+    src.goHome([div.clientWidth * ratio, div.clientHeight * ratio]);
+  }
+  resetRotation() {
+    this.from!.resetRotation();
+  }
+  resetDirection() {
+    this.from!.resetDirection();
+  }
+  resetCirculation() {
+    this.from!.resetCirculation();
   }
   getMapMeta(mapID: any) {
     let source: NowMap | HistMap | undefined;

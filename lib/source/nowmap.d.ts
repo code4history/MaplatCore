@@ -53,6 +53,9 @@ declare const NowMap_base: (abstract new (...args: any[]) => {
     }): void;
     defZoom(screenSize?: Size | undefined): number;
     goHome(screenSize?: Size | undefined): void;
+    resetRotation(): void;
+    resetDirection(): void;
+    resetCirculation(): void;
     setGPSMarkerAsync(position: any, ignoreMove?: boolean): Promise<unknown>;
     setGPSMarker(position: any, ignoreMove?: boolean): void;
     mercsFromGPSValue(lnglat: Coordinate, acc: number): number[][];
