@@ -1187,7 +1187,9 @@ export class MaplatApp extends EventTarget {
               view.setRotation(this.noRotate ? 0 : size[2]);
             } else if (!this.__init) {
               this.dispatchEvent(new CustomEvent("outOfMap", {}));
-              to.goHome();
+              const ratio = window.devicePixelRatio;
+              const div = this.mapDivDocument!.firstChild as any;
+              to.goHome([div.clientWidth * ratio, div.clientHeight * ratio]);
             }
             to.setGPSMarker(this.currentPosition, true);
             if (restore!.hideLayer) {
@@ -1225,7 +1227,9 @@ export class MaplatApp extends EventTarget {
             }
             if (this.__init) {
               this.__init = false;
-              to.goHome();
+              const ratio = window.devicePixelRatio;
+              const div = this.mapDivDocument!.firstChild as any;
+              to.goHome([div.clientWidth * ratio, div.clientHeight * ratio]);
             } else if (this.backMap && backTo) {
               this.convertParametersFromCurrent(backTo, (size: any) => {
                 const view = (this.backMap as MaplatMap).getView();

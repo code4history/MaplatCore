@@ -153,6 +153,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             var _this = this;
             return Promise.all(mercs[0].map(function (merc) { return _this.merc2SysCoordAsync(merc); })).then(function (xys) { return [[xys, mercs[1]]]; });
         };
+        NowMap.prototype.defZoom = function () {
+            return this.mercZoom;
+        };
         return NowMap;
     }((0, mixin_1.setCustomFunction)(source_1.OSM)));
     exports.NowMap = NowMap;

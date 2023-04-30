@@ -260,11 +260,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 }
                 this.setViewpointRadian(cond);
             };
-            Mixin.prototype.goHome = function () {
+            Mixin.prototype.goHome = function (screenSize) {
                 this.setViewpointRadian({
                     longitude: this.homePosition[0],
                     latitude: this.homePosition[1],
-                    mercZoom: this.mercZoom,
+                    zoom: this.defZoom(screenSize),
                     rotation: 0
                 });
             };

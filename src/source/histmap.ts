@@ -10,6 +10,7 @@ import { XYZ } from "ol/source";
 import { normalizeArg } from "../functions";
 import { createFromTemplates, expandUrl } from "ol/tileurlfunction";
 import { Coordinate } from "ol/coordinate";
+import { Size } from "ol/size";
 
 for (let z = 0; z < 9; z++) {
   const key = `ZOOM:${z}`;
@@ -169,5 +170,20 @@ export abstract class HistMap extends setCustomFunction(XYZ) {
     const x = ((sysCoord[0] + MERC_MAX) * this._maxxy) / (2 * MERC_MAX);
     const y = ((-sysCoord[1] + MERC_MAX) * this._maxxy) / (2 * MERC_MAX);
     return [x, y];
+  }
+
+  defZoom(screenSize?: Size): number {
+    const screenWidth = screenSize![0];
+    const screenHeight = screenSize![1];
+    const delZoomOfWidth = Math.log2((screenWidth - 10) / this.width);
+    const delZoomOfHeight = Math.log2((screenHeight - 10) / this.height);
+    const maxZoom = this.maxZoom!;
+    let delZoom;
+    if (delZoomOfHeight > delZoomOfWidth) {
+      delZoom = delZoomOfHeight - delZoomOfWidth > 0.6 ? delZoomOfWidth : delZoomOfHeight;
+    } else {
+      delZoom = delZoomOfWidth - delZoomOfHeight > 0.6 ? delZoomOfHeight : delZoomOfWidth;
+    }
+    return maxZoom + delZoom;
   }
 }

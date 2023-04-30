@@ -49,7 +49,8 @@ export declare function setCustomFunction<TBase extends Constructor>(Base: TBase
     getMap(): MaplatMap | undefined;
     setViewpointRadian(cond: ViewpointObject): void;
     setViewpoint(cond: ViewpointObject): void;
-    goHome(): void;
+    defZoom(screenSize?: Size): number;
+    goHome(screenSize?: Size): void;
     setGPSMarkerAsync(position: any, ignoreMove?: boolean): Promise<unknown>;
     setGPSMarker(position: any, ignoreMove?: boolean): void;
     mercsFromGPSValue(lnglat: Coordinate, acc: number): number[][];

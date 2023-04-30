@@ -1,6 +1,7 @@
 /// <reference path="../../src/types/weiwudi.d.ts" />
 import { XYZ } from "ol/source";
 import { Coordinate } from "ol/coordinate";
+import { Size } from "ol/size";
 declare const HistMap_base: (abstract new (...args: any[]) => {
     weiwudi?: import("weiwudi").default | undefined;
     _map?: import("../map_ex").MaplatMap | undefined;
@@ -49,7 +50,8 @@ declare const HistMap_base: (abstract new (...args: any[]) => {
         direction?: number | undefined;
         rotation?: number | undefined;
     }): void;
-    goHome(): void;
+    defZoom(screenSize?: Size | undefined): number;
+    goHome(screenSize?: Size | undefined): void;
     setGPSMarkerAsync(position: any, ignoreMove?: boolean): Promise<unknown>;
     setGPSMarker(position: any, ignoreMove?: boolean): void;
     mercsFromGPSValue(lnglat: Coordinate, acc: number): number[][];
@@ -68,15 +70,15 @@ declare const HistMap_base: (abstract new (...args: any[]) => {
     xy2MercAsync(xy: Coordinate): Promise<Coordinate>;
     xy2SysCoord(xy: Coordinate): Coordinate;
     sysCoord2Xy(sysCoord: Coordinate): Coordinate;
-    viewpoint2MercsAsync(viewpoint?: import("./mixin").ViewpointArray | undefined, size?: import("ol/size").Size | undefined): Promise<import("./mixin").CrossCoordinatesArray>;
+    viewpoint2MercsAsync(viewpoint?: import("./mixin").ViewpointArray | undefined, size?: Size | undefined): Promise<import("./mixin").CrossCoordinatesArray>;
     mercs2ViewpointAsync(mercs: import("./mixin").CrossCoordinatesArray): Promise<import("./mixin").ViewpointArray>;
     mercs2SysCoordsAsync_multiLayer(mercs: import("./mixin").CrossCoordinatesArray): Promise<(import("./mixin").CrossCoordinatesArray | undefined)[]>;
     merc2SysCoordAsync_ignoreBackground(merc: Coordinate): Promise<void | Coordinate>;
     merc2SysCoordAsync(merc: Coordinate): Promise<Coordinate>;
     sysCoord2MercAsync(sysCoord: Coordinate): Promise<Coordinate>;
-    zoom2Radius(size: import("ol/size").Size, zoom?: number | undefined): number;
-    viewpoint2SysCoords(viewpoint?: import("./mixin").ViewpointArray | undefined, size?: import("ol/size").Size | undefined): import("./mixin").CrossCoordinatesArray;
-    mercViewpoint2Mercs(viewpoint?: import("./mixin").ViewpointArray | undefined, size?: import("ol/size").Size | undefined): import("./mixin").CrossCoordinatesArray;
+    zoom2Radius(size: Size, zoom?: number | undefined): number;
+    viewpoint2SysCoords(viewpoint?: import("./mixin").ViewpointArray | undefined, size?: Size | undefined): import("./mixin").CrossCoordinatesArray;
+    mercViewpoint2Mercs(viewpoint?: import("./mixin").ViewpointArray | undefined, size?: Size | undefined): import("./mixin").CrossCoordinatesArray;
     sysCoords2Viewpoint(sysCoords: import("./mixin").CrossCoordinatesArray): import("./mixin").ViewpointArray;
     mercs2MercViewpoint(mercs: import("./mixin").CrossCoordinatesArray): import("./mixin").ViewpointArray;
     sysCoords2Xys(sysCoords: import("./mixin").CrossCoordinatesArray): import("./mixin").CrossCoordinatesArray;
@@ -95,5 +97,6 @@ export declare abstract class HistMap extends HistMap_base {
     modulateSysCoordInside(histCoords: any): Coordinate;
     xy2SysCoord(xy: Coordinate): Coordinate;
     sysCoord2Xy(sysCoord: Coordinate): Coordinate;
+    defZoom(screenSize?: Size): number;
 }
 export {};

@@ -51,7 +51,8 @@ declare const NowMap_base: (abstract new (...args: any[]) => {
         direction?: number | undefined;
         rotation?: number | undefined;
     }): void;
-    goHome(): void;
+    defZoom(screenSize?: Size | undefined): number;
+    goHome(screenSize?: Size | undefined): void;
     setGPSMarkerAsync(position: any, ignoreMove?: boolean): Promise<unknown>;
     setGPSMarker(position: any, ignoreMove?: boolean): void;
     mercsFromGPSValue(lnglat: Coordinate, acc: number): number[][];
@@ -101,5 +102,6 @@ export declare class NowMap extends NowMap_base {
     viewpoint2MercsAsync(viewpoint?: ViewpointArray, size?: Size): Promise<CrossCoordinatesArray>;
     mercs2ViewpointAsync(mercs: CrossCoordinatesArray): Promise<ViewpointArray>;
     mercs2SysCoordsAsync_multiLayer(mercs: CrossCoordinatesArray): Promise<(CrossCoordinatesArray | undefined)[]>;
+    defZoom(): number;
 }
 export {};

@@ -107,4 +107,8 @@ export class NowMap extends setCustomFunction(OSM) {
       mercs[0].map(merc => this.merc2SysCoordAsync(merc))
     ).then(xys => [[xys, mercs[1]]]);
   }
+
+  defZoom(): number {
+    return this.mercZoom!;
+  }
 }

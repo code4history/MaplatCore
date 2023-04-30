@@ -133,6 +133,21 @@ var __extends = (this && this.__extends) || (function () {
             var y = ((-sysCoord[1] + const_ex_1.MERC_MAX) * this._maxxy) / (2 * const_ex_1.MERC_MAX);
             return [x, y];
         };
+        HistMap.prototype.defZoom = function (screenSize) {
+            var screenWidth = screenSize[0];
+            var screenHeight = screenSize[1];
+            var delZoomOfWidth = Math.log2((screenWidth - 10) / this.width);
+            var delZoomOfHeight = Math.log2((screenHeight - 10) / this.height);
+            var maxZoom = this.maxZoom;
+            var delZoom;
+            if (delZoomOfHeight > delZoomOfWidth) {
+                delZoom = delZoomOfHeight - delZoomOfWidth > 0.6 ? delZoomOfWidth : delZoomOfHeight;
+            }
+            else {
+                delZoom = delZoomOfWidth - delZoomOfHeight > 0.6 ? delZoomOfHeight : delZoomOfWidth;
+            }
+            return maxZoom + delZoom;
+        };
         return HistMap;
     }((0, mixin_1.setCustomFunction)(source_1.XYZ)));
     exports.HistMap = HistMap;

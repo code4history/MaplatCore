@@ -167,11 +167,13 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
       this.setViewpointRadian(cond);
     }
 
-    goHome() {
+    abstract defZoom(screenSize?: Size): number;
+
+    goHome(screenSize?: Size) {
       this.setViewpointRadian({
         longitude: this.homePosition![0],
         latitude: this.homePosition![1],
-        mercZoom: this.mercZoom,
+        zoom: this.defZoom(screenSize),
         rotation: 0
       });
     }

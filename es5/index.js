@@ -1173,7 +1173,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         }
                         else if (!_this.__init) {
                             _this.dispatchEvent(new customevent_1.default("outOfMap", {}));
-                            to.goHome();
+                            var ratio = window.devicePixelRatio;
+                            var div = _this.mapDivDocument.firstChild;
+                            to.goHome([div.clientWidth * ratio, div.clientHeight * ratio]);
                         }
                         to.setGPSMarker(_this.currentPosition, true);
                         if (restore.hideLayer) {
@@ -1210,7 +1212,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         }
                         if (_this.__init) {
                             _this.__init = false;
-                            to.goHome();
+                            var ratio = window.devicePixelRatio;
+                            var div = _this.mapDivDocument.firstChild;
+                            to.goHome([div.clientWidth * ratio, div.clientHeight * ratio]);
                         }
                         else if (_this.backMap && backTo) {
                             _this.convertParametersFromCurrent(backTo, function (size) {
