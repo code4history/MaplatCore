@@ -303,7 +303,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 fakeGps: fakeGps,
                 fakeRadius: fakeRadius,
                 homePosition: homePos,
-                northUp: appOption.northUp || this.appData.northUp || false
+                northUp: appOption.northUp || this.appData.northUp || false,
+                tapDuration: appOption.tapDuration || this.appData.tapDuration || 3000
             });
             var backDiv = null;
             if (this.overlay) {
@@ -535,7 +536,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                     for (var i = 0; i < ctls.length; i++) {
                         ctls[i].classList.remove("fade");
                     }
-                }, 3000);
+                }, _this.mapObject.tapDuration);
             });
         };
         MaplatApp.prototype.setMouseCursor = function () {

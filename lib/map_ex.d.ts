@@ -8,6 +8,7 @@ export declare class MaplatMap extends Map {
     homePosition: any;
     __AvoidFirstMoveStart: boolean;
     northUp: boolean;
+    tapDuration: number;
     constructor(optOptions: any);
     static spawnLayer(layer: any, source: any, container: any): any;
     getLayer(name?: string): any;

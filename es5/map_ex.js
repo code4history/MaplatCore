@@ -145,6 +145,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             _this.fakeRadius = optOptions.fakeRadius;
             _this.homePosition = optOptions.homePosition;
             _this.northUp = optOptions.northUp;
+            _this.tapDuration = optOptions.tapDuration;
             var view = _this.getView();
             _this.__AvoidFirstMoveStart = true;
             var movestart = function () {

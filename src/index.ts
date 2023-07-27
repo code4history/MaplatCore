@@ -55,6 +55,7 @@ interface AppData {
   startFrom?: string;
   controls?: any[];
   northUp?: boolean;
+  tapDuration?: number;
 }
 
 type PositionSet = { x: number; y: number; zoom: number; rotation: number };
@@ -322,7 +323,8 @@ export class MaplatApp extends EventTarget {
       fakeGps,
       fakeRadius,
       homePosition: homePos,
-      northUp: appOption.northUp || this.appData!.northUp || false
+      northUp: appOption.northUp || this.appData!.northUp || false,
+      tapDuration: appOption.tapDuration || this.appData!.tapDuration || 3000
     });
     let backDiv = null;
     if (this.overlay) {
@@ -554,7 +556,7 @@ export class MaplatApp extends EventTarget {
         for (let i = 0; i < ctls.length; i++) {
           ctls[i].classList.remove("fade");
         }
-      }, 3000);
+      }, this.mapObject.tapDuration);
     });
   }
   // Async initializer 14: Handle mouse cursor
