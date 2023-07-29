@@ -536,6 +536,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                     for (var i = 0; i < ctls.length; i++) {
                         ctls[i].classList.remove("fade");
                     }
+                    console.log("Remove fade");
                 }, _this.mapObject.tapDuration);
             });
         };

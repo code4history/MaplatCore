@@ -556,6 +556,7 @@ export class MaplatApp extends EventTarget {
         for (let i = 0; i < ctls.length; i++) {
           ctls[i].classList.remove("fade");
         }
+        console.log("Remove fade");
       }, this.mapObject.tapDuration);
     });
   }
