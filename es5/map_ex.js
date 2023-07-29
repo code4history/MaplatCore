@@ -146,6 +146,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             _this.homePosition = optOptions.homePosition;
             _this.northUp = optOptions.northUp;
             _this.tapDuration = optOptions.tapDuration;
+            _this.homeMarginPixels = optOptions.homeMarginPixels;
             var view = _this.getView();
             _this.__AvoidFirstMoveStart = true;
             var movestart = function () {

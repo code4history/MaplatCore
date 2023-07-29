@@ -304,7 +304,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 fakeRadius: fakeRadius,
                 homePosition: homePos,
                 northUp: appOption.northUp || this.appData.northUp || false,
-                tapDuration: appOption.tapDuration || this.appData.tapDuration || 3000
+                tapDuration: appOption.tapDuration || this.appData.tapDuration || 3000,
+                homeMarginPixels: appOption.homeMarginPixels || this.appData.homeMarginPixels || 50
             });
             var backDiv = null;
             if (this.overlay) {
@@ -536,7 +537,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                     for (var i = 0; i < ctls.length; i++) {
                         ctls[i].classList.remove("fade");
                     }
-                    console.log("Remove fade");
                 }, _this.mapObject.tapDuration);
             });
         };
@@ -1274,9 +1274,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         };
         MaplatApp.prototype.goHome = function (useTo) {
             var src = useTo || this.from;
-            var ratio = window.devicePixelRatio;
-            var div = this.mapDivDocument.firstChild;
-            src.goHome([div.clientWidth * ratio, div.clientHeight * ratio]);
+            src.goHome();
         };
         MaplatApp.prototype.resetRotation = function () {
             this.from.resetRotation();

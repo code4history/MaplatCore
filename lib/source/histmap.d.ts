@@ -17,6 +17,7 @@ declare const HistMap_base: (abstract new (...args: any[]) => {
     minZoom?: number | undefined;
     envelope?: import("@turf/turf").Feature<import("@turf/turf").Polygon, import("@turf/turf").Properties> | undefined;
     centroid?: number[] | undefined;
+    homeMarginPixels: number;
     insideCheckSysCoord(sysCoord: Coordinate): boolean;
     getCacheEnable(): boolean;
     getTileCacheStatsAsync(): Promise<{
@@ -51,7 +52,7 @@ declare const HistMap_base: (abstract new (...args: any[]) => {
         rotation?: number | undefined;
     }): void;
     defZoom(screenSize?: Size | undefined): number;
-    goHome(screenSize?: Size | undefined): void;
+    goHome(): void;
     resetRotation(): void;
     resetDirection(): void;
     resetCirculation(): void;

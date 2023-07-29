@@ -34,6 +34,7 @@ export declare function setCustomFunction<TBase extends Constructor>(Base: TBase
     minZoom?: number | undefined;
     envelope?: Feature<Polygon, import("@turf/turf").Properties> | undefined;
     centroid?: number[] | undefined;
+    homeMarginPixels: number;
     insideCheckSysCoord(sysCoord: Coordinate): boolean;
     getCacheEnable(): boolean;
     getTileCacheStatsAsync(): Promise<{
@@ -50,7 +51,7 @@ export declare function setCustomFunction<TBase extends Constructor>(Base: TBase
     setViewpointRadian(cond: ViewpointObject): void;
     setViewpoint(cond: ViewpointObject): void;
     defZoom(screenSize?: Size): number;
-    goHome(screenSize?: Size): void;
+    goHome(): void;
     resetRotation(): void;
     resetDirection(): void;
     resetCirculation(): void;

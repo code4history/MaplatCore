@@ -79,6 +79,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 _this.title = "";
                 _this.mapID = "";
                 _this.label = "";
+                _this.homeMarginPixels = 0;
                 return _this;
             }
             Mixin.prototype.getCacheEnable = function () {
@@ -260,7 +261,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 }
                 this.setViewpointRadian(cond);
             };
-            Mixin.prototype.goHome = function (screenSize) {
+            Mixin.prototype.goHome = function () {
+                var ratio = 1;
+                var map = this.getMap();
+                var div = map.getTarget();
+                if (typeof div === 'string') {
+                    div = document.getElementById(div);
+                }
+                var homeMarginPixels = map.homeMarginPixels;
+                var screenSize = [(div.clientWidth - homeMarginPixels - 10) * ratio, (div.clientHeight - homeMarginPixels - 10) * ratio];
                 var options = {
                     longitude: this.homePosition[0],
                     latitude: this.homePosition[1],

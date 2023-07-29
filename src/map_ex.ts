@@ -68,6 +68,7 @@ export class MaplatMap extends Map {
   __AvoidFirstMoveStart: boolean;
   northUp: boolean;
   tapDuration: number;
+  homeMarginPixels: number;
   constructor(optOptions: any) {
     optOptions = normalizeArg(optOptions || {});
     const vectorLayer = new layerVector({
@@ -130,6 +131,7 @@ export class MaplatMap extends Map {
     this.homePosition = optOptions.homePosition;
     this.northUp = optOptions.northUp;
     this.tapDuration = optOptions.tapDuration;
+    this.homeMarginPixels = optOptions.homeMarginPixels;
     const view = this.getView();
     this.__AvoidFirstMoveStart = true;
     const movestart = () => {

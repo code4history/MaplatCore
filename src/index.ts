@@ -56,6 +56,7 @@ interface AppData {
   controls?: any[];
   northUp?: boolean;
   tapDuration?: number;
+  homeMarginPixels: number;
 }
 
 type PositionSet = { x: number; y: number; zoom: number; rotation: number };
@@ -324,7 +325,8 @@ export class MaplatApp extends EventTarget {
       fakeRadius,
       homePosition: homePos,
       northUp: appOption.northUp || this.appData!.northUp || false,
-      tapDuration: appOption.tapDuration || this.appData!.tapDuration || 3000
+      tapDuration: appOption.tapDuration || this.appData!.tapDuration || 3000,
+      homeMarginPixels: appOption.homeMarginPixels || this.appData!.homeMarginPixels || 50
     });
     let backDiv = null;
     if (this.overlay) {
@@ -556,7 +558,6 @@ export class MaplatApp extends EventTarget {
         for (let i = 0; i < ctls.length; i++) {
           ctls[i].classList.remove("fade");
         }
-        console.log("Remove fade");
       }, this.mapObject.tapDuration);
     });
   }
@@ -1286,9 +1287,7 @@ export class MaplatApp extends EventTarget {
   }
   goHome(useTo?: HistMap | NowMap) {
     const src = useTo || this.from!;
-    const ratio = window.devicePixelRatio;
-    const div = this.mapDivDocument!.firstChild as any;
-    src.goHome([div.clientWidth * ratio, div.clientHeight * ratio]);
+    src.goHome();
   }
   resetRotation() {
     this.from!.resetRotation();

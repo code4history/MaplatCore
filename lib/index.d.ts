@@ -27,6 +27,7 @@ interface AppData {
     controls?: any[];
     northUp?: boolean;
     tapDuration?: number;
+    homeMarginPixels: number;
 }
 declare type PositionSet = {
     x: number;
