@@ -15,8 +15,9 @@
       var option = {
         mapboxgl: mapboxgl,
         mapboxToken: 'YOUR-ACCESS-TOKEN',
-        northUp: true,
+        northUp: false,
         tapDuration: 60000,
+        homeMarginPixels: 100
       };
       var hashes = window.location.href
         .slice(window.location.href.indexOf("?") + 1)

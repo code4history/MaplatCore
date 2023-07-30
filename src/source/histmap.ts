@@ -180,9 +180,9 @@ export abstract class HistMap extends setCustomFunction(XYZ) {
     const maxZoom = this.maxZoom!;
     let delZoom;
     if (delZoomOfHeight > delZoomOfWidth) {
-      delZoom = delZoomOfHeight - delZoomOfWidth > 0.6 ? delZoomOfWidth : delZoomOfHeight;
+      delZoom = delZoomOfHeight;
     } else {
-      delZoom = delZoomOfWidth - delZoomOfHeight > 0.6 ? delZoomOfHeight : delZoomOfWidth;
+      delZoom = delZoomOfWidth;
     }
     return maxZoom + delZoom;
   }
