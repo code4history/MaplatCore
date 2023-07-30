@@ -265,11 +265,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 var ratio = 1;
                 var map = this.getMap();
                 var div = map.getTarget();
-                if (typeof div === 'string') {
+                if (typeof div === "string") {
                     div = document.getElementById(div);
                 }
                 var homeMarginPixels = map.homeMarginPixels;
-                var screenSize = [(div.clientWidth - homeMarginPixels - 10) * ratio, (div.clientHeight - homeMarginPixels - 10) * ratio];
+                var screenSize = [
+                    (div.clientWidth - homeMarginPixels - 10) * ratio,
+                    (div.clientHeight - homeMarginPixels - 10) * ratio
+                ];
                 var options = {
                     longitude: this.homePosition[0],
                     latitude: this.homePosition[1],
