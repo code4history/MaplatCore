@@ -170,15 +170,18 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
 
     abstract defZoom(screenSize?: Size): number;
 
-    goHome(){
+    goHome() {
       const ratio = 1; //window.devicePixelRatio;
       const map = this.getMap() as any;
       let div = map.getTarget() as any;
-      if (typeof div === 'string') {
+      if (typeof div === "string") {
         div = document.getElementById(div);
       }
       const homeMarginPixels = map.homeMarginPixels;
-      const screenSize = [(div.clientWidth - homeMarginPixels - 10) * ratio, (div.clientHeight - homeMarginPixels - 10) * ratio];
+      const screenSize = [
+        (div.clientWidth - homeMarginPixels - 10) * ratio,
+        (div.clientHeight - homeMarginPixels - 10) * ratio
+      ];
 
       const options = {
         longitude: this.homePosition![0],
@@ -191,11 +194,11 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
     }
 
     resetRotation() {
-      this.setViewpointRadian({rotation: 0});
+      this.setViewpointRadian({ rotation: 0 });
     }
 
     resetDirection() {
-      this.setViewpointRadian({direction: 0});
+      this.setViewpointRadian({ direction: 0 });
     }
 
     resetCirculation() {

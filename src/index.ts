@@ -326,7 +326,8 @@ export class MaplatApp extends EventTarget {
       homePosition: homePos,
       northUp: appOption.northUp || this.appData!.northUp || false,
       tapDuration: appOption.tapDuration || this.appData!.tapDuration || 3000,
-      homeMarginPixels: appOption.homeMarginPixels || this.appData!.homeMarginPixels || 50
+      homeMarginPixels:
+        appOption.homeMarginPixels || this.appData!.homeMarginPixels || 50
     });
     let backDiv = null;
     if (this.overlay) {
