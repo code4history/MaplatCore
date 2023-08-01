@@ -30,7 +30,8 @@ declare const HistMap_base: (abstract new (...args: any[]) => {
     fetchAllTileCacheAsync(callback: any): Promise<void>;
     cancelTileCacheAsync(): Promise<void>;
     clearTileCacheAsync(): Promise<void>;
-    getMap(): import("../map_ex").MaplatMap | undefined;
+    getMap(): import("../map_ex").MaplatMap;
+    setMap(map: import("../map_ex").MaplatMap): void;
     setViewpointRadian(cond: {
         x?: number | undefined;
         y?: number | undefined;

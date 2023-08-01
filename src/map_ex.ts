@@ -316,7 +316,7 @@ export class MaplatMap extends Map {
     const layer = MaplatMap.spawnLayer(prevLayer, source, this.getTarget());
     if (layer != prevLayer) layers.setAt(0, layer);
     if (source) {
-      source._map = this;
+      source.setMap(this);
     }
   }
   setLayer(source: any = undefined) {

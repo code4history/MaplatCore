@@ -364,7 +364,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             this.cacheHash = {};
             for (var i = 0; i < sources.length; i++) {
                 var source = sources[i];
-                source._map = this.mapObject;
+                source.setMap(this.mapObject);
                 if (source instanceof mapboxmap_1.MapboxMap) {
                     if (!this.mapboxMap) {
                         throw "To use mapbox gl based base map, you have to make Maplat object with specifying 'mapboxgl' option.";

@@ -395,7 +395,7 @@ export class MaplatApp extends EventTarget {
     this.cacheHash = {};
     for (let i = 0; i < sources.length; i++) {
       const source = sources[i];
-      source._map = this.mapObject;
+      source.setMap(this.mapObject);
       if (source instanceof MapboxMap) {
         if (!this.mapboxMap) {
           throw "To use mapbox gl based base map, you have to make Maplat object with specifying 'mapboxgl' option.";

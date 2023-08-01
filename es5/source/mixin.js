@@ -206,6 +206,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             Mixin.prototype.getMap = function () {
                 return this._map;
             };
+            Mixin.prototype.setMap = function (map) {
+                this._map = map;
+            };
             Mixin.prototype.setViewpointRadian = function (cond) {
                 var _this = this;
                 var merc;
@@ -214,7 +217,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 var zoom = cond.zoom;
                 var direction = cond.direction;
                 var rotation = cond.rotation;
-                var map = this._map;
+                var map = this.getMap();
                 var view = map === null || map === void 0 ? void 0 : map.getView();
                 if (cond.latitude !== undefined && cond.longitude !== undefined) {
                     merc = (0, proj_1.transform)([cond.longitude, cond.latitude], "EPSG:4326", "EPSG:3857");
@@ -278,7 +281,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                     latitude: this.homePosition[1],
                     zoom: this.defZoom(screenSize)
                 };
-                if (this._map.northUp)
+                if (this.getMap().northUp)
                     options.direction = 0;
                 else
                     options.rotation = 0;
@@ -291,7 +294,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 this.setViewpointRadian({ direction: 0 });
             };
             Mixin.prototype.resetCirculation = function () {
-                if (this._map.northUp)
+                if (this.getMap().northUp)
                     this.resetDirection();
                 else
                     this.resetRotation();
@@ -352,7 +355,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             };
             Mixin.prototype.rotateMatrix = function (xys, theta) {
                 if (theta === undefined) {
-                    theta = this._map.getView().getRotation();
+                    theta = this.getMap().getView().getRotation();
                 }
                 var result = [];
                 for (var i = 0; i < xys.length; i++) {
@@ -496,10 +499,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 return this.xy2MercAsync(xy);
             };
             Mixin.prototype.zoom2Radius = function (size, zoom) {
-                var _a;
                 var radius = Math.floor(Math.min(size[0], size[1]) / 4);
                 if (zoom === undefined) {
-                    zoom = (_a = this._map) === null || _a === void 0 ? void 0 : _a.getView().getDecimalZoom();
+                    zoom = this.getMap().getView().getDecimalZoom();
                 }
                 return (radius * const_ex_1.MERC_MAX) / 128 / Math.pow(2, zoom);
             };
@@ -511,10 +513,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 var zoom = viewpoint ? viewpoint[1] : undefined;
                 var rotate = viewpoint ? viewpoint[2] : undefined;
                 if (center === undefined) {
-                    center = this._map.getView().getCenter();
+                    center = this.getMap().getView().getCenter();
                 }
                 if (size === undefined) {
-                    size = this._map.getSize();
+                    size = this.getMap().getSize();
                 }
                 var radius = this.zoom2Radius(size, zoom);
                 var crossDelta = this.rotateMatrix(const_ex_1.MERC_CROSSMATRIX, rotate);
@@ -558,7 +560,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 var scale = abss / 4.0;
                 var omega = Math.atan2(sinx, cosx);
                 if (!size)
-                    size = this._map.getSize();
+                    size = this.getMap().getSize();
                 var radius = Math.floor(Math.min(size[0], size[1]) / 4);
                 var zoom = Math.log((radius * const_ex_1.MERC_MAX) / 128 / scale) / Math.log(2);
                 return [center, zoom, omega];

@@ -47,7 +47,8 @@ export declare function setCustomFunction<TBase extends Constructor>(Base: TBase
     fetchAllTileCacheAsync(callback: any): Promise<void>;
     cancelTileCacheAsync(): Promise<void>;
     clearTileCacheAsync(): Promise<void>;
-    getMap(): MaplatMap | undefined;
+    getMap(): MaplatMap;
+    setMap(map: MaplatMap): void;
     setViewpointRadian(cond: ViewpointObject): void;
     setViewpoint(cond: ViewpointObject): void;
     defZoom(screenSize?: Size): number;

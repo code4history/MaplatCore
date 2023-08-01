@@ -107,7 +107,11 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
     }
 
     getMap() {
-      return this._map;
+      return this._map!;
+    }
+
+    setMap(map: MaplatMap) {
+      this._map = map;
     }
 
     // 経緯度lnglat、メルカトルズームmercZoom、地図ズームzoom、方角direction、地図回転rotation等を指定し地図移動
@@ -118,7 +122,7 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
       const zoom = cond.zoom;
       const direction = cond.direction;
       const rotation = cond.rotation;
-      const map = this._map;
+      const map = this.getMap();
       const view = map?.getView();
       if (cond.latitude !== undefined && cond.longitude !== undefined) {
         merc = transform(
@@ -188,7 +192,7 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
         latitude: this.homePosition![1],
         zoom: this.defZoom(screenSize)
       } as ViewpointObject;
-      if (this._map!.northUp) options.direction = 0;
+      if (this.getMap().northUp) options.direction = 0;
       else options.rotation = 0;
       this.setViewpointRadian(options);
     }
@@ -202,7 +206,7 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
     }
 
     resetCirculation() {
-      if (this._map!.northUp) this.resetDirection();
+      if (this.getMap().northUp) this.resetDirection();
       else this.resetRotation();
     }
 
@@ -271,7 +275,7 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
     // 与えられた差分行列を回転。theta無指定の場合は自動取得
     rotateMatrix(xys: number[][], theta?: number): Coordinate[] {
       if (theta === undefined) {
-        theta = this._map!.getView().getRotation();
+        theta = this.getMap().getView().getRotation();
       }
       const result = [];
       for (let i = 0; i < xys.length; i++) {
@@ -424,7 +428,7 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
     zoom2Radius(size: Size, zoom?: number) {
       const radius = Math.floor(Math.min(size[0], size[1]) / 4);
       if (zoom === undefined) {
-        zoom = this._map?.getView().getDecimalZoom();
+        zoom = this.getMap().getView().getDecimalZoom();
       }
       return (radius * MERC_MAX) / 128 / Math.pow(2, zoom!);
     }
@@ -445,10 +449,10 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
       const zoom = viewpoint ? viewpoint[1] : undefined;
       const rotate = viewpoint ? viewpoint[2] : undefined;
       if (center === undefined) {
-        center = this._map!.getView().getCenter();
+        center = this.getMap().getView().getCenter();
       }
       if (size === undefined) {
-        size = this._map!.getSize()!;
+        size = this.getMap().getSize()!;
       }
       const radius = this.zoom2Radius(size, zoom);
       const crossDelta = this.rotateMatrix(MERC_CROSSMATRIX, rotate);
@@ -498,7 +502,7 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
       const scale = abss / 4.0;
       const omega = Math.atan2(sinx, cosx);
 
-      if (!size) size = this._map!.getSize()!;
+      if (!size) size = this.getMap().getSize()!;
       const radius = Math.floor(Math.min(size[0], size[1]) / 4);
       const zoom = Math.log((radius * MERC_MAX) / 128 / scale) / Math.log(2);
 

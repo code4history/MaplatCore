@@ -337,7 +337,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             if (layer != prevLayer)
                 layers.setAt(0, layer);
             if (source) {
-                source._map = this;
+                source.setMap(this);
             }
         };
         MaplatMap.prototype.setLayer = function (source) {
