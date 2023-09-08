@@ -10,6 +10,7 @@ export declare class MaplatMap extends Map {
     northUp: boolean;
     tapDuration: number;
     homeMarginPixels: number;
+    tapUIVanish: boolean;
     constructor(optOptions: any);
     static spawnLayer(layer: any, source: any, container: any): any;
     getLayer(name?: string): any;

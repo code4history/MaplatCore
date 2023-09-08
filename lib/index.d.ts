@@ -28,6 +28,7 @@ interface AppData {
     northUp?: boolean;
     tapDuration?: number;
     homeMarginPixels: number;
+    tapUIVanish: boolean;
 }
 declare type PositionSet = {
     x: number;

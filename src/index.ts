@@ -57,6 +57,7 @@ interface AppData {
   northUp?: boolean;
   tapDuration?: number;
   homeMarginPixels: number;
+  tapUIVanish: boolean;
 }
 
 type PositionSet = { x: number; y: number; zoom: number; rotation: number };
@@ -327,7 +328,8 @@ export class MaplatApp extends EventTarget {
       northUp: appOption.northUp || this.appData!.northUp || false,
       tapDuration: appOption.tapDuration || this.appData!.tapDuration || 3000,
       homeMarginPixels:
-        appOption.homeMarginPixels || this.appData!.homeMarginPixels || 50
+        appOption.homeMarginPixels || this.appData!.homeMarginPixels || 50,
+      tapUIVanish: appOption.tapUIVanish || this.appData!.tapUIVanish || false  
     });
     let backDiv = null;
     if (this.overlay) {
@@ -534,8 +536,21 @@ export class MaplatApp extends EventTarget {
         timer = undefined;
       }
       const ctls = this.mapDivDocument!.querySelectorAll(".ol-control");
-      for (let i = 0; i < ctls.length; i++) {
-        ctls[i].classList.remove("fade");
+      if (!this.mapObject.tapUIVanish || (ctls.length && ctls[0].classList.contains("fade"))) {
+        for (let i = 0; i < ctls.length; i++) {
+          ctls[i].classList.remove("fade");
+        }
+      } else {
+        for (let i = 0; i < ctls.length; i++) {
+          ctls[i].classList.add("fade");
+        }
+        timer = setTimeout(() => {
+          timer = undefined;
+          const ctls = this.mapDivDocument!.querySelectorAll(".ol-control");
+          for (let i = 0; i < ctls.length; i++) {
+            ctls[i].classList.remove("fade");
+          }
+        }, this.mapObject.tapDuration);
       }
     });
     this.mapObject.on("pointerdrag", () => {

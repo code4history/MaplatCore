@@ -305,7 +305,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 homePosition: homePos,
                 northUp: appOption.northUp || this.appData.northUp || false,
                 tapDuration: appOption.tapDuration || this.appData.tapDuration || 3000,
-                homeMarginPixels: appOption.homeMarginPixels || this.appData.homeMarginPixels || 50
+                homeMarginPixels: appOption.homeMarginPixels || this.appData.homeMarginPixels || 50,
+                tapUIVanish: appOption.tapUIVanish || this.appData.tapUIVanish || false
             });
             var backDiv = null;
             if (this.overlay) {
@@ -512,8 +513,22 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                     timer = undefined;
                 }
                 var ctls = _this.mapDivDocument.querySelectorAll(".ol-control");
-                for (var i = 0; i < ctls.length; i++) {
-                    ctls[i].classList.remove("fade");
+                if (!_this.mapObject.tapUIVanish || (ctls.length && ctls[0].classList.contains("fade"))) {
+                    for (var i = 0; i < ctls.length; i++) {
+                        ctls[i].classList.remove("fade");
+                    }
+                }
+                else {
+                    for (var i = 0; i < ctls.length; i++) {
+                        ctls[i].classList.add("fade");
+                    }
+                    timer = setTimeout(function () {
+                        timer = undefined;
+                        var ctls = _this.mapDivDocument.querySelectorAll(".ol-control");
+                        for (var i = 0; i < ctls.length; i++) {
+                            ctls[i].classList.remove("fade");
+                        }
+                    }, _this.mapObject.tapDuration);
                 }
             });
             this.mapObject.on("pointerdrag", function () {

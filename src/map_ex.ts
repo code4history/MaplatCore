@@ -69,6 +69,7 @@ export class MaplatMap extends Map {
   northUp: boolean;
   tapDuration: number;
   homeMarginPixels: number;
+  tapUIVanish: boolean;
   constructor(optOptions: any) {
     optOptions = normalizeArg(optOptions || {});
     const vectorLayer = new layerVector({
@@ -132,6 +133,7 @@ export class MaplatMap extends Map {
     this.northUp = optOptions.northUp;
     this.tapDuration = optOptions.tapDuration;
     this.homeMarginPixels = optOptions.homeMarginPixels;
+    this.tapUIVanish = optOptions.tapUIVanish;
     const view = this.getView();
     this.__AvoidFirstMoveStart = true;
     const movestart = () => {

@@ -32,7 +32,7 @@
   </head>
   <body>
     <div class="mainview">
-      <div id="map_div"></div>
+      <div id="map_div"><span class="ol-control"></span></div>
     </div>
     <div class="button">
       <button id="show">showLayer(Main)</button>
@@ -67,7 +67,8 @@
         mapboxToken: 'YOUR-ACCESS-TOKEN',
         northUp: true,
         tapDuration: 60000,
-        homeMarginPixels: 100
+        homeMarginPixels: 100,
+        tapUIVanish: true
       };
       var hashes = window.location.href
         .slice(window.location.href.indexOf("?") + 1)
