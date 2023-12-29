@@ -14,6 +14,7 @@ import { polygon } from "@turf/helpers";
 import centroid from "@turf/centroid";
 import { Feature, Polygon } from "@turf/turf";
 import { Size } from "ol/size";
+import { View as mlView } from "../view_ex";
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 type Constructor<T = {}> = new (...args: any[]) => T;
@@ -277,7 +278,7 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
       if (theta === undefined) {
         theta = this.getMap().getView().getRotation();
       }
-      const result = [];
+      const result: number[][] = [];
       for (let i = 0; i < xys.length; i++) {
         const xy = xys[i];
         const x = xy[0] * Math.cos(theta) - xy[1] * Math.sin(theta);
@@ -428,7 +429,7 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
     zoom2Radius(size: Size, zoom?: number) {
       const radius = Math.floor(Math.min(size[0], size[1]) / 4);
       if (zoom === undefined) {
-        zoom = this.getMap().getView().getDecimalZoom();
+        zoom = (this.getMap().getView() as mlView).getDecimalZoom();
       }
       return (radius * MERC_MAX) / 128 / Math.pow(2, zoom!);
     }

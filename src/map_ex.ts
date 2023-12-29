@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Feature, Geolocation, Map, MapEvent } from "ol";
 import { View } from "./view_ex";
 import { Group, Tile, Vector as layerVector } from "ol/layer";
@@ -10,9 +11,10 @@ import { getDistance, randomFromCenter } from "./math_ex";
 import { MapboxLayer } from "./layer_mapbox";
 import { normalizeArg } from "./functions";
 
-import bluedot from "../parts/bluedot.png";
-import bluedot_transparent from "../parts/bluedot_transparent.png";
-import bluedot_small from "../parts/bluedot_small.png";
+// @ts-ignore
+import bluedot from "../parts/bluedot.png";                         // @ts-ignore
+import bluedot_transparent from "../parts/bluedot_transparent.png"; // @ts-ignore
+import bluedot_small from "../parts/bluedot_small.png";             // @ts-ignore
 import defaultpin from "../parts/defaultpin.png";
 import IconAnchorUnits from "ol/style/IconAnchorUnits";
 import { HistMap } from "./source/histmap";
@@ -297,7 +299,7 @@ export class MaplatMap extends Map {
   }
   setFillEnvelope(xys: any, stroke: any, fill: any, layer: any) {
     if (!layer) layer = "envelope";
-    let style = null;
+    let style: (Style | undefined);
     if (stroke != null || fill != null) {
       const option = {};
       if (stroke != null) (option as any).stroke = new Stroke(stroke);

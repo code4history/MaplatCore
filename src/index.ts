@@ -31,8 +31,9 @@ import {
 } from "./normalize_pois";
 import { createIconSet, createHtmlFromTemplate } from "./template_works";
 
-import redcircle from "../parts/redcircle.png";
-import defaultpin_selected from "../parts/defaultpin_selected.png";
+// @ts-ignore
+import redcircle from "../parts/redcircle.png";                     // @ts-ignore  
+import defaultpin_selected from "../parts/defaultpin_selected.png"; // @ts-ignore
 import defaultpin from "../parts/defaultpin.png";
 import { Coordinate } from "ol/coordinate";
 
@@ -248,7 +249,7 @@ export class MaplatApp extends EventTarget {
   // Async initializer 8: Load sources setting asynchronous
   async sourcesLoader(mapReturnValue: any) {
     const dataSource = this.appData!.sources;
-    const sourcePromise = [];
+    const sourcePromise: Promise<any>[] = [];
     const commonOption = {
       //homePosition: mapReturnValue.homePos,
       //mercZoom: mapReturnValue.defZoom,
@@ -331,7 +332,7 @@ export class MaplatApp extends EventTarget {
         appOption.homeMarginPixels || this.appData!.homeMarginPixels || 50,
       tapUIVanish: appOption.tapUIVanish || this.appData!.tapUIVanish || false  
     });
-    let backDiv = null;
+    let backDiv: any = null;
     if (this.overlay) {
       backDiv = `${this.mapDiv}_back`;
       newElem = createElement(
@@ -393,7 +394,7 @@ export class MaplatApp extends EventTarget {
       if (prev) return prev;
       if (curr instanceof NowMap && !(curr instanceof TmsMap)) return curr;
     }, null);
-    const cache = [];
+    const cache: any[] = [];
     this.cacheHash = {};
     for (let i = 0; i < sources.length; i++) {
       const source = sources[i];
@@ -1132,8 +1133,8 @@ export class MaplatApp extends EventTarget {
       () =>
         new Promise((resolve, _reject) => {
           this.convertParametersFromCurrent(to, (size: any) => {
-            let backSrc = null;
-            let backTo = null;
+            let backSrc: any = null;
+            let backTo: any = null;
             const backRestore = restore!.backgroundID
               ? this.cacheHash[restore!.backgroundID]
               : undefined;
@@ -1148,7 +1149,7 @@ export class MaplatApp extends EventTarget {
                 } else {
                   if (!backSrc) {
                     // If current background source is not set, specify it
-                    backTo = now;
+                    backTo = now as any;
                     if (this.from instanceof NowMap) {
                       backTo =
                         this.from instanceof TmsMap
