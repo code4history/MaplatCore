@@ -1,0 +1,15 @@
+{
+  "mapID": "osm",
+  "title": {
+    "ja": "オープンストリートマップ",
+    "en": "OpenStreetMap"
+  },
+  "label": {
+    "ja": "OSM(現在)",
+    "en": "OSM(Now)"
+  },
+  "attr": "©︎ OpenStreetMap contributors",
+  "maptype": "base",
+  "thumbnail": "osm",
+  "url": "https://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
+}

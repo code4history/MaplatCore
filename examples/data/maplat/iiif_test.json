@@ -1,0 +1,37 @@
+{
+  "version": "3.0230620",
+  "metaData": {
+    "title": "大隅國熊毛郡種子嶋沿海圖",
+    "attr": "PUBLIC DOMAIN",
+    "officialTitle": "",
+    "dataAttr": "",
+    "author": "THE ARMY MAP SERVICE",
+    "createdAt": "1946",
+    "era": "",
+    "license": "PD",
+    "dataLicense": "CC0",
+    "contributor": "",
+    "mapper": "Kohei Otsuka",
+    "lang": "ja",
+    "reference": "https://maps.lib.utexas.edu/maps/ams/japan_city_plans/txu-oclc-6565467.jpg",
+    "description": ""
+  },
+  "sourceSpec": {
+    "url": "https://rmda.kulib.kyoto-u.ac.jp/iiif/metadata_manifest/RB00014991/manifest.json",
+    "tileSourceType": "IIIF"
+  },
+  "projectionSpec": {
+    "size": [6299, 12701],
+    "mapCoord": "EPSG:2444",
+    "worldParams": {
+      "xScale": 4.634026392015538,
+      "yRotation": 0,
+      "xRotation": 0,
+      "yScale": -4.6658651936848194,
+      "xOrigin": -19619.40613613040841301,
+      "yOrigin": -237221.11608402847195975
+    },
+    "interOperationCoord": "EPSG:3857",
+    "warp": "NONE"
+  }
+}

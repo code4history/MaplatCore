@@ -37,8 +37,10 @@
     "lint:eslint": "eslint \"{src,spec}/**/*.{js,ts}\" --fix",
     "lint:prettier": "prettier \"./{src,spec}/**/*.{js,ts}\" --write",
     "typecheck": "tsc --noEmit --project ts_config/tsconfig.es6.json",
-    "git_switch": "gulp git_switch"
+    "git_switch": "gulp git_switch",
+    "serve-examples": "webpack serve --config examples/webpack/config.mjs --mode development"
   },
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/code4history/MaplatCore.git"
@@ -62,7 +64,11 @@
     "i18next": "^21.8.4",
     "i18next-xhr-backend": "^3.2.2",
     "lodash.template": "^4.5.0",
-    "ol": "^6.14.1",
+    "manifesto.js": "^4.2.17",
+    "monotone-chain-convex-hull": "^1.1.0",
+    "ol": "^8.1.0",
+    "ol-ext": "^4.0.11",
+    "proj4-list": "^1.0.1",
     "weiwudi": "^0.1.4",
     "whatwg-fetch": "^3.6.2"
   },
@@ -82,6 +88,7 @@
     "babel-jest": "^28.1.0",
     "babel-loader": "^8.2.5",
     "clean-webpack-plugin": "^4.0.0",
+    "copy-webpack-plugin": "^11.0.0",
     "core-js": "^3.22.7",
     "cross-env": "^7.0.3",
     "css-loader": "^5.2.6",
@@ -92,16 +99,21 @@
     "eslint-plugin-jest": "^26.3.0",
     "file-loader": "^6.2.0",
     "fork-ts-checker-webpack-plugin": "^6.5.2",
+    "front-matter": "^4.0.0",
     "fs-extra": "^10.1.0",
     "gulp": "^4.0.2",
     "gulp-cli": "^2.3.0",
     "gulp-zip": "^5.1.0",
+    "handlebars": "4.7.7",
     "html-webpack-plugin": "^5.5.0",
     "jest": "^28.1.0",
     "jest-cli": "^28.1.0",
     "jest-puppeteer": "^6.1.0",
     "less": "^4.1.2",
     "less-loader": "^11.0.0",
+    "marked": "5.0.2",
+    "marked-gfm-heading-id": "^3.1.2",
+    "marked-mangle": "^1.1.6",
     "mini-css-extract-plugin": "^2.6.0",
     "prettier": "^2.6.2",
     "psaux": "^0.4.0",
@@ -113,9 +125,16 @@
     "typescript": "^4.7.2",
     "url-loader": "^4.1.1",
     "webpack": "^5.76.0",
-    "webpack-cli": "^4.9.2",
-    "webpack-dev-server": "^4.11.1"
+    "webpack-cli": "^5.0.0",
+    "webpack-dev-middleware": "^6.0.0",
+    "webpack-dev-server": "^4.11.1",
+    "webpack-sources": "^3.2.0"
   },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ],
   "overrides": {
     "@babel/traverse": "7.23.2",
     "glob-parent": "5.1.2",
