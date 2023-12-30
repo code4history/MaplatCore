@@ -200,7 +200,7 @@ function createProjection(settings, options, subNum) {
   }
 
   let returnProjs;
-  if (settings.sub_maps) {
+  /*if (settings.sub_maps) {
     returnProjs = settings.sub_maps.map((subMap, index) => {
       const subSettings = Object.assign(
         {
@@ -208,13 +208,15 @@ function createProjection(settings, options, subNum) {
         },
         subMap
       );
+      console.log(subSettings);
+      console.log(settings);
       const retProj = createProjection(subSettings, options, index + 1);
       //retProj.set('priority', subSettings.priority);
       //retProj.set('importance', subSettings.importance);
       return retProj;
     });
     returnProjs.unshift(maplatProjection);
-  }
+  }*/
   if (maplatProjection.getUnits() !== 'pixels') {
     if (settings.envelopeLngLats) {
       const lnglats = settings.envelopeLngLats.concat([settings.envelopeLngLats[0]]);

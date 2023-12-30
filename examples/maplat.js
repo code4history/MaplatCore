@@ -16,6 +16,7 @@ import {altKeyOnly} from 'ol/events/condition.js';
 import {defaults} from 'ol/interaction/defaults.js';
 import {transform} from 'ol/proj.js';
 
+(async () => {
 const centerLngLat = [139.53671, 36.24668];
 
 const createPoiSource = async (url) => {
@@ -94,13 +95,13 @@ const dataSources = [
       },
     ],
   },
-  {
-    area: '姫路',
-    raster: [
-      'https://s.maplat.jp/r/himejimap/maps/Jissoku_Himeji_Shigai.json',
-      'data/maplat/txu-oclc-6565467.json'
-    ],
-  },
+  //{
+  //  area: '姫路',
+  //  raster: [
+  //    'https://s.maplat.jp/r/himejimap/maps/Jissoku_Himeji_Shigai.json',
+  //    'data/maplat/txu-oclc-6565467.json'
+  //  ],
+  //},
   {
     area: '延岡',
     raster: ['data/maplat/1932_nobeoka.json'],
@@ -139,7 +140,7 @@ await Promise.all(
   })
 );
 
-let map, bakMap;
+let map;
 
 const areaSelect = document.getElementById('area_select');
 const layerSelect = document.getElementById('layer_select');
@@ -242,7 +243,7 @@ function layerSelectFunc(layer_id, clearMap) {
     })
   );
 
-  const frontDiv = document.querySelector('#map .front');
+  const frontDiv = document.querySelector('#map');
   if (!map) {
     map = new Map({
       target: frontDiv,
@@ -268,3 +269,4 @@ function layerSelectFunc(layer_id, clearMap) {
     view.fit(toSource.getProjection().getExtent(), {padding: [50, 50, 50, 50]});
   }
 }
+})();

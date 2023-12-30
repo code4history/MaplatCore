@@ -26,13 +26,21 @@ export default {
   module: {
     rules: [
       {
-        test: /\.(js|ts)$/,
-        //use: {
-        //  loader: path.join(src, 'webpack', 'worker-loader.cjs'),
-        //},
-        loader: 'babel-loader',
-        include: [path.join(root, 'src', 'ol', 'worker')],
+        test: /\.js$/,
+        loader: "babel-loader",
+        include: [path.join(root, "src", "ol", "worker")]
       },
+      {
+        test: /\.ts$/,
+        use: {
+          loader: "ts-loader",
+          options: {
+            transpileOnly: true,
+            configFile: path.join(root, "ts_config", "tsconfig.es6.json")
+          }
+        },
+        exclude: /node_modules/
+      }
     ],
   },
   optimization: {
