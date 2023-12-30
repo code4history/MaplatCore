@@ -1,3 +1,4 @@
+/* eslint-disable no-case-declarations */
 /**
  * @module ol/maplat/source/Factory
  */
@@ -46,20 +47,17 @@ class Factory {
    * @param {import('./Maplat.js').Options} options Options for ol/source/TileImage
    * @return {Promise<import('./Maplat.js').default>} Maplat instance
    */
-  // @ts-ignore
   static async factoryMaplatSource(settings, options = {}) {
     const mapID = settings.mapID;
     options.mapID = mapID;
     let SourceClass;
 
     // IIIFの場合、IIIF用のoptionsを取得
-    // @ts-ignore
     if (settings.sourceSpec && settings.sourceSpec.tileSourceType === 'IIIF') { 
       SourceClass = IIIF;
-      delete options.url;               // @ts-ignore
-      const manifest = await manifesto.loadManifest(settings.sourceSpec.url);                   // @ts-ignore
+      delete options.url;
+      const manifest = await manifesto.loadManifest(settings.sourceSpec.url);
       if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
-        // @ts-ignore
         const infoUrl = `${manifest.sequences[0].canvases[settings.sourceSpec.iiifNumber || 0].images[0].resource.service['@id']}/info.json`;
         const infoObj = await (await fetch(infoUrl)).json();
         const iiifOption = new IIIFInfo(infoObj).getTileSourceOptions();
@@ -68,9 +66,9 @@ class Factory {
       } else {
         throw new Error('Invalid IIIF settings');
       }
-    } else if(!('url' in options)) {    // @ts-ignore
-      options.url = settings.sourceSpec // @ts-ignore
-        ? settings.sourceSpec.url       // @ts-ignore
+    } else if(!('url' in options)) {
+      options.url = settings.sourceSpec
+        ? settings.sourceSpec.url
         : settings.url;
     }
 
@@ -84,7 +82,7 @@ class Factory {
     const source = new SourceClass(options);
     console.log(source);
     source.set(
-      'title',                          // @ts-ignore
+      'title',
       settings.metaData ? settings.metaData.title : settings.title
     );
     return source;
@@ -96,7 +94,6 @@ class Factory {
    * @param {import('./Maplat.js').Options} options Options for ol/source/TileImage
    * @return {Promise<import('./Maplat.js').default>} Maplat instance
    */
-  // @ts-ignore
   static async factoryMaplatSourceFromUrl(mapID, url, options = {}) {
     const settingsReq = await fetch(url);
     const settings = await settingsReq.json();
@@ -105,7 +102,7 @@ class Factory {
       if (settings.mapID) {
         mapID = settings.mapID;
       } else {
-        const mapDivide = url.split(/[\/\.]/);
+        const mapDivide = url.split(/[\\/\\.]/);
         mapID = mapDivide[mapDivide.length - 2];
       }
     }
@@ -155,7 +152,6 @@ function createProjection(settings, options, subNum) {
     ];
 
     addProjection(maplatProjection);
-    // @ts-ignore
     addCoordinateTransforms(
       maplatProjection,
       'EPSG:3857',
@@ -218,9 +214,7 @@ function createProjection(settings, options, subNum) {
   if (maplatProjection.getUnits() !== 'pixels') {
     if (settings.envelopeLngLats) {
       const lnglats = settings.envelopeLngLats.concat([settings.envelopeLngLats[0]]);
-      const coords3857 = lnglats.map((lnglat) => {
-        return transform(lnglat, 'EPSG:4326', 'EPSG:3857');
-      });
+      const coords3857 = lnglats.map((lnglat) => transform(lnglat, 'EPSG:4326', 'EPSG:3857'));
       maplatProjection.mercBoundary = polygon([coords3857]);
     }
   } else {
@@ -237,9 +231,7 @@ function createProjection(settings, options, subNum) {
       maplatProjection.pixelBoundary = polygon([xys]);
     }
     maplatProjection.mercBoundary = polygon([
-      maplatProjection.pixelBoundary.geometry.coordinates[0].map((xy) => {
-        return transform(xy, maplatProjection, 'EPSG:3857');
-      }),
+      maplatProjection.pixelBoundary.geometry.coordinates[0].map((xy) => transform(xy, maplatProjection, 'EPSG:3857')),
     ]);
   }
 
@@ -281,8 +273,7 @@ function decideProjection(settings, options, subNum = 0) {
             ? settings.projectionSpec.size
             : 'width' in settings && 'height' in settings
             ? [settings.width, settings.height]
-            : // @ts-ignore
-              settings.compiled.wh;
+            : settings.compiled.wh;
       }
       options.maxZoom = Math.ceil(
         Math.max(
@@ -296,8 +287,8 @@ function decideProjection(settings, options, subNum = 0) {
       returnProj = new Projection({
         code: projName,
         units: 'pixels',
-        extent: extent,
-        worldExtent: worldExtent,
+        extent,
+        worldExtent,
       });
   }
 
@@ -320,15 +311,11 @@ function createSystem2MapTransformation(settings) {
     const e = worldParams.yScale;
     const f = worldParams.yOrigin;
     return [
-      (xy) => {
-        return [a * xy[0] - b * xy[1] + c, d * xy[0] - e * xy[1] + f];
-      },
-      (xy) => {
-        return [
-          (xy[0] * e - xy[1] * b - c * e + f * b) / (a * e - b * d),
-          -(xy[1] * a - xy[0] * d - f * a + c * d) / (a * e - b * d),
-        ];
-      },
+      (xy) => [a * xy[0] - b * xy[1] + c, d * xy[0] - e * xy[1] + f],
+      (xy) => [
+        (xy[0] * e - xy[1] * b - c * e + f * b) / (a * e - b * d),
+        -(xy[1] * a - xy[0] * d - f * a + c * d) / (a * e - b * d),
+      ],
     ];
   }
   return [coord2Coord, coord2Coord];
@@ -346,12 +333,8 @@ function createMap2WarpTransformation(settings) {
       const shiftX = settings.mercatorXShift;
       const shiftY = settings.mercatorYShift;
       return [
-        (xy) => {
-          return [xy[0] + shiftX, xy[1] + shiftY];
-        },
-        (xy) => {
-          return [xy[0] - shiftX, xy[1] - shiftY];
-        },
+        (xy) => [xy[0] + shiftX, xy[1] + shiftY],
+        (xy) => [xy[0] - shiftX, xy[1] - shiftY],
       ];
     }
     // MaplatTinでの処理
@@ -372,12 +355,8 @@ function createMap2WarpTransformation(settings) {
     case 'SHIFT':
       const coordShift = settings.projectionSpec.coordShift;
       return [
-        (xy) => {
-          return [xy[0] + coordShift[0], xy[1] + coordShift[1]];
-        },
-        (xy) => {
-          return [xy[0] - coordShift[0], xy[1] - coordShift[1]];
-        },
+        (xy) => [xy[0] + coordShift[0], xy[1] + coordShift[1]],
+        (xy) => [xy[0] - coordShift[0], xy[1] - coordShift[1]],
       ];
     default:
       return [coord2Coord, coord2Coord];
@@ -444,7 +423,7 @@ function coord2Coord(xy) {
   return xy;
 }
 
-// データのバージョンが　設定のルートにない場合、レガシーとみなす
+// データのバージョンが設定のルートにない場合、レガシーとみなす
 function settingsIsLegacy(settings) {
   return !('version' in settings);
 }

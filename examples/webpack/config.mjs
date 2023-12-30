@@ -27,11 +27,11 @@ export default {
     rules: [
       {
         test: /\.(js|ts)$/,
-        //use: {
-        //  loader: path.join(src, 'webpack', 'worker-loader.cjs'),
-        //},
-        loader: 'babel-loader',
-        include: [path.join(root, 'src', 'ol', 'worker')],
+        use: {
+          loader: path.join(src, 'webpack', 'worker-loader.cjs'),
+        },
+        //loader: 'babel-loader',
+        include: [path.join(root, 'src', 'ol', 'maplat')],
       },
     ],
   },
