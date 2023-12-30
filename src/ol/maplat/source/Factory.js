@@ -1,7 +1,7 @@
 /**
  * @module ol/maplat/source/Factory
  */
-import Maplat from './Maplat.js';
+import Maplat from './Maplat.ts';
 import Tin from '@maplat/tin/lib/index.js';
 import proj4 from 'proj4';
 import proj4List from 'proj4-list';

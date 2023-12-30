@@ -5,7 +5,14 @@ import TileGrid from 'ol/tilegrid/TileGrid.js';
 import TileImage from 'ol/source/TileImage.js';
 import {CustomTile} from 'ol/source/Zoomify.js';
 import {DEFAULT_TILE_SIZE} from 'ol/tilegrid/common.js';
-import {toSize} from 'ol/size.js';
+import {Size, toSize} from 'ol/size.js';
+import { AttributionLike } from 'ol/source/Source';
+import { ProjectionLike } from 'ol/proj';
+import interpolate from '@turf/interpolate';
+import { Extent } from 'ol/extent';
+import { NearestDirectionFunction } from 'ol/array';
+
+type TierSizeCalculation = 'default' | 'truncated';
 
 /**
  * @typedef {'default' | 'truncated'} TierSizeCalculation
@@ -77,6 +84,26 @@ import {toSize} from 'ol/size.js';
  * @property {MaplatSpecLegacy} settings Setting of Tin.
  */
 
+interface Options extends Object {
+  attributions: AttributionLike;
+  cacheSize?: number;
+  crossOrigin?: null | string;
+  interpolate?: boolean;
+  projection?: ProjectionLike;
+  tilePixelRatio?: number;
+  reprojectionErrorThreshold?: number;
+  url: string;
+  tierSizeCalculation?: TierSizeCalculation;
+  size: Size;
+  extent?: Extent;
+  transition?: number;
+  tileSize?: number;
+  zDirection?: number | NearestDirectionFunction;
+  tinCompiled?: MaplatCompiledLegacy;
+  mapID?: string;
+  settings: MaplatSpecLegacy;
+};
+
 /**
  * @classdesc
  * Layer source for tile data in Zoomify format (both Zoomify and Internet
@@ -87,14 +114,14 @@ class Maplat extends TileImage {
   /**
    * @param {!Options} options Maplat options.
    */
-  constructor(options) {
+  constructor(options: Options) {
     const op = options;
     const size = op.size;
 
     const tilePixelRatio = options.tilePixelRatio || 1;
     const imageWidth = size[0];
     const imageHeight = size[1];
-    const tierSizeInTiles = [];
+    const tierSizeInTiles: number[][] = [];
     const tileSize = options.tileSize || DEFAULT_TILE_SIZE;
     const tileSizeForTierSizeCalculation = tileSize * tilePixelRatio;
 
@@ -127,13 +154,13 @@ class Maplat extends TileImage {
     resolutions.reverse();
 
     const tileGrid = new TileGrid({
-      tileSize: tileSize,
+      tileSize,
       extent: options.extent || [0, -imageHeight, imageWidth, 0],
-      resolutions: resolutions,
+      resolutions,
     });
 
     const url = options.url;
-    const tileUrlFunction = (tileCoord) =>
+    const tileUrlFunction = (tileCoord: number[]) =>
       url
         .replace('{z}', `${tileCoord[0]}`)
         .replace('{x}', `${tileCoord[1]}`)
@@ -150,18 +177,18 @@ class Maplat extends TileImage {
       crossOrigin: options.crossOrigin,
       interpolate: options.interpolate,
       projection: options.projection,
-      tilePixelRatio: tilePixelRatio,
+      tilePixelRatio,
       reprojectionErrorThreshold: options.reprojectionErrorThreshold,
       tileClass: ZoomifyTileClass,
-      tileGrid: tileGrid,
-      tileUrlFunction: tileUrlFunction,
+      tileGrid,
+      tileUrlFunction,
       transition: options.transition,
     });
 
     /**
      * @type {number|import("ol/array.js").NearestDirectionFunction}
      */
-    this.zDirection = options.zDirection;
+    this.zDirection = options.zDirection!;
   }
 }
 
