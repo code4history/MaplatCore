@@ -19,7 +19,7 @@ import {transform} from 'ol/proj.js';
 (async () => {
 const centerLngLat = [139.53671, 36.24668];
 
-const createPoiSource = async (url) => {
+const createPoiSource = async url => {
   const vectorReq = await fetch(url);
   const vectorJSON = await vectorReq.json();
   const vectorSource = new VectorSource({
@@ -31,7 +31,7 @@ const createPoiSource = async (url) => {
   return vectorSource;
 };
 
-const createKmlSource = async (url) => {
+const createKmlSource = async url => {
   const contourReq = await fetch(url);
   const contourText = await contourReq.text();
   const contourSource = new VectorSource({
@@ -44,7 +44,7 @@ const createKmlSource = async (url) => {
 };
 
 const stockIconHash = {};
-const stockIconStyle = (clusterMember) => {
+const stockIconStyle = clusterMember => {
   // eslint-disable-next-line no-undef
   const key = iconSelector(clusterMember);
   if (!stockIconHash[key]) {
@@ -120,23 +120,23 @@ const dataSources = [
   },
 ];
 await Promise.all(
-  dataSources.map(async (dataSource) => {
+  dataSources.map(async dataSource => {
     if (dataSource.raster) {
       dataSource.raster = await Promise.all(
-        dataSource.raster.map((url) =>
+        dataSource.raster.map(url =>
           MaplatFactory.factoryMaplatSourceFromUrl(null, url)
         )
       );
     }
     if (dataSource.vector) {
       dataSource.vector = await Promise.all(
-        dataSource.vector.map(async (vector) => {
+        dataSource.vector.map(async vector => {
           const source =
             vector.type == 'geojson'
               ? await createPoiSource(vector.url)
               : await createKmlSource(vector.url);
           return {
-            source: source,
+            source,
             style: vector.style,
           };
         })
@@ -222,7 +222,7 @@ function layerSelectFunc(layer_id, clearMap) {
 
   let addMapToCluster;
   const layers = areaData.vector
-    ? areaData.vector.map((vector) => {
+    ? areaData.vector.map(vector => {
         const source = vector.source;
         const filteredSource = vectorFilter(source, {
           projectTo: toSource.getProjection(),
@@ -252,14 +252,14 @@ function layerSelectFunc(layer_id, clearMap) {
   if (!map) {
     map = new Map({
       target: frontDiv,
-      layers: layers,
-      view: view,
+      layers,
+      view,
       interactions: defaults({altShiftDragRotate: false}).extend([
         new DragRotate({condition: altKeyOnly}),
       ]),
     });
   } else {
-    map.getLayers().forEach((layer) => {
+    map.getLayers().forEach(layer => {
       if (layer.removeMap) {
         layer.removeMap();
       }

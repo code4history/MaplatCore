@@ -46,20 +46,17 @@ class Factory {
    * @param {import('./Maplat.js').Options} options Options for ol/source/TileImage
    * @return {Promise<import('./Maplat.js').default>} Maplat instance
    */
-  // @ts-ignore
   static async factoryMaplatSource(settings, options = {}) {
     const mapID = settings.mapID;
     options.mapID = mapID;
     let SourceClass;
 
     // IIIFの場合、IIIF用のoptionsを取得
-    // @ts-ignore
     if (settings.sourceSpec && settings.sourceSpec.tileSourceType === 'IIIF') { 
       SourceClass = IIIF;
-      delete options.url;               // @ts-ignore
-      const manifest = await manifesto.loadManifest(settings.sourceSpec.url);                   // @ts-ignore
+      delete options.url;
+      const manifest = await manifesto.loadManifest(settings.sourceSpec.url);
       if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
-        // @ts-ignore
         const infoUrl = `${manifest.sequences[0].canvases[settings.sourceSpec.iiifNumber || 0].images[0].resource.service['@id']}/info.json`;
         const infoObj = await (await fetch(infoUrl)).json();
         const iiifOption = new IIIFInfo(infoObj).getTileSourceOptions();
@@ -68,9 +65,9 @@ class Factory {
       } else {
         throw new Error('Invalid IIIF settings');
       }
-    } else if(!('url' in options)) {    // @ts-ignore
-      options.url = settings.sourceSpec // @ts-ignore
-        ? settings.sourceSpec.url       // @ts-ignore
+    } else if(!('url' in options)) {
+      options.url = settings.sourceSpec
+        ? settings.sourceSpec.url
         : settings.url;
     }
 
@@ -84,7 +81,7 @@ class Factory {
     const source = new SourceClass(options);
     console.log(source);
     source.set(
-      'title',                          // @ts-ignore
+      'title',
       settings.metaData ? settings.metaData.title : settings.title
     );
     return source;
@@ -96,7 +93,6 @@ class Factory {
    * @param {import('./Maplat.js').Options} options Options for ol/source/TileImage
    * @return {Promise<import('./Maplat.js').default>} Maplat instance
    */
-  // @ts-ignore
   static async factoryMaplatSourceFromUrl(mapID, url, options = {}) {
     const settingsReq = await fetch(url);
     const settings = await settingsReq.json();
@@ -105,7 +101,7 @@ class Factory {
       if (settings.mapID) {
         mapID = settings.mapID;
       } else {
-        const mapDivide = url.split(/[\/\.]/);
+        const mapDivide = url.split(/[\\/\\.]/);
         mapID = mapDivide[mapDivide.length - 2];
       }
     }
@@ -134,7 +130,7 @@ function createProjection(settings, options, subNum) {
 
     // ピクセル座標と他のMaplat定義との変換処理用座標との変換定義
     const [toOperationCoord, fromOperationCoord] = [
-      (xy) => {
+      xy => {
         // ピクセル座標から、投影系座標に変換
         const mapCoord = fromSystemToMapTransform(xy);
         // 投影系座標上でのワーピング変換
@@ -143,7 +139,7 @@ function createProjection(settings, options, subNum) {
         const operationCoord = fromWarpToOperationTransform(warpCoord);
         return operationCoord;
       },
-      (operationCoord) => {
+      operationCoord => {
         // 他のMaplat定義との変換処理用座標からの変換
         const warpCoord = toWarpFromOperationTransform(operationCoord);
         // ワーピング結果からの投影系座標への変換
@@ -155,7 +151,6 @@ function createProjection(settings, options, subNum) {
     ];
 
     addProjection(maplatProjection);
-    // @ts-ignore
     addCoordinateTransforms(
       maplatProjection,
       'EPSG:3857',
@@ -165,30 +160,30 @@ function createProjection(settings, options, subNum) {
     addCoordinateTransforms(
       maplatProjection,
       'EPSG:4326',
-      (xy) =>
+      xy =>
         transform(
           transform(xy, maplatProjection, 'EPSG:3857'),
           'EPSG:3857',
           'EPSG:4326'
         ),
-      (lnglat) =>
+      lnglat =>
         transform(
           transform(lnglat, 'EPSG:4326', 'EPSG:3857'),
           'EPSG:3857',
           maplatProjection
         )
     );
-    maplatProjectionStore.forEach((projectionCode) => {
+    maplatProjectionStore.forEach(projectionCode => {
       addCoordinateTransforms(
         maplatProjection,
         projectionCode,
-        (xy) =>
+        xy =>
           transform(
             transform(xy, maplatProjection, 'EPSG:3857'),
             'EPSG:3857',
             projectionCode
           ),
-        (xy) =>
+        xy =>
           transform(
             transform(xy, projectionCode, 'EPSG:3857'),
             'EPSG:3857',
@@ -220,9 +215,7 @@ function createProjection(settings, options, subNum) {
   if (maplatProjection.getUnits() !== 'pixels') {
     if (settings.envelopeLngLats) {
       const lnglats = settings.envelopeLngLats.concat([settings.envelopeLngLats[0]]);
-      const coords3857 = lnglats.map((lnglat) => {
-        return transform(lnglat, 'EPSG:4326', 'EPSG:3857');
-      });
+      const coords3857 = lnglats.map(lnglat => transform(lnglat, 'EPSG:4326', 'EPSG:3857'));
       maplatProjection.mercBoundary = polygon([coords3857]);
     }
   } else {
@@ -239,9 +232,7 @@ function createProjection(settings, options, subNum) {
       maplatProjection.pixelBoundary = polygon([xys]);
     }
     maplatProjection.mercBoundary = polygon([
-      maplatProjection.pixelBoundary.geometry.coordinates[0].map((xy) => {
-        return transform(xy, maplatProjection, 'EPSG:3857');
-      }),
+      maplatProjection.pixelBoundary.geometry.coordinates[0].map(xy => transform(xy, maplatProjection, 'EPSG:3857')),
     ]);
   }
 
@@ -276,15 +267,14 @@ function decideProjection(settings, options, subNum = 0) {
         worldExtent: [-180, -85, 180, 85],
       });
       break;
-    default:
+    default: {
       if (!('size' in options)) {
         options.size =
           'projectionSpec' in settings
             ? settings.projectionSpec.size
             : 'width' in settings && 'height' in settings
-            ? [settings.width, settings.height]
-            : // @ts-ignore
-              settings.compiled.wh;
+              ? [settings.width, settings.height]
+              : settings.compiled.wh;
       }
       options.maxZoom = Math.ceil(
         Math.max(
@@ -298,9 +288,10 @@ function decideProjection(settings, options, subNum = 0) {
       returnProj = new Projection({
         code: projName,
         units: 'pixels',
-        extent: extent,
-        worldExtent: worldExtent,
+        extent,
+        worldExtent,
       });
+    }
   }
 
   return returnProj;
@@ -322,15 +313,11 @@ function createSystem2MapTransformation(settings) {
     const e = worldParams.yScale;
     const f = worldParams.yOrigin;
     return [
-      (xy) => {
-        return [a * xy[0] - b * xy[1] + c, d * xy[0] - e * xy[1] + f];
-      },
-      (xy) => {
-        return [
-          (xy[0] * e - xy[1] * b - c * e + f * b) / (a * e - b * d),
-          -(xy[1] * a - xy[0] * d - f * a + c * d) / (a * e - b * d),
-        ];
-      },
+      xy => [a * xy[0] - b * xy[1] + c, d * xy[0] - e * xy[1] + f],
+      xy => [
+        (xy[0] * e - xy[1] * b - c * e + f * b) / (a * e - b * d),
+        -(xy[1] * a - xy[0] * d - f * a + c * d) / (a * e - b * d),
+      ],
     ];
   }
   return [coord2Coord, coord2Coord];
@@ -348,20 +335,16 @@ function createMap2WarpTransformation(settings) {
       const shiftX = settings.mercatorXShift;
       const shiftY = settings.mercatorYShift;
       return [
-        (xy) => {
-          return [xy[0] + shiftX, xy[1] + shiftY];
-        },
-        (xy) => {
-          return [xy[0] - shiftX, xy[1] - shiftY];
-        },
+        xy => [xy[0] + shiftX, xy[1] + shiftY],
+        xy => [xy[0] - shiftX, xy[1] - shiftY],
       ];
     }
     // MaplatTinでの処理
     const tin = new Tin();
     tin.setCompiled(settings.compiled);
     return [
-      (xy) => tin.transform([xy[0], -xy[1]], false),
-      (merc) => {
+      xy => tin.transform([xy[0], -xy[1]], false),
+      merc => {
         const xy = tin.transform(merc, true);
         return [xy[0], -xy[1]];
       },
@@ -372,15 +355,13 @@ function createMap2WarpTransformation(settings) {
       // TIN処理
       return [coord2Coord, coord2Coord];
     case 'SHIFT':
-      const coordShift = settings.projectionSpec.coordShift;
-      return [
-        (xy) => {
-          return [xy[0] + coordShift[0], xy[1] + coordShift[1]];
-        },
-        (xy) => {
-          return [xy[0] - coordShift[0], xy[1] - coordShift[1]];
-        },
-      ];
+      {
+        const coordShift = settings.projectionSpec.coordShift;
+        return [
+          xy => [xy[0] + coordShift[0], xy[1] + coordShift[1]],
+          xy => [xy[0] - coordShift[0], xy[1] - coordShift[1]],
+        ];
+      }
     default:
       return [coord2Coord, coord2Coord];
   }
@@ -403,12 +384,12 @@ function createWarp2OperationTransformation(settings) {
     const map2nad = proj4(`${zone}:NAD27`, 'JCP:NAD27');
     const tky2merc = proj4('TOKYO', 'EPSG:3857');
     return [
-      (xy) => {
+      xy => {
         const tokyo = map2nad.forward(xy);
         const merc = tky2merc.forward(tokyo);
         return merc;
       },
-      (merc) => {
+      merc => {
         const tokyo = tky2merc.inverse(merc);
         const xy = map2nad.inverse(tokyo);
         return xy;
@@ -429,11 +410,11 @@ function createWarp2OperationTransformation(settings) {
     }
     const map2merc = proj4(epsg, 'EPSG:3857');
     return [
-      (xy) => {
+      xy => {
         const merc = map2merc.forward(xy);
         return merc;
       },
-      (merc) => {
+      merc => {
         const xy = map2merc.inverse(merc);
         return xy;
       },
@@ -446,7 +427,7 @@ function coord2Coord(xy) {
   return xy;
 }
 
-// データのバージョンが　設定のルートにない場合、レガシーとみなす
+// データのバージョンが設定のルートにない場合、レガシーとみなす
 function settingsIsLegacy(settings) {
   return !('version' in settings);
 }

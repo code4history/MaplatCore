@@ -7,12 +7,12 @@ import LayerGroup from 'ol/layer/Group.js';
 // @ts-ignore
 import monotoneChainConvexHull from 'monotone-chain-convex-hull';
 import {Circle as CircleStyle, Fill, Stroke, Style, Text} from 'ol/style.js';
-import {Cluster, Source} from 'ol/source.js';
+import {Cluster} from 'ol/source.js';
 import {Geometry, LineString, Point, Polygon} from 'ol/geom.js';
 import {Vector as VectorLayer} from 'ol/layer.js';
 import {createEmpty, extend, getHeight, getWidth} from 'ol/extent.js';
 import { StyleLike } from 'ol/style/Style';
-import { Map, MapEvent } from 'ol';
+import { Map } from 'ol';
 import VectorSource from 'ol/source/Vector';
 
 class clusterRegister extends LayerGroup {
