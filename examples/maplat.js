@@ -86,6 +86,7 @@ const dataSources = [
     raster: [
       'https://s.maplat.jp/r/naramap/maps/nara_saiken_ndl.json',
       'https://s.maplat.jp/r/naramap/maps/nara_ezuya.json',
+      'data/maplat/osm.json',
     ],
     vector: [
       {
@@ -95,16 +96,20 @@ const dataSources = [
       },
     ],
   },
-  //{
-  //  area: '姫路',
-  //  raster: [
-  //    'https://s.maplat.jp/r/himejimap/maps/Jissoku_Himeji_Shigai.json',
-  //    'data/maplat/txu-oclc-6565467.json'
-  //  ],
-  //},
+  {
+    area: '姫路',
+    raster: [
+      'https://s.maplat.jp/r/himejimap/maps/Jissoku_Himeji_Shigai.json',
+      'data/maplat/txu-oclc-6565467.json',
+      'data/maplat/osm.json',
+    ],
+  },
   {
     area: '延岡',
-    raster: ['data/maplat/1932_nobeoka.json'],
+    raster: [
+      'data/maplat/1932_nobeoka.json',
+      'data/maplat/osm.json',
+    ],
   },
   {
     area: '種子島',
