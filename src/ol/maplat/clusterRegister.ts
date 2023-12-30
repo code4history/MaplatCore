@@ -7,21 +7,29 @@ import LayerGroup from 'ol/layer/Group.js';
 // @ts-ignore
 import monotoneChainConvexHull from 'monotone-chain-convex-hull';
 import {Circle as CircleStyle, Fill, Stroke, Style, Text} from 'ol/style.js';
-import {Cluster} from 'ol/source.js';
-import {LineString, Point, Polygon} from 'ol/geom.js';
+import {Cluster, Source} from 'ol/source.js';
+import {Geometry, LineString, Point, Polygon} from 'ol/geom.js';
 import {Vector as VectorLayer} from 'ol/layer.js';
 import {createEmpty, extend, getHeight, getWidth} from 'ol/extent.js';
 import { StyleLike } from 'ol/style/Style';
+import { Map, MapEvent } from 'ol';
+import VectorSource from 'ol/source/Vector';
 
 class clusterRegister extends LayerGroup {
-  pointermove__;
-  pointerclick__;
-  removeMap: () => void;
+  pointermove__: any;
+  pointerclick__: any;
+  map__: Map | undefined;
 
-  registerMap(source, map, callback) {
+  removeMap() {
+    this.map__!.un('pointermove', this.pointermove__);
+    this.map__!.un('click', this.pointerclick__);
+  }
+
+  registerMap(source: VectorSource<Feature<Geometry>>, map: Map, callback: (feature: Feature<Geometry>) => StyleLike) {
     const circleDistanceMultiplier = 1;
     const circleFootSeparation = 28;
     const circleStartAngle = Math.PI / 2;
+    this.map__ = map;
 
     const convexHullFill = new Fill({
       color: 'rgba(255, 153, 0, 0.4)',
@@ -52,14 +60,14 @@ class clusterRegister extends LayerGroup {
       fill: outerCircleFill,
     });
 
-    let clickFeature, clickResolution;
+    let clickFeature: Feature, clickResolution: number;
     /**
      * Style for clusters with features that are too close to each other, activated on click.
      * @param {Feature} cluster A cluster with overlapping members.
      * @param {number} resolution The current view resolution.
      * @return {Array<Style>|null} A style to render an expanded view of the cluster members.
      */
-    function clusterCircleStyle(cluster, resolution) {
+    function clusterCircleStyle(cluster: Feature, resolution: number) {
       if (cluster !== clickFeature || resolution !== clickResolution) {
         return null;
       }
@@ -103,7 +111,7 @@ class clusterRegister extends LayerGroup {
      * @param {number} resolution Current view resolution.
      * @return {Array<Array<number>>} An array of coordinates representing the cluster members.
      */
-    function generatePointsCircle(count, clusterCenter, resolution) {
+    function generatePointsCircle(count: number, clusterCenter: number[], resolution: number) {
       const circumference =
         circleDistanceMultiplier * circleFootSeparation * (2 + count);
       let legLength = circumference / (Math.PI * 2); //radius from circumference
@@ -125,18 +133,18 @@ class clusterRegister extends LayerGroup {
       return res;
     }
 
-    let hoverFeature;
+    let hoverFeature: Feature;
     /**
      * Style for convex hulls of clusters, activated on hover.
      * @param {Feature} cluster The cluster feature.
      * @return {Style|null} Polygon style for the convex hull of the cluster.
      */
-    function clusterHullStyle(cluster) {
+    function clusterHullStyle(cluster: Feature) {
       if (cluster !== hoverFeature) {
         return null;
       }
       const originalFeatures = cluster.get('features');
-      const points = originalFeatures.map(feature => feature.getGeometry().getCoordinates());
+      const points = originalFeatures.map((feature: Feature<Point>) => feature.getGeometry()!.getCoordinates());
       return new Style({
         geometry: new Polygon([monotoneChainConvexHull(points)]),
         fill: convexHullFill,
@@ -144,7 +152,7 @@ class clusterRegister extends LayerGroup {
       });
     }
 
-    function clusterStyle(feature) {
+    function clusterStyle(feature: Feature<Geometry>): StyleLike {
       const size = feature.get('features').length;
       if (size > 1) {
         return [
@@ -181,7 +189,7 @@ class clusterRegister extends LayerGroup {
     // Layer displaying the clusters and individual features.
     const clusters = new VectorLayer({
       source: clusterSource,
-      style: clusterStyle,
+      style: clusterStyle as StyleLike,
     });
 
     // Layer displaying the expanded view of overlapping cluster members.
@@ -194,11 +202,11 @@ class clusterRegister extends LayerGroup {
     this.getLayers().push(clusters);
     this.getLayers().push(clusterCircles);
 
-    this.pointermove__ = event => {
+    this.pointermove__ = (event: any) => {
       clusters.getFeatures(event.pixel).then(features => {
         if (features[0] !== hoverFeature) {
           // Display the convex hull on hover.
-          hoverFeature = features[0];
+          hoverFeature = features[0] as Feature<Geometry>;
           clusterHulls.setStyle(clusterHullStyle as StyleLike);
           // Change the cursor style to indicate that the cluster is clickable.
           map.getTargetElement().style.cursor =
@@ -210,7 +218,7 @@ class clusterRegister extends LayerGroup {
     };
     map.on('pointermove', this.pointermove__);
 
-    this.pointerclick__ = async event => {
+    this.pointerclick__ = async (event: any) => {
       let features = await clusterCircles.getFeatures(event.pixel);
       if (features.length > 0) {
         // eslint-disable-next-line no-console
@@ -222,17 +230,17 @@ class clusterRegister extends LayerGroup {
           if (clusterMembers.length > 1) {
             // Calculate the extent of the cluster members.
             const extent = createEmpty();
-            clusterMembers.forEach(feature =>
-              extend(extent, feature.getGeometry().getExtent())
+            clusterMembers.forEach((feature: Feature) =>
+              extend(extent, feature.getGeometry()!.getExtent())
             );
             const view = map.getView();
-            const resolution = map.getView().getResolution();
+            const resolution = map.getView().getResolution()!;
             if (
               view.getZoom() === view.getMaxZoom() ||
               (getWidth(extent) < resolution && getHeight(extent) < resolution)
             ) {
               // Show an expanded view of the cluster members.
-              clickFeature = features[0];
+              clickFeature = features[0] as Feature<Geometry>;
               clickResolution = resolution;
               clusterCircles.setStyle(clusterCircleStyle as StyleLike);
             } else {
@@ -247,11 +255,6 @@ class clusterRegister extends LayerGroup {
       }
     };
     map.on('click', this.pointerclick__);
-
-    this.removeMap = () => {
-      map.un('pointermove', this.pointermove__);
-      map.un('click', this.pointerclick__);
-    };
   }
 }
 

@@ -68,6 +68,7 @@
     "monotone-chain-convex-hull": "^1.1.0",
     "ol": "^8.1.0",
     "ol-ext": "^4.0.11",
+    "proj4": "2.9.0",
     "proj4-list": "^1.0.1",
     "weiwudi": "^0.1.4",
     "whatwg-fetch": "^3.6.2"
