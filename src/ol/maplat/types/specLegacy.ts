@@ -2,6 +2,8 @@
  * @module ol/maplat/types/specLegacy
  */
 
+import { Coordinate2D, DataLicense, EdgeIndex, LegacyMapType, LocaleFragment, MapLicense, MaplatLegacyWeightBufferList, ValuesOfVertices } from "./basics";
+
 /**
  * @typedef { Object } MaplatCompiledLegacy
  * @property { string } [version] Version of Maplat Compiled data scheme (New)
@@ -20,11 +22,33 @@
  * @property { Array<[Coordinate2D, Coordinate2D]> } edgesNodes Nodes of edges
  */
 
+export interface MaplatCompiledLegacy extends Object { 
+  version?: string;
+  wh?: Coordinate2D;
+  points: [Coordinate2D, Coordinate2D, string | undefined][];
+  weight_buffer: {[key: string]: MaplatLegacyWeightBufferList};
+  centroid_point: [Coordinate2D, Coordinate2D];
+  vertices_params: [ValuesOfVertices, ValuesOfVertices];
+  vertices_points: [Coordinate2D, Coordinate2D][];
+  strict_status: "strict" | "strict_error" | "loose";
+  tins_points: [EdgeIndex, EdgeIndex, EdgeIndex][][];
+  yaxisMode: "follow" | "invert";
+  vertexMode: "plain" | "birdeye";
+  strictMode: "strict" | "auto" | "loose";
+  edges: [Coordinate2D[], Coordinate2D[], [EdgeIndex, EdgeIndex]][];
+  edgesNodes: [Coordinate2D, Coordinate2D][];
+}
+
 /**
  * @typedef { Object } GeoJSONPolygonGeometry
  * @property { "Polygon" } type Type of GeoJSON geometry
  * @property { Array<Array<Coordinate2D>> } coordinates Coordinates of GeoJSON geometry
  */
+
+export interface GeoJSONPolygonGeometry extends Object { 
+  type: "Polygon";
+  coordinates: Coordinate2D[][];
+}
 
 /**
  * @typedef { Object } GeoJSONPolygonFeature
@@ -33,6 +57,12 @@
  * @property { GeoJSONPolygonGeometry } geometry Geometry of GeoJSON
  */
 
+export interface GeoJSONPolygonFeature extends Object { 
+  type: "Feature";
+  properties: {[key: string]: any};
+  geometry: GeoJSONPolygonGeometry;
+}
+
 /**
  * @typedef { MaplatCompiledLegacy } MaplatSubMapCompiledLegacy
  * @property { Coordinate2D } xy Origin of submap (x, y)
@@ -40,12 +70,24 @@
  * @property { GeoJSONPolygonFeature } boundsPolygon Polygon of Boundary of submap
  */
 
+export interface MaplatSubMapCompiledLegacy extends MaplatCompiledLegacy { 
+  xy: Coordinate2D;
+  bounds: Coordinate2D[];
+  boundsPolygon: GeoJSONPolygonFeature;
+}
+
 /**
  * @typedef { Object } MaplatSubMapLegacy
  * @property { number } priority Priority of sub map
  * @property { number } importance Importance of sub map
  * @property { MaplatSubMapCompiledLegacy } compiled Maplat Compiled data
  */
+
+export interface MaplatSubMapLegacy extends Object { 
+  priority: number;
+  importance: number;
+  compiled: MaplatSubMapCompiledLegacy;
+}
 
 /**
  * @typedef { Object } MaplatSpecLegacy
@@ -75,3 +117,31 @@
  * @property { number } [width] Width of image (Old)
  * @property { number } [height] Height of image (Old)
  */
+
+export interface MaplatSpecLegacy extends Object {
+  title: LocaleFragment;
+  officialTitle?: LocaleFragment;
+  attr: LocaleFragment;
+  dataAttr?: LocaleFragment;
+  author: LocaleFragment;
+  contributor?: LocaleFragment;
+  mapper?: LocaleFragment;
+  description?: LocaleFragment;
+  license: MapLicense;
+  dataLicense: DataLicense;
+  createdAt: LocaleFragment;
+  era?: LocaleFragment;
+  reference: string;
+  lang: string;
+  mapID?: string;
+  url?: string;
+  extension: string;
+  sub_maps: MaplatSubMapLegacy[];
+  maptype?: LegacyMapType;
+  mercatorXShift?: number;
+  mercatorYShift?: number;
+  envelopLngLats?: Coordinate2D[];
+  compiled: MaplatCompiledLegacy;
+  width?: number;
+  height?: number;
+}

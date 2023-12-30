@@ -2,6 +2,8 @@
  * @module ol/maplat/types/specFile
  */
 
+import { Coordinate2D, DataLicense, LocaleFragment, MapLicense } from "./basics";
+
 /**
  * @typedef { Object } MaplatMetaData
  * @property { string } lang Default language
@@ -22,6 +24,24 @@
  *
  */
 
+export interface MaplatMetaData extends Object { 
+  lang: string;
+  mapID?: string;
+  title: LocaleFragment;
+  officialTitle?: LocaleFragment;
+  attr: LocaleFragment;
+  dataAttr?: LocaleFragment;
+  author: LocaleFragment;
+  contributor?: LocaleFragment;
+  mapper?: LocaleFragment;
+  description?: LocaleFragment;
+  license: MapLicense;
+  dataLicense: DataLicense;
+  createdAt: LocaleFragment;
+  era?: LocaleFragment;
+  reference: string;
+}
+
 /**
  * @typedef { Object } MaplatWorldParams
  * @property { number } xScale Scale factor of X param - a
@@ -32,6 +52,15 @@
  * @property { number } yOrigin Origin factor of Y param - f
  *
  */
+
+export interface MaplatWorldParams extends Object { 
+  xScale: number;
+  yRotation: number;
+  xRotation: number;
+  yScale: number;
+  xOrigin: number;
+  yOrigin: number;
+}
 
 /**
  * @typedef { Object } MaplatProjectionSpec
@@ -45,6 +74,16 @@
  *
  */
 
+export interface MaplatProjectionSpec extends Object { 
+  size?: Coordinate2D;
+  mapCoord: string;
+  worldParams?: MaplatWorldParams;
+  interOperationCode: string;
+  warp: "TIN" | "SHIFT" | "NONE";
+  coordShift?: [Coordinate2D, Coordinate2D];
+  envelopLngLats?: Coordinate2D[];
+}
+
 /**
  * @typedef { Object } MaplatSourceSpec
  * @property { "PIXEL" | "WMTS" | "TMS" | "IIIF" } tileSourceType Type of tile source
@@ -53,6 +92,13 @@
  * @property { number } [iiifNumber] Target number of IIIF images set 
  *
  */
+
+export interface MaplatSourceSpec extends Object { 
+  tileSourceType: "PIXEL" | "WMTS" | "TMS" | "IIIF";
+  url?: string;
+  extension?: string;
+  iiifNumber?: number;
+}
 
 /**
  * @typedef { Object } MaplatDefinition
@@ -63,3 +109,11 @@
  * @property { MaplatSourceSpec } sourceSpec Map's source spec
  *
  */
+
+export interface MaplatDefinition extends Object { 
+  version: string;
+  mapID: string;
+  metaData: MaplatMetaData;
+  projectionSpec: MaplatProjectionSpec;
+  sourceSpec: MaplatSourceSpec;
+}

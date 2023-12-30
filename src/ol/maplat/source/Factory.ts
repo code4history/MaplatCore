@@ -1,7 +1,7 @@
 /**
  * @module ol/maplat/source/Factory
  */
-import Maplat from './Maplat.ts';
+import { Options, default as Maplat } from './Maplat.ts';
 import Tin from '@maplat/tin/lib/index.js';
 import proj4 from 'proj4';
 import proj4List from 'proj4-list';
@@ -12,10 +12,12 @@ import {
   get as getProjection,
   transform,
 } from 'ol/proj.js';
-import {XYZ, IIIF} from 'ol/source.js';
+import {XYZ, IIIF, Source} from 'ol/source.js';
 import IIIFInfo from 'ol/format/IIIFInfo.js';
 import {polygon} from '@turf/helpers';
 import manifesto from 'manifesto.js';
+import { MaplatDefinition } from '../types/specFile.ts';
+import { MaplatSpecLegacy } from '../types/specLegacy.ts';
 
 proj4.defs([
   ['TOKYO', '+proj=longlat +ellps=bessel +towgs84=-146.336,506.832,680.254'],
@@ -46,18 +48,19 @@ class Factory {
    * @param {import('./Maplat.js').Options} options Options for ol/source/TileImage
    * @return {Promise<import('./Maplat.js').default>} Maplat instance
    */
-  static async factoryMaplatSource(settings, options = {}) {
+  static async factoryMaplatSource(settings: MaplatDefinition | MaplatSpecLegacy, options: Options = {} as Options) {
     const mapID = settings.mapID;
     options.mapID = mapID;
-    let SourceClass;
+    let SourceClass: any;
 
     // IIIFの場合、IIIF用のoptionsを取得
-    if (settings.sourceSpec && settings.sourceSpec.tileSourceType === 'IIIF') { 
+    const settingsNew = settings as MaplatDefinition;
+    if (settingsNew.sourceSpec && settingsNew.sourceSpec.tileSourceType === 'IIIF') { 
       SourceClass = IIIF;
       delete options.url;
-      const manifest = await manifesto.loadManifest(settings.sourceSpec.url);
+      const manifest = await manifesto.loadManifest(settingsNew.sourceSpec.url!) as any;
       if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
-        const infoUrl = `${manifest.sequences[0].canvases[settings.sourceSpec.iiifNumber || 0].images[0].resource.service['@id']}/info.json`;
+        const infoUrl = `${manifest.sequences[0].canvases[settingsNew.sourceSpec.iiifNumber || 0].images[0].resource.service['@id']}/info.json`;
         const infoObj = await (await fetch(infoUrl)).json();
         const iiifOption = new IIIFInfo(infoObj).getTileSourceOptions();
         if (iiifOption === undefined || iiifOption.version === undefined) throw new Error('Invalid Image setting in IIIF settings');
@@ -66,9 +69,9 @@ class Factory {
         throw new Error('Invalid IIIF settings');
       }
     } else if(!('url' in options)) {
-      options.url = settings.sourceSpec
-        ? settings.sourceSpec.url
-        : settings.url;
+      options.url = settingsNew.sourceSpec
+        ? settingsNew.sourceSpec.url!
+        : (settings as MaplatSpecLegacy).url!;
     }
 
     // Set up Maplat projection
@@ -82,7 +85,7 @@ class Factory {
     console.log(source);
     source.set(
       'title',
-      settings.metaData ? settings.metaData.title : settings.title
+      'metaData' in settings ? settings.metaData.title : settings.title
     );
     return source;
   }
@@ -93,7 +96,7 @@ class Factory {
    * @param {import('./Maplat.js').Options} options Options for ol/source/TileImage
    * @return {Promise<import('./Maplat.js').default>} Maplat instance
    */
-  static async factoryMaplatSourceFromUrl(mapID, url, options = {}) {
+  static async factoryMaplatSourceFromUrl(mapID: string, url: string, options: Options = {} as Options): Promise<Source> {
     const settingsReq = await fetch(url);
     const settings = await settingsReq.json();
 
@@ -112,7 +115,7 @@ class Factory {
 }
 
 // Maplat定義の投影系を作成
-function createProjection(settings, options, subNum) {
+function createProjection(settings: MaplatDefinition | MaplatSpecLegacy, options: Options, subNum = 0) {
   const maplatProjection = decideProjection(settings, options, subNum);
   if (
     maplatProjection.getCode() !== 'EPSG:3857' &&

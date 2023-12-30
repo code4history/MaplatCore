@@ -11,6 +11,7 @@ import { ProjectionLike } from 'ol/proj';
 import interpolate from '@turf/interpolate';
 import { Extent } from 'ol/extent';
 import { NearestDirectionFunction } from 'ol/array';
+import { MaplatCompiledLegacy, MaplatSpecLegacy } from '../types/specLegacy';
 
 type TierSizeCalculation = 'default' | 'truncated';
 
@@ -84,7 +85,7 @@ type TierSizeCalculation = 'default' | 'truncated';
  * @property {MaplatSpecLegacy} settings Setting of Tin.
  */
 
-interface Options extends Object {
+export interface Options extends Object {
   attributions: AttributionLike;
   cacheSize?: number;
   crossOrigin?: null | string;
@@ -92,7 +93,7 @@ interface Options extends Object {
   projection?: ProjectionLike;
   tilePixelRatio?: number;
   reprojectionErrorThreshold?: number;
-  url: string;
+  url?: string;
   tierSizeCalculation?: TierSizeCalculation;
   size: Size;
   extent?: Extent;
@@ -159,7 +160,7 @@ class Maplat extends TileImage {
       resolutions,
     });
 
-    const url = options.url;
+    const url = options.url!;
     const tileUrlFunction = (tileCoord: number[]) =>
       url
         .replace('{z}', `${tileCoord[0]}`)
