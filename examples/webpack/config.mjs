@@ -124,7 +124,7 @@ export default {
   devtool: 'source-map',
   output: {
     filename: '[name].js',
-    path: path.join(root, 'build', 'examples'),
+    path: path.join(root, 'docs'),
   },
   resolve: {
     fallback: {
