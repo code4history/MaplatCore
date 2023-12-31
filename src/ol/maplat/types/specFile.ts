@@ -77,11 +77,12 @@ export interface MaplatWorldParams extends Object {
 export interface MaplatProjectionSpec extends Object { 
   size?: Coordinate2D;
   mapCoord: string;
+  mapCoordText?: string;
   worldParams?: MaplatWorldParams;
   interOperationCode: string;
   warp: "TIN" | "SHIFT" | "NONE";
-  coordShift?: [Coordinate2D, Coordinate2D];
-  envelopLngLats?: Coordinate2D[];
+  coordShift?: Coordinate2D;
+  envelopeLngLats?: Coordinate2D[];
 }
 
 /**
@@ -98,6 +99,7 @@ export interface MaplatSourceSpec extends Object {
   url?: string;
   extension?: string;
   iiifNumber?: number;
+  maxZoom?: number;
 }
 
 /**

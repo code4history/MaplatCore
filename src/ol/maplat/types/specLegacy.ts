@@ -144,4 +144,6 @@ export interface MaplatSpecLegacy extends Object {
   compiled: MaplatCompiledLegacy;
   width?: number;
   height?: number;
+  maxZoom?: number;
+  boundsPolygon?: GeoJSONPolygonFeature;
 }

@@ -95,7 +95,7 @@ export interface Options extends Object {
   reprojectionErrorThreshold?: number;
   url?: string;
   tierSizeCalculation?: TierSizeCalculation;
-  size: Size;
+  size?: Size;
   extent?: Extent;
   transition?: number;
   tileSize?: number;
@@ -103,6 +103,7 @@ export interface Options extends Object {
   tinCompiled?: MaplatCompiledLegacy;
   mapID?: string;
   settings: MaplatSpecLegacy;
+  maxZoom?: number;
 };
 
 /**
@@ -120,8 +121,8 @@ class Maplat extends TileImage {
     const size = op.size;
 
     const tilePixelRatio = options.tilePixelRatio || 1;
-    const imageWidth = size[0];
-    const imageHeight = size[1];
+    const imageWidth = size![0];
+    const imageHeight = size![1];
     const tierSizeInTiles: number[][] = [];
     const tileSize = options.tileSize || DEFAULT_TILE_SIZE;
     const tileSizeForTierSizeCalculation = tileSize * tilePixelRatio;
