@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 function iconSelector(data) {
   const type = data.get("type");
   const title = data.get("title");
@@ -74,8 +75,6 @@ function iconSelector(data) {
     prefix = "itahi";
   } else if (type.match(/墓碑/)) {
     prefix = "tomb";
-  } else if (type.match(/板碑/)) {
-    prefix = "itahi";
   } else if (type.match(/(甲子|巳待|日待)塔/)) {
     prefix = "himachi";
   } else if (type.match(/石塔/)) {

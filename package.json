@@ -38,7 +38,8 @@
     "lint:prettier": "prettier \"./{src,spec}/**/*.{js,ts}\" --write",
     "typecheck": "tsc --noEmit --project ts_config/tsconfig.es6.json",
     "git_switch": "gulp git_switch",
-    "serve-examples": "webpack serve --config examples/webpack/config.mjs --mode development"
+    "serve-examples": "webpack serve --config examples/webpack/config.mjs --mode development",
+    "build-examples": "shx rm -rf build/examples && webpack --config examples/webpack/config.mjs --mode production"
   },
   "type": "module",
   "repository": {
@@ -122,6 +123,7 @@
     "prettier": "^2.6.2",
     "psaux": "^0.4.0",
     "puppeteer": "^14.1.1",
+    "shx": "^0.3.4",
     "sleep-promise": "^9.1.0",
     "terminate": "^2.5.0",
     "terser-webpack-plugin": "^5.3.1",

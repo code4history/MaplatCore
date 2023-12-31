@@ -1,5 +1,4 @@
-/* eslint-disable import/no-commonjs */
-
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const build = require('../../tasks/serialize-workers.cjs').build;
 
 module.exports = function loader() {
@@ -7,7 +6,7 @@ module.exports = function loader() {
   const minify = this.mode === 'production';
 
   build(this.resource, {minify})
-    .then((chunk) => {
+    .then(chunk => {
       for (const filePath in chunk.modules) {
         try {
           const dependency = require.resolve(filePath);

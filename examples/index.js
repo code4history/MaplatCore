@@ -8,7 +8,7 @@
   function listExamples(examples) {
     target.innerHTML = '';
     template.process({
-      context: {examples: examples},
+      context: {examples},
       clone: true,
       parent: target,
     });
@@ -21,9 +21,7 @@
       window.clearTimeout(timerId);
     }
     const text = this.value;
-    timerId = window.setTimeout(function () {
-      filterList(text);
-    }, 500);
+    timerId = window.setTimeout(() => filterList(text), 500);
   }
 
   function getMatchingExamples(text) {
@@ -44,7 +42,7 @@
         exScore[word] = (exScore[word] || 0) + dict[exIndex];
       }
     };
-    words.forEach(function (word) {
+    words.forEach(word => {
       const dict = info.wordIndex[word];
       if (dict) {
         updateScores(dict, word);
@@ -73,9 +71,7 @@
     }
     // sort examples, first by number of words matched, then
     // by word frequency
-    examples.sort(function (a, b) {
-      return b.score - a.score || b.words - a.words;
-    });
+    examples.sort((a, b) => b.score - a.score || b.words - a.words);
     return examples;
   }
 

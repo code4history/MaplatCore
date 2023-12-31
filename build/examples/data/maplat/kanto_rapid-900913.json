@@ -1,0 +1,47 @@
+{
+  "attr": {
+    "ja": "農研機構",
+    "en": "NARO"
+  },
+  "label": {
+    "ja": "迅速測図",
+    "en": "Rapid Survey Map"
+  },
+  "title": {
+    "ja": "関東迅速測図",
+    "en": "Rapid Survey Map of Kanto Plain"
+  },
+  "contributor": {
+    "ja": "国土地理院",
+    "en": "Geospatial Information Authority of Japan"
+  },
+  "createdAt": "1880-1886",
+  "author": {
+    "ja": "大日本帝国陸軍参謀本部陸地測量部",
+    "en": "Japan Imperial Army Map Service"
+  },
+  "mapID": "kanto_rapid-900913",
+  "maptype": "overlay",
+  "url": "https://boiledorange73.sakura.ne.jp/ws/tile/Kanto_Rapid-900913/{z}/{x}/{y}.jpg",
+  "maxZoom": 17,
+  "mercatorXShift": -3.26,
+  "mercatorYShift": -57.01,
+  "envelopLngLats": [
+    [
+      139.454802,
+      36.209997
+    ],
+    [
+      139.63024,
+      36.209997
+    ],
+    [
+      139.63024,
+      36.283371
+    ],
+    [
+      139.454802,
+      36.283371
+    ]
+  ]
+}

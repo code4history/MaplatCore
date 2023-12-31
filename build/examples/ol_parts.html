@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <title>New Maplat OpenLayers parts example</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.2/css/fontawesome.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.2/css/solid.css" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.2/css/brands.css" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="/theme/ol.css">
+    <link rel="stylesheet" type="text/css" href="/theme/site.css">
+    <link rel="stylesheet" type="text/css" href="ol_parts.css">
+    <link rel="icon" type="image/svg+xml" href="/parts/maplat-logo-w.svg" media="(prefers-color-scheme: light)" />
+    <link rel="icon" type="image/svg+xml" href="/parts/maplat-logo-bk.svg" media="(prefers-color-scheme: dark)" />
+  </head>
+  <body>
+    <header class="navbar navbar-expand-md navbar-dark mb-3 px-3 py-0 fixed-top" role="navigation">
+      <a class="navbar-brand" href="/"><img src="/parts/maplat-logo-w.svg" width="150" height="70" alt="" class="logo">&nbsp;Maplat Core Demo</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#olmenu" aria-controls="olmenu" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <!-- menu items that get hidden below 768px width -->
+      <nav class="collapse navbar-collapse" id="olmenu">
+        <ul class="nav navbar-nav ms-auto">
+          <!--li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="docdropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Docs</a>
+            <div class="dropdown-menu dropdown-menu-end mb-3" aria-labelledby="docdropdown">
+              <a class="dropdown-item" href="/doc/">Docs</a>
+              <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="/doc/quickstart.html"><i class="fa fa-check fa-fw me-2 fa-lg"></i>Quick Start</a>
+                <a class="dropdown-item" href="/doc/faq.html"><i class="fa fa-question fa-fw me-2 fa-lg"></i>FAQ</a>
+                <a class="dropdown-item" href="/doc/tutorials/"><i class="fa fa-book fa-fw me-2 fa-lg"></i>Tutorials</a>
+                <a class="dropdown-item" href="/workshop/"><i class="fa fa-graduation-cap fa-fw me-2 fa-lg"></i>Workshop</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="https://stackoverflow.com/questions/tagged/openlayers"><i class="fab fa-stack-overflow fa-fw me-2"></i>Ask a Question</a>
+            </div>
+          </li-->
+          <!--li class="nav-item"><a class="nav-link" href="../examples/">Examples</a></li>
+          <li class="nav-item"><a class="nav-link" href="../apidoc/"><i class="fa fa-sitemap me-1"></i>API</a></li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="codedropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Code</a>
+            <div class="dropdown-menu dropdown-menu-end mb-3" aria-labelledby="codedropdown">
+              <a class="dropdown-item" href="https://github.com/openlayers/openlayers"><i class="fab fa-github fa-fw me-2 fa-lg"></i>Repository</a>
+              <a class="dropdown-item" href="/download/"><i class="fa fa-download fa-fw me-2 fa-lg"></i>Download</a>
+            </div>
+          </li-->
+        </ul>
+      </nav>
+    </header>
+
+    <div class="container-fluid line-numbers">
+      <div id="latest-check" class="alert alert-warning alert-dismissible" role="alert" style="display:none">
+        <button id="latest-dismiss" type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        This example uses OpenLayers v<span>0.10.6</span>. The <a id="latest-link" href="#" class="alert-link">latest</a> is v<span id="latest-version"></span>.
+      </div>
+
+
+      <div class="row-fluid">
+        <!--a href="#" id="codepen-button" class="btn btn-link float-end">
+          <i class="fab fa-codepen fa-lg"></i> Edit
+        </a-->
+        <div class="span12">
+          <h4 id="title">New Maplat OpenLayers parts example</h4>
+          <p class="tags">
+            <span class="badge-group">
+              <a
+                href="./index.html?q=maplat" class="badge badge-info">maplat</a
+              ><a
+                class="badge badge-info tag-modal-toggle"
+                data-bs-toggle="modal"
+                data-bs-target="#tag-example-list"
+                data-title="maplat"
+                data-content="&lt;ul class=&quot;list-group&quot;&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action&quot; href=&quot;./maplatcore_api.html&quot;&gt;Maplat Core API Demo (Legacy)&lt;/a&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./ol_parts.html&quot;&gt;New Maplat OpenLayers parts example&lt;/a&gt;
+                  &lt;/ul&gt;"
+                tabindex="0"
+                >2</a>
+            </span>
+            <span class="badge-group">
+              <a
+                href="./index.html?q=openlayers" class="badge badge-info">openlayers</a
+              ><a
+                class="badge badge-info tag-modal-toggle"
+                data-bs-toggle="modal"
+                data-bs-target="#tag-example-list"
+                data-title="openlayers"
+                data-content="&lt;ul class=&quot;list-group&quot;&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./ol_parts.html&quot;&gt;New Maplat OpenLayers parts example&lt;/a&gt;
+                  &lt;/ul&gt;"
+                tabindex="0"
+                >1</a>
+            </span>
+            <span class="badge-group">
+              <a
+                href="./index.html?q=vector" class="badge badge-info">vector</a
+              ><a
+                class="badge badge-info tag-modal-toggle"
+                data-bs-toggle="modal"
+                data-bs-target="#tag-example-list"
+                data-title="vector"
+                data-content="&lt;ul class=&quot;list-group&quot;&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./ol_parts.html&quot;&gt;New Maplat OpenLayers parts example&lt;/a&gt;
+                  &lt;/ul&gt;"
+                tabindex="0"
+                >1</a>
+            </span>
+            <span class="badge-group">
+              <a
+                href="./index.html?q=projection" class="badge badge-info">projection</a
+              ><a
+                class="badge badge-info tag-modal-toggle"
+                data-bs-toggle="modal"
+                data-bs-target="#tag-example-list"
+                data-title="projection"
+                data-content="&lt;ul class=&quot;list-group&quot;&gt;
+                  &lt;li&gt;&lt;a class=&quot;list-group-item list-group-item-action active&quot; href=&quot;./ol_parts.html&quot;&gt;New Maplat OpenLayers parts example&lt;/a&gt;
+                  &lt;/ul&gt;"
+                tabindex="0"
+                >1</a>
+            </span>
+          </p>
+          <div class="modal modal-tag-example" id="tag-example-list" tabindex="-1" role="dialog" aria-labelledby="tag-example-title" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="tag-example-title"></h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <div class="list-group"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="map" class="map" tabindex="0"></div>
+<span id="button"></span>
+<select id="area_select">
+</select>
+<select id="layer_select">
+</select>
+
+        </div>
+        <form method="POST" id="codepen-form" target="_blank" action="https://codesandbox.io/api/v1/sandboxes/define">
+          <input id="codesandbox-params" type="hidden" name="parameters">
+        </form>
+      </div>
+
+      <div class="row-fluid">
+        <div class="span12">
+          <p id="shortdesc">Example of OpenLayers parts for new Maplat.</p>
+          <div id="docs"><p>Maplatの仕様を大きく変更し、座標系の変換を絵地図/古地図だけではなく、様々なその他の座標系同士でも歪ませずに重ねる仕様を検討しています。 また、OpenLayersのパーツとして一部をMaplatから独立して使えるよう、独立したライブラリを実装中です。 ベクトルデータも扱えるように実装を進めています。</p>
+</div>
+        </div>
+      </div>
+
+      <div class="row-fluid">
+        <h5 class="source-heading">main.js</h5>
+        <pre><code id="example-js-source" class="language-js">import FormatGeoJSON from &#x27;ol/format/GeoJSON.js&#x27;;
+import FormatKML from &#x27;ol/format/KML.js&#x27;;
+import Map from &#x27;ol/Map.js&#x27;;
+import MaplatFactory from &#x27;ol/maplat/source/Factory.ts&#x27;;
+import VectorLayer from &#x27;ol/layer/Vector.js&#x27;;
+import VectorSource from &#x27;ol/source/Vector.js&#x27;;
+import View from &#x27;ol/View.js&#x27;;
+import WebGLTileLayer from &#x27;ol/layer/WebGLTile.js&#x27;;
+import clusterRegister from &#x27;ol/maplat/clusterRegister.ts&#x27;;
+import localeSelector from &#x27;ol/maplat/locale/selector.ts&#x27;;
+import vectorFilter from &#x27;ol/maplat/vector/filter.ts&#x27;;
+import viewportSwitcher from &#x27;ol/maplat/viewport/switcher.ts&#x27;;
+import {DragRotate} from &#x27;ol/interaction.js&#x27;;
+import {Icon, Style} from &#x27;ol/style.js&#x27;;
+import {altKeyOnly} from &#x27;ol/events/condition.js&#x27;;
+import {defaults} from &#x27;ol/interaction/defaults.js&#x27;;
+import {transform} from &#x27;ol/proj.js&#x27;;
+
+(async () &#x3D;&gt; {
+const centerLngLat &#x3D; [139.53671, 36.24668];
+
+const createPoiSource &#x3D; async url &#x3D;&gt; {
+  const vectorReq &#x3D; await fetch(url);
+  const vectorJSON &#x3D; await vectorReq.json();
+  const vectorSource &#x3D; new VectorSource({
+    features: new FormatGeoJSON().readFeatures(vectorJSON, {
+      featureProjection: &#x27;EPSG:4326&#x27;,
+      dataProjection: &#x27;EPSG:4326&#x27;,
+    }),
+  });
+  return vectorSource;
+};
+
+const createKmlSource &#x3D; async url &#x3D;&gt; {
+  const contourReq &#x3D; await fetch(url);
+  const contourText &#x3D; await contourReq.text();
+  const contourSource &#x3D; new VectorSource({
+    features: new FormatKML().readFeatures(contourText, {
+      featureProjection: &#x27;EPSG:4326&#x27;,
+      dataProjection: &#x27;EPSG:4326&#x27;,
+    }),
+  });
+  return contourSource;
+};
+
+const stockIconHash &#x3D; {};
+const stockIconStyle &#x3D; clusterMember &#x3D;&gt; {
+  // eslint-disable-next-line no-undef
+  const key &#x3D; iconSelector(clusterMember);
+  if (!stockIconHash[key]) {
+    stockIconHash[key] &#x3D; new Icon({
+      src: key,
+      anchor: [0.5, 1.0],
+    });
+  }
+  return new Style({
+    geometry: clusterMember.getGeometry(),
+    image: stockIconHash[key],
+  });
+};
+
+const dataSources &#x3D; [
+  {
+    area: &#x27;館林(TMS、レガシー、ベクトルデータサンプル)&#x27;,
+    raster: [
+      &#x27;https://s.maplat.jp/r/tatebayashimap/maps/tatebayashi_ojozu.json&#x27;,
+      &#x27;https://s.maplat.jp/r/tatebayashimap/maps/tatebayashi_castle_akimoto.json&#x27;,
+      &#x27;https://s.maplat.jp/r/tatebayashimap/maps/tatebayashi_satonuma_village_1.json&#x27;,
+      &#x27;data/maplat/kanto_rapid-900913.json&#x27;,
+      &#x27;data/maplat/osm.json&#x27;,
+    ],
+    vector: [
+      {
+        url: &#x27;data/maplat/yagoe_contour.kml&#x27;,
+        type: &#x27;kml&#x27;,
+      },
+      {
+        url: &#x27;https://raw.githubusercontent.com/code4history/TatebayashiStones/master/tatebayashi_stones.geojson&#x27;,
+        type: &#x27;geojson&#x27;,
+        style: stockIconStyle,
+      },
+    ],
+  },
+  {
+    area: &#x27;奈良(レガシーMaplatサンプル)&#x27;,
+    raster: [
+      &#x27;https://s.maplat.jp/r/naramap/maps/nara_saiken_ndl.json&#x27;,
+      &#x27;https://s.maplat.jp/r/naramap/maps/nara_ezuya.json&#x27;,
+      &#x27;data/maplat/osm.json&#x27;,
+    ],
+    vector: [
+      {
+        url: &#x27;https://raw.githubusercontent.com/code4history/JizoProject/master/jizo_project.geojson&#x27;,
+        type: &#x27;geojson&#x27;,
+        style: stockIconStyle,
+      },
+    ],
+  },
+  {
+    area: &#x27;姫路(Japan City Plansサンプル)&#x27;,
+    raster: [
+      &#x27;https://s.maplat.jp/r/himejimap/maps/Jissoku_Himeji_Shigai.json&#x27;,
+      &#x27;data/maplat/txu-oclc-6565467.json&#x27;,
+      &#x27;data/maplat/osm.json&#x27;,
+    ],
+  },
+  {
+    area: &#x27;延岡(複数地図面サンプル予定)&#x27;,
+    raster: [
+      &#x27;data/maplat/1932_nobeoka.json&#x27;,
+      &#x27;data/maplat/osm.json&#x27;,
+    ],
+  },
+  {
+    area: &#x27;種子島(IFFFサンプル)&#x27;,
+    raster: [
+      &#x27;data/maplat/iiif_test.json&#x27;,
+      &#x27;data/maplat/osm.json&#x27;
+    ],
+  },
+];
+await Promise.all(
+  dataSources.map(async dataSource &#x3D;&gt; {
+    if (dataSource.raster) {
+      dataSource.raster &#x3D; await Promise.all(
+        dataSource.raster.map(url &#x3D;&gt;
+          MaplatFactory.factoryMaplatSourceFromUrl(null, url)
+        )
+      );
+    }
+    if (dataSource.vector) {
+      dataSource.vector &#x3D; await Promise.all(
+        dataSource.vector.map(async vector &#x3D;&gt; {
+          const source &#x3D;
+            vector.type &#x3D;&#x3D; &#x27;geojson&#x27;
+              ? await createPoiSource(vector.url)
+              : await createKmlSource(vector.url);
+          return {
+            source,
+            style: vector.style,
+          };
+        })
+      );
+    }
+  })
+);
+
+let map;
+
+const areaSelect &#x3D; document.getElementById(&#x27;area_select&#x27;);
+const layerSelect &#x3D; document.getElementById(&#x27;layer_select&#x27;);
+areaSelect.onchange &#x3D; function () {
+  const area &#x3D; areaSelect.value;
+  // eslint-disable-next-line no-console
+  areaSelectFunc(area * 1);
+};
+layerSelect.onchange &#x3D; function () {
+  const layer &#x3D; layerSelect.value;
+  // eslint-disable-next-line no-console
+  layerSelectFunc(layer * 1);
+};
+let areaOptions &#x3D; &#x27;&#x27;;
+dataSources.forEach((data, index) &#x3D;&gt; {
+  areaOptions &#x3D; &#x60;${areaOptions}&lt;option value&#x3D;&quot;${index}&quot;&gt;${data.area}&lt;/option&gt;&#x60;;
+});
+areaSelect.innerHTML &#x3D; areaOptions;
+areaSelectFunc(0);
+
+function areaSelectFunc(area_id) {
+  const areaData &#x3D; dataSources[area_id];
+  let layerOptions &#x3D; &#x27;&#x27;;
+  areaData.raster.forEach((raster, index) &#x3D;&gt; {
+    layerOptions &#x3D; &#x60;${layerOptions}&lt;option value&#x3D;&quot;${index}&quot;&gt;${localeSelector(
+      raster.get(&#x27;title&#x27;),
+      &#x27;ja&#x27;
+    )}&lt;/option&gt;&#x60;;
+  });
+  layerSelect.innerHTML &#x3D; layerOptions;
+  layerSelectFunc(0, true);
+}
+
+function layerSelectFunc(layer_id, clearMap) {
+  const area_id &#x3D; areaSelect.value * 1;
+  const areaData &#x3D; dataSources[area_id];
+
+  const fromSource &#x3D;
+    clearMap || !map ? null : map.getLayers().getArray()[0].getSource();
+  const toSource &#x3D; areaData.raster[layer_id];
+  console.log(toSource.getProjection());
+
+  let toCenter, toResolution, toRotation, toParam;
+  if (!fromSource) {
+    toParam &#x3D; {
+      center: transform(centerLngLat, &#x27;EPSG:4326&#x27;, toSource.getProjection()),
+      rotation: 0,
+      zoom: 0,
+    };
+  } else {
+    const fromView &#x3D; map.getView();
+    const fromCenter &#x3D; fromView.getCenter();
+    const fromRotation &#x3D; fromView.getRotation();
+    const fromResolution &#x3D; fromView.getResolution();
+    [toCenter, toRotation, toResolution] &#x3D; viewportSwitcher(
+      fromCenter,
+      fromRotation,
+      fromResolution,
+      500,
+      fromSource.getProjection(),
+      toSource.getProjection()
+    );
+    toParam &#x3D; {
+      center: toCenter,
+      rotation: toRotation,
+      resolution: toResolution,
+    };
+  }
+  toParam &#x3D; Object.assign(toParam, {
+    projection: toSource.getProjection(),
+    constrainRotation: false,
+  });
+  const view &#x3D; new View(toParam);
+
+  let addMapToCluster;
+  const layers &#x3D; areaData.vector
+    ? areaData.vector.map(vector &#x3D;&gt; {
+        const source &#x3D; vector.source;
+        const filteredSource &#x3D; vectorFilter(source, {
+          projectTo: toSource.getProjection(),
+          extent: toSource.getProjection().getExtent(),
+        });
+        if (vector.style) {
+          const clusterLayer &#x3D; new clusterRegister({});
+          addMapToCluster &#x3D; () &#x3D;&gt; {
+            clusterLayer.registerMap(filteredSource, map, vector.style);
+          };
+          return clusterLayer;
+        }
+        return new VectorLayer({
+          source: filteredSource,
+        });
+      })
+    : [];
+
+  layers.unshift(
+    new WebGLTileLayer({
+      title: localeSelector(toSource.get(&#x27;title&#x27;), &#x27;ja&#x27;),
+      source: toSource,
+    })
+  );
+
+  const frontDiv &#x3D; document.querySelector(&#x27;#map&#x27;);
+  if (!map) {
+    map &#x3D; new Map({
+      target: frontDiv,
+      layers,
+      view,
+      interactions: defaults({altShiftDragRotate: false}).extend([
+        new DragRotate({condition: altKeyOnly}),
+      ]),
+    });
+  } else {
+    map.getLayers().forEach(layer &#x3D;&gt; {
+      if (layer.removeMap) {
+        layer.removeMap();
+      }
+    });
+    map.setLayers(layers);
+    map.setView(view);
+  }
+  if (addMapToCluster) {
+    addMapToCluster();
+  }
+  if (!fromSource) {
+    view.fit(toSource.getProjection().getExtent(), {padding: [50, 50, 50, 50]});
+  }
+}
+})();</code></pre>
+      </div>
+
+      <div class="row-fluid">
+        <h5 class="source-heading">index.html</h5>
+        <pre><code id="example-html-source" class="language-markup">&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+  &lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;New Maplat OpenLayers parts example&lt;/title&gt;
+    &lt;link rel="stylesheet" href="node_modules/ol/ol.css"&gt;
+    &lt;style&gt;
+      .map {
+        width: 100%;
+        height: 400px;
+      }
+      #map:focus {
+        outline: #4A74A8 solid 0.15em;
+      }
+    &lt;/style&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;div id&#x3D;&quot;map&quot; class&#x3D;&quot;map&quot; tabindex&#x3D;&quot;0&quot;&gt;&lt;/div&gt;
+    &lt;span id&#x3D;&quot;button&quot;&gt;&lt;/span&gt;
+    &lt;select id&#x3D;&quot;area_select&quot;&gt;
+    &lt;/select&gt;
+    &lt;select id&#x3D;&quot;layer_select&quot;&gt;
+    &lt;/select&gt;
+    &lt;!-- Pointer events polyfill for old browsers, see https://caniuse.com/#feat=pointer --&gt;
+    &lt;script src="https://cdn.jsdelivr.net/npm/elm-pep@1.0.6/dist/elm-pep.js"&gt;&lt;/script&gt;
+    &lt;script src="https://openlayers.org/en/v0.10.6/examples/resources/maplat-tools.js"&gt;&lt;/script&gt;
+    &lt;script type="module" src="main.js"&gt;&lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</code></pre>
+      </div>
+
+      <div class="row-fluid">
+        <h5 class="source-heading">package.json</h5>
+        <pre><code id="example-pkg-source" class="language-json">{
+  &quot;name&quot;: &quot;ol_parts&quot;,
+  &quot;dependencies&quot;: {
+    &quot;ol&quot;: &quot;0.10.6&quot;
+  },
+  &quot;devDependencies&quot;: {
+    &quot;vite&quot;: &quot;^3.2.3&quot;
+  },
+  &quot;scripts&quot;: {
+    &quot;start&quot;: &quot;vite&quot;,
+    &quot;build&quot;: &quot;vite build&quot;
+  }
+}</code></pre>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/elm-pep@1.0.6/dist/elm-pep.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="resources/maplat-tools.js"></script>
+    <script src="common.js"></script>
+    <script src="ol_parts.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/plugins/toolbar/prism-toolbar.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.js"></script>
+    <!--script src="./resources/common.js"></script-->
+    <script>
+      document.getElementById('tag-example-list')
+        .addEventListener('show.bs.modal', function (event) {
+          const button = event.relatedTarget; // Button that triggered the modal
+          this.querySelector('.modal-title').innerText = button.dataset.title;
+          this.querySelector('.modal-body').innerHTML = button.dataset.content;
+        });
+    </script>
+    <script>
+      const releaseUrl = 'https://cdn.jsdelivr.net/npm/ol/package.json';
+      fetch(releaseUrl).then(function(response) {
+        return response.json();
+      }).then(function(json) {
+        const latestVersion = json.version;
+        document.getElementById('latest-version').innerHTML = latestVersion;
+        const url = window.location.href;
+        const branchSearch = url.match(/\/([^\/]*)\/examples\//);
+        const storageKey = 'ol-dismissed=-' + latestVersion;
+        const dismissed = localStorage.getItem(storageKey) === 'true';
+        if (branchSearch && !dismissed && /^v[0-9\.]*$/.test(branchSearch[1]) && '0.10.6' != latestVersion) {
+          const link = url.replace(branchSearch[0], '/latest/examples/');
+          fetch(link, {method: 'head'}).then(function(response) {
+            const a = document.getElementById('latest-link');
+            a.href = response.status == 200 ? link : '../../latest/examples/';
+          });
+          const latestCheck = document.getElementById('latest-check');
+          latestCheck.style.display = '';
+          document.getElementById('latest-dismiss').onclick = function() {
+            latestCheck.style.display = 'none';
+            localStorage.setItem(storageKey, 'true');
+          }
+        }
+      });
+    </script>
+  </body>
+</html>

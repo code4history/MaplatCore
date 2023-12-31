@@ -16,9 +16,9 @@ export default {
   entry: () => {
     const entry = {};
     fs.readdirSync(src)
-      .filter((name) => /^(?!index).*\.html$/.test(name))
-      .map((name) => name.replace(/\.html$/, ''))
-      .forEach((example) => {
+      .filter(name => /^(?!index).*\.html$/.test(name))
+      .map(name => name.replace(/\.html$/, ''))
+      .forEach(example => {
         entry[example] = `./${example}.js`;
       });
     return entry;

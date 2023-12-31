@@ -20,8 +20,8 @@ const isTemplateCss =
 
 const exampleDirContents = fs
   .readdirSync(path.join(baseDir, '..'))
-  .filter((name) => /^(?!index).*\.html$/.test(name))
-  .map((name) => name.replace(/\.html$/, ''));
+  .filter(name => /^(?!index).*\.html$/.test(name))
+  .map(name => name.replace(/\.html$/, ''));
 
 function getPackageInfo() {
   return fse.readJSON(path.resolve(baseDir, '../../package.json'));
@@ -29,15 +29,13 @@ function getPackageInfo() {
 
 handlebars.registerHelper(
   'md',
-  (str) => new handlebars.SafeString(marked(str))
+  str => new handlebars.SafeString(marked(str))
 );
 
 /**
  * Used to doube-escape the title when stored as data-* attribute.
  */
-handlebars.registerHelper('escape', (text) => {
-  return handlebars.Utils.escapeExpression(text);
-});
+handlebars.registerHelper('escape', text => handlebars.Utils.escapeExpression(text));
 
 handlebars.registerHelper('indent', (text, options) => {
   if (!text) {
@@ -47,7 +45,7 @@ handlebars.registerHelper('indent', (text, options) => {
   const spaces = new Array(count + 1).join(' ');
   return text
     .split('\n')
-    .map((line) => (line ? spaces + line : ''))
+    .map(line => (line ? spaces + line : ''))
     .join('\n');
 });
 
@@ -75,7 +73,7 @@ function sortObjectByKey(obj) {
 function createTagIndex(exampleData) {
   const index = {};
   exampleData.forEach((data, i) => {
-    data.tags.forEach((tag) => {
+    data.tags.forEach(tag => {
       tag = tag.toLowerCase();
       let tagIndex = index[tag];
       if (!tagIndex) {
@@ -99,13 +97,13 @@ function createWordIndex(exampleData) {
   const index = {};
   const keys = ['shortdesc', 'title', 'tags'];
   exampleData.forEach((data, i) => {
-    keys.forEach((key) => {
+    keys.forEach(key => {
       let text = data[key] || '';
       if (Array.isArray(text)) {
         text = text.join(' ');
       }
       const words = text.toLowerCase().split(/\W+/);
-      words.forEach((word) => {
+      words.forEach(word => {
         if (word) {
           let counts = index[word];
           if (!counts) {
@@ -165,7 +163,7 @@ export default class ExampleBuilder {
    * @param {Object} compiler The webpack compiler.
    */
   apply(compiler) {
-    compiler.hooks.compilation.tap(this.name, (compilation) => {
+    compiler.hooks.compilation.tap(this.name, compilation => {
       compilation.hooks.additionalAssets.tapPromise(this.name, async () => {
         await this.addAssets(compilation.assets, compiler.context);
       });
@@ -193,10 +191,10 @@ export default class ExampleBuilder {
     }
 
     const exampleData = await Promise.all(
-      names.map((name) => this.parseExample(dir, name))
+      names.map(name => this.parseExample(dir, name))
     );
 
-    const examples = exampleData.map((data) => ({
+    const examples = exampleData.map(data => ({
       link: data.filename,
       title: data.title,
       shortdesc: data.shortdesc,
@@ -208,17 +206,17 @@ export default class ExampleBuilder {
     );
     const tagIndex = createTagIndex(examples);
     const info = {
-      examples: examples,
+      examples,
       // Tags for main page... TODO: implement index tag links
       // tagIndex: sortObjectByKey(tagIndex),
       wordIndex: sortObjectByKey(createWordIndex(examples)),
     };
-    exampleData.forEach((data) => {
-      data.tags = data.tags.map((tag) => {
+    exampleData.forEach(data => {
+      data.tags = data.tags.map(tag => {
         const tagExamples = tagIndex[tag.toLowerCase()];
         return {
-          tag: tag,
-          examples: tagExamples.map((exampleIdx) => {
+          tag,
+          examples: tagExamples.map(exampleIdx => {
             const example = examples[exampleIdx];
             return {
               link: example.link,
@@ -232,7 +230,7 @@ export default class ExampleBuilder {
 
     const pkg = await getPackageInfo();
     await Promise.all(
-      exampleData.map(async (data) => {
+      exampleData.map(async data => {
         const newAssets = await this.render(data, pkg);
         for (const file in newAssets) {
           assets[file] = new RawSource(newAssets[file]);
@@ -255,8 +253,8 @@ export default class ExampleBuilder {
     return Object.assign(data, {
       contents: body,
       filename: htmlName,
-      dir: dir,
-      name: name,
+      dir,
+      name,
       // process tags
       tags: data.tags ? data.tags.replace(/[\s"]+/g, '').split(',') : [],
     });
@@ -320,7 +318,7 @@ export default class ExampleBuilder {
     let jsSources = jsSource;
     if (data.sources) {
       data.extraSources = await Promise.all(
-        data.sources.map(async (sourceConfig) => {
+        data.sources.map(async sourceConfig => {
           const fileName = sourceConfig.path;
           const extraSourcePath = path.join(data.dir, fileName);
           let source = await fse.readFile(extraSourcePath, readOptions);
@@ -330,13 +328,13 @@ export default class ExampleBuilder {
           }
           if (ext === 'js') {
             source = this.transformJsSource(source);
-            jsSources += '\n' + source;
+            jsSources += `\n${source}`;
           }
           source = this.cloakSource(source, data.cloak);
           assets[fileName] = source;
           return {
             name: sourceConfig.as || fileName,
-            source: source,
+            source,
             type: ext,
           };
         })
@@ -368,7 +366,7 @@ export default class ExampleBuilder {
 
     // add additional resources
     if (data.resources) {
-      data.resources.forEach((resource) => {
+      data.resources.forEach(resource => {
         const absoluteUrl = /^https?:\/\//.test(resource)
           ? resource
           : `https://openlayers.org/en/v${pkg.version}/examples/${resource}`;

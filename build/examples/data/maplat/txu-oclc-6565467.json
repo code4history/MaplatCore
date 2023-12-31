@@ -1,0 +1,38 @@
+{
+  "version": "3.0230620",
+  "metaData": {
+    "title": "姫路 (JAPAN CITY PLANS)",
+    "attr": "PUBLIC DOMAIN",
+    "officialTitle": "",
+    "dataAttr": "",
+    "author": "THE ARMY MAP SERVICE",
+    "createdAt": "1946",
+    "era": "",
+    "license": "PD",
+    "dataLicense": "CC0",
+    "contributor": "",
+    "mapper": "Kohei Otsuka",
+    "lang": "ja",
+    "reference": "https://maps.lib.utexas.edu/maps/ams/japan_city_plans/txu-oclc-6565467.jpg",
+    "description": ""
+  },
+  "sourceSpec": {
+    "url": "https://t.tilemap.jp/maplat/tiles/txu-oclc-6565467/{z}/{x}/{y}.jpg",
+    "extension": "jpg",
+    "tileSourceType": "PIXEL"
+  },
+  "projectionSpec": {
+    "size": [5000, 4244],
+    "mapCoord": "JCP:ZONEB",
+    "worldParams": {
+      "xScale": 1.9275481219096946,
+      "yRotation": -0.01820809533114698,
+      "xRotation": -0.005165225448763522,
+      "yScale": -1.922418931285847,
+      "xOrigin": 964437.3288920135,
+      "yOrigin": 1316324.60056178
+    },
+    "interOperationCoord": "EPSG:3857",
+    "warp": "NONE"
+  }
+}
