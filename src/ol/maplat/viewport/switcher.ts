@@ -1,24 +1,21 @@
 /**
  * @module ol/maplat/viewport/switcher
  */
+import { Coordinate } from 'ol/coordinate';
 import {transform} from 'ol/proj.js';
 
-const thetas = [0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75].map((pow) => {
-  return pow * Math.PI;
-});
+const thetas = [0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75].map((pow: number) => pow * Math.PI);
 
-function center2Vicinities(center, radius) {
-  const vicinities = thetas.map((theta) => {
-    return [
-      center[0] + Math.sin(theta) * radius,
-      center[1] + Math.cos(theta) * radius,
-    ];
-  });
+function center2Vicinities(center: number[], radius: number): number[][] {
+  const vicinities = thetas.map((theta: number) => [
+    center[0] + Math.sin(theta) * radius,
+    center[1] + Math.cos(theta) * radius,
+  ]);
   vicinities.unshift(center);
   return vicinities;
 }
 
-function normalizeAngle(theta) {
+function normalizeAngle(theta: number): number {
   while (theta > Math.PI || theta <= -Math.PI) {
     theta = theta > Math.PI ? theta - 2 * Math.PI : theta + 2 * Math.PI;
   }
@@ -26,12 +23,12 @@ function normalizeAngle(theta) {
 }
 
 function switcher(
-  fromCenter,
-  fromRotation,
-  fromResolution,
-  baseRadius,
-  fromProj,
-  toProj,
+  fromCenter: number[],
+  fromRotation: number,
+  fromResolution: number,
+  baseRadius: number,
+  fromProj: string,
+  toProj: string,
   baseProj = 'EPSG:3857'
 ) {
   let midCenter = fromCenter,
@@ -61,13 +58,13 @@ function switcher(
 }
 
 function maplat2Base(
-  maplatCenter,
-  maplatRotation,
-  maplatResolution,
-  baseRadius,
-  maplatProj,
+  maplatCenter: number[],
+  maplatRotation: number,
+  maplatResolution: number,
+  baseRadius: number,
+  maplatProj: string,
   baseProj = 'EPSG:3857'
-) {
+): [number[], number, number] {
   const baseCenter = transform(maplatCenter, maplatProj, baseProj);
   const maplatParams = base2MaplatParams(
     baseCenter,
@@ -81,11 +78,11 @@ function maplat2Base(
 }
 
 function base2Maplat(
-  baseCenter,
-  baseRotation,
-  baseResolution,
-  baseRadius,
-  maplatProj,
+  baseCenter: number[],
+  baseRotation: number,
+  baseResolution: number,
+  baseRadius: number,
+  maplatProj: string,
   baseProj = 'EPSG:3857'
 ) {
   const maplatParams = base2MaplatParams(
@@ -100,13 +97,10 @@ function base2Maplat(
   return [maplatCenter, maplatRotation, maplatResolution];
 }
 
-function base2MaplatParams(center, radius, maplatProj, baseProj) {
+function base2MaplatParams(center: number[], radius: number, maplatProj: string, baseProj: string): [number[], number, number] {
   const maplatVicinities = center2Vicinities(center, radius).map(
-    (baseCoord) => {
-      return transform(baseCoord, baseProj, maplatProj);
-    }
-  );
-  const maplatCenter = maplatVicinities.shift();
+    (baseCoord: number[]) => transform(baseCoord, baseProj, maplatProj));
+  const maplatCenter = maplatVicinities.shift()!;
   const maplatParams = maplatVicinities
     .map((maplatCoord, index) => {
       const vacinity = [
@@ -119,21 +113,21 @@ function base2MaplatParams(center, radius, maplatProj, baseProj) {
       );
       return [normalizeAngle(theta - thetas[index]), distance];
     })
-    .reduce((prev, curr, index) => {
+    .reduce((prev: (Coordinate | number)[] | null, curr: number[], index: number) => {
       const thetax = Math.cos(curr[0]);
       const thetay = Math.sin(curr[0]);
       const dist = curr[1];
       if (!prev) {
         return [thetax, thetay, dist];
       }
-      prev[0] = prev[0] + thetax;
-      prev[1] = prev[1] + thetay;
-      prev[2] = prev[2] + dist;
+      prev[0] = prev[0] as number + thetax;
+      prev[1] = prev[1] as number + thetay;
+      prev[2] = prev[2] as number + dist;
       if (index == 7) {
         return [maplatCenter, Math.atan2(prev[1], prev[0]), prev[2] / 8];
       }
       return prev;
-    }, null);
+    }, null) as [number[], number, number];
   return maplatParams;
 }
 

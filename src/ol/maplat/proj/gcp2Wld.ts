@@ -3,6 +3,8 @@
  */
 
 import {inv, multiply, transpose} from 'mathjs';
+import { MaplatWorldParams } from '../types/specFile';
+import { Coordinate2D } from '../types/basics';
 
 /*interface Coordinate {
   x: number;
@@ -24,17 +26,17 @@ const geoCoordinates/*: Coordinate[]* / = [
 ];*/
 
 export default function gcp2Wld(
-  pixelCoordinates /*: Coordinate[]*/,
-  geoCoordinates /*: Coordinate[]*/
-) {
+  pixelCoordinates: Coordinate2D[] /*: Coordinate[]*/,
+  geoCoordinates: Coordinate2D[] /*: Coordinate[]*/
+): MaplatWorldParams {
   // Prepare matrices
-  const A = [];
-  const Bx = [];
-  const By = [];
+  const A: number[][] = [];
+  const Bx: number[] = [];
+  const By: number[] = [];
 
   for (let i = 0; i < pixelCoordinates.length; i++) {
-    const [px, py] = [pixelCoordinates[i].x, pixelCoordinates[i].y];
-    const [gx, gy] = [geoCoordinates[i].x, geoCoordinates[i].y];
+    const [px, py] = [pixelCoordinates[i][0], pixelCoordinates[i][1]];
+    const [gx, gy] = [geoCoordinates[i][0], geoCoordinates[i][1]];
 
     A.push([px, py, 1, 0, 0, 0]);
     A.push([0, 0, 0, px, py, 1]);

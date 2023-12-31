@@ -2,23 +2,24 @@
  * @module ol/maplat/proj/store
  */
 
-import {
+/*import {
   Projection,
   addCoordinateTransforms,
   addProjection,
   get as getProjection,
   transform,
 } from 'ol/proj.js';
+import { MaplatProjection } from './Maplat';
 
 /**
  * @private
  * @type {Array<string>}
- */
-const maplatProjectionStore = [];
+ * /
+const maplatProjectionStore: string[] = [];
 
 function store(definition, toBase, fromBase) {
   //  const maplatProjectionCode = `Maplat:${mapID}`;
-  let returnProjection;
+  let returnProjection: MaplatProjection;
   if (maplatProjectionStore.indexOf(definition.code) < 0) {
     returnProjection = new Projection(definition);
     addProjection(returnProjection);
@@ -59,10 +60,11 @@ function store(definition, toBase, fromBase) {
     });
     maplatProjectionStore.push(definition.code);
   } else {
-    returnProjection = getProjection(definition.code);
+    returnProjection = getProjection(definition.code) as MaplatProjection;
   }
 
   return returnProjection;
 }
 
 export default store;
+*/

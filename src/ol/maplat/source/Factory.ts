@@ -2,7 +2,7 @@
  * @module ol/maplat/source/Factory
  */
 import { Options, default as Maplat } from './Maplat';
-import Tin, { Compiled } from '@maplat/tin/lib/index.js';
+import Tin from '@maplat/tin/lib/index.js';
 import proj4 from 'proj4';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const proj4List = require('proj4-list');
