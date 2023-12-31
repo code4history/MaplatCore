@@ -1,0 +1,18 @@
+---
+layout: example.html
+title: New Maplat OpenLayers parts example
+shortdesc: Example of OpenLayers parts for new Maplat.
+docs: >
+  Maplatの仕様を大きく変更し、座標系の変換を絵地図/古地図だけではなく、様々なその他の座標系同士でも歪ませずに重ねる仕様を検討しています。
+  また、OpenLayersのパーツとして一部をMaplatから独立して使えるよう、独立したライブラリを実装中です。
+  ベクトルデータも扱えるように実装を進めています。
+resources:
+  - resources/maplat-tools.js
+tags: "maplat, openlayers, vector, projection"
+---
+<div id="map" class="map" tabindex="0"></div>
+<span id="button"></span>
+<select id="area_select">
+</select>
+<select id="layer_select">
+</select>

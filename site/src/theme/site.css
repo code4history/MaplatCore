@@ -86,6 +86,11 @@ a:focus {
   display: inline-block;
 }
 
+.navbar-brand img.logo {
+  height: 35px;
+  width: 75px;
+}
+
 .navbar-dark .navbar-nav .nav-link {
   color: var(--ol-background-color);
 }

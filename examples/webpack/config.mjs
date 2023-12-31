@@ -2,6 +2,7 @@ import CopyPlugin from 'copy-webpack-plugin';
 import ExampleBuilder from './example-builder.js';
 import TerserPlugin from 'terser-webpack-plugin';
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
+import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import fs from 'fs';
 import path, {dirname} from 'path';
 import {fileURLToPath} from 'url';
@@ -40,7 +41,29 @@ export default {
           }
         },
         exclude: /node_modules/
-      }
+      },
+      {
+        test: /\.(jpg|jpeg|png)$/,
+        use: {
+          loader: 'file-loader',
+          options: {
+            outputPath: "assets/images",
+            publicPath(path) {
+              return `assets/images/${path}`;
+            }
+          }          
+        },
+        exclude: /node_modules/,
+      },
+      {
+        test: /\.less$/,
+        exclude: /node_modules/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          { loader: "css-loader" },
+          { loader: "less-loader" }
+        ]
+      },
     ],
   },
   optimization: {
@@ -76,6 +99,11 @@ export default {
           to: path.join('theme', 'ol.css'),
         },
         {from: 'data', to: 'data'},
+        {from: '../apps', to: 'apps'},
+        {from: '../maps', to: 'maps'},
+        {from: '../pois', to: 'pois'},
+        {from: '../tiles', to: 'tiles'},
+        {from: '../parts', to: 'parts'},
         {from: 'resources', to: 'resources'},
         {from: 'index.html', to: 'index.html'},
         {from: 'index.js', to: 'index.js'},
@@ -88,6 +116,9 @@ export default {
       typescript: {
         configFile: "../ts_config/tsconfig.es6.json"
       }
+    }),
+    new MiniCssExtractPlugin({
+      filename: "./assets/[name].css"
     }),
   ],
   devtool: 'source-map',

@@ -61,7 +61,7 @@ const stockIconStyle = clusterMember => {
 
 const dataSources = [
   {
-    area: '館林',
+    area: '館林(TMS、レガシー、ベクトルデータサンプル)',
     raster: [
       'https://s.maplat.jp/r/tatebayashimap/maps/tatebayashi_ojozu.json',
       'https://s.maplat.jp/r/tatebayashimap/maps/tatebayashi_castle_akimoto.json',
@@ -82,7 +82,7 @@ const dataSources = [
     ],
   },
   {
-    area: '奈良',
+    area: '奈良(レガシーMaplatサンプル)',
     raster: [
       'https://s.maplat.jp/r/naramap/maps/nara_saiken_ndl.json',
       'https://s.maplat.jp/r/naramap/maps/nara_ezuya.json',
@@ -97,7 +97,7 @@ const dataSources = [
     ],
   },
   {
-    area: '姫路',
+    area: '姫路(Japan City Plansサンプル)',
     raster: [
       'https://s.maplat.jp/r/himejimap/maps/Jissoku_Himeji_Shigai.json',
       'data/maplat/txu-oclc-6565467.json',
@@ -105,14 +105,14 @@ const dataSources = [
     ],
   },
   {
-    area: '延岡',
+    area: '延岡(複数地図面サンプル予定)',
     raster: [
       'data/maplat/1932_nobeoka.json',
       'data/maplat/osm.json',
     ],
   },
   {
-    area: '種子島',
+    area: '種子島(IFFFサンプル)',
     raster: [
       'data/maplat/iiif_test.json',
       'data/maplat/osm.json'
