@@ -178,6 +178,16 @@ import &quot;../less/core.less&quot;;
     tapUIVanish: true,
     div: &quot;map&quot;,
   };
+
+  const hashes &#x3D; window.location.href
+    .slice(window.location.href.indexOf(&quot;?&quot;) + 1)
+    .split(&quot;&amp;&quot;);
+  for (let i &#x3D; 0; i &lt; hashes.length; i++) {
+    const hash &#x3D; hashes[i].split(&quot;&#x3D;&quot;);
+    option[hash[0]] &#x3D;
+      hash[1] &#x3D;&#x3D; &quot;true&quot; ? true : hash[1] &#x3D;&#x3D; &quot;false&quot; ? false : hash[1];
+  }
+
   const app &#x3D; new MaplatApp(option);
   await app.waitReady;
   console.log(&quot;####Message appReady&quot;);

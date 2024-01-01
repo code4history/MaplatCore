@@ -177,263 +177,293 @@ import {defaults} from &#x27;ol/interaction/defaults.js&#x27;;
 import {transform} from &#x27;ol/proj.js&#x27;;
 
 (async () &#x3D;&gt; {
-const centerLngLat &#x3D; [139.53671, 36.24668];
+  const centerLngLat &#x3D; [139.53671, 36.24668];
+  let area &#x3D; 0, mapid &#x3D; 0;
+  const areaSelect &#x3D; document.getElementById(&#x27;area_select&#x27;);
+  const layerSelect &#x3D; document.getElementById(&#x27;layer_select&#x27;);
 
-const createPoiSource &#x3D; async url &#x3D;&gt; {
-  const vectorReq &#x3D; await fetch(url);
-  const vectorJSON &#x3D; await vectorReq.json();
-  const vectorSource &#x3D; new VectorSource({
-    features: new FormatGeoJSON().readFeatures(vectorJSON, {
-      featureProjection: &#x27;EPSG:4326&#x27;,
-      dataProjection: &#x27;EPSG:4326&#x27;,
-    }),
-  });
-  return vectorSource;
-};
-
-const createKmlSource &#x3D; async url &#x3D;&gt; {
-  const contourReq &#x3D; await fetch(url);
-  const contourText &#x3D; await contourReq.text();
-  const contourSource &#x3D; new VectorSource({
-    features: new FormatKML().readFeatures(contourText, {
-      featureProjection: &#x27;EPSG:4326&#x27;,
-      dataProjection: &#x27;EPSG:4326&#x27;,
-    }),
-  });
-  return contourSource;
-};
-
-const stockIconHash &#x3D; {};
-const stockIconStyle &#x3D; clusterMember &#x3D;&gt; {
-  // eslint-disable-next-line no-undef
-  const key &#x3D; iconSelector(clusterMember);
-  if (!stockIconHash[key]) {
-    stockIconHash[key] &#x3D; new Icon({
-      src: key,
-      anchor: [0.5, 1.0],
+  const hashes &#x3D; window.location.href
+    .slice(window.location.href.indexOf(&quot;?&quot;) + 1)
+    .split(&quot;&amp;&quot;);
+  for (let i &#x3D; 0; i &lt; hashes.length; i++) {
+    const hash &#x3D; hashes[i].split(&quot;&#x3D;&quot;);
+    switch (hash[0]) { 
+      case &quot;lat&quot;:
+        centerLngLat[1] &#x3D; parseFloat(hash[1]);
+        break;
+      case &quot;lng&quot;:
+        centerLngLat[0] &#x3D; parseFloat(hash[1]);
+        break;
+      case &quot;area&quot;:
+        area &#x3D; parseInt(hash[1]);
+        break;
+      case &quot;mapid&quot;:
+        mapid &#x3D; parseInt(hash[1]);
+        break;
+      default:
+    }
+  }
+  
+  const createPoiSource &#x3D; async url &#x3D;&gt; {
+    const vectorReq &#x3D; await fetch(url);
+    const vectorJSON &#x3D; await vectorReq.json();
+    const vectorSource &#x3D; new VectorSource({
+      features: new FormatGeoJSON().readFeatures(vectorJSON, {
+        featureProjection: &#x27;EPSG:4326&#x27;,
+        dataProjection: &#x27;EPSG:4326&#x27;,
+      }),
     });
-  }
-  return new Style({
-    geometry: clusterMember.getGeometry(),
-    image: stockIconHash[key],
-  });
-};
+    return vectorSource;
+  };
 
-const dataSources &#x3D; [
-  {
-    area: &#x27;館林(TMS、レガシー、ベクトルデータサンプル)&#x27;,
-    raster: [
-      &#x27;https://s.maplat.jp/r/tatebayashimap/maps/tatebayashi_ojozu.json&#x27;,
-      &#x27;https://s.maplat.jp/r/tatebayashimap/maps/tatebayashi_castle_akimoto.json&#x27;,
-      &#x27;https://s.maplat.jp/r/tatebayashimap/maps/tatebayashi_satonuma_village_1.json&#x27;,
-      &#x27;data/maplat/kanto_rapid-900913.json&#x27;,
-      &#x27;data/maplat/osm.json&#x27;,
-    ],
-    vector: [
-      {
-        url: &#x27;data/maplat/yagoe_contour.kml&#x27;,
-        type: &#x27;kml&#x27;,
-      },
-      {
-        url: &#x27;https://raw.githubusercontent.com/code4history/TatebayashiStones/master/tatebayashi_stones.geojson&#x27;,
-        type: &#x27;geojson&#x27;,
-        style: stockIconStyle,
-      },
-    ],
-  },
-  {
-    area: &#x27;奈良(レガシーMaplatサンプル)&#x27;,
-    raster: [
-      &#x27;https://s.maplat.jp/r/naramap/maps/nara_saiken_ndl.json&#x27;,
-      &#x27;https://s.maplat.jp/r/naramap/maps/nara_ezuya.json&#x27;,
-      &#x27;data/maplat/osm.json&#x27;,
-    ],
-    vector: [
-      {
-        url: &#x27;https://raw.githubusercontent.com/code4history/JizoProject/master/jizo_project.geojson&#x27;,
-        type: &#x27;geojson&#x27;,
-        style: stockIconStyle,
-      },
-    ],
-  },
-  {
-    area: &#x27;姫路(Japan City Plansサンプル)&#x27;,
-    raster: [
-      &#x27;https://s.maplat.jp/r/himejimap/maps/Jissoku_Himeji_Shigai.json&#x27;,
-      &#x27;data/maplat/txu-oclc-6565467.json&#x27;,
-      &#x27;data/maplat/osm.json&#x27;,
-    ],
-  },
-  {
-    area: &#x27;延岡(複数地図面サンプル予定)&#x27;,
-    raster: [
-      &#x27;data/maplat/1932_nobeoka.json&#x27;,
-      &#x27;data/maplat/osm.json&#x27;,
-    ],
-  },
-  {
-    area: &#x27;種子島(IFFFサンプル)&#x27;,
-    raster: [
-      &#x27;data/maplat/iiif_test.json&#x27;,
-      &#x27;data/maplat/osm.json&#x27;
-    ],
-  },
-];
-await Promise.all(
-  dataSources.map(async dataSource &#x3D;&gt; {
-    if (dataSource.raster) {
-      dataSource.raster &#x3D; await Promise.all(
-        dataSource.raster.map(url &#x3D;&gt;
-          MaplatFactory.factoryMaplatSourceFromUrl(null, url)
-        )
-      );
+  const createKmlSource &#x3D; async url &#x3D;&gt; {
+    const contourReq &#x3D; await fetch(url);
+    const contourText &#x3D; await contourReq.text();
+    const contourSource &#x3D; new VectorSource({
+      features: new FormatKML().readFeatures(contourText, {
+        featureProjection: &#x27;EPSG:4326&#x27;,
+        dataProjection: &#x27;EPSG:4326&#x27;,
+      }),
+    });
+    return contourSource;
+  };
+
+  const stockIconHash &#x3D; {};
+  const stockIconStyle &#x3D; clusterMember &#x3D;&gt; {
+    // eslint-disable-next-line no-undef
+    const key &#x3D; iconSelector(clusterMember);
+    if (!stockIconHash[key]) {
+      stockIconHash[key] &#x3D; new Icon({
+        src: key,
+        anchor: [0.5, 1.0],
+      });
     }
-    if (dataSource.vector) {
-      dataSource.vector &#x3D; await Promise.all(
-        dataSource.vector.map(async vector &#x3D;&gt; {
-          const source &#x3D;
-            vector.type &#x3D;&#x3D; &#x27;geojson&#x27;
-              ? await createPoiSource(vector.url)
-              : await createKmlSource(vector.url);
-          return {
-            source,
-            style: vector.style,
-          };
-        })
-      );
-    }
-  })
-);
+    return new Style({
+      geometry: clusterMember.getGeometry(),
+      image: stockIconHash[key],
+    });
+  };
 
-let map;
-
-const areaSelect &#x3D; document.getElementById(&#x27;area_select&#x27;);
-const layerSelect &#x3D; document.getElementById(&#x27;layer_select&#x27;);
-areaSelect.onchange &#x3D; function () {
-  const area &#x3D; areaSelect.value;
-  // eslint-disable-next-line no-console
-  areaSelectFunc(area * 1);
-};
-layerSelect.onchange &#x3D; function () {
-  const layer &#x3D; layerSelect.value;
-  // eslint-disable-next-line no-console
-  layerSelectFunc(layer * 1);
-};
-let areaOptions &#x3D; &#x27;&#x27;;
-dataSources.forEach((data, index) &#x3D;&gt; {
-  areaOptions &#x3D; &#x60;${areaOptions}&lt;option value&#x3D;&quot;${index}&quot;&gt;${data.area}&lt;/option&gt;&#x60;;
-});
-areaSelect.innerHTML &#x3D; areaOptions;
-areaSelectFunc(0);
-
-function areaSelectFunc(area_id) {
-  const areaData &#x3D; dataSources[area_id];
-  let layerOptions &#x3D; &#x27;&#x27;;
-  areaData.raster.forEach((raster, index) &#x3D;&gt; {
-    layerOptions &#x3D; &#x60;${layerOptions}&lt;option value&#x3D;&quot;${index}&quot;&gt;${localeSelector(
-      raster.get(&#x27;title&#x27;),
-      &#x27;ja&#x27;
-    )}&lt;/option&gt;&#x60;;
-  });
-  layerSelect.innerHTML &#x3D; layerOptions;
-  layerSelectFunc(0, true);
-}
-
-function layerSelectFunc(layer_id, clearMap) {
-  const area_id &#x3D; areaSelect.value * 1;
-  const areaData &#x3D; dataSources[area_id];
-
-  const fromSource &#x3D;
-    clearMap || !map ? null : map.getLayers().getArray()[0].getSource();
-  const toSource &#x3D; areaData.raster[layer_id];
-  console.log(toSource.getProjection());
-
-  let toCenter, toResolution, toRotation, toParam;
-  if (!fromSource) {
-    toParam &#x3D; {
-      center: transform(centerLngLat, &#x27;EPSG:4326&#x27;, toSource.getProjection()),
-      rotation: 0,
-      zoom: 0,
-    };
-  } else {
-    const fromView &#x3D; map.getView();
-    const fromCenter &#x3D; fromView.getCenter();
-    const fromRotation &#x3D; fromView.getRotation();
-    const fromResolution &#x3D; fromView.getResolution();
-    [toCenter, toRotation, toResolution] &#x3D; viewportSwitcher(
-      fromCenter,
-      fromRotation,
-      fromResolution,
-      500,
-      fromSource.getProjection(),
-      toSource.getProjection()
-    );
-    toParam &#x3D; {
-      center: toCenter,
-      rotation: toRotation,
-      resolution: toResolution,
-    };
-  }
-  toParam &#x3D; Object.assign(toParam, {
-    projection: toSource.getProjection(),
-    constrainRotation: false,
-  });
-  const view &#x3D; new View(toParam);
-
-  let addMapToCluster;
-  const layers &#x3D; areaData.vector
-    ? areaData.vector.map(vector &#x3D;&gt; {
-        const source &#x3D; vector.source;
-        const filteredSource &#x3D; vectorFilter(source, {
-          projectTo: toSource.getProjection(),
-          extent: toSource.getProjection().getExtent(),
-        });
-        if (vector.style) {
-          const clusterLayer &#x3D; new clusterRegister({});
-          addMapToCluster &#x3D; () &#x3D;&gt; {
-            clusterLayer.registerMap(filteredSource, map, vector.style);
-          };
-          return clusterLayer;
-        }
-        return new VectorLayer({
-          source: filteredSource,
-        });
-      })
-    : [];
-
-  layers.unshift(
-    new WebGLTileLayer({
-      title: localeSelector(toSource.get(&#x27;title&#x27;), &#x27;ja&#x27;),
-      source: toSource,
+  const dataSources &#x3D; [
+    {
+      area: &#x27;館林(TMS、レガシー、ベクトルデータサンプル)&#x27;,
+      raster: [
+        &#x27;https://s.maplat.jp/r/tatebayashimap/maps/tatebayashi_ojozu.json&#x27;,
+        &#x27;https://s.maplat.jp/r/tatebayashimap/maps/tatebayashi_castle_akimoto.json&#x27;,
+        &#x27;https://s.maplat.jp/r/tatebayashimap/maps/tatebayashi_satonuma_village_1.json&#x27;,
+        &#x27;data/maplat/kanto_rapid-900913.json&#x27;,
+        &#x27;data/maplat/osm.json&#x27;,
+      ],
+      vector: [
+        {
+          url: &#x27;data/maplat/yagoe_contour.kml&#x27;,
+          type: &#x27;kml&#x27;,
+        },
+        {
+          url: &#x27;https://raw.githubusercontent.com/code4history/TatebayashiStones/master/tatebayashi_stones.geojson&#x27;,
+          type: &#x27;geojson&#x27;,
+          style: stockIconStyle,
+        },
+      ],
+    },
+    {
+      area: &#x27;奈良(レガシーMaplatサンプル)&#x27;,
+      raster: [
+        &#x27;https://s.maplat.jp/r/naramap/maps/nara_saiken_ndl.json&#x27;,
+        &#x27;https://s.maplat.jp/r/naramap/maps/nara_ezuya.json&#x27;,
+        &#x27;data/maplat/osm.json&#x27;,
+      ],
+      vector: [
+        {
+          url: &#x27;https://raw.githubusercontent.com/code4history/JizoProject/master/jizo_project.geojson&#x27;,
+          type: &#x27;geojson&#x27;,
+          style: stockIconStyle,
+        },
+      ],
+    },
+    {
+      area: &#x27;姫路(Japan City Plansサンプル)&#x27;,
+      raster: [
+        &#x27;https://s.maplat.jp/r/himejimap/maps/Jissoku_Himeji_Shigai.json&#x27;,
+        &#x27;data/maplat/txu-oclc-6565467.json&#x27;,
+        &#x27;data/maplat/osm.json&#x27;,
+      ],
+    },
+    {
+      area: &#x27;延岡(複数地図面サンプル予定)&#x27;,
+      raster: [
+        &#x27;data/maplat/1932_nobeoka.json&#x27;,
+        &#x27;data/maplat/osm.json&#x27;,
+      ],
+    },
+    {
+      area: &#x27;種子島(IFFFサンプル)&#x27;,
+      raster: [
+        &#x27;data/maplat/iiif_test.json&#x27;,
+        &#x27;data/maplat/osm.json&#x27;
+      ],
+    },
+  ];
+  await Promise.all(
+    dataSources.map(async dataSource &#x3D;&gt; {
+      if (dataSource.raster) {
+        dataSource.raster &#x3D; await Promise.all(
+          dataSource.raster.map(url &#x3D;&gt;
+            MaplatFactory.factoryMaplatSourceFromUrl(null, url)
+          )
+        );
+      }
+      if (dataSource.vector) {
+        dataSource.vector &#x3D; await Promise.all(
+          dataSource.vector.map(async vector &#x3D;&gt; {
+            const source &#x3D;
+              vector.type &#x3D;&#x3D; &#x27;geojson&#x27;
+                ? await createPoiSource(vector.url)
+                : await createKmlSource(vector.url);
+            return {
+              source,
+              style: vector.style,
+            };
+          })
+        );
+      }
     })
   );
 
-  const frontDiv &#x3D; document.querySelector(&#x27;#map&#x27;);
-  if (!map) {
-    map &#x3D; new Map({
-      target: frontDiv,
-      layers,
-      view,
-      interactions: defaults({altShiftDragRotate: false}).extend([
-        new DragRotate({condition: altKeyOnly}),
-      ]),
+  let map;
+
+  areaSelect.onchange &#x3D; function () {
+    const area &#x3D; areaSelect.value;
+    // eslint-disable-next-line no-console
+    areaSelectFunc(area * 1);
+  };
+  layerSelect.onchange &#x3D; function () {
+    const layer &#x3D; layerSelect.value;
+    // eslint-disable-next-line no-console
+    layerSelectFunc(layer * 1);
+  };
+  let areaOptions &#x3D; &#x27;&#x27;;
+  dataSources.forEach((data, index) &#x3D;&gt; {
+    areaOptions &#x3D; &#x60;${areaOptions}&lt;option value&#x3D;&quot;${index}&quot;&gt;${data.area}&lt;/option&gt;&#x60;;
+  });
+  areaSelect.innerHTML &#x3D; areaOptions;
+  areaSelect.value &#x3D; area;
+  areaSelectFunc(area);
+  area &#x3D; undefined;
+
+  function areaSelectFunc(area_id) {
+    const areaData &#x3D; dataSources[area_id];
+    let layerOptions &#x3D; &#x27;&#x27;;
+    areaData.raster.forEach((raster, index) &#x3D;&gt; {
+      layerOptions &#x3D; &#x60;${layerOptions}&lt;option value&#x3D;&quot;${index}&quot;&gt;${localeSelector(
+        raster.get(&#x27;title&#x27;),
+        &#x27;ja&#x27;
+      )}&lt;/option&gt;&#x60;;
     });
-  } else {
-    map.getLayers().forEach(layer &#x3D;&gt; {
-      if (layer.removeMap) {
-        layer.removeMap();
-      }
+    layerSelect.innerHTML &#x3D; layerOptions;
+    if (mapid) {
+      layerSelectFunc(mapid, true);
+      mapid &#x3D; 0;
+    } else {
+      layerSelectFunc(0, true);
+    }
+  }
+
+  function layerSelectFunc(layer_id, clearMap) {
+    const area_id &#x3D; areaSelect.value * 1;
+    const areaData &#x3D; dataSources[area_id];
+
+    const fromSource &#x3D;
+      clearMap || !map ? null : map.getLayers().getArray()[0].getSource();
+    const toSource &#x3D; areaData.raster[layer_id];
+    console.log(toSource.getProjection());
+
+    let toCenter, toResolution, toRotation, toParam;
+    if (!fromSource) {
+      toParam &#x3D; {
+        center: transform(centerLngLat, &#x27;EPSG:4326&#x27;, toSource.getProjection()),
+        rotation: 0,
+        zoom: 0,
+      };
+    } else {
+      const fromView &#x3D; map.getView();
+      const fromCenter &#x3D; fromView.getCenter();
+      const fromRotation &#x3D; fromView.getRotation();
+      const fromResolution &#x3D; fromView.getResolution();
+      [toCenter, toRotation, toResolution] &#x3D; viewportSwitcher(
+        fromCenter,
+        fromRotation,
+        fromResolution,
+        500,
+        fromSource.getProjection(),
+        toSource.getProjection()
+      );
+      toParam &#x3D; {
+        center: toCenter,
+        rotation: toRotation,
+        resolution: toResolution,
+      };
+    }
+    toParam &#x3D; Object.assign(toParam, {
+      projection: toSource.getProjection(),
+      constrainRotation: false,
     });
-    map.setLayers(layers);
-    map.setView(view);
+    const view &#x3D; new View(toParam);
+
+    let addMapToCluster;
+    const layers &#x3D; areaData.vector
+      ? areaData.vector.map(vector &#x3D;&gt; {
+          const source &#x3D; vector.source;
+          const filteredSource &#x3D; vectorFilter(source, {
+            projectTo: toSource.getProjection(),
+            extent: toSource.getProjection().getExtent(),
+          });
+          if (vector.style) {
+            const clusterLayer &#x3D; new clusterRegister({});
+            addMapToCluster &#x3D; () &#x3D;&gt; {
+              clusterLayer.registerMap(filteredSource, map, vector.style);
+            };
+            return clusterLayer;
+          }
+          return new VectorLayer({
+            source: filteredSource,
+          });
+        })
+      : [];
+
+    layers.unshift(
+      new WebGLTileLayer({
+        title: localeSelector(toSource.get(&#x27;title&#x27;), &#x27;ja&#x27;),
+        source: toSource,
+      })
+    );
+
+    const frontDiv &#x3D; document.querySelector(&#x27;#map&#x27;);
+    if (!map) {
+      map &#x3D; new Map({
+        target: frontDiv,
+        layers,
+        view,
+        interactions: defaults({altShiftDragRotate: false}).extend([
+          new DragRotate({condition: altKeyOnly}),
+        ]),
+      });
+    } else {
+      map.getLayers().forEach(layer &#x3D;&gt; {
+        if (layer.removeMap) {
+          layer.removeMap();
+        }
+      });
+      map.setLayers(layers);
+      map.setView(view);
+    }
+    if (addMapToCluster) {
+      addMapToCluster();
+    }
+    if (!fromSource) {
+      view.fit(toSource.getProjection().getExtent(), {padding: [50, 50, 50, 50]});
+    }
   }
-  if (addMapToCluster) {
-    addMapToCluster();
-  }
-  if (!fromSource) {
-    view.fit(toSource.getProjection().getExtent(), {padding: [50, 50, 50, 50]});
-  }
-}
 })();</code></pre>
       </div>
 

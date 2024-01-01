@@ -11,6 +11,16 @@ import "../less/core.less";
     tapUIVanish: true,
     div: "map",
   };
+
+  const hashes = window.location.href
+    .slice(window.location.href.indexOf("?") + 1)
+    .split("&");
+  for (let i = 0; i < hashes.length; i++) {
+    const hash = hashes[i].split("=");
+    option[hash[0]] =
+      hash[1] == "true" ? true : hash[1] == "false" ? false : hash[1];
+  }
+
   const app = new MaplatApp(option);
   await app.waitReady;
   console.log("####Message appReady");
