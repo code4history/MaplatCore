@@ -18,7 +18,7 @@ import {transform} from 'ol/proj.js';
 
 (async () => {
   const centerLngLat = [139.53671, 36.24668];
-  let area = 0, mapid = 0;
+  let area = 0, mapid = 0, zoom;
   const areaSelect = document.getElementById('area_select');
   const layerSelect = document.getElementById('layer_select');
 
@@ -39,6 +39,9 @@ import {transform} from 'ol/proj.js';
         break;
       case "mapid":
         mapid = parseInt(hash[1]);
+        break;
+      case "zoom":
+        zoom = parseInt(hash[1]);
         break;
       default:
     }
@@ -223,7 +226,7 @@ import {transform} from 'ol/proj.js';
       toParam = {
         center: transform(centerLngLat, 'EPSG:4326', toSource.getProjection()),
         rotation: 0,
-        zoom: 0,
+        zoom: zoom || 0,
       };
     } else {
       const fromView = map.getView();
@@ -300,8 +303,9 @@ import {transform} from 'ol/proj.js';
     if (addMapToCluster) {
       addMapToCluster();
     }
-    if (!fromSource) {
+    if (!fromSource && !zoom) {
       view.fit(toSource.getProjection().getExtent(), {padding: [50, 50, 50, 50]});
     }
+    zoom = undefined;
   }
 })();

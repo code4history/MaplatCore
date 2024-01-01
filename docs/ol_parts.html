@@ -178,7 +178,7 @@ import {transform} from &#x27;ol/proj.js&#x27;;
 
 (async () &#x3D;&gt; {
   const centerLngLat &#x3D; [139.53671, 36.24668];
-  let area &#x3D; 0, mapid &#x3D; 0;
+  let area &#x3D; 0, mapid &#x3D; 0, zoom;
   const areaSelect &#x3D; document.getElementById(&#x27;area_select&#x27;);
   const layerSelect &#x3D; document.getElementById(&#x27;layer_select&#x27;);
 
@@ -199,6 +199,9 @@ import {transform} from &#x27;ol/proj.js&#x27;;
         break;
       case &quot;mapid&quot;:
         mapid &#x3D; parseInt(hash[1]);
+        break;
+      case &quot;zoom&quot;:
+        zoom &#x3D; parseInt(hash[1]);
         break;
       default:
     }
@@ -383,7 +386,7 @@ import {transform} from &#x27;ol/proj.js&#x27;;
       toParam &#x3D; {
         center: transform(centerLngLat, &#x27;EPSG:4326&#x27;, toSource.getProjection()),
         rotation: 0,
-        zoom: 0,
+        zoom: zoom || 0,
       };
     } else {
       const fromView &#x3D; map.getView();
@@ -460,9 +463,10 @@ import {transform} from &#x27;ol/proj.js&#x27;;
     if (addMapToCluster) {
       addMapToCluster();
     }
-    if (!fromSource) {
+    if (!fromSource &amp;&amp; !zoom) {
       view.fit(toSource.getProjection().getExtent(), {padding: [50, 50, 50, 50]});
     }
+    zoom &#x3D; undefined;
   }
 })();</code></pre>
       </div>
