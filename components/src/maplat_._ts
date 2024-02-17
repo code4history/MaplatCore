@@ -1,0 +1,118 @@
+import { LitElement, html, css } from 'lit';
+import { Map, View, } from 'ol';
+import { Tile } from 'ol/layer';
+import { OSM } from 'ol/source';
+import { fromLonLat } from 'ol/proj';
+
+export class Maplat extends LitElement {
+  constructor() {
+    super();
+    this.loadStyles();
+  }
+
+  async loadStyles() {
+    // CSSファイルのURLを組み立てる
+    const cssUrl = new URL('./maplat.css', import.meta.url).href;
+    try {
+      const response = await fetch(cssUrl);
+      const cssText = await response.text();
+      const style = document.createElement('style');
+      style.textContent = cssText;
+      this.shadowRoot!.appendChild(style);
+    } catch (error) {
+      console.error('Failed to load CSS', error);
+    }
+  }
+
+  render() {
+    return html`
+      <div id="map" class="map-container"></div>
+    `;
+  }
+
+  firstUpdated() {
+    new Map({
+      target: this.shadowRoot!.querySelector('#map') as any,
+      layers: [
+        new Tile({
+          source: new OSM()
+        })
+      ],
+      view: new View({
+        center: fromLonLat([37.41, 8.82]),
+        zoom: 4
+      })
+    });
+  }
+}
+
+window.customElements.define('maplat-core', Maplat);
+/*import olCssUrl from './maplat.css?url';
+
+import { Map, View } from 'ol';
+import TileLayer from 'ol/layer/Tile';
+import OSM from 'ol/source/OSM';
+import { fromLonLat } from 'ol/proj';
+
+class MapLat extends HTMLElement {
+  private map?: Map;
+
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+    this.addOpenLayersStyle();
+  }
+
+  addOpenLayersStyle() {
+    const linkElement = document.createElement('link');
+    linkElement.rel = 'stylesheet';
+    linkElement.href = olCssUrl;
+    this.shadowRoot!.appendChild(linkElement);
+  }
+
+  connectedCallback() {
+    const style = document.createElement('style');
+    style.textContent = `
+      :host {
+        display: block;
+        height: 100%;
+      }
+      .map-container {
+        height: 100%;
+      }
+    `;
+    const container = document.createElement('div');
+    container.className = 'map-container';
+    this.shadowRoot!.append(style, container);
+
+    const lon = parseFloat(this.getAttribute('lon') || '') || 139.6917;
+    const lat = parseFloat(this.getAttribute('lat') || '') || 35.6895;
+    const zoom = parseInt(this.getAttribute('zoom') || '') || 17;
+
+    this.map = new Map({
+      target: container,
+      layers: [
+        new TileLayer({
+          source: new OSM()
+        })
+      ],
+      view: new View({
+        center: fromLonLat([lon, lat]),
+        zoom: zoom
+      })
+    });
+
+    this.map.on('moveend', () => this.handleMoveEnd());
+  }
+
+  handleMoveEnd() {
+    const view = this.map!.getView();
+    const [lon, lat] = fromLonLat(view.getCenter()!);
+    const zoom = view.getZoom();
+    this.dispatchEvent(new CustomEvent('change:lon', { detail: lon }));
+    this.dispatchEvent(new CustomEvent('change:lat', { detail: lat }));
+    this.dispatchEvent(new CustomEvent('change:zoom', { detail: zoom }));
+  }
+}
+
+window.customElements.define('maplat-core', MapLat);*/

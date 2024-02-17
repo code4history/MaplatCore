@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MapLat Demo</title>
+  <script type="module" src="./src/maplat_core.ts"></script>
+  <script type="module" src="./src/maplat_ui.ts"></script>
+  <style>
+    maplat-core {
+      display: block;
+      height: 400px;
+      /* カスタムエレメントの高さを設定 */
+    }
+    maplat-ui {
+      display: block;
+      height: 400px;
+      /* カスタムエレメントの高さを設定 */
+    }
+</style>
+</head>
+
+<body>
+  <maplat-core center="135,35" zoom="14"></maplat-core>
+  <maplat-ui center="140,38" zoom="14"></maplat-ui>
+</body>
+<script>
+  const core = document.querySelector('maplat-core');
+  const ui = document.querySelector('maplat-ui');
+  core.addEventListener('changed:zoom', (e) => {
+    console.log('core changed:zoom', e.detail);
+  });
+  ui.addEventListener('changed:zoom', (e) => {
+    console.log('ui changed:zoom', e.detail);
+  });
+  core.addEventListener('changed:center', (e) => {
+    console.log('core changed:center', e.detail);
+  });
+  ui.addEventListener('changed:center', (e) => {
+    console.log('ui changed:center', e.detail);
+  });
+</script>
+
+</html>
