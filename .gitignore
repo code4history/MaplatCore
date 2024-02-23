@@ -68,3 +68,5 @@ mapboxToken
 # Open/Keep
 .git.keep
 .git.open
+
+.vscode
