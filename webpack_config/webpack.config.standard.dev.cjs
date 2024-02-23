@@ -3,13 +3,13 @@
 
 const path = require("path");
 const { merge } = require("webpack-merge");
-const prod = require("./webpack.config.packed.js");
+const prod = require("./webpack.config.standard.cjs");
 
 const port = process.env.PORT || 8888;
 
 module.exports = merge(prod, {
   output: {
-    path: path.resolve(__dirname, "../dev_packed"),
+    path: path.resolve(__dirname, "../dev"),
     filename: './assets/[name].js'
   },
 

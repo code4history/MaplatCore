@@ -3,11 +3,11 @@
 
 const path = require("path");
 const { merge } = require("webpack-merge");
-const common = require("./webpack.config.common.js");
+const common = require("./webpack.config.common.cjs");
 
 module.exports = merge(common, {
   output: {
-    path: path.resolve(__dirname, "../dist"),
+    path: path.resolve(__dirname, "../dist_packed"),
     filename: './assets/[name].js'
   },
 
@@ -16,13 +16,7 @@ module.exports = merge(common, {
       {
         test: /\.(jpg|jpeg|png)$/,
         exclude: /node_modules/,
-        loader: 'file-loader',
-        options: {
-          outputPath: "assets/images",
-          publicPath(path) {
-            return `assets/images/${path}`;
-          }
-        }
+        loader: 'url-loader',
       }
     ]
   },

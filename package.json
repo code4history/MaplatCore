@@ -16,14 +16,14 @@
     "es5/"
   ],
   "scripts": {
-    "server": "cross-env NODE_OPTIONS=--openssl-legacy-provider webpack-cli serve --config ./webpack_config/webpack.config.standard.dev.js --mode=development --devtool=inline-source-map",
-    "server:packed": "cross-env NODE_OPTIONS=--openssl-legacy-provider webpack-cli serve --config ./webpack_config/webpack.config.packed.dev.js  --mode=development --devtool=inline-source-map",
-    "server:e2e": "cross-env NODE_OPTIONS=--openssl-legacy-provider webpack-cli serve --config ./webpack_config/webpack.config.e2e.js  --mode=development",
+    "server": "cross-env NODE_OPTIONS=--openssl-legacy-provider webpack-cli serve --config ./webpack_config/webpack.config.standard.dev.cjs --mode=development --devtool=inline-source-map",
+    "server:packed": "cross-env NODE_OPTIONS=--openssl-legacy-provider webpack-cli serve --config ./webpack_config/webpack.config.packed.dev.cjs  --mode=development --devtool=inline-source-map",
+    "server:e2e": "cross-env NODE_OPTIONS=--openssl-legacy-provider webpack-cli serve --config ./webpack_config/webpack.config.e2e.cjs  --mode=development",
     "server:e2e:start": "gulp e2e:start",
     "server:e2e:stop": "gulp e2e:stop",
     "build": "npm run build:standard && npm run build:packed && npm run build:es6 && npm run build:es5",
-    "build:standard": "cross-env NODE_OPTIONS=--openssl-legacy-provider webpack --color --progress --config ./webpack_config/webpack.config.standard.js",
-    "build:packed": "cross-env NODE_OPTIONS=--openssl-legacy-provider webpack --config ./webpack_config/webpack.config.packed.js",
+    "build:standard": "cross-env NODE_OPTIONS=--openssl-legacy-provider webpack --color --progress --config ./webpack_config/webpack.config.standard.cjs",
+    "build:packed": "cross-env NODE_OPTIONS=--openssl-legacy-provider webpack --config ./webpack_config/webpack.config.packed.cjs",
     "build:es6": "tsc --build ts_config/tsconfig.es6.json",
     "build:es5": "tsc --build ts_config/tsconfig.es5.json",
     "zip": "gulp zip",
@@ -57,7 +57,7 @@
   },
   "homepage": "https://github.com/code4history/MaplatCore/wiki",
   "dependencies": {
-    "@maplat/tin": "^0.9.4",
+    "@maplat/tin": "github:code4history/MaplatTin#forVite",
     "@turf/line-intersect": "^6.5.0",
     "@turf/turf": "^6.5.0",
     "argv": "^0.0.2",

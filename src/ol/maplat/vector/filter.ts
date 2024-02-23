@@ -26,7 +26,7 @@ function filter(source: VectorSource, options: Options = {}): VectorSource {
   const extent = options.extent;
   const projectTo = options.projectTo;
   const retSource = new VectorSource();
-  source.forEachFeature((f) => {
+  source.forEachFeature(f => {
     const retF = f.clone();
     if (projectTo) {
       retF.setGeometry(retF.getGeometry()!.transform('EPSG:4326', projectTo));

@@ -8,7 +8,6 @@ import {DEFAULT_TILE_SIZE} from 'ol/tilegrid/common.js';
 import {Size, toSize} from 'ol/size.js';
 import { AttributionLike } from 'ol/source/Source';
 import { ProjectionLike } from 'ol/proj';
-import interpolate from '@turf/interpolate';
 import { Extent } from 'ol/extent';
 import { NearestDirectionFunction } from 'ol/array';
 import { MaplatCompiledLegacy, MaplatSpecLegacy } from '../types/specLegacy';

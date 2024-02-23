@@ -1,0 +1,1 @@
+{"version":3,"file":"selector.js","sourceRoot":"","sources":["../../../../src/ol/maplat/locale/selector.ts"],"names":[],"mappings":";;;;;;;;;;;IAMA,SAAwB,SAAS,CAAC,QAAwB,EAAE,MAAc;QACxE,IAAI,OAAO,QAAQ,KAAK,QAAQ,EAAE;YAChC,OAAO,QAAQ,CAAC;SACjB;QACD,IAAI,MAAM,KAAK,IAAI,EAAE;YACnB,OAAO,QAAQ,CAAC,EAAE,CAAC;SACpB;QACD,OAAO,QAAQ,CAAC,EAAE,CAAC;IACrB,CAAC;IARD,4BAQC"}
