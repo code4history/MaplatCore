@@ -19,6 +19,7 @@ import { HistMap } from "./source/histmap";
 import { NowMap } from "./source/nowmap";
 import { TmsMap } from "./source/tmsmap";
 import { MapboxMap } from "./source/mapboxmap";
+//import { GoogleMap } from "./source/googlemap";
 import { mapSourceFactory } from "./source_ex";
 import { META_KEYS, ViewpointArray } from "./source/mixin";
 import { recursiveRound } from "./math_ex";
@@ -36,6 +37,7 @@ import redcircle from "../parts/redcircle.png";                     // @ts-ignor
 import defaultpin_selected from "../parts/defaultpin_selected.png"; // @ts-ignore
 import defaultpin from "../parts/defaultpin.png";
 import { Coordinate } from "ol/coordinate";
+import { GoogleMap } from "./source/googlemap";
 
 interface AppData {
   sources: string[];
@@ -71,6 +73,9 @@ interface Restore {
   hideLayer?: string;
 }
 
+export type MaplatSource = HistMap | NowMap | GoogleMap;
+export type BackmapSource = NowMap | GoogleMap;
+
 export class MaplatApp extends EventTarget {
   appid: string;
   translateUI = false;
@@ -91,14 +96,14 @@ export class MaplatApp extends EventTarget {
   appData?: AppData;
   appLang = "ja";
   backMap?: MaplatMap;
-  mercSrc?: NowMap;
+  mercSrc?: BackmapSource;
   mercBuffer: any;
   timer: any = undefined;
   appName: any;
   cacheHash: any;
   currentPosition: any;
   startFrom? = "";
-  from?: NowMap | HistMap;
+  from?: MaplatSource;
   vectors: any = [];
   mapDivDocument: HTMLElement | null;
   mapObject: any;
@@ -114,7 +119,7 @@ export class MaplatApp extends EventTarget {
   __selectedMarker: any;
   __init = true;
   __redrawMarkerBlock = false;
-  __redrawMarkerThrottle: (NowMap | HistMap)[] = [];
+  __redrawMarkerThrottle: MaplatSource[] = [];
   __transparency: any;
   lastClickEvent: any;
   // Maplat App Class
@@ -392,7 +397,7 @@ export class MaplatApp extends EventTarget {
   handleSources(sources: any) {
     this.mercSrc = sources.reduce((prev: any, curr: any) => {
       if (prev) return prev;
-      if (curr instanceof NowMap && !(curr instanceof TmsMap)) return curr;
+      if ((curr instanceof NowMap && !(curr instanceof TmsMap)) || curr instanceof GoogleMap) return curr;
     }, null);
     const cache: any[] = [];
     this.cacheHash = {};
@@ -418,13 +423,13 @@ export class MaplatApp extends EventTarget {
     this.raiseChangeViewpoint();
   }
   // Async initializer 10: Handle initial map
-  async setInitialMap(cache: (HistMap | NowMap)[]) {
+  async setInitialMap(cache: MaplatSource[]) {
     const initial: string =
       this.initialRestore.mapID ||
       this.startFrom ||
       cache[cache.length - 1].mapID;
     this.from = cache.reduce(
-      (prev: HistMap | NowMap | undefined, curr: HistMap | NowMap) => {
+      (prev: MaplatSource | undefined, curr: MaplatSource) => {
         if (prev) {
           return !(prev instanceof HistMap) && curr.mapID != initial
             ? curr
@@ -453,7 +458,7 @@ export class MaplatApp extends EventTarget {
       } else {
         const xy = evt.coordinate;
         this.dispatchEvent(new CustomEvent("clickMapXy", xy));
-        (this.from as NowMap | HistMap)
+        (this.from as MaplatSource)
           .sysCoord2MercAsync(xy)
           .then((merc: any) => {
             this.dispatchEvent(new CustomEvent("clickMapMerc", merc));
@@ -476,7 +481,7 @@ export class MaplatApp extends EventTarget {
     const pointerCounter: any = {};
     const pointermoveHandler = (xy: any) => {
       this.dispatchEvent(new CustomEvent("pointerMoveOnMapXy", xy));
-      (this.from as HistMap | NowMap)
+      (this.from as MaplatSource)
         .sysCoord2MercAsync(xy)
         .then((merc: any) => {
           this.dispatchEvent(new CustomEvent("pointerMoveOnMapMerc", merc));
@@ -605,8 +610,8 @@ export class MaplatApp extends EventTarget {
     const mapOutHandler = (evt: any) => {
       let histCoord = evt.frameState.viewState.center;
       const source = this.from;
-      if (!(source as HistMap | NowMap).insideCheckSysCoord(histCoord)) {
-        histCoord = (source as HistMap | NowMap).modulateSysCoordInside(
+      if (!(source as MaplatSource).insideCheckSysCoord(histCoord)) {
+        histCoord = (source as MaplatSource).modulateSysCoordInside(
           histCoord
         );
         evt.target.getView().setCenter(histCoord);
@@ -645,9 +650,9 @@ export class MaplatApp extends EventTarget {
       const center = view.getCenter();
       const zoom = view.getDecimalZoom();
       const rotation = normalizeDegree((view.getRotation() * 180) / Math.PI);
-      (this.from as HistMap | NowMap)
+      (this.from as MaplatSource)
         .viewpoint2MercsAsync()
-        .then(mercs => (this.mercSrc as NowMap).mercs2ViewpointAsync(mercs))
+        .then(mercs => (this.mercSrc as BackmapSource).mercs2ViewpointAsync(mercs))
         .then(viewpoint => {
           if (
             this.mobileMapMoveBuffer &&
@@ -711,23 +716,23 @@ export class MaplatApp extends EventTarget {
       : defaultpin;
     const promise = coords
       ? (function () {
-          return (src as HistMap | NowMap).merc2SysCoordAsync_ignoreBackground(
-            coords
-          );
-        })()
+        return (src as MaplatSource).merc2SysCoordAsync_ignoreBackground(
+          coords
+        );
+      })()
       : x && y
       ? new Promise(resolve => {
           resolve((src as HistMap).xy2SysCoord([x, y]));
         })
       : (function () {
           const merc = transform(lnglat, "EPSG:4326", "EPSG:3857");
-          return (src as HistMap | NowMap).merc2SysCoordAsync_ignoreBackground(
+          return (src as MaplatSource).merc2SysCoordAsync_ignoreBackground(
             merc
           );
         })();
     return promise.then((xy: any) => {
       if (!xy) return;
-      if ((src as HistMap | NowMap).insideCheckSysCoord(xy)) {
+      if ((src as MaplatSource).insideCheckSysCoord(xy)) {
         this.mapObject.setMarker(xy, { datum: data }, icon);
       }
     });
@@ -756,7 +761,7 @@ export class MaplatApp extends EventTarget {
             return merc2XyRecurse(coord, isLnglat);
           } else {
             if (isLnglat) coord = transform(coord, "EPSG:4326", "EPSG:3857");
-            return (this.from as HistMap | NowMap).merc2SysCoordAsync(coord);
+            return (this.from as MaplatSource).merc2SysCoordAsync(coord);
           }
         })
       );
@@ -778,7 +783,7 @@ export class MaplatApp extends EventTarget {
     // Ready for Polygon
     this.mapObject.resetVector();
   }
-  redrawMarkers(source: HistMap | NowMap | undefined = undefined) {
+  redrawMarkers(source: MaplatSource | undefined = undefined) {
     if (!source) {
       source = this.from;
     }
@@ -786,7 +791,7 @@ export class MaplatApp extends EventTarget {
       if (!this.__redrawMarkerThrottle) this.__redrawMarkerThrottle = [];
       const throttle = this.__redrawMarkerThrottle;
       if (throttle.length == 0 || throttle[throttle.length - 1] !== source) {
-        throttle.push(source as HistMap | NowMap);
+        throttle.push(source as MaplatSource);
         return;
       }
     }
@@ -1017,7 +1022,7 @@ export class MaplatApp extends EventTarget {
           ? layer.hide
           : true
       );
-    const mapPois = (this.from as HistMap | NowMap).listPoiLayers(
+    const mapPois = (this.from as MaplatSource).listPoiLayers(
       hideOnly,
       nonzero
     );
@@ -1120,12 +1125,12 @@ export class MaplatApp extends EventTarget {
   }
   setGPSMarker(position: any) {
     this.currentPosition = position;
-    (this.from as HistMap | NowMap).setGPSMarker(position, true);
+    (this.from as MaplatSource).setGPSMarker(position, true);
   }
   changeMap(mapID: string, restore?: Restore) {
     if (restore === undefined) restore = {};
     const now = this.mercSrc;
-    const to: NowMap | HistMap = this.cacheHash[mapID];
+    const to: MaplatSource = this.cacheHash[mapID];
     if (!this.changeMapSeq) {
       this.changeMapSeq = Promise.resolve();
     }
@@ -1141,7 +1146,7 @@ export class MaplatApp extends EventTarget {
             if (this.backMap) {
               // Overlay = true case:
               backSrc = this.backMap.getSource(); // Get current source of background map
-              if (!(to instanceof NowMap)) {
+              if (!(to instanceof NowMap || to instanceof GoogleMap)) {
                 // If new foreground source is nonlinear map:
                 if (backRestore) {
                   backTo = backRestore;
@@ -1150,7 +1155,7 @@ export class MaplatApp extends EventTarget {
                   if (!backSrc) {
                     // If current background source is not set, specify it
                     backTo = now as any;
-                    if (this.from instanceof NowMap) {
+                    if (this.from instanceof NowMap || this.from instanceof GoogleMap) {
                       backTo =
                         this.from instanceof TmsMap
                           ? this.mapObject.getSource()
@@ -1176,7 +1181,7 @@ export class MaplatApp extends EventTarget {
               // If current foreground is basemap then set it as basemap layer
               if (backRestore) {
                 this.mapObject.exchangeSource(backRestore);
-              } else if (!(this.from instanceof NowMap)) {
+              } else if (!(this.from instanceof NowMap || this.from instanceof GoogleMap)) {
                 const backToLocal = backSrc || now;
                 this.mapObject.exchangeSource(backToLocal);
               }
@@ -1191,7 +1196,7 @@ export class MaplatApp extends EventTarget {
             const updateState = {
               mapID: to.mapID
             };
-            if (to instanceof NowMap && !(to instanceof TmsMap)) {
+            if ((to instanceof NowMap && !(to instanceof TmsMap)) || to instanceof GoogleMap) {
               (updateState as any).backgroundID = "____delete____";
             }
             this.requestUpdateState(updateState);
@@ -1300,9 +1305,9 @@ export class MaplatApp extends EventTarget {
     return this.__transparency == null ? 0 : this.__transparency;
   }
   setViewpoint(cond: any) {
-    (this.from as HistMap | NowMap).setViewpoint(cond);
+    (this.from as MaplatSource).setViewpoint(cond);
   }
-  goHome(useTo?: HistMap | NowMap) {
+  goHome(useTo?: MaplatSource) {
     const src = useTo || this.from!;
     src.goHome();
   }
@@ -1316,7 +1321,7 @@ export class MaplatApp extends EventTarget {
     this.from!.resetCirculation();
   }
   getMapMeta(mapID: any) {
-    let source: NowMap | HistMap | undefined;
+    let source: MaplatSource | undefined;
     if (!mapID) {
       source = this.from;
     } else {
@@ -1335,7 +1340,7 @@ export class MaplatApp extends EventTarget {
     );
   }
   getMapCacheEnable(mapID: string) {
-    let source: NowMap | HistMap | undefined;
+    let source: MaplatSource | undefined;
     if (!mapID) {
       source = this.from;
     } else {
@@ -1345,7 +1350,7 @@ export class MaplatApp extends EventTarget {
     return source.getCacheEnable();
   }
   async getMapTileCacheStatsAsync(mapID: string) {
-    let source: NowMap | HistMap | undefined;
+    let source: MaplatSource | undefined;
     if (!mapID) {
       source = this.from;
     } else {
@@ -1359,7 +1364,7 @@ export class MaplatApp extends EventTarget {
     return stats.size || 0;
   }
   async clearMapTileCacheAsync(mapID: string) {
-    let source: NowMap | HistMap | undefined;
+    let source: MaplatSource | undefined;
     if (!mapID) {
       source = this.from;
     } else {
@@ -1369,7 +1374,7 @@ export class MaplatApp extends EventTarget {
     await source.clearTileCacheAsync();
   }
   async fetchAllMapTileCacheAsync(mapID: string, callback: any) {
-    let source: NowMap | HistMap | undefined;
+    let source: MaplatSource | undefined;
     if (!mapID) {
       source = this.from;
     } else {
@@ -1382,7 +1387,7 @@ export class MaplatApp extends EventTarget {
     await source.fetchAllTileCacheAsync(callback);
   }
   async cancelMapTileCacheAsync(mapID: string) {
-    let source: NowMap | HistMap | undefined;
+    let source: MaplatSource | undefined;
     if (!mapID) {
       source = this.from;
     } else {
@@ -1393,7 +1398,7 @@ export class MaplatApp extends EventTarget {
   }
   convertParametersFromCurrent(to: any, callback: any) {
     const view = this.mapObject.getView();
-    let fromPromise = (this.from as HistMap | NowMap).viewpoint2MercsAsync();
+    let fromPromise = (this.from as MaplatSource).viewpoint2MercsAsync();
     const current = recursiveRound(
       [view.getCenter(), view.getZoom(), view.getRotation()],
       10
@@ -1401,10 +1406,10 @@ export class MaplatApp extends EventTarget {
     if (
       this.mercBuffer &&
       this.mercBuffer.mercs &&
-      this.mercBuffer.buffer[(this.from as HistMap | NowMap).mapID]
+      this.mercBuffer.buffer[(this.from as MaplatSource).mapID]
     ) {
       const buffer =
-        this.mercBuffer.buffer[(this.from as HistMap | NowMap).mapID];
+        this.mercBuffer.buffer[(this.from as MaplatSource).mapID];
       if (
         buffer[0][0] == current[0][0] &&
         buffer[0][1] == current[0][1] &&
@@ -1421,18 +1426,18 @@ export class MaplatApp extends EventTarget {
         this.mercBuffer = {
           buffer: {}
         };
-        this.mercBuffer.buffer[(this.from as HistMap | NowMap).mapID] = current;
+        this.mercBuffer.buffer[(this.from as MaplatSource).mapID] = current;
       }
     } else {
       this.mercBuffer = {
         buffer: {}
       };
-      this.mercBuffer.buffer[(this.from as HistMap | NowMap).mapID] = current;
+      this.mercBuffer.buffer[(this.from as MaplatSource).mapID] = current;
     }
     this.logger.debug(
       `From: Center: ${current[0]} Zoom: ${current[1]} Rotation: ${current[2]}`
     );
-    this.logger.debug(`From: ${(this.from as HistMap | NowMap).mapID}`);
+    this.logger.debug(`From: ${(this.from as MaplatSource).mapID}`);
     fromPromise
       .then((mercs: any) => {
         this.mercBuffer.mercs = mercs;

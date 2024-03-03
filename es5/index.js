@@ -58,7 +58,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "i18next", "i18next-xhr-backend", "./customevent", "./browserlanguage", "./logger", "./functions", "ol/events/Target", "ol/proj", "./map_ex", "ol/interaction", "ol/events/condition", "./source/histmap", "./source/nowmap", "./source/tmsmap", "./source/mapboxmap", "./source_ex", "./source/mixin", "./math_ex", "./freeze_locales", "./normalize_pois", "./template_works", "../parts/redcircle.png", "../parts/defaultpin_selected.png", "../parts/defaultpin.png"], factory);
+        define(["require", "exports", "i18next", "i18next-xhr-backend", "./customevent", "./browserlanguage", "./logger", "./functions", "ol/events/Target", "ol/proj", "./map_ex", "ol/interaction", "ol/events/condition", "./source/histmap", "./source/nowmap", "./source/tmsmap", "./source/mapboxmap", "./source_ex", "./source/mixin", "./math_ex", "./freeze_locales", "./normalize_pois", "./template_works", "../parts/redcircle.png", "../parts/defaultpin_selected.png", "../parts/defaultpin.png", "./source/googlemap"], factory);
     }
 })(function (require, exports) {
     "use strict";
@@ -90,6 +90,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     var redcircle_png_1 = __importDefault(require("../parts/redcircle.png"));
     var defaultpin_selected_png_1 = __importDefault(require("../parts/defaultpin_selected.png"));
     var defaultpin_png_1 = __importDefault(require("../parts/defaultpin.png"));
+    var googlemap_1 = require("./source/googlemap");
     var MaplatApp = (function (_super) {
         __extends(MaplatApp, _super);
         function MaplatApp(appOption) {
@@ -358,7 +359,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             this.mercSrc = sources.reduce(function (prev, curr) {
                 if (prev)
                     return prev;
-                if (curr instanceof nowmap_1.NowMap && !(curr instanceof tmsmap_1.TmsMap))
+                if ((curr instanceof nowmap_1.NowMap && !(curr instanceof tmsmap_1.TmsMap)) || curr instanceof googlemap_1.GoogleMap)
                     return curr;
             }, null);
             var cache = [];
@@ -1126,7 +1127,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                             : undefined;
                         if (_this.backMap) {
                             backSrc = _this.backMap.getSource();
-                            if (!(to instanceof nowmap_1.NowMap)) {
+                            if (!(to instanceof nowmap_1.NowMap || to instanceof googlemap_1.GoogleMap)) {
                                 if (backRestore) {
                                     backTo = backRestore;
                                     _this.backMap.exchangeSource(backTo);
@@ -1134,7 +1135,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                                 else {
                                     if (!backSrc) {
                                         backTo = now;
-                                        if (_this.from instanceof nowmap_1.NowMap) {
+                                        if (_this.from instanceof nowmap_1.NowMap || _this.from instanceof googlemap_1.GoogleMap) {
                                             backTo =
                                                 _this.from instanceof tmsmap_1.TmsMap
                                                     ? _this.mapObject.getSource()
@@ -1158,7 +1159,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                             if (backRestore) {
                                 _this.mapObject.exchangeSource(backRestore);
                             }
-                            else if (!(_this.from instanceof nowmap_1.NowMap)) {
+                            else if (!(_this.from instanceof nowmap_1.NowMap || _this.from instanceof googlemap_1.GoogleMap)) {
                                 var backToLocal = backSrc || now;
                                 _this.mapObject.exchangeSource(backToLocal);
                             }
@@ -1173,7 +1174,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         var updateState = {
                             mapID: to.mapID
                         };
-                        if (to instanceof nowmap_1.NowMap && !(to instanceof tmsmap_1.TmsMap)) {
+                        if ((to instanceof nowmap_1.NowMap && !(to instanceof tmsmap_1.TmsMap)) || to instanceof googlemap_1.GoogleMap) {
                             updateState.backgroundID = "____delete____";
                         }
                         _this.requestUpdateState(updateState);

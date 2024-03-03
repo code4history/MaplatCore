@@ -43,7 +43,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "./functions", "weiwudi", "./source/nowmap", "./source/tmsmap", "./source/mapboxmap", "./source/histmap_tin", "whatwg-fetch", "../parts/osm.jpg", "../parts/gsi.jpg", "../parts/gsi_ortho.jpg"], factory);
+        define(["require", "exports", "./functions", "weiwudi", "./source/nowmap", "./source/tmsmap", "./source/mapboxmap", "./source/googlemap", "./source/histmap_tin", "whatwg-fetch", "../parts/osm.jpg", "../parts/gsi.jpg", "../parts/gsi_ortho.jpg"], factory);
     }
 })(function (require, exports) {
     "use strict";
@@ -54,6 +54,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     var nowmap_1 = require("./source/nowmap");
     var tmsmap_1 = require("./source/tmsmap");
     var mapboxmap_1 = require("./source/mapboxmap");
+    var googlemap_1 = require("./source/googlemap");
     var histmap_tin_1 = require("./source/histmap_tin");
     require("whatwg-fetch");
     var osm_jpg_1 = __importDefault(require("../parts/osm.jpg"));
@@ -131,12 +132,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         options.label = options.label || options.year;
                         if (!(options.maptype === "base" ||
                             options.maptype === "overlay" ||
+                            options.maptype === "google" ||
                             options.maptype === "mapbox")) return [3, 4];
                         targetSrc = options.maptype === "base"
                             ? nowmap_1.NowMap
                             : options.maptype === "overlay"
                                 ? tmsmap_1.TmsMap
-                                : mapboxmap_1.MapboxMap;
+                                : options.maptype === "google"
+                                    ? googlemap_1.GoogleMap
+                                    : mapboxmap_1.MapboxMap;
                         if (targetSrc instanceof tmsmap_1.TmsMap) {
                             if (!options.homePosition)
                                 options.homePosition = options.homePos;
@@ -215,12 +219,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                                                     options.maptype = "maplat";
                                                 if (!(options.maptype === "base" ||
                                                     options.maptype === "overlay" ||
+                                                    options.maptype === "google" ||
                                                     options.maptype === "mapbox")) return [3, 11];
                                                 targetSrc = options.maptype === "base"
                                                     ? nowmap_1.NowMap
                                                     : options.maptype === "overlay"
                                                         ? tmsmap_1.TmsMap
-                                                        : mapboxmap_1.MapboxMap;
+                                                        : options.maptype === "google"
+                                                            ? googlemap_1.GoogleMap
+                                                            : mapboxmap_1.MapboxMap;
                                                 if (targetSrc instanceof tmsmap_1.TmsMap) {
                                                     if (!options.homePosition)
                                                         options.homePosition = options.homePos;

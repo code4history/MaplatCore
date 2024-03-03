@@ -7,6 +7,7 @@ import { HistMap } from "./source/histmap";
 import { NowMap } from "./source/nowmap";
 import { ViewpointArray } from "./source/mixin";
 import { Coordinate } from "ol/coordinate";
+import { GoogleMap } from "./source/googlemap";
 interface AppData {
     sources: string[];
     lang?: string;
@@ -44,6 +45,8 @@ interface Restore {
     hideMarker?: number;
     hideLayer?: string;
 }
+export declare type MaplatSource = HistMap | NowMap | GoogleMap;
+export declare type BackmapSource = NowMap | GoogleMap;
 export declare class MaplatApp extends EventTarget {
     appid: string;
     translateUI: boolean;
@@ -64,14 +67,14 @@ export declare class MaplatApp extends EventTarget {
     appData?: AppData;
     appLang: string;
     backMap?: MaplatMap;
-    mercSrc?: NowMap;
+    mercSrc?: BackmapSource;
     mercBuffer: any;
     timer: any;
     appName: any;
     cacheHash: any;
     currentPosition: any;
     startFrom?: string | undefined;
-    from?: NowMap | HistMap;
+    from?: MaplatSource;
     vectors: any;
     mapDivDocument: HTMLElement | null;
     mapObject: any;
@@ -87,13 +90,13 @@ export declare class MaplatApp extends EventTarget {
     __selectedMarker: any;
     __init: boolean;
     __redrawMarkerBlock: boolean;
-    __redrawMarkerThrottle: (NowMap | HistMap)[];
+    __redrawMarkerThrottle: MaplatSource[];
     __transparency: any;
     lastClickEvent: any;
     constructor(appOption: any);
     settingLoader(setting: any): Promise<any>;
     i18nLoader(): Promise<unknown>;
-    sourcesLoader(mapReturnValue: any): Promise<unknown[]>;
+    sourcesLoader(mapReturnValue: any): Promise<any[]>;
     handleSetting(setting: any, appOption: any): Promise<void>;
     handleI18n(i18nObj: any, appOption: any): Promise<void>;
     prepareMap(appOption: any): {
@@ -105,7 +108,7 @@ export declare class MaplatApp extends EventTarget {
     };
     handlePois(pois: any, mapReturnValue: any): Promise<void>;
     handleSources(sources: any): void;
-    setInitialMap(cache: (HistMap | NowMap)[]): Promise<void>;
+    setInitialMap(cache: MaplatSource[]): Promise<void>;
     setMapClick(): void;
     setPointerEvents(): void;
     setMapOnOff(): void;
@@ -120,7 +123,7 @@ export declare class MaplatApp extends EventTarget {
     setVector(data: any): void;
     resetLine(): void;
     resetVector(): void;
-    redrawMarkers(source?: HistMap | NowMap | undefined): void;
+    redrawMarkers(source?: MaplatSource | undefined): void;
     selectMarker(id: any): void;
     unselectMarker(): void;
     getMarker(id: any): any;
@@ -147,7 +150,7 @@ export declare class MaplatApp extends EventTarget {
     setTransparency(percentage: any): void;
     getTransparency(): any;
     setViewpoint(cond: any): void;
-    goHome(useTo?: HistMap | NowMap): void;
+    goHome(useTo?: MaplatSource): void;
     resetRotation(): void;
     resetDirection(): void;
     resetCirculation(): void;

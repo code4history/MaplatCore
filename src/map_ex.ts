@@ -6,6 +6,7 @@ import { Vector as sourceVector } from "ol/source";
 import { Circle, LineString, Point, Polygon } from "ol/geom";
 import { Fill, Icon, Stroke, Style } from "ol/style";
 import { MapboxMap } from "./source/mapboxmap";
+//import { GoogleMap } from "./source/googlemap";
 import { NowMap } from "./source/nowmap";
 import { getDistance, randomFromCenter } from "./math_ex";
 import { MapboxLayer } from "./layer_mapbox";

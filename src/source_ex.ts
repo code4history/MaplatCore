@@ -3,6 +3,7 @@ import Weiwudi from "weiwudi";
 import { NowMap } from "./source/nowmap";
 import { TmsMap } from "./source/tmsmap";
 import { MapboxMap } from "./source/mapboxmap";
+import { GoogleMap } from "./source/googlemap";
 import { HistMap_tin } from "./source/histmap_tin";
 import "whatwg-fetch";
 
@@ -80,6 +81,7 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
   if (
     options.maptype === "base" ||
     options.maptype === "overlay" ||
+    options.maptype === "google" ||
     options.maptype === "mapbox"
   ) {
     const targetSrc =
@@ -87,6 +89,8 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
         ? NowMap
         : options.maptype === "overlay"
         ? TmsMap
+        : options.maptype === "google"
+        ? GoogleMap
         : MapboxMap;
     if (targetSrc instanceof TmsMap) {
       if (!options.homePosition) options.homePosition = options.homePos;
@@ -149,6 +153,7 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
           if (
             options.maptype === "base" ||
             options.maptype === "overlay" ||
+            options.maptype === "google" ||
             options.maptype === "mapbox"
           ) {
             const targetSrc =
@@ -156,6 +161,8 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
                 ? NowMap
                 : options.maptype === "overlay"
                 ? TmsMap
+                : options.maptype === "google"
+                ? GoogleMap
                 : MapboxMap;
             if (targetSrc instanceof TmsMap) {
               if (!options.homePosition) options.homePosition = options.homePos;
