@@ -58,7 +58,7 @@
     "@turf/line-intersect": "^6.5.0",
     "@turf/turf": "^6.5.0",
     "argv": "^0.0.2",
-    "caniuse-lite": "^1.0.30001431",
+    "caniuse-lite": "^1.0.30001591",
     "i18next": "^21.8.4",
     "i18next-xhr-backend": "^3.2.2",
     "lodash.template": "^4.5.0",
