@@ -16,30 +16,29 @@ import bluedot from "../parts/bluedot.png";                         // @ts-ignor
 import bluedot_transparent from "../parts/bluedot_transparent.png"; // @ts-ignore
 import bluedot_small from "../parts/bluedot_small.png";             // @ts-ignore
 import defaultpin from "../parts/defaultpin.png";
-import IconAnchorUnits from "ol/style/IconAnchorUnits";
 import { HistMap } from "./source/histmap";
 
 const gpsStyle = new Style({
   image: new Icon({
     anchor: [0.5, 0.5],
-    anchorXUnits: IconAnchorUnits.FRACTION,
-    anchorYUnits: IconAnchorUnits.FRACTION,
+    anchorXUnits: 'fraction',
+    anchorYUnits: 'fraction',
     src: bluedot
   })
 });
 const gpsHideStyle = new Style({
   image: new Icon({
     anchor: [0.5, 0.5],
-    anchorXUnits: IconAnchorUnits.FRACTION,
-    anchorYUnits: IconAnchorUnits.FRACTION,
+    anchorXUnits: 'fraction',
+    anchorYUnits: 'fraction',
     src: bluedot_transparent
   })
 });
 const gpsSubStyle = new Style({
   image: new Icon({
     anchor: [0.5, 0.5],
-    anchorXUnits: IconAnchorUnits.FRACTION,
-    anchorYUnits: IconAnchorUnits.FRACTION,
+    anchorXUnits: 'fraction',
+    anchorYUnits: 'fraction',
     src: bluedot_small
   })
 });
@@ -55,8 +54,8 @@ const accCircleStyle = new Style({
 const markerDefaultStyle = new Style({
   image: new Icon({
     anchor: [0.5, 1.0],
-    anchorXUnits: IconAnchorUnits.FRACTION,
-    anchorYUnits: IconAnchorUnits.FRACTION,
+    anchorXUnits: 'fraction',
+    anchorYUnits: 'fraction',
     src: defaultpin
   })
 });
@@ -238,8 +237,8 @@ export class MaplatMap extends Map {
       markerStyle = new Style({
         image: new Icon({
           anchor: [0.5, 1.0],
-          anchorXUnits: IconAnchorUnits.FRACTION,
-          anchorYUnits: IconAnchorUnits.FRACTION,
+          anchorXUnits: 'fraction',
+          anchorYUnits: 'fraction',
           src: markerStyle
         })
       });

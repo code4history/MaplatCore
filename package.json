@@ -62,7 +62,7 @@
     "i18next": "^21.8.4",
     "i18next-xhr-backend": "^3.2.2",
     "lodash.template": "^4.5.0",
-    "ol": "^6.14.1",
+    "ol": "^9.0.0",
     "weiwudi": "^0.1.4",
     "whatwg-fetch": "^3.6.2"
   },
