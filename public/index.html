@@ -9,10 +9,7 @@
       content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no"
     />
     <link rel="icon" type="image/png" href="parts/favicon.png" />
-    <link
-      href="https://api.tiles.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.css"
-      rel="stylesheet"
-    />
+    <link href="https://api.tiles.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet" />
     <style>
       .mainview {
         position: absolute;
@@ -54,12 +51,13 @@
       <button id="gsi">地理院</button>
       <button id="mapbox">Mapbox</button>
       <button id="google">Google</button>
+      <button id="google_sat">Google 衛星</button>
       <button id="go_home">ホームへ</button>
       <button id="reset_rotation">回転オフ</button>
       <button id="reset_direction">北を上に</button>
       <button id="reset_circulation">北を上に（northUp）</button>
     </div>
-    <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.js"></script>
+    <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
   </body>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -250,6 +248,9 @@
         });
         document.getElementById("google").addEventListener("click", function (e) {
           app.changeMap("google");
+        });
+        document.getElementById("google_sat").addEventListener("click", function (e) {
+          app.changeMap("google_sat");
         });
         document.getElementById("go_home").addEventListener("click", function (e) {
           app.goHome();

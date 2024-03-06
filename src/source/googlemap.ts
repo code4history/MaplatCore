@@ -12,6 +12,8 @@ import { Size } from "ol/size";
 
 export class GoogleMap extends setCustomFunction(Google) {
   constructor(options: any = {}) {
+    options.mapType = options.googleMapType || "roadmap";
+    options.layerTypes = options.googleLayerTypes || [];
     super(options);
 
     if (options.mapID) {

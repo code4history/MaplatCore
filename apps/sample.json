@@ -40,6 +40,10 @@
         {
             "mapID" : "google",
             "label" : "Google"
+        },
+        {
+            "mapID": "google_sat",
+            "label": "Google Satellite"
         }
     ], 
     "pois" : "morioka_all_poi.json"
