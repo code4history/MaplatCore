@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset="UTF-8"/><title>Maplat</title><meta content="yes" name="apple-mobile-web-app-capable"/><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"/><link rel="icon" type="image/png" href="parts/favicon.png"/><link href="https://api.tiles.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.css" rel="stylesheet"/><style>.mainview {
+<!doctype html><html><head><meta charset="UTF-8"/><title>Maplat</title><meta content="yes" name="apple-mobile-web-app-capable"/><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"/><link rel="icon" type="image/png" href="parts/favicon.png"/><link href="https://api.tiles.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet"/><style>.mainview {
         position: absolute;
         top: 5%;
         bottom: 5%;
@@ -11,7 +11,7 @@
         bottom: 0%;
         left: 5%;
         right: 5%;
-      }</style><script defer="defer" src="./assets/maplat_core.js"></script><link href="./assets/maplat_core.css" rel="stylesheet"></head><body><div class="mainview"><div id="map_div"><span class="ol-control"></span></div></div><div class="button"><button id="show">showLayer(Main)</button> <button id="hide">hideLayer(Main)</button> <button id="clear">clearMarker(Main)</button> <button id="move">moveMarker(Main)</button> <button id="remove">removeMarker(Main)</button> <button id="add2">addMarker(Main2)</button> <button id="clear2">clearMarker(Main2)</button> <button id="addMap">addMarker(Map)</button> <button id="clearMap">clearMarker(Map)</button> <button id="unSelect">unSelect</button> <button id="showAll">showAll</button> <button id="hideAll">hideAll</button> <button id="morioka">盛岡城</button> <button id="maplat">盛岡(Maplat)</button> <button id="tms">盛岡(TMS)</button> <button id="osm">OSM</button> <button id="gsi">地理院</button> <button id="mapbox">Mapbox</button> <button id="google">Google</button> <button id="go_home">ホームへ</button> <button id="reset_rotation">回転オフ</button> <button id="reset_direction">北を上に</button> <button id="reset_circulation">北を上に（northUp）</button></div><script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.js"></script></body><script>document.addEventListener('DOMContentLoaded', () => {
+      }</style><script defer="defer" src="./assets/maplat_core.js"></script><link href="./assets/maplat_core.css" rel="stylesheet"></head><body><div class="mainview"><div id="map_div"><span class="ol-control"></span></div></div><div class="button"><button id="show">showLayer(Main)</button> <button id="hide">hideLayer(Main)</button> <button id="clear">clearMarker(Main)</button> <button id="move">moveMarker(Main)</button> <button id="remove">removeMarker(Main)</button> <button id="add2">addMarker(Main2)</button> <button id="clear2">clearMarker(Main2)</button> <button id="addMap">addMarker(Map)</button> <button id="clearMap">clearMarker(Map)</button> <button id="unSelect">unSelect</button> <button id="showAll">showAll</button> <button id="hideAll">hideAll</button> <button id="morioka">盛岡城</button> <button id="maplat">盛岡(Maplat)</button> <button id="tms">盛岡(TMS)</button> <button id="osm">OSM</button> <button id="gsi">地理院</button> <button id="mapbox">Mapbox</button> <button id="google">Google</button> <button id="google_sat">Google 衛星</button> <button id="go_home">ホームへ</button> <button id="reset_rotation">回転オフ</button> <button id="reset_direction">北を上に</button> <button id="reset_circulation">北を上に（northUp）</button></div><script src="https://api.tiles.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script></body><script>document.addEventListener('DOMContentLoaded', () => {
       var option = {
         mapboxgl: mapboxgl,
         mapboxToken: 'YOUR-ACCESS-TOKEN',
@@ -199,6 +199,9 @@
         });
         document.getElementById("google").addEventListener("click", function (e) {
           app.changeMap("google");
+        });
+        document.getElementById("google_sat").addEventListener("click", function (e) {
+          app.changeMap("google_sat");
         });
         document.getElementById("go_home").addEventListener("click", function (e) {
           app.goHome();

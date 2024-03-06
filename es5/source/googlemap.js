@@ -68,7 +68,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         __extends(GoogleMap, _super);
         function GoogleMap(options) {
             if (options === void 0) { options = {}; }
-            var _this = _super.call(this, options) || this;
+            var _this = this;
+            options.mapType = options.googleMapType || "roadmap";
+            options.layerTypes = options.googleLayerTypes || [];
+            _this = _super.call(this, options) || this;
             if (options.mapID) {
                 _this.mapID = options.mapID;
             }
