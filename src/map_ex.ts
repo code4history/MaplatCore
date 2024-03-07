@@ -9,7 +9,9 @@ import { MapboxMap } from "./source/mapboxmap";
 import { GoogleMap } from "./source/googlemap";
 import { NowMap } from "./source/nowmap";
 import { getDistance, randomFromCenter } from "./math_ex";
-import { MapboxLayer } from "./layer_mapbox";
+//import { MapboxLayer } from "./layer_mapbox";
+import MapboxLayer from 'ol/layer/VectorTile';
+import {applyStyle} from 'ol-mapbox-style';
 import { normalizeArg } from "./functions";
 
 // @ts-ignore
