@@ -65,7 +65,6 @@
     "lodash.template": "^4.5.0",
     "mapbox-gl": "^1.8.1",
     "ol": "^9.0.0",
-    "ol-mapbox-style": "^12.2.1",
     "weiwudi": "^0.1.4",
     "whatwg-fetch": "^3.6.2"
   },
