@@ -244,7 +244,7 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
 
 export async function registerMapToSW(options: any) {
   const setting: any = {};
-  if (options.maptype === "mapbox" || !options.enableCache) return;
+  if (options.maptype === "mapbox" || options.maptype === "google" || !options.enableCache) return;
   else if (options.maptype === "base" || options.maptype === "overlay")
     setting.type = "wmts";
   else setting.type = "xyz";

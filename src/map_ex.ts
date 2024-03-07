@@ -6,7 +6,7 @@ import { Vector as sourceVector } from "ol/source";
 import { Circle, LineString, Point, Polygon } from "ol/geom";
 import { Fill, Icon, Stroke, Style } from "ol/style";
 import { MapboxMap } from "./source/mapboxmap";
-//import { GoogleMap } from "./source/googlemap";
+import { GoogleMap } from "./source/googlemap";
 import { NowMap } from "./source/nowmap";
 import { getDistance, randomFromCenter } from "./math_ex";
 import { MapboxLayer } from "./layer_mapbox";
@@ -336,7 +336,7 @@ export class MaplatMap extends Map {
   setTransparency(percentage: any) {
     const opacity = (100 - percentage) / 100;
     const source = this.getSource();
-    if (source instanceof NowMap) {
+    if (source instanceof NowMap || source instanceof GoogleMap) {
       this.getLayers().item(0).setOpacity(1);
       this.getLayers().item(1).setOpacity(opacity);
     } else {
@@ -398,7 +398,7 @@ export class MaplatMap extends Map {
             const acc = randomFromCenter(15.0, 10);
             gpsVal = { lnglat, acc };
           }
-          (source as NowMap | HistMap)
+          (source as NowMap | HistMap | GoogleMap)
             .setGPSMarkerAsync(gpsVal, !this._first_gps_request)
             .then((result: any) => {
               if (!result) {
