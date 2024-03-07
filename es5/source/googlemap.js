@@ -69,9 +69,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         function GoogleMap(options) {
             if (options === void 0) { options = {}; }
             var _this = this;
-            options.mapType = options.googleMapType || "roadmap";
-            options.layerTypes = options.googleLayerTypes || [];
-            _this = _super.call(this, options) || this;
+            var parentOptions = Object.assign({}, options);
+            parentOptions.mapType = options.maptype.match(/^google_(.+)$/) ? RegExp.$1 : "roadmap";
+            parentOptions.layerTypes = (options.layers || []).map(function (layer) { return "layer".concat(layer.charAt(0).toUpperCase()).concat(layer.slice(1).toLowerCase()); });
+            _this = _super.call(this, parentOptions) || this;
             if (options.mapID) {
                 _this.mapID = options.mapID;
             }

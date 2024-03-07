@@ -9,7 +9,7 @@
       content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no"
     />
     <link rel="icon" type="image/png" href="parts/favicon.png" />
-    <link href="https://api.tiles.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet" />
+    <link href="https://api.tiles.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.css" rel="stylesheet" />
     <style>
       .mainview {
         position: absolute;
@@ -57,13 +57,14 @@
       <button id="reset_direction">北を上に</button>
       <button id="reset_circulation">北を上に（northUp）</button>
     </div>
-    <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
+    <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js"></script>
   </body>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       var option = {
         mapboxgl: mapboxgl,
         mapboxToken: 'pk.eyJ1Ijoia29jaGl6dWZhbiIsImEiOiJjbHRnaWhzOW8wd2p4MmtvZDFsOWJiOG40In0.FYTPboTqXKv5a_onOaW1vQ',
+        googleApiKey: 'AIzaSyB0v_F9EVPbE7R2uOm6Mixrtzts21DEICc',
         northUp: true,
         tapDuration: 60000,
         homeMarginPixels: 100,
@@ -81,9 +82,6 @@
       // new MaplatApp(option).waitReady.then(function (app) {
       Maplat.createObject(option).then(function (app) {
         console.log("####Message appReady");
-        console.log(app);
-        console.log(app.currentMapInfo());
-        console.log(app.mapInfo("gsi"));
         var moveFlag = false;
         app.addEventListener("clickMarker", function (evt) {
           app.selectMarker(evt.detail.namespaceID);

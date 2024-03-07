@@ -58,7 +58,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "i18next", "i18next-xhr-backend", "./customevent", "./browserlanguage", "./logger", "./functions", "ol/events/Target", "ol/proj", "./map_ex", "ol/interaction", "ol/events/condition", "./source/histmap", "./source/nowmap", "./source/tmsmap", "./source/mapboxmap", "./source_ex", "./source/mixin", "./math_ex", "./freeze_locales", "./normalize_pois", "./template_works", "../parts/redcircle.png", "../parts/defaultpin_selected.png", "../parts/defaultpin.png", "./source/googlemap"], factory);
+        define(["require", "exports", "i18next", "i18next-xhr-backend", "./customevent", "./browserlanguage", "./logger", "./functions", "ol/events/Target", "ol/proj", "./map_ex", "ol/interaction", "ol/events/condition", "./source/histmap", "./source/tmsmap", "./source_ex", "./source/mixin", "./math_ex", "./freeze_locales", "./normalize_pois", "./template_works", "mapbox-gl", "../parts/redcircle.png", "../parts/defaultpin_selected.png", "../parts/defaultpin.png"], factory);
     }
 })(function (require, exports) {
     "use strict";
@@ -78,19 +78,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     var interaction_1 = require("ol/interaction");
     var condition_1 = require("ol/events/condition");
     var histmap_1 = require("./source/histmap");
-    var nowmap_1 = require("./source/nowmap");
     var tmsmap_1 = require("./source/tmsmap");
-    var mapboxmap_1 = require("./source/mapboxmap");
-    var source_ex_1 = require("./source_ex");
+    var source_ex_1 = __importDefault(require("./source_ex"));
     var mixin_1 = require("./source/mixin");
     var math_ex_1 = require("./math_ex");
     var freeze_locales_1 = __importDefault(require("./freeze_locales"));
     var normalize_pois_1 = require("./normalize_pois");
     var template_works_1 = require("./template_works");
+    var mapbox_gl_1 = __importDefault(require("mapbox-gl"));
     var redcircle_png_1 = __importDefault(require("../parts/redcircle.png"));
     var defaultpin_selected_png_1 = __importDefault(require("../parts/defaultpin_selected.png"));
     var defaultpin_png_1 = __importDefault(require("../parts/defaultpin.png"));
-    var googlemap_1 = require("./source/googlemap");
     var MaplatApp = (function (_super) {
         __extends(MaplatApp, _super);
         function MaplatApp(appOption) {
@@ -112,11 +110,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             _this.__redrawMarkerThrottle = [];
             appOption = (0, functions_1.normalizeArg)(appOption);
             _this.appid = appOption.appid || "sample";
-            if (appOption.mapboxgl) {
-                _this.mapboxgl = appOption.mapboxgl;
-                if (appOption.mapboxToken) {
-                    _this.mapboxgl.accessToken = appOption.mapboxToken;
-                }
+            if (appOption.mapboxToken) {
+                mapbox_gl_1.default.accessToken = appOption.mapboxToken;
+            }
+            if (appOption.googleApiKey) {
+                _this.googleApiKey = appOption.googleApiKey;
             }
             _this.mapDiv = appOption.div || "map_div";
             _this.mapDivDocument = document.querySelector("#".concat(_this.mapDiv));
@@ -239,11 +237,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         mercMinZoom: mapReturnValue.mercMinZoom,
                         mercMaxZoom: mapReturnValue.mercMaxZoom,
                         enableCache: this.enableCache,
+                        key: this.googleApiKey,
                         translator: function (fragment) { return _this.translate(fragment); }
                     };
+                    console.log(commonOption);
                     for (i = 0; i < dataSource.length; i++) {
                         option = dataSource[i];
-                        sourcePromise.push((0, source_ex_1.mapSourceFactory)(option, commonOption));
+                        sourcePromise.push(source_ex_1.default.mapSourceFactory(option, commonOption));
                     }
                     return [2, Promise.all(sourcePromise)];
                 });
@@ -320,14 +320,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                     div: backDiv
                 });
             }
-            if (this.mapboxgl) {
-                var mapboxgl = this.mapboxgl;
-                delete this.mapboxgl;
+            if (mapbox_gl_1.default) {
                 var mapboxDiv = "".concat(this.mapDiv, "_mapbox");
                 newElem = (0, functions_1.createElement)("<div id=\"".concat(mapboxDiv, "\" class=\"map\" style=\"top:0; left:0; right:0; bottom:0; ") +
                     "position:absolute;visibility:hidden;\"></div>")[0];
                 this.mapDivDocument.insertBefore(newElem, this.mapDivDocument.firstChild);
-                this.mapboxMap = new mapboxgl.Map({
+                this.mapboxMap = new mapbox_gl_1.default.Map({
                     attributionControl: false,
                     boxZoom: false,
                     container: mapboxDiv,
@@ -359,7 +357,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             this.mercSrc = sources.reduce(function (prev, curr) {
                 if (prev)
                     return prev;
-                if ((curr instanceof nowmap_1.NowMap && !(curr instanceof tmsmap_1.TmsMap)) || curr instanceof googlemap_1.GoogleMap)
+                if (source_ex_1.default.checkIsBaseMap(curr))
                     return curr;
             }, null);
             var cache = [];
@@ -367,7 +365,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             for (var i = 0; i < sources.length; i++) {
                 var source = sources[i];
                 source.setMap(this.mapObject);
-                if (source instanceof mapboxmap_1.MapboxMap) {
+                if (source_ex_1.default.checkIsMapbox(source)) {
                     if (!this.mapboxMap) {
                         throw "To use mapbox gl based base map, you have to make Maplat object with specifying 'mapboxgl' option.";
                     }
@@ -1127,7 +1125,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                             : undefined;
                         if (_this.backMap) {
                             backSrc = _this.backMap.getSource();
-                            if (!(to instanceof nowmap_1.NowMap || to instanceof googlemap_1.GoogleMap)) {
+                            if (!source_ex_1.default.checkIsWMTSMap(to)) {
                                 if (backRestore) {
                                     backTo = backRestore;
                                     _this.backMap.exchangeSource(backTo);
@@ -1135,7 +1133,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                                 else {
                                     if (!backSrc) {
                                         backTo = now;
-                                        if (_this.from instanceof nowmap_1.NowMap || _this.from instanceof googlemap_1.GoogleMap) {
+                                        if (source_ex_1.default.checkIsWMTSMap(_this.from)) {
                                             backTo =
                                                 _this.from instanceof tmsmap_1.TmsMap
                                                     ? _this.mapObject.getSource()
@@ -1159,7 +1157,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                             if (backRestore) {
                                 _this.mapObject.exchangeSource(backRestore);
                             }
-                            else if (!(_this.from instanceof nowmap_1.NowMap || _this.from instanceof googlemap_1.GoogleMap)) {
+                            else if (!source_ex_1.default.checkIsWMTSMap(_this.from)) {
                                 var backToLocal = backSrc || now;
                                 _this.mapObject.exchangeSource(backToLocal);
                             }
@@ -1174,7 +1172,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         var updateState = {
                             mapID: to.mapID
                         };
-                        if ((to instanceof nowmap_1.NowMap && !(to instanceof tmsmap_1.TmsMap)) || to instanceof googlemap_1.GoogleMap) {
+                        if (source_ex_1.default.checkIsBaseMap(to)) {
                             updateState.backgroundID = "____delete____";
                         }
                         _this.requestUpdateState(updateState);

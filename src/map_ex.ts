@@ -8,6 +8,7 @@ import { Fill, Icon, Stroke, Style } from "ol/style";
 import { MapboxMap } from "./source/mapboxmap";
 import { GoogleMap } from "./source/googlemap";
 import { NowMap } from "./source/nowmap";
+import { HistMap } from "./source/histmap";
 import { getDistance, randomFromCenter } from "./math_ex";
 import { MapboxLayer } from "./layer_mapbox";
 import { normalizeArg } from "./functions";
@@ -17,7 +18,6 @@ import bluedot from "../parts/bluedot.png";                         // @ts-ignor
 import bluedot_transparent from "../parts/bluedot_transparent.png"; // @ts-ignore
 import bluedot_small from "../parts/bluedot_small.png";             // @ts-ignore
 import defaultpin from "../parts/defaultpin.png";
-import { HistMap } from "./source/histmap";
 
 const gpsStyle = new Style({
   image: new Icon({

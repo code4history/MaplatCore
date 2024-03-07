@@ -22,7 +22,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "ol", "./view_ex", "ol/layer", "ol/source", "ol/geom", "ol/style", "./source/mapboxmap", "./source/nowmap", "./math_ex", "./layer_mapbox", "./functions", "../parts/bluedot.png", "../parts/bluedot_transparent.png", "../parts/bluedot_small.png", "../parts/defaultpin.png"], factory);
+        define(["require", "exports", "ol", "./view_ex", "ol/layer", "ol/source", "ol/geom", "ol/style", "./source/mapboxmap", "./source/googlemap", "./source/nowmap", "./math_ex", "./layer_mapbox", "./functions", "../parts/bluedot.png", "../parts/bluedot_transparent.png", "../parts/bluedot_small.png", "../parts/defaultpin.png"], factory);
     }
 })(function (require, exports) {
     "use strict";
@@ -35,6 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     var geom_1 = require("ol/geom");
     var style_1 = require("ol/style");
     var mapboxmap_1 = require("./source/mapboxmap");
+    var googlemap_1 = require("./source/googlemap");
     var nowmap_1 = require("./source/nowmap");
     var math_ex_1 = require("./math_ex");
     var layer_mapbox_1 = require("./layer_mapbox");
@@ -354,7 +355,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         MaplatMap.prototype.setTransparency = function (percentage) {
             var opacity = (100 - percentage) / 100;
             var source = this.getSource();
-            if (source instanceof nowmap_1.NowMap) {
+            if (source instanceof nowmap_1.NowMap || source instanceof googlemap_1.GoogleMap) {
                 this.getLayers().item(0).setOpacity(1);
                 this.getLayers().item(1).setOpacity(opacity);
             }

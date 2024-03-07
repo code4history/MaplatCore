@@ -3,11 +3,9 @@ import { Logger } from "./logger";
 import { createElement } from "./functions";
 import EventTarget from "ol/events/Target";
 import { MaplatMap } from "./map_ex";
-import { HistMap } from "./source/histmap";
-import { NowMap } from "./source/nowmap";
+import { BackmapSource, MaplatSource } from "./source_ex";
 import { ViewpointArray } from "./source/mixin";
 import { Coordinate } from "ol/coordinate";
-import { GoogleMap } from "./source/googlemap";
 interface AppData {
     sources: string[];
     lang?: string;
@@ -45,14 +43,11 @@ interface Restore {
     hideMarker?: number;
     hideLayer?: string;
 }
-export declare type MaplatSource = HistMap | NowMap | GoogleMap;
-export declare type BackmapSource = NowMap | GoogleMap;
 export declare class MaplatApp extends EventTarget {
     appid: string;
     translateUI: boolean;
     noRotate: boolean;
     initialRestore: Restore;
-    mapboxgl: any;
     mapDiv: string;
     restoreSession: boolean;
     enableCache: false;
@@ -79,6 +74,7 @@ export declare class MaplatApp extends EventTarget {
     mapDivDocument: HTMLElement | null;
     mapObject: any;
     mapboxMap: any;
+    googleApiKey?: string;
     pois: any;
     poiTemplate?: string;
     poiStyle?: string;

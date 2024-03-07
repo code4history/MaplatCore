@@ -1,8 +1,6 @@
 {
-  "key": "AIzaSyB0v_F9EVPbE7R2uOm6Mixrtzts21DEICc",
-  "maptype": "google",
-  "googleMapType": "satellite",
-  "googleLayerTypes": ["layerRoadmap"],
+  "maptype": "google_satellite",
+  "layers": ["roadmap"],
   "title": {
     "ja": "Google 衛星",
     "en": "Google Sat"

@@ -4,8 +4,12 @@ import { NowMap } from "./source/nowmap";
 import { TmsMap } from "./source/tmsmap";
 import { MapboxMap } from "./source/mapboxmap";
 import { GoogleMap } from "./source/googlemap";
+import { HistMap } from "./source/histmap";
 import { HistMap_tin } from "./source/histmap_tin";
 import "whatwg-fetch";
+
+export type MaplatSource = HistMap | NowMap | GoogleMap;
+export type BackmapSource = NowMap | GoogleMap;
 
 import osm from "../parts/osm.jpg";
 import gsi from "../parts/gsi.jpg";
@@ -71,6 +75,8 @@ const baseDict = {
   }
 };
 
+const checkMapTypeIsWMTS = (maptype?: string) => (maptype || '').match(/^(?:base|overlay|google(?:_(?:roadmap|satellite|hybrid|terrain))?|mapbox)$/);
+
 export async function mapSourceFactory(options: any, commonOptions: any) {
   if (typeof options === "string") {
     options = (baseDict as any)[options];
@@ -78,20 +84,15 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
 
   options = normalizeArg(Object.assign(options, commonOptions));
   options.label = options.label || options.year;
-  if (
-    options.maptype === "base" ||
-    options.maptype === "overlay" ||
-    options.maptype === "google" ||
-    options.maptype === "mapbox"
-  ) {
+  if (checkMapTypeIsWMTS(options.maptype)) {
     const targetSrc =
       options.maptype === "base"
         ? NowMap
         : options.maptype === "overlay"
         ? TmsMap
-        : options.maptype === "google"
-        ? GoogleMap
-        : MapboxMap;
+        : options.maptype === "mapbox"
+        ? MapboxMap
+        : GoogleMap;
     if (targetSrc instanceof TmsMap) {
       if (!options.homePosition) options.homePosition = options.homePos;
       if (!options.mercZoom) options.mercZoom = options.defZoom;
@@ -150,20 +151,15 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
           }
           if (!options.maptype) options.maptype = "maplat";
 
-          if (
-            options.maptype === "base" ||
-            options.maptype === "overlay" ||
-            options.maptype === "google" ||
-            options.maptype === "mapbox"
-          ) {
+          if (checkMapTypeIsWMTS(options.maptype)) {
             const targetSrc =
               options.maptype === "base"
                 ? NowMap
                 : options.maptype === "overlay"
                 ? TmsMap
-                : options.maptype === "google"
-                ? GoogleMap
-                : MapboxMap;
+                : options.maptype === "mapbox"
+                ? MapboxMap
+                : GoogleMap;
             if (targetSrc instanceof TmsMap) {
               if (!options.homePosition) options.homePosition = options.homePos;
               if (!options.mercZoom) options.mercZoom = options.defZoom;
@@ -277,3 +273,20 @@ export async function registerMapToSW(options: any) {
   }
   return ret;
 }
+
+const checkIsBaseMap = (source: MaplatSource) => 
+  (source instanceof NowMap && !(source instanceof TmsMap)) || source instanceof GoogleMap;
+
+const checkIsMapbox = (source: MaplatSource) => 
+  source instanceof MapboxMap;
+
+const checkIsWMTSMap = (source: MaplatSource) => 
+  source instanceof NowMap || source instanceof GoogleMap;
+
+export default {
+  mapSourceFactory,
+  registerMapToSW,
+  checkIsBaseMap,
+  checkIsMapbox,
+  checkIsWMTSMap
+};

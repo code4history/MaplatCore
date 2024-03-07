@@ -12,9 +12,10 @@ import { Size } from "ol/size";
 
 export class GoogleMap extends setCustomFunction(Google) {
   constructor(options: any = {}) {
-    options.mapType = options.googleMapType || "roadmap";
-    options.layerTypes = options.googleLayerTypes || [];
-    super(options);
+    const parentOptions = Object.assign({}, options);
+    parentOptions.mapType = options.maptype.match(/^google_(.+)$/) ? RegExp.$1 : "roadmap";
+    parentOptions.layerTypes = (options.layers || []).map((layer: string) => `layer${layer.charAt(0).toUpperCase()}${layer.slice(1).toLowerCase()}`);
+    super(parentOptions);
 
     if (options.mapID) {
       this.mapID = options.mapID;
