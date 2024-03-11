@@ -1,6 +1,7 @@
 import Weiwudi from "weiwudi";
 import { MaplatMap } from "../map_ex";
 import { Coordinate } from "ol/coordinate";
+import { Size } from "ol/size";
 import { transform } from "ol/proj";
 import { canvBase, MERC_CROSSMATRIX, MERC_MAX } from "../const_ex";
 import {
@@ -12,12 +13,11 @@ import {
 import { normalizeArg } from "../functions";
 import { polygon } from "@turf/helpers";
 import centroid from "@turf/centroid";
-import { Feature, Polygon } from "@turf/turf";
-import { Size } from "ol/size";
+import { booleanPointInPolygon, Feature, lineIntersect, lineString, Polygon } from "@turf/turf";
 import { View as mlView } from "../view_ex";
+import { Source } from "ol/source";
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-type Constructor<T = {}> = new (...args: any[]) => T;
+type SourceConstructor = new (...args: any[]) => Source;
 type ViewpointObject = {
   x?: number;
   y?: number;
@@ -34,7 +34,7 @@ export type CrossCoordinatesArray = [
   Size? // size
 ];
 
-export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
+export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) {
   abstract class Mixin extends Base {
     weiwudi?: Weiwudi;
     _map?: MaplatMap;
@@ -51,6 +51,8 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
     envelope?: Feature<Polygon>;
     centroid?: number[];
     homeMarginPixels = 0;
+    isBasemap = false;
+    isWmts = true;
 
     abstract insideCheckSysCoord(sysCoord: Coordinate): boolean;
 
@@ -536,6 +538,165 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
     }
   }
 
+  return Mixin;
+}
+
+export function setCustomFunctionBase<TBase extends SourceConstructor>(Base: TBase) {
+  abstract class Mixin extends setCustomFunction(Base) {
+
+    /*constructor(options: any = {}) {
+      super(options);
+      //setCustomInitialize(this, options);
+      //setupTileLoadFunction(this);
+    }*/
+
+    insideCheckXy(xy: Coordinate) {
+      if (!this.envelope) return true;
+      return booleanPointInPolygon(xy, this.envelope);
+    }
+
+    insideCheckSysCoord(histCoords: Coordinate) {
+      return this.insideCheckXy(histCoords);
+    }
+
+    modulateXyInside(xy: any) {
+      if (!this.centroid) return xy;
+      const expandLine = lineString([xy, this.centroid]);
+      const intersect = lineIntersect(this.envelope as any, expandLine as any);
+      if (intersect.features.length > 0 && intersect.features[0].geometry) {
+        return intersect.features[0].geometry.coordinates;
+      } else {
+        return xy;
+      }
+    }
+
+    modulateSysCoordInside(histCoords: any) {
+      return this.modulateXyInside(histCoords);
+    }
+
+    // unifyTerm対応
+    // https://github.com/code4history/MaplatCore/issues/19
+
+    merc2XyAsync(merc: Coordinate): Promise<Coordinate> {
+      return Promise.resolve(merc);
+    }
+
+    merc2XyAsync_ignoreBackground(merc: Coordinate): Promise<Coordinate | void> {
+      return this.merc2XyAsync(merc);
+    }
+
+    xy2MercAsync(xy: Coordinate): Promise<Coordinate> {
+      return Promise.resolve(xy);
+    }
+
+    xy2SysCoord(xy: Coordinate): Coordinate {
+      return xy;
+    }
+
+    sysCoord2Xy(sysCoord: Coordinate): Coordinate {
+      return sysCoord;
+    }
+
+    viewpoint2MercsAsync(viewpoint?: ViewpointArray, size?: Size) {
+      const sysCoords = this.viewpoint2SysCoords(viewpoint, size);
+      const xys = this.sysCoords2Xys(sysCoords);
+      return this.xys2MercsAsync(xys);
+    }
+
+    mercs2ViewpointAsync(mercs: CrossCoordinatesArray): Promise<ViewpointArray> {
+      return this.mercs2XysAsync(mercs).then(xys => {
+        const sysCoords = this.xys2SysCoords(xys);
+        return this.sysCoords2Viewpoint(sysCoords);
+      });
+    }
+
+    mercs2SysCoordsAsync_multiLayer(
+      mercs: CrossCoordinatesArray
+    ): Promise<(CrossCoordinatesArray | undefined)[]> {
+      return Promise.all(
+        mercs[0].map(merc => this.merc2SysCoordAsync(merc))
+      ).then(xys => [[xys, mercs[1]]]);
+    }
+
+    defZoom(): number {
+      return this.mercZoom!;
+    }
+  }
+  return Mixin;
+}
+
+export function setCustomFunctionOverlay<TBase extends SourceConstructor>(Base: TBase) {
+  abstract class Mixin extends setCustomFunction(Base) {
+
+  }
+  return Mixin;
+}
+
+export function setCustomFunctionMaplat<TBase extends SourceConstructor>(Base: TBase) {
+  abstract class Mixin extends setCustomFunction(Base) {
+    width = 0;
+    height = 0;
+    _maxxy= 0;
+
+    insideCheckXy(xy: Coordinate) {
+      return !(
+        xy[0] < 0 ||
+        xy[0] > this.width ||
+        xy[1] < 0 ||
+        xy[1] > this.height
+      );
+    }
+
+    insideCheckSysCoord(sysCoord: Coordinate) {
+      return this.insideCheckXy(this.sysCoord2Xy(sysCoord));
+    }
+
+    modulateXyInside(xy: any) {
+      const dx = xy[0] / (this.width / 2) - 1;
+      const dy = xy[1] / (this.height / 2) - 1;
+      const da = Math.max(Math.abs(dx), Math.abs(dy));
+      return [
+        ((dx / da + 1) * this.width) / 2,
+        ((dy / da + 1) * this.height) / 2
+      ];
+    }
+
+    modulateSysCoordInside(histCoords: any) {
+      const xy = this.sysCoord2Xy(histCoords);
+      const ret = this.modulateXyInside(xy);
+      return this.xy2SysCoord(ret);
+    }
+
+    // unifyTerm対応
+    // https://github.com/code4history/MaplatCore/issues/19
+
+    xy2SysCoord(xy: Coordinate): Coordinate {
+      const sysCoordX = (xy[0] * (2 * MERC_MAX)) / this._maxxy - MERC_MAX;
+      const sysCoordY = -1 * ((xy[1] * (2 * MERC_MAX)) / this._maxxy - MERC_MAX);
+      return [sysCoordX, sysCoordY];
+    }
+
+    sysCoord2Xy(sysCoord: Coordinate): Coordinate {
+      const x = ((sysCoord[0] + MERC_MAX) * this._maxxy) / (2 * MERC_MAX);
+      const y = ((-sysCoord[1] + MERC_MAX) * this._maxxy) / (2 * MERC_MAX);
+      return [x, y];
+    }
+
+    defZoom(screenSize?: Size): number {
+      const screenWidth = screenSize![0];
+      const screenHeight = screenSize![1];
+      const delZoomOfWidth = Math.log2((screenWidth - 10) / this.width);
+      const delZoomOfHeight = Math.log2((screenHeight - 10) / this.height);
+      const maxZoom = this.maxZoom!;
+      let delZoom;
+      if (delZoomOfHeight > delZoomOfWidth) {
+        delZoom = delZoomOfHeight;
+      } else {
+        delZoom = delZoomOfWidth;
+      }
+      return maxZoom + delZoom;
+    }
+  }
   return Mixin;
 }
 
