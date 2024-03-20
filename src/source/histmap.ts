@@ -63,10 +63,10 @@ export function setCustomInitializeForHistmap(self: any, options: any) {
 
 export abstract class HistMap extends setCustomFunctionMaplat(XYZ) {
   constructor(options: any = {}) {
-    options = addCommonOptions(options);
-    options.wrapX = false;
-    options.tileUrlFunction =
-      options.tileUrlFunction ||
+    const options_ = addCommonOptions(options);
+    options_.wrapX = false;
+    options_.tileUrlFunction =
+      options_.tileUrlFunction ||
       function (this: HistMap, coord: any) {
         const z = coord[0];
         const x = coord[1];
@@ -86,8 +86,7 @@ export abstract class HistMap extends setCustomFunctionMaplat(XYZ) {
         // @ts-expect-error ts-migrate(2683)
         return this._tileUrlFunction(coord);
       };
-    console.log(options);
-    super(options);
+    super(options_);
 
     if (options.mapID) {
       this.mapID = options.mapID;

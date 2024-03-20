@@ -9,9 +9,7 @@ import {
 
 export class NowMap extends setCustomFunctionBase(XYZ) {
   constructor(options: any = {}) {
-    options = addCommonOptions(options);
-    console.log(options);
-    super(options);
+    super(addCommonOptions(options));
     if (options.mapID) {
       this.mapID = options.mapID;
     }
