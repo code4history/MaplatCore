@@ -2,12 +2,12 @@
 import { addCoordinateTransforms, addProjection, Projection } from "ol/proj";
 import { MERC_MAX, tileSize, transPng } from "../const_ex";
 import {
+  addCommonOptions,
   setCustomFunctionMaplat,
   setCustomInitialize,
   setupTileLoadFunction
 } from "./mixin";
 import { XYZ } from "ol/source";
-import { normalizeArg } from "../functions";
 import { createFromTemplates, expandUrl } from "ol/tileurlfunction";
 
 for (let z = 0; z < 9; z++) {
@@ -63,44 +63,31 @@ export function setCustomInitializeForHistmap(self: any, options: any) {
 
 export abstract class HistMap extends setCustomFunctionMaplat(XYZ) {
   constructor(options: any = {}) {
-    super(
-      (options = (() => {
-        options = normalizeArg(options);
-
-        options.wrapX = false;
-        if (!options.imageExtension) options.imageExtension = "jpg";
-        if (options.mapID && !options.url && !options.urls) {
-          options.url = `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtension}`;
+    options = addCommonOptions(options);
+    options.wrapX = false;
+    options.tileUrlFunction =
+      options.tileUrlFunction ||
+      function (this: HistMap, coord: any) {
+        const z = coord[0];
+        const x = coord[1];
+        const y = coord[2];
+        if (
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          x * tileSize * Math.pow(2, this.maxZoom - z) >= this.width ||
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          y * tileSize * Math.pow(2, this.maxZoom - z) >= this.height ||
+          x < 0 ||
+          y < 0
+        ) {
+          return transPng;
         }
-
-        const zW = Math.log2(options.width / tileSize);
-        const zH = Math.log2(options.height / tileSize);
-        options.maxZoom = Math.ceil(Math.max(zW, zH));
-
-        options.tileUrlFunction =
-          options.tileUrlFunction ||
-          function (this: HistMap, coord: any) {
-            const z = coord[0];
-            const x = coord[1];
-            const y = coord[2];
-            if (
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              x * tileSize * Math.pow(2, this.maxZoom - z) >= this.width ||
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              y * tileSize * Math.pow(2, this.maxZoom - z) >= this.height ||
-              x < 0 ||
-              y < 0
-            ) {
-              return transPng;
-            }
-            // @ts-expect-error ts-migrate(2683)
-            return this._tileUrlFunction(coord);
-          };
-        return options;
-      })() as any)
-    );
+        // @ts-expect-error ts-migrate(2683)
+        return this._tileUrlFunction(coord);
+      };
+    console.log(options);
+    super(options);
 
     if (options.mapID) {
       this.mapID = options.mapID;

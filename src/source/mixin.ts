@@ -56,6 +56,12 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
 
     abstract insideCheckSysCoord(sysCoord: Coordinate): boolean;
 
+    initialize(options: any = {}) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      if (super.initialize) super.initialize(options);
+    }
+
     getCacheEnable() {
       return !!this.weiwudi;
     }
@@ -730,6 +736,17 @@ const META_KEYS_OPTION = [
   "reference",
   "description"
 ];
+
+export function addCommonOptions(options: any) { 
+  options = normalizeArg(options);
+  if (!options.imageExtension) options.imageExtension = "jpg";
+  if (options.mapID && !options.url && !options.urls) {
+    options.url = options.tms
+      ? `tiles/${options.mapID}/{z}/{x}/{-y}.${options.imageExtension}`
+      : `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtension}`;
+  }
+  return options;
+}
 
 export function setCustomInitialize(self: any, options: any) {
   options = normalizeArg(options);
