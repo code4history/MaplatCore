@@ -77,6 +77,7 @@ export class HistMap_tin extends HistMap {
   xy2MercAsync_specifyLayer(xy: Coordinate, layerId: number) {
     const layerKey = `Illst:${this.mapID}${layerId ? `#${layerId}` : ""}`;
     return new Promise((resolve, _reject) => {
+      console.log(`xy: ${xy}`);
       resolve(transformDirect(layerKey, "EPSG:3857", xy)!);
     }) as Promise<Coordinate>;
   }

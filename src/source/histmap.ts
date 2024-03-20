@@ -103,6 +103,7 @@ export abstract class HistMap extends setCustomFunctionMaplat(XYZ) {
     this.height = options.height;
     this.maxZoom = options.maxZoom;
     this._maxxy = Math.pow(2, this.maxZoom as number) * tileSize;
+    console.log(`Constructor: ${this.maxZoom} ${this._maxxy} ${tileSize}`);
 
     setCustomInitialize(this, options);
     setupTileLoadFunction(this);

@@ -469,6 +469,7 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
         xy[0] * radius + center![0],
         xy[1] * radius + center![1]
       ]);
+      console.log(`${center}, ${size}, ${radius}, ${crossDelta}, ${cross}`);
       return [cross, size];
     }
 
@@ -683,6 +684,7 @@ export function setCustomFunctionMaplat<TBase extends SourceConstructor>(Base: T
     }
 
     sysCoord2Xy(sysCoord: Coordinate): Coordinate {
+      console.log(`${sysCoord} ${this._maxxy} ${MERC_MAX}`);
       const x = ((sysCoord[0] + MERC_MAX) * this._maxxy) / (2 * MERC_MAX);
       const y = ((-sysCoord[1] + MERC_MAX) * this._maxxy) / (2 * MERC_MAX);
       return [x, y];
