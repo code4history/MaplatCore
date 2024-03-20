@@ -1,8 +1,6 @@
 import { Google } from "ol/source";
 import {
-  setCustomFunctionBase,
-  setCustomInitialize,
-  setupTileLoadFunction
+  setCustomFunctionBase
 } from "./mixin";
 
 export class GoogleMap extends setCustomFunctionBase(Google) {
@@ -15,8 +13,7 @@ export class GoogleMap extends setCustomFunctionBase(Google) {
     if (options.mapID) {
       this.mapID = options.mapID;
     }
-    setCustomInitialize(this, options);
-    setupTileLoadFunction(this);
+    this.initialize(options);
   }
 
   static async createAsync(options: any) {

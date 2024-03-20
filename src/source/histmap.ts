@@ -3,9 +3,7 @@ import { addCoordinateTransforms, addProjection, Projection } from "ol/proj";
 import { MERC_MAX, tileSize, transPng } from "../const_ex";
 import {
   addCommonOptions,
-  setCustomFunctionMaplat,
-  setCustomInitialize,
-  setupTileLoadFunction
+  setCustomFunctionMaplat
 } from "./mixin";
 import { XYZ } from "ol/source";
 import { createFromTemplates, expandUrl } from "ol/tileurlfunction";
@@ -63,10 +61,13 @@ export function setCustomInitializeForHistmap(self: any, options: any) {
 
 export abstract class HistMap extends setCustomFunctionMaplat(XYZ) {
   constructor(options: any = {}) {
-    const options_ = addCommonOptions(options);
-    options_.wrapX = false;
-    options_.tileUrlFunction =
-      options_.tileUrlFunction ||
+    options = addCommonOptions(options);
+    options.wrapX = false;
+    const zW = Math.log2(options.width / tileSize);
+    const zH = Math.log2(options.height / tileSize);
+    options.maxZoom = Math.ceil(Math.max(zW, zH));
+    options.tileUrlFunction =
+      options.tileUrlFunction ||
       function (this: HistMap, coord: any) {
         const z = coord[0];
         const x = coord[1];
@@ -86,7 +87,7 @@ export abstract class HistMap extends setCustomFunctionMaplat(XYZ) {
         // @ts-expect-error ts-migrate(2683)
         return this._tileUrlFunction(coord);
       };
-    super(options_);
+    super(options);
 
     if (options.mapID) {
       this.mapID = options.mapID;
@@ -103,9 +104,7 @@ export abstract class HistMap extends setCustomFunctionMaplat(XYZ) {
     this.height = options.height;
     this.maxZoom = options.maxZoom;
     this._maxxy = Math.pow(2, this.maxZoom as number) * tileSize;
-    console.log(`Constructor: ${this.maxZoom} ${this._maxxy} ${tileSize}`);
 
-    setCustomInitialize(this, options);
-    setupTileLoadFunction(this);
+    this.initialize(options);
   }
 }

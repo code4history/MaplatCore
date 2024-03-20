@@ -261,7 +261,6 @@ export class MaplatApp extends EventTarget {
       key: this.googleApiKey,
       translator: (fragment: any) => this.translate(fragment)
     };
-    console.log(commonOption);
     for (let i = 0; i < dataSource.length; i++) {
       const option = dataSource[i];
       sourcePromise.push(source_ex.mapSourceFactory(option, commonOption));

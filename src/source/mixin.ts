@@ -13,7 +13,7 @@ import {
 import { normalizeArg } from "../functions";
 import { polygon } from "@turf/helpers";
 import centroid from "@turf/centroid";
-import { booleanPointInPolygon, Feature, lineIntersect, lineString, Polygon } from "@turf/turf";
+import { booleanPointInPolygon, Feature, lineIntersect, lineString, Polygon, Properties } from "@turf/turf";
 import { View as mlView } from "../view_ex";
 import { Source } from "ol/source";
 
@@ -51,15 +51,82 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
     envelope?: Feature<Polygon>;
     centroid?: number[];
     homeMarginPixels = 0;
+    thumbnail?: string;
+    poiTemplate?: string;
+    poiStyle?: string;
+    iconTemplate?: string;
+    startFrom?: string;
+    controls?: any[];
+    northUp?: boolean;
+    tapDuration?: number;
+    mercatorXShift = 0;
+    mercatorYShift = 0;
+    icon?: string;
+    selectedIcon?: string;
     isBasemap = false;
     isWmts = true;
 
     abstract insideCheckSysCoord(sysCoord: Coordinate): boolean;
 
-    initialize(options: any = {}) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      if (super.initialize) super.initialize(options);
+    initialize(options: any) {
+      options = normalizeArg(options);
+      this.mapID = options.mapID;
+      this.homePosition = options.homePosition;
+      this.mercZoom = options.mercZoom;
+      this.label = options.label;
+      this.maxZoom = options.maxZoom;
+      this.minZoom = options.minZoom;
+      this.poiTemplate = options.poiTemplate;
+      this.poiStyle = options.poiStyle;
+      this.iconTemplate = options.iconTemplate;
+      this.icon = options.icon;
+      this.selectedIcon = options.selectedIcon;
+      this.mercatorXShift = options.mercatorXShift;
+      this.mercatorYShift = options.mercatorYShift;
+      this.weiwudi = options.weiwudi;
+      if (options.envelopeLngLats) {
+        const lngLats = options.envelopeLngLats;
+        const mercs = lngLats.map((lnglat: Coordinate) =>
+          transform(lnglat, "EPSG:4326", "EPSG:3857")
+        );
+        mercs.push(mercs[0]);
+        this.envelope = polygon([mercs]) as Feature<Polygon, Properties>;
+        this.centroid = centroid(this.envelope).geometry?.coordinates;
+      }
+
+      for (let i = 0; i < META_KEYS.length; i++) {
+        const key = META_KEYS[i];
+        const option_key = META_KEYS_OPTION[i];
+        this.set(key, options[option_key] || options[key]);
+      }
+
+      const thumbWait = options.thumbnail
+        ? new Promise(resolve => {
+          this.thumbnail = options.thumbnail;
+          resolve(undefined);
+        })
+        : new Promise(resolve => {
+          this.thumbnail = `./tmbs/${options.mapID}.jpg`;
+          fetch(this.thumbnail)
+            .then(response => {
+              if (response.ok) {
+                resolve(undefined);
+              } else {
+                this.thumbnail = `./tmbs/${options.mapID}_menu.jpg`;
+                resolve(undefined);
+              }
+            })
+            .catch(_error => {
+              this.thumbnail = `./tmbs/${options.mapID}_menu.jpg`;
+              resolve(undefined);
+            });
+        }).catch(_error => {
+          this.thumbnail = `./tmbs/${options.mapID || options.sourceID}_menu.jpg`;
+        });
+      const poisWait = this.resolvePois(options.pois);
+      this.initialWait = Promise.all([poisWait, thumbWait]);
+
+      setupTileLoadFunction(this);
     }
 
     getCacheEnable() {
@@ -469,7 +536,6 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
         xy[0] * radius + center![0],
         xy[1] * radius + center![1]
       ]);
-      console.log(`${center}, ${size}, ${radius}, ${crossDelta}, ${cross}`);
       return [cross, size];
     }
 
@@ -550,13 +616,6 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
 
 export function setCustomFunctionBase<TBase extends SourceConstructor>(Base: TBase) {
   abstract class Mixin extends setCustomFunction(Base) {
-
-    /*constructor(options: any = {}) {
-      super(options);
-      //setCustomInitialize(this, options);
-      //setupTileLoadFunction(this);
-    }*/
-
     insideCheckXy(xy: Coordinate) {
       if (!this.envelope) return true;
       return booleanPointInPolygon(xy, this.envelope);
@@ -684,7 +743,6 @@ export function setCustomFunctionMaplat<TBase extends SourceConstructor>(Base: T
     }
 
     sysCoord2Xy(sysCoord: Coordinate): Coordinate {
-      console.log(`${sysCoord} ${this._maxxy} ${MERC_MAX}`);
       const x = ((sysCoord[0] + MERC_MAX) * this._maxxy) / (2 * MERC_MAX);
       const y = ((-sysCoord[1] + MERC_MAX) * this._maxxy) / (2 * MERC_MAX);
       return [x, y];
@@ -750,64 +808,64 @@ export function addCommonOptions(options: any) {
   return options;
 }
 
-export function setCustomInitialize(self: any, options: any) {
+/*export function setCustomInitialize(this: any, options: any) {
   options = normalizeArg(options);
-  self.mapID = options.mapID;
-  self.homePosition = options.homePosition;
-  self.mercZoom = options.mercZoom;
-  self.label = options.label;
-  self.maxZoom = options.maxZoom;
-  self.minZoom = options.minZoom;
-  self.poiTemplate = options.poiTemplate;
-  self.poiStyle = options.poiStyle;
-  self.iconTemplate = options.iconTemplate;
-  self.icon = options.icon;
-  self.selectedIcon = options.selectedIcon;
-  self.mercatorXShift = options.mercatorXShift;
-  self.mercatorYShift = options.mercatorYShift;
-  self.weiwudi = options.weiwudi;
+  this.mapID = options.mapID;
+  this.homePosition = options.homePosition;
+  this.mercZoom = options.mercZoom;
+  this.label = options.label;
+  this.maxZoom = options.maxZoom;
+  this.minZoom = options.minZoom;
+  this.poiTemplate = options.poiTemplate;
+  this.poiStyle = options.poiStyle;
+  this.iconTemplate = options.iconTemplate;
+  this.icon = options.icon;
+  this.selectedIcon = options.selectedIcon;
+  this.mercatorXShift = options.mercatorXShift;
+  this.mercatorYShift = options.mercatorYShift;
+  this.weiwudi = options.weiwudi;
   if (options.envelopeLngLats) {
     const lngLats = options.envelopeLngLats;
     const mercs = lngLats.map((lnglat: Coordinate) =>
       transform(lnglat, "EPSG:4326", "EPSG:3857")
     );
     mercs.push(mercs[0]);
-    self.envelope = polygon([mercs]);
-    self.centroid = centroid(self.envelope).geometry?.coordinates;
+    this.envelope = polygon([mercs]);
+    this.centroid = centroid(this.envelope).geometry?.coordinates;
   }
 
   for (let i = 0; i < META_KEYS.length; i++) {
     const key = META_KEYS[i];
     const option_key = META_KEYS_OPTION[i];
-    self[key] = options[option_key] || options[key];
+    this[key] = options[option_key] || options[key];
   }
 
   const thumbWait = options.thumbnail
     ? new Promise(resolve => {
-        self.thumbnail = options.thumbnail;
+        this.thumbnail = options.thumbnail;
         resolve(undefined);
       })
     : new Promise(resolve => {
-        self.thumbnail = `./tmbs/${options.mapID}.jpg`;
-        fetch(self.thumbnail)
+        this.thumbnail = `./tmbs/${options.mapID}.jpg`;
+        fetch(this.thumbnail)
           .then(response => {
             if (response.ok) {
               resolve(undefined);
             } else {
-              self.thumbnail = `./tmbs/${options.mapID}_menu.jpg`;
+              this.thumbnail = `./tmbs/${options.mapID}_menu.jpg`;
               resolve(undefined);
             }
           })
           .catch(_error => {
-            self.thumbnail = `./tmbs/${options.mapID}_menu.jpg`;
+            this.thumbnail = `./tmbs/${options.mapID}_menu.jpg`;
             resolve(undefined);
           });
       }).catch(_error => {
-        self.thumbnail = `./tmbs/${options.mapID || options.sourceID}_menu.jpg`;
+        this.thumbnail = `./tmbs/${options.mapID || options.sourceID}_menu.jpg`;
       });
-  const poisWait = self.resolvePois(options.pois);
-  self.initialWait = Promise.all([poisWait, thumbWait]);
-}
+  const poisWait = this.resolvePois(options.pois);
+  this.initialWait = Promise.all([poisWait, thumbWait]);
+}*/
 
 export function setupTileLoadFunction(target: any) {
   const self = target;

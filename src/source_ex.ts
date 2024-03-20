@@ -75,7 +75,7 @@ const baseDict = {
   }
 };
 
-const checkMapTypeIsWMTS = (maptype?: string) => (maptype || '').match(/^(?:base|overlay|google(?:_(?:roadmap|satellite|hybrid|terrain))?|mapbox)$/);
+const checkMapTypeIsWMTS = (maptype?: string) => (maptype || '').match(/^(?:base|overlay|google(?:_(?:roadmap|satellite|hybrid|terrain))?|mapbox|osm)$/);
 
 export async function mapSourceFactory(options: any, commonOptions: any) {
   if (typeof options === "string") {
