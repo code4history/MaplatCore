@@ -638,50 +638,45 @@ export class MaplatApp extends EventTarget {
   }
   // Async initializer 16: Handle back map's behavior
   raiseChangeViewpoint() {
-    this.mapObject.on("postrender", (_evt: any) => {
+    this.mapObject.on("postrender", async (_evt: any) => {
       const view = this.mapObject.getView();
       const center = view.getCenter();
       const zoom = view.getDecimalZoom();
       const rotation = normalizeDegree((view.getRotation() * 180) / Math.PI);
-      (this.from as MaplatSource)
-        .viewpoint2MercsAsync()
-        .then(mercs => (this.mercSrc as BackmapSource).mercs2ViewpointAsync(mercs))
-        .then(viewpoint => {
-          if (
-            this.mobileMapMoveBuffer &&
-            this.mobileMapMoveBuffer[0]![0] == viewpoint[0]![0] &&
-            this.mobileMapMoveBuffer[0]![1] == viewpoint[0]![1] &&
-            this.mobileMapMoveBuffer[1] == viewpoint[1] &&
-            this.mobileMapMoveBuffer[2] == viewpoint[2]
-          ) {
-            return;
-          }
-          this.mobileMapMoveBuffer = viewpoint;
-          const ll = transform(viewpoint[0]!, "EPSG:3857", "EPSG:4326");
-          const direction = normalizeDegree((viewpoint[2]! * 180) / Math.PI);
-          this.dispatchEvent(
-            new CustomEvent("changeViewpoint", {
-              x: center[0],
-              y: center[1],
-              longitude: ll[0],
-              latitude: ll[1],
-              mercator_x: viewpoint[0]![0],
-              mercator_y: viewpoint[0]![1],
-              zoom,
-              mercZoom: viewpoint[1],
-              direction,
-              rotation
-            })
-          );
-          this.requestUpdateState({
-            position: {
-              x: center[0],
-              y: center[1],
-              zoom,
-              rotation
-            }
-          });
-        });
+      const mercs = await this.from!.viewpoint2MercsAsync();
+      const viewpoint = await this.mercSrc!.mercs2ViewpointAsync(mercs);
+      if (
+        this.mobileMapMoveBuffer &&
+        this.mobileMapMoveBuffer[0]![0] == viewpoint[0]![0] &&
+        this.mobileMapMoveBuffer[0]![1] == viewpoint[0]![1] &&
+        this.mobileMapMoveBuffer[1] == viewpoint[1] &&
+        this.mobileMapMoveBuffer[2] == viewpoint[2]
+      ) return;
+      this.mobileMapMoveBuffer = viewpoint;
+      const ll = transform(viewpoint[0]!, "EPSG:3857", "EPSG:4326");
+      const direction = normalizeDegree((viewpoint[2]! * 180) / Math.PI);
+      this.dispatchEvent(
+        new CustomEvent("changeViewpoint", {
+          x: center[0],
+          y: center[1],
+          longitude: ll[0],
+          latitude: ll[1],
+          mercator_x: viewpoint[0]![0],
+          mercator_y: viewpoint[0]![1],
+          zoom,
+          mercZoom: viewpoint[1],
+          direction,
+          rotation
+        })
+      );
+      this.requestUpdateState({
+        position: {
+          x: center[0],
+          y: center[1],
+          zoom,
+          rotation
+        }
+      });
     });
   }
   currentMapInfo() {

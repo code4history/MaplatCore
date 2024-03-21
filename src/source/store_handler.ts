@@ -96,8 +96,8 @@ async function store2HistMap_internal(
   keys.forEach(key => {
     ret[key] = store[key];
   });
-  if ((store as any)["imageExtention"])
-    ret["imageExtension"] = (store as any)["imageExtention"];
+  if ((store as any)["imageExtention"] || (store as any)["imageExtension"])
+    ret["imageExtension"] = (store as any)["imageExtension"] || (store as any)["imageExtention"];
   if (store.compiled) {
     const opt: Partial<Options> = {} as Options;
     if (!store.compiled.wh) opt.wh = [store.width!, store.height!];
@@ -190,8 +190,8 @@ export async function histMap2Store(
   keys.forEach(key => {
     ret[key] = histmap[key];
   });
-  if ((histmap as any)["imageExtention"])
-    ret["imageExtension"] = (histmap as any)["imageExtention"];
+  if ((histmap as any)["imageExtention"] || (histmap as any)["imageExtension"])
+    ret["imageExtension"] = (histmap as any)["imageExtension"] || (histmap as any)["imageExtention"];
   const tin = tins.shift();
   if (typeof tin === "string") {
     ret.width = histmap.width;

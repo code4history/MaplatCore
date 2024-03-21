@@ -107,8 +107,9 @@ export function normalizeArg(options: Record<string, any>) {
   } as const;
   return (Object.keys(table) as (keyof typeof table)[]).reduce((opt, key) => {
     if (opt[key]) {
-      opt[table[key]] = opt[key];
-      delete opt[key];
+      throw new Error(`Invalid Maplat option key: ${key}. Use "${table[key]}" instead.`);
+      //opt[table[key]] = opt[key];
+      //delete opt[key];
     }
     return opt;
   }, options);
