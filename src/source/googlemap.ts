@@ -15,8 +15,4 @@ export class GoogleMap extends setCustomFunctionBase(Google) {
     }
     this.initialize(options);
   }
-
-  static async createAsync(options: any) {
-    return new GoogleMap(options);
-  }
 }

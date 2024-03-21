@@ -210,7 +210,7 @@ export class HistMap_tin extends HistMap {
           [this.width, this.height],
           [0, this.height]
         ];
-        const proms = [];
+        const proms:Promise<any>[] = [];
         for (let i = 0; i < 9; i++) {
           const prom =
             i < 4

@@ -4,14 +4,11 @@ export class MapboxMap extends NowMap {
   style = "";
   accessToken = "";
   mapboxMap: any;
+  static isMapbox_ = true;
 
   constructor(options: any = {}) {
     super(options);
     this.style = options.style;
     this.mapboxMap = options.mapboxMap;
-  }
-
-  static async createAsync(options: any) {
-    return new MapboxMap(options);
   }
 }

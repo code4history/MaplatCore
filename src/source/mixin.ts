@@ -63,10 +63,9 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
     mercatorYShift = 0;
     icon?: string;
     selectedIcon?: string;
-    isBasemap = false;
-    isWmts = true;
-
-    abstract insideCheckSysCoord(sysCoord: Coordinate): boolean;
+    static isBasemap_ = false;
+    static isWmts_ = true;
+    static isMapbox_ = false;
 
     initialize(options: any) {
       options = normalizeArg(options);
@@ -128,6 +127,38 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
 
       setupTileLoadFunction(this);
     }
+
+    static isBasemap() {
+      return this.isBasemap_;
+    }
+    
+    static isWmts() { 
+      return this.isWmts_;
+    }
+
+    static isMapbox() {
+      return this.isMapbox_;
+    }
+
+    isBasemap() { 
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      return this.constructor.isBasemap();
+    }
+
+    isWmts() {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      return this.constructor.isWmts();
+    }
+
+    isMapbox() {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      return this.constructor.isMapbox();
+    }
+
+    abstract insideCheckSysCoord(sysCoord: Coordinate): boolean;
 
     getCacheEnable() {
       return !!this.weiwudi;
@@ -609,6 +640,12 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
         mercs => [mercs, xys[1]]
       );
     }
+
+    static async createAsync(options: any) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      return new this(options);
+    }
   }
 
   return Mixin;
@@ -616,6 +653,9 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
 
 export function setCustomFunctionBase<TBase extends SourceConstructor>(Base: TBase) {
   abstract class Mixin extends setCustomFunction(Base) {
+    static isBasemap_ = true;
+    static isWmts_ = true;
+
     insideCheckXy(xy: Coordinate) {
       if (!this.envelope) return true;
       return booleanPointInPolygon(xy, this.envelope);
@@ -700,6 +740,8 @@ export function setCustomFunctionOverlay<TBase extends SourceConstructor>(Base: 
 
 export function setCustomFunctionMaplat<TBase extends SourceConstructor>(Base: TBase) {
   abstract class Mixin extends setCustomFunction(Base) {
+    static isBasemap_ = false;
+    static isWmts_ = false;
     width = 0;
     height = 0;
     _maxxy= 0;

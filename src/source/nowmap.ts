@@ -13,8 +13,4 @@ export class NowMap extends setCustomFunctionBase(XYZ) {
     }
     this.initialize(options);
   }
-
-  static async createAsync(options: any) {
-    return new NowMap(options);
-  }
 }

@@ -93,7 +93,7 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
         : options.maptype === "mapbox"
         ? MapboxMap
         : GoogleMap;
-    if (targetSrc instanceof TmsMap) {
+    if (!targetSrc.isBasemap()) {
       if (!options.homePosition) options.homePosition = options.homePos;
       if (!options.mercZoom) options.mercZoom = options.defZoom;
     } else {
@@ -160,7 +160,7 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
                 : options.maptype === "mapbox"
                 ? MapboxMap
                 : GoogleMap;
-            if (targetSrc instanceof TmsMap) {
+            if (!targetSrc.isBasemap()) {
               if (!options.homePosition) options.homePosition = options.homePos;
               if (!options.mercZoom) options.mercZoom = options.defZoom;
             } else {
@@ -273,20 +273,3 @@ export async function registerMapToSW(options: any) {
   }
   return ret;
 }
-
-const checkIsBaseMap = (source: MaplatSource) => 
-  (source instanceof NowMap && !(source instanceof TmsMap)) || source instanceof GoogleMap;
-
-const checkIsMapbox = (source: MaplatSource) => 
-  source instanceof MapboxMap;
-
-const checkIsWMTSMap = (source: MaplatSource) => 
-  source instanceof NowMap || source instanceof GoogleMap;
-
-export default {
-  mapSourceFactory,
-  registerMapToSW,
-  checkIsBaseMap,
-  checkIsMapbox,
-  checkIsWMTSMap
-};

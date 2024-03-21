@@ -17,7 +17,7 @@ import { defaults, DragRotateAndZoom } from "ol/interaction";
 import { altKeyOnly } from "ol/events/condition";
 import { HistMap } from "./source/histmap";
 import { TmsMap } from "./source/tmsmap";
-import { BackmapSource, MaplatSource, default as source_ex } from "./source_ex";
+import { BackmapSource, MaplatSource, mapSourceFactory } from "./source_ex";
 import { META_KEYS, ViewpointArray } from "./source/mixin";
 import { recursiveRound } from "./math_ex";
 import locales from "./freeze_locales";
@@ -263,7 +263,7 @@ export class MaplatApp extends EventTarget {
     };
     for (let i = 0; i < dataSource.length; i++) {
       const option = dataSource[i];
-      sourcePromise.push(source_ex.mapSourceFactory(option, commonOption));
+      sourcePromise.push(mapSourceFactory(option, commonOption));
     }
     return Promise.all(sourcePromise);
   }
@@ -390,14 +390,14 @@ export class MaplatApp extends EventTarget {
   handleSources(sources: any) {
     this.mercSrc = sources.reduce((prev: any, curr: any) => {
       if (prev) return prev;
-      if (source_ex.checkIsBaseMap(curr)) return curr;
+      if (curr.isBasemap()) return curr;
     }, null);
     const cache: any[] = [];
     this.cacheHash = {};
     for (let i = 0; i < sources.length; i++) {
       const source = sources[i];
       source.setMap(this.mapObject);
-      if (source_ex.checkIsMapbox(source)) {
+      if (source.isMapbox()) {
         if (!this.mapboxMap) {
           throw "To use mapbox gl based base map, you have to make Maplat object with specifying 'mapboxgl' option.";
         }
@@ -1139,7 +1139,7 @@ export class MaplatApp extends EventTarget {
             if (this.backMap) {
               // Overlay = true case:
               backSrc = this.backMap.getSource(); // Get current source of background map
-              if (!source_ex.checkIsWMTSMap(to)) {
+              if (!to.isWmts()) {
                 // If new foreground source is nonlinear map:
                 if (backRestore) {
                   backTo = backRestore;
@@ -1148,7 +1148,7 @@ export class MaplatApp extends EventTarget {
                   if (!backSrc) {
                     // If current background source is not set, specify it
                     backTo = now as any;
-                    if (source_ex.checkIsWMTSMap(this.from!)) {
+                    if (this.from!.isWmts()) {
                       backTo =
                         this.from instanceof TmsMap
                           ? this.mapObject.getSource()
@@ -1174,7 +1174,7 @@ export class MaplatApp extends EventTarget {
               // If current foreground is basemap then set it as basemap layer
               if (backRestore) {
                 this.mapObject.exchangeSource(backRestore);
-              } else if (!source_ex.checkIsWMTSMap(this.from!)) {
+              } else if (!this.from!.isWmts()) {
                 const backToLocal = backSrc || now;
                 this.mapObject.exchangeSource(backToLocal);
               }
@@ -1189,7 +1189,7 @@ export class MaplatApp extends EventTarget {
             const updateState = {
               mapID: to.mapID
             };
-            if (source_ex.checkIsBaseMap(to)) {
+            if (to.isBasemap()) {
               (updateState as any).backgroundID = "____delete____";
             }
             this.requestUpdateState(updateState);
