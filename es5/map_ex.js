@@ -139,6 +139,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             if (optOptions.interactions) {
                 options.interactions = optOptions.interactions;
             }
+            options.renderer = 'webgl';
             _this = _super.call(this, options) || this;
             _this._overlay_group = overlayLayer;
             _this.fakeGps = optOptions.fakeGps;
