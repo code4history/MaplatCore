@@ -196,6 +196,7 @@ export class MaplatMap extends Map {
       feature.setStyle(style);
     }
     src.addFeature(feature);
+    this.render();
     return feature;
   }
   removeFeature(feature: any, layer: any) {

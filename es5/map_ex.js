@@ -218,6 +218,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 feature.setStyle(style);
             }
             src.addFeature(feature);
+            this.render();
             return feature;
         };
         MaplatMap.prototype.removeFeature = function (feature, layer) {
