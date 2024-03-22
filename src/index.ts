@@ -1231,7 +1231,7 @@ export class MaplatApp extends EventTarget {
               new CustomEvent("mapChanged", this.getMapMeta(to.mapID))
             );
             this.mapObject.updateSize();
-            this.mapObject.renderSync();
+            //this.mapObject.renderSync();
             if (restore!.position) {
               this.__init = false;
               to.setViewpoint(restore!.position);
@@ -1249,7 +1249,7 @@ export class MaplatApp extends EventTarget {
                 view.setZoom(size[1]);
                 view.setRotation(this.noRotate ? 0 : size[2]);
                 (this.backMap as MaplatMap).updateSize();
-                (this.backMap as MaplatMap).renderSync();
+                //(this.backMap as MaplatMap).renderSync();
               });
             }
             resolve(undefined);
