@@ -146,6 +146,7 @@ export class MaplatMap extends Map {
     };
     view.on("propertychange", movestart);
     this.on("moveend", () => {
+      this.render();
       view.on("propertychange", movestart);
     });
   }
@@ -196,7 +197,6 @@ export class MaplatMap extends Map {
       feature.setStyle(style);
     }
     src.addFeature(feature);
-    this.render();
     return feature;
   }
   removeFeature(feature: any, layer: any) {

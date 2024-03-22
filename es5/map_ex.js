@@ -159,6 +159,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             };
             view.on("propertychange", movestart);
             _this.on("moveend", function () {
+                _this.render();
                 view.on("propertychange", movestart);
             });
             return _this;
@@ -218,7 +219,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 feature.setStyle(style);
             }
             src.addFeature(feature);
-            this.render();
             return feature;
         };
         MaplatMap.prototype.removeFeature = function (feature, layer) {
