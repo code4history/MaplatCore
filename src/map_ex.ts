@@ -127,7 +127,6 @@ export class MaplatMap extends Map {
     if (optOptions.interactions) {
       (options as any).interactions = optOptions.interactions;
     }
-    (options as any).renderer = 'canvas';
     super(options);
     this._overlay_group = overlayLayer;
     this.fakeGps = optOptions.fakeGps;
