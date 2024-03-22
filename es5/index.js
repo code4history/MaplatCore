@@ -1223,6 +1223,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         }
                         _this.dispatchEvent(new customevent_1.default("mapChanged", _this.getMapMeta(to.mapID)));
                         _this.mapObject.updateSize();
+                        _this.mapObject.renderSync();
                         if (restore.position) {
                             _this.__init = false;
                             to.setViewpoint(restore.position);
@@ -1241,6 +1242,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                                 view.setZoom(size[1]);
                                 view.setRotation(_this.noRotate ? 0 : size[2]);
                                 _this.backMap.updateSize();
+                                _this.backMap.renderSync();
                             });
                         }
                         resolve(undefined);
