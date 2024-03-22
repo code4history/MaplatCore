@@ -140,12 +140,40 @@
           app.clearMarker("main2");
         });
         document.getElementById("addMap").addEventListener("click", function (e) {
-          app.addMarker(
+          for (let i=0;i<100;i++) {
+            const dx = Math.random() * 0.02 - 0.01;
+            const dy = Math.random() * 0.02 - 0.01;
+            const ll = [141.1501111 + dx, 39.69994722 + dy];
+            app.addMarker({
+              address: "岩手県盛岡市内丸1-37",
+              desc:
+                "南部（盛岡）藩南部氏の居城である。西部を流れる北上川と南東部を流れる中津川の合流地、現在の盛岡市中心部にあった花崗岩丘陵に築城された連郭式平山城。",
+              icon: `data:image/svg+xml,${encodeURIComponent(`<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+x="0px" y="0px" width="30.021484375px" height="20px"
+viewBox="0 0 30.021484375 20" enable-background="new 0 0 30.021484375 20" xml:space="preserve">
+<polygon x="0" y="0" points="0,0 30.021484375,0 30.021484375,16 19.0107421875,16
+15.0107421875,20 11.0107421875,16 0,16 0,0" stroke="#000000" fill="#DEEFAE"
+stroke-width="2"></polygon>
+<text x="5" y="13" fill="#000000" font-family="Arial" font-size="12" font-weight="normal">${i+1}</text></svg>`)}`,
+              image: "moriokajo.jpg",
+              lnglat: ll,
+              name: { ja: "盛岡城", en: "Morioka Castle" },
+              selectedIcon: undefined,
+              start: 1598
+            });
+          }
+          /*app.addMarker(
             {
               address: "岩手県盛岡市内丸1-37",
               desc:
                 "南部（盛岡）藩南部氏の居城である。西部を流れる北上川と南東部を流れる中津川の合流地、現在の盛岡市中心部にあった花崗岩丘陵に築城された連郭式平山城。",
-              icon: undefined,
+              icon: `data:image/svg+xml,${encodeURIComponent(`<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+x="0px" y="0px" width="30.021484375px" height="20px"
+viewBox="0 0 30.021484375 20" enable-background="new 0 0 30.021484375 20" xml:space="preserve">
+<polygon x="0" y="0" points="0,0 30.021484375,0 30.021484375,16 19.0107421875,16
+15.0107421875,20 11.0107421875,16 0,16 0,0" stroke="#000000" fill="#DEEFAE"
+stroke-width="2"></polygon>
+<text x="5" y="13" fill="#000000" font-family="Arial" font-size="12" font-weight="normal">168</text></svg>`)}`,
               image: "moriokajo.jpg",
               lnglat: [141.1501111, 39.69994722],
               name: { ja: "盛岡城", en: "Morioka Castle" },
@@ -153,7 +181,7 @@
               start: 1598
             },
             "morioka_ndl2#main2"
-          );
+          );*/
         });
         document
           .getElementById("clearMap")
