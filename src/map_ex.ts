@@ -235,6 +235,7 @@ export class MaplatMap extends Map {
     data["geometry"] = new Point(xy);
     if (!markerStyle) markerStyle = markerDefaultStyle;
     else if (typeof markerStyle == "string") {
+      console.log("Make modify 1");
       markerStyle = new Style({
         image: new Icon({
           anchor: [0.5, 1.0],
@@ -244,9 +245,12 @@ export class MaplatMap extends Map {
         })
       });
     } else if (!(markerStyle instanceof Style)) {
+      console.log("Make modify 2");
       markerStyle = new Style({
         image: new Icon(markerStyle)
       });
+    } else { 
+      console.log("Use directly");
     }
     return this.setFeature(data, markerStyle, layer);
   }

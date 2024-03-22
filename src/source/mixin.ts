@@ -15,9 +15,11 @@ import { polygon } from "@turf/helpers";
 import centroid from "@turf/centroid";
 import { booleanPointInPolygon, Feature, lineIntersect, lineString, Polygon, Properties } from "@turf/turf";
 import { View as mlView } from "../view_ex";
-import { Source } from "ol/source";
+//import { Source } from "ol/source";
 
-type SourceConstructor = new (...args: any[]) => Source;
+//type SourceConstructor<T> = new (...args: any[]) => T;
+// eslint-disable-next-line @typescript-eslint/ban-types
+type SourceConstructor<T = {}> = new (...args: any[]) => T;
 type ViewpointObject = {
   x?: number;
   y?: number;
@@ -96,7 +98,7 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
       for (let i = 0; i < META_KEYS.length; i++) {
         const key = META_KEYS[i];
         const option_key = META_KEYS_OPTION[i];
-        this.set(key, options[option_key] || options[key]);
+        (this as any).set(key, options[option_key] || options[key]);
       }
 
       const thumbWait = options.thumbnail

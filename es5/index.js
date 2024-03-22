@@ -79,7 +79,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     var condition_1 = require("ol/events/condition");
     var histmap_1 = require("./source/histmap");
     var tmsmap_1 = require("./source/tmsmap");
-    var source_ex_1 = __importDefault(require("./source_ex"));
+    var source_ex_1 = require("./source_ex");
     var mixin_1 = require("./source/mixin");
     var math_ex_1 = require("./math_ex");
     var freeze_locales_1 = __importDefault(require("./freeze_locales"));
@@ -240,10 +240,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         key: this.googleApiKey,
                         translator: function (fragment) { return _this.translate(fragment); }
                     };
-                    console.log(commonOption);
                     for (i = 0; i < dataSource.length; i++) {
                         option = dataSource[i];
-                        sourcePromise.push(source_ex_1.default.mapSourceFactory(option, commonOption));
+                        sourcePromise.push((0, source_ex_1.mapSourceFactory)(option, commonOption));
                     }
                     return [2, Promise.all(sourcePromise)];
                 });
@@ -357,7 +356,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             this.mercSrc = sources.reduce(function (prev, curr) {
                 if (prev)
                     return prev;
-                if (source_ex_1.default.checkIsBaseMap(curr))
+                if (curr.isBasemap())
                     return curr;
             }, null);
             var cache = [];
@@ -365,7 +364,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             for (var i = 0; i < sources.length; i++) {
                 var source = sources[i];
                 source.setMap(this.mapObject);
-                if (source_ex_1.default.checkIsMapbox(source)) {
+                if (source.isMapbox()) {
                     if (!this.mapboxMap) {
                         throw "To use mapbox gl based base map, you have to make Maplat object with specifying 'mapboxgl' option.";
                     }
@@ -608,47 +607,54 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         };
         MaplatApp.prototype.raiseChangeViewpoint = function () {
             var _this = this;
-            this.mapObject.on("postrender", function (_evt) {
-                var view = _this.mapObject.getView();
-                var center = view.getCenter();
-                var zoom = view.getDecimalZoom();
-                var rotation = (0, functions_1.normalizeDegree)((view.getRotation() * 180) / Math.PI);
-                _this.from
-                    .viewpoint2MercsAsync()
-                    .then(function (mercs) { return _this.mercSrc.mercs2ViewpointAsync(mercs); })
-                    .then(function (viewpoint) {
-                    if (_this.mobileMapMoveBuffer &&
-                        _this.mobileMapMoveBuffer[0][0] == viewpoint[0][0] &&
-                        _this.mobileMapMoveBuffer[0][1] == viewpoint[0][1] &&
-                        _this.mobileMapMoveBuffer[1] == viewpoint[1] &&
-                        _this.mobileMapMoveBuffer[2] == viewpoint[2]) {
-                        return;
+            this.mapObject.on("postrender", function (_evt) { return __awaiter(_this, void 0, void 0, function () {
+                var view, center, zoom, rotation, mercs, viewpoint, ll, direction;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            view = this.mapObject.getView();
+                            center = view.getCenter();
+                            zoom = view.getDecimalZoom();
+                            rotation = (0, functions_1.normalizeDegree)((view.getRotation() * 180) / Math.PI);
+                            return [4, this.from.viewpoint2MercsAsync()];
+                        case 1:
+                            mercs = _a.sent();
+                            return [4, this.mercSrc.mercs2ViewpointAsync(mercs)];
+                        case 2:
+                            viewpoint = _a.sent();
+                            if (this.mobileMapMoveBuffer &&
+                                this.mobileMapMoveBuffer[0][0] == viewpoint[0][0] &&
+                                this.mobileMapMoveBuffer[0][1] == viewpoint[0][1] &&
+                                this.mobileMapMoveBuffer[1] == viewpoint[1] &&
+                                this.mobileMapMoveBuffer[2] == viewpoint[2])
+                                return [2];
+                            this.mobileMapMoveBuffer = viewpoint;
+                            ll = (0, proj_1.transform)(viewpoint[0], "EPSG:3857", "EPSG:4326");
+                            direction = (0, functions_1.normalizeDegree)((viewpoint[2] * 180) / Math.PI);
+                            this.dispatchEvent(new customevent_1.default("changeViewpoint", {
+                                x: center[0],
+                                y: center[1],
+                                longitude: ll[0],
+                                latitude: ll[1],
+                                mercator_x: viewpoint[0][0],
+                                mercator_y: viewpoint[0][1],
+                                zoom: zoom,
+                                mercZoom: viewpoint[1],
+                                direction: direction,
+                                rotation: rotation
+                            }));
+                            this.requestUpdateState({
+                                position: {
+                                    x: center[0],
+                                    y: center[1],
+                                    zoom: zoom,
+                                    rotation: rotation
+                                }
+                            });
+                            return [2];
                     }
-                    _this.mobileMapMoveBuffer = viewpoint;
-                    var ll = (0, proj_1.transform)(viewpoint[0], "EPSG:3857", "EPSG:4326");
-                    var direction = (0, functions_1.normalizeDegree)((viewpoint[2] * 180) / Math.PI);
-                    _this.dispatchEvent(new customevent_1.default("changeViewpoint", {
-                        x: center[0],
-                        y: center[1],
-                        longitude: ll[0],
-                        latitude: ll[1],
-                        mercator_x: viewpoint[0][0],
-                        mercator_y: viewpoint[0][1],
-                        zoom: zoom,
-                        mercZoom: viewpoint[1],
-                        direction: direction,
-                        rotation: rotation
-                    }));
-                    _this.requestUpdateState({
-                        position: {
-                            x: center[0],
-                            y: center[1],
-                            zoom: zoom,
-                            rotation: rotation
-                        }
-                    });
                 });
-            });
+            }); });
         };
         MaplatApp.prototype.currentMapInfo = function () {
             return (0, functions_1.createMapInfo)(this.from);
@@ -1125,7 +1131,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                             : undefined;
                         if (_this.backMap) {
                             backSrc = _this.backMap.getSource();
-                            if (!source_ex_1.default.checkIsWMTSMap(to)) {
+                            if (!to.isWmts()) {
                                 if (backRestore) {
                                     backTo = backRestore;
                                     _this.backMap.exchangeSource(backTo);
@@ -1133,7 +1139,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                                 else {
                                     if (!backSrc) {
                                         backTo = now;
-                                        if (source_ex_1.default.checkIsWMTSMap(_this.from)) {
+                                        if (_this.from.isWmts()) {
                                             backTo =
                                                 _this.from instanceof tmsmap_1.TmsMap
                                                     ? _this.mapObject.getSource()
@@ -1157,7 +1163,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                             if (backRestore) {
                                 _this.mapObject.exchangeSource(backRestore);
                             }
-                            else if (!source_ex_1.default.checkIsWMTSMap(_this.from)) {
+                            else if (!_this.from.isWmts()) {
                                 var backToLocal = backSrc || now;
                                 _this.mapObject.exchangeSource(backToLocal);
                             }
@@ -1172,7 +1178,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         var updateState = {
                             mapID: to.mapID
                         };
-                        if (source_ex_1.default.checkIsBaseMap(to)) {
+                        if (to.isBasemap()) {
                             updateState.backgroundID = "____delete____";
                         }
                         _this.requestUpdateState(updateState);

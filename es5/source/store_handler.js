@@ -98,8 +98,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         keys.forEach(function (key) {
                             ret[key] = store[key];
                         });
-                        if (store["imageExtention"])
-                            ret["imageExtension"] = store["imageExtention"];
+                        if (store["imageExtention"] || store["imageExtension"])
+                            ret["imageExtension"] = store["imageExtension"] || store["imageExtention"];
                         if (!store.compiled) return [3, 1];
                         opt = {};
                         if (!store.compiled.wh)
@@ -201,8 +201,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 keys.forEach(function (key) {
                     ret[key] = histmap[key];
                 });
-                if (histmap["imageExtention"])
-                    ret["imageExtension"] = histmap["imageExtention"];
+                if (histmap["imageExtention"] || histmap["imageExtension"])
+                    ret["imageExtension"] = histmap["imageExtension"] || histmap["imageExtention"];
                 tin = tins.shift();
                 if (typeof tin === "string") {
                     ret.width = histmap.width;

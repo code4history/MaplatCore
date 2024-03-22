@@ -251,6 +251,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             if (!markerStyle)
                 markerStyle = markerDefaultStyle;
             else if (typeof markerStyle == "string") {
+                console.log("Make modify 1");
                 markerStyle = new style_1.Style({
                     image: new style_1.Icon({
                         anchor: [0.5, 1.0],
@@ -261,9 +262,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 });
             }
             else if (!(markerStyle instanceof style_1.Style)) {
+                console.log("Make modify 2");
                 markerStyle = new style_1.Style({
                     image: new style_1.Icon(markerStyle)
                 });
+            }
+            else {
+                console.log("Use directly");
             }
             return this.setFeature(data, markerStyle, layer);
         };

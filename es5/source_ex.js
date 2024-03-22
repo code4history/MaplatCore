@@ -119,7 +119,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             thumbnail: gsi_ortho_jpg_1.default
         }
     };
-    var checkMapTypeIsWMTS = function (maptype) { return (maptype || '').match(/^(?:base|overlay|google(?:_(?:roadmap|satellite|hybrid|terrain))?|mapbox)$/); };
+    var checkMapTypeIsWMTS = function (maptype) { return (maptype || '').match(/^(?:base|overlay|google(?:_(?:roadmap|satellite|hybrid|terrain))?|mapbox|osm)$/); };
     function mapSourceFactory(options, commonOptions) {
         return __awaiter(this, void 0, void 0, function () {
             var targetSrc, _a, obj;
@@ -139,7 +139,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                                 : options.maptype === "mapbox"
                                     ? mapboxmap_1.MapboxMap
                                     : googlemap_1.GoogleMap;
-                        if (targetSrc instanceof tmsmap_1.TmsMap) {
+                        if (!targetSrc.isBasemap()) {
                             if (!options.homePosition)
                                 options.homePosition = options.homePos;
                             if (!options.mercZoom)
@@ -223,7 +223,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                                                         : options.maptype === "mapbox"
                                                             ? mapboxmap_1.MapboxMap
                                                             : googlemap_1.GoogleMap;
-                                                if (targetSrc instanceof tmsmap_1.TmsMap) {
+                                                if (!targetSrc.isBasemap()) {
                                                     if (!options.homePosition)
                                                         options.homePosition = options.homePos;
                                                     if (!options.mercZoom)
@@ -389,21 +389,5 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         });
     }
     exports.registerMapToSW = registerMapToSW;
-    var checkIsBaseMap = function (source) {
-        return (source instanceof nowmap_1.NowMap && !(source instanceof tmsmap_1.TmsMap)) || source instanceof googlemap_1.GoogleMap;
-    };
-    var checkIsMapbox = function (source) {
-        return source instanceof mapboxmap_1.MapboxMap;
-    };
-    var checkIsWMTSMap = function (source) {
-        return source instanceof nowmap_1.NowMap || source instanceof googlemap_1.GoogleMap;
-    };
-    exports.default = {
-        mapSourceFactory: mapSourceFactory,
-        registerMapToSW: registerMapToSW,
-        checkIsBaseMap: checkIsBaseMap,
-        checkIsMapbox: checkIsMapbox,
-        checkIsWMTSMap: checkIsWMTSMap
-    };
 });
 //# sourceMappingURL=source_ex.js.map

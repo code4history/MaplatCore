@@ -1,5 +1,5 @@
 import { NowMap } from "./nowmap";
 export declare class TmsMap extends NowMap {
+    static isBasemap_: boolean;
     constructor(options?: any);
-    static createAsync(options: any): Promise<TmsMap>;
 }
