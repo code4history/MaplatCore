@@ -69,10 +69,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         animate: false
                     });
                 }
-                if (mbMap._frame) {
-                    mbMap._frame.cancel();
-                    mbMap._frame = null;
-                }
                 mbMap._render();
                 return canvas;
             };

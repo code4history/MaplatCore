@@ -57,10 +57,10 @@ export class MapboxLayer extends Layer {
       // cancel the scheduled update & trigger synchronous redraw
       // see https://github.com/mapbox/mapbox-gl-js/issues/7893#issue-408992184
       // NOTE: THIS MIGHT BREAK WHEN UPDATING MAPBOX
-      if (mbMap._frame) {
-        mbMap._frame.cancel();
-        mbMap._frame = null;
-      }
+      //if (mbMap._frame) {
+      //  mbMap._frame.cancel();
+      //  mbMap._frame = null;
+      //}
 
       mbMap._render();
 

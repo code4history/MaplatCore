@@ -146,7 +146,6 @@ export class MaplatMap extends Map {
     };
     view.on("propertychange", movestart);
     this.on("moveend", () => {
-      this.render();
       view.on("propertychange", movestart);
     });
   }
