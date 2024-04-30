@@ -56,6 +56,7 @@
       <button id="reset_rotation">回転オフ</button>
       <button id="reset_direction">北を上に</button>
       <button id="reset_circulation">北を上に（northUp）</button>
+      <button id="gps_on">GPS ON</button>
     </div>
     <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js"></script>
   </body>
@@ -68,7 +69,8 @@
         northUp: true,
         tapDuration: 60000,
         homeMarginPixels: 100,
-        tapUIVanish: true
+        tapUIVanish: true,
+        gpsAlwaysOn: true
       };
       var hashes = window.location.href
         .slice(window.location.href.indexOf("?") + 1)
@@ -295,7 +297,12 @@ stroke-width="2"></polygon>
           .addEventListener("click", function (e) {
             app.remove();
           });
-      });
+        document
+          .getElementById("gps_on")
+          .addEventListener("click", function (e) {
+            app.mapObject.handleGPS(true);
+          });
+        });
     });
   </script>
 </html>

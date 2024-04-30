@@ -102,6 +102,7 @@ export class MaplatApp extends EventTarget {
   mapObject: any;
   mapboxMap: any;
   googleApiKey?: string;
+  gpsAlwaysOn: boolean;
   pois: any;
   poiTemplate?: string;
   poiStyle?: string;
@@ -127,6 +128,8 @@ export class MaplatApp extends EventTarget {
     if (appOption.googleApiKey) {
       this.googleApiKey = appOption.googleApiKey;
     }
+    this.gpsAlwaysOn = appOption.gpsAlwaysOn || false;
+
     this.mapDiv = appOption.div || "map_div";
     this.mapDivDocument = document.querySelector(`#${this.mapDiv}`);
     this.mapDivDocument!.classList.add("maplat");
@@ -783,6 +786,7 @@ export class MaplatApp extends EventTarget {
         return;
       }
     }
+    console.log("redrawMarkers");
     this.__redrawMarkerBlock = true;
     const redrawLogic = (source: any) => {
       const promises: any = [];
