@@ -56,13 +56,15 @@
       <button id="reset_rotation">回転オフ</button>
       <button id="reset_direction">北を上に</button>
       <button id="reset_circulation">北を上に（northUp）</button>
-      <button id="gps_on">GPS ON</button>
+      <button id="gps_on">GPS トグル</button>
     </div>
     <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js"></script>
   </body>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      let gps_on = false;
       var option = {
+        fake: true,
         mapboxgl: mapboxgl,
         mapboxToken: 'pk.eyJ1Ijoia29jaGl6dWZhbiIsImEiOiJjbHRnaWhzOW8wd2p4MmtvZDFsOWJiOG40In0.FYTPboTqXKv5a_onOaW1vQ',
         googleApiKey: 'AIzaSyB0v_F9EVPbE7R2uOm6Mixrtzts21DEICc',
@@ -290,19 +292,22 @@ stroke-width="2"></polygon>
           app.resetDirection();
         });
         document.getElementById("reset_circulation").addEventListener("click", function (e) {
+          console.log("Click reset_circulation");
           app.resetCirculation();
         });
-        document
+        /*document
           .getElementById("map_remove")
           .addEventListener("click", function (e) {
             app.remove();
-          });
+        });*/
         document
           .getElementById("gps_on")
           .addEventListener("click", function (e) {
-            app.mapObject.handleGPS(true);
-          });
+            console.log("Click GPS on/off");
+            gps_on = !gps_on;
+            app.handleGPS(gps_on);
         });
+      });
     });
   </script>
 </html>

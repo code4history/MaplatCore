@@ -19,7 +19,7 @@ import { HistMap } from "./source/histmap";
 import { TmsMap } from "./source/tmsmap";
 import { BackmapSource, MaplatSource, mapSourceFactory } from "./source_ex";
 import { META_KEYS, ViewpointArray } from "./source/mixin";
-import { recursiveRound } from "./math_ex";
+import { randomFromCenter, recursiveRound } from "./math_ex";
 import locales from "./freeze_locales";
 import {
   normalizeLayers,
@@ -29,6 +29,7 @@ import {
 } from "./normalize_pois";
 import { createIconSet, createHtmlFromTemplate } from "./template_works";
 import mapboxgl from "mapbox-gl";
+import { Geolocation } from "ol";
 
 // @ts-ignore
 import redcircle from "../parts/redcircle.png";                     // @ts-ignore  
@@ -110,6 +111,11 @@ export class MaplatApp extends EventTarget {
   logger: Logger;
   icon?: string;
   selectedIcon?: string;
+  geolocation?: Geolocation;
+  fakeGps = false;
+  fakeRadius?: number;
+  homePosition?: [number, number];
+  __first_gps_request = true;
   __backMapMoving = false;
   __selectedMarker: any;
   __init = true;
@@ -289,6 +295,7 @@ export class MaplatApp extends EventTarget {
   }
   // Async initializers 5: Prepare map base elements and objects
   prepareMap(appOption: any) {
+    console.log(appOption);
     appOption = normalizeArg(appOption);
     this.mercBuffer = null;
     const homePos = this.appData!.homePosition;
@@ -316,6 +323,13 @@ export class MaplatApp extends EventTarget {
         `position:absolute;"></div>`
     )[0];
     this.mapDivDocument!.insertBefore(newElem, this.mapDivDocument!.firstChild);
+    console.log(appOption);
+    console.log(this.appData);
+    console.log(`FakeGps: ${fakeGps}`);
+    this.fakeGps = fakeGps as boolean;
+    this.fakeRadius = fakeRadius as number;
+    this.homePosition = homePos as [number, number];
+
     this.mapObject = new MaplatMap({
       div: frontDiv,
       controls: this.appData!.controls || [],
@@ -1500,6 +1514,85 @@ export class MaplatApp extends EventTarget {
     }
     this.mapDivDocument!.innerHTML = "";
     this.mapDivDocument!.classList.remove("maplat");
+  }
+  handleGPS(launch: any, avoidEventForOff: any) { 
+    console.log(`GPS trigger${launch}`);
+    // launch: true = GPS on, false = GPS off
+    // avoidEventForOff: true = No event for GPS off, false = Event for GPS off
+    if (launch) {
+      this.dispatchEvent("gps_request");
+      this.__first_gps_request = true;
+      if (!this.geolocation) {
+        const geolocation = (this.geolocation = new Geolocation({
+          tracking: true
+        }));
+        // listen to changes in position
+        geolocation.on("change", _evt => {
+          console.log(`GPS Change ${_evt}`);
+          const overlayLayer = this.mapObject.getLayer("overlay").getLayers().item(0);
+          const source = overlayLayer
+            ? overlayLayer.getSource()
+            : (this.mapObject.getLayers().item(0) as any).getSource();
+          let lnglat = geolocation.getPosition();
+          let acc = geolocation.getAccuracy();
+          if (
+            this.fakeGps //&&
+            //getDistance(this.homePosition, lnglat as [number, number]) >
+            //this.fakeGps
+          ) {
+            lnglat = [
+              randomFromCenter(this.homePosition![0], 0.001),
+              randomFromCenter(this.homePosition![1], 0.001)
+            ];
+            acc = randomFromCenter(15.0, 10);
+          }
+          let gpsVal: any = { lnglat, acc };
+          console.log(this.fakeGps);
+          console.log(gpsVal);
+          (source as MaplatSource)
+            .setGPSMarkerAsync(gpsVal, !this.__first_gps_request)
+            .then((result: any) => {
+              if (!result) {
+                gpsVal = { error: "gps_out" };
+              }
+              this.__first_gps_request = false;
+              this.dispatchEvent(new CustomEvent("gps_result", gpsVal));
+            });
+        });
+        geolocation.on("error", _evt => {
+          console.log(`GPS Error ${_evt}`);
+          const source = (this.mapObject.getLayers().item(0) as any).getSource();
+          let gpsVal: any = null;
+          if (this.fakeGps) {
+            const lnglat = [
+              randomFromCenter(this.homePosition![0], 0.001),
+              randomFromCenter(this.homePosition![1], 0.001)
+            ];
+            const acc = randomFromCenter(15.0, 10);
+            gpsVal = { lnglat, acc };
+          }
+          (source as MaplatSource)
+            .setGPSMarkerAsync(gpsVal, !this.__first_gps_request)
+            .then((result: any) => {
+              if (!result) {
+                gpsVal = { error: "gps_out" };
+              }
+              this.__first_gps_request = false;
+              this.dispatchEvent(new CustomEvent("gps_result", gpsVal));
+            });
+        });
+      } else {
+        this.geolocation.setTracking(true);
+      }
+    } else {
+      if (this.geolocation) this.geolocation.setTracking(false);
+      const source = (this.mapObject.getLayers().item(0) as any).getSource();
+      source.setGPSMarker();
+      if (!avoidEventForOff)
+        this.dispatchEvent(
+          new CustomEvent("gps_result", { error: "gps_off" })
+        );
+    }
   }
 }
 export { createElement };
