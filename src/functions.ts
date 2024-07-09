@@ -106,7 +106,7 @@ export function normalizeArg(options: Record<string, any>) {
     mercator_y_shift: "mercatorYShift"
   } as const;
   return (Object.keys(table) as (keyof typeof table)[]).reduce((opt, key) => {
-    if (opt[key]) {
+    if (opt[key] !== undefined) {
       throw new Error(`Invalid Maplat option key: ${key}. Use "${table[key]}" instead.`);
       //opt[table[key]] = opt[key];
       //delete opt[key];
