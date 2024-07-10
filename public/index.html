@@ -64,7 +64,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       let gps_on = false;
       var option = {
-        fake: true,
+        //fake: true,
         mapboxgl: mapboxgl,
         mapboxToken: 'pk.eyJ1Ijoia29jaGl6dWZhbiIsImEiOiJjbHRnaWhzOW8wd2p4MmtvZDFsOWJiOG40In0.FYTPboTqXKv5a_onOaW1vQ',
         googleApiKey: 'AIzaSyB0v_F9EVPbE7R2uOm6Mixrtzts21DEICc',
@@ -72,7 +72,7 @@
         tapDuration: 60000,
         homeMarginPixels: 100,
         tapUIVanish: true,
-        gpsAlwaysOn: true
+        alwaysGpsOn: false
       };
       var hashes = window.location.href
         .slice(window.location.href.indexOf("?") + 1)
@@ -305,7 +305,10 @@ stroke-width="2"></polygon>
           .addEventListener("click", function (e) {
             console.log("Click GPS on/off");
             gps_on = !gps_on;
-            app.handleGPS(gps_on);
+            app.mapObject.handleGPS(gps_on);
+        });
+        app.mapObject.addEventListener("gps_result", (evt) => {
+          console.log(evt);
         });
       });
     });

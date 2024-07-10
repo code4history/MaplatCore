@@ -336,10 +336,7 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
           const xys = hide ? results[1]! : results[0]!;
           const sub = !hide ? results[1] : null;
           const pos: any = { xy: xys[0][0] };
-          if (!this.insideCheckSysCoord(xys[0][0]!)) {
-            map?.handleGPS(false, true);
-            return false;
-          }
+          if (!this.insideCheckSysCoord(xys[0][0]!)) return false;
           const news = xys[0].slice(1);
 
           pos.rad = news.reduce(

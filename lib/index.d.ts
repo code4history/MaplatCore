@@ -76,7 +76,6 @@ export declare class MaplatApp extends EventTarget {
     mapObject: any;
     mapboxMap: any;
     googleApiKey?: string;
-    gpsAlwaysOn: boolean;
     pois: any;
     poiTemplate?: string;
     poiStyle?: string;
@@ -88,14 +87,12 @@ export declare class MaplatApp extends EventTarget {
     fakeGps: boolean;
     fakeRadius?: number;
     homePosition?: [number, number];
-    private __first_gps_request;
     private __backMapMoving;
     private __selectedMarker;
     private __init;
     private __redrawMarkerBlock;
     private __redrawMarkerThrottle;
     private __transparency;
-    private __timerId?;
     lastClickEvent: any;
     constructor(appOption: any);
     settingLoader(setting: any): Promise<any>;
@@ -173,8 +170,6 @@ export declare class MaplatApp extends EventTarget {
     convertParametersFromCurrent(to: any, callback: any): void;
     translate(dataFragment?: Record<string, string> | string): string | undefined;
     remove(): void;
-    handleGPS(launch: any, avoidEventForOff: any): void;
-    handleGPSResults(type: "change" | "error"): void;
 }
 export { createElement };
 export { CustomEvent };

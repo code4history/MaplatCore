@@ -1,17 +1,19 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { Feature, Geolocation, Map, MapEvent } from "ol";
+import { Feature, Geolocation, Map } from "ol";
 import { View } from "./view_ex";
-import { Group, Tile, Vector as layerVector } from "ol/layer";
+import { Layer, Group, Tile, Vector as layerVector } from "ol/layer";
 import { Vector as sourceVector } from "ol/source";
 import { Circle, LineString, Point, Polygon } from "ol/geom";
 import { Fill, Icon, Stroke, Style } from "ol/style";
 import { MapboxMap } from "./source/mapboxmap";
 import { GoogleMap } from "./source/googlemap";
 import { NowMap } from "./source/nowmap";
-import { HistMap } from "./source/histmap";
-import { getDistance, randomFromCenter } from "./math_ex";
+import { randomFromCenter } from "./math_ex";
 import { MapboxLayer } from "./layer_mapbox";
 import { normalizeArg } from "./functions";
+import { MaplatSource } from "./source_ex";
+import { Coordinate } from "ol/coordinate";
+import CustomEvent from "./customevent";
 
 // @ts-ignore
 import bluedot from "../parts/bluedot.png";                         // @ts-ignore
@@ -60,18 +62,21 @@ const markerDefaultStyle = new Style({
     src: defaultpin
   })
 });
+
 export class MaplatMap extends Map {
-  _first_gps_request: any;
-  _overlay_group: any;
   fakeGps: any;
   fakeRadius: any;
   geolocation: any;
   homePosition: any;
-  __AvoidFirstMoveStart: boolean;
   northUp: boolean;
   tapDuration: number;
   homeMarginPixels: number;
   tapUIVanish: boolean;
+  alwaysGpsOn: boolean;
+  private __timer_id?: number;
+  private __first_gps_request = true;
+  private __ignore_first_move: boolean;
+
   constructor(optOptions: any) {
     optOptions = normalizeArg(optOptions || {});
     const vectorLayer = new layerVector({
@@ -128,7 +133,6 @@ export class MaplatMap extends Map {
       (options as any).interactions = optOptions.interactions;
     }
     super(options);
-    this._overlay_group = overlayLayer;
     this.fakeGps = optOptions.fakeGps;
     this.fakeRadius = optOptions.fakeRadius;
     this.homePosition = optOptions.homePosition;
@@ -136,11 +140,12 @@ export class MaplatMap extends Map {
     this.tapDuration = optOptions.tapDuration;
     this.homeMarginPixels = optOptions.homeMarginPixels;
     this.tapUIVanish = optOptions.tapUIVanish;
+    this.alwaysGpsOn = optOptions.alwaysGpsOn || false;
     const view = this.getView();
-    this.__AvoidFirstMoveStart = true;
+    this.__ignore_first_move = true;
     const movestart = () => {
-      if (!this.__AvoidFirstMoveStart) this.dispatchEvent("movestart");
-      this.__AvoidFirstMoveStart = false;
+      if (!this.__ignore_first_move) this.dispatchEvent("movestart");
+      this.__ignore_first_move = false;
       view.un("propertychange", movestart);
     };
     view.on("propertychange", movestart);
@@ -348,7 +353,7 @@ export class MaplatMap extends Map {
     const source = (this.getLayers().item(0) as any).getSource();
     source.setGPSMarker(position, ignoreMove);
   }
-  handleGPS(launch: any, avoidEventForOff: any) {
+  /*handleGPS(launch: any, avoidEventForOff: any) {
     //const map = this;
     if (launch) {
       this.dispatchEvent("gps_request");
@@ -420,5 +425,96 @@ export class MaplatMap extends Map {
           new MapEvent("gps_result", this, { error: "gps_off" } as any)
         );
     }
+  }*/
+  handleGPS(launch: any, avoidEventForOff = false) { 
+    console.log(`GPS trigger${launch}`);
+    // launch: true = GPS on, false = GPS off
+    // avoidEventForOff: true = No event for GPS off, false = Event for GPS off
+    if (launch) {
+      this.dispatchEvent(new CustomEvent("gps_request", {}));
+      this.__first_gps_request = !this.alwaysGpsOn;
+      if (this.fakeGps) {
+        this.__timer_id = setInterval(evt => {
+          console.log(`GPS Change ${evt}`);
+          this.handleGPSResults("change", evt);
+        }, 10000);
+        this.handleGPSResults("change");
+      } else {
+        if (!this.geolocation) {
+          const geolocation = (this.geolocation = new Geolocation({
+            tracking: true
+          }));
+          // listen to changes in position
+          geolocation.on("change", evt => {
+            console.log(`GPS Change ${evt}`);
+            console.log(evt);
+            this.handleGPSResults("change", evt);
+          });
+          geolocation.on("error", evt => {
+            console.log(`GPS Error ${evt}`);
+            console.log(evt);
+            this.handleGPSResults("error", evt);
+          });
+        } else {
+          this.geolocation.setTracking(true);
+        }
+      }
+    } else {
+      if (this.geolocation) this.geolocation.setTracking(false);
+      else if (this.__timer_id) {
+        clearInterval(this.__timer_id);
+        this.__timer_id = undefined;
+      }
+      const source = (this.getLayers().item(0) as Layer).getSource() as MaplatSource;
+      source.setGPSMarker(null);
+      if (!avoidEventForOff)
+        this.dispatchEvent(
+          new CustomEvent("gps_result", { error: "gps_off" })
+        );
+    }
+  }
+  
+  handleGPSResults(type: "change" | "error", event?: any) {
+    const overlayLayer = this.getLayer("overlay").getLayers().item(0) as Layer;
+    const firstLayer = this.getLayers().item(0) as Layer;
+    const source = (overlayLayer ? overlayLayer.getSource() : firstLayer.getSource()) as MaplatSource;
+    let gpsVal: {
+      lnglat?: Coordinate;
+      acc?: number;
+      error?: any;
+      code?: number;
+      message?: string;
+    } | null = null;
+    if (!this.geolocation) {
+      console.log("1");
+      const lnglat: Coordinate = [
+        randomFromCenter(this.homePosition![0], 0.05),
+        randomFromCenter(this.homePosition![1], 0.05)
+      ];
+      const acc = randomFromCenter(15.0, 10);
+      gpsVal = { lnglat, acc };
+    } else if (type == "change") {
+      console.log("2");
+      const lnglat = this.geolocation!.getPosition()!;
+      const acc = this.geolocation!.getAccuracy()!;
+      gpsVal = { lnglat, acc };
+    } else {
+      gpsVal = { error: "gps_error", code: event.code, message: event.message };
+      source.setGPSMarker(false);
+      this.dispatchEvent(new CustomEvent("gps_result", gpsVal));
+      if (!this.alwaysGpsOn) this.handleGPS(false);
+      return;
+    }
+    source.setGPSMarkerAsync(gpsVal, !this.__first_gps_request)
+      .then((result: any) => {
+        console.log("Out event dispatch");
+        console.log(result);
+        if (!result) {
+          gpsVal!.error = "gps_out";
+          //if (!this.alwaysGpsOn) this.handleGPS(false);
+        }
+        this.__first_gps_request = false;
+        this.dispatchEvent(new CustomEvent("gps_result", gpsVal));
+      });
   }
 }

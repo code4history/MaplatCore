@@ -58,7 +58,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "i18next", "i18next-xhr-backend", "./customevent", "./browserlanguage", "./logger", "./functions", "ol/events/Target", "ol/proj", "./map_ex", "ol/interaction", "ol/events/condition", "./source/histmap", "./source/tmsmap", "./source_ex", "./source/mixin", "./math_ex", "./freeze_locales", "./normalize_pois", "./template_works", "mapbox-gl", "ol", "../parts/redcircle.png", "../parts/defaultpin_selected.png", "../parts/defaultpin.png"], factory);
+        define(["require", "exports", "i18next", "i18next-xhr-backend", "./customevent", "./browserlanguage", "./logger", "./functions", "ol/events/Target", "ol/proj", "./map_ex", "ol/interaction", "ol/events/condition", "./source/histmap", "./source/tmsmap", "./source_ex", "./source/mixin", "./math_ex", "./freeze_locales", "./normalize_pois", "./template_works", "mapbox-gl", "../parts/redcircle.png", "../parts/defaultpin_selected.png", "../parts/defaultpin.png"], factory);
     }
 })(function (require, exports) {
     "use strict";
@@ -86,7 +86,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     var normalize_pois_1 = require("./normalize_pois");
     var template_works_1 = require("./template_works");
     var mapbox_gl_1 = __importDefault(require("mapbox-gl"));
-    var ol_1 = require("ol");
     var redcircle_png_1 = __importDefault(require("../parts/redcircle.png"));
     var defaultpin_selected_png_1 = __importDefault(require("../parts/defaultpin_selected.png"));
     var defaultpin_png_1 = __importDefault(require("../parts/defaultpin.png"));
@@ -106,7 +105,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             _this.startFrom = "";
             _this.vectors = [];
             _this.fakeGps = false;
-            _this.__first_gps_request = true;
             _this.__backMapMoving = false;
             _this.__init = true;
             _this.__redrawMarkerBlock = false;
@@ -119,7 +117,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             if (appOption.googleApiKey) {
                 _this.googleApiKey = appOption.googleApiKey;
             }
-            _this.gpsAlwaysOn = appOption.gpsAlwaysOn || false;
             _this.mapDiv = appOption.div || "map_div";
             _this.mapDivDocument = document.querySelector("#".concat(_this.mapDiv));
             _this.mapDivDocument.classList.add("maplat");
@@ -279,7 +276,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             var mercMinZoom = this.appData.minZoom;
             var mercMaxZoom = this.appData.maxZoom;
             this.appName = this.appData.appName;
+            console.log("fakeGps test");
+            console.log(appOption);
+            console.log(this.appData);
             var fakeGps = appOption.fake ? this.appData.fakeGps : false;
+            console.log(fakeGps);
             var fakeRadius = appOption.fake ? this.appData.fakeRadius : false;
             this.appLang = this.appData.lang || "ja";
             this.noRotate = appOption.noRotate || this.appData.noRotate || false;
@@ -317,7 +318,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 northUp: appOption.northUp || this.appData.northUp || false,
                 tapDuration: appOption.tapDuration || this.appData.tapDuration || 3000,
                 homeMarginPixels: appOption.homeMarginPixels || this.appData.homeMarginPixels || 50,
-                tapUIVanish: appOption.tapUIVanish || this.appData.tapUIVanish || false
+                tapUIVanish: appOption.tapUIVanish || this.appData.tapUIVanish || false,
+                alwaysGpsOn: appOption.alwaysGpsOn || false
             });
             var backDiv = null;
             if (this.overlay) {
@@ -1550,81 +1552,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             }
             this.mapDivDocument.innerHTML = "";
             this.mapDivDocument.classList.remove("maplat");
-        };
-        MaplatApp.prototype.handleGPS = function (launch, avoidEventForOff) {
-            var _this = this;
-            console.log("GPS trigger".concat(launch));
-            if (launch) {
-                this.__first_gps_request = true;
-                if (this.fakeGps) {
-                    this.__timerId = setInterval(function (_evt) {
-                        console.log("GPS Change ".concat(_evt));
-                        _this.handleGPSResults("change");
-                    }, 10000);
-                    this.handleGPSResults("change");
-                }
-                else {
-                    if (!this.geolocation) {
-                        var geolocation = (this.geolocation = new ol_1.Geolocation({
-                            tracking: true
-                        }));
-                        geolocation.on("change", function (_evt) {
-                            console.log("GPS Change ".concat(_evt));
-                            _this.handleGPSResults("change");
-                        });
-                        geolocation.on("error", function (_evt) {
-                            console.log("GPS Error ".concat(_evt));
-                            _this.handleGPSResults("error");
-                        });
-                    }
-                    else {
-                        this.geolocation.setTracking(true);
-                    }
-                }
-            }
-            else {
-                if (this.geolocation)
-                    this.geolocation.setTracking(false);
-                else if (this.__timerId) {
-                    clearInterval(this.__timerId);
-                    this.__timerId = undefined;
-                }
-                var source = this.mapObject.getLayers().item(0).getSource();
-                source.setGPSMarker(null);
-                if (!avoidEventForOff)
-                    this.dispatchEvent(new customevent_1.default("gps_result", { error: "gps_off" }));
-            }
-        };
-        MaplatApp.prototype.handleGPSResults = function (type) {
-            var _this = this;
-            var overlayLayer = this.mapObject.getLayer("overlay").getLayers().item(0);
-            var firstLayer = this.mapObject.getLayers().item(0);
-            var source = (overlayLayer ? overlayLayer.getSource() : firstLayer.getSource());
-            var gpsVal = null;
-            if (!this.geolocation) {
-                console.log("1");
-                var lnglat = [
-                    (0, math_ex_1.randomFromCenter)(this.homePosition[0], 0.05),
-                    (0, math_ex_1.randomFromCenter)(this.homePosition[1], 0.05)
-                ];
-                var acc = (0, math_ex_1.randomFromCenter)(15.0, 10);
-                gpsVal = { lnglat: lnglat, acc: acc };
-            }
-            else if (type == "change") {
-                console.log("2");
-                var lnglat = this.geolocation.getPosition();
-                var acc = this.geolocation.getAccuracy();
-                gpsVal = { lnglat: lnglat, acc: acc };
-            }
-            source.setGPSMarkerAsync(gpsVal, !this.__first_gps_request)
-                .then(function (result) {
-                console.log(result);
-                if (!result) {
-                    gpsVal = { error: "gps_out" };
-                }
-                _this.__first_gps_request = false;
-                _this.dispatchEvent(new customevent_1.default("gps_result", gpsVal));
-            });
         };
         return MaplatApp;
     }(Target_1.default));
