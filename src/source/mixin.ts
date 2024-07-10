@@ -15,7 +15,6 @@ import { polygon } from "@turf/helpers";
 import centroid from "@turf/centroid";
 import { booleanPointInPolygon, Feature, lineIntersect, lineString, Polygon, Properties } from "@turf/turf";
 import { View as mlView } from "../view_ex";
-//import { Source } from "ol/source";
 
 //type SourceConstructor<T> = new (...args: any[]) => T;
 // eslint-disable-next-line @typescript-eslint/ban-types

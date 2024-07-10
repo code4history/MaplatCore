@@ -34,6 +34,4 @@ export declare class MaplatMap extends Map {
     setLayer(source?: any): void;
     setTransparency(percentage: any): void;
     setGPSMarker(position: any, ignoreMove: any): void;
-    handleGPS(launch: any, avoidEventForOff?: boolean): void;
-    handleGPSResults(type: "change" | "error", event?: any): void;
 }

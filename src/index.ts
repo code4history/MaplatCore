@@ -29,7 +29,6 @@ import {
 } from "./normalize_pois";
 import { createIconSet, createHtmlFromTemplate } from "./template_works";
 import mapboxgl from "mapbox-gl";
-import { Geolocation } from "ol";
 
 // @ts-ignore
 import redcircle from "../parts/redcircle.png";                     // @ts-ignore  
@@ -110,7 +109,6 @@ export class MaplatApp extends EventTarget {
   logger: Logger;
   icon?: string;
   selectedIcon?: string;
-  geolocation?: Geolocation;
   fakeGps = false;
   fakeRadius?: number;
   homePosition?: [number, number];

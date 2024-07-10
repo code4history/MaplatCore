@@ -22,7 +22,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "ol", "./view_ex", "ol/layer", "ol/source", "ol/geom", "ol/style", "./source/mapboxmap", "./source/googlemap", "./source/nowmap", "./math_ex", "./layer_mapbox", "./functions", "./customevent", "../parts/bluedot.png", "../parts/bluedot_transparent.png", "../parts/bluedot_small.png", "../parts/defaultpin.png"], factory);
+        define(["require", "exports", "ol", "./view_ex", "ol/layer", "ol/source", "ol/geom", "ol/style", "./source/mapboxmap", "./source/googlemap", "./source/nowmap", "./layer_mapbox", "./functions", "../parts/bluedot.png", "../parts/bluedot_transparent.png", "../parts/bluedot_small.png", "../parts/defaultpin.png"], factory);
     }
 })(function (require, exports) {
     "use strict";
@@ -37,10 +37,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     var mapboxmap_1 = require("./source/mapboxmap");
     var googlemap_1 = require("./source/googlemap");
     var nowmap_1 = require("./source/nowmap");
-    var math_ex_1 = require("./math_ex");
     var layer_mapbox_1 = require("./layer_mapbox");
     var functions_1 = require("./functions");
-    var customevent_1 = __importDefault(require("./customevent"));
     var bluedot_png_1 = __importDefault(require("../parts/bluedot.png"));
     var bluedot_transparent_png_1 = __importDefault(require("../parts/bluedot_transparent.png"));
     var bluedot_small_png_1 = __importDefault(require("../parts/bluedot_small.png"));
@@ -368,95 +366,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         MaplatMap.prototype.setGPSMarker = function (position, ignoreMove) {
             var source = this.getLayers().item(0).getSource();
             source.setGPSMarker(position, ignoreMove);
-        };
-        MaplatMap.prototype.handleGPS = function (launch, avoidEventForOff) {
-            var _this = this;
-            if (avoidEventForOff === void 0) { avoidEventForOff = false; }
-            console.log("GPS trigger".concat(launch));
-            if (launch) {
-                this.dispatchEvent(new customevent_1.default("gps_request", {}));
-                this.__first_gps_request = !this.alwaysGpsOn;
-                if (this.fakeGps) {
-                    this.__timer_id = setInterval(function (evt) {
-                        console.log("GPS Change ".concat(evt));
-                        _this.handleGPSResults("change", evt);
-                    }, 10000);
-                    this.handleGPSResults("change");
-                }
-                else {
-                    if (!this.geolocation) {
-                        var geolocation = (this.geolocation = new ol_1.Geolocation({
-                            tracking: true
-                        }));
-                        geolocation.on("change", function (evt) {
-                            console.log("GPS Change ".concat(evt));
-                            console.log(evt);
-                            _this.handleGPSResults("change", evt);
-                        });
-                        geolocation.on("error", function (evt) {
-                            console.log("GPS Error ".concat(evt));
-                            console.log(evt);
-                            _this.handleGPSResults("error", evt);
-                        });
-                    }
-                    else {
-                        this.geolocation.setTracking(true);
-                    }
-                }
-            }
-            else {
-                if (this.geolocation)
-                    this.geolocation.setTracking(false);
-                else if (this.__timer_id) {
-                    clearInterval(this.__timer_id);
-                    this.__timer_id = undefined;
-                }
-                var source = this.getLayers().item(0).getSource();
-                source.setGPSMarker(null);
-                if (!avoidEventForOff)
-                    this.dispatchEvent(new customevent_1.default("gps_result", { error: "gps_off" }));
-            }
-        };
-        MaplatMap.prototype.handleGPSResults = function (type, event) {
-            var _this = this;
-            var overlayLayer = this.getLayer("overlay").getLayers().item(0);
-            var firstLayer = this.getLayers().item(0);
-            var source = (overlayLayer ? overlayLayer.getSource() : firstLayer.getSource());
-            var gpsVal = null;
-            if (!this.geolocation) {
-                console.log("1");
-                var lnglat = [
-                    (0, math_ex_1.randomFromCenter)(this.homePosition[0], 0.05),
-                    (0, math_ex_1.randomFromCenter)(this.homePosition[1], 0.05)
-                ];
-                var acc = (0, math_ex_1.randomFromCenter)(15.0, 10);
-                gpsVal = { lnglat: lnglat, acc: acc };
-            }
-            else if (type == "change") {
-                console.log("2");
-                var lnglat = this.geolocation.getPosition();
-                var acc = this.geolocation.getAccuracy();
-                gpsVal = { lnglat: lnglat, acc: acc };
-            }
-            else {
-                gpsVal = { error: "gps_error", code: event.code, message: event.message };
-                source.setGPSMarker(false);
-                this.dispatchEvent(new customevent_1.default("gps_result", gpsVal));
-                if (!this.alwaysGpsOn)
-                    this.handleGPS(false);
-                return;
-            }
-            source.setGPSMarkerAsync(gpsVal, !this.__first_gps_request)
-                .then(function (result) {
-                console.log("Out event dispatch");
-                console.log(result);
-                if (!result) {
-                    gpsVal.error = "gps_out";
-                }
-                _this.__first_gps_request = false;
-                _this.dispatchEvent(new customevent_1.default("gps_result", gpsVal));
-                _this.render();
-            });
         };
         return MaplatMap;
     }(ol_1.Map));
