@@ -291,7 +291,6 @@ export class MaplatApp extends EventTarget {
   }
   // Async initializers 5: Prepare map base elements and objects
   prepareMap(appOption: any) {
-    console.log(appOption);
     appOption = normalizeArg(appOption);
     this.mercBuffer = null;
     const homePos = this.appData!.homePosition;
@@ -300,11 +299,7 @@ export class MaplatApp extends EventTarget {
     const mercMinZoom = this.appData!.minZoom;
     const mercMaxZoom = this.appData!.maxZoom;
     this.appName = this.appData!.appName;
-    console.log("fakeGps test");
-    console.log(appOption);
-    console.log(this.appData);
     const fakeGps = appOption.fake ? this.appData!.fakeGps : false;
-    console.log(fakeGps);
     const fakeRadius = appOption.fake ? this.appData!.fakeRadius : false;
     this.appLang = this.appData!.lang || "ja";
     this.noRotate = appOption.noRotate || this.appData!.noRotate || false;
@@ -323,9 +318,6 @@ export class MaplatApp extends EventTarget {
         `position:absolute;"></div>`
     )[0];
     this.mapDivDocument!.insertBefore(newElem, this.mapDivDocument!.firstChild);
-    console.log(appOption);
-    console.log(this.appData);
-    console.log(`FakeGps: ${fakeGps}`);
     this.fakeGps = fakeGps as boolean;
     this.fakeRadius = fakeRadius as number;
     this.homePosition = homePos as [number, number];
@@ -801,7 +793,6 @@ export class MaplatApp extends EventTarget {
         return;
       }
     }
-    console.log("redrawMarkers");
     this.__redrawMarkerBlock = true;
     const redrawLogic = (source: any) => {
       const promises: any = [];

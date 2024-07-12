@@ -267,7 +267,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             });
         };
         MaplatApp.prototype.prepareMap = function (appOption) {
-            console.log(appOption);
             appOption = (0, functions_1.normalizeArg)(appOption);
             this.mercBuffer = null;
             var homePos = this.appData.homePosition;
@@ -276,11 +275,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             var mercMinZoom = this.appData.minZoom;
             var mercMaxZoom = this.appData.maxZoom;
             this.appName = this.appData.appName;
-            console.log("fakeGps test");
-            console.log(appOption);
-            console.log(this.appData);
             var fakeGps = appOption.fake ? this.appData.fakeGps : false;
-            console.log(fakeGps);
             var fakeRadius = appOption.fake ? this.appData.fakeRadius : false;
             this.appLang = this.appData.lang || "ja";
             this.noRotate = appOption.noRotate || this.appData.noRotate || false;
@@ -296,9 +291,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             var newElem = (0, functions_1.createElement)("<div id=\"".concat(frontDiv, "\" class=\"map\" style=\"top:0; left:0; right:0; bottom:0; ") +
                 "position:absolute;\"></div>")[0];
             this.mapDivDocument.insertBefore(newElem, this.mapDivDocument.firstChild);
-            console.log(appOption);
-            console.log(this.appData);
-            console.log("FakeGps: ".concat(fakeGps));
             this.fakeGps = fakeGps;
             this.fakeRadius = fakeRadius;
             this.homePosition = homePos;
@@ -773,7 +765,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                     return;
                 }
             }
-            console.log("redrawMarkers");
             this.__redrawMarkerBlock = true;
             var redrawLogic = function (source) {
                 var promises = [];
