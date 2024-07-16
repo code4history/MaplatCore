@@ -1320,8 +1320,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             }
             if (!source)
                 return;
-            console.log("#####aaaa#####");
-            console.log(source);
             return mixin_1.META_KEYS.reduce(function (prev, curr) {
                 prev[curr] = source.get(curr);
                 return prev;

@@ -1326,8 +1326,6 @@ export class MaplatApp extends EventTarget {
       source = this.cacheHash[mapID];
     }
     if (!source) return;
-    console.log("#####aaaa#####");
-    console.log(source);
     return META_KEYS.reduce(
       (prev: any, curr: string) => {
         prev[curr] = (source as any).get(curr);
