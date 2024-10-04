@@ -21,6 +21,7 @@ import {transform} from 'ol/proj.js';
   let area = 0, mapid = 0, zoom;
   const areaSelect = document.getElementById('area_select');
   const layerSelect = document.getElementById('layer_select');
+  const projSelect = document.getElementById('proj_select');
 
   const hashes = window.location.href
     .slice(window.location.href.indexOf("?") + 1)

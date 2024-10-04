@@ -64,15 +64,15 @@ class Factory {
       SourceClass = IIIF;
       delete options.url;
       const manifest = await manifesto.loadManifest(settingsNew.sourceSpec.url!) as any;
-      if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
-        const infoUrl = `${manifest.sequences[0].canvases[settingsNew.sourceSpec.iiifNumber || 0].images[0].resource.service['@id']}/info.json`;
+      //if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
+        const infoUrl = "https://rmda.kulib.kyoto-u.ac.jp/iiif/3/RB00014991%2FRB00014991_00001_0.ptif/info.json"//`${manifest.sequences[0].canvases[settingsNew.sourceSpec.iiifNumber || 0].images[0].resource.service['@id']}/info.json`;
         const infoObj = await (await fetch(infoUrl)).json();
         const iiifOption = new IIIFInfo(infoObj).getTileSourceOptions();
         if (iiifOption === undefined || iiifOption.version === undefined) throw new Error('Invalid Image setting in IIIF settings');
         options = Object.assign(options, iiifOption);
-      } else {
-        throw new Error('Invalid IIIF settings');
-      }
+      //} else {
+      //  throw new Error('Invalid IIIF settings');
+      //}
     } else if(!('url' in options)) {
       options.url = settingsNew.sourceSpec
         ? settingsNew.sourceSpec.url!
