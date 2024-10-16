@@ -64,6 +64,8 @@
     "i18next-xhr-backend": "^3.2.2",
     "lodash.template": "^4.5.0",
     "mapbox-gl": "^1.8.1",
+    "maplibre-gl": "^4.7.1",
+    "maplibregl-mapbox-request-transformer": "^0.0.2",
     "ol": "^9.0.0",
     "weiwudi": "^0.1.4",
     "whatwg-fetch": "^3.6.2"

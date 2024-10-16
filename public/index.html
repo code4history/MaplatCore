@@ -9,7 +9,6 @@
       content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no"
     />
     <link rel="icon" type="image/png" href="parts/favicon.png" />
-    <link href="https://api.tiles.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.css" rel="stylesheet" />
     <style>
       .mainview {
         position: absolute;
@@ -58,14 +57,12 @@
       <button id="reset_circulation">北を上に（northUp）</button>
       <button id="gps_on">GPS トグル</button>
     </div>
-    <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js"></script>
   </body>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       let gps_on = false;
       var option = {
         //fake: true,
-        mapboxgl: mapboxgl,
         mapboxToken: 'pk.eyJ1Ijoia29jaGl6dWZhbiIsImEiOiJjbHRnaWhzOW8wd2p4MmtvZDFsOWJiOG40In0.FYTPboTqXKv5a_onOaW1vQ',
         googleApiKey: 'AIzaSyB0v_F9EVPbE7R2uOm6Mixrtzts21DEICc',
         northUp: true,

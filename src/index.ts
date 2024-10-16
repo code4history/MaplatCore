@@ -28,7 +28,10 @@ import {
   normalizePoi
 } from "./normalize_pois";
 import { createIconSet, createHtmlFromTemplate } from "./template_works";
-import mapboxgl from "mapbox-gl";
+//import mapboxgl from "mapbox-gl";
+import maplibregl, { RequestTransformFunction, RequestParameters, ResourceType }  from 'maplibre-gl';
+//import 'maplibre-gl/dist/maplibre-gl.css'; // 追加
+import { isMapboxURL, transformMapboxUrl } from 'maplibregl-mapbox-request-transformer';
 
 // @ts-ignore
 import redcircle from "../parts/redcircle.png";                     // @ts-ignore  
@@ -101,6 +104,7 @@ export class MaplatApp extends EventTarget {
   mapDivDocument: HTMLElement | null;
   mapObject: any;
   mapboxMap: any;
+  mapboxToken?: string;
   googleApiKey?: string;
   pois: any;
   poiTemplate?: string;
@@ -126,7 +130,7 @@ export class MaplatApp extends EventTarget {
     appOption = normalizeArg(appOption);
     this.appid = appOption.appid || "sample";
     if (appOption.mapboxToken) {
-      mapboxgl.accessToken = appOption.mapboxToken;
+      this.mapboxToken = appOption.mapboxToken;
     }
     if (appOption.googleApiKey) {
       this.googleApiKey = appOption.googleApiKey;
@@ -358,7 +362,7 @@ export class MaplatApp extends EventTarget {
         div: backDiv
       });
     }
-    if (mapboxgl) {
+    if (maplibregl) {
       const mapboxDiv = `${this.mapDiv}_mapbox`;
       newElem = createElement(
         `<div id="${mapboxDiv}" class="map" style="top:0; left:0; right:0; bottom:0; ` +
@@ -368,7 +372,28 @@ export class MaplatApp extends EventTarget {
         newElem,
         this.mapDivDocument!.firstChild
       );
-      this.mapboxMap = new mapboxgl.Map({
+      const transformRequest: RequestTransformFunction = (url: string, resourceType?: ResourceType) => {
+        if (isMapboxURL(url)) {
+          return transformMapboxUrl(url, resourceType as string, this.mapboxToken!) as RequestParameters;
+        }
+        
+        // Do any other transforms you want
+        return {url} as RequestParameters;
+      }
+
+      /*const map = new maplibregl.Map({
+        container: 'map',
+        style: mapboxStyle,
+        center: [139.7670, 35.6814],
+        zoom: 15,
+        pitch: 60,
+        maxPitch: 85, // ピッチの最大値を85度に設定
+        bearing: -17.6,
+        antialias: true,
+        transformRequest
+      });*/
+
+      this.mapboxMap = new maplibregl.Map({
         attributionControl: false,
         boxZoom: false,
         container: mapboxDiv,
@@ -379,7 +404,8 @@ export class MaplatApp extends EventTarget {
         keyboard: false,
         pitchWithRotate: false,
         scrollZoom: false,
-        touchZoomRotate: false
+        touchZoomRotate: false,
+        transformRequest
       });
     }
     this.startFrom = this.appData!.startFrom;
