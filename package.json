@@ -54,6 +54,7 @@
   },
   "homepage": "https://github.com/code4history/MaplatCore/wiki",
   "dependencies": {
+    "@geoblocks/ol-maplibre-layer": "^1.0.1",
     "@maplat/tin": "^0.9.4",
     "@turf/line-intersect": "^6.5.0",
     "@turf/turf": "^6.5.0",
