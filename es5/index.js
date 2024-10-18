@@ -58,7 +58,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "i18next", "i18next-xhr-backend", "./customevent", "./browserlanguage", "./logger", "./functions", "ol/events/Target", "ol/proj", "./map_ex", "ol/interaction", "ol/events/condition", "./source/histmap", "./source/tmsmap", "./source_ex", "./source/mixin", "./math_ex", "./freeze_locales", "./normalize_pois", "./template_works", "mapbox-gl", "../parts/redcircle.png", "../parts/defaultpin_selected.png", "../parts/defaultpin.png"], factory);
+        define(["require", "exports", "i18next", "i18next-xhr-backend", "./customevent", "./browserlanguage", "./logger", "./functions", "ol/events/Target", "ol/proj", "./map_ex", "ol/interaction", "ol/events/condition", "./source/histmap", "./source/tmsmap", "./source_ex", "./source/mixin", "./math_ex", "./freeze_locales", "./normalize_pois", "./template_works", "mapbox-gl", "./geolocation", "../parts/redcircle.png", "../parts/defaultpin_selected.png", "../parts/defaultpin.png"], factory);
     }
 })(function (require, exports) {
     "use strict";
@@ -86,6 +86,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     var normalize_pois_1 = require("./normalize_pois");
     var template_works_1 = require("./template_works");
     var mapbox_gl_1 = __importDefault(require("mapbox-gl"));
+    var geolocation_1 = require("./geolocation");
     var redcircle_png_1 = __importDefault(require("../parts/redcircle.png"));
     var defaultpin_selected_png_1 = __importDefault(require("../parts/defaultpin_selected.png"));
     var defaultpin_png_1 = __importDefault(require("../parts/defaultpin.png"));
@@ -255,7 +256,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             if (!this.lang && this.appData.lang) {
                 this.lang = this.appData.lang;
             }
-            return this.i18nLoader().then(function (x) { return _this.handleI18n(x, appOption); });
+            return this.i18nLoader()
+                .then(function (x) { return _this.handleI18n(x, appOption); })
+                .then(function () {
+                _this.geolocation = new geolocation_1.Geolocation({
+                    timerBase: appOption.fake,
+                    homePosition: _this.appData.homePosition
+                });
+                _this.geolocation.setTracking(true);
+            });
         };
         MaplatApp.prototype.handleI18n = function (i18nObj, appOption) {
             var _this = this;

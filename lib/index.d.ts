@@ -5,6 +5,7 @@ import EventTarget from "ol/events/Target";
 import { MaplatMap } from "./map_ex";
 import { BackmapSource, MaplatSource } from "./source_ex";
 import { ViewpointArray } from "./source/mixin";
+import { Geolocation } from './geolocation';
 import { Coordinate } from "ol/coordinate";
 interface AppData {
     sources: string[];
@@ -85,6 +86,7 @@ export declare class MaplatApp extends EventTarget {
     fakeGps: boolean;
     fakeRadius?: number;
     homePosition?: [number, number];
+    geolocation?: Geolocation;
     private __backMapMoving;
     private __selectedMarker;
     private __init;

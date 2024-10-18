@@ -29,6 +29,7 @@ import {
 } from "./normalize_pois";
 import { createIconSet, createHtmlFromTemplate } from "./template_works";
 import mapboxgl from "mapbox-gl";
+import { Geolocation } from './geolocation';
 
 // @ts-ignore
 import redcircle from "../parts/redcircle.png";                     // @ts-ignore  
@@ -112,6 +113,7 @@ export class MaplatApp extends EventTarget {
   fakeGps = false;
   fakeRadius?: number;
   homePosition?: [number, number];
+  geolocation?: Geolocation;
   private __backMapMoving = false;
   private __selectedMarker: any;
   private __init = true;
@@ -278,7 +280,15 @@ export class MaplatApp extends EventTarget {
     if (!this.lang && this.appData.lang) {
       this.lang = this.appData.lang;
     }
-    return this.i18nLoader().then(x => this.handleI18n(x, appOption));
+    return this.i18nLoader()
+      .then(x => this.handleI18n(x, appOption))
+      .then(() => {
+        this.geolocation =new Geolocation({
+          timerBase: appOption.fake as boolean,
+          homePosition: this.appData!.homePosition!
+        });
+        this.geolocation.setTracking(true);
+      });
   }
   // Async initializers 4: Handle i18n setting
   handleI18n(i18nObj: any, appOption: any) {
