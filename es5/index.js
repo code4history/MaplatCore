@@ -58,12 +58,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "i18next", "i18next-xhr-backend", "./customevent", "./browserlanguage", "./logger", "./functions", "ol/events/Target", "ol/proj", "./map_ex", "ol/interaction", "ol/events/condition", "./source/histmap", "./source/tmsmap", "./source_ex", "./source/mixin", "./math_ex", "./freeze_locales", "./normalize_pois", "./template_works", "mapbox-gl", "./geolocation", "../parts/redcircle.png", "../parts/defaultpin_selected.png", "../parts/defaultpin.png"], factory);
+        define(["require", "exports", "i18next", "i18next-xhr-backend", "./customevent", "./browserlanguage", "./logger", "./functions", "ol/events/Target", "ol/proj", "./map_ex", "ol/interaction", "ol/events/condition", "./source/histmap", "./source/tmsmap", "./source_ex", "./source/mixin", "./math_ex", "./freeze_locales", "./normalize_pois", "./template_works", "mapbox-gl", "./geolocation", "../parts/redcircle.png", "../parts/defaultpin_selected.png", "../parts/defaultpin.png", "ol/events/Event"], factory);
     }
 })(function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.CustomEvent = exports.createElement = exports.MaplatApp = void 0;
+    exports.CustomEvent = exports.createElement = exports.MaplatApp = exports.GPSErrorEvent = void 0;
     var i18next_1 = __importDefault(require("i18next"));
     var i18next_xhr_backend_1 = __importDefault(require("i18next-xhr-backend"));
     var customevent_1 = __importDefault(require("./customevent"));
@@ -90,6 +90,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     var redcircle_png_1 = __importDefault(require("../parts/redcircle.png"));
     var defaultpin_selected_png_1 = __importDefault(require("../parts/defaultpin_selected.png"));
     var defaultpin_png_1 = __importDefault(require("../parts/defaultpin.png"));
+    var Event_1 = __importDefault(require("ol/events/Event"));
+    var GPSErrorEvent = (function (_super) {
+        __extends(GPSErrorEvent, _super);
+        function GPSErrorEvent(detail) {
+            var _this = _super.call(this, "gps_error") || this;
+            _this.detail = detail;
+            return _this;
+        }
+        return GPSErrorEvent;
+    }(Event_1.default));
+    exports.GPSErrorEvent = GPSErrorEvent;
     var MaplatApp = (function (_super) {
         __extends(MaplatApp, _super);
         function MaplatApp(appOption) {
@@ -106,6 +117,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             _this.startFrom = "";
             _this.vectors = [];
             _this.fakeGps = false;
+            _this.moveTo_ = false;
             _this.__backMapMoving = false;
             _this.__init = true;
             _this.__redrawMarkerBlock = false;
@@ -258,12 +270,58 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             }
             return this.i18nLoader()
                 .then(function (x) { return _this.handleI18n(x, appOption); })
-                .then(function () {
-                _this.geolocation = new geolocation_1.Geolocation({
-                    timerBase: appOption.fake,
-                    homePosition: _this.appData.homePosition
+                .then(function () { return _this.initGeolocation(appOption); });
+        };
+        MaplatApp.prototype.initGeolocation = function (appOption) {
+            var _this = this;
+            var geolocation = this.geolocation = new geolocation_1.Geolocation({
+                timerBase: appOption.fake,
+                homePosition: this.appData.homePosition
+            });
+            geolocation.setTracking(true);
+            geolocation.on("change", function () {
+                var map = _this.mapObject;
+                var overlayLayer = map.getLayer("overlay").getLayers().item(0);
+                var firstLayer = map.getLayers().item(0);
+                var source = (overlayLayer ? overlayLayer.getSource() : firstLayer.getSource());
+                var lnglat = geolocation.getPosition();
+                var acc = geolocation.getAccuracy();
+                if (!lnglat || !acc)
+                    return;
+                source.setGPSMarkerAsync({ lnglat: lnglat, acc: acc }, !_this.moveTo_).then(function (insideCheck) {
+                    _this.moveTo_ = false;
+                    if (!insideCheck) {
+                        source.setGPSMarker();
+                    }
                 });
-                _this.geolocation.setTracking(true);
+            });
+            geolocation.on("error", function (evt) {
+                var code = evt.code;
+                if (code === 3)
+                    return;
+                geolocation.setTracking(false);
+                _this.addEventListener("gps_error", function (evt) {
+                    console.log("Self receive check");
+                    console.log(evt);
+                });
+                _this.dispatchEvent(new GPSErrorEvent(code === 1 ? "user_gps_deny" : code === 2 ? "gps_miss" : "gps_timeout"));
+            });
+            this.addEventListener("mapChanged", function () {
+                if (geolocation.getTracking()) {
+                    var map = _this.mapObject;
+                    var overlayLayer = map.getLayer("overlay").getLayers().item(0);
+                    var firstLayer = map.getLayers().item(0);
+                    var source_1 = (overlayLayer ? overlayLayer.getSource() : firstLayer.getSource());
+                    var lnglat = geolocation.getPosition();
+                    var acc = geolocation.getAccuracy();
+                    if (!lnglat || !acc)
+                        return;
+                    source_1.setGPSMarkerAsync({ lnglat: lnglat, acc: acc }, true).then(function (insideCheck) {
+                        if (!insideCheck) {
+                            source_1.setGPSMarker();
+                        }
+                    });
+                }
             });
         };
         MaplatApp.prototype.handleI18n = function (i18nObj, appOption) {
