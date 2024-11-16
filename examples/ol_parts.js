@@ -15,6 +15,7 @@ import {Icon, Style} from 'ol/style.js';
 import {altKeyOnly} from 'ol/events/condition.js';
 import {defaults} from 'ol/interaction/defaults.js';
 import {transform} from 'ol/proj.js';
+import { MapboxVectorLayer } from 'ol-mapbox-style';
 
 (async () => {
   const centerLngLat = [139.53671, 36.24668];
@@ -148,14 +149,22 @@ import {transform} from 'ol/proj.js';
       ],
     },
   ];
+  const mapboxSource = new MapboxVectorLayer({
+    styleUrl: 'https://mierune.github.io/rekichizu-style/styles/street/style.json'
+  });
   await Promise.all(
     dataSources.map(async dataSource => {
       if (dataSource.raster) {
         dataSource.raster = await Promise.all(
-          dataSource.raster.map(url =>
-            MaplatFactory.factoryMaplatSourceFromUrl(null, url)
-          )
+          dataSource.raster.map(async url => {
+            const source = await MaplatFactory.factoryMaplatSourceFromUrl(null, url);
+            return new WebGLTileLayer({
+              title: localeSelector(source.get('title'), 'ja'),
+              source
+            })
+          })
         );
+        dataSource.raster.push(mapboxSource);
       }
       if (dataSource.vector) {
         dataSource.vector = await Promise.all(
@@ -219,8 +228,9 @@ import {transform} from 'ol/proj.js';
 
     const fromSource =
       clearMap || !map ? null : map.getLayers().getArray()[0].getSource();
-    const toSource = areaData.raster[layer_id];
-    console.log(toSource.getProjection());
+    const toLayer = areaData.raster[layer_id];
+    const toSource = toLayer.getSource();
+    //console.log(toLayer.getSource().getProjection());
 
     let toCenter, toResolution, toRotation, toParam;
     if (!fromSource) {
@@ -275,12 +285,7 @@ import {transform} from 'ol/proj.js';
         })
       : [];
 
-    layers.unshift(
-      new WebGLTileLayer({
-        title: localeSelector(toSource.get('title'), 'ja'),
-        source: toSource,
-      })
-    );
+    layers.unshift(toLayer);
 
     const frontDiv = document.querySelector('#map');
     if (!map) {

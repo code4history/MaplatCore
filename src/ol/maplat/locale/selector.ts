@@ -5,6 +5,7 @@
 import { LocaleFragment } from "../types/basics";
 
 export default function selectord(resource: LocaleFragment, locale: string) {
+  if (resource == null) return;
   if (typeof resource === 'string') {
     return resource;
   }
