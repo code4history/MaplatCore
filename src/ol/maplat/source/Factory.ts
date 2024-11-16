@@ -17,7 +17,7 @@ import {XYZ, IIIF, Source} from 'ol/source.js';
 import IIIFInfo from 'ol/format/IIIFInfo.js';
 import {polygon} from '@turf/helpers';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const manifesto = require('manifesto.js');
+//const manifesto = require('manifesto.js');
 import { MaplatDefinition } from '../types/specFile';
 import { GeoJSONPolygonFeature, MaplatSpecLegacy } from '../types/specLegacy';
 import { Position } from '@turf/turf';
@@ -63,7 +63,7 @@ class Factory {
     if (settingsNew.sourceSpec && settingsNew.sourceSpec.tileSourceType === 'IIIF') { 
       SourceClass = IIIF;
       delete options.url;
-      const manifest = await manifesto.loadManifest(settingsNew.sourceSpec.url!) as any;
+      //const manifest = await manifesto.loadManifest(settingsNew.sourceSpec.url!) as any;
       //if (manifest.sequences && manifest.sequences[0] && manifest.sequences[0].canvases) {
         const infoUrl = "https://rmda.kulib.kyoto-u.ac.jp/iiif/3/RB00014991%2FRB00014991_00001_0.ptif/info.json"//`${manifest.sequences[0].canvases[settingsNew.sourceSpec.iiifNumber || 0].images[0].resource.service['@id']}/info.json`;
         const infoObj = await (await fetch(infoUrl)).json();
