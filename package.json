@@ -64,7 +64,8 @@
     "i18next-xhr-backend": "^3.2.2",
     "lodash.template": "^4.5.0",
     "mapbox-gl": "^1.8.1",
-    "ol": "^9.0.0",
+    "ol": "^10.2.1",
+    "ol-mapbox-style": "^12.3.5",
     "weiwudi": "^0.1.4",
     "whatwg-fetch": "^3.6.2"
   },

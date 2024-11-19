@@ -1,5 +1,7 @@
 import { View } from "ol";
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore 
 View.prototype.getDecimalZoom = function (this: View): number {
   const resolution = this.getResolution();
   const offset =

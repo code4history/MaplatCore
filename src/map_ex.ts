@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { Feature, Map } from "ol";
+import { Collection, Feature, Map } from "ol";
 import { View } from "./view_ex";
-import { Group, Tile, Vector as layerVector } from "ol/layer";
+import { Group, Layer, Tile, Vector as layerVector } from "ol/layer";
 import { Vector as sourceVector } from "ol/source";
 import { Circle, LineString, Point, Polygon } from "ol/geom";
 import { Fill, Icon, Stroke, Style } from "ol/style";
@@ -10,12 +10,17 @@ import { GoogleMap } from "./source/googlemap";
 import { NowMap } from "./source/nowmap";
 import { MapboxLayer } from "./layer_mapbox";
 import { normalizeArg } from "./functions";
+import PointerInteraction from 'ol/interaction/Pointer';
+import MapBrowserEvent from 'ol/MapBrowserEvent';
 
 // @ts-ignore
 import bluedot from "../parts/bluedot.png";                         // @ts-ignore
 import bluedot_transparent from "../parts/bluedot_transparent.png"; // @ts-ignore
 import bluedot_small from "../parts/bluedot_small.png";             // @ts-ignore
 import defaultpin from "../parts/defaultpin.png";
+import BaseLayer from "ol/layer/Base";
+import LayerGroup from "ol/layer/Group";
+import { StyleLike } from "ol/style/Style";
 
 const gpsStyle = new Style({
   image: new Icon({
@@ -25,6 +30,7 @@ const gpsStyle = new Style({
     src: bluedot
   })
 });
+
 const gpsHideStyle = new Style({
   image: new Icon({
     anchor: [0.5, 0.5],
@@ -33,6 +39,7 @@ const gpsHideStyle = new Style({
     src: bluedot_transparent
   })
 });
+
 const gpsSubStyle = new Style({
   image: new Icon({
     anchor: [0.5, 0.5],
@@ -41,6 +48,7 @@ const gpsSubStyle = new Style({
     src: bluedot_small
   })
 });
+
 const accCircleStyle = new Style({
   fill: new Fill({
     color: [128, 128, 256, 0.2]
@@ -50,6 +58,7 @@ const accCircleStyle = new Style({
     width: 3
   })
 });
+
 const markerDefaultStyle = new Style({
   image: new Icon({
     anchor: [0.5, 1.0],
@@ -58,6 +67,30 @@ const markerDefaultStyle = new Style({
     src: defaultpin
   })
 });
+
+class CustomInteraction extends PointerInteraction {
+  handleDownEvent(evt: any) {
+    // pointerdown の処理
+    console.log('handleDownEvent', evt);
+
+    // pointerdown イベントを発火
+    const downEvent = new MapBrowserEvent('pointerdown', evt.map, evt.originalEvent);
+    evt.map.dispatchEvent(downEvent);
+
+    return false;
+  }
+
+  handleUpEvent(evt: any) {
+    // pointerup の処理
+    console.log('handleUpEvent', evt);
+
+    // pointerup イベントを発火
+    const upEvent = new MapBrowserEvent('pointerup', evt.map, evt.originalEvent);
+    evt.map.dispatchEvent(upEvent);
+
+    return false;
+  }
+}
 
 export class MaplatMap extends Map {
   fakeGps: any;
@@ -139,6 +172,10 @@ export class MaplatMap extends Map {
     this.alwaysGpsOn = optOptions.alwaysGpsOn || false;
     const view = this.getView();
     this.__ignore_first_move = true;
+      
+    const interaction = new CustomInteraction({});
+    this.addInteraction(interaction);
+
     const movestart = () => {
       if (!this.__ignore_first_move) this.dispatchEvent("movestart");
       this.__ignore_first_move = false;
@@ -170,15 +207,15 @@ export class MaplatMap extends Map {
     return layer;
   }
   getLayer(name = "base") {
-    const recur = (layers: any) => {
+    const recur = (layers: Collection<BaseLayer>) => {
       const filtered = layers
         .getArray()
-        .map((layer: any) => {
+        .map((layer: BaseLayer) => {
           if (layer.get("name") == name) return layer;
-          if (layer.getLayers) return recur(layer.getLayers());
+          if (layer instanceof LayerGroup) return recur(layer.getLayers());
           return;
         })
-        .filter((layer: any) => layer);
+        .filter((layer: BaseLayer | undefined) => layer) as BaseLayer[];
       if (filtered.length == 0) return;
       return filtered[0];
     };
@@ -187,10 +224,11 @@ export class MaplatMap extends Map {
   getSource(name = "base") {
     const layer = this.getLayer(name);
     if (!layer) return;
-    return layer.getSource();
+    return (layer as Layer).getSource();
   }
-  setFeature(data: any, style: any, layer: any) {
-    const src = this.getSource(layer);
+
+  setFeature(data: any, style: StyleLike | undefined, layer: string) {
+    const src = this.getSource(layer)! as sourceVector;
     const feature = new Feature(data);
     if (style) {
       feature.setStyle(style);
@@ -198,14 +236,17 @@ export class MaplatMap extends Map {
     src.addFeature(feature);
     return feature;
   }
+
   removeFeature(feature: any, layer: any) {
-    const src = this.getSource(layer);
+    const src = this.getSource(layer)! as sourceVector;
     src.removeFeature(feature);
   }
+
   resetFeature(layer: any) {
-    const src = this.getSource(layer);
+    const src = this.getSource(layer)! as sourceVector;
     src.clear();
   }
+
   setGPSPosition(pos: any, type: any = undefined) {
     const style =
       type == "sub" ? gpsSubStyle : type == "hide" ? gpsHideStyle : gpsStyle;
@@ -231,7 +272,7 @@ export class MaplatMap extends Map {
       }
     }
   }
-  setMarker(xy: any, data: any, markerStyle: any, layer: any) {
+  setMarker(xy: any, data: any, markerStyle: any, layer?: any) {
     if (!layer) layer = "marker";
     data["geometry"] = new Point(xy);
     if (!markerStyle) markerStyle = markerDefaultStyle;
@@ -251,7 +292,7 @@ export class MaplatMap extends Map {
     }
     return this.setFeature(data, markerStyle, layer);
   }
-  resetMarker(layer: any) {
+  resetMarker(layer?: any) {
     if (!layer) layer = "marker";
     this.resetFeature(layer);
   }
@@ -259,7 +300,7 @@ export class MaplatMap extends Map {
     // Ready for Polygon
     return this.setVector(xys, "Line", stroke ? { stroke } : null, layer);
   }
-  setVector(coords: any, type = "Line", style: any, layer: any) {
+  setVector(coords: any, type = "Line", style: any, layer?: any) {
     // Ready for Polygon
     if (!layer) layer = "feature";
     const option = {};
@@ -281,7 +322,7 @@ export class MaplatMap extends Map {
     // Ready for Polygon
     this.resetVector(layer);
   }
-  resetVector(layer: any) {
+  resetVector(layer?: any) {
     // Ready for Polygon
     if (!layer) layer = "feature";
     this.resetFeature(layer);
@@ -315,6 +356,7 @@ export class MaplatMap extends Map {
       layer
     );
   }
+
   exchangeSource(source: any = undefined) {
     const layers = this.getLayers();
     const prevLayer = layers.item(0);
@@ -325,15 +367,18 @@ export class MaplatMap extends Map {
     }
   }
   setLayer(source: any = undefined) {
-    const layers = this.getLayer("overlay").getLayers();
+  //setLayer(layer: Tile | MapboxLayer) {
+    const layers = (this.getLayer("overlay")! as LayerGroup).getLayers();
     layers.clear();
     if (source) {
       const layer = new Tile({
         source
       });
+  //  if (layer) {
       layers.push(layer);
     }
   }
+
   setTransparency(percentage: any) {
     const opacity = (100 - percentage) / 100;
     const source = this.getSource();

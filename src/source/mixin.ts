@@ -533,6 +533,8 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
     zoom2Radius(size: Size, zoom?: number) {
       const radius = Math.floor(Math.min(size[0], size[1]) / 4);
       if (zoom === undefined) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         zoom = (this.getMap().getView() as mlView).getDecimalZoom();
       }
       return (radius * MERC_MAX) / 128 / Math.pow(2, zoom!);

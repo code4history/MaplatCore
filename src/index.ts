@@ -35,6 +35,8 @@ import redcircle from "../parts/redcircle.png";                     // @ts-ignor
 import defaultpin_selected from "../parts/defaultpin_selected.png"; // @ts-ignore
 import defaultpin from "../parts/defaultpin.png";
 import { Coordinate } from "ol/coordinate";
+import { MapboxLayer } from "./layer_mapbox";
+import { Tile } from "ol/layer";
 
 interface AppData {
   sources: string[];
@@ -97,9 +99,9 @@ export class MaplatApp extends EventTarget {
   currentPosition: any;
   startFrom? = "";
   from?: MaplatSource;
-  vectors: any = [];
+  vectors: any[] = [];
   mapDivDocument: HTMLElement | null;
-  mapObject: any;
+  mapObject?: MaplatMap;
   mapboxMap: any;
   googleApiKey?: string;
   pois: any;
@@ -112,14 +114,15 @@ export class MaplatApp extends EventTarget {
   fakeGps = false;
   fakeRadius?: number;
   homePosition?: [number, number];
+  lastClickEvent: any;
   private __backMapMoving = false;
   private __selectedMarker: any;
   private __init = true;
   private __redrawMarkerBlock = false;
   private __redrawMarkerThrottle: MaplatSource[] = [];
   private __transparency: any;
+  private __layerHash: { [key: string]: Tile | MapboxLayer; } = {};
 
-  lastClickEvent: any;
   // Maplat App Class
   constructor(appOption: any) {
     super();
@@ -207,9 +210,12 @@ export class MaplatApp extends EventTarget {
     if (this.overlay) {
       this.mapDivDocument!.classList.add("with-opacity");
     }
-    this.waitReady = this.settingLoader(setting).then(x =>
-      this.handleSetting(x, appOption)
-    );
+    this.waitReady = (async () => {
+      const loaded = await this.settingLoader(setting);
+      this.handleSetting(loaded);
+      const i18n = await this.i18nLoader();
+      return this.handleI18n(i18n, appOption);
+    })();
   }
   // Async initializers 1: Load application setting
   async settingLoader(setting: any) {
@@ -228,6 +234,15 @@ export class MaplatApp extends EventTarget {
       })
     );
   }
+
+  // Async initializers 2: Handle application setting
+  handleSetting(setting: any) {
+    this.appData = normalizeArg(setting as Record<string, any>) as AppData;
+    if (!this.lang && this.appData.lang) {
+      this.lang = this.appData.lang;
+    }
+  }
+
   // Async initializers 3: Load i18n setting
   async i18nLoader() {
     return new Promise((resolve, _reject) => {
@@ -249,37 +264,7 @@ export class MaplatApp extends EventTarget {
       );
     });
   }
-  // Async initializer 6: Load pois setting => move to normalize_pois.js
-  // Async initializer 8: Load sources setting asynchronous
-  async sourcesLoader(mapReturnValue: any) {
-    const dataSource = this.appData!.sources;
-    const sourcePromise: Promise<any>[] = [];
-    const commonOption = {
-      //homePosition: mapReturnValue.homePos,
-      //mercZoom: mapReturnValue.defZoom,
-      homePos: mapReturnValue.homePos,
-      defZoom: mapReturnValue.defZoom,
-      zoomRestriction: mapReturnValue.zoomRestriction,
-      mercMinZoom: mapReturnValue.mercMinZoom,
-      mercMaxZoom: mapReturnValue.mercMaxZoom,
-      enableCache: this.enableCache,
-      key: this.googleApiKey,
-      translator: (fragment: any) => this.translate(fragment)
-    };
-    for (let i = 0; i < dataSource.length; i++) {
-      const option = dataSource[i];
-      sourcePromise.push(mapSourceFactory(option, commonOption));
-    }
-    return Promise.all(sourcePromise);
-  }
-  // Async initializers 2: Handle application setting
-  handleSetting(setting: any, appOption: any) {
-    this.appData = normalizeArg(setting as Record<string, any>) as AppData;
-    if (!this.lang && this.appData.lang) {
-      this.lang = this.appData.lang;
-    }
-    return this.i18nLoader().then(x => this.handleI18n(x, appOption));
-  }
+
   // Async initializers 4: Handle i18n setting
   handleI18n(i18nObj: any, appOption: any) {
     this.i18n = i18nObj[1];
@@ -289,6 +274,7 @@ export class MaplatApp extends EventTarget {
       this.handlePois(x, mapReturnValue)
     );
   }
+
   // Async initializers 5: Prepare map base elements and objects
   prepareMap(appOption: any) {
     appOption = normalizeArg(appOption);
@@ -391,11 +377,38 @@ export class MaplatApp extends EventTarget {
       mercMaxZoom
     };
   }
+
+  // Async initializer 6: Load pois setting => move to normalize_pois.js
+
   // Async initializer 7: Handle pois loading result
   handlePois(pois: any, mapReturnValue: any) {
     this.pois = pois;
     return this.sourcesLoader(mapReturnValue).then(x => this.handleSources(x));
   }
+
+  // Async initializer 8: Load sources setting asynchronous
+  async sourcesLoader(mapReturnValue: any) {
+    const dataSource = this.appData!.sources;
+    const sourcePromise: Promise<any>[] = [];
+    const commonOption = {
+      //homePosition: mapReturnValue.homePos,
+      //mercZoom: mapReturnValue.defZoom,
+      homePos: mapReturnValue.homePos,
+      defZoom: mapReturnValue.defZoom,
+      zoomRestriction: mapReturnValue.zoomRestriction,
+      mercMinZoom: mapReturnValue.mercMinZoom,
+      mercMaxZoom: mapReturnValue.mercMaxZoom,
+      enableCache: this.enableCache,
+      key: this.googleApiKey,
+      translator: (fragment: any) => this.translate(fragment)
+    };
+    for (let i = 0; i < dataSource.length; i++) {
+      const option = dataSource[i];
+      sourcePromise.push(mapSourceFactory(option, commonOption));
+    }
+    return Promise.all(sourcePromise);
+  }
+
   // Async initializer 9: Handle sources loading result
   handleSources(sources: any) {
     this.mercSrc = sources.reduce((prev: any, curr: any) => {
@@ -412,7 +425,10 @@ export class MaplatApp extends EventTarget {
           throw "To use mapbox gl based base map, you have to make Maplat object with specifying 'mapboxgl' option.";
         }
         source.mapboxMap = this.mapboxMap;
-      }
+
+      } //else {
+      //
+      //}
       cache.push(source);
       this.cacheHash[source.mapID] = source;
     }
@@ -447,7 +463,7 @@ export class MaplatApp extends EventTarget {
   }
   // Async initializer 11: Handle map click event
   setMapClick() {
-    this.mapObject.on("click", (evt: any) => {
+    this.mapObject!.on("click", (evt: any) => {
       this.logger.debug(evt.pixel);
       this.lastClickEvent = evt;
       const features: any[] = [];
@@ -497,7 +513,7 @@ export class MaplatApp extends EventTarget {
           }
         });
     };
-    this.mapObject.on("pointermove", (evt: any) => {
+    this.mapObject!.on("pointermove", (evt: any) => {
       if (dragging) return;
       if (waiting) {
         xyBuffer = evt.coordinate;
@@ -506,19 +522,26 @@ export class MaplatApp extends EventTarget {
         pointermoveHandler(evt.coordinate);
       }
     });
-    this.mapObject.on("pointerdown", (evt: any) => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    this.mapObject!.on("pointerdown", (evt: any) => {
+      console.log("pointerdown", evt);
       if (evt.originalEvent && evt.originalEvent.pointerId != null) {
         pointerCounter[evt.originalEvent.pointerId] = true;
       }
       dragging = true;
     });
-    this.mapObject.on("pointerdrag", (evt: any) => {
+    this.mapObject!.on("pointerdrag", (evt: any) => {
+      console.log("pointerdrag", evt);
       if (evt.originalEvent && evt.originalEvent.pointerId != null) {
         pointerCounter[evt.originalEvent.pointerId] = true;
       }
       dragging = true;
     });
-    this.mapObject.on("pointerup", (evt: any) => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    this.mapObject!.on("pointerup", (evt: any) => {
+      console.log("pointerup", evt);
       // Android
       if (evt.originalEvent && evt.originalEvent.pointerId != null) {
         delete pointerCounter[evt.originalEvent.pointerId];
@@ -539,13 +562,13 @@ export class MaplatApp extends EventTarget {
   setMapOnOff() {
     // MapUI on off
     let timer: any;
-    this.mapObject.on("click", () => {
+    this.mapObject!.on("click", () => {
       if (timer) {
         clearTimeout(timer);
         timer = undefined;
       }
       const ctls = this.mapDivDocument!.querySelectorAll(".ol-control");
-      if (!this.mapObject.tapUIVanish || (ctls.length && ctls[0].classList.contains("fade"))) {
+      if (!this.mapObject!.tapUIVanish || (ctls.length && ctls[0].classList.contains("fade"))) {
         for (let i = 0; i < ctls.length; i++) {
           ctls[i].classList.remove("fade");
         }
@@ -559,10 +582,10 @@ export class MaplatApp extends EventTarget {
           for (let i = 0; i < ctls.length; i++) {
             ctls[i].classList.remove("fade");
           }
-        }, this.mapObject.tapDuration);
+        }, this.mapObject!.tapDuration);
       }
     });
-    this.mapObject.on("pointerdrag", () => {
+    this.mapObject!.on("pointerdrag", () => {
       if (timer) {
         clearTimeout(timer);
         timer = undefined;
@@ -572,7 +595,7 @@ export class MaplatApp extends EventTarget {
         ctls[i].classList.add("fade");
       }
     });
-    this.mapObject.on("moveend", () => {
+    this.mapObject!.on("moveend", () => {
       if (timer) {
         clearTimeout(timer);
         timer = undefined;
@@ -583,7 +606,7 @@ export class MaplatApp extends EventTarget {
         for (let i = 0; i < ctls.length; i++) {
           ctls[i].classList.remove("fade");
         }
-      }, this.mapObject.tapDuration);
+      }, this.mapObject!.tapDuration);
     });
   }
   // Async initializer 14: Handle mouse cursor
@@ -609,7 +632,7 @@ export class MaplatApp extends EventTarget {
         this.mapDivDocument!.querySelector(`#${target}`)! as HTMLElement
       ).style.cursor = "";
     };
-    this.mapObject.on("pointermove", moveHandler);
+    this.mapObject!.on("pointermove", moveHandler);
     const mapOutHandler = (evt: any) => {
       let histCoord = evt.frameState.viewState.center;
       const source = this.from;
@@ -620,7 +643,7 @@ export class MaplatApp extends EventTarget {
         evt.target.getView().setCenter(histCoord);
       }
     };
-    this.mapObject.on("moveend", mapOutHandler);
+    this.mapObject!.on("moveend", mapOutHandler);
   }
   // Async initializer 15: Handle back map's behavior
   setBackMapBehavior() {
@@ -644,14 +667,14 @@ export class MaplatApp extends EventTarget {
         });
       }
     };
-    this.mapObject.on("postrender", backMapMove);
+    this.mapObject!.on("postrender", backMapMove);
   }
   // Async initializer 16: Handle back map's behavior
   raiseChangeViewpoint() {
-    this.mapObject.on("postrender", async (_evt: any) => {
-      const view = this.mapObject.getView();
-      const center = view.getCenter();
-      const zoom = view.getDecimalZoom();
+    this.mapObject!.on("postrender", async (_evt: any) => {
+      const view = this.mapObject!.getView();
+      const center = view.getCenter()!;
+      const zoom = (view as any).getDecimalZoom();
       const rotation = normalizeDegree((view.getRotation() * 180) / Math.PI);
       const mercs = await this.from!.viewpoint2MercsAsync();
       const viewpoint = await this.mercSrc!.mercs2ViewpointAsync(mercs);
@@ -731,12 +754,12 @@ export class MaplatApp extends EventTarget {
     return promise.then((xy: any) => {
       if (!xy) return;
       if ((src as MaplatSource).insideCheckSysCoord(xy)) {
-        this.mapObject.setMarker(xy, { datum: data }, icon);
+        this.mapObject!.setMarker(xy, { datum: data }, icon);
       }
     });
   }
   resetMarker() {
-    this.mapObject.resetMarker();
+    this.mapObject!.resetMarker();
   }
   setLine(data: any) {
     // Ready for Polygon
@@ -770,7 +793,7 @@ export class MaplatApp extends EventTarget {
       xyPromises = merc2XyRecurse(data.lnglats, true);
     }
     xyPromises.then(xys => {
-      this.mapObject.setVector(xys, data.type, data.style);
+      this.mapObject!.setVector(xys, data.type, data.style);
     });
   }
   resetLine() {
@@ -779,7 +802,7 @@ export class MaplatApp extends EventTarget {
   }
   resetVector() {
     // Ready for Polygon
-    this.mapObject.resetVector();
+    this.mapObject!.resetVector();
   }
   redrawMarkers(source: MaplatSource | undefined = undefined) {
     if (!source) {
@@ -1156,7 +1179,7 @@ export class MaplatApp extends EventTarget {
                     if (this.from!.isWmts()) {
                       backTo =
                         this.from instanceof TmsMap
-                          ? this.mapObject.getSource()
+                          ? this.mapObject!.getSource()
                           : // If current foreground is TMS overlay, set current basemap as new background
                             this.from; // If current foreground source is basemap, set current foreground as new background
                     }
@@ -1175,21 +1198,21 @@ export class MaplatApp extends EventTarget {
             }
             if (to instanceof TmsMap) {
               // Foreground is TMS overlay case: set TMS as Layer
-              this.mapObject.setLayer(to);
+              this.mapObject!.setLayer(to);
               // If current foreground is basemap then set it as basemap layer
               if (backRestore) {
-                this.mapObject.exchangeSource(backRestore);
+                this.mapObject!.exchangeSource(backRestore);
               } else if (!this.from!.isWmts()) {
                 const backToLocal = backSrc || now;
-                this.mapObject.exchangeSource(backToLocal);
+                this.mapObject!.exchangeSource(backToLocal);
               }
               this.requestUpdateState({
-                backgroundID: this.mapObject.getSource().mapID
+                backgroundID: (this.mapObject!.getSource()! as any).mapID
               });
             } else {
               // Remove overlay from foreground and set current source to foreground
-              this.mapObject.setLayer();
-              this.mapObject.exchangeSource(to);
+              this.mapObject!.setLayer();
+              this.mapObject!.exchangeSource(to);
             }
             const updateState = {
               mapID: to.mapID
@@ -1202,7 +1225,7 @@ export class MaplatApp extends EventTarget {
             // and Changing "from" content must be finished before "postrender" event
             this.from = to;
             this.dispatchPoiNumber();
-            const view = this.mapObject.getView();
+            const view = this.mapObject!.getView();
             if (this.appData!.zoomRestriction) {
               view.setMaxZoom(to.maxZoom!);
               view.setMinZoom(to.minZoom || 0);
@@ -1240,8 +1263,8 @@ export class MaplatApp extends EventTarget {
             this.dispatchEvent(
               new CustomEvent("mapChanged", this.getMapMeta(to.mapID))
             );
-            this.mapObject.updateSize();
-            this.mapObject.render();
+            this.mapObject!.updateSize();
+            this.mapObject!.render();
             if (restore!.position) {
               this.__init = false;
               to.setViewpoint(restore!.position);
@@ -1296,7 +1319,7 @@ export class MaplatApp extends EventTarget {
   }
   setTransparency(percentage: any) {
     this.__transparency = percentage;
-    this.mapObject.setTransparency(percentage);
+    this.mapObject!.setTransparency(percentage);
     this.requestUpdateState({ transparency: percentage });
   }
   getTransparency() {
@@ -1395,7 +1418,7 @@ export class MaplatApp extends EventTarget {
     await source.cancelTileCacheAsync();
   }
   convertParametersFromCurrent(to: any, callback: any) {
-    const view = this.mapObject.getView();
+    const view = this.mapObject!.getView();
     let fromPromise = (this.from as MaplatSource).viewpoint2MercsAsync();
     const current = recursiveRound(
       [view.getCenter(), view.getZoom(), view.getRotation()],

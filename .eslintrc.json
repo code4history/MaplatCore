@@ -36,6 +36,7 @@
     "rest-spread-spacing": "error",
     "template-curly-spacing": "error",
     "yield-star-spacing": "error",
+    //"@typescript-eslint/ban-ts-comment": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/explicit-member-accessibility": "off",
