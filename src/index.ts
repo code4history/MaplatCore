@@ -522,8 +522,6 @@ export class MaplatApp extends EventTarget {
         pointermoveHandler(evt.coordinate);
       }
     });
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
     this.mapObject!.on("pointerdown", (evt: any) => {
       console.log("pointerdown", evt);
       if (evt.originalEvent && evt.originalEvent.pointerId != null) {
@@ -538,8 +536,6 @@ export class MaplatApp extends EventTarget {
       }
       dragging = true;
     });
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
     this.mapObject!.on("pointerup", (evt: any) => {
       console.log("pointerup", evt);
       // Android

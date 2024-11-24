@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { Collection, Feature, Map } from "ol";
-import { View } from "./view_ex";
+import "./view_ex";
+import { Collection, Feature, Map, View } from "ol";
 import { Group, Layer, Tile, Vector as layerVector } from "ol/layer";
 import { Vector as sourceVector } from "ol/source";
 import { Circle, LineString, Point, Polygon } from "ol/geom";
@@ -12,6 +12,7 @@ import { MapboxLayer } from "./layer_mapbox";
 import { normalizeArg } from "./functions";
 import PointerInteraction from 'ol/interaction/Pointer';
 import MapBrowserEvent from 'ol/MapBrowserEvent';
+import Observable, { EventTypes } from 'ol/Observable';
 
 // @ts-ignore
 import bluedot from "../parts/bluedot.png";                         // @ts-ignore
@@ -21,6 +22,9 @@ import defaultpin from "../parts/defaultpin.png";
 import BaseLayer from "ol/layer/Base";
 import LayerGroup from "ol/layer/Group";
 import { StyleLike } from "ol/style/Style";
+import { Types as OLMapBrowserEventTypes } from 'ol/MapBrowserEventType';
+import { EventsKey } from 'ol/events';
+import { MapEventHandler } from "ol/Map";
 
 const gpsStyle = new Style({
   image: new Icon({
@@ -92,6 +96,14 @@ class CustomInteraction extends PointerInteraction {
   }
 }
 
+// 既存の型を拡張
+type ExtendedMapBrowserEventTypes = OLMapBrowserEventTypes | 'pointerdown' | 'pointerup';
+
+// 拡張されたMapEventHandler
+interface ExtendedMapEventHandler<Return> extends MapEventHandler<Return> {
+    (type: ExtendedMapBrowserEventTypes, listener: (evt: MapBrowserEvent<PointerEvent>) => void): Return;
+}
+
 export class MaplatMap extends Map {
   fakeGps: any;
   fakeRadius: any;
@@ -105,6 +117,10 @@ export class MaplatMap extends Map {
   private __timer_id?: number;
   private __first_gps_request = true;
   private __ignore_first_move: boolean;
+  
+  public on: ExtendedMapEventHandler<EventsKey>;
+  public once: ExtendedMapEventHandler<EventsKey>;
+  public un: ExtendedMapEventHandler<void>;
 
   constructor(optOptions: any) {
     optOptions = normalizeArg(optOptions || {});
@@ -176,16 +192,37 @@ export class MaplatMap extends Map {
     const interaction = new CustomInteraction({});
     this.addInteraction(interaction);
 
-    const movestart = () => {
-      if (!this.__ignore_first_move) this.dispatchEvent("movestart");
-      this.__ignore_first_move = false;
-      view.un("propertychange", movestart);
-    };
-    view.on("propertychange", movestart);
-    this.on("moveend", () => {
-      view.on("propertychange", movestart);
-    });
-  }
+
+
+        // Observableのprototypeから元のメソッドを取得
+        const originalOn = Observable.prototype.on.bind(this);
+        const originalOnce = Observable.prototype.once.bind(this);
+        const originalUn = Observable.prototype.un.bind(this);
+
+        // 新しい実装で上書き
+        this.on = (((type: string | string[], listener: any) => 
+            originalOn(type as EventTypes, listener)
+        ) as any) as ExtendedMapEventHandler<EventsKey>;
+
+        this.once = (((type: string | string[], listener: any) => 
+            originalOnce(type as EventTypes, listener)
+        ) as any) as ExtendedMapEventHandler<EventsKey>;
+
+        this.un = (((type: string | string[], listener: any) => 
+            originalUn(type as EventTypes, listener)
+        ) as any) as ExtendedMapEventHandler<void>;
+
+        const movestart = () => {
+          if (!this.__ignore_first_move) this.dispatchEvent("movestart");
+          this.__ignore_first_move = false;
+          view.un("propertychange", movestart);
+        };
+        view.on("propertychange", movestart);
+        this.on("moveend", () => {
+          view.on("propertychange", movestart);
+        });
+      }
+
   static spawnLayer(layer: any, source: any, container: any) {
     if (source instanceof MapboxMap || !(layer instanceof Tile)) {
       if (source instanceof MapboxMap) {
