@@ -87,7 +87,7 @@ export class MaplatApp extends EventTarget {
   changeMapSeq?: Promise<void>;
   i18n?: any;
   t?: any;
-  lang: string;
+  lang?: string;
   appData?: AppData;
   appLang = "ja";
   backMap?: MaplatMap;
@@ -212,13 +212,26 @@ export class MaplatApp extends EventTarget {
     }
     this.waitReady = (async () => {
       const loaded = await this.settingLoader(setting);
-      this.handleSetting(loaded);
-      const i18n = await this.i18nLoader();
-      return this.handleI18n(i18n, appOption);
+
+      // Handle application setting
+      this.appData = normalizeArg(loaded) as AppData;
+
+      if (!this.lang && this.appData.lang) this.lang = this.appData.lang;
+      this.i18n = i18n;
+      this.t = await this.i18nLoader();
+
+      // Handle i18n setting
+      const mapReturnValue = this.prepareMap(appOption);
+
+      // Handle pois loading result
+      this.pois = await normalizeLayers(this.appData!.pois || [], this);
+
+      const sources = await this.sourcesLoader(mapReturnValue);
+      this.handleSources(sources);
     })();
   }
   // Async initializers 1: Load application setting
-  async settingLoader(setting: any) {
+  async settingLoader(setting: any): Promise<Record<string, any>> {
     return (
       setting ||
       new Promise((resolve, _reject) => {
@@ -235,16 +248,8 @@ export class MaplatApp extends EventTarget {
     );
   }
 
-  // Async initializers 2: Handle application setting
-  handleSetting(setting: any) {
-    this.appData = normalizeArg(setting as Record<string, any>) as AppData;
-    if (!this.lang && this.appData.lang) {
-      this.lang = this.appData.lang;
-    }
-  }
-
   // Async initializers 3: Load i18n setting
-  async i18nLoader() {
+  async i18nLoader(): Promise<any> {
     return new Promise((resolve, _reject) => {
       const localesFlag = Object.keys(locales).length != 0;
       const translib =
@@ -259,20 +264,10 @@ export class MaplatApp extends EventTarget {
           resources: localesFlag ? locales : undefined
         },
         (_err, t) => {
-          resolve([t, i18n]);
+          resolve(t);
         }
       );
     });
-  }
-
-  // Async initializers 4: Handle i18n setting
-  handleI18n(i18nObj: any, appOption: any) {
-    this.i18n = i18nObj[1];
-    this.t = i18nObj[0];
-    const mapReturnValue = this.prepareMap(appOption);
-    return normalizeLayers(this.appData!.pois || [], this).then(x =>
-      this.handlePois(x, mapReturnValue)
-    );
   }
 
   // Async initializers 5: Prepare map base elements and objects
@@ -376,14 +371,6 @@ export class MaplatApp extends EventTarget {
       mercMinZoom,
       mercMaxZoom
     };
-  }
-
-  // Async initializer 6: Load pois setting => move to normalize_pois.js
-
-  // Async initializer 7: Handle pois loading result
-  handlePois(pois: any, mapReturnValue: any) {
-    this.pois = pois;
-    return this.sourcesLoader(mapReturnValue).then(x => this.handleSources(x));
   }
 
   // Async initializer 8: Load sources setting asynchronous
