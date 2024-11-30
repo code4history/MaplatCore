@@ -28,14 +28,13 @@ import {
   normalizePoi
 } from "./normalize_pois";
 import { createIconSet, createHtmlFromTemplate } from "./template_works";
-import mapboxgl from "mapbox-gl";
 
 // @ts-ignore
 import redcircle from "../parts/redcircle.png";                     // @ts-ignore  
 import defaultpin_selected from "../parts/defaultpin_selected.png"; // @ts-ignore
 import defaultpin from "../parts/defaultpin.png";
 import { Coordinate } from "ol/coordinate";
-import { MapboxLayer } from "./layer_mapbox";
+
 import { Tile } from "ol/layer";
 
 interface AppData {
@@ -121,16 +120,16 @@ export class MaplatApp extends EventTarget {
   private __redrawMarkerBlock = false;
   private __redrawMarkerThrottle: MaplatSource[] = [];
   private __transparency: any;
-  private __layerHash: { [key: string]: Tile | MapboxLayer; } = {};
+  private __layerHash: { [key: string]: Tile; } = {};
 
   // Maplat App Class
   constructor(appOption: any) {
     super();
     appOption = normalizeArg(appOption);
     this.appid = appOption.appid || "sample";
-    if (appOption.mapboxToken) {
+    /*if (appOption.mapboxToken) {
       mapboxgl.accessToken = appOption.mapboxToken;
-    }
+    }*/
     if (appOption.googleApiKey) {
       this.googleApiKey = appOption.googleApiKey;
     }
@@ -220,14 +219,14 @@ export class MaplatApp extends EventTarget {
       this.i18n = i18n;
       this.t = await this.i18nLoader();
 
-      // Handle i18n setting
+      // Handle i18n setting => mapObject 生成箇所
       const mapReturnValue = this.prepareMap(appOption);
 
       // Handle pois loading result
       this.pois = await normalizeLayers(this.appData!.pois || [], this);
 
       const sources = await this.sourcesLoader(mapReturnValue);
-      this.handleSources(sources);
+      await this.handleSources(sources);
     })();
   }
   // Async initializers 1: Load application setting
@@ -303,6 +302,7 @@ export class MaplatApp extends EventTarget {
     this.fakeRadius = fakeRadius as number;
     this.homePosition = homePos as [number, number];
 
+    // MapObject生成
     this.mapObject = new MaplatMap({
       div: frontDiv,
       controls: this.appData!.controls || [],
@@ -339,30 +339,6 @@ export class MaplatApp extends EventTarget {
         div: backDiv
       });
     }
-    if (mapboxgl) {
-      const mapboxDiv = `${this.mapDiv}_mapbox`;
-      newElem = createElement(
-        `<div id="${mapboxDiv}" class="map" style="top:0; left:0; right:0; bottom:0; ` +
-          `position:absolute;visibility:hidden;"></div>`
-      )[0];
-      this.mapDivDocument!.insertBefore(
-        newElem,
-        this.mapDivDocument!.firstChild
-      );
-      this.mapboxMap = new mapboxgl.Map({
-        attributionControl: false,
-        boxZoom: false,
-        container: mapboxDiv,
-        doubleClickZoom: false,
-        dragPan: false,
-        dragRotate: false,
-        interactive: false,
-        keyboard: false,
-        pitchWithRotate: false,
-        scrollZoom: false,
-        touchZoomRotate: false
-      });
-    }
     this.startFrom = this.appData!.startFrom;
     return {
       homePos,
@@ -397,7 +373,7 @@ export class MaplatApp extends EventTarget {
   }
 
   // Async initializer 9: Handle sources loading result
-  handleSources(sources: any) {
+  async handleSources(sources: any) {
     this.mercSrc = sources.reduce((prev: any, curr: any) => {
       if (prev) return prev;
       if (curr.isBasemap()) return curr;
@@ -420,7 +396,7 @@ export class MaplatApp extends EventTarget {
       this.cacheHash[source.mapID] = source;
     }
     this.dispatchEvent(new CustomEvent("sourceLoaded", sources));
-    this.setInitialMap(cache);
+    await this.setInitialMap(cache);
     this.setMapClick();
     this.setPointerEvents();
     this.setMapOnOff();
@@ -428,6 +404,7 @@ export class MaplatApp extends EventTarget {
     this.setBackMapBehavior();
     this.raiseChangeViewpoint();
   }
+
   // Async initializer 10: Handle initial map
   async setInitialMap(cache: MaplatSource[]) {
     const initial: string =
@@ -448,6 +425,7 @@ export class MaplatApp extends EventTarget {
     );
     await this.changeMap(initial, this.initialRestore);
   }
+
   // Async initializer 11: Handle map click event
   setMapClick() {
     this.mapObject!.on("click", (evt: any) => {

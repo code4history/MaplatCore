@@ -2,10 +2,10 @@ import { normalizeArg } from "./functions";
 import Weiwudi from "weiwudi";
 import { NowMap } from "./source/nowmap";
 import { TmsMap } from "./source/tmsmap";
-import { MapboxMap } from "./source/mapboxmap";
 import { GoogleMap } from "./source/googlemap";
 import { HistMap } from "./source/histmap";
 import { HistMap_tin } from "./source/histmap_tin";
+import { VectorMap } from "./source/vectormap";
 import "whatwg-fetch";
 
 export type MaplatSource = HistMap | NowMap | GoogleMap;
@@ -91,7 +91,7 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
         : options.maptype === "overlay"
         ? TmsMap
         : options.maptype === "mapbox"
-        ? MapboxMap
+        ? VectorMap 
         : GoogleMap;
     if (!targetSrc.isBasemap()) {
       if (!options.homePosition) options.homePosition = options.homePos;
@@ -158,7 +158,7 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
                 : options.maptype === "overlay"
                 ? TmsMap
                 : options.maptype === "mapbox"
-                ? MapboxMap
+                ? VectorMap
                 : GoogleMap;
             if (!targetSrc.isBasemap()) {
               if (!options.homePosition) options.homePosition = options.homePos;

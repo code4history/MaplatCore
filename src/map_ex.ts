@@ -5,10 +5,9 @@ import { Group, Layer, Tile, Vector as layerVector } from "ol/layer";
 import { Vector as sourceVector } from "ol/source";
 import { Circle, LineString, Point, Polygon } from "ol/geom";
 import { Fill, Icon, Stroke, Style } from "ol/style";
-import { MapboxMap } from "./source/mapboxmap";
 import { GoogleMap } from "./source/googlemap";
 import { NowMap } from "./source/nowmap";
-import { MapboxLayer } from "./layer_mapbox";
+import { VectorMap } from "./source/vectormap";
 import { normalizeArg } from "./functions";
 import PointerInteraction from 'ol/interaction/Pointer';
 import MapBrowserEvent from 'ol/MapBrowserEvent';
@@ -134,8 +133,7 @@ export class MaplatMap extends Map {
     envelopeLayer.set("name", "envelope");
     const baseLayer = MaplatMap.spawnLayer(
       null,
-      optOptions.source,
-      optOptions.target
+      optOptions.source
     );
     const overlayLayer = new Group();
     overlayLayer.set("name", "overlay");
@@ -186,15 +184,10 @@ export class MaplatMap extends Map {
       view.on("propertychange", movestart);
     });
   }
-  static spawnLayer(layer: any, source: any, container: any) {
-    if (source instanceof MapboxMap || !(layer instanceof Tile)) {
-      if (source instanceof MapboxMap) {
-        layer = new MapboxLayer({
-          style: source.style,
-          accessToken: source.accessToken,
-          container,
-          source
-        });
+  static spawnLayer(layer: any, source: any) {
+    if (source instanceof VectorMap || !(layer instanceof Tile)) {
+      if (source instanceof VectorMap) {
+        layer = (source as any).layer_;
       } else {
         layer = new Tile({
           source
@@ -360,7 +353,7 @@ export class MaplatMap extends Map {
   exchangeSource(source: any = undefined) {
     const layers = this.getLayers();
     const prevLayer = layers.item(0);
-    const layer = MaplatMap.spawnLayer(prevLayer, source, this.getTarget());
+    const layer = MaplatMap.spawnLayer(prevLayer, source);
     if (layer != prevLayer) layers.setAt(0, layer);
     if (source) {
       source.setMap(this);
