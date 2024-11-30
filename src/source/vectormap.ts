@@ -31,6 +31,7 @@ export class VectorMap extends setCustomFunctionBase(VectorTileSource) {
         Object.assign(tgtSource, srcSource);
       });
       (tgtSource as any).layer_ = vectorLayer;
+      vectorLayer.setSource(tgtSource);
       res(tgtSource);
     });
   }

@@ -20,6 +20,7 @@ import defaultpin from "../parts/defaultpin.png";
 import BaseLayer from "ol/layer/Base";
 import LayerGroup from "ol/layer/Group";
 import { StyleLike } from "ol/style/Style";
+import { MapboxVectorLayer } from "ol-mapbox-style";
 
 const gpsStyle = new Style({
   image: new Icon({
@@ -185,7 +186,8 @@ export class MaplatMap extends Map {
     });
   }
   static spawnLayer(layer: any, source: any) {
-    if (source instanceof VectorMap || !(layer instanceof Tile)) {
+    if ((source instanceof VectorMap) || (layer instanceof MapboxVectorLayer) || !layer) {
+      console.log("Create new");
       if (source instanceof VectorMap) {
         layer = (source as any).layer_;
       } else {
@@ -195,6 +197,7 @@ export class MaplatMap extends Map {
       }
       layer.set("name", "base");
     } else {
+      console.log("Reuse");
       layer.setSource(source);
     }
     return layer;

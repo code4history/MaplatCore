@@ -2,7 +2,8 @@
 import { XYZ } from "ol/source";
 import {
   addCommonOptions,
-  setCustomFunctionBase
+  setCustomFunctionBase,
+  setupTileLoadFunction
 } from "./mixin";
 
 export class NowMap extends setCustomFunctionBase(XYZ) {
@@ -12,5 +13,6 @@ export class NowMap extends setCustomFunctionBase(XYZ) {
       this.mapID = options.mapID;
     }
     this.initialize(options);
+    setupTileLoadFunction(this);
   }
 }

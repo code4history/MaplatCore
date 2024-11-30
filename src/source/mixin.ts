@@ -126,7 +126,7 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
       const poisWait = this.resolvePois(options.pois);
       this.initialWait = Promise.all([poisWait, thumbWait]);
 
-      setupTileLoadFunction(this);
+      //setupTileLoadFunction(this);
     }
 
     static isBasemap() {

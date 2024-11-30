@@ -3,7 +3,8 @@ import { addCoordinateTransforms, addProjection, Projection } from "ol/proj";
 import { MERC_MAX, tileSize, transPng } from "../const_ex";
 import {
   addCommonOptions,
-  setCustomFunctionMaplat
+  setCustomFunctionMaplat,
+  setupTileLoadFunction
 } from "./mixin";
 import { XYZ } from "ol/source";
 import { createFromTemplates, expandUrl } from "ol/tileurlfunction";
@@ -42,22 +43,6 @@ for (let z = 0; z < 9; z++) {
     );
   })(key, maxxy);
 }
-
-// eslint-disable-next-line @typescript-eslint/ban-types
-/*type Constructor<T = {}> = new (...args: any[]) => T;
-
-export function setCustomFunctionForHistmap<TBase extends Constructor>(Base: TBase) {
-  abstract class HistMapMixin extends setCustomFunction(Base) {
-
-  }
-  return HistMapMixin;
-}
-
-export function setCustomInitializeForHistmap(self: any, options: any) {
-
-  setCustomInitialize(this, options);
-  setupTileLoadFunction(this);
-}*/
 
 export abstract class HistMap extends setCustomFunctionMaplat(XYZ) {
   constructor(options: any = {}) {
@@ -106,5 +91,6 @@ export abstract class HistMap extends setCustomFunctionMaplat(XYZ) {
     this._maxxy = Math.pow(2, this.maxZoom as number) * tileSize;
 
     this.initialize(options);
+    setupTileLoadFunction(this);
   }
 }
