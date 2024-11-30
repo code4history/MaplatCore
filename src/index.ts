@@ -35,8 +35,6 @@ import defaultpin_selected from "../parts/defaultpin_selected.png"; // @ts-ignor
 import defaultpin from "../parts/defaultpin.png";
 import { Coordinate } from "ol/coordinate";
 
-import { Tile } from "ol/layer";
-
 interface AppData {
   sources: string[];
   lang?: string;
@@ -120,7 +118,6 @@ export class MaplatApp extends EventTarget {
   private __redrawMarkerBlock = false;
   private __redrawMarkerThrottle: MaplatSource[] = [];
   private __transparency: any;
-  private __layerHash: { [key: string]: Tile; } = {};
 
   // Maplat App Class
   constructor(appOption: any) {
