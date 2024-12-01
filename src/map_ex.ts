@@ -20,7 +20,8 @@ import defaultpin from "../parts/defaultpin.png";
 import BaseLayer from "ol/layer/Base";
 import LayerGroup from "ol/layer/Group";
 import { StyleLike } from "ol/style/Style";
-//import { MapboxVectorLayer } from "ol-mapbox-style";
+
+const layersHash:Record<string, Layer> = {};
 
 const gpsStyle = new Style({
   image: new Icon({
@@ -67,6 +68,23 @@ const markerDefaultStyle = new Style({
     src: defaultpin
   })
 });
+
+export function setToLayersHash(source: any, layer: Layer) {
+  layersHash[source.mapID] = layer;
+}
+
+export function getFromLayersHash(source: any) {
+  let layer;
+  if (source) layer = layersHash[source.mapID];
+  if (!layer) {
+    layer = new Tile({
+      source
+    });
+    layer.set("name", "base");
+    if (source) setToLayersHash(source, layer);
+  }
+  return layer;
+}
 
 class CustomInteraction extends PointerInteraction {
   handleDownEvent(evt: any) {
@@ -132,10 +150,7 @@ export class MaplatMap extends Map {
       })
     });
     envelopeLayer.set("name", "envelope");
-    const baseLayer = MaplatMap.spawnLayer(
-      null,
-      optOptions.source
-    );
+    const baseLayer = getFromLayersHash(optOptions.source);
     const overlayLayer = new Group();
     overlayLayer.set("name", "overlay");
     const controls = optOptions.controls ? optOptions.controls : [];
@@ -185,23 +200,7 @@ export class MaplatMap extends Map {
       view.on("propertychange", movestart);
     });
   }
-  static spawnLayer(layer: any, source: any) {
-    //if ((source instanceof VectorMap) || (layer instanceof MapboxVectorLayer) || !layer) {
-      console.log("Create new");
-      if (source instanceof VectorMap) {
-        layer = (source as any).layer_;
-      } else {
-        layer = new Tile({
-          source
-        });
-      }
-      layer.set("name", "base");
-    /*} else {
-      console.log("Reuse");
-      layer.setSource(source);
-    }*/
-    return layer;
-  }
+
   getLayer(name = "base") {
     const recur = (layers: Collection<BaseLayer>) => {
       const filtered = layers
@@ -356,21 +355,19 @@ export class MaplatMap extends Map {
   exchangeSource(source: any = undefined) {
     const layers = this.getLayers();
     const prevLayer = layers.item(0);
-    const layer = MaplatMap.spawnLayer(prevLayer, source);
+    const layer = getFromLayersHash(source);
     if (layer != prevLayer) layers.setAt(0, layer);
     if (source) {
       source.setMap(this);
     }
   }
   setLayer(source: any = undefined) {
-  //setLayer(layer: Tile | MapboxLayer) {
     const layers = (this.getLayer("overlay")! as LayerGroup).getLayers();
     layers.clear();
     if (source) {
       const layer = new Tile({
         source
       });
-  //  if (layer) {
       layers.push(layer);
     }
   }
@@ -378,7 +375,7 @@ export class MaplatMap extends Map {
   setTransparency(percentage: any) {
     const opacity = (100 - percentage) / 100;
     const source = this.getSource();
-    if (source instanceof NowMap || source instanceof GoogleMap) {
+    if (source instanceof NowMap || source instanceof GoogleMap || source instanceof VectorMap) {
       this.getLayers().item(0).setOpacity(1);
       this.getLayers().item(1).setOpacity(opacity);
     } else {

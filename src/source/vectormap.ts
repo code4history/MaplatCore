@@ -5,6 +5,7 @@ import {
   addCommonOptions,
   setCustomFunctionBase
 } from "./mixin";
+import { setToLayersHash } from '../map_ex';
 
 export class VectorMap extends setCustomFunctionBase(VectorTileSource) {
   constructor(options: any = {}) {
@@ -30,8 +31,9 @@ export class VectorMap extends setCustomFunctionBase(VectorTileSource) {
         const srcSource = vectorLayer.getSource();
         Object.assign(tgtSource, srcSource);
       });
-      (tgtSource as any).layer_ = vectorLayer;
+      vectorLayer.set("name", "base");
       vectorLayer.setSource(tgtSource);
+      setToLayersHash(tgtSource, vectorLayer);
       res(tgtSource);
     });
   }

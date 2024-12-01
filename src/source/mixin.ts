@@ -850,65 +850,6 @@ export function addCommonOptions(options: any) {
   return options;
 }
 
-/*export function setCustomInitialize(this: any, options: any) {
-  options = normalizeArg(options);
-  this.mapID = options.mapID;
-  this.homePosition = options.homePosition;
-  this.mercZoom = options.mercZoom;
-  this.label = options.label;
-  this.maxZoom = options.maxZoom;
-  this.minZoom = options.minZoom;
-  this.poiTemplate = options.poiTemplate;
-  this.poiStyle = options.poiStyle;
-  this.iconTemplate = options.iconTemplate;
-  this.icon = options.icon;
-  this.selectedIcon = options.selectedIcon;
-  this.mercatorXShift = options.mercatorXShift;
-  this.mercatorYShift = options.mercatorYShift;
-  this.weiwudi = options.weiwudi;
-  if (options.envelopeLngLats) {
-    const lngLats = options.envelopeLngLats;
-    const mercs = lngLats.map((lnglat: Coordinate) =>
-      transform(lnglat, "EPSG:4326", "EPSG:3857")
-    );
-    mercs.push(mercs[0]);
-    this.envelope = polygon([mercs]);
-    this.centroid = centroid(this.envelope).geometry?.coordinates;
-  }
-
-  for (let i = 0; i < META_KEYS.length; i++) {
-    const key = META_KEYS[i];
-    const option_key = META_KEYS_OPTION[i];
-    this[key] = options[option_key] || options[key];
-  }
-
-  const thumbWait = options.thumbnail
-    ? new Promise(resolve => {
-        this.thumbnail = options.thumbnail;
-        resolve(undefined);
-      })
-    : new Promise(resolve => {
-        this.thumbnail = `./tmbs/${options.mapID}.jpg`;
-        fetch(this.thumbnail)
-          .then(response => {
-            if (response.ok) {
-              resolve(undefined);
-            } else {
-              this.thumbnail = `./tmbs/${options.mapID}_menu.jpg`;
-              resolve(undefined);
-            }
-          })
-          .catch(_error => {
-            this.thumbnail = `./tmbs/${options.mapID}_menu.jpg`;
-            resolve(undefined);
-          });
-      }).catch(_error => {
-        this.thumbnail = `./tmbs/${options.mapID || options.sourceID}_menu.jpg`;
-      });
-  const poisWait = this.resolvePois(options.pois);
-  this.initialWait = Promise.all([poisWait, thumbWait]);
-}*/
-
 export function setupTileLoadFunction(target: any) {
   const self = target;
   target.setTileLoadFunction(
