@@ -4,7 +4,7 @@ import { META_KEYS } from "./source/mixin";
 export function createElement(domStr: string) {
   const context = document;
   const fragment = context.createDocumentFragment();
-  const nodes = [];
+  const nodes: (HTMLElement | ChildNode)[] = [];
   domStr = domStr
     .replace(/(<\/?)d([ >])/g, "$1div$2")
     .replace(/(<\/?)s([ >])/g, "$1span$2")

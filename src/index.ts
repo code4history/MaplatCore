@@ -28,6 +28,7 @@ import {
   normalizePoi
 } from "./normalize_pois";
 import { createIconSet, createHtmlFromTemplate } from "./template_works";
+import { Geolocation } from './geolocation';
 
 // @ts-ignore
 import redcircle from "../parts/redcircle.png";                     // @ts-ignore  
@@ -111,6 +112,7 @@ export class MaplatApp extends EventTarget {
   fakeGps = false;
   fakeRadius?: number;
   homePosition?: [number, number];
+  geolocation?: Geolocation;
   lastClickEvent: any;
   private __backMapMoving = false;
   private __selectedMarker: any;
@@ -215,6 +217,11 @@ export class MaplatApp extends EventTarget {
       if (!this.lang && this.appData.lang) this.lang = this.appData.lang;
       this.i18n = i18n;
       this.t = await this.i18nLoader();
+
+      this.geolocation = new Geolocation({
+        timerBase: appOption.fake as boolean,
+        homePosition: this.appData!.homePosition!
+      });
 
       // Handle i18n setting => mapObject 生成箇所
       const mapReturnValue = this.prepareMap(appOption);
