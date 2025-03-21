@@ -29,7 +29,6 @@ import {
 } from "./normalize_pois";
 import { createIconSet, createHtmlFromTemplate } from "./template_works";
 import mapboxgl from "mapbox-gl";
-import { Geolocation, GeolocationError } from './geolocation';
 
 // @ts-ignore
 import redcircle from "../parts/redcircle.png";                     // @ts-ignore  
@@ -122,7 +121,6 @@ export class MaplatApp extends EventTarget {
   fakeGps = false;
   fakeRadius?: number;
   homePosition?: [number, number];
-  geolocation?: Geolocation;
   moveTo_ = false;
   private __backMapMoving = false;
   private __selectedMarker: any;
@@ -291,62 +289,9 @@ export class MaplatApp extends EventTarget {
       this.lang = this.appData.lang;
     }
     return this.i18nLoader()
-      .then(x => this.handleI18n(x, appOption))
-      .then(() => this.initGeolocation(appOption));
+      .then(x => this.handleI18n(x, appOption));
   }
   // Async Initializers 2.5: For geolocation settings
-  initGeolocation(appOption: any) {
-    const geolocation = this.geolocation = new Geolocation({
-      timerBase: appOption.fake as boolean,
-      homePosition: this.appData!.homePosition!
-    });
-    geolocation.setTracking(true);
-
-    geolocation.on("change", () => {
-      const map = this.mapObject;
-      const overlayLayer = map.getLayer("overlay").getLayers().item(0);
-      const firstLayer = map.getLayers().item(0);
-      const source = (overlayLayer ? overlayLayer.getSource() : firstLayer.getSource());
-      const lnglat = geolocation.getPosition();
-      const acc = geolocation.getAccuracy();
-      if (!lnglat || !acc) return;
-      source.setGPSMarkerAsync({ lnglat, acc }, !this.moveTo_).then((insideCheck: boolean) => {
-        this.moveTo_ = false;
-        if (!insideCheck) {
-          source.setGPSMarker();
-        }
-      });
-    });
-
-    geolocation.on("error", (evt: any) => {
-      const code = evt.code;
-      if (code === 3) return;
-      geolocation.setTracking(false);
-      this.addEventListener("gps_error", (evt) => {
-        console.log("Self receive check");
-        console.log(evt);
-      });
-      this.dispatchEvent(new GPSErrorEvent(code === 1 ? "user_gps_deny" : code === 2 ? "gps_miss" : "gps_timeout"));
-    });
-
-    this.addEventListener("mapChanged", () => {
-      if (geolocation.getTracking()) {
-        const map = this.mapObject;
-        const overlayLayer = map.getLayer("overlay").getLayers().item(0);
-        const firstLayer = map.getLayers().item(0);
-        const source = (overlayLayer ? overlayLayer.getSource() : firstLayer.getSource());
-        const lnglat = geolocation.getPosition();
-        const acc = geolocation.getAccuracy();
-        if (!lnglat || !acc) return;
-        source.setGPSMarkerAsync({ lnglat, acc }, true).then((insideCheck: boolean) => {
-          if (!insideCheck) {
-            source.setGPSMarker();
-          }
-        });
-      }
-    });
-
-  }
   // Async initializers 4: Handle i18n setting
   handleI18n(i18nObj: any, appOption: any) {
     this.i18n = i18nObj[1];

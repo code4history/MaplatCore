@@ -58,7 +58,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "i18next", "i18next-xhr-backend", "./customevent", "./browserlanguage", "./logger", "./functions", "ol/events/Target", "ol/proj", "./map_ex", "ol/interaction", "ol/events/condition", "./source/histmap", "./source/tmsmap", "./source_ex", "./source/mixin", "./math_ex", "./freeze_locales", "./normalize_pois", "./template_works", "mapbox-gl", "./geolocation", "../parts/redcircle.png", "../parts/defaultpin_selected.png", "../parts/defaultpin.png", "ol/events/Event"], factory);
+        define(["require", "exports", "i18next", "i18next-xhr-backend", "./customevent", "./browserlanguage", "./logger", "./functions", "ol/events/Target", "ol/proj", "./map_ex", "ol/interaction", "ol/events/condition", "./source/histmap", "./source/tmsmap", "./source_ex", "./source/mixin", "./math_ex", "./freeze_locales", "./normalize_pois", "./template_works", "mapbox-gl", "../parts/redcircle.png", "../parts/defaultpin_selected.png", "../parts/defaultpin.png", "ol/events/Event"], factory);
     }
 })(function (require, exports) {
     "use strict";
@@ -86,7 +86,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     var normalize_pois_1 = require("./normalize_pois");
     var template_works_1 = require("./template_works");
     var mapbox_gl_1 = __importDefault(require("mapbox-gl"));
-    var geolocation_1 = require("./geolocation");
     var redcircle_png_1 = __importDefault(require("../parts/redcircle.png"));
     var defaultpin_selected_png_1 = __importDefault(require("../parts/defaultpin_selected.png"));
     var defaultpin_png_1 = __importDefault(require("../parts/defaultpin.png"));
@@ -269,60 +268,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 this.lang = this.appData.lang;
             }
             return this.i18nLoader()
-                .then(function (x) { return _this.handleI18n(x, appOption); })
-                .then(function () { return _this.initGeolocation(appOption); });
-        };
-        MaplatApp.prototype.initGeolocation = function (appOption) {
-            var _this = this;
-            var geolocation = this.geolocation = new geolocation_1.Geolocation({
-                timerBase: appOption.fake,
-                homePosition: this.appData.homePosition
-            });
-            geolocation.setTracking(true);
-            geolocation.on("change", function () {
-                var map = _this.mapObject;
-                var overlayLayer = map.getLayer("overlay").getLayers().item(0);
-                var firstLayer = map.getLayers().item(0);
-                var source = (overlayLayer ? overlayLayer.getSource() : firstLayer.getSource());
-                var lnglat = geolocation.getPosition();
-                var acc = geolocation.getAccuracy();
-                if (!lnglat || !acc)
-                    return;
-                source.setGPSMarkerAsync({ lnglat: lnglat, acc: acc }, !_this.moveTo_).then(function (insideCheck) {
-                    _this.moveTo_ = false;
-                    if (!insideCheck) {
-                        source.setGPSMarker();
-                    }
-                });
-            });
-            geolocation.on("error", function (evt) {
-                var code = evt.code;
-                if (code === 3)
-                    return;
-                geolocation.setTracking(false);
-                _this.addEventListener("gps_error", function (evt) {
-                    console.log("Self receive check");
-                    console.log(evt);
-                });
-                _this.dispatchEvent(new GPSErrorEvent(code === 1 ? "user_gps_deny" : code === 2 ? "gps_miss" : "gps_timeout"));
-            });
-            this.addEventListener("mapChanged", function () {
-                if (geolocation.getTracking()) {
-                    var map = _this.mapObject;
-                    var overlayLayer = map.getLayer("overlay").getLayers().item(0);
-                    var firstLayer = map.getLayers().item(0);
-                    var source_1 = (overlayLayer ? overlayLayer.getSource() : firstLayer.getSource());
-                    var lnglat = geolocation.getPosition();
-                    var acc = geolocation.getAccuracy();
-                    if (!lnglat || !acc)
-                        return;
-                    source_1.setGPSMarkerAsync({ lnglat: lnglat, acc: acc }, true).then(function (insideCheck) {
-                        if (!insideCheck) {
-                            source_1.setGPSMarker();
-                        }
-                    });
-                }
-            });
+                .then(function (x) { return _this.handleI18n(x, appOption); });
         };
         MaplatApp.prototype.handleI18n = function (i18nObj, appOption) {
             var _this = this;

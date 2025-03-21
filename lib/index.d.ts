@@ -5,7 +5,6 @@ import EventTarget from "ol/events/Target";
 import { MaplatMap } from "./map_ex";
 import { BackmapSource, MaplatSource } from "./source_ex";
 import { ViewpointArray } from "./source/mixin";
-import { Geolocation } from './geolocation';
 import { Coordinate } from "ol/coordinate";
 import BaseEvent from "ol/events/Event";
 interface AppData {
@@ -91,7 +90,6 @@ export declare class MaplatApp extends EventTarget {
     fakeGps: boolean;
     fakeRadius?: number;
     homePosition?: [number, number];
-    geolocation?: Geolocation;
     moveTo_: boolean;
     private __backMapMoving;
     private __selectedMarker;
@@ -105,7 +103,6 @@ export declare class MaplatApp extends EventTarget {
     i18nLoader(): Promise<unknown>;
     sourcesLoader(mapReturnValue: any): Promise<any[]>;
     handleSetting(setting: any, appOption: any): Promise<void>;
-    initGeolocation(appOption: any): void;
     handleI18n(i18nObj: any, appOption: any): Promise<void>;
     prepareMap(appOption: any): {
         homePos: Coordinate | undefined;
