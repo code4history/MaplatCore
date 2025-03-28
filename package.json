@@ -105,7 +105,7 @@
     "mini-css-extract-plugin": "^2.6.0",
     "prettier": "^2.6.2",
     "psaux": "^0.4.0",
-    "puppeteer": "^14.1.1",
+    "puppeteer": "^24.4.0",
     "sleep-promise": "^9.1.0",
     "terminate": "^2.5.0",
     "terser-webpack-plugin": "^5.3.1",
