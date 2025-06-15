@@ -26,8 +26,8 @@ type GeolocationErrorOptions = {
 };
 
 type GeolocationOptions = {
-  timerBase: boolean;
-  homePosition: number[];
+  timerBase?: boolean;
+  homePosition?: number[];
   trackingOptions?: {
     enableHighAccuracy: boolean;
     timeout: number;
@@ -63,7 +63,7 @@ export class Geolocation extends BaseObject {
   timer_base_ = false;
   home_position_: number[] | boolean = false;
 
-  constructor(options: GeolocationOptions) {
+  constructor(options?: GeolocationOptions) {
     super();
 
     this.on;
@@ -72,7 +72,7 @@ export class Geolocation extends BaseObject {
 
     this.un;
 
-    options = options || {};
+    options = options || {} as GeolocationOptions;
 
     this.timer_base_ = options.timerBase !== undefined ? options.timerBase : false;
 

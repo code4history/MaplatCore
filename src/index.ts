@@ -78,6 +78,20 @@ export class GPSErrorEvent extends BaseEvent {
     super("gps_error");
     this.detail = detail;
   }
+}
+
+export class GPSResultEvent extends BaseEvent {
+  detail: any;
+  constructor(detail: any) {
+    super("gps_result");
+    this.detail = detail;
+  }
+}
+
+export class GPSRequestEvent extends BaseEvent {
+  constructor() {
+    super("gps_request");
+  }
 } 
 
 export class MaplatApp extends EventTarget {
@@ -124,6 +138,9 @@ export class MaplatApp extends EventTarget {
   homePosition?: [number, number];
   geolocation?: Geolocation;
   moveTo_ = false;
+  gpsEnabled_ = false;
+  alwaysGpsOn = false;
+  firstGpsRequest_ = false;
   private __backMapMoving = false;
   private __selectedMarker: any;
   private __init = true;
@@ -296,11 +313,20 @@ export class MaplatApp extends EventTarget {
   }
   // Async Initializers 2.5: For geolocation settings
   initGeolocation(appOption: any) {
+    this.alwaysGpsOn = appOption.alwaysGpsOn || false;
     const geolocation = this.geolocation = new Geolocation({
       timerBase: appOption.fake as boolean,
       homePosition: this.appData!.homePosition!
     });
-    geolocation.setTracking(true);
+    
+    // alwaysGpsOnモードでは起動時からGPS有効、そうでなければ無効
+    if (this.alwaysGpsOn) {
+      geolocation.setTracking(true);
+      this.gpsEnabled_ = true;
+    } else {
+      geolocation.setTracking(false);
+      this.gpsEnabled_ = false;
+    }
 
     geolocation.on("change", () => {
       const map = this.mapObject;
@@ -310,23 +336,41 @@ export class MaplatApp extends EventTarget {
       const lnglat = geolocation.getPosition();
       const acc = geolocation.getAccuracy();
       if (!lnglat || !acc) return;
-      source.setGPSMarkerAsync({ lnglat, acc }, !this.moveTo_).then((insideCheck: boolean) => {
+      
+      source.setGPSMarkerAsync({ lnglat, acc }, !this.moveTo_ && !this.firstGpsRequest_).then((insideCheck: boolean) => {
         this.moveTo_ = false;
+        this.firstGpsRequest_ = false;
         if (!insideCheck) {
+          // 本流モードでは範囲外エラー時にGPSオフ、傍流モードでは継続
+          if (!this.alwaysGpsOn) {
+            this.handleGPS(false, true);
+            return;
+          }
           source.setGPSMarker();
         }
+        // GPS結果をUI側に通知
+        this.dispatchEvent(new GPSResultEvent(insideCheck ? { lnglat, acc } : { error: "gps_out" }));
       });
     });
 
     geolocation.on("error", (evt: any) => {
       const code = evt.code;
       if (code === 3) return;
+      
+      // GPS無効化
       geolocation.setTracking(false);
-      this.addEventListener("gps_error", (evt) => {
-        console.log("Self receive check");
-        console.log(evt);
-      });
+      this.gpsEnabled_ = false;
+      
+      // マーカークリア
+      const map = this.mapObject;
+      const overlayLayer = map.getLayer("overlay").getLayers().item(0);
+      const firstLayer = map.getLayers().item(0);
+      const source = (overlayLayer ? overlayLayer.getSource() : firstLayer.getSource());
+      source.setGPSMarker();
+      
+      // エラーイベント発火
       this.dispatchEvent(new GPSErrorEvent(code === 1 ? "user_gps_deny" : code === 2 ? "gps_miss" : "gps_timeout"));
+      this.dispatchEvent(new GPSResultEvent({ error: "gps_off" }));
     });
 
     this.addEventListener("mapChanged", () => {
@@ -340,6 +384,11 @@ export class MaplatApp extends EventTarget {
         if (!lnglat || !acc) return;
         source.setGPSMarkerAsync({ lnglat, acc }, true).then((insideCheck: boolean) => {
           if (!insideCheck) {
+            // 本流モードでは範囲外エラー時にGPSオフ、傍流モードでは継続
+            if (!this.alwaysGpsOn) {
+              this.handleGPS(false, true);
+              return;
+            }
             source.setGPSMarker();
           }
         });
@@ -347,6 +396,59 @@ export class MaplatApp extends EventTarget {
     });
 
   }
+  
+  // GPS handling methods
+  handleGPS(enable: boolean, avoidEventForOff = false) {
+    if (!this.geolocation) return;
+    
+    if (enable) {
+      // alwaysGpsOnモードでは既に有効、本流モードではリクエスト時に有効化
+      if (!this.alwaysGpsOn) {
+        this.firstGpsRequest_ = true;
+        this.geolocation.setTracking(true);
+        this.gpsEnabled_ = true;
+        this.dispatchEvent(new GPSRequestEvent());
+      } else {
+        // alwaysGpsOnモードでは位置移動のみ
+        this.moveTo_ = true;
+        const lnglat = this.geolocation.getPosition();
+        const acc = this.geolocation.getAccuracy();
+        if (lnglat && acc) {
+          const map = this.mapObject;
+          const overlayLayer = map.getLayer("overlay").getLayers().item(0);
+          const firstLayer = map.getLayers().item(0);
+          const source = (overlayLayer ? overlayLayer.getSource() : firstLayer.getSource());
+          source.setGPSMarkerAsync({ lnglat, acc }, false).then((insideCheck: boolean) => {
+            if (!insideCheck) {
+              source.setGPSMarker();
+            }
+          });
+        }
+      }
+    } else {
+      // GPS無効化
+      if (!this.alwaysGpsOn) {
+        this.geolocation.setTracking(false);
+        this.gpsEnabled_ = false;
+        
+        // マーカークリア
+        const map = this.mapObject;
+        const overlayLayer = map.getLayer("overlay").getLayers().item(0);
+        const firstLayer = map.getLayers().item(0);
+        const source = (overlayLayer ? overlayLayer.getSource() : firstLayer.getSource());
+        source.setGPSMarker();
+        
+        if (!avoidEventForOff) {
+          this.dispatchEvent(new GPSResultEvent({ error: "gps_off" }));
+        }
+      }
+    }
+  }
+  
+  getGPSEnabled(): boolean {
+    return this.gpsEnabled_;
+  }
+  
   // Async initializers 4: Handle i18n setting
   handleI18n(i18nObj: any, appOption: any) {
     this.i18n = i18nObj[1];
