@@ -343,7 +343,7 @@ export class MaplatApp extends EventTarget {
         if (!insideCheck) {
           // 本流モードでは範囲外エラー時にGPSオフ、傍流モードでは継続
           if (!this.alwaysGpsOn) {
-            this.handleGPS(false, true);
+            this.handleGPS(false, false); // UIに状態変更を通知するためavoidEventForOffをfalseに
             return;
           }
           source.setGPSMarker();

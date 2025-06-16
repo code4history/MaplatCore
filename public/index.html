@@ -313,15 +313,15 @@ stroke-width="2"></polygon>
             app.handleGPS(gps_on);
         });
         app.addEventListener("gps_result", (evt) => {
-          console.log(evt);
+          console.log("GPS Result Event:", evt.detail);
           // GPSが地図外やエラーで自動的にOFFになった場合、ボタンの状態を同期
-          if (evt.detail.error && (evt.detail.error === "gps_out" || evt.detail.error === "gps_off")) {
+          if (evt.detail.error && evt.detail.error === "gps_off") {
             gps_on = false;
             console.log("GPS automatically turned off, button state synchronized");
           }
         });
         app.addEventListener("gps_error", (evt) => {
-          console.log("GPS Error:", evt);
+          console.log("GPS Error Event:", evt.detail);
           // GPSエラー時もボタンの状態を同期
           gps_on = false;
           console.log("GPS error occurred, button state synchronized");
