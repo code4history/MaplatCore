@@ -29,7 +29,7 @@ import {
 } from "./normalize_pois";
 import { createIconSet, createHtmlFromTemplate } from "./template_works";
 import mapboxgl from "mapbox-gl";
-import { Geolocation, GeolocationError } from './geolocation';
+import { Geolocation } from './geolocation';
 
 // @ts-ignore
 import redcircle from "../parts/redcircle.png";                     // @ts-ignore  

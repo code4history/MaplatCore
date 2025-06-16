@@ -64,7 +64,9 @@
     document.addEventListener('DOMContentLoaded', () => {
       let gps_on = false;
       var option = {
-        //fake: true,
+        fake: true,
+        fakeGps: [141.1501111, 39.69994722], // 盛岡城
+        fakeRadius: 50,
         mapboxgl: mapboxgl,
         mapboxToken: 'pk.eyJ1Ijoia29jaGl6dWZhbiIsImEiOiJjbHRnaWhzOW8wd2p4MmtvZDFsOWJiOG40In0.FYTPboTqXKv5a_onOaW1vQ',
         googleApiKey: 'AIzaSyB0v_F9EVPbE7R2uOm6Mixrtzts21DEICc',
@@ -74,13 +76,16 @@
         tapUIVanish: true,
         alwaysGpsOn: false
       };
-      var hashes = window.location.href
-        .slice(window.location.href.indexOf("?") + 1)
-        .split("&");
-      for (var i = 0; i < hashes.length; i++) {
-        hash = hashes[i].split("=");
-        option[hash[0]] =
-          hash[1] == "true" ? true : hash[1] == "false" ? false : hash[1];
+      // クエリパラメータ処理
+      if (window.location.search) {
+        var hashes = window.location.href
+          .slice(window.location.href.indexOf("?") + 1)
+          .split("&");
+        for (var i = 0; i < hashes.length; i++) {
+          hash = hashes[i].split("=");
+          option[hash[0]] =
+            hash[1] == "true" ? true : hash[1] == "false" ? false : hash[1];
+        }
       }
 
       // new MaplatApp(option).waitReady.then(function (app) {
@@ -305,10 +310,21 @@ stroke-width="2"></polygon>
           .addEventListener("click", function (e) {
             console.log("Click GPS on/off");
             gps_on = !gps_on;
-            app.mapObject.handleGPS(gps_on);
+            app.handleGPS(gps_on);
         });
-        app.mapObject.addEventListener("gps_result", (evt) => {
+        app.addEventListener("gps_result", (evt) => {
           console.log(evt);
+          // GPSが地図外やエラーで自動的にOFFになった場合、ボタンの状態を同期
+          if (evt.detail.error && (evt.detail.error === "gps_out" || evt.detail.error === "gps_off")) {
+            gps_on = false;
+            console.log("GPS automatically turned off, button state synchronized");
+          }
+        });
+        app.addEventListener("gps_error", (evt) => {
+          console.log("GPS Error:", evt);
+          // GPSエラー時もボタンの状態を同期
+          gps_on = false;
+          console.log("GPS error occurred, button state synchronized");
         });
       });
     });
