@@ -10,11 +10,11 @@ module.exports = {
         }
       }
     ],
-    "@babel/preset-typescript"
+    ["@babel/preset-typescript", {
+      allowDeclareFields: true
+    }]
   ],
-  plugins: [
-    "@babel/plugin-proposal-class-properties"
-  ],
+  plugins: [],
   env: {
     test: {
       presets: [

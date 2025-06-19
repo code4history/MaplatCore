@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>MapLibre Simple Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
+    <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+        .info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="info">
+        <h3>MapLibre XY Coordinate Test</h3>
+        <p>Testing XY coordinate system with MapLibre</p>
+        <p id="status">Loading...</p>
+    </div>
+    <div id="map"></div>
+    <script type="module">
+        // Simple test of MapLibre with XY coordinates
+        
+        // XY to Web Mercator transformation
+        function xyToMercator(x, y, width, height) {
+            const MERC_MAX = 20037508.34;
+            const mercX = (x / width - 0.5) * 2 * MERC_MAX;
+            const mercY = (0.5 - y / height) * 2 * MERC_MAX;
+            return [mercX, mercY];
+        }
+        
+        function mercatorToLngLat(mercX, mercY) {
+            const MERC_MAX = 20037508.34;
+            const lng = (mercX / MERC_MAX) * 180;
+            const lat = (Math.atan(Math.exp((mercY / MERC_MAX) * Math.PI)) * 360 / Math.PI) - 90;
+            return [lng, lat];
+        }
+        
+        // Test parameters
+        const imageWidth = 1000;
+        const imageHeight = 800;
+        
+        // Convert XY bounds to lng/lat
+        const topLeft = xyToMercator(0, 0, imageWidth, imageHeight);
+        const bottomRight = xyToMercator(imageWidth, imageHeight, imageWidth, imageHeight);
+        
+        const topLeftLngLat = mercatorToLngLat(topLeft[0], topLeft[1]);
+        const bottomRightLngLat = mercatorToLngLat(bottomRight[0], bottomRight[1]);
+        
+        const bounds = [
+            topLeftLngLat[0], bottomRightLngLat[1],  // SW
+            bottomRightLngLat[0], topLeftLngLat[1]    // NE
+        ];
+        
+        console.log('Bounds:', bounds);
+        
+        // Initialize map
+        const map = new maplibregl.Map({
+            container: 'map',
+            style: {
+                version: 8,
+                sources: {
+                    'osm': {
+                        type: 'raster',
+                        tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+                        tileSize: 256,
+                        attribution: '© OpenStreetMap contributors'
+                    },
+                    'xy-overlay': {
+                        type: 'raster',
+                        tiles: ['https://via.placeholder.com/256x256.png?text=XY+{z}-{x}-{y}'],
+                        tileSize: 256,
+                        bounds: bounds,
+                        maxzoom: 18,
+                        scheme: 'xyz'
+                    }
+                },
+                layers: [
+                    {
+                        id: 'osm-layer',
+                        type: 'raster',
+                        source: 'osm',
+                        paint: {}
+                    },
+                    {
+                        id: 'xy-layer',
+                        type: 'raster',
+                        source: 'xy-overlay',
+                        paint: {
+                            'raster-opacity': 0.5
+                        }
+                    }
+                ]
+            },
+            center: [0, 0],
+            zoom: 2
+        });
+        
+        map.on('load', () => {
+            document.getElementById('status').textContent = 'Map loaded successfully!';
+            
+            // Fit to bounds
+            map.fitBounds(bounds, { padding: 50 });
+            
+            // Add click handler
+            map.on('click', (e) => {
+                console.log('Clicked at:', e.lngLat);
+            });
+        });
+        
+        map.on('error', (e) => {
+            console.error('Map error:', e);
+            document.getElementById('status').textContent = 'Error: ' + e.error.message;
+        });
+    </script>
+</body>
+</html>

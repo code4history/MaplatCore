@@ -1,0 +1,5 @@
+/*! @maplat/core v0.10.6 | Kohei Otsuka, Code for History | license: Maplat Limited License 1.1 */
+
+/*!**********************************!*\
+  !*** ./tmpl/web-bridge-libre.js ***!
+  \**********************************/

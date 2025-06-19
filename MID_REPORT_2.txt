@@ -1,0 +1,71 @@
+# MapLibre変換作業 中間報告書 2
+作成日時: 2025-06-19
+
+## 前回からの進捗
+MID_REPORT_1.txtから引き継いで作業を開始しました。
+
+## 確認事項
+
+### 1. package.jsonの変更内容確認 (完了)
+- MapLibre GL JS v3.6.2が依存関係に追加されています（行66）
+- npm run devコマンドがMapLibre版用に設定されています：
+  - 行21: "dev": "cross-env NODE_OPTIONS=--openssl-legacy-provider webpack-cli serve --config ./webpack_config/webpack.config.libre.dev.js"
+  - 新しいWebpack設定ファイル webpack.config.libre.dev.js を使用
+
+### 2. npm run devの動作確認
+次のステップとして、npm installの実行状況を確認し、npm run devを実行します。
+
+## npm run devの動作確認
+
+### 状況
+- node_modulesは存在している
+- npm run devを実行したところ、ポート8888で既にサーバーが動作中
+- webpack.config.libre.dev.jsの設定：
+  - エントリーポイント: tmpl/web-bridge-libre.js
+  - 出力: dev_packed/assets/maplat_core.js
+  - デフォルトで index.html を開く設定
+
+### テストページ
+- test_maplibre.html が作成されている
+- MapLibre版のMaplat APIを使用したテストコード
+- dev_packed/assets/maplat_core.js を読み込んでいる
+
+## MapLibre実装の詳細調査
+
+### 実装状況
+- index.htmlに MapLibre Test ボタンを追加済み
+- dev_packed/assets/maplat_core.js が生成されサーバーから提供されている
+- webpack dev serverは正常に動作中 (http://localhost:8888)
+
+### アーキテクチャ
+1. エントリーポイント: tmpl/web-bridge-libre.js
+   - MaplatAppLibreをインポート
+   - グローバルMaplatオブジェクトを作成
+
+2. 主要実装ファイル:
+   - src/index_libre.ts - MapLibre版メイン実装
+   - src/map_libre.ts - maplibregl.Mapを拡張したマップラッパー
+   - src/source/histmap_libre.ts - 歴史地図ソース
+   - src/source/nowmap_libre.ts - 現代地図ソース
+   - src/maplibre_coord_transform.ts - 座標変換ユーティリティ
+
+### 現在の問題点
+
+1. **Babel設定エラー**:
+   ```
+   TypeError: [BABEL]: _traverse.visitors.environmentVisitor is not a function
+   ```
+   Babelプラグインの互換性問題
+
+2. **TypeScriptエラー**:
+   - 型定義の欠落
+   - プロパティ初期化の問題
+   - MapLibreソース仕様の型不一致
+
+3. **未実装メソッド**:
+   - 歴史地図実装の一部抽象メソッド
+
+## 次のアクション
+1. Babel設定エラーの修正
+2. TypeScriptエラーの修正
+3. デモページでの動作確認

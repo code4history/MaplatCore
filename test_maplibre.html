@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>MapLibre Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+        #map_div {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="map_div"></div>
+    <script src="./assets/maplat_core.js"></script>
+    <script>
+        // Wait for DOM to be ready
+        window.addEventListener('DOMContentLoaded', function() {
+            if (window.Maplat) {
+                window.Maplat.createObject({
+                    appid: 'test',
+                    div: 'map_div',
+                    setting: {
+                        sources: ['osm'],
+                        homePosition: [139.7673068, 35.6809591], // Tokyo
+                        defaultZoom: 14,
+                        appName: 'MapLibre Test'
+                    }
+                }).then(function(app) {
+                    console.log('Maplat app created:', app);
+                    
+                    // Add test event listeners
+                    app.addEventListener('clickMap', function(evt) {
+                        console.log('Map clicked:', evt);
+                    });
+                }).catch(function(error) {
+                    console.error('Error creating Maplat app:', error);
+                    console.error(error.stack);
+                });
+            } else {
+                console.error('Maplat not found');
+            }
+        });
+    </script>
+</body>
+</html>

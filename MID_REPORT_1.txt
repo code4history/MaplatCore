@@ -1,0 +1,38 @@
+# MapLibre変換作業 中間報告書 1
+作成日時: 2025-06-19
+
+## 概要
+OpenLayersベースの実装をMapLibreに置き換える作業の進捗状況を報告します。
+
+## Git Status (作業ブランチ: claude_expr_libre)
+
+### 新規作成ファイル:
+- src/index_libre.ts
+- src/map_libre.ts
+- src/maplibre_coord_transform.ts
+- src/source/histmap_libre.ts
+- src/source/histmap_libre_impl.ts
+- src/source/nowmap_libre.ts
+- src/source_libre.ts
+- test_maplibre.html
+- tmpl/web-bridge-libre.js
+- webpack_config/webpack.config.libre.dev.js
+
+### 変更されたファイル:
+- package.json (MapLibre依存関係の追加と思われる)
+
+### 削除されたファイル:
+- package-lock.json
+
+## 作業の状況
+MapLibre版の実装が進行中です。XY座標系をMapLibreで扱うための新しいアーキテクチャが構築されているようです。
+
+## 詳細調査予定項目
+1. 各MapLibreファイルの実装内容
+2. XY座標系の変換アプローチ
+3. package.jsonの具体的な変更内容
+4. デモページ(test_maplibre.html)の動作状態
+5. npm run devでの動作確認
+
+## 次のステップ
+バックグラウンド処理にて、上記の詳細調査を実施予定。

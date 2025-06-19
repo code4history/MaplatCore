@@ -16,6 +16,10 @@ import { Feature, Polygon } from "@turf/turf";
 import { Size } from "ol/size";
 import { View as mlView } from "../view_ex";
 
+// Export types for use in MapLibre implementation
+export type { Coordinate } from "ol/coordinate";
+export type { Size } from "ol/size";
+
 // eslint-disable-next-line @typescript-eslint/ban-types
 type Constructor<T = {}> = new (...args: any[]) => T;
 type ViewpointObject = {

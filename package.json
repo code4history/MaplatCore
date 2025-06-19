@@ -18,6 +18,7 @@
   "scripts": {
     "server": "cross-env NODE_OPTIONS=--openssl-legacy-provider webpack-cli serve --config ./webpack_config/webpack.config.standard.dev.js --mode=development --devtool=inline-source-map",
     "server:packed": "cross-env NODE_OPTIONS=--openssl-legacy-provider webpack-cli serve --config ./webpack_config/webpack.config.packed.dev.js  --mode=development --devtool=inline-source-map",
+    "dev": "cross-env NODE_OPTIONS=--openssl-legacy-provider webpack-cli serve --config ./webpack_config/webpack.config.libre.dev.js",
     "server:e2e": "cross-env NODE_OPTIONS=--openssl-legacy-provider webpack-cli serve --config ./webpack_config/webpack.config.e2e.js  --mode=development",
     "server:e2e:start": "gulp e2e:start",
     "server:e2e:stop": "gulp e2e:stop",
@@ -62,6 +63,7 @@
     "i18next": "^21.8.4",
     "i18next-xhr-backend": "^3.2.2",
     "lodash.template": "^4.5.0",
+    "maplibre-gl": "^3.6.2",
     "ol": "^6.14.1",
     "weiwudi": "^0.1.4",
     "whatwg-fetch": "^3.6.2"
@@ -69,11 +71,13 @@
   "devDependencies": {
     "@babel/cli": "^7.17.10",
     "@babel/core": "^7.18.2",
-    "@babel/plugin-proposal-class-properties": "^7.17.12",
     "@babel/preset-env": "^7.18.2",
     "@babel/preset-typescript": "^7.17.12",
+    "@turf/boolean-point-in-polygon": "^7.2.0",
+    "@turf/centroid": "^7.2.0",
     "@types/eslint": "^8.4.2",
     "@types/estree": "^0.0.51",
+    "@types/geojson": "^7946.0.16",
     "@types/jest": "^27.5.1",
     "@types/lodash.template": "^4.5.1",
     "@types/node": "^17.0.36",
@@ -105,7 +109,6 @@
     "mini-css-extract-plugin": "^2.6.0",
     "prettier": "^2.6.2",
     "psaux": "^0.4.0",
-    "puppeteer": "^14.1.1",
     "sleep-promise": "^9.1.0",
     "terminate": "^2.5.0",
     "terser-webpack-plugin": "^5.3.1",

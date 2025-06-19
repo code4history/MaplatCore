@@ -1,0 +1,40 @@
+# MapLibre変換作業 中間報告書 4
+作成日時: 2025-06-19
+
+## 前回からの進捗
+MID_REPORT_3.txtから引き継いで作業を継続しました。
+
+## 修正済みの問題
+
+### 1. TypeScript型定義の修正
+- mixin.tsに`Size`と`Coordinate`の型をexport追加
+- 画像インポート用の型定義ファイル(types/images.d.ts)を作成
+- @ts-ignoreコメントを全て削除
+
+### 2. 抽象メソッドの実装
+- HistMapLibreImplクラスに以下の抽象メソッドを実装:
+  - insideCheckSysCoord
+  - merc2XyAsync_ignoreBackground
+  - xy2SysCoord
+  - sysCoord2Xy
+- NowMapLibreクラスの抽象メソッドは既に実装済みであることを確認
+
+### 3. 型エラーの修正
+- CrossCoordinatesArrayとViewpointArrayの型不一致を修正
+- AppDataインターフェースのsources型を`string[] | (NowMapLibre | HistMapLibre)[]`に更新
+- MapLibreソース仕様のscheme型を修正
+
+### 4. コード品質の改善
+- 重複関数の削除(merc2XyAsync_ignoreBackground)
+- ESLintエラーの修正
+
+## 残存する問題
+- ESLint loaderのOpenSSLエラー（webpack設定の問題）
+
+## 現在の状態
+TypeScriptのコンパイルエラーはほぼ解消され、webpack設定の調整のみが必要な状態です。
+
+## 次のステップ
+1. webpack dev serverでの動作確認
+2. デモページ(test_maplibre.html)の動作テスト
+3. XY座標系地図の表示確認

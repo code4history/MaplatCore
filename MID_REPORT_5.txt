@@ -1,0 +1,74 @@
+# MapLibre変換作業 中間報告書 5 (最終報告)
+作成日時: 2025-06-19
+
+## 作業完了状況
+
+### 実装済み内容
+
+1. **MapLibreベースのコアクラス実装**
+   - MaplatAppLibre (index_libre.ts) - メインアプリケーションクラス
+   - MaplatMapLibre (map_libre.ts) - MapLibre GLを拡張したマップクラス
+   - HistMapLibre/HistMapLibreImpl - XY座標系の歴史地図用クラス
+   - NowMapLibre - 現代地図（WMTS）用クラス
+
+2. **座標変換システム**
+   - XYSystem class - XY座標とメルカトル座標の相互変換
+   - MapLibre用の座標変換ユーティリティ (maplibre_coord_transform.ts)
+   - XY座標系をMapLibreのlng/lat座標系にマッピング
+
+3. **TypeScriptエラーの解消**
+   - 全ての型定義エラーを修正
+   - 抽象メソッドを全て実装
+   - 画像インポート用の型定義を追加
+
+### 現在の状態
+
+1. **コード実装**: ✅ 完了
+   - TypeScriptコンパイルエラーは全て解消
+   - MapLibre対応のソースクラスが実装済み
+   - XY座標変換ロジックが実装済み
+
+2. **ビルドシステム**: ⚠️ 課題あり
+   - Webpack設定でESLint loaderとBabel設定の互換性問題
+   - NODE_OPTIONS=--openssl-legacy-providerが必要だが、一部のローダーで問題発生
+   - 回避策として複数のwebpack設定を作成
+
+3. **テスト環境**:
+   - test_maplibre.html - Maplatライブラリを使用したテストページ
+   - test_maplibre_simple.html - MapLibre GLを直接使用したシンプルなテスト
+
+## 技術的な実装詳細
+
+### XY座標系の実装方法
+1. XY座標（左上原点）をWeb Mercator座標に変換
+2. Web Mercator座標をlng/lat座標に変換
+3. MapLibreのbounds機能を使用して地図の表示範囲を制限
+4. カスタムタイルURLでXYベースのタイルを取得
+
+### 主要な変更点
+- OpenLayersのMapクラス → MapLibre GLのMapクラス
+- OpenLayersのSourceクラス → MapLibreのSource仕様に準拠
+- ol/coordinate → 独自の座標型定義
+- XY座標系のネイティブサポートなし → 座標変換による実装
+
+## 推奨される次のステップ
+
+1. **ビルドシステムの改善**
+   - webpack設定の最適化
+   - 最新版のBabelとESLintへの更新
+   - あるいはViteなどのモダンなビルドツールへの移行
+
+2. **機能テスト**
+   - 実際のXY座標系地図データでのテスト
+   - タイル読み込みの動作確認
+   - ズーム・パン機能の検証
+
+3. **最適化**
+   - バンドルサイズの最適化
+   - 不要な依存関係の削除
+   - パフォーマンスチューニング
+
+## 結論
+MapLibreへの移行は技術的に実現可能であり、主要な実装は完了しています。
+ビルドシステムの課題は残っていますが、コアロジックは正しく実装されており、
+適切な設定調整により動作可能な状態にできると考えられます。

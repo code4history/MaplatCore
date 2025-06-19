@@ -1,0 +1,42 @@
+# MapLibre変換作業 中間報告書 3
+作成日時: 2025-06-19
+
+## 前回からの進捗
+MID_REPORT_2.txtの問題点を引き継いで作業を継続しました。
+
+## 修正事項
+
+### 1. Babel設定エラーの修正 (完了)
+- 問題: `@babel/plugin-proposal-class-properties`プラグインの互換性エラー
+- 解決策: 非推奨プラグインを削除し、babel.config.jsを更新
+- 結果: Babelエラーは解消され、webpack-dev-serverは正常に起動
+
+### 2. TypeScript エラーの状況
+
+#### 主要なエラーカテゴリ:
+
+1. **型定義の欠落**
+   - `@types/geojson`パッケージが必要
+   - `@turf/boolean-point-in-polygon`と`@turf/centroid`のモジュールが見つからない
+
+2. **プロパティ初期化エラー**
+   - `mapObject`プロパティの初期化が必要
+
+3. **型不一致**
+   - MapLibre GLのソース仕様との型不一致
+   - Promise戻り値の型不一致
+   - Function型の使用（より具体的な型が必要）
+
+4. **未実装の抽象メソッド**
+   - HistMapLibreImplクラスで4つの抽象メソッドが未実装
+   - NowMapLibreクラスで2つの抽象メソッドが未実装
+
+## 次のアクション
+1. 必要な型定義パッケージのインストール
+2. TypeScriptエラーの修正
+3. デモページでの動作確認
+
+## 現在の状態
+- webpack-dev-serverは起動可能（ポート8888）
+- バンドルは生成されるがTypeScriptエラーのため正常に動作しない
+- Babelエラーは解消済み
