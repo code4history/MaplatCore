@@ -1,5 +1,5 @@
 import { HistMap } from "./histmap";
-import Tin from "@maplat/tin";
+import { Transform } from "@maplat/transform";
 import { addCoordinateTransforms, addProjection, toLonLat } from "ol/proj";
 import Projection from "ol/proj/Projection";
 import { transformDirect } from "../proj_ex";
@@ -13,7 +13,7 @@ import { Size } from "ol/size";
 import { CrossCoordinatesArray, ViewpointArray } from "./mixin";
 
 export class HistMap_tin extends HistMap {
-  tins: Tin[];
+  tins: Transform[];
 
   constructor(options: any = {}) {
     super(options);
@@ -24,7 +24,7 @@ export class HistMap_tin extends HistMap {
     const histmaps = await store2HistMap4Core(options);
     options = histmaps[0];
     const obj = new HistMap_tin(options);
-    obj.tins = histmaps[1] as Tin[];
+    obj.tins = histmaps[1] as Transform[];
     const proj = new Projection({
       code: `Illst:${obj.mapID}`,
       extent: [0.0, 0.0, obj.width, obj.height],
@@ -91,7 +91,7 @@ export class HistMap_tin extends HistMap {
   xy2MercAsync_returnLayer(xy: Coordinate) {
     return new Promise((resolve, reject) => {
       const tinSorted = this.tins
-        .map((tin, index) => [index, tin] as [number, Tin])
+        .map((tin, index) => [index, tin] as [number, Transform])
         .sort((a, b) => (a[1].priority < b[1].priority ? 1 : -1));
 
       for (let i = 0; i < tinSorted.length; i++) {
@@ -121,22 +121,22 @@ export class HistMap_tin extends HistMap {
             this.merc2XyAsync_specifyLayer(merc, index)
               .then(xy => {
                 if (index === 0 || booleanPointInPolygon(xy, tin.xyBounds)) {
-                  resolve([tin, index, xy] as [Tin, number, Coordinate?]);
+                  resolve([tin, index, xy] as [Transform, number, Coordinate?]);
                 } else {
-                  resolve([tin, index] as [Tin, number, Coordinate?]);
+                  resolve([tin, index] as [Transform, number, Coordinate?]);
                 }
               })
               .catch(err => {
                 reject(err);
               });
-          }) as Promise<[Tin, number, Coordinate?]>
+          }) as Promise<[Transform, number, Coordinate?]>
       )
     ).then(results =>
       results
         .sort((a, b) => (a[0].priority < b[0].priority ? 1 : -1))
         .reduce(
           (
-            ret: (undefined | [number, Coordinate, Tin])[],
+            ret: (undefined | [number, Coordinate, Transform])[],
             result,
             priIndex: number,
             arry
@@ -160,13 +160,13 @@ export class HistMap_tin extends HistMap {
                   } else {
                     return [undefined, [index, xy, tin]] as (
                       | undefined
-                      | [number, Coordinate, Tin]
+                      | [number, Coordinate, Transform]
                     )[];
                   }
                 } else {
                   return [undefined, [index, xy, tin]] as (
                     | undefined
-                    | [number, Coordinate, Tin]
+                    | [number, Coordinate, Transform]
                   )[];
                 }
               }
@@ -174,7 +174,7 @@ export class HistMap_tin extends HistMap {
             if (!ret.length || !ret[0]) {
               return [[index, xy, tin]] as (
                 | undefined
-                | [number, Coordinate, Tin]
+                | [number, Coordinate, Transform]
               )[];
             } else {
               ret.push([index, xy, tin]);
