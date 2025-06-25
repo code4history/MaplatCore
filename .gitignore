@@ -68,3 +68,17 @@ mapboxToken
 # Open/Keep
 .git.keep
 .git.open
+
+# Vite
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.DS_Store
+
+# Test coverage
+coverage/
+*.lcov

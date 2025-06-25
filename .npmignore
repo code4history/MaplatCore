@@ -1,17 +1,62 @@
-package-lock.json
-apps
-maps
-pois
-tiles
-tmpl
-index.html
-index_packed.html
-webpack_config
-gulpfile.js
-server.js
-jest_config
-babel.config.js
-.eslintrc.json
+# Source files (built files are in dist/)
+src/
+*.ts
+!dist/*.d.ts
+
+# Test files
+spec/
+vitest.config.ts
+coverage/
+
+# Development files
+.eslintrc*
+eslint.config.mjs
 .prettierrc
-distribution.zip
+tsconfig.json
+ts_config/
+vite.config.ts
+
+# Old build configs
+webpack_config/
+babel.config.js
+jest_config/
+gulpfile.js
+
+# Build artifacts
+lib/
+es5/
+dist_packed/
+
+# Documentation
+*.md
+!README.md
+docs/
+
+# Git and IDE
+.git*
+.vscode/
+.idea/
+
+# CI/CD
+.github/
+
+# Scripts
+scripts/
+
+# Test data
+tiles/
+parts_test/
+maps/
+pois/
+apps/
+
+# Build artifacts
+*.log
+*.tgz
+.DS_Store
+
+# Examples
 example.zip
+index.html
+test.html
+public/

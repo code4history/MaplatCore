@@ -2,17 +2,13 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>Maplat</title>
+    <title>Maplat - Vite Dev Mode TEST</title>
     <meta content="yes" name="apple-mobile-web-app-capable" />
     <meta
       name="viewport"
       content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"
     />
     <link rel="icon" type="image/png" href="parts/favicon.png" />
-    <link
-      href="https://api.tiles.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.css"
-      rel="stylesheet"
-    />
     <style>
       .mainview {
         position: absolute;
@@ -29,9 +25,12 @@
         right: 5%;
       }
     </style>
-    <link href="./dist_packed/assets/maplat_core.css" rel="stylesheet" />
+    <!-- Development mode: styles will be loaded by Vite -->
+    <!-- Production mode: uncomment the line below -->
+    <!-- <link href="./dist/maplat_core.css" rel="stylesheet" /> -->
   </head>
   <body>
+    <h1 style="position: absolute; top: 0; left: 0; z-index: 9999; background: red; color: white;">VITE TEST VERSION</h1>
     <div class="mainview"><div id="map_div"></div></div>
     <div class="button">
       <button id="show">showLayer(Main)</button>
@@ -52,14 +51,13 @@
       <button id="gsi">地理院</button> <button id="mapbox">Mapbox</button>
       <button id="map_remove">Remove Map</button>
     </div>
-    <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.js"></script>
-    <script src="./dist_packed/assets/maplat_core.js"></script>
-    <script>
-      var option = {
-        mapboxgl: mapboxgl,
-        //mapboxToken: 'YOUR-ACCESS-TOKEN'
-        mapboxToken:
-          "pk.eyJ1IjoicmVraXNoaWtva3VkbyIsImEiOiJjazRoMmF3dncwODU2M2ttdzI2aDVqYXVwIn0.8Hb9sekgjfck6Setxk5uVg"
+    <!-- Development mode with Vite -->
+    <script type="module">
+      import { MaplatApp } from './src/index.ts';
+      
+      window.addEventListener('DOMContentLoaded', async () => {
+        var option = {
+        // mapboxgl will be removed in future versions
       };
       var hashes = window.location.href
         .slice(window.location.href.indexOf("?") + 1)
@@ -70,6 +68,9 @@
           hash[1] == "true" ? true : hash[1] == "false" ? false : hash[1];
       }
 
+      // For backward compatibility
+      window.Maplat = MaplatApp;
+      
       Maplat.createObject(option).then(function (app) {
         console.log(app);
         console.log(app.currentMapInfo());
@@ -213,6 +214,7 @@
             app.remove();
           });
       });
+      }); // DOMContentLoaded
     </script>
   </body>
 </html>

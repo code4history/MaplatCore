@@ -6,7 +6,7 @@ import {
   setCustomFunctionMaplat
 } from "./mixin";
 import { XYZ } from "ol/source";
-import { createFromTemplates, expandUrl } from "ol/tileurlfunction";
+import { createFromTemplates } from "ol/tileurlfunction";
 
 for (let z = 0; z < 9; z++) {
   const key = `ZOOM:${z}`;
@@ -97,7 +97,8 @@ export abstract class HistMap extends setCustomFunctionMaplat(XYZ) {
       this._tileUrlFunction = createFromTemplates(options.urls);
     } else if (options.url) {
       // @ts-expect-error ts-migrate(2554)
-      this._tileUrlFunction = createFromTemplates(expandUrl(options.url));
+      // In newer versions of OpenLayers, expandUrl is included in createFromTemplates
+      this._tileUrlFunction = createFromTemplates(Array.isArray(options.url) ? options.url : [options.url]);
     }
 
     this.width = options.width;
