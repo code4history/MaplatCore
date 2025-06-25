@@ -2,14 +2,15 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>Maplat</title>
+    <title>Maplat - Vite Development Mode</title>
     <meta content="yes" name="apple-mobile-web-app-capable" />
+    <meta content="yes" name="mobile-web-app-capable" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no"
     />
     <link rel="icon" type="image/png" href="parts/favicon.png" />
-    <link href="https://api.tiles.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.css" rel="stylesheet" />
+    <!-- Mapbox CSS will be removed in future versions -->
     <style>
       .mainview {
         position: absolute;
@@ -58,17 +59,23 @@
       <button id="reset_circulation">北を上に（northUp）</button>
       <button id="gps_on">GPS トグル</button>
     </div>
-    <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js"></script>
-  </body>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    <!-- Vite development mode -->
+    <script type="module">
+      import { MaplatApp } from '/src/index.ts';
+      
+      // Create Maplat object for backward compatibility
+      const Maplat = window.Maplat = {};
+      Maplat.createObject = MaplatApp.createObject;
+      
+      // Wait for DOM content to be loaded
+      window.addEventListener('DOMContentLoaded', () => {
       let gps_on = false;
       var option = {
         fake: true,
         fakeGps: [141.1501111, 39.69994722], // 盛岡城
         fakeRadius: 50,
-        mapboxgl: mapboxgl,
-        mapboxToken: 'pk.eyJ1Ijoia29jaGl6dWZhbiIsImEiOiJjbHRnaWhzOW8wd2p4MmtvZDFsOWJiOG40In0.FYTPboTqXKv5a_onOaW1vQ',
+        // mapboxgl will be removed in future versions
+        // mapboxToken: 'pk.eyJ1Ijoia29jaGl6dWZhbiIsImEiOiJjbHRnaWhzOW8wd2p4MmtvZDFsOWJiOG40In0.FYTPboTqXKv5a_onOaW1vQ',
         googleApiKey: 'AIzaSyB0v_F9EVPbE7R2uOm6Mixrtzts21DEICc',
         northUp: true,
         tapDuration: 60000,
@@ -326,7 +333,7 @@ stroke-width="2"></polygon>
           gps_on = false;
           console.log("GPS error occurred, button state synchronized");
         });
-      });
-    });
-  </script>
+      }); // Maplat.createObject
+      }); // DOMContentLoaded
+    </script>
 </html>

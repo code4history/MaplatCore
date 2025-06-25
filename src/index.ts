@@ -1,4 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+// Import styles
+import '../less/core.less';
+
 import i18n from "i18next";
 import i18nxhr from "i18next-xhr-backend";
 import CustomEvent from "./customevent";
@@ -28,7 +31,7 @@ import {
   normalizePoi
 } from "./normalize_pois";
 import { createIconSet, createHtmlFromTemplate } from "./template_works";
-import mapboxgl from "mapbox-gl";
+// import mapboxgl from "mapbox-gl"; // TODO: Remove mapbox dependency
 import { Geolocation } from './geolocation';
 
 // @ts-ignore
@@ -95,6 +98,9 @@ export class GPSRequestEvent extends BaseEvent {
 } 
 
 export class MaplatApp extends EventTarget {
+  // Static method declaration
+  static createObject: (option: any) => Promise<MaplatApp>;
+  
   appid: string;
   translateUI = false;
   noRotate = false;
@@ -155,7 +161,9 @@ export class MaplatApp extends EventTarget {
     appOption = normalizeArg(appOption);
     this.appid = appOption.appid || "sample";
     if (appOption.mapboxToken) {
-      mapboxgl.accessToken = appOption.mapboxToken;
+      if (typeof mapboxgl !== 'undefined' && mapboxgl) {
+        mapboxgl.accessToken = appOption.mapboxToken;
+      }
     }
     if (appOption.googleApiKey) {
       this.googleApiKey = appOption.googleApiKey;
@@ -529,7 +537,8 @@ export class MaplatApp extends EventTarget {
         div: backDiv
       });
     }
-    if (mapboxgl) {
+    // TODO: Remove mapbox support
+    if (typeof mapboxgl !== 'undefined' && mapboxgl) {
       const mapboxDiv = `${this.mapDiv}_mapbox`;
       newElem = createElement(
         `<div id="${mapboxDiv}" class="map" style="top:0; left:0; right:0; bottom:0; ` +
@@ -539,7 +548,7 @@ export class MaplatApp extends EventTarget {
         newElem,
         this.mapDivDocument!.firstChild
       );
-      this.mapboxMap = new mapboxgl.Map({
+      this.mapboxMap = new (mapboxgl as any).Map({
         attributionControl: false,
         boxZoom: false,
         container: mapboxDiv,
@@ -580,7 +589,7 @@ export class MaplatApp extends EventTarget {
       source.setMap(this.mapObject);
       if (source.isMapbox()) {
         if (!this.mapboxMap) {
-          throw "To use mapbox gl based base map, you have to make Maplat object with specifying 'mapboxgl' option.";
+          throw "Mapbox GL support is being removed. Please use OpenLayers vector tiles instead.";
         }
         source.mapboxMap = this.mapboxMap;
       }
@@ -1681,3 +1690,22 @@ export class MaplatApp extends EventTarget {
 }
 export { createElement };
 export { CustomEvent };
+
+// Static method for cleaner initialization
+MaplatApp.createObject = function(option: any): Promise<MaplatApp> {
+  return new Promise((resolve) => {
+    const app = new MaplatApp(option);
+    app.waitReady.then(() => {
+      resolve(app);
+    });
+  });
+};
+
+// For backward compatibility - Maplat namespace
+if (typeof window !== 'undefined') {
+  const Maplat = {
+    createObject: MaplatApp.createObject
+  };
+  (window as any).Maplat = Maplat;
+  (window as any).MaplatApp = MaplatApp;
+}

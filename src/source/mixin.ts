@@ -138,7 +138,9 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
     }
 
     static isMapbox() {
-      return this.isMapbox_;
+      // TODO: Remove when Mapbox support is removed
+      return false; // Temporarily disabled
+      // return this.isMapbox_;
     }
 
     isBasemap() { 
