@@ -23,9 +23,9 @@
       "@/*": ["./src/*"]
     },
     "typeRoots": [
-      "./node_modules/@types",
-      "./src/types"
+      "./node_modules/@types"
     ],
+    "types": ["node"],
     "allowJs": true,
     "downlevelIteration": true,
     "removeComments": true
