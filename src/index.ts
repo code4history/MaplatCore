@@ -31,7 +31,7 @@ import {
   normalizePoi
 } from "./normalize_pois";
 import { createIconSet, createHtmlFromTemplate } from "./template_works";
-// import mapboxgl from "mapbox-gl"; // TODO: Remove mapbox dependency
+// Mapbox GL JS support has been removed. Use OpenLayers with Mapbox styles instead.
 import { Geolocation } from './geolocation';
 
 // @ts-ignore
@@ -130,7 +130,7 @@ export class MaplatApp extends EventTarget {
   vectors: any = [];
   mapDivDocument: HTMLElement | null;
   mapObject: any;
-  mapboxMap: any;
+  // mapboxMap: any; // Removed - Mapbox GL JS support discontinued
   googleApiKey?: string;
   pois: any;
   poiTemplate?: string;
@@ -161,9 +161,8 @@ export class MaplatApp extends EventTarget {
     appOption = normalizeArg(appOption);
     this.appid = appOption.appid || "sample";
     if (appOption.mapboxToken) {
-      if (typeof mapboxgl !== 'undefined' && mapboxgl) {
-        mapboxgl.accessToken = appOption.mapboxToken;
-      }
+      console.error("Mapbox GL JS support has been removed. Please use OpenLayers with Mapbox styles instead.");
+      console.error("Set 'maptype: 'mapbox'' in your source configuration and provide a 'style' URL.");
     }
     if (appOption.googleApiKey) {
       this.googleApiKey = appOption.googleApiKey;
@@ -538,30 +537,7 @@ export class MaplatApp extends EventTarget {
       });
     }
     // TODO: Remove mapbox support
-    if (typeof mapboxgl !== 'undefined' && mapboxgl) {
-      const mapboxDiv = `${this.mapDiv}_mapbox`;
-      newElem = createElement(
-        `<div id="${mapboxDiv}" class="map" style="top:0; left:0; right:0; bottom:0; ` +
-          `position:absolute;visibility:hidden;"></div>`
-      )[0];
-      this.mapDivDocument!.insertBefore(
-        newElem,
-        this.mapDivDocument!.firstChild
-      );
-      this.mapboxMap = new (mapboxgl as any).Map({
-        attributionControl: false,
-        boxZoom: false,
-        container: mapboxDiv,
-        doubleClickZoom: false,
-        dragPan: false,
-        dragRotate: false,
-        interactive: false,
-        keyboard: false,
-        pitchWithRotate: false,
-        scrollZoom: false,
-        touchZoomRotate: false
-      });
-    }
+    // Mapbox GL JS support has been removed
     this.startFrom = this.appData!.startFrom;
     return {
       homePos,
@@ -587,12 +563,7 @@ export class MaplatApp extends EventTarget {
     for (let i = 0; i < sources.length; i++) {
       const source = sources[i];
       source.setMap(this.mapObject);
-      if (source.isMapbox()) {
-        if (!this.mapboxMap) {
-          throw "Mapbox GL support is being removed. Please use OpenLayers vector tiles instead.";
-        }
-        source.mapboxMap = this.mapboxMap;
-      }
+      // Mapbox check no longer needed - all maps use OpenLayers
       cache.push(source);
       this.cacheHash[source.mapID] = source;
     }
@@ -1315,7 +1286,7 @@ export class MaplatApp extends EventTarget {
     return (this.changeMapSeq = this.changeMapSeq.then(
       () =>
         new Promise((resolve, _reject) => {
-          this.convertParametersFromCurrent(to, (size: any) => {
+          this.convertParametersFromCurrent(to, async (size: any) => {
             let backSrc: any = null;
             let backTo: any = null;
             const backRestore = restore!.backgroundID
@@ -1328,7 +1299,7 @@ export class MaplatApp extends EventTarget {
                 // If new foreground source is nonlinear map:
                 if (backRestore) {
                   backTo = backRestore;
-                  this.backMap.exchangeSource(backTo);
+                  await this.backMap.exchangeSource(backTo);
                 } else {
                   if (!backSrc) {
                     // If current background source is not set, specify it
@@ -1340,7 +1311,7 @@ export class MaplatApp extends EventTarget {
                           : // If current foreground is TMS overlay, set current basemap as new background
                             this.from; // If current foreground source is basemap, set current foreground as new background
                     }
-                    this.backMap.exchangeSource(backTo);
+                    await this.backMap.exchangeSource(backTo);
                   } else {
                     // If current background source is set, use it again
                     backTo = backSrc;
@@ -1349,7 +1320,7 @@ export class MaplatApp extends EventTarget {
                 this.requestUpdateState({ backgroundID: backTo.mapID });
               } else {
                 // If new foreground source is basemap or TMS overlay, remove source from background map
-                this.backMap.exchangeSource();
+                await this.backMap.exchangeSource();
               }
               // Overlay = true case: end
             }
@@ -1358,10 +1329,10 @@ export class MaplatApp extends EventTarget {
               this.mapObject.setLayer(to);
               // If current foreground is basemap then set it as basemap layer
               if (backRestore) {
-                this.mapObject.exchangeSource(backRestore);
+                await this.mapObject.exchangeSource(backRestore);
               } else if (!this.from!.isWmts()) {
                 const backToLocal = backSrc || now;
-                this.mapObject.exchangeSource(backToLocal);
+                await this.mapObject.exchangeSource(backToLocal);
               }
               this.requestUpdateState({
                 backgroundID: this.mapObject.getSource().mapID
@@ -1369,7 +1340,7 @@ export class MaplatApp extends EventTarget {
             } else {
               // Remove overlay from foreground and set current source to foreground
               this.mapObject.setLayer();
-              this.mapObject.exchangeSource(to);
+              await this.mapObject.exchangeSource(to);
             }
             const updateState = {
               mapID: to.mapID
@@ -1681,9 +1652,7 @@ export class MaplatApp extends EventTarget {
     });
   }
   remove() {
-    if (this.mapboxMap) {
-      this.mapboxMap.remove();
-    }
+    // Mapbox cleanup no longer needed
     this.mapDivDocument!.innerHTML = "";
     this.mapDivDocument!.classList.remove("maplat");
   }

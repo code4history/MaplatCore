@@ -1,10 +1,10 @@
-import { Google } from 'ol/source';
+import { default as VectorTileSource } from 'ol/source/VectorTile';
+import { MapOptions, MaplatMap } from '../map_ex';
 import { Coordinate } from 'ol/coordinate';
 import { ViewpointArray, CrossCoordinatesArray } from './mixin';
 import { Size } from 'ol/size';
 import { default as __DTS_DEFAULT_0__ } from 'weiwudi';
-import { MaplatMap } from '../map_ex';
-declare const GoogleMap_base: ((abstract new (...args: any[]) => {
+declare const MapboxStyleMap_base: ((abstract new (...args: any[]) => {
     insideCheckXy(xy: Coordinate): any;
     insideCheckSysCoord(histCoords: Coordinate): any;
     modulateXyInside(xy: any): any;
@@ -118,8 +118,25 @@ declare const GoogleMap_base: ((abstract new (...args: any[]) => {
     isWmts(): boolean;
     isMapbox(): boolean;
     createAsync(options: any): Promise<any>;
-}) & typeof Google;
-export declare class GoogleMap extends GoogleMap_base {
-    constructor(options?: any);
+}) & typeof VectorTileSource;
+export declare class MapboxStyleMap extends MapboxStyleMap_base {
+    style?: string;
+    accessToken?: string;
+    private styleApplied;
+    private stylePromise?;
+    private targetLayer?;
+    private styleJson?;
+    constructor(option?: MapOptions);
+    static title: string;
+    static isBasemap_: boolean;
+    static isWmts_: boolean;
+    getTileLoadFunction(): null;
+    setMap(map: any): void;
+    setTargetLayer(layer: any): void;
+    waitForStyle(): Promise<void>;
+    private applyMapboxStyleAsync;
+    insideCheckSysCoord(_coord: any): boolean;
+    static isMapbox(): boolean;
+    isMapbox(): boolean;
 }
 export {};

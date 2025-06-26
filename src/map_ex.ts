@@ -1,15 +1,42 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Feature, Map } from "ol";
 import { View } from "./view_ex";
-import { Group, Tile, Vector as layerVector } from "ol/layer";
+import { Group, Tile, Vector as layerVector, VectorTile } from "ol/layer";
 import { Vector as sourceVector } from "ol/source";
 import { Circle, LineString, Point, Polygon } from "ol/geom";
 import { Fill, Icon, Stroke, Style } from "ol/style";
-import { MapboxMap } from "./source/mapboxmap";
+import { MapboxStyleMap } from "./source/mapboxstylemap";
 import { GoogleMap } from "./source/googlemap";
 import { NowMap } from "./source/nowmap";
-import { MapboxLayer } from "./layer_mapbox";
 import { normalizeArg } from "./functions";
+
+export interface MapOptions {
+  mapID?: string;
+  style?: string;
+  url?: string;
+  urls?: string[];
+  accessToken?: string;
+  maxZoom?: number;
+  minZoom?: number;
+  homePosition?: any;
+  mercZoom?: number;
+  label?: string;
+  poiTemplate?: string;
+  poiStyle?: string;
+  iconTemplate?: string;
+  icon?: string;
+  selectedIcon?: string;
+  mercatorXShift?: number;
+  mercatorYShift?: number;
+  weiwudi?: any;
+  envelopeLngLats?: any;
+  width?: number;
+  height?: number;
+  imageExtension?: string;
+  tms?: boolean;
+  pois?: any;
+  thumbnail?: string;
+}
 
 // @ts-ignore
 import bluedot from "../parts/bluedot.png";                         // @ts-ignore
@@ -150,19 +177,26 @@ export class MaplatMap extends Map {
     });
   }
   static spawnLayer(layer: any, source: any, container: any) {
-    if (source instanceof MapboxMap || !(layer instanceof Tile)) {
-      if (source instanceof MapboxMap) {
-        layer = new MapboxLayer({
-          style: source.style,
-          accessToken: source.accessToken,
-          container,
-          source
+    // Special handling for MapboxStyleMap - create VectorTile layer
+    if (source instanceof MapboxStyleMap) {
+      if (!(layer instanceof VectorTile)) {
+        layer = new VectorTile({
+          source,
+          declutter: true
         });
+        layer.set("name", "base");
       } else {
-        layer = new Tile({
-          source
-        });
+        layer.setSource(source);
       }
+      // Set the target layer so MapboxStyleMap can apply style
+      source.setTargetLayer(layer);
+      return layer;
+    }
+    
+    if (!(layer instanceof Tile)) {
+      layer = new Tile({
+        source
+      });
       layer.set("name", "base");
     } else {
       layer.setSource(source);
@@ -315,13 +349,35 @@ export class MaplatMap extends Map {
       layer
     );
   }
-  exchangeSource(source: any = undefined) {
+  async exchangeSource(source: any = undefined) {
     const layers = this.getLayers();
     const prevLayer = layers.item(0);
+    const prevSource = prevLayer ? prevLayer.getSource() : null;
+    
+    // Skip if the source is the same
+    if (source && prevSource === source) {
+      return;
+    }
+    
+    // Hide previous source if it has a hide method
+    if (prevSource && typeof prevSource.hide === 'function') {
+      prevSource.hide();
+    }
+    
     const layer = MaplatMap.spawnLayer(prevLayer, source, this.getTarget());
     if (layer != prevLayer) layers.setAt(0, layer);
     if (source) {
       source.setMap(this);
+      
+      // Wait for MapboxStyleMap to apply style
+      if (source instanceof MapboxStyleMap && source.waitForStyle) {
+        await source.waitForStyle();
+      }
+      
+      // Show new source if it has a show method
+      if (typeof source.show === 'function') {
+        source.show();
+      }
     }
   }
   setLayer(source: any = undefined) {

@@ -1,4 +1,31 @@
 import { Feature, Map } from 'ol';
+export interface MapOptions {
+    mapID?: string;
+    style?: string;
+    url?: string;
+    urls?: string[];
+    accessToken?: string;
+    maxZoom?: number;
+    minZoom?: number;
+    homePosition?: any;
+    mercZoom?: number;
+    label?: string;
+    poiTemplate?: string;
+    poiStyle?: string;
+    iconTemplate?: string;
+    icon?: string;
+    selectedIcon?: string;
+    mercatorXShift?: number;
+    mercatorYShift?: number;
+    weiwudi?: any;
+    envelopeLngLats?: any;
+    width?: number;
+    height?: number;
+    imageExtension?: string;
+    tms?: boolean;
+    pois?: any;
+    thumbnail?: string;
+}
 export declare class MaplatMap extends Map {
     fakeGps: any;
     fakeRadius: any;
@@ -30,7 +57,7 @@ export declare class MaplatMap extends Map {
     removeEnvelope(feature: any, layer: any): void;
     resetEnvelope(layer: any): void;
     setFillEnvelope(xys: any, stroke: any, fill: any, layer: any): Feature<any>;
-    exchangeSource(source?: any): void;
+    exchangeSource(source?: any): Promise<void>;
     setLayer(source?: any): void;
     setTransparency(percentage: any): void;
     setGPSMarker(position: any, ignoreMove: any): void;

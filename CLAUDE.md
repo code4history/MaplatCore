@@ -105,6 +105,43 @@ MaplatCoreは、ブラウザで動作する地図SDKライブラリです。Open
 - 開発完了後にmasterブランチにマージ
 - Code4History TypeScript/Node.js/Denoコーディングルールを基本とするが、ブラウザライブラリの特性に合わせて調整
 
+## MaplatCoreアーキテクチャの詳細
+
+### 地図インスタンスの構成
+MaplatCoreは前面地図と背面地図の2つの地図インスタンスを使用して座標変換を実現しています：
+
+1. **前面地図（mapObject）**: ユーザーが直接操作する地図
+2. **背面地図（backMap）**: オーバーレイ表示時の背景地図（overlayオプションがtrueの場合のみ）
+
+### ソースクラスの階層構造
+- **NowMap**: WMTS/XYZベースマップ（OSM、GSIなど）を扱うクラス
+  - ベースマップとして使用される
+  - `isBasemap_` = true, `isWmts_` = true
+- **TmsMap**: WMTSオーバーレイを扱うクラス  
+  - オーバーレイレイヤーとして使用される
+  - `isBasemap_` = false, `isWmts_` = true
+- **HistMap_tin**: カスタム座標系のオーバーレイを扱うクラス
+  - 歴史地図など、独自の座標系を持つ地図
+  - `isBasemap_` = false, `isWmts_` = false
+
+### 地図切り替えのロジック
+1. **ベースマップ → 非線形地図（HistMap_tin）**
+   - 前面に非線形地図、背面に元のベースマップを配置
+   - 座標変換追尾が有効になる
+2. **非線形地図 → ベースマップ**
+   - 前面にベースマップ、背面地図はクリア
+   - 通常の地図表示に戻る
+3. **TMSオーバーレイの場合**
+   - 前面地図のオーバーレイレイヤーとして追加
+   - ベースマップは維持される
+
+### Mapbox/MapLibre移行に関する注意点
+- MapboxStyleMapはNowMapと同様にベースマップとして扱う
+- OpenLayersのVectorTileSourceを継承して実装
+- ol-mapbox-styleはスタイル解析のみに使用し、レイヤー管理はMaplatCore側で行う
+- VectorTileに対してsetupTileLoadFunctionを適用しないよう注意が必要
+
 ## 更新履歴
 
 - 2025-06-25: 初版作成
+- 2025-06-26: MaplatCoreアーキテクチャの詳細を追加

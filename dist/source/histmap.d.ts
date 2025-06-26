@@ -45,7 +45,7 @@ declare const HistMap_base: ((abstract new (...args: any[]) => {
     initialize(options: any): void;
     isBasemap(): any;
     isWmts(): any;
-    isMapbox(): any;
+    isMapbox(): boolean;
     getCacheEnable(): boolean;
     getTileCacheStatsAsync(): Promise<{
         size?: number;
@@ -117,7 +117,6 @@ declare const HistMap_base: ((abstract new (...args: any[]) => {
 }) & {
     isBasemap_: boolean;
     isWmts_: boolean;
-    isMapbox_: boolean;
     isBasemap(): boolean;
     isWmts(): boolean;
     isMapbox(): boolean;

@@ -50,7 +50,7 @@ export declare function setCustomFunction<TBase extends SourceConstructor>(Base:
     initialize(options: any): void;
     isBasemap(): any;
     isWmts(): any;
-    isMapbox(): any;
+    isMapbox(): boolean;
     insideCheckSysCoord(sysCoord: Coordinate): boolean;
     getCacheEnable(): boolean;
     getTileCacheStatsAsync(): Promise<{
@@ -108,7 +108,6 @@ export declare function setCustomFunction<TBase extends SourceConstructor>(Base:
 }) & {
     isBasemap_: boolean;
     isWmts_: boolean;
-    isMapbox_: boolean;
     isBasemap(): boolean;
     isWmts(): boolean;
     isMapbox(): boolean;
@@ -158,7 +157,7 @@ export declare function setCustomFunctionBase<TBase extends SourceConstructor>(B
     initialize(options: any): void;
     isBasemap(): any;
     isWmts(): any;
-    isMapbox(): any;
+    isMapbox(): boolean;
     getCacheEnable(): boolean;
     getTileCacheStatsAsync(): Promise<{
         size?: number;
@@ -206,7 +205,6 @@ export declare function setCustomFunctionBase<TBase extends SourceConstructor>(B
 }) & {
     isBasemap_: boolean;
     isWmts_: boolean;
-    isMapbox_: boolean;
     isBasemap(): boolean;
     isWmts(): boolean;
     isMapbox(): boolean;
@@ -243,7 +241,7 @@ export declare function setCustomFunctionOverlay<TBase extends SourceConstructor
     initialize(options: any): void;
     isBasemap(): any;
     isWmts(): any;
-    isMapbox(): any;
+    isMapbox(): boolean;
     insideCheckSysCoord(sysCoord: Coordinate): boolean;
     getCacheEnable(): boolean;
     getTileCacheStatsAsync(): Promise<{
@@ -301,7 +299,6 @@ export declare function setCustomFunctionOverlay<TBase extends SourceConstructor
 }) & {
     isBasemap_: boolean;
     isWmts_: boolean;
-    isMapbox_: boolean;
     isBasemap(): boolean;
     isWmts(): boolean;
     isMapbox(): boolean;
@@ -348,7 +345,7 @@ export declare function setCustomFunctionMaplat<TBase extends SourceConstructor>
     initialize(options: any): void;
     isBasemap(): any;
     isWmts(): any;
-    isMapbox(): any;
+    isMapbox(): boolean;
     getCacheEnable(): boolean;
     getTileCacheStatsAsync(): Promise<{
         size?: number;
@@ -402,7 +399,6 @@ export declare function setCustomFunctionMaplat<TBase extends SourceConstructor>
 }) & {
     isBasemap_: boolean;
     isWmts_: boolean;
-    isMapbox_: boolean;
     isBasemap(): boolean;
     isWmts(): boolean;
     isMapbox(): boolean;

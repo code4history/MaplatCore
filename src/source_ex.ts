@@ -2,10 +2,12 @@ import { normalizeArg } from "./functions";
 import Weiwudi from "weiwudi";
 import { NowMap } from "./source/nowmap";
 import { TmsMap } from "./source/tmsmap";
-import { MapboxMap } from "./source/mapboxmap";
+// import { MapboxMap } from "./source/mapboxmap"; // Deprecated
+import { MapboxStyleMap } from "./source/mapboxstylemap";
 import { GoogleMap } from "./source/googlemap";
 import { HistMap } from "./source/histmap";
 import { HistMap_tin } from "./source/histmap_tin";
+import { WmsMap } from "./source/wmsmap";
 import "whatwg-fetch";
 
 export type MaplatSource = HistMap | NowMap | GoogleMap;
@@ -91,7 +93,7 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
         : options.maptype === "overlay"
         ? TmsMap
         : options.maptype === "mapbox"
-        ? MapboxMap
+        ? MapboxStyleMap
         : GoogleMap;
     if (!targetSrc.isBasemap()) {
       if (!options.homePosition) options.homePosition = options.homePos;
@@ -146,7 +148,7 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
           if (typeof resp != "object") resp = JSON.parse(resp);
           options = normalizeArg(Object.assign(resp, options));
           options.label = options.label || resp.year;
-          if (options.translator) {
+          if (options.translator && options.url) {
             options.url = options.translator(options.url);
           }
           if (!options.maptype) options.maptype = "maplat";
@@ -158,7 +160,7 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
                 : options.maptype === "overlay"
                 ? TmsMap
                 : options.maptype === "mapbox"
-                ? MapboxMap
+                ? MapboxStyleMap
                 : GoogleMap;
             if (!targetSrc.isBasemap()) {
               if (!options.homePosition) options.homePosition = options.homePos;

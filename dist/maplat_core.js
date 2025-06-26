@@ -1,10 +1,10 @@
 var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
-import { transform, toLonLat as toLonLat$1, Projection as Projection$1, addProjection as addProjection$1, addCoordinateTransforms, getTransform as getTransform$1, identityTransform } from "ol/proj";
-import { View as View$1, Map as Map$1, Feature } from "ol";
-import { Vector, Group, Tile } from "ol/layer";
-import { XYZ, Google, Vector as Vector$1 } from "ol/source";
+import { transform, Projection as Projection$1, addProjection as addProjection$1, addCoordinateTransforms, getTransform as getTransform$1, identityTransform, toLonLat as toLonLat$1 } from "ol/proj";
+import { View, Map, Feature as Feature$1 } from "ol";
+import { Vector, Group, VectorTile as VectorTile$2, Tile as Tile$1 } from "ol/layer";
+import { Google, XYZ, Vector as Vector$1 } from "ol/source";
 import { Style, Icon, Stroke, Fill } from "ol/style";
 function _typeof(o) {
   "@babel/helpers - typeof";
@@ -180,7 +180,7 @@ var Logger$1 = function() {
     }
   }, {
     key: "warn",
-    value: function warn3() {
+    value: function warn2() {
       for (var _len2 = arguments.length, args = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
         args[_key2] = arguments[_key2];
       }
@@ -188,7 +188,7 @@ var Logger$1 = function() {
     }
   }, {
     key: "error",
-    value: function error3() {
+    value: function error2() {
       for (var _len3 = arguments.length, args = new Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
         args[_key3] = arguments[_key3];
       }
@@ -464,12 +464,12 @@ function deepFind(obj, path) {
       return void 0;
     }
     if (current[paths[i]] === void 0) {
-      var j = 2;
-      var p = paths.slice(i, i + j).join(keySeparator);
+      var j2 = 2;
+      var p = paths.slice(i, i + j2).join(keySeparator);
       var mix = current[p];
-      while (mix === void 0 && paths.length > i + j) {
-        j++;
-        p = paths.slice(i, i + j).join(keySeparator);
+      while (mix === void 0 && paths.length > i + j2) {
+        j2++;
+        p = paths.slice(i, i + j2).join(keySeparator);
         mix = current[p];
       }
       if (mix === void 0) return void 0;
@@ -478,7 +478,7 @@ function deepFind(obj, path) {
         if (typeof mix === "string") return mix;
         if (p && typeof mix[p] === "string") return mix[p];
       }
-      var joinedPath = paths.slice(i + j).join(keySeparator);
+      var joinedPath = paths.slice(i + j2).join(keySeparator);
       if (joinedPath) return deepFind(mix, joinedPath, keySeparator);
       return void 0;
     }
@@ -520,9 +520,9 @@ var ResourceStore = function(_EventEmitter) {
   }, {
     key: "removeNamespaces",
     value: function removeNamespaces(ns) {
-      var index2 = this.options.ns.indexOf(ns);
-      if (index2 > -1) {
-        this.options.ns.splice(index2, 1);
+      var index = this.options.ns.indexOf(ns);
+      if (index > -1) {
+        this.options.ns.splice(index, 1);
       }
     }
   }, {
@@ -627,8 +627,8 @@ var ResourceStore = function(_EventEmitter) {
     value: function hasLanguageSomeTranslations(lng) {
       var data = this.getDataByLanguage(lng);
       var n = data && Object.keys(data) || [];
-      return !!n.find(function(v2) {
-        return data[v2] && Object.keys(data[v2]).length > 0;
+      return !!n.find(function(v) {
+        return data[v] && Object.keys(data[v]).length > 0;
       });
     }
   }, {
@@ -1701,8 +1701,8 @@ var Interpolator = function() {
           value = "";
         }
         if (doReduce) {
-          value = formatters.reduce(function(v2, f) {
-            return _this2.format(v2, f, options.lng, _objectSpread$3(_objectSpread$3({}, options), {}, {
+          value = formatters.reduce(function(v, f) {
+            return _this2.format(v, f, options.lng, _objectSpread$3(_objectSpread$3({}, options), {}, {
               interpolationkey: match[1].trim()
             }));
           }, value.trim());
@@ -1860,8 +1860,8 @@ var Formatter = function() {
             var valOptions = options && options.formatParams && options.formatParams[options.interpolationkey] || {};
             var l = valOptions.locale || valOptions.lng || options.locale || options.lng || lng;
             formatted = _this.formats[formatName](mem, l, _objectSpread$4(_objectSpread$4(_objectSpread$4({}, formatOptions), options), valOptions));
-          } catch (error3) {
-            _this.logger.warn(error3);
+          } catch (error2) {
+            _this.logger.warn(error2);
           }
           return formatted;
         } else {
@@ -1929,10 +1929,10 @@ function _isNativeReflectConstruct$2() {
     return false;
   }
 }
-function removePending(q, name) {
-  if (q.pending[name] !== void 0) {
-    delete q.pending[name];
-    q.pendingCount--;
+function removePending(q2, name) {
+  if (q2.pending[name] !== void 0) {
+    delete q2.pending[name];
+    q2.pendingCount--;
   }
 }
 var Connector = function(_EventEmitter) {
@@ -2019,31 +2019,31 @@ var Connector = function(_EventEmitter) {
       }
       this.state[name] = err ? -1 : 2;
       var loaded2 = {};
-      this.queue.forEach(function(q) {
-        pushPath(q.loaded, [lng], ns);
-        removePending(q, name);
-        if (err) q.errors.push(err);
-        if (q.pendingCount === 0 && !q.done) {
-          Object.keys(q.loaded).forEach(function(l) {
+      this.queue.forEach(function(q2) {
+        pushPath(q2.loaded, [lng], ns);
+        removePending(q2, name);
+        if (err) q2.errors.push(err);
+        if (q2.pendingCount === 0 && !q2.done) {
+          Object.keys(q2.loaded).forEach(function(l) {
             if (!loaded2[l]) loaded2[l] = {};
-            var loadedKeys = q.loaded[l];
+            var loadedKeys = q2.loaded[l];
             if (loadedKeys.length) {
               loadedKeys.forEach(function(ns2) {
                 if (loaded2[l][ns2] === void 0) loaded2[l][ns2] = true;
               });
             }
           });
-          q.done = true;
-          if (q.errors.length) {
-            q.callback(q.errors);
+          q2.done = true;
+          if (q2.errors.length) {
+            q2.callback(q2.errors);
           } else {
-            q.callback();
+            q2.callback();
           }
         }
       });
       this.emit("loaded", loaded2);
-      this.queue = this.queue.filter(function(q) {
-        return !q.done;
+      this.queue = this.queue.filter(function(q2) {
+        return !q2.done;
       });
     }
   }, {
@@ -3076,10 +3076,10 @@ async function normalizeLayers(layers, options) {
   if (Array.isArray(layers)) {
     layers = await Promise.all(layers.map(async (x) => await nodesLoader(x)));
     if (layers.length > 0 && layers[0].type === "FeatureCollection") {
-      layers = layers.reduce((prev, layer, index2) => {
+      layers = layers.reduce((prev, layer, index) => {
         let key = layer.id || layer.properties && layer.properties.id;
         if (!key) {
-          if (index2 === 0) key = "main";
+          if (index === 0) key = "main";
           else throw "POI layers include bad key setting";
         }
         prev[key] = normalizeLayer(layer, key, options);
@@ -3112,10 +3112,10 @@ function normalizeLayer(layer, key, options) {
       pois: layer.map((x) => normalizePoi(x))
     };
   } else if (layer.type === "FeatureCollection") {
-    const buffer = Object.assign({}, layer.properties || {});
-    if (layer.name) buffer.name = layer.name;
-    buffer.pois = layer.features.map((x) => normalizePoi(x));
-    layer = buffer;
+    const buffer2 = Object.assign({}, layer.properties || {});
+    if (layer.name) buffer2.name = layer.name;
+    buffer2.pois = layer.features.map((x) => normalizePoi(x));
+    layer = buffer2;
   }
   if (typeof layer.id === "undefined") {
     layer.id = key;
@@ -3130,11 +3130,11 @@ function normalizeLayer(layer, key, options) {
 }
 function normalizePoi(poi) {
   if (poi.type === "Feature") {
-    const buffer = Object.assign({}, poi.properties || {});
-    buffer.lnglat = poi.geometry.coordinates;
-    if (!buffer.id) buffer.id = poi.id;
-    if (!buffer.name) buffer.name = poi.name;
-    poi = buffer;
+    const buffer2 = Object.assign({}, poi.properties || {});
+    buffer2.lnglat = poi.geometry.coordinates;
+    if (!buffer2.id) buffer2.id = poi.id;
+    if (!buffer2.name) buffer2.name = poi.name;
+    poi = buffer2;
   }
   if (!poi.lnglat)
     poi.lnglat = [poi.lng || poi.longitude, poi.lat || poi.latitude];
@@ -3161,58 +3161,174 @@ function addIdToPoi(layers, key, options) {
     }
   });
 }
-var earthRadius = 63710088e-1;
-var factors = {
-  centimeters: earthRadius * 100,
-  centimetres: earthRadius * 100,
-  degrees: earthRadius / 111325,
-  feet: earthRadius * 3.28084,
-  inches: earthRadius * 39.37,
-  kilometers: earthRadius / 1e3,
-  kilometres: earthRadius / 1e3,
-  meters: earthRadius,
-  metres: earthRadius,
-  miles: earthRadius / 1609.344,
-  millimeters: earthRadius * 1e3,
-  millimetres: earthRadius * 1e3,
-  nauticalmiles: earthRadius / 1852,
-  radians: 1,
-  yards: earthRadius * 1.0936
-};
-var unitsFactors = {
-  centimeters: 100,
-  centimetres: 100,
-  degrees: 1 / 111325,
-  feet: 3.28084,
-  inches: 39.37,
-  kilometers: 1 / 1e3,
-  kilometres: 1 / 1e3,
-  meters: 1,
-  metres: 1,
-  miles: 1 / 1609.344,
-  millimeters: 1e3,
-  millimetres: 1e3,
-  nauticalmiles: 1 / 1852,
-  radians: 1 / earthRadius,
-  yards: 1.0936133
-};
-var areaFactors = {
-  acres: 247105e-9,
-  centimeters: 1e4,
-  centimetres: 1e4,
-  feet: 10.763910417,
-  hectares: 1e-4,
-  inches: 1550.003100006,
-  kilometers: 1e-6,
-  kilometres: 1e-6,
-  meters: 1,
-  metres: 1,
-  miles: 386e-9,
-  millimeters: 1e6,
-  millimetres: 1e6,
-  yards: 1.195990046
-};
-function feature(geom, properties, options) {
+function feature$4(geom, properties, options = {}) {
+  const feat = { type: "Feature" };
+  if (options.id === 0 || options.id) {
+    feat.id = options.id;
+  }
+  if (options.bbox) {
+    feat.bbox = options.bbox;
+  }
+  feat.properties = properties || {};
+  feat.geometry = geom;
+  return feat;
+}
+function point$2(coordinates2, properties, options = {}) {
+  if (!coordinates2) {
+    throw new Error("coordinates is required");
+  }
+  if (!Array.isArray(coordinates2)) {
+    throw new Error("coordinates must be an Array");
+  }
+  if (coordinates2.length < 2) {
+    throw new Error("coordinates must be at least 2 numbers long");
+  }
+  if (!isNumber$2(coordinates2[0]) || !isNumber$2(coordinates2[1])) {
+    throw new Error("coordinates must contain numbers");
+  }
+  const geom = {
+    type: "Point",
+    coordinates: coordinates2
+  };
+  return feature$4(geom, properties, options);
+}
+function polygon(coordinates2, properties, options = {}) {
+  for (const ring of coordinates2) {
+    if (ring.length < 4) {
+      throw new Error(
+        "Each LinearRing of a Polygon must have 4 or more Positions."
+      );
+    }
+    if (ring[ring.length - 1].length !== ring[0].length) {
+      throw new Error("First and last Position are not equivalent.");
+    }
+    for (let j2 = 0; j2 < ring[ring.length - 1].length; j2++) {
+      if (ring[ring.length - 1][j2] !== ring[0][j2]) {
+        throw new Error("First and last Position are not equivalent.");
+      }
+    }
+  }
+  const geom = {
+    type: "Polygon",
+    coordinates: coordinates2
+  };
+  return feature$4(geom, properties, options);
+}
+function isNumber$2(num) {
+  return !isNaN(num) && num !== null && !Array.isArray(num);
+}
+function coordEach$1(geojson, callback, excludeWrapCoord) {
+  if (geojson === null) return;
+  var j2, k, l, geometry, stopG, coords, geometryMaybeCollection, wrapShrink = 0, coordIndex = 0, isGeometryCollection, type = geojson.type, isFeatureCollection = type === "FeatureCollection", isFeature = type === "Feature", stop = isFeatureCollection ? geojson.features.length : 1;
+  for (var featureIndex = 0; featureIndex < stop; featureIndex++) {
+    geometryMaybeCollection = isFeatureCollection ? geojson.features[featureIndex].geometry : isFeature ? geojson.geometry : geojson;
+    isGeometryCollection = geometryMaybeCollection ? geometryMaybeCollection.type === "GeometryCollection" : false;
+    stopG = isGeometryCollection ? geometryMaybeCollection.geometries.length : 1;
+    for (var geomIndex = 0; geomIndex < stopG; geomIndex++) {
+      var multiFeatureIndex = 0;
+      var geometryIndex = 0;
+      geometry = isGeometryCollection ? geometryMaybeCollection.geometries[geomIndex] : geometryMaybeCollection;
+      if (geometry === null) continue;
+      coords = geometry.coordinates;
+      var geomType = geometry.type;
+      wrapShrink = geomType === "Polygon" || geomType === "MultiPolygon" ? 1 : 0;
+      switch (geomType) {
+        case null:
+          break;
+        case "Point":
+          if (callback(
+            coords,
+            coordIndex,
+            featureIndex,
+            multiFeatureIndex,
+            geometryIndex
+          ) === false)
+            return false;
+          coordIndex++;
+          multiFeatureIndex++;
+          break;
+        case "LineString":
+        case "MultiPoint":
+          for (j2 = 0; j2 < coords.length; j2++) {
+            if (callback(
+              coords[j2],
+              coordIndex,
+              featureIndex,
+              multiFeatureIndex,
+              geometryIndex
+            ) === false)
+              return false;
+            coordIndex++;
+            if (geomType === "MultiPoint") multiFeatureIndex++;
+          }
+          if (geomType === "LineString") multiFeatureIndex++;
+          break;
+        case "Polygon":
+        case "MultiLineString":
+          for (j2 = 0; j2 < coords.length; j2++) {
+            for (k = 0; k < coords[j2].length - wrapShrink; k++) {
+              if (callback(
+                coords[j2][k],
+                coordIndex,
+                featureIndex,
+                multiFeatureIndex,
+                geometryIndex
+              ) === false)
+                return false;
+              coordIndex++;
+            }
+            if (geomType === "MultiLineString") multiFeatureIndex++;
+            if (geomType === "Polygon") geometryIndex++;
+          }
+          if (geomType === "Polygon") multiFeatureIndex++;
+          break;
+        case "MultiPolygon":
+          for (j2 = 0; j2 < coords.length; j2++) {
+            geometryIndex = 0;
+            for (k = 0; k < coords[j2].length; k++) {
+              for (l = 0; l < coords[j2][k].length - wrapShrink; l++) {
+                if (callback(
+                  coords[j2][k][l],
+                  coordIndex,
+                  featureIndex,
+                  multiFeatureIndex,
+                  geometryIndex
+                ) === false)
+                  return false;
+                coordIndex++;
+              }
+              geometryIndex++;
+            }
+            multiFeatureIndex++;
+          }
+          break;
+        case "GeometryCollection":
+          for (j2 = 0; j2 < geometry.geometries.length; j2++)
+            if (coordEach$1(geometry.geometries[j2], callback) === false)
+              return false;
+          break;
+        default:
+          throw new Error("Unknown Geometry Type");
+      }
+    }
+  }
+}
+function centroid$1(geojson, options = {}) {
+  let xSum = 0;
+  let ySum = 0;
+  let len = 0;
+  coordEach$1(
+    geojson,
+    function(coord) {
+      xSum += coord[0];
+      ySum += coord[1];
+      len++;
+    }
+  );
+  return point$2([xSum / len, ySum / len], options.properties);
+}
+var turf_centroid_default = centroid$1;
+function feature$3(geom, properties, options) {
   if (options === void 0) {
     options = {};
   }
@@ -3227,25 +3343,7 @@ function feature(geom, properties, options) {
   feat.geometry = geom;
   return feat;
 }
-function geometry(type, coordinates2, _options) {
-  switch (type) {
-    case "Point":
-      return point(coordinates2).geometry;
-    case "LineString":
-      return lineString(coordinates2).geometry;
-    case "Polygon":
-      return polygon(coordinates2).geometry;
-    case "MultiPoint":
-      return multiPoint(coordinates2).geometry;
-    case "MultiLineString":
-      return multiLineString(coordinates2).geometry;
-    case "MultiPolygon":
-      return multiPolygon(coordinates2).geometry;
-    default:
-      throw new Error(type + " is invalid");
-  }
-}
-function point(coordinates2, properties, options) {
+function point$1(coordinates2, properties, options) {
   if (options === void 0) {
     options = {};
   }
@@ -3258,53 +3356,16 @@ function point(coordinates2, properties, options) {
   if (coordinates2.length < 2) {
     throw new Error("coordinates must be at least 2 numbers long");
   }
-  if (!isNumber(coordinates2[0]) || !isNumber(coordinates2[1])) {
+  if (!isNumber$1(coordinates2[0]) || !isNumber$1(coordinates2[1])) {
     throw new Error("coordinates must contain numbers");
   }
   var geom = {
     type: "Point",
     coordinates: coordinates2
   };
-  return feature(geom, properties, options);
+  return feature$3(geom, properties, options);
 }
-function points(coordinates2, properties, options) {
-  if (options === void 0) {
-    options = {};
-  }
-  return featureCollection$1(coordinates2.map(function(coords) {
-    return point(coords, properties);
-  }), options);
-}
-function polygon(coordinates2, properties, options) {
-  if (options === void 0) {
-    options = {};
-  }
-  for (var _i = 0, coordinates_1 = coordinates2; _i < coordinates_1.length; _i++) {
-    var ring = coordinates_1[_i];
-    if (ring.length < 4) {
-      throw new Error("Each LinearRing of a Polygon must have 4 or more Positions.");
-    }
-    for (var j = 0; j < ring[ring.length - 1].length; j++) {
-      if (ring[ring.length - 1][j] !== ring[0][j]) {
-        throw new Error("First and last Position are not equivalent.");
-      }
-    }
-  }
-  var geom = {
-    type: "Polygon",
-    coordinates: coordinates2
-  };
-  return feature(geom, properties, options);
-}
-function polygons(coordinates2, properties, options) {
-  if (options === void 0) {
-    options = {};
-  }
-  return featureCollection$1(coordinates2.map(function(coords) {
-    return polygon(coords, properties);
-  }), options);
-}
-function lineString(coordinates2, properties, options) {
+function lineString$2(coordinates2, properties, options) {
   if (options === void 0) {
     options = {};
   }
@@ -3315,216 +3376,17 @@ function lineString(coordinates2, properties, options) {
     type: "LineString",
     coordinates: coordinates2
   };
-  return feature(geom, properties, options);
+  return feature$3(geom, properties, options);
 }
-function lineStrings(coordinates2, properties, options) {
-  if (options === void 0) {
-    options = {};
-  }
-  return featureCollection$1(coordinates2.map(function(coords) {
-    return lineString(coords, properties);
-  }), options);
-}
-function featureCollection$1(features, options) {
-  if (options === void 0) {
-    options = {};
-  }
-  var fc = { type: "FeatureCollection" };
-  if (options.id) {
-    fc.id = options.id;
-  }
-  if (options.bbox) {
-    fc.bbox = options.bbox;
-  }
-  fc.features = features;
-  return fc;
-}
-function multiLineString(coordinates2, properties, options) {
-  if (options === void 0) {
-    options = {};
-  }
-  var geom = {
-    type: "MultiLineString",
-    coordinates: coordinates2
-  };
-  return feature(geom, properties, options);
-}
-function multiPoint(coordinates2, properties, options) {
-  if (options === void 0) {
-    options = {};
-  }
-  var geom = {
-    type: "MultiPoint",
-    coordinates: coordinates2
-  };
-  return feature(geom, properties, options);
-}
-function multiPolygon(coordinates2, properties, options) {
-  if (options === void 0) {
-    options = {};
-  }
-  var geom = {
-    type: "MultiPolygon",
-    coordinates: coordinates2
-  };
-  return feature(geom, properties, options);
-}
-function geometryCollection(geometries, properties, options) {
-  if (options === void 0) {
-    options = {};
-  }
-  var geom = {
-    type: "GeometryCollection",
-    geometries
-  };
-  return feature(geom, properties, options);
-}
-function round(num, precision) {
-  if (precision === void 0) {
-    precision = 0;
-  }
-  if (precision && !(precision >= 0)) {
-    throw new Error("precision must be a positive number");
-  }
-  var multiplier = Math.pow(10, precision || 0);
-  return Math.round(num * multiplier) / multiplier;
-}
-function radiansToLength(radians, units) {
-  if (units === void 0) {
-    units = "kilometers";
-  }
-  var factor = factors[units];
-  if (!factor) {
-    throw new Error(units + " units is invalid");
-  }
-  return radians * factor;
-}
-function lengthToRadians(distance, units) {
-  if (units === void 0) {
-    units = "kilometers";
-  }
-  var factor = factors[units];
-  if (!factor) {
-    throw new Error(units + " units is invalid");
-  }
-  return distance / factor;
-}
-function lengthToDegrees(distance, units) {
-  return radiansToDegrees(lengthToRadians(distance, units));
-}
-function bearingToAzimuth(bearing) {
-  var angle = bearing % 360;
-  if (angle < 0) {
-    angle += 360;
-  }
-  return angle;
-}
-function radiansToDegrees(radians) {
-  var degrees = radians % (2 * Math.PI);
-  return degrees * 180 / Math.PI;
-}
-function degreesToRadians(degrees) {
-  var radians = degrees % 360;
-  return radians * Math.PI / 180;
-}
-function convertLength(length2, originalUnit, finalUnit) {
-  if (originalUnit === void 0) {
-    originalUnit = "kilometers";
-  }
-  if (finalUnit === void 0) {
-    finalUnit = "kilometers";
-  }
-  if (!(length2 >= 0)) {
-    throw new Error("length must be a positive number");
-  }
-  return radiansToLength(lengthToRadians(length2, originalUnit), finalUnit);
-}
-function convertArea(area, originalUnit, finalUnit) {
-  if (originalUnit === void 0) {
-    originalUnit = "meters";
-  }
-  if (finalUnit === void 0) {
-    finalUnit = "kilometers";
-  }
-  if (!(area >= 0)) {
-    throw new Error("area must be a positive number");
-  }
-  var startFactor = areaFactors[originalUnit];
-  if (!startFactor) {
-    throw new Error("invalid original units");
-  }
-  var finalFactor = areaFactors[finalUnit];
-  if (!finalFactor) {
-    throw new Error("invalid final units");
-  }
-  return area / startFactor * finalFactor;
-}
-function isNumber(num) {
+function isNumber$1(num) {
   return !isNaN(num) && num !== null && !Array.isArray(num);
 }
 function isObject(input) {
   return !!input && input.constructor === Object;
 }
-function validateBBox(bbox2) {
-  if (!bbox2) {
-    throw new Error("bbox is required");
-  }
-  if (!Array.isArray(bbox2)) {
-    throw new Error("bbox must be an Array");
-  }
-  if (bbox2.length !== 4 && bbox2.length !== 6) {
-    throw new Error("bbox must be an Array of 4 or 6 numbers");
-  }
-  bbox2.forEach(function(num) {
-    if (!isNumber(num)) {
-      throw new Error("bbox must only contain numbers");
-    }
-  });
-}
-function validateId(id) {
-  if (!id) {
-    throw new Error("id is required");
-  }
-  if (["string", "number"].indexOf(typeof id) === -1) {
-    throw new Error("id must be a number or a string");
-  }
-}
-const es$2 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
-  __proto__: null,
-  areaFactors,
-  bearingToAzimuth,
-  convertArea,
-  convertLength,
-  degreesToRadians,
-  earthRadius,
-  factors,
-  feature,
-  featureCollection: featureCollection$1,
-  geometry,
-  geometryCollection,
-  isNumber,
-  isObject,
-  lengthToDegrees,
-  lengthToRadians,
-  lineString,
-  lineStrings,
-  multiLineString,
-  multiPoint,
-  multiPolygon,
-  point,
-  points,
-  polygon,
-  polygons,
-  radiansToDegrees,
-  radiansToLength,
-  round,
-  unitsFactors,
-  validateBBox,
-  validateId
-}, Symbol.toStringTag, { value: "Module" }));
 function coordEach(geojson, callback, excludeWrapCoord) {
   if (geojson === null) return;
-  var j, k, l, geometry2, stopG, coords, geometryMaybeCollection, wrapShrink = 0, coordIndex = 0, isGeometryCollection, type = geojson.type, isFeatureCollection = type === "FeatureCollection", isFeature = type === "Feature", stop = isFeatureCollection ? geojson.features.length : 1;
+  var j2, k, l, geometry, stopG, coords, geometryMaybeCollection, wrapShrink = 0, coordIndex = 0, isGeometryCollection, type = geojson.type, isFeatureCollection = type === "FeatureCollection", isFeature = type === "Feature", stop = isFeatureCollection ? geojson.features.length : 1;
   for (var featureIndex = 0; featureIndex < stop; featureIndex++) {
     geometryMaybeCollection = isFeatureCollection ? geojson.features[featureIndex].geometry : isFeature ? geojson.geometry : geojson;
     isGeometryCollection = geometryMaybeCollection ? geometryMaybeCollection.type === "GeometryCollection" : false;
@@ -3532,10 +3394,10 @@ function coordEach(geojson, callback, excludeWrapCoord) {
     for (var geomIndex = 0; geomIndex < stopG; geomIndex++) {
       var multiFeatureIndex = 0;
       var geometryIndex = 0;
-      geometry2 = isGeometryCollection ? geometryMaybeCollection.geometries[geomIndex] : geometryMaybeCollection;
-      if (geometry2 === null) continue;
-      coords = geometry2.coordinates;
-      var geomType = geometry2.type;
+      geometry = isGeometryCollection ? geometryMaybeCollection.geometries[geomIndex] : geometryMaybeCollection;
+      if (geometry === null) continue;
+      coords = geometry.coordinates;
+      var geomType = geometry.type;
       wrapShrink = excludeWrapCoord && (geomType === "Polygon" || geomType === "MultiPolygon") ? 1 : 0;
       switch (geomType) {
         case null:
@@ -3554,9 +3416,9 @@ function coordEach(geojson, callback, excludeWrapCoord) {
           break;
         case "LineString":
         case "MultiPoint":
-          for (j = 0; j < coords.length; j++) {
+          for (j2 = 0; j2 < coords.length; j2++) {
             if (callback(
-              coords[j],
+              coords[j2],
               coordIndex,
               featureIndex,
               multiFeatureIndex,
@@ -3570,10 +3432,10 @@ function coordEach(geojson, callback, excludeWrapCoord) {
           break;
         case "Polygon":
         case "MultiLineString":
-          for (j = 0; j < coords.length; j++) {
-            for (k = 0; k < coords[j].length - wrapShrink; k++) {
+          for (j2 = 0; j2 < coords.length; j2++) {
+            for (k = 0; k < coords[j2].length - wrapShrink; k++) {
               if (callback(
-                coords[j][k],
+                coords[j2][k],
                 coordIndex,
                 featureIndex,
                 multiFeatureIndex,
@@ -3588,12 +3450,12 @@ function coordEach(geojson, callback, excludeWrapCoord) {
           if (geomType === "Polygon") multiFeatureIndex++;
           break;
         case "MultiPolygon":
-          for (j = 0; j < coords.length; j++) {
+          for (j2 = 0; j2 < coords.length; j2++) {
             geometryIndex = 0;
-            for (k = 0; k < coords[j].length; k++) {
-              for (l = 0; l < coords[j][k].length - wrapShrink; l++) {
+            for (k = 0; k < coords[j2].length; k++) {
+              for (l = 0; l < coords[j2][k].length - wrapShrink; l++) {
                 if (callback(
-                  coords[j][k][l],
+                  coords[j2][k][l],
                   coordIndex,
                   featureIndex,
                   multiFeatureIndex,
@@ -3608,8 +3470,8 @@ function coordEach(geojson, callback, excludeWrapCoord) {
           }
           break;
         case "GeometryCollection":
-          for (j = 0; j < geometry2.geometries.length; j++)
-            if (coordEach(geometry2.geometries[j], callback, excludeWrapCoord) === false)
+          for (j2 = 0; j2 < geometry.geometries.length; j2++)
+            if (coordEach(geometry.geometries[j2], callback, excludeWrapCoord) === false)
               return false;
           break;
         default:
@@ -3688,7 +3550,7 @@ function coordAll(geojson) {
   return coords;
 }
 function geomEach(geojson, callback) {
-  var i, j, g2, geometry2, stopG, geometryMaybeCollection, isGeometryCollection, featureProperties, featureBBox, featureId, featureIndex = 0, isFeatureCollection = geojson.type === "FeatureCollection", isFeature = geojson.type === "Feature", stop = isFeatureCollection ? geojson.features.length : 1;
+  var i, j2, g2, geometry, stopG, geometryMaybeCollection, isGeometryCollection, featureProperties, featureBBox, featureId, featureIndex = 0, isFeatureCollection = geojson.type === "FeatureCollection", isFeature = geojson.type === "Feature", stop = isFeatureCollection ? geojson.features.length : 1;
   for (i = 0; i < stop; i++) {
     geometryMaybeCollection = isFeatureCollection ? geojson.features[i].geometry : isFeature ? geojson.geometry : geojson;
     featureProperties = isFeatureCollection ? geojson.features[i].properties : isFeature ? geojson.properties : {};
@@ -3697,8 +3559,8 @@ function geomEach(geojson, callback) {
     isGeometryCollection = geometryMaybeCollection ? geometryMaybeCollection.type === "GeometryCollection" : false;
     stopG = isGeometryCollection ? geometryMaybeCollection.geometries.length : 1;
     for (g2 = 0; g2 < stopG; g2++) {
-      geometry2 = isGeometryCollection ? geometryMaybeCollection.geometries[g2] : geometryMaybeCollection;
-      if (geometry2 === null) {
+      geometry = isGeometryCollection ? geometryMaybeCollection.geometries[g2] : geometryMaybeCollection;
+      if (geometry === null) {
         if (callback(
           null,
           featureIndex,
@@ -3709,7 +3571,7 @@ function geomEach(geojson, callback) {
           return false;
         continue;
       }
-      switch (geometry2.type) {
+      switch (geometry.type) {
         case "Point":
         case "LineString":
         case "MultiPoint":
@@ -3717,7 +3579,7 @@ function geomEach(geojson, callback) {
         case "MultiLineString":
         case "MultiPolygon": {
           if (callback(
-            geometry2,
+            geometry,
             featureIndex,
             featureProperties,
             featureBBox,
@@ -3727,9 +3589,9 @@ function geomEach(geojson, callback) {
           break;
         }
         case "GeometryCollection": {
-          for (j = 0; j < geometry2.geometries.length; j++) {
+          for (j2 = 0; j2 < geometry.geometries.length; j2++) {
             if (callback(
-              geometry2.geometries[j],
+              geometry.geometries[j2],
               featureIndex,
               featureProperties,
               featureBBox,
@@ -3767,15 +3629,15 @@ function geomReduce(geojson, callback, initialValue) {
   return previousValue;
 }
 function flattenEach(geojson, callback) {
-  geomEach(geojson, function(geometry2, featureIndex, properties, bbox2, id) {
-    var type = geometry2 === null ? null : geometry2.type;
+  geomEach(geojson, function(geometry, featureIndex, properties, bbox2, id) {
+    var type = geometry === null ? null : geometry.type;
     switch (type) {
       case null:
       case "Point":
       case "LineString":
       case "Polygon":
         if (callback(
-          feature(geometry2, properties, { bbox: bbox2, id }),
+          feature$3(geometry, properties, { bbox: bbox2, id }),
           featureIndex,
           0
         ) === false)
@@ -3794,13 +3656,13 @@ function flattenEach(geojson, callback) {
         geomType = "Polygon";
         break;
     }
-    for (var multiFeatureIndex = 0; multiFeatureIndex < geometry2.coordinates.length; multiFeatureIndex++) {
-      var coordinate = geometry2.coordinates[multiFeatureIndex];
+    for (var multiFeatureIndex = 0; multiFeatureIndex < geometry.coordinates.length; multiFeatureIndex++) {
+      var coordinate = geometry.coordinates[multiFeatureIndex];
       var geom = {
         type: geomType,
         coordinates: coordinate
       };
-      if (callback(feature(geom, properties), featureIndex, multiFeatureIndex) === false)
+      if (callback(feature$3(geom, properties), featureIndex, multiFeatureIndex) === false)
         return false;
     }
   });
@@ -3844,7 +3706,7 @@ function segmentEach(geojson, callback) {
           segmentIndex = 0;
           return;
         }
-        var currentSegment = lineString(
+        var currentSegment = lineString$2(
           [previousCoords, currentCoord],
           feature2.properties
         );
@@ -3899,7 +3761,7 @@ function lineEach(geojson, callback) {
       case "Polygon":
         for (var geometryIndex = 0; geometryIndex < coords.length; geometryIndex++) {
           if (callback(
-            lineString(coords[geometryIndex], feature2.properties),
+            lineString$2(coords[geometryIndex], feature2.properties),
             featureIndex,
             multiFeatureIndex,
             geometryIndex
@@ -3937,17 +3799,17 @@ function findSegment(geojson, options) {
   var geometryIndex = options.geometryIndex || 0;
   var segmentIndex = options.segmentIndex || 0;
   var properties = options.properties;
-  var geometry2;
+  var geometry;
   switch (geojson.type) {
     case "FeatureCollection":
       if (featureIndex < 0)
         featureIndex = geojson.features.length + featureIndex;
       properties = properties || geojson.features[featureIndex].properties;
-      geometry2 = geojson.features[featureIndex].geometry;
+      geometry = geojson.features[featureIndex].geometry;
       break;
     case "Feature":
       properties = properties || geojson.properties;
-      geometry2 = geojson.geometry;
+      geometry = geojson.geometry;
       break;
     case "Point":
     case "MultiPoint":
@@ -3956,20 +3818,20 @@ function findSegment(geojson, options) {
     case "Polygon":
     case "MultiLineString":
     case "MultiPolygon":
-      geometry2 = geojson;
+      geometry = geojson;
       break;
     default:
       throw new Error("geojson is invalid");
   }
-  if (geometry2 === null) return null;
-  var coords = geometry2.coordinates;
-  switch (geometry2.type) {
+  if (geometry === null) return null;
+  var coords = geometry.coordinates;
+  switch (geometry.type) {
     case "Point":
     case "MultiPoint":
       return null;
     case "LineString":
       if (segmentIndex < 0) segmentIndex = coords.length + segmentIndex - 1;
-      return lineString(
+      return lineString$2(
         [coords[segmentIndex], coords[segmentIndex + 1]],
         properties,
         options
@@ -3978,7 +3840,7 @@ function findSegment(geojson, options) {
       if (geometryIndex < 0) geometryIndex = coords.length + geometryIndex;
       if (segmentIndex < 0)
         segmentIndex = coords[geometryIndex].length + segmentIndex - 1;
-      return lineString(
+      return lineString$2(
         [
           coords[geometryIndex][segmentIndex],
           coords[geometryIndex][segmentIndex + 1]
@@ -3991,7 +3853,7 @@ function findSegment(geojson, options) {
         multiFeatureIndex = coords.length + multiFeatureIndex;
       if (segmentIndex < 0)
         segmentIndex = coords[multiFeatureIndex].length + segmentIndex - 1;
-      return lineString(
+      return lineString$2(
         [
           coords[multiFeatureIndex][segmentIndex],
           coords[multiFeatureIndex][segmentIndex + 1]
@@ -4006,7 +3868,7 @@ function findSegment(geojson, options) {
         geometryIndex = coords[multiFeatureIndex].length + geometryIndex;
       if (segmentIndex < 0)
         segmentIndex = coords[multiFeatureIndex][geometryIndex].length - segmentIndex - 1;
-      return lineString(
+      return lineString$2(
         [
           coords[multiFeatureIndex][geometryIndex][segmentIndex],
           coords[multiFeatureIndex][geometryIndex][segmentIndex + 1]
@@ -4025,17 +3887,17 @@ function findPoint(geojson, options) {
   var geometryIndex = options.geometryIndex || 0;
   var coordIndex = options.coordIndex || 0;
   var properties = options.properties;
-  var geometry2;
+  var geometry;
   switch (geojson.type) {
     case "FeatureCollection":
       if (featureIndex < 0)
         featureIndex = geojson.features.length + featureIndex;
       properties = properties || geojson.features[featureIndex].properties;
-      geometry2 = geojson.features[featureIndex].geometry;
+      geometry = geojson.features[featureIndex].geometry;
       break;
     case "Feature":
       properties = properties || geojson.properties;
-      geometry2 = geojson.geometry;
+      geometry = geojson.geometry;
       break;
     case "Point":
     case "MultiPoint":
@@ -4044,34 +3906,34 @@ function findPoint(geojson, options) {
     case "Polygon":
     case "MultiLineString":
     case "MultiPolygon":
-      geometry2 = geojson;
+      geometry = geojson;
       break;
     default:
       throw new Error("geojson is invalid");
   }
-  if (geometry2 === null) return null;
-  var coords = geometry2.coordinates;
-  switch (geometry2.type) {
+  if (geometry === null) return null;
+  var coords = geometry.coordinates;
+  switch (geometry.type) {
     case "Point":
-      return point(coords, properties, options);
+      return point$1(coords, properties, options);
     case "MultiPoint":
       if (multiFeatureIndex < 0)
         multiFeatureIndex = coords.length + multiFeatureIndex;
-      return point(coords[multiFeatureIndex], properties, options);
+      return point$1(coords[multiFeatureIndex], properties, options);
     case "LineString":
       if (coordIndex < 0) coordIndex = coords.length + coordIndex;
-      return point(coords[coordIndex], properties, options);
+      return point$1(coords[coordIndex], properties, options);
     case "Polygon":
       if (geometryIndex < 0) geometryIndex = coords.length + geometryIndex;
       if (coordIndex < 0)
         coordIndex = coords[geometryIndex].length + coordIndex;
-      return point(coords[geometryIndex][coordIndex], properties, options);
+      return point$1(coords[geometryIndex][coordIndex], properties, options);
     case "MultiLineString":
       if (multiFeatureIndex < 0)
         multiFeatureIndex = coords.length + multiFeatureIndex;
       if (coordIndex < 0)
         coordIndex = coords[multiFeatureIndex].length + coordIndex;
-      return point(coords[multiFeatureIndex][coordIndex], properties, options);
+      return point$1(coords[multiFeatureIndex][coordIndex], properties, options);
     case "MultiPolygon":
       if (multiFeatureIndex < 0)
         multiFeatureIndex = coords.length + multiFeatureIndex;
@@ -4079,7 +3941,7 @@ function findPoint(geojson, options) {
         geometryIndex = coords[multiFeatureIndex].length + geometryIndex;
       if (coordIndex < 0)
         coordIndex = coords[multiFeatureIndex][geometryIndex].length - coordIndex;
-      return point(
+      return point$1(
         coords[multiFeatureIndex][geometryIndex][coordIndex],
         properties,
         options
@@ -4107,20 +3969,6 @@ const es$1 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty
   segmentEach,
   segmentReduce
 }, Symbol.toStringTag, { value: "Module" }));
-function centroid$1(geojson, options) {
-  if (options === void 0) {
-    options = {};
-  }
-  var xSum = 0;
-  var ySum = 0;
-  var len = 0;
-  coordEach(geojson, function(coord) {
-    xSum += coord[0];
-    ySum += coord[1];
-    len++;
-  }, true);
-  return point([xSum / len, ySum / len], options.properties);
-}
 function bbox$1(geojson) {
   var result = [Infinity, Infinity, -Infinity, -Infinity];
   coordEach(geojson, function(coord) {
@@ -4144,7 +3992,7 @@ const es = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   default: bbox$1
 }, Symbol.toStringTag, { value: "Module" }));
-function getCoord(coord) {
+function getCoord$1(coord) {
   if (!coord) {
     throw new Error("coord is required");
   }
@@ -4176,7 +4024,7 @@ function getCoords(coords) {
   }
   throw new Error("coords must be GeoJSON Feature, Geometry Object or an Array");
 }
-function getGeom(geojson) {
+function getGeom$1(geojson) {
   if (geojson.type === "Feature") {
     return geojson.geometry;
   }
@@ -4210,674 +4058,33 @@ function getAugmentedNamespace(n) {
   });
   return a;
 }
-var concaveman$2 = { exports: {} };
-var rbush_min$1 = { exports: {} };
-(function(module, exports) {
-  !function(t, i) {
-    module.exports = i();
-  }(commonjsGlobal, function() {
-    function t(t2, r2, e2, a2, h2) {
-      !function t3(n2, r3, e3, a3, h3) {
-        for (; a3 > e3; ) {
-          if (a3 - e3 > 600) {
-            var o2 = a3 - e3 + 1, s2 = r3 - e3 + 1, l2 = Math.log(o2), f2 = 0.5 * Math.exp(2 * l2 / 3), u3 = 0.5 * Math.sqrt(l2 * f2 * (o2 - f2) / o2) * (s2 - o2 / 2 < 0 ? -1 : 1), m2 = Math.max(e3, Math.floor(r3 - s2 * f2 / o2 + u3)), c2 = Math.min(a3, Math.floor(r3 + (o2 - s2) * f2 / o2 + u3));
-            t3(n2, r3, m2, c2, h3);
-          }
-          var p2 = n2[r3], d2 = e3, x = a3;
-          for (i(n2, e3, r3), h3(n2[a3], p2) > 0 && i(n2, e3, a3); d2 < x; ) {
-            for (i(n2, d2, x), d2++, x--; h3(n2[d2], p2) < 0; ) d2++;
-            for (; h3(n2[x], p2) > 0; ) x--;
-          }
-          0 === h3(n2[e3], p2) ? i(n2, e3, x) : i(n2, ++x, a3), x <= r3 && (e3 = x + 1), r3 <= x && (a3 = x - 1);
-        }
-      }(t2, r2, e2 || 0, a2 || t2.length - 1, h2 || n);
-    }
-    function i(t2, i2, n2) {
-      var r2 = t2[i2];
-      t2[i2] = t2[n2], t2[n2] = r2;
-    }
-    function n(t2, i2) {
-      return t2 < i2 ? -1 : t2 > i2 ? 1 : 0;
-    }
-    var r = function(t2) {
-      void 0 === t2 && (t2 = 9), this._maxEntries = Math.max(4, t2), this._minEntries = Math.max(2, Math.ceil(0.4 * this._maxEntries)), this.clear();
-    };
-    function e(t2, i2, n2) {
-      if (!n2) return i2.indexOf(t2);
-      for (var r2 = 0; r2 < i2.length; r2++) if (n2(t2, i2[r2])) return r2;
-      return -1;
-    }
-    function a(t2, i2) {
-      h(t2, 0, t2.children.length, i2, t2);
-    }
-    function h(t2, i2, n2, r2, e2) {
-      e2 || (e2 = p(null)), e2.minX = 1 / 0, e2.minY = 1 / 0, e2.maxX = -1 / 0, e2.maxY = -1 / 0;
-      for (var a2 = i2; a2 < n2; a2++) {
-        var h2 = t2.children[a2];
-        o(e2, t2.leaf ? r2(h2) : h2);
-      }
-      return e2;
-    }
-    function o(t2, i2) {
-      return t2.minX = Math.min(t2.minX, i2.minX), t2.minY = Math.min(t2.minY, i2.minY), t2.maxX = Math.max(t2.maxX, i2.maxX), t2.maxY = Math.max(t2.maxY, i2.maxY), t2;
-    }
-    function s(t2, i2) {
-      return t2.minX - i2.minX;
-    }
-    function l(t2, i2) {
-      return t2.minY - i2.minY;
-    }
-    function f(t2) {
-      return (t2.maxX - t2.minX) * (t2.maxY - t2.minY);
-    }
-    function u2(t2) {
-      return t2.maxX - t2.minX + (t2.maxY - t2.minY);
-    }
-    function m(t2, i2) {
-      return t2.minX <= i2.minX && t2.minY <= i2.minY && i2.maxX <= t2.maxX && i2.maxY <= t2.maxY;
-    }
-    function c(t2, i2) {
-      return i2.minX <= t2.maxX && i2.minY <= t2.maxY && i2.maxX >= t2.minX && i2.maxY >= t2.minY;
-    }
-    function p(t2) {
-      return { children: t2, height: 1, leaf: true, minX: 1 / 0, minY: 1 / 0, maxX: -1 / 0, maxY: -1 / 0 };
-    }
-    function d(i2, n2, r2, e2, a2) {
-      for (var h2 = [n2, r2]; h2.length; ) if (!((r2 = h2.pop()) - (n2 = h2.pop()) <= e2)) {
-        var o2 = n2 + Math.ceil((r2 - n2) / e2 / 2) * e2;
-        t(i2, o2, n2, r2, a2), h2.push(n2, o2, o2, r2);
-      }
-    }
-    return r.prototype.all = function() {
-      return this._all(this.data, []);
-    }, r.prototype.search = function(t2) {
-      var i2 = this.data, n2 = [];
-      if (!c(t2, i2)) return n2;
-      for (var r2 = this.toBBox, e2 = []; i2; ) {
-        for (var a2 = 0; a2 < i2.children.length; a2++) {
-          var h2 = i2.children[a2], o2 = i2.leaf ? r2(h2) : h2;
-          c(t2, o2) && (i2.leaf ? n2.push(h2) : m(t2, o2) ? this._all(h2, n2) : e2.push(h2));
-        }
-        i2 = e2.pop();
-      }
-      return n2;
-    }, r.prototype.collides = function(t2) {
-      var i2 = this.data;
-      if (!c(t2, i2)) return false;
-      for (var n2 = []; i2; ) {
-        for (var r2 = 0; r2 < i2.children.length; r2++) {
-          var e2 = i2.children[r2], a2 = i2.leaf ? this.toBBox(e2) : e2;
-          if (c(t2, a2)) {
-            if (i2.leaf || m(t2, a2)) return true;
-            n2.push(e2);
-          }
-        }
-        i2 = n2.pop();
-      }
-      return false;
-    }, r.prototype.load = function(t2) {
-      if (!t2 || !t2.length) return this;
-      if (t2.length < this._minEntries) {
-        for (var i2 = 0; i2 < t2.length; i2++) this.insert(t2[i2]);
-        return this;
-      }
-      var n2 = this._build(t2.slice(), 0, t2.length - 1, 0);
-      if (this.data.children.length) if (this.data.height === n2.height) this._splitRoot(this.data, n2);
-      else {
-        if (this.data.height < n2.height) {
-          var r2 = this.data;
-          this.data = n2, n2 = r2;
-        }
-        this._insert(n2, this.data.height - n2.height - 1, true);
-      }
-      else this.data = n2;
-      return this;
-    }, r.prototype.insert = function(t2) {
-      return t2 && this._insert(t2, this.data.height - 1), this;
-    }, r.prototype.clear = function() {
-      return this.data = p([]), this;
-    }, r.prototype.remove = function(t2, i2) {
-      if (!t2) return this;
-      for (var n2, r2, a2, h2 = this.data, o2 = this.toBBox(t2), s2 = [], l2 = []; h2 || s2.length; ) {
-        if (h2 || (h2 = s2.pop(), r2 = s2[s2.length - 1], n2 = l2.pop(), a2 = true), h2.leaf) {
-          var f2 = e(t2, h2.children, i2);
-          if (-1 !== f2) return h2.children.splice(f2, 1), s2.push(h2), this._condense(s2), this;
-        }
-        a2 || h2.leaf || !m(h2, o2) ? r2 ? (n2++, h2 = r2.children[n2], a2 = false) : h2 = null : (s2.push(h2), l2.push(n2), n2 = 0, r2 = h2, h2 = h2.children[0]);
-      }
-      return this;
-    }, r.prototype.toBBox = function(t2) {
-      return t2;
-    }, r.prototype.compareMinX = function(t2, i2) {
-      return t2.minX - i2.minX;
-    }, r.prototype.compareMinY = function(t2, i2) {
-      return t2.minY - i2.minY;
-    }, r.prototype.toJSON = function() {
-      return this.data;
-    }, r.prototype.fromJSON = function(t2) {
-      return this.data = t2, this;
-    }, r.prototype._all = function(t2, i2) {
-      for (var n2 = []; t2; ) t2.leaf ? i2.push.apply(i2, t2.children) : n2.push.apply(n2, t2.children), t2 = n2.pop();
-      return i2;
-    }, r.prototype._build = function(t2, i2, n2, r2) {
-      var e2, h2 = n2 - i2 + 1, o2 = this._maxEntries;
-      if (h2 <= o2) return a(e2 = p(t2.slice(i2, n2 + 1)), this.toBBox), e2;
-      r2 || (r2 = Math.ceil(Math.log(h2) / Math.log(o2)), o2 = Math.ceil(h2 / Math.pow(o2, r2 - 1))), (e2 = p([])).leaf = false, e2.height = r2;
-      var s2 = Math.ceil(h2 / o2), l2 = s2 * Math.ceil(Math.sqrt(o2));
-      d(t2, i2, n2, l2, this.compareMinX);
-      for (var f2 = i2; f2 <= n2; f2 += l2) {
-        var u3 = Math.min(f2 + l2 - 1, n2);
-        d(t2, f2, u3, s2, this.compareMinY);
-        for (var m2 = f2; m2 <= u3; m2 += s2) {
-          var c2 = Math.min(m2 + s2 - 1, u3);
-          e2.children.push(this._build(t2, m2, c2, r2 - 1));
-        }
-      }
-      return a(e2, this.toBBox), e2;
-    }, r.prototype._chooseSubtree = function(t2, i2, n2, r2) {
-      for (; r2.push(i2), !i2.leaf && r2.length - 1 !== n2; ) {
-        for (var e2 = 1 / 0, a2 = 1 / 0, h2 = void 0, o2 = 0; o2 < i2.children.length; o2++) {
-          var s2 = i2.children[o2], l2 = f(s2), u3 = (m2 = t2, c2 = s2, (Math.max(c2.maxX, m2.maxX) - Math.min(c2.minX, m2.minX)) * (Math.max(c2.maxY, m2.maxY) - Math.min(c2.minY, m2.minY)) - l2);
-          u3 < a2 ? (a2 = u3, e2 = l2 < e2 ? l2 : e2, h2 = s2) : u3 === a2 && l2 < e2 && (e2 = l2, h2 = s2);
-        }
-        i2 = h2 || i2.children[0];
-      }
-      var m2, c2;
-      return i2;
-    }, r.prototype._insert = function(t2, i2, n2) {
-      var r2 = n2 ? t2 : this.toBBox(t2), e2 = [], a2 = this._chooseSubtree(r2, this.data, i2, e2);
-      for (a2.children.push(t2), o(a2, r2); i2 >= 0 && e2[i2].children.length > this._maxEntries; ) this._split(e2, i2), i2--;
-      this._adjustParentBBoxes(r2, e2, i2);
-    }, r.prototype._split = function(t2, i2) {
-      var n2 = t2[i2], r2 = n2.children.length, e2 = this._minEntries;
-      this._chooseSplitAxis(n2, e2, r2);
-      var h2 = this._chooseSplitIndex(n2, e2, r2), o2 = p(n2.children.splice(h2, n2.children.length - h2));
-      o2.height = n2.height, o2.leaf = n2.leaf, a(n2, this.toBBox), a(o2, this.toBBox), i2 ? t2[i2 - 1].children.push(o2) : this._splitRoot(n2, o2);
-    }, r.prototype._splitRoot = function(t2, i2) {
-      this.data = p([t2, i2]), this.data.height = t2.height + 1, this.data.leaf = false, a(this.data, this.toBBox);
-    }, r.prototype._chooseSplitIndex = function(t2, i2, n2) {
-      for (var r2, e2, a2, o2, s2, l2, u3, m2 = 1 / 0, c2 = 1 / 0, p2 = i2; p2 <= n2 - i2; p2++) {
-        var d2 = h(t2, 0, p2, this.toBBox), x = h(t2, p2, n2, this.toBBox), v2 = (e2 = d2, a2 = x, o2 = void 0, s2 = void 0, l2 = void 0, u3 = void 0, o2 = Math.max(e2.minX, a2.minX), s2 = Math.max(e2.minY, a2.minY), l2 = Math.min(e2.maxX, a2.maxX), u3 = Math.min(e2.maxY, a2.maxY), Math.max(0, l2 - o2) * Math.max(0, u3 - s2)), M = f(d2) + f(x);
-        v2 < m2 ? (m2 = v2, r2 = p2, c2 = M < c2 ? M : c2) : v2 === m2 && M < c2 && (c2 = M, r2 = p2);
-      }
-      return r2 || n2 - i2;
-    }, r.prototype._chooseSplitAxis = function(t2, i2, n2) {
-      var r2 = t2.leaf ? this.compareMinX : s, e2 = t2.leaf ? this.compareMinY : l;
-      this._allDistMargin(t2, i2, n2, r2) < this._allDistMargin(t2, i2, n2, e2) && t2.children.sort(r2);
-    }, r.prototype._allDistMargin = function(t2, i2, n2, r2) {
-      t2.children.sort(r2);
-      for (var e2 = this.toBBox, a2 = h(t2, 0, i2, e2), s2 = h(t2, n2 - i2, n2, e2), l2 = u2(a2) + u2(s2), f2 = i2; f2 < n2 - i2; f2++) {
-        var m2 = t2.children[f2];
-        o(a2, t2.leaf ? e2(m2) : m2), l2 += u2(a2);
-      }
-      for (var c2 = n2 - i2 - 1; c2 >= i2; c2--) {
-        var p2 = t2.children[c2];
-        o(s2, t2.leaf ? e2(p2) : p2), l2 += u2(s2);
-      }
-      return l2;
-    }, r.prototype._adjustParentBBoxes = function(t2, i2, n2) {
-      for (var r2 = n2; r2 >= 0; r2--) o(i2[r2], t2);
-    }, r.prototype._condense = function(t2) {
-      for (var i2 = t2.length - 1, n2 = void 0; i2 >= 0; i2--) 0 === t2[i2].children.length ? i2 > 0 ? (n2 = t2[i2 - 1].children).splice(n2.indexOf(t2[i2]), 1) : this.clear() : a(t2[i2], this.toBBox);
-    }, r;
-  });
-})(rbush_min$1);
-var rbush_minExports$1 = rbush_min$1.exports;
-class TinyQueue {
-  constructor(data = [], compare = defaultCompare) {
-    this.data = data;
-    this.length = this.data.length;
-    this.compare = compare;
-    if (this.length > 0) {
-      for (let i = (this.length >> 1) - 1; i >= 0; i--) this._down(i);
-    }
-  }
-  push(item) {
-    this.data.push(item);
-    this.length++;
-    this._up(this.length - 1);
-  }
-  pop() {
-    if (this.length === 0) return void 0;
-    const top = this.data[0];
-    const bottom = this.data.pop();
-    this.length--;
-    if (this.length > 0) {
-      this.data[0] = bottom;
-      this._down(0);
-    }
-    return top;
-  }
-  peek() {
-    return this.data[0];
-  }
-  _up(pos) {
-    const { data, compare } = this;
-    const item = data[pos];
-    while (pos > 0) {
-      const parent = pos - 1 >> 1;
-      const current = data[parent];
-      if (compare(item, current) >= 0) break;
-      data[pos] = current;
-      pos = parent;
-    }
-    data[pos] = item;
-  }
-  _down(pos) {
-    const { data, compare } = this;
-    const halfLength = this.length >> 1;
-    const item = data[pos];
-    while (pos < halfLength) {
-      let left = (pos << 1) + 1;
-      let best = data[left];
-      const right = left + 1;
-      if (right < this.length && compare(data[right], best) < 0) {
-        left = right;
-        best = data[right];
-      }
-      if (compare(best, item) >= 0) break;
-      data[pos] = best;
-      pos = left;
-    }
-    data[pos] = item;
-  }
-}
-function defaultCompare(a, b) {
-  return a < b ? -1 : a > b ? 1 : 0;
-}
-const tinyqueue = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
-  __proto__: null,
-  default: TinyQueue
-}, Symbol.toStringTag, { value: "Module" }));
-const require$$1$1 = /* @__PURE__ */ getAugmentedNamespace(tinyqueue);
-var pointInPolygon$2 = { exports: {} };
-var flat = function pointInPolygonFlat(point2, vs, start, end) {
-  var x = point2[0], y = point2[1];
-  var inside2 = false;
-  if (start === void 0) start = 0;
-  if (end === void 0) end = vs.length;
-  var len = (end - start) / 2;
-  for (var i = 0, j = len - 1; i < len; j = i++) {
-    var xi = vs[start + i * 2 + 0], yi = vs[start + i * 2 + 1];
-    var xj = vs[start + j * 2 + 0], yj = vs[start + j * 2 + 1];
-    var intersect2 = yi > y !== yj > y && x < (xj - xi) * (y - yi) / (yj - yi) + xi;
-    if (intersect2) inside2 = !inside2;
-  }
-  return inside2;
-};
-var nested = function pointInPolygonNested(point2, vs, start, end) {
-  var x = point2[0], y = point2[1];
-  var inside2 = false;
-  if (start === void 0) start = 0;
-  if (end === void 0) end = vs.length;
-  var len = end - start;
-  for (var i = 0, j = len - 1; i < len; j = i++) {
-    var xi = vs[i + start][0], yi = vs[i + start][1];
-    var xj = vs[j + start][0], yj = vs[j + start][1];
-    var intersect2 = yi > y !== yj > y && x < (xj - xi) * (y - yi) / (yj - yi) + xi;
-    if (intersect2) inside2 = !inside2;
-  }
-  return inside2;
-};
-var pointInPolygonFlat2 = flat;
-var pointInPolygonNested2 = nested;
-pointInPolygon$2.exports = function pointInPolygon(point2, vs, start, end) {
-  if (vs.length > 0 && Array.isArray(vs[0])) {
-    return pointInPolygonNested2(point2, vs, start, end);
-  } else {
-    return pointInPolygonFlat2(point2, vs, start, end);
-  }
-};
-pointInPolygon$2.exports.nested = pointInPolygonNested2;
-pointInPolygon$2.exports.flat = pointInPolygonFlat2;
-var pointInPolygonExports = pointInPolygon$2.exports;
-var orient2d_min = { exports: {} };
-(function(module, exports) {
-  !function(t, e) {
-    e(exports);
-  }(commonjsGlobal, function(t) {
-    const e = 134217729, n = 33306690738754706e-32;
-    function r(t2, e2, n2, r2, o2) {
-      let f2, i2, u3, c2, s2 = e2[0], a2 = r2[0], d2 = 0, l2 = 0;
-      a2 > s2 == a2 > -s2 ? (f2 = s2, s2 = e2[++d2]) : (f2 = a2, a2 = r2[++l2]);
-      let p = 0;
-      if (d2 < t2 && l2 < n2) for (a2 > s2 == a2 > -s2 ? (u3 = f2 - ((i2 = s2 + f2) - s2), s2 = e2[++d2]) : (u3 = f2 - ((i2 = a2 + f2) - a2), a2 = r2[++l2]), f2 = i2, 0 !== u3 && (o2[p++] = u3); d2 < t2 && l2 < n2; ) a2 > s2 == a2 > -s2 ? (u3 = f2 - ((i2 = f2 + s2) - (c2 = i2 - f2)) + (s2 - c2), s2 = e2[++d2]) : (u3 = f2 - ((i2 = f2 + a2) - (c2 = i2 - f2)) + (a2 - c2), a2 = r2[++l2]), f2 = i2, 0 !== u3 && (o2[p++] = u3);
-      for (; d2 < t2; ) u3 = f2 - ((i2 = f2 + s2) - (c2 = i2 - f2)) + (s2 - c2), s2 = e2[++d2], f2 = i2, 0 !== u3 && (o2[p++] = u3);
-      for (; l2 < n2; ) u3 = f2 - ((i2 = f2 + a2) - (c2 = i2 - f2)) + (a2 - c2), a2 = r2[++l2], f2 = i2, 0 !== u3 && (o2[p++] = u3);
-      return 0 === f2 && 0 !== p || (o2[p++] = f2), p;
-    }
-    function o(t2) {
-      return new Float64Array(t2);
-    }
-    const f = 33306690738754716e-32, i = 22204460492503146e-32, u2 = 11093356479670487e-47, c = o(4), s = o(8), a = o(12), d = o(16), l = o(4);
-    t.orient2d = function(t2, o2, p, b, y, h) {
-      const M = (o2 - h) * (p - y), x = (t2 - y) * (b - h), j = M - x;
-      if (0 === M || 0 === x || M > 0 != x > 0) return j;
-      const m = Math.abs(M + x);
-      return Math.abs(j) >= f * m ? j : -function(t3, o3, f2, p2, b2, y2, h2) {
-        let M5, x2, j2, m2, _23, v2, w, A, F, O, P, g2, k, q, z, B2, C, D2;
-        const E4 = t3 - b2, G = f2 - b2, H = o3 - y2, I = p2 - y2;
-        _23 = (z = (A = E4 - (w = (v2 = e * E4) - (v2 - E4))) * (O = I - (F = (v2 = e * I) - (v2 - I))) - ((q = E4 * I) - w * F - A * F - w * O)) - (P = z - (C = (A = H - (w = (v2 = e * H) - (v2 - H))) * (O = G - (F = (v2 = e * G) - (v2 - G))) - ((B2 = H * G) - w * F - A * F - w * O))), c[0] = z - (P + _23) + (_23 - C), _23 = (k = q - ((g2 = q + P) - (_23 = g2 - q)) + (P - _23)) - (P = k - B2), c[1] = k - (P + _23) + (_23 - B2), _23 = (D2 = g2 + P) - g2, c[2] = g2 - (D2 - _23) + (P - _23), c[3] = D2;
-        let J = function(t4, e2) {
-          let n2 = e2[0];
-          for (let r2 = 1; r2 < t4; r2++) n2 += e2[r2];
-          return n2;
-        }(4, c), K = i * h2;
-        if (J >= K || -J >= K) return J;
-        if (M5 = t3 - (E4 + (_23 = t3 - E4)) + (_23 - b2), j2 = f2 - (G + (_23 = f2 - G)) + (_23 - b2), x2 = o3 - (H + (_23 = o3 - H)) + (_23 - y2), m2 = p2 - (I + (_23 = p2 - I)) + (_23 - y2), 0 === M5 && 0 === x2 && 0 === j2 && 0 === m2) return J;
-        if (K = u2 * h2 + n * Math.abs(J), (J += E4 * m2 + I * M5 - (H * j2 + G * x2)) >= K || -J >= K) return J;
-        _23 = (z = (A = M5 - (w = (v2 = e * M5) - (v2 - M5))) * (O = I - (F = (v2 = e * I) - (v2 - I))) - ((q = M5 * I) - w * F - A * F - w * O)) - (P = z - (C = (A = x2 - (w = (v2 = e * x2) - (v2 - x2))) * (O = G - (F = (v2 = e * G) - (v2 - G))) - ((B2 = x2 * G) - w * F - A * F - w * O))), l[0] = z - (P + _23) + (_23 - C), _23 = (k = q - ((g2 = q + P) - (_23 = g2 - q)) + (P - _23)) - (P = k - B2), l[1] = k - (P + _23) + (_23 - B2), _23 = (D2 = g2 + P) - g2, l[2] = g2 - (D2 - _23) + (P - _23), l[3] = D2;
-        const L = r(4, c, 4, l, s);
-        _23 = (z = (A = E4 - (w = (v2 = e * E4) - (v2 - E4))) * (O = m2 - (F = (v2 = e * m2) - (v2 - m2))) - ((q = E4 * m2) - w * F - A * F - w * O)) - (P = z - (C = (A = H - (w = (v2 = e * H) - (v2 - H))) * (O = j2 - (F = (v2 = e * j2) - (v2 - j2))) - ((B2 = H * j2) - w * F - A * F - w * O))), l[0] = z - (P + _23) + (_23 - C), _23 = (k = q - ((g2 = q + P) - (_23 = g2 - q)) + (P - _23)) - (P = k - B2), l[1] = k - (P + _23) + (_23 - B2), _23 = (D2 = g2 + P) - g2, l[2] = g2 - (D2 - _23) + (P - _23), l[3] = D2;
-        const N = r(L, s, 4, l, a);
-        _23 = (z = (A = M5 - (w = (v2 = e * M5) - (v2 - M5))) * (O = m2 - (F = (v2 = e * m2) - (v2 - m2))) - ((q = M5 * m2) - w * F - A * F - w * O)) - (P = z - (C = (A = x2 - (w = (v2 = e * x2) - (v2 - x2))) * (O = j2 - (F = (v2 = e * j2) - (v2 - j2))) - ((B2 = x2 * j2) - w * F - A * F - w * O))), l[0] = z - (P + _23) + (_23 - C), _23 = (k = q - ((g2 = q + P) - (_23 = g2 - q)) + (P - _23)) - (P = k - B2), l[1] = k - (P + _23) + (_23 - B2), _23 = (D2 = g2 + P) - g2, l[2] = g2 - (D2 - _23) + (P - _23), l[3] = D2;
-        const Q = r(N, a, 4, l, d);
-        return d[Q - 1];
-      }(t2, o2, p, b, y, h, m);
-    }, t.orient2dfast = function(t2, e2, n2, r2, o2, f2) {
-      return (e2 - f2) * (n2 - o2) - (t2 - o2) * (r2 - f2);
-    }, Object.defineProperty(t, "__esModule", { value: true });
-  });
-})(orient2d_min, orient2d_min.exports);
-var orient2d_minExports = orient2d_min.exports;
-var RBush = rbush_minExports$1;
-var Queue = require$$1$1;
-var pointInPolygon$1 = pointInPolygonExports;
-var orient = orient2d_minExports.orient2d;
-if (Queue.default) {
-  Queue = Queue.default;
-}
-concaveman$2.exports = concaveman;
-concaveman$2.exports.default = concaveman;
-function concaveman(points2, concavity, lengthThreshold) {
-  concavity = Math.max(0, concavity === void 0 ? 2 : concavity);
-  lengthThreshold = lengthThreshold || 0;
-  var hull = fastConvexHull(points2);
-  var tree = new RBush(16);
-  tree.toBBox = function(a2) {
-    return {
-      minX: a2[0],
-      minY: a2[1],
-      maxX: a2[0],
-      maxY: a2[1]
-    };
-  };
-  tree.compareMinX = function(a2, b2) {
-    return a2[0] - b2[0];
-  };
-  tree.compareMinY = function(a2, b2) {
-    return a2[1] - b2[1];
-  };
-  tree.load(points2);
-  var queue = [];
-  for (var i = 0, last; i < hull.length; i++) {
-    var p = hull[i];
-    tree.remove(p);
-    last = insertNode(p, last);
-    queue.push(last);
-  }
-  var segTree = new RBush(16);
-  for (i = 0; i < queue.length; i++) segTree.insert(updateBBox(queue[i]));
-  var sqConcavity = concavity * concavity;
-  var sqLenThreshold = lengthThreshold * lengthThreshold;
-  while (queue.length) {
-    var node = queue.shift();
-    var a = node.p;
-    var b = node.next.p;
-    var sqLen = getSqDist(a, b);
-    if (sqLen < sqLenThreshold) continue;
-    var maxSqLen = sqLen / sqConcavity;
-    p = findCandidate(tree, node.prev.p, a, b, node.next.next.p, maxSqLen, segTree);
-    if (p && Math.min(getSqDist(p, a), getSqDist(p, b)) <= maxSqLen) {
-      queue.push(node);
-      queue.push(insertNode(p, node));
-      tree.remove(p);
-      segTree.remove(node);
-      segTree.insert(updateBBox(node));
-      segTree.insert(updateBBox(node.next));
-    }
-  }
-  node = last;
-  var concave = [];
-  do {
-    concave.push(node.p);
-    node = node.next;
-  } while (node !== last);
-  concave.push(node.p);
-  return concave;
-}
-function findCandidate(tree, a, b, c, d, maxDist, segTree) {
-  var queue = new Queue([], compareDist);
-  var node = tree.data;
-  while (node) {
-    for (var i = 0; i < node.children.length; i++) {
-      var child = node.children[i];
-      var dist2 = node.leaf ? sqSegDist(child, b, c) : sqSegBoxDist(b, c, child);
-      if (dist2 > maxDist) continue;
-      queue.push({
-        node: child,
-        dist: dist2
-      });
-    }
-    while (queue.length && !queue.peek().node.children) {
-      var item = queue.pop();
-      var p = item.node;
-      var d0 = sqSegDist(p, a, b);
-      var d1 = sqSegDist(p, c, d);
-      if (item.dist < d0 && item.dist < d1 && noIntersections(b, p, segTree) && noIntersections(c, p, segTree)) return p;
-    }
-    node = queue.pop();
-    if (node) node = node.node;
-  }
-  return null;
-}
-function compareDist(a, b) {
-  return a.dist - b.dist;
-}
-function sqSegBoxDist(a, b, bbox2) {
-  if (inside$1(a, bbox2) || inside$1(b, bbox2)) return 0;
-  var d1 = sqSegSegDist(a[0], a[1], b[0], b[1], bbox2.minX, bbox2.minY, bbox2.maxX, bbox2.minY);
-  if (d1 === 0) return 0;
-  var d2 = sqSegSegDist(a[0], a[1], b[0], b[1], bbox2.minX, bbox2.minY, bbox2.minX, bbox2.maxY);
-  if (d2 === 0) return 0;
-  var d3 = sqSegSegDist(a[0], a[1], b[0], b[1], bbox2.maxX, bbox2.minY, bbox2.maxX, bbox2.maxY);
-  if (d3 === 0) return 0;
-  var d4 = sqSegSegDist(a[0], a[1], b[0], b[1], bbox2.minX, bbox2.maxY, bbox2.maxX, bbox2.maxY);
-  if (d4 === 0) return 0;
-  return Math.min(d1, d2, d3, d4);
-}
-function inside$1(a, bbox2) {
-  return a[0] >= bbox2.minX && a[0] <= bbox2.maxX && a[1] >= bbox2.minY && a[1] <= bbox2.maxY;
-}
-function noIntersections(a, b, segTree) {
-  var minX = Math.min(a[0], b[0]);
-  var minY = Math.min(a[1], b[1]);
-  var maxX = Math.max(a[0], b[0]);
-  var maxY = Math.max(a[1], b[1]);
-  var edges = segTree.search({ minX, minY, maxX, maxY });
-  for (var i = 0; i < edges.length; i++) {
-    if (intersects$2(edges[i].p, edges[i].next.p, a, b)) return false;
-  }
-  return true;
-}
-function cross(p1, p2, p3) {
-  return orient(p1[0], p1[1], p2[0], p2[1], p3[0], p3[1]);
-}
-function intersects$2(p1, q1, p2, q2) {
-  return p1 !== q2 && q1 !== p2 && cross(p1, q1, p2) > 0 !== cross(p1, q1, q2) > 0 && cross(p2, q2, p1) > 0 !== cross(p2, q2, q1) > 0;
-}
-function updateBBox(node) {
-  var p1 = node.p;
-  var p2 = node.next.p;
-  node.minX = Math.min(p1[0], p2[0]);
-  node.minY = Math.min(p1[1], p2[1]);
-  node.maxX = Math.max(p1[0], p2[0]);
-  node.maxY = Math.max(p1[1], p2[1]);
-  return node;
-}
-function fastConvexHull(points2) {
-  var left = points2[0];
-  var top = points2[0];
-  var right = points2[0];
-  var bottom = points2[0];
-  for (var i = 0; i < points2.length; i++) {
-    var p = points2[i];
-    if (p[0] < left[0]) left = p;
-    if (p[0] > right[0]) right = p;
-    if (p[1] < top[1]) top = p;
-    if (p[1] > bottom[1]) bottom = p;
-  }
-  var cull = [left, top, right, bottom];
-  var filtered = cull.slice();
-  for (i = 0; i < points2.length; i++) {
-    if (!pointInPolygon$1(points2[i], cull)) filtered.push(points2[i]);
-  }
-  return convexHull(filtered);
-}
-function insertNode(p, prev) {
-  var node = {
-    p,
-    prev: null,
-    next: null,
-    minX: 0,
-    minY: 0,
-    maxX: 0,
-    maxY: 0
-  };
-  if (!prev) {
-    node.prev = node;
-    node.next = node;
-  } else {
-    node.next = prev.next;
-    node.prev = prev;
-    prev.next.prev = node;
-    prev.next = node;
-  }
-  return node;
-}
-function getSqDist(p1, p2) {
-  var dx = p1[0] - p2[0], dy = p1[1] - p2[1];
-  return dx * dx + dy * dy;
-}
-function sqSegDist(p, p1, p2) {
-  var x = p1[0], y = p1[1], dx = p2[0] - x, dy = p2[1] - y;
-  if (dx !== 0 || dy !== 0) {
-    var t = ((p[0] - x) * dx + (p[1] - y) * dy) / (dx * dx + dy * dy);
-    if (t > 1) {
-      x = p2[0];
-      y = p2[1];
-    } else if (t > 0) {
-      x += dx * t;
-      y += dy * t;
-    }
-  }
-  dx = p[0] - x;
-  dy = p[1] - y;
-  return dx * dx + dy * dy;
-}
-function sqSegSegDist(x0, y0, x1, y1, x2, y2, x3, y3) {
-  var ux = x1 - x0;
-  var uy = y1 - y0;
-  var vx = x3 - x2;
-  var vy = y3 - y2;
-  var wx = x0 - x2;
-  var wy = y0 - y2;
-  var a = ux * ux + uy * uy;
-  var b = ux * vx + uy * vy;
-  var c = vx * vx + vy * vy;
-  var d = ux * wx + uy * wy;
-  var e = vx * wx + vy * wy;
-  var D2 = a * c - b * b;
-  var sc, sN, tc, tN;
-  var sD = D2;
-  var tD = D2;
-  if (D2 === 0) {
-    sN = 0;
-    sD = 1;
-    tN = e;
-    tD = c;
-  } else {
-    sN = b * e - c * d;
-    tN = a * e - b * d;
-    if (sN < 0) {
-      sN = 0;
-      tN = e;
-      tD = c;
-    } else if (sN > sD) {
-      sN = sD;
-      tN = e + b;
-      tD = c;
-    }
-  }
-  if (tN < 0) {
-    tN = 0;
-    if (-d < 0) sN = 0;
-    else if (-d > a) sN = sD;
-    else {
-      sN = -d;
-      sD = a;
-    }
-  } else if (tN > tD) {
-    tN = tD;
-    if (-d + b < 0) sN = 0;
-    else if (-d + b > a) sN = sD;
-    else {
-      sN = -d + b;
-      sD = a;
-    }
-  }
-  sc = sN === 0 ? 0 : sN / sD;
-  tc = tN === 0 ? 0 : tN / tD;
-  var cx = (1 - sc) * x0 + sc * x1;
-  var cy = (1 - sc) * y0 + sc * y1;
-  var cx2 = (1 - tc) * x2 + tc * x3;
-  var cy2 = (1 - tc) * y2 + tc * y3;
-  var dx = cx2 - cx;
-  var dy = cy2 - cy;
-  return dx * dx + dy * dy;
-}
-function compareByX(a, b) {
-  return a[0] === b[0] ? a[1] - b[1] : a[0] - b[0];
-}
-function convexHull(points2) {
-  points2.sort(compareByX);
-  var lower = [];
-  for (var i = 0; i < points2.length; i++) {
-    while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], points2[i]) <= 0) {
-      lower.pop();
-    }
-    lower.push(points2[i]);
-  }
-  var upper = [];
-  for (var ii = points2.length - 1; ii >= 0; ii--) {
-    while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], points2[ii]) <= 0) {
-      upper.pop();
-    }
-    upper.push(points2[ii]);
-  }
-  upper.pop();
-  lower.pop();
-  return lower.concat(upper);
-}
-var concavemanExports = concaveman$2.exports;
-const concaveman$1 = /* @__PURE__ */ getDefaultExportFromCjs(concavemanExports);
-function convex(geojson, options) {
+function feature$2(geom, properties, options) {
   if (options === void 0) {
     options = {};
   }
-  options.concavity = options.concavity || Infinity;
-  var points2 = [];
-  coordEach(geojson, function(coord) {
-    points2.push([coord[0], coord[1]]);
-  });
-  if (!points2.length) {
-    return null;
+  var feat = { type: "Feature" };
+  if (options.id === 0 || options.id) {
+    feat.id = options.id;
   }
-  var convexHull2 = concaveman$1(points2, options.concavity);
-  if (convexHull2.length > 3) {
-    return polygon([convexHull2]);
+  if (options.bbox) {
+    feat.bbox = options.bbox;
   }
-  return null;
+  feat.properties = {};
+  feat.geometry = geom;
+  return feat;
+}
+function lineString$1(coordinates2, properties, options) {
+  if (options === void 0) {
+    options = {};
+  }
+  if (coordinates2.length < 2) {
+    throw new Error("coordinates must be an array of two or more positions");
+  }
+  var geom = {
+    type: "LineString",
+    coordinates: coordinates2
+  };
+  return feature$2(geom, properties, options);
 }
 function booleanPointInPolygon$1(point2, polygon2, options) {
   if (options === void 0) {
@@ -4889,8 +4096,8 @@ function booleanPointInPolygon$1(point2, polygon2, options) {
   if (!polygon2) {
     throw new Error("polygon is required");
   }
-  var pt = getCoord(point2);
-  var geom = getGeom(polygon2);
+  var pt = getCoord$1(point2);
+  var geom = getGeom$1(polygon2);
   var type = geom.type;
   var bbox2 = polygon2.bbox;
   var polys = geom.coordinates;
@@ -4923,17 +4130,17 @@ function inRing(pt, ring, ignoreBoundary) {
   if (ring[0][0] === ring[ring.length - 1][0] && ring[0][1] === ring[ring.length - 1][1]) {
     ring = ring.slice(0, ring.length - 1);
   }
-  for (var i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+  for (var i = 0, j2 = ring.length - 1; i < ring.length; j2 = i++) {
     var xi = ring[i][0];
     var yi = ring[i][1];
-    var xj = ring[j][0];
-    var yj = ring[j][1];
+    var xj = ring[j2][0];
+    var yj = ring[j2][1];
     var onBoundary = pt[1] * (xi - xj) + yi * (xj - pt[0]) + yj * (pt[0] - xi) === 0 && (xi - pt[0]) * (xj - pt[0]) <= 0 && (yi - pt[1]) * (yj - pt[1]) <= 0;
     if (onBoundary) {
       return !ignoreBoundary;
     }
-    var intersect2 = yi > pt[1] !== yj > pt[1] && pt[0] < (xj - xi) * (pt[1] - yi) / (yj - yi) + xi;
-    if (intersect2) {
+    var intersect = yi > pt[1] !== yj > pt[1] && pt[0] < (xj - xi) * (pt[1] - yi) / (yj - yi) + xi;
+    if (intersect) {
       isInside = !isInside;
     }
   }
@@ -4941,6 +4148,102 @@ function inRing(pt, ring, ignoreBoundary) {
 }
 function inBBox$1(pt, bbox2) {
   return bbox2[0] <= pt[0] && bbox2[1] <= pt[1] && bbox2[2] >= pt[0] && bbox2[3] >= pt[1];
+}
+function feature$1(geom, properties, options) {
+  if (options === void 0) {
+    options = {};
+  }
+  var feat = { type: "Feature" };
+  if (options.id === 0 || options.id) {
+    feat.id = options.id;
+  }
+  if (options.bbox) {
+    feat.bbox = options.bbox;
+  }
+  feat.properties = {};
+  feat.geometry = geom;
+  return feat;
+}
+function point(coordinates2, properties, options) {
+  if (options === void 0) {
+    options = {};
+  }
+  if (!coordinates2) {
+    throw new Error("coordinates is required");
+  }
+  if (!Array.isArray(coordinates2)) {
+    throw new Error("coordinates must be an Array");
+  }
+  if (coordinates2.length < 2) {
+    throw new Error("coordinates must be at least 2 numbers long");
+  }
+  if (!isNumber(coordinates2[0]) || !isNumber(coordinates2[1])) {
+    throw new Error("coordinates must contain numbers");
+  }
+  var geom = {
+    type: "Point",
+    coordinates: coordinates2
+  };
+  return feature$1(geom, properties, options);
+}
+function featureCollection$2(features, options) {
+  if (options === void 0) {
+    options = {};
+  }
+  var fc = { type: "FeatureCollection" };
+  if (options.id) {
+    fc.id = options.id;
+  }
+  if (options.bbox) {
+    fc.bbox = options.bbox;
+  }
+  fc.features = features;
+  return fc;
+}
+function isNumber(num) {
+  return !isNaN(num) && num !== null && !Array.isArray(num);
+}
+function feature(geom, properties, options) {
+  if (options === void 0) {
+    options = {};
+  }
+  var feat = { type: "Feature" };
+  if (options.id === 0 || options.id) {
+    feat.id = options.id;
+  }
+  if (options.bbox) {
+    feat.bbox = options.bbox;
+  }
+  feat.properties = properties || {};
+  feat.geometry = geom;
+  return feat;
+}
+function lineString(coordinates2, properties, options) {
+  if (options === void 0) {
+    options = {};
+  }
+  if (coordinates2.length < 2) {
+    throw new Error("coordinates must be an array of two or more positions");
+  }
+  var geom = {
+    type: "LineString",
+    coordinates: coordinates2
+  };
+  return feature(geom, properties, options);
+}
+function featureCollection$1(features, options) {
+  if (options === void 0) {
+    options = {};
+  }
+  var fc = { type: "FeatureCollection" };
+  if (options.id) {
+    fc.id = options.id;
+  }
+  if (options.bbox) {
+    fc.bbox = options.bbox;
+  }
+  fc.features = features;
+  return fc;
 }
 function lineSegment(geojson) {
   if (!geojson) {
@@ -4954,14 +4257,14 @@ function lineSegment(geojson) {
 }
 function lineSegmentFeature(geojson, results) {
   var coords = [];
-  var geometry2 = geojson.geometry;
-  if (geometry2 !== null) {
-    switch (geometry2.type) {
+  var geometry = geojson.geometry;
+  if (geometry !== null) {
+    switch (geometry.type) {
       case "Polygon":
-        coords = getCoords(geometry2);
+        coords = getCoords(geometry);
         break;
       case "LineString":
-        coords = [getCoords(geometry2)];
+        coords = [getCoords(geometry)];
     }
     coords.forEach(function(coord) {
       var segments = createSegments(coord, geojson.properties);
@@ -5180,8 +4483,8 @@ var rbush_min = { exports: {} };
       this.data = p([t2, i2]), this.data.height = t2.height + 1, this.data.leaf = false, a(this.data, this.toBBox);
     }, r.prototype._chooseSplitIndex = function(t2, i2, n2) {
       for (var r2, e2, a2, o2, s2, l2, u3, m2 = 1 / 0, c2 = 1 / 0, p2 = i2; p2 <= n2 - i2; p2++) {
-        var d2 = h(t2, 0, p2, this.toBBox), x = h(t2, p2, n2, this.toBBox), v2 = (e2 = d2, a2 = x, o2 = void 0, s2 = void 0, l2 = void 0, u3 = void 0, o2 = Math.max(e2.minX, a2.minX), s2 = Math.max(e2.minY, a2.minY), l2 = Math.min(e2.maxX, a2.maxX), u3 = Math.min(e2.maxY, a2.maxY), Math.max(0, l2 - o2) * Math.max(0, u3 - s2)), M = f(d2) + f(x);
-        v2 < m2 ? (m2 = v2, r2 = p2, c2 = M < c2 ? M : c2) : v2 === m2 && M < c2 && (c2 = M, r2 = p2);
+        var d2 = h(t2, 0, p2, this.toBBox), x = h(t2, p2, n2, this.toBBox), v = (e2 = d2, a2 = x, o2 = void 0, s2 = void 0, l2 = void 0, u3 = void 0, o2 = Math.max(e2.minX, a2.minX), s2 = Math.max(e2.minY, a2.minY), l2 = Math.min(e2.maxX, a2.maxX), u3 = Math.min(e2.maxY, a2.maxY), Math.max(0, l2 - o2) * Math.max(0, u3 - s2)), M = f(d2) + f(x);
+        v < m2 ? (m2 = v, r2 = p2, c2 = M < c2 ? M : c2) : v === m2 && M < c2 && (c2 = M, r2 = p2);
       }
       return r2 || n2 - i2;
     }, r.prototype._chooseSplitAxis = function(t2, i2, n2) {
@@ -5206,11 +4509,368 @@ var rbush_min = { exports: {} };
   });
 })(rbush_min);
 var rbush_minExports = rbush_min.exports;
-const require$$1 = /* @__PURE__ */ getAugmentedNamespace(es$2);
+var js = {};
+(function(exports) {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.earthRadius = 63710088e-1;
+  exports.factors = {
+    centimeters: exports.earthRadius * 100,
+    centimetres: exports.earthRadius * 100,
+    degrees: exports.earthRadius / 111325,
+    feet: exports.earthRadius * 3.28084,
+    inches: exports.earthRadius * 39.37,
+    kilometers: exports.earthRadius / 1e3,
+    kilometres: exports.earthRadius / 1e3,
+    meters: exports.earthRadius,
+    metres: exports.earthRadius,
+    miles: exports.earthRadius / 1609.344,
+    millimeters: exports.earthRadius * 1e3,
+    millimetres: exports.earthRadius * 1e3,
+    nauticalmiles: exports.earthRadius / 1852,
+    radians: 1,
+    yards: exports.earthRadius * 1.0936
+  };
+  exports.unitsFactors = {
+    centimeters: 100,
+    centimetres: 100,
+    degrees: 1 / 111325,
+    feet: 3.28084,
+    inches: 39.37,
+    kilometers: 1 / 1e3,
+    kilometres: 1 / 1e3,
+    meters: 1,
+    metres: 1,
+    miles: 1 / 1609.344,
+    millimeters: 1e3,
+    millimetres: 1e3,
+    nauticalmiles: 1 / 1852,
+    radians: 1 / exports.earthRadius,
+    yards: 1.0936133
+  };
+  exports.areaFactors = {
+    acres: 247105e-9,
+    centimeters: 1e4,
+    centimetres: 1e4,
+    feet: 10.763910417,
+    hectares: 1e-4,
+    inches: 1550.003100006,
+    kilometers: 1e-6,
+    kilometres: 1e-6,
+    meters: 1,
+    metres: 1,
+    miles: 386e-9,
+    millimeters: 1e6,
+    millimetres: 1e6,
+    yards: 1.195990046
+  };
+  function feature2(geom, properties, options) {
+    if (options === void 0) {
+      options = {};
+    }
+    var feat = { type: "Feature" };
+    if (options.id === 0 || options.id) {
+      feat.id = options.id;
+    }
+    if (options.bbox) {
+      feat.bbox = options.bbox;
+    }
+    feat.properties = properties || {};
+    feat.geometry = geom;
+    return feat;
+  }
+  exports.feature = feature2;
+  function geometry(type, coordinates2, _options) {
+    switch (type) {
+      case "Point":
+        return point2(coordinates2).geometry;
+      case "LineString":
+        return lineString2(coordinates2).geometry;
+      case "Polygon":
+        return polygon2(coordinates2).geometry;
+      case "MultiPoint":
+        return multiPoint(coordinates2).geometry;
+      case "MultiLineString":
+        return multiLineString(coordinates2).geometry;
+      case "MultiPolygon":
+        return multiPolygon(coordinates2).geometry;
+      default:
+        throw new Error(type + " is invalid");
+    }
+  }
+  exports.geometry = geometry;
+  function point2(coordinates2, properties, options) {
+    if (options === void 0) {
+      options = {};
+    }
+    if (!coordinates2) {
+      throw new Error("coordinates is required");
+    }
+    if (!Array.isArray(coordinates2)) {
+      throw new Error("coordinates must be an Array");
+    }
+    if (coordinates2.length < 2) {
+      throw new Error("coordinates must be at least 2 numbers long");
+    }
+    if (!isNumber2(coordinates2[0]) || !isNumber2(coordinates2[1])) {
+      throw new Error("coordinates must contain numbers");
+    }
+    var geom = {
+      type: "Point",
+      coordinates: coordinates2
+    };
+    return feature2(geom, properties, options);
+  }
+  exports.point = point2;
+  function points(coordinates2, properties, options) {
+    if (options === void 0) {
+      options = {};
+    }
+    return featureCollection2(coordinates2.map(function(coords) {
+      return point2(coords, properties);
+    }), options);
+  }
+  exports.points = points;
+  function polygon2(coordinates2, properties, options) {
+    if (options === void 0) {
+      options = {};
+    }
+    for (var _i = 0, coordinates_1 = coordinates2; _i < coordinates_1.length; _i++) {
+      var ring = coordinates_1[_i];
+      if (ring.length < 4) {
+        throw new Error("Each LinearRing of a Polygon must have 4 or more Positions.");
+      }
+      for (var j2 = 0; j2 < ring[ring.length - 1].length; j2++) {
+        if (ring[ring.length - 1][j2] !== ring[0][j2]) {
+          throw new Error("First and last Position are not equivalent.");
+        }
+      }
+    }
+    var geom = {
+      type: "Polygon",
+      coordinates: coordinates2
+    };
+    return feature2(geom, properties, options);
+  }
+  exports.polygon = polygon2;
+  function polygons(coordinates2, properties, options) {
+    if (options === void 0) {
+      options = {};
+    }
+    return featureCollection2(coordinates2.map(function(coords) {
+      return polygon2(coords, properties);
+    }), options);
+  }
+  exports.polygons = polygons;
+  function lineString2(coordinates2, properties, options) {
+    if (options === void 0) {
+      options = {};
+    }
+    if (coordinates2.length < 2) {
+      throw new Error("coordinates must be an array of two or more positions");
+    }
+    var geom = {
+      type: "LineString",
+      coordinates: coordinates2
+    };
+    return feature2(geom, properties, options);
+  }
+  exports.lineString = lineString2;
+  function lineStrings(coordinates2, properties, options) {
+    if (options === void 0) {
+      options = {};
+    }
+    return featureCollection2(coordinates2.map(function(coords) {
+      return lineString2(coords, properties);
+    }), options);
+  }
+  exports.lineStrings = lineStrings;
+  function featureCollection2(features, options) {
+    if (options === void 0) {
+      options = {};
+    }
+    var fc = { type: "FeatureCollection" };
+    if (options.id) {
+      fc.id = options.id;
+    }
+    if (options.bbox) {
+      fc.bbox = options.bbox;
+    }
+    fc.features = features;
+    return fc;
+  }
+  exports.featureCollection = featureCollection2;
+  function multiLineString(coordinates2, properties, options) {
+    if (options === void 0) {
+      options = {};
+    }
+    var geom = {
+      type: "MultiLineString",
+      coordinates: coordinates2
+    };
+    return feature2(geom, properties, options);
+  }
+  exports.multiLineString = multiLineString;
+  function multiPoint(coordinates2, properties, options) {
+    if (options === void 0) {
+      options = {};
+    }
+    var geom = {
+      type: "MultiPoint",
+      coordinates: coordinates2
+    };
+    return feature2(geom, properties, options);
+  }
+  exports.multiPoint = multiPoint;
+  function multiPolygon(coordinates2, properties, options) {
+    if (options === void 0) {
+      options = {};
+    }
+    var geom = {
+      type: "MultiPolygon",
+      coordinates: coordinates2
+    };
+    return feature2(geom, properties, options);
+  }
+  exports.multiPolygon = multiPolygon;
+  function geometryCollection(geometries, properties, options) {
+    if (options === void 0) {
+      options = {};
+    }
+    var geom = {
+      type: "GeometryCollection",
+      geometries
+    };
+    return feature2(geom, properties, options);
+  }
+  exports.geometryCollection = geometryCollection;
+  function round(num, precision) {
+    if (precision === void 0) {
+      precision = 0;
+    }
+    if (precision && !(precision >= 0)) {
+      throw new Error("precision must be a positive number");
+    }
+    var multiplier = Math.pow(10, precision || 0);
+    return Math.round(num * multiplier) / multiplier;
+  }
+  exports.round = round;
+  function radiansToLength(radians, units) {
+    if (units === void 0) {
+      units = "kilometers";
+    }
+    var factor = exports.factors[units];
+    if (!factor) {
+      throw new Error(units + " units is invalid");
+    }
+    return radians * factor;
+  }
+  exports.radiansToLength = radiansToLength;
+  function lengthToRadians(distance, units) {
+    if (units === void 0) {
+      units = "kilometers";
+    }
+    var factor = exports.factors[units];
+    if (!factor) {
+      throw new Error(units + " units is invalid");
+    }
+    return distance / factor;
+  }
+  exports.lengthToRadians = lengthToRadians;
+  function lengthToDegrees(distance, units) {
+    return radiansToDegrees(lengthToRadians(distance, units));
+  }
+  exports.lengthToDegrees = lengthToDegrees;
+  function bearingToAzimuth(bearing) {
+    var angle = bearing % 360;
+    if (angle < 0) {
+      angle += 360;
+    }
+    return angle;
+  }
+  exports.bearingToAzimuth = bearingToAzimuth;
+  function radiansToDegrees(radians) {
+    var degrees = radians % (2 * Math.PI);
+    return degrees * 180 / Math.PI;
+  }
+  exports.radiansToDegrees = radiansToDegrees;
+  function degreesToRadians(degrees) {
+    var radians = degrees % 360;
+    return radians * Math.PI / 180;
+  }
+  exports.degreesToRadians = degreesToRadians;
+  function convertLength(length, originalUnit, finalUnit) {
+    if (originalUnit === void 0) {
+      originalUnit = "kilometers";
+    }
+    if (finalUnit === void 0) {
+      finalUnit = "kilometers";
+    }
+    if (!(length >= 0)) {
+      throw new Error("length must be a positive number");
+    }
+    return radiansToLength(lengthToRadians(length, originalUnit), finalUnit);
+  }
+  exports.convertLength = convertLength;
+  function convertArea(area, originalUnit, finalUnit) {
+    if (originalUnit === void 0) {
+      originalUnit = "meters";
+    }
+    if (finalUnit === void 0) {
+      finalUnit = "kilometers";
+    }
+    if (!(area >= 0)) {
+      throw new Error("area must be a positive number");
+    }
+    var startFactor = exports.areaFactors[originalUnit];
+    if (!startFactor) {
+      throw new Error("invalid original units");
+    }
+    var finalFactor = exports.areaFactors[finalUnit];
+    if (!finalFactor) {
+      throw new Error("invalid final units");
+    }
+    return area / startFactor * finalFactor;
+  }
+  exports.convertArea = convertArea;
+  function isNumber2(num) {
+    return !isNaN(num) && num !== null && !Array.isArray(num);
+  }
+  exports.isNumber = isNumber2;
+  function isObject2(input) {
+    return !!input && input.constructor === Object;
+  }
+  exports.isObject = isObject2;
+  function validateBBox(bbox2) {
+    if (!bbox2) {
+      throw new Error("bbox is required");
+    }
+    if (!Array.isArray(bbox2)) {
+      throw new Error("bbox must be an Array");
+    }
+    if (bbox2.length !== 4 && bbox2.length !== 6) {
+      throw new Error("bbox must be an Array of 4 or 6 numbers");
+    }
+    bbox2.forEach(function(num) {
+      if (!isNumber2(num)) {
+        throw new Error("bbox must only contain numbers");
+      }
+    });
+  }
+  exports.validateBBox = validateBBox;
+  function validateId(id) {
+    if (!id) {
+      throw new Error("id is required");
+    }
+    if (["string", "number"].indexOf(typeof id) === -1) {
+      throw new Error("id must be a number or a string");
+    }
+  }
+  exports.validateId = validateId;
+})(js);
 const require$$2 = /* @__PURE__ */ getAugmentedNamespace(es$1);
 const require$$3 = /* @__PURE__ */ getAugmentedNamespace(es);
 var rbush = rbush_minExports;
-var helpers = require$$1;
+var helpers = js;
 var meta = require$$2;
 var turfBBox = require$$3.default;
 var featureEach = meta.featureEach;
@@ -5291,33 +4951,33 @@ function lineIntersect(line1, line2) {
   var unique = {};
   var results = [];
   if (line1.type === "LineString") {
-    line1 = feature(line1);
+    line1 = feature$1(line1);
   }
   if (line2.type === "LineString") {
-    line2 = feature(line2);
+    line2 = feature$1(line2);
   }
   if (line1.type === "Feature" && line2.type === "Feature" && line1.geometry !== null && line2.geometry !== null && line1.geometry.type === "LineString" && line2.geometry.type === "LineString" && line1.geometry.coordinates.length === 2 && line2.geometry.coordinates.length === 2) {
-    var intersect2 = intersects$1(line1, line2);
-    if (intersect2) {
-      results.push(intersect2);
+    var intersect = intersects$1(line1, line2);
+    if (intersect) {
+      results.push(intersect);
     }
-    return featureCollection$1(results);
+    return featureCollection$2(results);
   }
   var tree = rbush$1();
   tree.load(lineSegment(line2));
   featureEach$1(lineSegment(line1), function(segment) {
     featureEach$1(tree.search(segment), function(match) {
-      var intersect3 = intersects$1(segment, match);
-      if (intersect3) {
-        var key = getCoords(intersect3).join(",");
+      var intersect2 = intersects$1(segment, match);
+      if (intersect2) {
+        var key = getCoords(intersect2).join(",");
         if (!unique[key]) {
           unique[key] = true;
-          results.push(intersect3);
+          results.push(intersect2);
         }
       }
     });
   });
-  return featureCollection$1(results);
+  return featureCollection$2(results);
 }
 function intersects$1(line1, line2) {
   var coords1 = getCoords(line1);
@@ -5354,824 +5014,96 @@ function intersects$1(line1, line2) {
   }
   return null;
 }
-/**
- * splaytree v3.1.2
- * Fast Splay tree for Node and browser
- *
- * @author Alexander Milevski <info@w8r.name>
- * @license MIT
- * @preserve
- */
-/*! *****************************************************************************
-Copyright (c) Microsoft Corporation. All rights reserved.
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use
-this file except in compliance with the License. You may obtain a copy of the
-License at http://www.apache.org/licenses/LICENSE-2.0
-
-THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
-WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
-MERCHANTABLITY OR NON-INFRINGEMENT.
-
-See the Apache Version 2.0 License for specific language governing permissions
-and limitations under the License.
-***************************************************************************** */
-function __generator(thisArg, body) {
-  var _23 = { label: 0, sent: function() {
-    if (t[0] & 1) throw t[1];
-    return t[1];
-  }, trys: [], ops: [] }, f, y, t, g2;
-  return g2 = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g2[Symbol.iterator] = function() {
-    return this;
-  }), g2;
-  function verb(n) {
-    return function(v2) {
-      return step([n, v2]);
-    };
-  }
-  function step(op) {
-    if (f) throw new TypeError("Generator is already executing.");
-    while (_23) try {
-      if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-      if (y = 0, t) op = [op[0] & 2, t.value];
-      switch (op[0]) {
-        case 0:
-        case 1:
-          t = op;
-          break;
-        case 4:
-          _23.label++;
-          return { value: op[1], done: false };
-        case 5:
-          _23.label++;
-          y = op[1];
-          op = [0];
-          continue;
-        case 7:
-          op = _23.ops.pop();
-          _23.trys.pop();
-          continue;
-        default:
-          if (!(t = _23.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
-            _23 = 0;
-            continue;
-          }
-          if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
-            _23.label = op[1];
-            break;
-          }
-          if (op[0] === 6 && _23.label < t[1]) {
-            _23.label = t[1];
-            t = op;
-            break;
-          }
-          if (t && _23.label < t[2]) {
-            _23.label = t[2];
-            _23.ops.push(op);
-            break;
-          }
-          if (t[2]) _23.ops.pop();
-          _23.trys.pop();
-          continue;
-      }
-      op = body.call(thisArg, _23);
-    } catch (e) {
-      op = [6, e];
-      y = 0;
-    } finally {
-      f = t = 0;
-    }
-    if (op[0] & 5) throw op[1];
-    return { value: op[0] ? op[1] : void 0, done: true };
-  }
-}
-var Node = (
-  /** @class */
-  /* @__PURE__ */ function() {
-    function Node2(key, data) {
-      this.next = null;
-      this.key = key;
-      this.data = data;
-      this.left = null;
-      this.right = null;
-    }
-    return Node2;
-  }()
-);
-function DEFAULT_COMPARE(a, b) {
-  return a > b ? 1 : a < b ? -1 : 0;
-}
-function splay(i, t, comparator) {
-  var N = new Node(null, null);
-  var l = N;
-  var r = N;
-  while (true) {
-    var cmp2 = comparator(i, t.key);
-    if (cmp2 < 0) {
-      if (t.left === null)
-        break;
-      if (comparator(i, t.left.key) < 0) {
-        var y = t.left;
-        t.left = y.right;
-        y.right = t;
-        t = y;
-        if (t.left === null)
-          break;
-      }
-      r.left = t;
-      r = t;
-      t = t.left;
-    } else if (cmp2 > 0) {
-      if (t.right === null)
-        break;
-      if (comparator(i, t.right.key) > 0) {
-        var y = t.right;
-        t.right = y.left;
-        y.left = t;
-        t = y;
-        if (t.right === null)
-          break;
-      }
-      l.right = t;
-      l = t;
-      t = t.right;
-    } else
-      break;
-  }
-  l.right = t.left;
-  r.left = t.right;
-  t.left = N.right;
-  t.right = N.left;
-  return t;
-}
-function insert(i, data, t, comparator) {
-  var node = new Node(i, data);
-  if (t === null) {
-    node.left = node.right = null;
-    return node;
-  }
-  t = splay(i, t, comparator);
-  var cmp2 = comparator(i, t.key);
-  if (cmp2 < 0) {
-    node.left = t.left;
-    node.right = t;
-    t.left = null;
-  } else if (cmp2 >= 0) {
-    node.right = t.right;
-    node.left = t;
-    t.right = null;
-  }
-  return node;
-}
-function split(key, v2, comparator) {
-  var left = null;
-  var right = null;
-  if (v2) {
-    v2 = splay(key, v2, comparator);
-    var cmp2 = comparator(v2.key, key);
-    if (cmp2 === 0) {
-      left = v2.left;
-      right = v2.right;
-    } else if (cmp2 < 0) {
-      right = v2.right;
-      v2.right = null;
-      left = v2;
-    } else {
-      left = v2.left;
-      v2.left = null;
-      right = v2;
-    }
-  }
-  return { left, right };
-}
-function merge(left, right, comparator) {
-  if (right === null)
-    return left;
-  if (left === null)
-    return right;
-  right = splay(left.key, right, comparator);
-  right.left = left;
-  return right;
-}
-function printRow(root2, prefix, isTail, out, printNode) {
-  if (root2) {
-    out("" + prefix + (isTail ? "└── " : "├── ") + printNode(root2) + "\n");
-    var indent = prefix + (isTail ? "    " : "│   ");
-    if (root2.left)
-      printRow(root2.left, indent, false, out, printNode);
-    if (root2.right)
-      printRow(root2.right, indent, true, out, printNode);
-  }
-}
-var Tree = (
-  /** @class */
-  function() {
-    function Tree2(comparator) {
-      if (comparator === void 0) {
-        comparator = DEFAULT_COMPARE;
-      }
-      this._root = null;
-      this._size = 0;
-      this._comparator = comparator;
-    }
-    Tree2.prototype.insert = function(key, data) {
-      this._size++;
-      return this._root = insert(key, data, this._root, this._comparator);
-    };
-    Tree2.prototype.add = function(key, data) {
-      var node = new Node(key, data);
-      if (this._root === null) {
-        node.left = node.right = null;
-        this._size++;
-        this._root = node;
-      }
-      var comparator = this._comparator;
-      var t = splay(key, this._root, comparator);
-      var cmp2 = comparator(key, t.key);
-      if (cmp2 === 0)
-        this._root = t;
-      else {
-        if (cmp2 < 0) {
-          node.left = t.left;
-          node.right = t;
-          t.left = null;
-        } else if (cmp2 > 0) {
-          node.right = t.right;
-          node.left = t;
-          t.right = null;
-        }
-        this._size++;
-        this._root = node;
-      }
-      return this._root;
-    };
-    Tree2.prototype.remove = function(key) {
-      this._root = this._remove(key, this._root, this._comparator);
-    };
-    Tree2.prototype._remove = function(i, t, comparator) {
-      var x;
-      if (t === null)
-        return null;
-      t = splay(i, t, comparator);
-      var cmp2 = comparator(i, t.key);
-      if (cmp2 === 0) {
-        if (t.left === null) {
-          x = t.right;
-        } else {
-          x = splay(i, t.left, comparator);
-          x.right = t.right;
-        }
-        this._size--;
-        return x;
-      }
-      return t;
-    };
-    Tree2.prototype.pop = function() {
-      var node = this._root;
-      if (node) {
-        while (node.left)
-          node = node.left;
-        this._root = splay(node.key, this._root, this._comparator);
-        this._root = this._remove(node.key, this._root, this._comparator);
-        return { key: node.key, data: node.data };
-      }
-      return null;
-    };
-    Tree2.prototype.findStatic = function(key) {
-      var current = this._root;
-      var compare = this._comparator;
-      while (current) {
-        var cmp2 = compare(key, current.key);
-        if (cmp2 === 0)
-          return current;
-        else if (cmp2 < 0)
-          current = current.left;
-        else
-          current = current.right;
-      }
-      return null;
-    };
-    Tree2.prototype.find = function(key) {
-      if (this._root) {
-        this._root = splay(key, this._root, this._comparator);
-        if (this._comparator(key, this._root.key) !== 0)
-          return null;
-      }
-      return this._root;
-    };
-    Tree2.prototype.contains = function(key) {
-      var current = this._root;
-      var compare = this._comparator;
-      while (current) {
-        var cmp2 = compare(key, current.key);
-        if (cmp2 === 0)
-          return true;
-        else if (cmp2 < 0)
-          current = current.left;
-        else
-          current = current.right;
-      }
-      return false;
-    };
-    Tree2.prototype.forEach = function(visitor, ctx) {
-      var current = this._root;
-      var Q = [];
-      var done = false;
-      while (!done) {
-        if (current !== null) {
-          Q.push(current);
-          current = current.left;
-        } else {
-          if (Q.length !== 0) {
-            current = Q.pop();
-            visitor.call(ctx, current);
-            current = current.right;
-          } else
-            done = true;
-        }
-      }
-      return this;
-    };
-    Tree2.prototype.range = function(low, high, fn, ctx) {
-      var Q = [];
-      var compare = this._comparator;
-      var node = this._root;
-      var cmp2;
-      while (Q.length !== 0 || node) {
-        if (node) {
-          Q.push(node);
-          node = node.left;
-        } else {
-          node = Q.pop();
-          cmp2 = compare(node.key, high);
-          if (cmp2 > 0) {
-            break;
-          } else if (compare(node.key, low) >= 0) {
-            if (fn.call(ctx, node))
-              return this;
-          }
-          node = node.right;
-        }
-      }
-      return this;
-    };
-    Tree2.prototype.keys = function() {
-      var keys2 = [];
-      this.forEach(function(_a) {
-        var key = _a.key;
-        return keys2.push(key);
-      });
-      return keys2;
-    };
-    Tree2.prototype.values = function() {
-      var values = [];
-      this.forEach(function(_a) {
-        var data = _a.data;
-        return values.push(data);
-      });
-      return values;
-    };
-    Tree2.prototype.min = function() {
-      if (this._root)
-        return this.minNode(this._root).key;
-      return null;
-    };
-    Tree2.prototype.max = function() {
-      if (this._root)
-        return this.maxNode(this._root).key;
-      return null;
-    };
-    Tree2.prototype.minNode = function(t) {
-      if (t === void 0) {
-        t = this._root;
-      }
-      if (t)
-        while (t.left)
-          t = t.left;
-      return t;
-    };
-    Tree2.prototype.maxNode = function(t) {
-      if (t === void 0) {
-        t = this._root;
-      }
-      if (t)
-        while (t.right)
-          t = t.right;
-      return t;
-    };
-    Tree2.prototype.at = function(index2) {
-      var current = this._root;
-      var done = false;
-      var i = 0;
-      var Q = [];
-      while (!done) {
-        if (current) {
-          Q.push(current);
-          current = current.left;
-        } else {
-          if (Q.length > 0) {
-            current = Q.pop();
-            if (i === index2)
-              return current;
-            i++;
-            current = current.right;
-          } else
-            done = true;
-        }
-      }
-      return null;
-    };
-    Tree2.prototype.next = function(d) {
-      var root2 = this._root;
-      var successor = null;
-      if (d.right) {
-        successor = d.right;
-        while (successor.left)
-          successor = successor.left;
-        return successor;
-      }
-      var comparator = this._comparator;
-      while (root2) {
-        var cmp2 = comparator(d.key, root2.key);
-        if (cmp2 === 0)
-          break;
-        else if (cmp2 < 0) {
-          successor = root2;
-          root2 = root2.left;
-        } else
-          root2 = root2.right;
-      }
-      return successor;
-    };
-    Tree2.prototype.prev = function(d) {
-      var root2 = this._root;
-      var predecessor = null;
-      if (d.left !== null) {
-        predecessor = d.left;
-        while (predecessor.right)
-          predecessor = predecessor.right;
-        return predecessor;
-      }
-      var comparator = this._comparator;
-      while (root2) {
-        var cmp2 = comparator(d.key, root2.key);
-        if (cmp2 === 0)
-          break;
-        else if (cmp2 < 0)
-          root2 = root2.left;
-        else {
-          predecessor = root2;
-          root2 = root2.right;
-        }
-      }
-      return predecessor;
-    };
-    Tree2.prototype.clear = function() {
-      this._root = null;
-      this._size = 0;
-      return this;
-    };
-    Tree2.prototype.toList = function() {
-      return toList(this._root);
-    };
-    Tree2.prototype.load = function(keys2, values, presort) {
-      if (values === void 0) {
-        values = [];
-      }
-      if (presort === void 0) {
-        presort = false;
-      }
-      var size = keys2.length;
-      var comparator = this._comparator;
-      if (presort)
-        sort(keys2, values, 0, size - 1, comparator);
-      if (this._root === null) {
-        this._root = loadRecursive(keys2, values, 0, size);
-        this._size = size;
-      } else {
-        var mergedList = mergeLists(this.toList(), createList(keys2, values), comparator);
-        size = this._size + size;
-        this._root = sortedListToBST({ head: mergedList }, 0, size);
-      }
-      return this;
-    };
-    Tree2.prototype.isEmpty = function() {
-      return this._root === null;
-    };
-    Object.defineProperty(Tree2.prototype, "size", {
-      get: function() {
-        return this._size;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(Tree2.prototype, "root", {
-      get: function() {
-        return this._root;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Tree2.prototype.toString = function(printNode) {
-      if (printNode === void 0) {
-        printNode = function(n) {
-          return String(n.key);
-        };
-      }
-      var out = [];
-      printRow(this._root, "", true, function(v2) {
-        return out.push(v2);
-      }, printNode);
-      return out.join("");
-    };
-    Tree2.prototype.update = function(key, newKey, newData) {
-      var comparator = this._comparator;
-      var _a = split(key, this._root, comparator), left = _a.left, right = _a.right;
-      if (comparator(key, newKey) < 0) {
-        right = insert(newKey, newData, right, comparator);
-      } else {
-        left = insert(newKey, newData, left, comparator);
-      }
-      this._root = merge(left, right, comparator);
-    };
-    Tree2.prototype.split = function(key) {
-      return split(key, this._root, this._comparator);
-    };
-    Tree2.prototype[Symbol.iterator] = function() {
-      var current, Q, done;
-      return __generator(this, function(_a) {
-        switch (_a.label) {
-          case 0:
-            current = this._root;
-            Q = [];
-            done = false;
-            _a.label = 1;
-          case 1:
-            if (!!done) return [3, 6];
-            if (!(current !== null)) return [3, 2];
-            Q.push(current);
-            current = current.left;
-            return [3, 5];
-          case 2:
-            if (!(Q.length !== 0)) return [3, 4];
-            current = Q.pop();
-            return [4, current];
-          case 3:
-            _a.sent();
-            current = current.right;
-            return [3, 5];
-          case 4:
-            done = true;
-            _a.label = 5;
-          case 5:
-            return [3, 1];
-          case 6:
-            return [
-              2
-              /*return*/
-            ];
-        }
-      });
-    };
-    return Tree2;
-  }()
-);
-function loadRecursive(keys2, values, start, end) {
-  var size = end - start;
-  if (size > 0) {
-    var middle = start + Math.floor(size / 2);
-    var key = keys2[middle];
-    var data = values[middle];
-    var node = new Node(key, data);
-    node.left = loadRecursive(keys2, values, start, middle);
-    node.right = loadRecursive(keys2, values, middle + 1, end);
-    return node;
-  }
-  return null;
-}
-function createList(keys2, values) {
-  var head = new Node(null, null);
-  var p = head;
-  for (var i = 0; i < keys2.length; i++) {
-    p = p.next = new Node(keys2[i], values[i]);
-  }
-  p.next = null;
-  return head.next;
-}
-function toList(root2) {
-  var current = root2;
-  var Q = [];
-  var done = false;
-  var head = new Node(null, null);
-  var p = head;
-  while (!done) {
-    if (current) {
-      Q.push(current);
-      current = current.left;
-    } else {
-      if (Q.length > 0) {
-        current = p = p.next = Q.pop();
-        current = current.right;
-      } else
-        done = true;
-    }
-  }
-  p.next = null;
-  return head.next;
-}
-function sortedListToBST(list, start, end) {
-  var size = end - start;
-  if (size > 0) {
-    var middle = start + Math.floor(size / 2);
-    var left = sortedListToBST(list, start, middle);
-    var root2 = list.head;
-    root2.left = left;
-    list.head = list.head.next;
-    root2.right = sortedListToBST(list, middle + 1, end);
-    return root2;
-  }
-  return null;
-}
-function mergeLists(l1, l2, compare) {
-  var head = new Node(null, null);
-  var p = head;
-  var p1 = l1;
-  var p2 = l2;
-  while (p1 !== null && p2 !== null) {
-    if (compare(p1.key, p2.key) < 0) {
-      p.next = p1;
-      p1 = p1.next;
-    } else {
-      p.next = p2;
-      p2 = p2.next;
-    }
-    p = p.next;
-  }
-  if (p1 !== null) {
-    p.next = p1;
-  } else if (p2 !== null) {
-    p.next = p2;
-  }
-  return head.next;
-}
-function sort(keys2, values, left, right, compare) {
-  if (left >= right)
-    return;
-  var pivot = keys2[left + right >> 1];
-  var i = left - 1;
-  var j = right + 1;
-  while (true) {
-    do
-      i++;
-    while (compare(keys2[i], pivot) < 0);
-    do
-      j--;
-    while (compare(keys2[j], pivot) > 0);
-    if (i >= j)
-      break;
-    var tmp = keys2[i];
-    keys2[i] = keys2[j];
-    keys2[j] = tmp;
-    tmp = values[i];
-    values[i] = values[j];
-    values[j] = tmp;
-  }
-  sort(keys2, values, left, j, compare);
-  sort(keys2, values, j + 1, right, compare);
-}
-const epsilon$1 = 11102230246251565e-32;
+const epsilon = 11102230246251565e-32;
 const splitter = 134217729;
-const resulterrbound = (3 + 8 * epsilon$1) * epsilon$1;
+const resulterrbound = (3 + 8 * epsilon) * epsilon;
 function sum(elen, e, flen, f, h) {
-  let Q, Qnew, hh, bvirt;
+  let Q2, Qnew, hh, bvirt;
   let enow = e[0];
   let fnow = f[0];
   let eindex = 0;
   let findex = 0;
   if (fnow > enow === fnow > -enow) {
-    Q = enow;
+    Q2 = enow;
     enow = e[++eindex];
   } else {
-    Q = fnow;
+    Q2 = fnow;
     fnow = f[++findex];
   }
   let hindex = 0;
   if (eindex < elen && findex < flen) {
     if (fnow > enow === fnow > -enow) {
-      Qnew = enow + Q;
-      hh = Q - (Qnew - enow);
+      Qnew = enow + Q2;
+      hh = Q2 - (Qnew - enow);
       enow = e[++eindex];
     } else {
-      Qnew = fnow + Q;
-      hh = Q - (Qnew - fnow);
+      Qnew = fnow + Q2;
+      hh = Q2 - (Qnew - fnow);
       fnow = f[++findex];
     }
-    Q = Qnew;
+    Q2 = Qnew;
     if (hh !== 0) {
       h[hindex++] = hh;
     }
     while (eindex < elen && findex < flen) {
       if (fnow > enow === fnow > -enow) {
-        Qnew = Q + enow;
-        bvirt = Qnew - Q;
-        hh = Q - (Qnew - bvirt) + (enow - bvirt);
+        Qnew = Q2 + enow;
+        bvirt = Qnew - Q2;
+        hh = Q2 - (Qnew - bvirt) + (enow - bvirt);
         enow = e[++eindex];
       } else {
-        Qnew = Q + fnow;
-        bvirt = Qnew - Q;
-        hh = Q - (Qnew - bvirt) + (fnow - bvirt);
+        Qnew = Q2 + fnow;
+        bvirt = Qnew - Q2;
+        hh = Q2 - (Qnew - bvirt) + (fnow - bvirt);
         fnow = f[++findex];
       }
-      Q = Qnew;
+      Q2 = Qnew;
       if (hh !== 0) {
         h[hindex++] = hh;
       }
     }
   }
   while (eindex < elen) {
-    Qnew = Q + enow;
-    bvirt = Qnew - Q;
-    hh = Q - (Qnew - bvirt) + (enow - bvirt);
+    Qnew = Q2 + enow;
+    bvirt = Qnew - Q2;
+    hh = Q2 - (Qnew - bvirt) + (enow - bvirt);
     enow = e[++eindex];
-    Q = Qnew;
+    Q2 = Qnew;
     if (hh !== 0) {
       h[hindex++] = hh;
     }
   }
   while (findex < flen) {
-    Qnew = Q + fnow;
-    bvirt = Qnew - Q;
-    hh = Q - (Qnew - bvirt) + (fnow - bvirt);
+    Qnew = Q2 + fnow;
+    bvirt = Qnew - Q2;
+    hh = Q2 - (Qnew - bvirt) + (fnow - bvirt);
     fnow = f[++findex];
-    Q = Qnew;
+    Q2 = Qnew;
     if (hh !== 0) {
       h[hindex++] = hh;
     }
   }
-  if (Q !== 0 || hindex === 0) {
-    h[hindex++] = Q;
-  }
-  return hindex;
-}
-function sum_three(alen, a, blen, b, clen, c, tmp, out) {
-  return sum(sum(alen, a, blen, b, tmp), tmp, clen, c, out);
-}
-function scale$2(elen, e, b, h) {
-  let Q, sum2, hh, product1, product0;
-  let bvirt, c, ahi, alo, bhi, blo;
-  c = splitter * b;
-  bhi = c - (c - b);
-  blo = b - bhi;
-  let enow = e[0];
-  Q = enow * b;
-  c = splitter * enow;
-  ahi = c - (c - enow);
-  alo = enow - ahi;
-  hh = alo * blo - (Q - ahi * bhi - alo * bhi - ahi * blo);
-  let hindex = 0;
-  if (hh !== 0) {
-    h[hindex++] = hh;
-  }
-  for (let i = 1; i < elen; i++) {
-    enow = e[i];
-    product1 = enow * b;
-    c = splitter * enow;
-    ahi = c - (c - enow);
-    alo = enow - ahi;
-    product0 = alo * blo - (product1 - ahi * bhi - alo * bhi - ahi * blo);
-    sum2 = Q + product0;
-    bvirt = sum2 - Q;
-    hh = Q - (sum2 - bvirt) + (product0 - bvirt);
-    if (hh !== 0) {
-      h[hindex++] = hh;
-    }
-    Q = product1 + sum2;
-    hh = sum2 - (Q - product1);
-    if (hh !== 0) {
-      h[hindex++] = hh;
-    }
-  }
-  if (Q !== 0 || hindex === 0) {
-    h[hindex++] = Q;
+  if (Q2 !== 0 || hindex === 0) {
+    h[hindex++] = Q2;
   }
   return hindex;
 }
 function estimate(elen, e) {
-  let Q = e[0];
-  for (let i = 1; i < elen; i++) Q += e[i];
-  return Q;
+  let Q2 = e[0];
+  for (let i = 1; i < elen; i++) Q2 += e[i];
+  return Q2;
 }
 function vec(n) {
   return new Float64Array(n);
 }
-const ccwerrboundA = (3 + 16 * epsilon$1) * epsilon$1;
-const ccwerrboundB = (2 + 12 * epsilon$1) * epsilon$1;
-const ccwerrboundC = (9 + 64 * epsilon$1) * epsilon$1 * epsilon$1;
-const B = vec(4);
+const ccwerrboundA = (3 + 16 * epsilon) * epsilon;
+const ccwerrboundB = (2 + 12 * epsilon) * epsilon;
+const ccwerrboundC = (9 + 64 * epsilon) * epsilon * epsilon;
+const B$1 = vec(4);
 const C1 = vec(8);
 const C2 = vec(12);
-const D = vec(16);
-const u$1 = vec(4);
+const D$1 = vec(16);
+const u = vec(4);
 function orient2dadapt(ax, ay, bx, by, cx, cy, detsum) {
   let acxtail, acytail, bcxtail, bcytail;
   let bvirt, c, ahi, alo, bhi, blo, _i, _j, _0, s1, s0, t1, t0, u3;
@@ -6197,18 +5129,18 @@ function orient2dadapt(ax, ay, bx, by, cx, cy, detsum) {
   t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
   _i = s0 - t0;
   bvirt = s0 - _i;
-  B[0] = s0 - (_i + bvirt) + (bvirt - t0);
+  B$1[0] = s0 - (_i + bvirt) + (bvirt - t0);
   _j = s1 + _i;
   bvirt = _j - s1;
   _0 = s1 - (_j - bvirt) + (_i - bvirt);
   _i = _0 - t1;
   bvirt = _0 - _i;
-  B[1] = _0 - (_i + bvirt) + (bvirt - t1);
+  B$1[1] = _0 - (_i + bvirt) + (bvirt - t1);
   u3 = _j + _i;
   bvirt = u3 - _j;
-  B[2] = _j - (u3 - bvirt) + (_i - bvirt);
-  B[3] = u3;
-  let det = estimate(4, B);
+  B$1[2] = _j - (u3 - bvirt) + (_i - bvirt);
+  B$1[3] = u3;
+  let det = estimate(4, B$1);
   let errbound = ccwerrboundB * detsum;
   if (det >= errbound || -det >= errbound) {
     return det;
@@ -6245,18 +5177,18 @@ function orient2dadapt(ax, ay, bx, by, cx, cy, detsum) {
   t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
   _i = s0 - t0;
   bvirt = s0 - _i;
-  u$1[0] = s0 - (_i + bvirt) + (bvirt - t0);
+  u[0] = s0 - (_i + bvirt) + (bvirt - t0);
   _j = s1 + _i;
   bvirt = _j - s1;
   _0 = s1 - (_j - bvirt) + (_i - bvirt);
   _i = _0 - t1;
   bvirt = _0 - _i;
-  u$1[1] = _0 - (_i + bvirt) + (bvirt - t1);
+  u[1] = _0 - (_i + bvirt) + (bvirt - t1);
   u3 = _j + _i;
   bvirt = u3 - _j;
-  u$1[2] = _j - (u3 - bvirt) + (_i - bvirt);
-  u$1[3] = u3;
-  const C1len = sum(4, B, 4, u$1, C1);
+  u[2] = _j - (u3 - bvirt) + (_i - bvirt);
+  u[3] = u3;
+  const C1len = sum(4, B$1, 4, u, C1);
   s1 = acx * bcytail;
   c = splitter * acx;
   ahi = c - (c - acx);
@@ -6275,18 +5207,18 @@ function orient2dadapt(ax, ay, bx, by, cx, cy, detsum) {
   t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
   _i = s0 - t0;
   bvirt = s0 - _i;
-  u$1[0] = s0 - (_i + bvirt) + (bvirt - t0);
+  u[0] = s0 - (_i + bvirt) + (bvirt - t0);
   _j = s1 + _i;
   bvirt = _j - s1;
   _0 = s1 - (_j - bvirt) + (_i - bvirt);
   _i = _0 - t1;
   bvirt = _0 - _i;
-  u$1[1] = _0 - (_i + bvirt) + (bvirt - t1);
+  u[1] = _0 - (_i + bvirt) + (bvirt - t1);
   u3 = _j + _i;
   bvirt = u3 - _j;
-  u$1[2] = _j - (u3 - bvirt) + (_i - bvirt);
-  u$1[3] = u3;
-  const C2len = sum(C1len, C1, 4, u$1, C2);
+  u[2] = _j - (u3 - bvirt) + (_i - bvirt);
+  u[3] = u3;
+  const C2len = sum(C1len, C1, 4, u, C2);
   s1 = acxtail * bcytail;
   c = splitter * acxtail;
   ahi = c - (c - acxtail);
@@ -6305,19 +5237,19 @@ function orient2dadapt(ax, ay, bx, by, cx, cy, detsum) {
   t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
   _i = s0 - t0;
   bvirt = s0 - _i;
-  u$1[0] = s0 - (_i + bvirt) + (bvirt - t0);
+  u[0] = s0 - (_i + bvirt) + (bvirt - t0);
   _j = s1 + _i;
   bvirt = _j - s1;
   _0 = s1 - (_j - bvirt) + (_i - bvirt);
   _i = _0 - t1;
   bvirt = _0 - _i;
-  u$1[1] = _0 - (_i + bvirt) + (bvirt - t1);
+  u[1] = _0 - (_i + bvirt) + (bvirt - t1);
   u3 = _j + _i;
   bvirt = u3 - _j;
-  u$1[2] = _j - (u3 - bvirt) + (_i - bvirt);
-  u$1[3] = u3;
-  const Dlen = sum(C2len, C2, 4, u$1, D);
-  return D[Dlen - 1];
+  u[2] = _j - (u3 - bvirt) + (_i - bvirt);
+  u[3] = u3;
+  const Dlen = sum(C2len, C2, 4, u, D$1);
+  return D$1[Dlen - 1];
 }
 function orient2d(ax, ay, bx, by, cx, cy) {
   const detleft = (ay - cy) * (bx - cx);
@@ -6326,2024 +5258,6 @@ function orient2d(ax, ay, bx, by, cx, cy) {
   const detsum = Math.abs(detleft + detright);
   if (Math.abs(det) >= ccwerrboundA * detsum) return det;
   return -orient2dadapt(ax, ay, bx, by, cx, cy, detsum);
-}
-const iccerrboundA = (10 + 96 * epsilon$1) * epsilon$1;
-const iccerrboundB = (4 + 48 * epsilon$1) * epsilon$1;
-const iccerrboundC = (44 + 576 * epsilon$1) * epsilon$1 * epsilon$1;
-const bc = vec(4);
-const ca = vec(4);
-const ab = vec(4);
-const aa = vec(4);
-const bb = vec(4);
-const cc = vec(4);
-const u = vec(4);
-const v = vec(4);
-const axtbc = vec(8);
-const aytbc = vec(8);
-const bxtca = vec(8);
-const bytca = vec(8);
-const cxtab = vec(8);
-const cytab = vec(8);
-const abt = vec(8);
-const bct = vec(8);
-const cat = vec(8);
-const abtt = vec(4);
-const bctt = vec(4);
-const catt = vec(4);
-const _82 = vec(8);
-const _162 = vec(16);
-const _16b = vec(16);
-const _16c = vec(16);
-const _32 = vec(32);
-const _32b = vec(32);
-const _48 = vec(48);
-const _64 = vec(64);
-let fin = vec(1152);
-let fin2 = vec(1152);
-function finadd(finlen, a, alen) {
-  finlen = sum(finlen, fin, a, alen, fin2);
-  const tmp = fin;
-  fin = fin2;
-  fin2 = tmp;
-  return finlen;
-}
-function incircleadapt(ax, ay, bx, by, cx, cy, dx, dy, permanent) {
-  let finlen;
-  let adxtail, bdxtail, cdxtail, adytail, bdytail, cdytail;
-  let axtbclen, aytbclen, bxtcalen, bytcalen, cxtablen, cytablen;
-  let abtlen, bctlen, catlen;
-  let abttlen, bcttlen, cattlen;
-  let n1, n0;
-  let bvirt, c, ahi, alo, bhi, blo, _i, _j, _0, s1, s0, t1, t0, u3;
-  const adx = ax - dx;
-  const bdx = bx - dx;
-  const cdx = cx - dx;
-  const ady = ay - dy;
-  const bdy = by - dy;
-  const cdy = cy - dy;
-  s1 = bdx * cdy;
-  c = splitter * bdx;
-  ahi = c - (c - bdx);
-  alo = bdx - ahi;
-  c = splitter * cdy;
-  bhi = c - (c - cdy);
-  blo = cdy - bhi;
-  s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
-  t1 = cdx * bdy;
-  c = splitter * cdx;
-  ahi = c - (c - cdx);
-  alo = cdx - ahi;
-  c = splitter * bdy;
-  bhi = c - (c - bdy);
-  blo = bdy - bhi;
-  t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
-  _i = s0 - t0;
-  bvirt = s0 - _i;
-  bc[0] = s0 - (_i + bvirt) + (bvirt - t0);
-  _j = s1 + _i;
-  bvirt = _j - s1;
-  _0 = s1 - (_j - bvirt) + (_i - bvirt);
-  _i = _0 - t1;
-  bvirt = _0 - _i;
-  bc[1] = _0 - (_i + bvirt) + (bvirt - t1);
-  u3 = _j + _i;
-  bvirt = u3 - _j;
-  bc[2] = _j - (u3 - bvirt) + (_i - bvirt);
-  bc[3] = u3;
-  s1 = cdx * ady;
-  c = splitter * cdx;
-  ahi = c - (c - cdx);
-  alo = cdx - ahi;
-  c = splitter * ady;
-  bhi = c - (c - ady);
-  blo = ady - bhi;
-  s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
-  t1 = adx * cdy;
-  c = splitter * adx;
-  ahi = c - (c - adx);
-  alo = adx - ahi;
-  c = splitter * cdy;
-  bhi = c - (c - cdy);
-  blo = cdy - bhi;
-  t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
-  _i = s0 - t0;
-  bvirt = s0 - _i;
-  ca[0] = s0 - (_i + bvirt) + (bvirt - t0);
-  _j = s1 + _i;
-  bvirt = _j - s1;
-  _0 = s1 - (_j - bvirt) + (_i - bvirt);
-  _i = _0 - t1;
-  bvirt = _0 - _i;
-  ca[1] = _0 - (_i + bvirt) + (bvirt - t1);
-  u3 = _j + _i;
-  bvirt = u3 - _j;
-  ca[2] = _j - (u3 - bvirt) + (_i - bvirt);
-  ca[3] = u3;
-  s1 = adx * bdy;
-  c = splitter * adx;
-  ahi = c - (c - adx);
-  alo = adx - ahi;
-  c = splitter * bdy;
-  bhi = c - (c - bdy);
-  blo = bdy - bhi;
-  s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
-  t1 = bdx * ady;
-  c = splitter * bdx;
-  ahi = c - (c - bdx);
-  alo = bdx - ahi;
-  c = splitter * ady;
-  bhi = c - (c - ady);
-  blo = ady - bhi;
-  t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
-  _i = s0 - t0;
-  bvirt = s0 - _i;
-  ab[0] = s0 - (_i + bvirt) + (bvirt - t0);
-  _j = s1 + _i;
-  bvirt = _j - s1;
-  _0 = s1 - (_j - bvirt) + (_i - bvirt);
-  _i = _0 - t1;
-  bvirt = _0 - _i;
-  ab[1] = _0 - (_i + bvirt) + (bvirt - t1);
-  u3 = _j + _i;
-  bvirt = u3 - _j;
-  ab[2] = _j - (u3 - bvirt) + (_i - bvirt);
-  ab[3] = u3;
-  finlen = sum(
-    sum(
-      sum(
-        scale$2(scale$2(4, bc, adx, _82), _82, adx, _162),
-        _162,
-        scale$2(scale$2(4, bc, ady, _82), _82, ady, _16b),
-        _16b,
-        _32
-      ),
-      _32,
-      sum(
-        scale$2(scale$2(4, ca, bdx, _82), _82, bdx, _162),
-        _162,
-        scale$2(scale$2(4, ca, bdy, _82), _82, bdy, _16b),
-        _16b,
-        _32b
-      ),
-      _32b,
-      _64
-    ),
-    _64,
-    sum(
-      scale$2(scale$2(4, ab, cdx, _82), _82, cdx, _162),
-      _162,
-      scale$2(scale$2(4, ab, cdy, _82), _82, cdy, _16b),
-      _16b,
-      _32
-    ),
-    _32,
-    fin
-  );
-  let det = estimate(finlen, fin);
-  let errbound = iccerrboundB * permanent;
-  if (det >= errbound || -det >= errbound) {
-    return det;
-  }
-  bvirt = ax - adx;
-  adxtail = ax - (adx + bvirt) + (bvirt - dx);
-  bvirt = ay - ady;
-  adytail = ay - (ady + bvirt) + (bvirt - dy);
-  bvirt = bx - bdx;
-  bdxtail = bx - (bdx + bvirt) + (bvirt - dx);
-  bvirt = by - bdy;
-  bdytail = by - (bdy + bvirt) + (bvirt - dy);
-  bvirt = cx - cdx;
-  cdxtail = cx - (cdx + bvirt) + (bvirt - dx);
-  bvirt = cy - cdy;
-  cdytail = cy - (cdy + bvirt) + (bvirt - dy);
-  if (adxtail === 0 && bdxtail === 0 && cdxtail === 0 && adytail === 0 && bdytail === 0 && cdytail === 0) {
-    return det;
-  }
-  errbound = iccerrboundC * permanent + resulterrbound * Math.abs(det);
-  det += (adx * adx + ady * ady) * (bdx * cdytail + cdy * bdxtail - (bdy * cdxtail + cdx * bdytail)) + 2 * (adx * adxtail + ady * adytail) * (bdx * cdy - bdy * cdx) + ((bdx * bdx + bdy * bdy) * (cdx * adytail + ady * cdxtail - (cdy * adxtail + adx * cdytail)) + 2 * (bdx * bdxtail + bdy * bdytail) * (cdx * ady - cdy * adx)) + ((cdx * cdx + cdy * cdy) * (adx * bdytail + bdy * adxtail - (ady * bdxtail + bdx * adytail)) + 2 * (cdx * cdxtail + cdy * cdytail) * (adx * bdy - ady * bdx));
-  if (det >= errbound || -det >= errbound) {
-    return det;
-  }
-  if (bdxtail !== 0 || bdytail !== 0 || cdxtail !== 0 || cdytail !== 0) {
-    s1 = adx * adx;
-    c = splitter * adx;
-    ahi = c - (c - adx);
-    alo = adx - ahi;
-    s0 = alo * alo - (s1 - ahi * ahi - (ahi + ahi) * alo);
-    t1 = ady * ady;
-    c = splitter * ady;
-    ahi = c - (c - ady);
-    alo = ady - ahi;
-    t0 = alo * alo - (t1 - ahi * ahi - (ahi + ahi) * alo);
-    _i = s0 + t0;
-    bvirt = _i - s0;
-    aa[0] = s0 - (_i - bvirt) + (t0 - bvirt);
-    _j = s1 + _i;
-    bvirt = _j - s1;
-    _0 = s1 - (_j - bvirt) + (_i - bvirt);
-    _i = _0 + t1;
-    bvirt = _i - _0;
-    aa[1] = _0 - (_i - bvirt) + (t1 - bvirt);
-    u3 = _j + _i;
-    bvirt = u3 - _j;
-    aa[2] = _j - (u3 - bvirt) + (_i - bvirt);
-    aa[3] = u3;
-  }
-  if (cdxtail !== 0 || cdytail !== 0 || adxtail !== 0 || adytail !== 0) {
-    s1 = bdx * bdx;
-    c = splitter * bdx;
-    ahi = c - (c - bdx);
-    alo = bdx - ahi;
-    s0 = alo * alo - (s1 - ahi * ahi - (ahi + ahi) * alo);
-    t1 = bdy * bdy;
-    c = splitter * bdy;
-    ahi = c - (c - bdy);
-    alo = bdy - ahi;
-    t0 = alo * alo - (t1 - ahi * ahi - (ahi + ahi) * alo);
-    _i = s0 + t0;
-    bvirt = _i - s0;
-    bb[0] = s0 - (_i - bvirt) + (t0 - bvirt);
-    _j = s1 + _i;
-    bvirt = _j - s1;
-    _0 = s1 - (_j - bvirt) + (_i - bvirt);
-    _i = _0 + t1;
-    bvirt = _i - _0;
-    bb[1] = _0 - (_i - bvirt) + (t1 - bvirt);
-    u3 = _j + _i;
-    bvirt = u3 - _j;
-    bb[2] = _j - (u3 - bvirt) + (_i - bvirt);
-    bb[3] = u3;
-  }
-  if (adxtail !== 0 || adytail !== 0 || bdxtail !== 0 || bdytail !== 0) {
-    s1 = cdx * cdx;
-    c = splitter * cdx;
-    ahi = c - (c - cdx);
-    alo = cdx - ahi;
-    s0 = alo * alo - (s1 - ahi * ahi - (ahi + ahi) * alo);
-    t1 = cdy * cdy;
-    c = splitter * cdy;
-    ahi = c - (c - cdy);
-    alo = cdy - ahi;
-    t0 = alo * alo - (t1 - ahi * ahi - (ahi + ahi) * alo);
-    _i = s0 + t0;
-    bvirt = _i - s0;
-    cc[0] = s0 - (_i - bvirt) + (t0 - bvirt);
-    _j = s1 + _i;
-    bvirt = _j - s1;
-    _0 = s1 - (_j - bvirt) + (_i - bvirt);
-    _i = _0 + t1;
-    bvirt = _i - _0;
-    cc[1] = _0 - (_i - bvirt) + (t1 - bvirt);
-    u3 = _j + _i;
-    bvirt = u3 - _j;
-    cc[2] = _j - (u3 - bvirt) + (_i - bvirt);
-    cc[3] = u3;
-  }
-  if (adxtail !== 0) {
-    axtbclen = scale$2(4, bc, adxtail, axtbc);
-    finlen = finadd(finlen, sum_three(
-      scale$2(axtbclen, axtbc, 2 * adx, _162),
-      _162,
-      scale$2(scale$2(4, cc, adxtail, _82), _82, bdy, _16b),
-      _16b,
-      scale$2(scale$2(4, bb, adxtail, _82), _82, -cdy, _16c),
-      _16c,
-      _32,
-      _48
-    ), _48);
-  }
-  if (adytail !== 0) {
-    aytbclen = scale$2(4, bc, adytail, aytbc);
-    finlen = finadd(finlen, sum_three(
-      scale$2(aytbclen, aytbc, 2 * ady, _162),
-      _162,
-      scale$2(scale$2(4, bb, adytail, _82), _82, cdx, _16b),
-      _16b,
-      scale$2(scale$2(4, cc, adytail, _82), _82, -bdx, _16c),
-      _16c,
-      _32,
-      _48
-    ), _48);
-  }
-  if (bdxtail !== 0) {
-    bxtcalen = scale$2(4, ca, bdxtail, bxtca);
-    finlen = finadd(finlen, sum_three(
-      scale$2(bxtcalen, bxtca, 2 * bdx, _162),
-      _162,
-      scale$2(scale$2(4, aa, bdxtail, _82), _82, cdy, _16b),
-      _16b,
-      scale$2(scale$2(4, cc, bdxtail, _82), _82, -ady, _16c),
-      _16c,
-      _32,
-      _48
-    ), _48);
-  }
-  if (bdytail !== 0) {
-    bytcalen = scale$2(4, ca, bdytail, bytca);
-    finlen = finadd(finlen, sum_three(
-      scale$2(bytcalen, bytca, 2 * bdy, _162),
-      _162,
-      scale$2(scale$2(4, cc, bdytail, _82), _82, adx, _16b),
-      _16b,
-      scale$2(scale$2(4, aa, bdytail, _82), _82, -cdx, _16c),
-      _16c,
-      _32,
-      _48
-    ), _48);
-  }
-  if (cdxtail !== 0) {
-    cxtablen = scale$2(4, ab, cdxtail, cxtab);
-    finlen = finadd(finlen, sum_three(
-      scale$2(cxtablen, cxtab, 2 * cdx, _162),
-      _162,
-      scale$2(scale$2(4, bb, cdxtail, _82), _82, ady, _16b),
-      _16b,
-      scale$2(scale$2(4, aa, cdxtail, _82), _82, -bdy, _16c),
-      _16c,
-      _32,
-      _48
-    ), _48);
-  }
-  if (cdytail !== 0) {
-    cytablen = scale$2(4, ab, cdytail, cytab);
-    finlen = finadd(finlen, sum_three(
-      scale$2(cytablen, cytab, 2 * cdy, _162),
-      _162,
-      scale$2(scale$2(4, aa, cdytail, _82), _82, bdx, _16b),
-      _16b,
-      scale$2(scale$2(4, bb, cdytail, _82), _82, -adx, _16c),
-      _16c,
-      _32,
-      _48
-    ), _48);
-  }
-  if (adxtail !== 0 || adytail !== 0) {
-    if (bdxtail !== 0 || bdytail !== 0 || cdxtail !== 0 || cdytail !== 0) {
-      s1 = bdxtail * cdy;
-      c = splitter * bdxtail;
-      ahi = c - (c - bdxtail);
-      alo = bdxtail - ahi;
-      c = splitter * cdy;
-      bhi = c - (c - cdy);
-      blo = cdy - bhi;
-      s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
-      t1 = bdx * cdytail;
-      c = splitter * bdx;
-      ahi = c - (c - bdx);
-      alo = bdx - ahi;
-      c = splitter * cdytail;
-      bhi = c - (c - cdytail);
-      blo = cdytail - bhi;
-      t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
-      _i = s0 + t0;
-      bvirt = _i - s0;
-      u[0] = s0 - (_i - bvirt) + (t0 - bvirt);
-      _j = s1 + _i;
-      bvirt = _j - s1;
-      _0 = s1 - (_j - bvirt) + (_i - bvirt);
-      _i = _0 + t1;
-      bvirt = _i - _0;
-      u[1] = _0 - (_i - bvirt) + (t1 - bvirt);
-      u3 = _j + _i;
-      bvirt = u3 - _j;
-      u[2] = _j - (u3 - bvirt) + (_i - bvirt);
-      u[3] = u3;
-      s1 = cdxtail * -bdy;
-      c = splitter * cdxtail;
-      ahi = c - (c - cdxtail);
-      alo = cdxtail - ahi;
-      c = splitter * -bdy;
-      bhi = c - (c - -bdy);
-      blo = -bdy - bhi;
-      s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
-      t1 = cdx * -bdytail;
-      c = splitter * cdx;
-      ahi = c - (c - cdx);
-      alo = cdx - ahi;
-      c = splitter * -bdytail;
-      bhi = c - (c - -bdytail);
-      blo = -bdytail - bhi;
-      t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
-      _i = s0 + t0;
-      bvirt = _i - s0;
-      v[0] = s0 - (_i - bvirt) + (t0 - bvirt);
-      _j = s1 + _i;
-      bvirt = _j - s1;
-      _0 = s1 - (_j - bvirt) + (_i - bvirt);
-      _i = _0 + t1;
-      bvirt = _i - _0;
-      v[1] = _0 - (_i - bvirt) + (t1 - bvirt);
-      u3 = _j + _i;
-      bvirt = u3 - _j;
-      v[2] = _j - (u3 - bvirt) + (_i - bvirt);
-      v[3] = u3;
-      bctlen = sum(4, u, 4, v, bct);
-      s1 = bdxtail * cdytail;
-      c = splitter * bdxtail;
-      ahi = c - (c - bdxtail);
-      alo = bdxtail - ahi;
-      c = splitter * cdytail;
-      bhi = c - (c - cdytail);
-      blo = cdytail - bhi;
-      s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
-      t1 = cdxtail * bdytail;
-      c = splitter * cdxtail;
-      ahi = c - (c - cdxtail);
-      alo = cdxtail - ahi;
-      c = splitter * bdytail;
-      bhi = c - (c - bdytail);
-      blo = bdytail - bhi;
-      t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
-      _i = s0 - t0;
-      bvirt = s0 - _i;
-      bctt[0] = s0 - (_i + bvirt) + (bvirt - t0);
-      _j = s1 + _i;
-      bvirt = _j - s1;
-      _0 = s1 - (_j - bvirt) + (_i - bvirt);
-      _i = _0 - t1;
-      bvirt = _0 - _i;
-      bctt[1] = _0 - (_i + bvirt) + (bvirt - t1);
-      u3 = _j + _i;
-      bvirt = u3 - _j;
-      bctt[2] = _j - (u3 - bvirt) + (_i - bvirt);
-      bctt[3] = u3;
-      bcttlen = 4;
-    } else {
-      bct[0] = 0;
-      bctlen = 1;
-      bctt[0] = 0;
-      bcttlen = 1;
-    }
-    if (adxtail !== 0) {
-      const len = scale$2(bctlen, bct, adxtail, _16c);
-      finlen = finadd(finlen, sum(
-        scale$2(axtbclen, axtbc, adxtail, _162),
-        _162,
-        scale$2(len, _16c, 2 * adx, _32),
-        _32,
-        _48
-      ), _48);
-      const len2 = scale$2(bcttlen, bctt, adxtail, _82);
-      finlen = finadd(finlen, sum_three(
-        scale$2(len2, _82, 2 * adx, _162),
-        _162,
-        scale$2(len2, _82, adxtail, _16b),
-        _16b,
-        scale$2(len, _16c, adxtail, _32),
-        _32,
-        _32b,
-        _64
-      ), _64);
-      if (bdytail !== 0) {
-        finlen = finadd(finlen, scale$2(scale$2(4, cc, adxtail, _82), _82, bdytail, _162), _162);
-      }
-      if (cdytail !== 0) {
-        finlen = finadd(finlen, scale$2(scale$2(4, bb, -adxtail, _82), _82, cdytail, _162), _162);
-      }
-    }
-    if (adytail !== 0) {
-      const len = scale$2(bctlen, bct, adytail, _16c);
-      finlen = finadd(finlen, sum(
-        scale$2(aytbclen, aytbc, adytail, _162),
-        _162,
-        scale$2(len, _16c, 2 * ady, _32),
-        _32,
-        _48
-      ), _48);
-      const len2 = scale$2(bcttlen, bctt, adytail, _82);
-      finlen = finadd(finlen, sum_three(
-        scale$2(len2, _82, 2 * ady, _162),
-        _162,
-        scale$2(len2, _82, adytail, _16b),
-        _16b,
-        scale$2(len, _16c, adytail, _32),
-        _32,
-        _32b,
-        _64
-      ), _64);
-    }
-  }
-  if (bdxtail !== 0 || bdytail !== 0) {
-    if (cdxtail !== 0 || cdytail !== 0 || adxtail !== 0 || adytail !== 0) {
-      s1 = cdxtail * ady;
-      c = splitter * cdxtail;
-      ahi = c - (c - cdxtail);
-      alo = cdxtail - ahi;
-      c = splitter * ady;
-      bhi = c - (c - ady);
-      blo = ady - bhi;
-      s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
-      t1 = cdx * adytail;
-      c = splitter * cdx;
-      ahi = c - (c - cdx);
-      alo = cdx - ahi;
-      c = splitter * adytail;
-      bhi = c - (c - adytail);
-      blo = adytail - bhi;
-      t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
-      _i = s0 + t0;
-      bvirt = _i - s0;
-      u[0] = s0 - (_i - bvirt) + (t0 - bvirt);
-      _j = s1 + _i;
-      bvirt = _j - s1;
-      _0 = s1 - (_j - bvirt) + (_i - bvirt);
-      _i = _0 + t1;
-      bvirt = _i - _0;
-      u[1] = _0 - (_i - bvirt) + (t1 - bvirt);
-      u3 = _j + _i;
-      bvirt = u3 - _j;
-      u[2] = _j - (u3 - bvirt) + (_i - bvirt);
-      u[3] = u3;
-      n1 = -cdy;
-      n0 = -cdytail;
-      s1 = adxtail * n1;
-      c = splitter * adxtail;
-      ahi = c - (c - adxtail);
-      alo = adxtail - ahi;
-      c = splitter * n1;
-      bhi = c - (c - n1);
-      blo = n1 - bhi;
-      s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
-      t1 = adx * n0;
-      c = splitter * adx;
-      ahi = c - (c - adx);
-      alo = adx - ahi;
-      c = splitter * n0;
-      bhi = c - (c - n0);
-      blo = n0 - bhi;
-      t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
-      _i = s0 + t0;
-      bvirt = _i - s0;
-      v[0] = s0 - (_i - bvirt) + (t0 - bvirt);
-      _j = s1 + _i;
-      bvirt = _j - s1;
-      _0 = s1 - (_j - bvirt) + (_i - bvirt);
-      _i = _0 + t1;
-      bvirt = _i - _0;
-      v[1] = _0 - (_i - bvirt) + (t1 - bvirt);
-      u3 = _j + _i;
-      bvirt = u3 - _j;
-      v[2] = _j - (u3 - bvirt) + (_i - bvirt);
-      v[3] = u3;
-      catlen = sum(4, u, 4, v, cat);
-      s1 = cdxtail * adytail;
-      c = splitter * cdxtail;
-      ahi = c - (c - cdxtail);
-      alo = cdxtail - ahi;
-      c = splitter * adytail;
-      bhi = c - (c - adytail);
-      blo = adytail - bhi;
-      s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
-      t1 = adxtail * cdytail;
-      c = splitter * adxtail;
-      ahi = c - (c - adxtail);
-      alo = adxtail - ahi;
-      c = splitter * cdytail;
-      bhi = c - (c - cdytail);
-      blo = cdytail - bhi;
-      t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
-      _i = s0 - t0;
-      bvirt = s0 - _i;
-      catt[0] = s0 - (_i + bvirt) + (bvirt - t0);
-      _j = s1 + _i;
-      bvirt = _j - s1;
-      _0 = s1 - (_j - bvirt) + (_i - bvirt);
-      _i = _0 - t1;
-      bvirt = _0 - _i;
-      catt[1] = _0 - (_i + bvirt) + (bvirt - t1);
-      u3 = _j + _i;
-      bvirt = u3 - _j;
-      catt[2] = _j - (u3 - bvirt) + (_i - bvirt);
-      catt[3] = u3;
-      cattlen = 4;
-    } else {
-      cat[0] = 0;
-      catlen = 1;
-      catt[0] = 0;
-      cattlen = 1;
-    }
-    if (bdxtail !== 0) {
-      const len = scale$2(catlen, cat, bdxtail, _16c);
-      finlen = finadd(finlen, sum(
-        scale$2(bxtcalen, bxtca, bdxtail, _162),
-        _162,
-        scale$2(len, _16c, 2 * bdx, _32),
-        _32,
-        _48
-      ), _48);
-      const len2 = scale$2(cattlen, catt, bdxtail, _82);
-      finlen = finadd(finlen, sum_three(
-        scale$2(len2, _82, 2 * bdx, _162),
-        _162,
-        scale$2(len2, _82, bdxtail, _16b),
-        _16b,
-        scale$2(len, _16c, bdxtail, _32),
-        _32,
-        _32b,
-        _64
-      ), _64);
-      if (cdytail !== 0) {
-        finlen = finadd(finlen, scale$2(scale$2(4, aa, bdxtail, _82), _82, cdytail, _162), _162);
-      }
-      if (adytail !== 0) {
-        finlen = finadd(finlen, scale$2(scale$2(4, cc, -bdxtail, _82), _82, adytail, _162), _162);
-      }
-    }
-    if (bdytail !== 0) {
-      const len = scale$2(catlen, cat, bdytail, _16c);
-      finlen = finadd(finlen, sum(
-        scale$2(bytcalen, bytca, bdytail, _162),
-        _162,
-        scale$2(len, _16c, 2 * bdy, _32),
-        _32,
-        _48
-      ), _48);
-      const len2 = scale$2(cattlen, catt, bdytail, _82);
-      finlen = finadd(finlen, sum_three(
-        scale$2(len2, _82, 2 * bdy, _162),
-        _162,
-        scale$2(len2, _82, bdytail, _16b),
-        _16b,
-        scale$2(len, _16c, bdytail, _32),
-        _32,
-        _32b,
-        _64
-      ), _64);
-    }
-  }
-  if (cdxtail !== 0 || cdytail !== 0) {
-    if (adxtail !== 0 || adytail !== 0 || bdxtail !== 0 || bdytail !== 0) {
-      s1 = adxtail * bdy;
-      c = splitter * adxtail;
-      ahi = c - (c - adxtail);
-      alo = adxtail - ahi;
-      c = splitter * bdy;
-      bhi = c - (c - bdy);
-      blo = bdy - bhi;
-      s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
-      t1 = adx * bdytail;
-      c = splitter * adx;
-      ahi = c - (c - adx);
-      alo = adx - ahi;
-      c = splitter * bdytail;
-      bhi = c - (c - bdytail);
-      blo = bdytail - bhi;
-      t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
-      _i = s0 + t0;
-      bvirt = _i - s0;
-      u[0] = s0 - (_i - bvirt) + (t0 - bvirt);
-      _j = s1 + _i;
-      bvirt = _j - s1;
-      _0 = s1 - (_j - bvirt) + (_i - bvirt);
-      _i = _0 + t1;
-      bvirt = _i - _0;
-      u[1] = _0 - (_i - bvirt) + (t1 - bvirt);
-      u3 = _j + _i;
-      bvirt = u3 - _j;
-      u[2] = _j - (u3 - bvirt) + (_i - bvirt);
-      u[3] = u3;
-      n1 = -ady;
-      n0 = -adytail;
-      s1 = bdxtail * n1;
-      c = splitter * bdxtail;
-      ahi = c - (c - bdxtail);
-      alo = bdxtail - ahi;
-      c = splitter * n1;
-      bhi = c - (c - n1);
-      blo = n1 - bhi;
-      s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
-      t1 = bdx * n0;
-      c = splitter * bdx;
-      ahi = c - (c - bdx);
-      alo = bdx - ahi;
-      c = splitter * n0;
-      bhi = c - (c - n0);
-      blo = n0 - bhi;
-      t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
-      _i = s0 + t0;
-      bvirt = _i - s0;
-      v[0] = s0 - (_i - bvirt) + (t0 - bvirt);
-      _j = s1 + _i;
-      bvirt = _j - s1;
-      _0 = s1 - (_j - bvirt) + (_i - bvirt);
-      _i = _0 + t1;
-      bvirt = _i - _0;
-      v[1] = _0 - (_i - bvirt) + (t1 - bvirt);
-      u3 = _j + _i;
-      bvirt = u3 - _j;
-      v[2] = _j - (u3 - bvirt) + (_i - bvirt);
-      v[3] = u3;
-      abtlen = sum(4, u, 4, v, abt);
-      s1 = adxtail * bdytail;
-      c = splitter * adxtail;
-      ahi = c - (c - adxtail);
-      alo = adxtail - ahi;
-      c = splitter * bdytail;
-      bhi = c - (c - bdytail);
-      blo = bdytail - bhi;
-      s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
-      t1 = bdxtail * adytail;
-      c = splitter * bdxtail;
-      ahi = c - (c - bdxtail);
-      alo = bdxtail - ahi;
-      c = splitter * adytail;
-      bhi = c - (c - adytail);
-      blo = adytail - bhi;
-      t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
-      _i = s0 - t0;
-      bvirt = s0 - _i;
-      abtt[0] = s0 - (_i + bvirt) + (bvirt - t0);
-      _j = s1 + _i;
-      bvirt = _j - s1;
-      _0 = s1 - (_j - bvirt) + (_i - bvirt);
-      _i = _0 - t1;
-      bvirt = _0 - _i;
-      abtt[1] = _0 - (_i + bvirt) + (bvirt - t1);
-      u3 = _j + _i;
-      bvirt = u3 - _j;
-      abtt[2] = _j - (u3 - bvirt) + (_i - bvirt);
-      abtt[3] = u3;
-      abttlen = 4;
-    } else {
-      abt[0] = 0;
-      abtlen = 1;
-      abtt[0] = 0;
-      abttlen = 1;
-    }
-    if (cdxtail !== 0) {
-      const len = scale$2(abtlen, abt, cdxtail, _16c);
-      finlen = finadd(finlen, sum(
-        scale$2(cxtablen, cxtab, cdxtail, _162),
-        _162,
-        scale$2(len, _16c, 2 * cdx, _32),
-        _32,
-        _48
-      ), _48);
-      const len2 = scale$2(abttlen, abtt, cdxtail, _82);
-      finlen = finadd(finlen, sum_three(
-        scale$2(len2, _82, 2 * cdx, _162),
-        _162,
-        scale$2(len2, _82, cdxtail, _16b),
-        _16b,
-        scale$2(len, _16c, cdxtail, _32),
-        _32,
-        _32b,
-        _64
-      ), _64);
-      if (adytail !== 0) {
-        finlen = finadd(finlen, scale$2(scale$2(4, bb, cdxtail, _82), _82, adytail, _162), _162);
-      }
-      if (bdytail !== 0) {
-        finlen = finadd(finlen, scale$2(scale$2(4, aa, -cdxtail, _82), _82, bdytail, _162), _162);
-      }
-    }
-    if (cdytail !== 0) {
-      const len = scale$2(abtlen, abt, cdytail, _16c);
-      finlen = finadd(finlen, sum(
-        scale$2(cytablen, cytab, cdytail, _162),
-        _162,
-        scale$2(len, _16c, 2 * cdy, _32),
-        _32,
-        _48
-      ), _48);
-      const len2 = scale$2(abttlen, abtt, cdytail, _82);
-      finlen = finadd(finlen, sum_three(
-        scale$2(len2, _82, 2 * cdy, _162),
-        _162,
-        scale$2(len2, _82, cdytail, _16b),
-        _16b,
-        scale$2(len, _16c, cdytail, _32),
-        _32,
-        _32b,
-        _64
-      ), _64);
-    }
-  }
-  return fin[finlen - 1];
-}
-function incircle(ax, ay, bx, by, cx, cy, dx, dy) {
-  const adx = ax - dx;
-  const bdx = bx - dx;
-  const cdx = cx - dx;
-  const ady = ay - dy;
-  const bdy = by - dy;
-  const cdy = cy - dy;
-  const bdxcdy = bdx * cdy;
-  const cdxbdy = cdx * bdy;
-  const alift = adx * adx + ady * ady;
-  const cdxady = cdx * ady;
-  const adxcdy = adx * cdy;
-  const blift = bdx * bdx + bdy * bdy;
-  const adxbdy = adx * bdy;
-  const bdxady = bdx * ady;
-  const clift = cdx * cdx + cdy * cdy;
-  const det = alift * (bdxcdy - cdxbdy) + blift * (cdxady - adxcdy) + clift * (adxbdy - bdxady);
-  const permanent = (Math.abs(bdxcdy) + Math.abs(cdxbdy)) * alift + (Math.abs(cdxady) + Math.abs(adxcdy)) * blift + (Math.abs(adxbdy) + Math.abs(bdxady)) * clift;
-  const errbound = iccerrboundA * permanent;
-  if (det > errbound || -det > errbound) {
-    return det;
-  }
-  return incircleadapt(ax, ay, bx, by, cx, cy, dx, dy, permanent);
-}
-const isInBbox = (bbox2, point2) => {
-  return bbox2.ll.x <= point2.x && point2.x <= bbox2.ur.x && bbox2.ll.y <= point2.y && point2.y <= bbox2.ur.y;
-};
-const getBboxOverlap = (b1, b2) => {
-  if (b2.ur.x < b1.ll.x || b1.ur.x < b2.ll.x || b2.ur.y < b1.ll.y || b1.ur.y < b2.ll.y) return null;
-  const lowerX = b1.ll.x < b2.ll.x ? b2.ll.x : b1.ll.x;
-  const upperX = b1.ur.x < b2.ur.x ? b1.ur.x : b2.ur.x;
-  const lowerY = b1.ll.y < b2.ll.y ? b2.ll.y : b1.ll.y;
-  const upperY = b1.ur.y < b2.ur.y ? b1.ur.y : b2.ur.y;
-  return {
-    ll: {
-      x: lowerX,
-      y: lowerY
-    },
-    ur: {
-      x: upperX,
-      y: upperY
-    }
-  };
-};
-let epsilon = Number.EPSILON;
-if (epsilon === void 0) epsilon = Math.pow(2, -52);
-const EPSILON_SQ = epsilon * epsilon;
-const cmp = (a, b) => {
-  if (-epsilon < a && a < epsilon) {
-    if (-epsilon < b && b < epsilon) {
-      return 0;
-    }
-  }
-  const ab2 = a - b;
-  if (ab2 * ab2 < EPSILON_SQ * a * b) {
-    return 0;
-  }
-  return a < b ? -1 : 1;
-};
-class PtRounder {
-  constructor() {
-    this.reset();
-  }
-  reset() {
-    this.xRounder = new CoordRounder();
-    this.yRounder = new CoordRounder();
-  }
-  round(x, y) {
-    return {
-      x: this.xRounder.round(x),
-      y: this.yRounder.round(y)
-    };
-  }
-}
-class CoordRounder {
-  constructor() {
-    this.tree = new Tree();
-    this.round(0);
-  }
-  // Note: this can rounds input values backwards or forwards.
-  //       You might ask, why not restrict this to just rounding
-  //       forwards? Wouldn't that allow left endpoints to always
-  //       remain left endpoints during splitting (never change to
-  //       right). No - it wouldn't, because we snap intersections
-  //       to endpoints (to establish independence from the segment
-  //       angle for t-intersections).
-  round(coord) {
-    const node = this.tree.add(coord);
-    const prevNode = this.tree.prev(node);
-    if (prevNode !== null && cmp(node.key, prevNode.key) === 0) {
-      this.tree.remove(coord);
-      return prevNode.key;
-    }
-    const nextNode = this.tree.next(node);
-    if (nextNode !== null && cmp(node.key, nextNode.key) === 0) {
-      this.tree.remove(coord);
-      return nextNode.key;
-    }
-    return coord;
-  }
-}
-const rounder = new PtRounder();
-const crossProduct = (a, b) => a.x * b.y - a.y * b.x;
-const dotProduct = (a, b) => a.x * b.x + a.y * b.y;
-const compareVectorAngles = (basePt, endPt1, endPt2) => {
-  const res = orient2d(basePt.x, basePt.y, endPt1.x, endPt1.y, endPt2.x, endPt2.y);
-  if (res > 0) return -1;
-  if (res < 0) return 1;
-  return 0;
-};
-const length = (v2) => Math.sqrt(dotProduct(v2, v2));
-const sineOfAngle = (pShared, pBase, pAngle) => {
-  const vBase = {
-    x: pBase.x - pShared.x,
-    y: pBase.y - pShared.y
-  };
-  const vAngle = {
-    x: pAngle.x - pShared.x,
-    y: pAngle.y - pShared.y
-  };
-  return crossProduct(vAngle, vBase) / length(vAngle) / length(vBase);
-};
-const cosineOfAngle = (pShared, pBase, pAngle) => {
-  const vBase = {
-    x: pBase.x - pShared.x,
-    y: pBase.y - pShared.y
-  };
-  const vAngle = {
-    x: pAngle.x - pShared.x,
-    y: pAngle.y - pShared.y
-  };
-  return dotProduct(vAngle, vBase) / length(vAngle) / length(vBase);
-};
-const horizontalIntersection = (pt, v2, y) => {
-  if (v2.y === 0) return null;
-  return {
-    x: pt.x + v2.x / v2.y * (y - pt.y),
-    y
-  };
-};
-const verticalIntersection = (pt, v2, x) => {
-  if (v2.x === 0) return null;
-  return {
-    x,
-    y: pt.y + v2.y / v2.x * (x - pt.x)
-  };
-};
-const intersection$1 = (pt1, v1, pt2, v2) => {
-  if (v1.x === 0) return verticalIntersection(pt2, v2, pt1.x);
-  if (v2.x === 0) return verticalIntersection(pt1, v1, pt2.x);
-  if (v1.y === 0) return horizontalIntersection(pt2, v2, pt1.y);
-  if (v2.y === 0) return horizontalIntersection(pt1, v1, pt2.y);
-  const kross = crossProduct(v1, v2);
-  if (kross == 0) return null;
-  const ve = {
-    x: pt2.x - pt1.x,
-    y: pt2.y - pt1.y
-  };
-  const d1 = crossProduct(ve, v1) / kross;
-  const d2 = crossProduct(ve, v2) / kross;
-  const x1 = pt1.x + d2 * v1.x, x2 = pt2.x + d1 * v2.x;
-  const y1 = pt1.y + d2 * v1.y, y2 = pt2.y + d1 * v2.y;
-  const x = (x1 + x2) / 2;
-  const y = (y1 + y2) / 2;
-  return {
-    x,
-    y
-  };
-};
-class SweepEvent {
-  // for ordering sweep events in the sweep event queue
-  static compare(a, b) {
-    const ptCmp = SweepEvent.comparePoints(a.point, b.point);
-    if (ptCmp !== 0) return ptCmp;
-    if (a.point !== b.point) a.link(b);
-    if (a.isLeft !== b.isLeft) return a.isLeft ? 1 : -1;
-    return Segment.compare(a.segment, b.segment);
-  }
-  // for ordering points in sweep line order
-  static comparePoints(aPt, bPt) {
-    if (aPt.x < bPt.x) return -1;
-    if (aPt.x > bPt.x) return 1;
-    if (aPt.y < bPt.y) return -1;
-    if (aPt.y > bPt.y) return 1;
-    return 0;
-  }
-  // Warning: 'point' input will be modified and re-used (for performance)
-  constructor(point2, isLeft) {
-    if (point2.events === void 0) point2.events = [this];
-    else point2.events.push(this);
-    this.point = point2;
-    this.isLeft = isLeft;
-  }
-  link(other) {
-    if (other.point === this.point) {
-      throw new Error("Tried to link already linked events");
-    }
-    const otherEvents = other.point.events;
-    for (let i = 0, iMax = otherEvents.length; i < iMax; i++) {
-      const evt = otherEvents[i];
-      this.point.events.push(evt);
-      evt.point = this.point;
-    }
-    this.checkForConsuming();
-  }
-  /* Do a pass over our linked events and check to see if any pair
-   * of segments match, and should be consumed. */
-  checkForConsuming() {
-    const numEvents = this.point.events.length;
-    for (let i = 0; i < numEvents; i++) {
-      const evt1 = this.point.events[i];
-      if (evt1.segment.consumedBy !== void 0) continue;
-      for (let j = i + 1; j < numEvents; j++) {
-        const evt2 = this.point.events[j];
-        if (evt2.consumedBy !== void 0) continue;
-        if (evt1.otherSE.point.events !== evt2.otherSE.point.events) continue;
-        evt1.segment.consume(evt2.segment);
-      }
-    }
-  }
-  getAvailableLinkedEvents() {
-    const events = [];
-    for (let i = 0, iMax = this.point.events.length; i < iMax; i++) {
-      const evt = this.point.events[i];
-      if (evt !== this && !evt.segment.ringOut && evt.segment.isInResult()) {
-        events.push(evt);
-      }
-    }
-    return events;
-  }
-  /**
-   * Returns a comparator function for sorting linked events that will
-   * favor the event that will give us the smallest left-side angle.
-   * All ring construction starts as low as possible heading to the right,
-   * so by always turning left as sharp as possible we'll get polygons
-   * without uncessary loops & holes.
-   *
-   * The comparator function has a compute cache such that it avoids
-   * re-computing already-computed values.
-   */
-  getLeftmostComparator(baseEvent) {
-    const cache2 = /* @__PURE__ */ new Map();
-    const fillCache = (linkedEvent) => {
-      const nextEvent = linkedEvent.otherSE;
-      cache2.set(linkedEvent, {
-        sine: sineOfAngle(this.point, baseEvent.point, nextEvent.point),
-        cosine: cosineOfAngle(this.point, baseEvent.point, nextEvent.point)
-      });
-    };
-    return (a, b) => {
-      if (!cache2.has(a)) fillCache(a);
-      if (!cache2.has(b)) fillCache(b);
-      const {
-        sine: asine,
-        cosine: acosine
-      } = cache2.get(a);
-      const {
-        sine: bsine,
-        cosine: bcosine
-      } = cache2.get(b);
-      if (asine >= 0 && bsine >= 0) {
-        if (acosine < bcosine) return 1;
-        if (acosine > bcosine) return -1;
-        return 0;
-      }
-      if (asine < 0 && bsine < 0) {
-        if (acosine < bcosine) return -1;
-        if (acosine > bcosine) return 1;
-        return 0;
-      }
-      if (bsine < asine) return -1;
-      if (bsine > asine) return 1;
-      return 0;
-    };
-  }
-}
-let segmentId = 0;
-class Segment {
-  /* This compare() function is for ordering segments in the sweep
-   * line tree, and does so according to the following criteria:
-   *
-   * Consider the vertical line that lies an infinestimal step to the
-   * right of the right-more of the two left endpoints of the input
-   * segments. Imagine slowly moving a point up from negative infinity
-   * in the increasing y direction. Which of the two segments will that
-   * point intersect first? That segment comes 'before' the other one.
-   *
-   * If neither segment would be intersected by such a line, (if one
-   * or more of the segments are vertical) then the line to be considered
-   * is directly on the right-more of the two left inputs.
-   */
-  static compare(a, b) {
-    const alx = a.leftSE.point.x;
-    const blx = b.leftSE.point.x;
-    const arx = a.rightSE.point.x;
-    const brx = b.rightSE.point.x;
-    if (brx < alx) return 1;
-    if (arx < blx) return -1;
-    const aly = a.leftSE.point.y;
-    const bly = b.leftSE.point.y;
-    const ary = a.rightSE.point.y;
-    const bry = b.rightSE.point.y;
-    if (alx < blx) {
-      if (bly < aly && bly < ary) return 1;
-      if (bly > aly && bly > ary) return -1;
-      const aCmpBLeft = a.comparePoint(b.leftSE.point);
-      if (aCmpBLeft < 0) return 1;
-      if (aCmpBLeft > 0) return -1;
-      const bCmpARight = b.comparePoint(a.rightSE.point);
-      if (bCmpARight !== 0) return bCmpARight;
-      return -1;
-    }
-    if (alx > blx) {
-      if (aly < bly && aly < bry) return -1;
-      if (aly > bly && aly > bry) return 1;
-      const bCmpALeft = b.comparePoint(a.leftSE.point);
-      if (bCmpALeft !== 0) return bCmpALeft;
-      const aCmpBRight = a.comparePoint(b.rightSE.point);
-      if (aCmpBRight < 0) return 1;
-      if (aCmpBRight > 0) return -1;
-      return 1;
-    }
-    if (aly < bly) return -1;
-    if (aly > bly) return 1;
-    if (arx < brx) {
-      const bCmpARight = b.comparePoint(a.rightSE.point);
-      if (bCmpARight !== 0) return bCmpARight;
-    }
-    if (arx > brx) {
-      const aCmpBRight = a.comparePoint(b.rightSE.point);
-      if (aCmpBRight < 0) return 1;
-      if (aCmpBRight > 0) return -1;
-    }
-    if (arx !== brx) {
-      const ay = ary - aly;
-      const ax = arx - alx;
-      const by = bry - bly;
-      const bx = brx - blx;
-      if (ay > ax && by < bx) return 1;
-      if (ay < ax && by > bx) return -1;
-    }
-    if (arx > brx) return 1;
-    if (arx < brx) return -1;
-    if (ary < bry) return -1;
-    if (ary > bry) return 1;
-    if (a.id < b.id) return -1;
-    if (a.id > b.id) return 1;
-    return 0;
-  }
-  /* Warning: a reference to ringWindings input will be stored,
-   *  and possibly will be later modified */
-  constructor(leftSE, rightSE, rings, windings) {
-    this.id = ++segmentId;
-    this.leftSE = leftSE;
-    leftSE.segment = this;
-    leftSE.otherSE = rightSE;
-    this.rightSE = rightSE;
-    rightSE.segment = this;
-    rightSE.otherSE = leftSE;
-    this.rings = rings;
-    this.windings = windings;
-  }
-  static fromRing(pt1, pt2, ring) {
-    let leftPt, rightPt, winding;
-    const cmpPts = SweepEvent.comparePoints(pt1, pt2);
-    if (cmpPts < 0) {
-      leftPt = pt1;
-      rightPt = pt2;
-      winding = 1;
-    } else if (cmpPts > 0) {
-      leftPt = pt2;
-      rightPt = pt1;
-      winding = -1;
-    } else throw new Error(`Tried to create degenerate segment at [${pt1.x}, ${pt1.y}]`);
-    const leftSE = new SweepEvent(leftPt, true);
-    const rightSE = new SweepEvent(rightPt, false);
-    return new Segment(leftSE, rightSE, [ring], [winding]);
-  }
-  /* When a segment is split, the rightSE is replaced with a new sweep event */
-  replaceRightSE(newRightSE) {
-    this.rightSE = newRightSE;
-    this.rightSE.segment = this;
-    this.rightSE.otherSE = this.leftSE;
-    this.leftSE.otherSE = this.rightSE;
-  }
-  bbox() {
-    const y1 = this.leftSE.point.y;
-    const y2 = this.rightSE.point.y;
-    return {
-      ll: {
-        x: this.leftSE.point.x,
-        y: y1 < y2 ? y1 : y2
-      },
-      ur: {
-        x: this.rightSE.point.x,
-        y: y1 > y2 ? y1 : y2
-      }
-    };
-  }
-  /* A vector from the left point to the right */
-  vector() {
-    return {
-      x: this.rightSE.point.x - this.leftSE.point.x,
-      y: this.rightSE.point.y - this.leftSE.point.y
-    };
-  }
-  isAnEndpoint(pt) {
-    return pt.x === this.leftSE.point.x && pt.y === this.leftSE.point.y || pt.x === this.rightSE.point.x && pt.y === this.rightSE.point.y;
-  }
-  /* Compare this segment with a point.
-   *
-   * A point P is considered to be colinear to a segment if there
-   * exists a distance D such that if we travel along the segment
-   * from one * endpoint towards the other a distance D, we find
-   * ourselves at point P.
-   *
-   * Return value indicates:
-   *
-   *   1: point lies above the segment (to the left of vertical)
-   *   0: point is colinear to segment
-   *  -1: point lies below the segment (to the right of vertical)
-   */
-  comparePoint(point2) {
-    if (this.isAnEndpoint(point2)) return 0;
-    const lPt = this.leftSE.point;
-    const rPt = this.rightSE.point;
-    const v2 = this.vector();
-    if (lPt.x === rPt.x) {
-      if (point2.x === lPt.x) return 0;
-      return point2.x < lPt.x ? 1 : -1;
-    }
-    const yDist = (point2.y - lPt.y) / v2.y;
-    const xFromYDist = lPt.x + yDist * v2.x;
-    if (point2.x === xFromYDist) return 0;
-    const xDist = (point2.x - lPt.x) / v2.x;
-    const yFromXDist = lPt.y + xDist * v2.y;
-    if (point2.y === yFromXDist) return 0;
-    return point2.y < yFromXDist ? -1 : 1;
-  }
-  /**
-   * Given another segment, returns the first non-trivial intersection
-   * between the two segments (in terms of sweep line ordering), if it exists.
-   *
-   * A 'non-trivial' intersection is one that will cause one or both of the
-   * segments to be split(). As such, 'trivial' vs. 'non-trivial' intersection:
-   *
-   *   * endpoint of segA with endpoint of segB --> trivial
-   *   * endpoint of segA with point along segB --> non-trivial
-   *   * endpoint of segB with point along segA --> non-trivial
-   *   * point along segA with point along segB --> non-trivial
-   *
-   * If no non-trivial intersection exists, return null
-   * Else, return null.
-   */
-  getIntersection(other) {
-    const tBbox = this.bbox();
-    const oBbox = other.bbox();
-    const bboxOverlap = getBboxOverlap(tBbox, oBbox);
-    if (bboxOverlap === null) return null;
-    const tlp = this.leftSE.point;
-    const trp = this.rightSE.point;
-    const olp = other.leftSE.point;
-    const orp = other.rightSE.point;
-    const touchesOtherLSE = isInBbox(tBbox, olp) && this.comparePoint(olp) === 0;
-    const touchesThisLSE = isInBbox(oBbox, tlp) && other.comparePoint(tlp) === 0;
-    const touchesOtherRSE = isInBbox(tBbox, orp) && this.comparePoint(orp) === 0;
-    const touchesThisRSE = isInBbox(oBbox, trp) && other.comparePoint(trp) === 0;
-    if (touchesThisLSE && touchesOtherLSE) {
-      if (touchesThisRSE && !touchesOtherRSE) return trp;
-      if (!touchesThisRSE && touchesOtherRSE) return orp;
-      return null;
-    }
-    if (touchesThisLSE) {
-      if (touchesOtherRSE) {
-        if (tlp.x === orp.x && tlp.y === orp.y) return null;
-      }
-      return tlp;
-    }
-    if (touchesOtherLSE) {
-      if (touchesThisRSE) {
-        if (trp.x === olp.x && trp.y === olp.y) return null;
-      }
-      return olp;
-    }
-    if (touchesThisRSE && touchesOtherRSE) return null;
-    if (touchesThisRSE) return trp;
-    if (touchesOtherRSE) return orp;
-    const pt = intersection$1(tlp, this.vector(), olp, other.vector());
-    if (pt === null) return null;
-    if (!isInBbox(bboxOverlap, pt)) return null;
-    return rounder.round(pt.x, pt.y);
-  }
-  /**
-   * Split the given segment into multiple segments on the given points.
-   *  * Each existing segment will retain its leftSE and a new rightSE will be
-   *    generated for it.
-   *  * A new segment will be generated which will adopt the original segment's
-   *    rightSE, and a new leftSE will be generated for it.
-   *  * If there are more than two points given to split on, new segments
-   *    in the middle will be generated with new leftSE and rightSE's.
-   *  * An array of the newly generated SweepEvents will be returned.
-   *
-   * Warning: input array of points is modified
-   */
-  split(point2) {
-    const newEvents = [];
-    const alreadyLinked = point2.events !== void 0;
-    const newLeftSE = new SweepEvent(point2, true);
-    const newRightSE = new SweepEvent(point2, false);
-    const oldRightSE = this.rightSE;
-    this.replaceRightSE(newRightSE);
-    newEvents.push(newRightSE);
-    newEvents.push(newLeftSE);
-    const newSeg = new Segment(newLeftSE, oldRightSE, this.rings.slice(), this.windings.slice());
-    if (SweepEvent.comparePoints(newSeg.leftSE.point, newSeg.rightSE.point) > 0) {
-      newSeg.swapEvents();
-    }
-    if (SweepEvent.comparePoints(this.leftSE.point, this.rightSE.point) > 0) {
-      this.swapEvents();
-    }
-    if (alreadyLinked) {
-      newLeftSE.checkForConsuming();
-      newRightSE.checkForConsuming();
-    }
-    return newEvents;
-  }
-  /* Swap which event is left and right */
-  swapEvents() {
-    const tmpEvt = this.rightSE;
-    this.rightSE = this.leftSE;
-    this.leftSE = tmpEvt;
-    this.leftSE.isLeft = true;
-    this.rightSE.isLeft = false;
-    for (let i = 0, iMax = this.windings.length; i < iMax; i++) {
-      this.windings[i] *= -1;
-    }
-  }
-  /* Consume another segment. We take their rings under our wing
-   * and mark them as consumed. Use for perfectly overlapping segments */
-  consume(other) {
-    let consumer = this;
-    let consumee = other;
-    while (consumer.consumedBy) consumer = consumer.consumedBy;
-    while (consumee.consumedBy) consumee = consumee.consumedBy;
-    const cmp2 = Segment.compare(consumer, consumee);
-    if (cmp2 === 0) return;
-    if (cmp2 > 0) {
-      const tmp = consumer;
-      consumer = consumee;
-      consumee = tmp;
-    }
-    if (consumer.prev === consumee) {
-      const tmp = consumer;
-      consumer = consumee;
-      consumee = tmp;
-    }
-    for (let i = 0, iMax = consumee.rings.length; i < iMax; i++) {
-      const ring = consumee.rings[i];
-      const winding = consumee.windings[i];
-      const index2 = consumer.rings.indexOf(ring);
-      if (index2 === -1) {
-        consumer.rings.push(ring);
-        consumer.windings.push(winding);
-      } else consumer.windings[index2] += winding;
-    }
-    consumee.rings = null;
-    consumee.windings = null;
-    consumee.consumedBy = consumer;
-    consumee.leftSE.consumedBy = consumer.leftSE;
-    consumee.rightSE.consumedBy = consumer.rightSE;
-  }
-  /* The first segment previous segment chain that is in the result */
-  prevInResult() {
-    if (this._prevInResult !== void 0) return this._prevInResult;
-    if (!this.prev) this._prevInResult = null;
-    else if (this.prev.isInResult()) this._prevInResult = this.prev;
-    else this._prevInResult = this.prev.prevInResult();
-    return this._prevInResult;
-  }
-  beforeState() {
-    if (this._beforeState !== void 0) return this._beforeState;
-    if (!this.prev) this._beforeState = {
-      rings: [],
-      windings: [],
-      multiPolys: []
-    };
-    else {
-      const seg = this.prev.consumedBy || this.prev;
-      this._beforeState = seg.afterState();
-    }
-    return this._beforeState;
-  }
-  afterState() {
-    if (this._afterState !== void 0) return this._afterState;
-    const beforeState = this.beforeState();
-    this._afterState = {
-      rings: beforeState.rings.slice(0),
-      windings: beforeState.windings.slice(0),
-      multiPolys: []
-    };
-    const ringsAfter = this._afterState.rings;
-    const windingsAfter = this._afterState.windings;
-    const mpsAfter = this._afterState.multiPolys;
-    for (let i = 0, iMax = this.rings.length; i < iMax; i++) {
-      const ring = this.rings[i];
-      const winding = this.windings[i];
-      const index2 = ringsAfter.indexOf(ring);
-      if (index2 === -1) {
-        ringsAfter.push(ring);
-        windingsAfter.push(winding);
-      } else windingsAfter[index2] += winding;
-    }
-    const polysAfter = [];
-    const polysExclude = [];
-    for (let i = 0, iMax = ringsAfter.length; i < iMax; i++) {
-      if (windingsAfter[i] === 0) continue;
-      const ring = ringsAfter[i];
-      const poly = ring.poly;
-      if (polysExclude.indexOf(poly) !== -1) continue;
-      if (ring.isExterior) polysAfter.push(poly);
-      else {
-        if (polysExclude.indexOf(poly) === -1) polysExclude.push(poly);
-        const index2 = polysAfter.indexOf(ring.poly);
-        if (index2 !== -1) polysAfter.splice(index2, 1);
-      }
-    }
-    for (let i = 0, iMax = polysAfter.length; i < iMax; i++) {
-      const mp = polysAfter[i].multiPoly;
-      if (mpsAfter.indexOf(mp) === -1) mpsAfter.push(mp);
-    }
-    return this._afterState;
-  }
-  /* Is this segment part of the final result? */
-  isInResult() {
-    if (this.consumedBy) return false;
-    if (this._isInResult !== void 0) return this._isInResult;
-    const mpsBefore = this.beforeState().multiPolys;
-    const mpsAfter = this.afterState().multiPolys;
-    switch (operation.type) {
-      case "union": {
-        const noBefores = mpsBefore.length === 0;
-        const noAfters = mpsAfter.length === 0;
-        this._isInResult = noBefores !== noAfters;
-        break;
-      }
-      case "intersection": {
-        let least;
-        let most;
-        if (mpsBefore.length < mpsAfter.length) {
-          least = mpsBefore.length;
-          most = mpsAfter.length;
-        } else {
-          least = mpsAfter.length;
-          most = mpsBefore.length;
-        }
-        this._isInResult = most === operation.numMultiPolys && least < most;
-        break;
-      }
-      case "xor": {
-        const diff = Math.abs(mpsBefore.length - mpsAfter.length);
-        this._isInResult = diff % 2 === 1;
-        break;
-      }
-      case "difference": {
-        const isJustSubject = (mps) => mps.length === 1 && mps[0].isSubject;
-        this._isInResult = isJustSubject(mpsBefore) !== isJustSubject(mpsAfter);
-        break;
-      }
-      default:
-        throw new Error(`Unrecognized operation type found ${operation.type}`);
-    }
-    return this._isInResult;
-  }
-}
-class RingIn {
-  constructor(geomRing, poly, isExterior) {
-    if (!Array.isArray(geomRing) || geomRing.length === 0) {
-      throw new Error("Input geometry is not a valid Polygon or MultiPolygon");
-    }
-    this.poly = poly;
-    this.isExterior = isExterior;
-    this.segments = [];
-    if (typeof geomRing[0][0] !== "number" || typeof geomRing[0][1] !== "number") {
-      throw new Error("Input geometry is not a valid Polygon or MultiPolygon");
-    }
-    const firstPoint = rounder.round(geomRing[0][0], geomRing[0][1]);
-    this.bbox = {
-      ll: {
-        x: firstPoint.x,
-        y: firstPoint.y
-      },
-      ur: {
-        x: firstPoint.x,
-        y: firstPoint.y
-      }
-    };
-    let prevPoint = firstPoint;
-    for (let i = 1, iMax = geomRing.length; i < iMax; i++) {
-      if (typeof geomRing[i][0] !== "number" || typeof geomRing[i][1] !== "number") {
-        throw new Error("Input geometry is not a valid Polygon or MultiPolygon");
-      }
-      let point2 = rounder.round(geomRing[i][0], geomRing[i][1]);
-      if (point2.x === prevPoint.x && point2.y === prevPoint.y) continue;
-      this.segments.push(Segment.fromRing(prevPoint, point2, this));
-      if (point2.x < this.bbox.ll.x) this.bbox.ll.x = point2.x;
-      if (point2.y < this.bbox.ll.y) this.bbox.ll.y = point2.y;
-      if (point2.x > this.bbox.ur.x) this.bbox.ur.x = point2.x;
-      if (point2.y > this.bbox.ur.y) this.bbox.ur.y = point2.y;
-      prevPoint = point2;
-    }
-    if (firstPoint.x !== prevPoint.x || firstPoint.y !== prevPoint.y) {
-      this.segments.push(Segment.fromRing(prevPoint, firstPoint, this));
-    }
-  }
-  getSweepEvents() {
-    const sweepEvents = [];
-    for (let i = 0, iMax = this.segments.length; i < iMax; i++) {
-      const segment = this.segments[i];
-      sweepEvents.push(segment.leftSE);
-      sweepEvents.push(segment.rightSE);
-    }
-    return sweepEvents;
-  }
-}
-class PolyIn {
-  constructor(geomPoly, multiPoly) {
-    if (!Array.isArray(geomPoly)) {
-      throw new Error("Input geometry is not a valid Polygon or MultiPolygon");
-    }
-    this.exteriorRing = new RingIn(geomPoly[0], this, true);
-    this.bbox = {
-      ll: {
-        x: this.exteriorRing.bbox.ll.x,
-        y: this.exteriorRing.bbox.ll.y
-      },
-      ur: {
-        x: this.exteriorRing.bbox.ur.x,
-        y: this.exteriorRing.bbox.ur.y
-      }
-    };
-    this.interiorRings = [];
-    for (let i = 1, iMax = geomPoly.length; i < iMax; i++) {
-      const ring = new RingIn(geomPoly[i], this, false);
-      if (ring.bbox.ll.x < this.bbox.ll.x) this.bbox.ll.x = ring.bbox.ll.x;
-      if (ring.bbox.ll.y < this.bbox.ll.y) this.bbox.ll.y = ring.bbox.ll.y;
-      if (ring.bbox.ur.x > this.bbox.ur.x) this.bbox.ur.x = ring.bbox.ur.x;
-      if (ring.bbox.ur.y > this.bbox.ur.y) this.bbox.ur.y = ring.bbox.ur.y;
-      this.interiorRings.push(ring);
-    }
-    this.multiPoly = multiPoly;
-  }
-  getSweepEvents() {
-    const sweepEvents = this.exteriorRing.getSweepEvents();
-    for (let i = 0, iMax = this.interiorRings.length; i < iMax; i++) {
-      const ringSweepEvents = this.interiorRings[i].getSweepEvents();
-      for (let j = 0, jMax = ringSweepEvents.length; j < jMax; j++) {
-        sweepEvents.push(ringSweepEvents[j]);
-      }
-    }
-    return sweepEvents;
-  }
-}
-class MultiPolyIn {
-  constructor(geom, isSubject) {
-    if (!Array.isArray(geom)) {
-      throw new Error("Input geometry is not a valid Polygon or MultiPolygon");
-    }
-    try {
-      if (typeof geom[0][0][0] === "number") geom = [geom];
-    } catch (ex) {
-    }
-    this.polys = [];
-    this.bbox = {
-      ll: {
-        x: Number.POSITIVE_INFINITY,
-        y: Number.POSITIVE_INFINITY
-      },
-      ur: {
-        x: Number.NEGATIVE_INFINITY,
-        y: Number.NEGATIVE_INFINITY
-      }
-    };
-    for (let i = 0, iMax = geom.length; i < iMax; i++) {
-      const poly = new PolyIn(geom[i], this);
-      if (poly.bbox.ll.x < this.bbox.ll.x) this.bbox.ll.x = poly.bbox.ll.x;
-      if (poly.bbox.ll.y < this.bbox.ll.y) this.bbox.ll.y = poly.bbox.ll.y;
-      if (poly.bbox.ur.x > this.bbox.ur.x) this.bbox.ur.x = poly.bbox.ur.x;
-      if (poly.bbox.ur.y > this.bbox.ur.y) this.bbox.ur.y = poly.bbox.ur.y;
-      this.polys.push(poly);
-    }
-    this.isSubject = isSubject;
-  }
-  getSweepEvents() {
-    const sweepEvents = [];
-    for (let i = 0, iMax = this.polys.length; i < iMax; i++) {
-      const polySweepEvents = this.polys[i].getSweepEvents();
-      for (let j = 0, jMax = polySweepEvents.length; j < jMax; j++) {
-        sweepEvents.push(polySweepEvents[j]);
-      }
-    }
-    return sweepEvents;
-  }
-}
-class RingOut {
-  /* Given the segments from the sweep line pass, compute & return a series
-   * of closed rings from all the segments marked to be part of the result */
-  static factory(allSegments) {
-    const ringsOut = [];
-    for (let i = 0, iMax = allSegments.length; i < iMax; i++) {
-      const segment = allSegments[i];
-      if (!segment.isInResult() || segment.ringOut) continue;
-      let prevEvent = null;
-      let event = segment.leftSE;
-      let nextEvent = segment.rightSE;
-      const events = [event];
-      const startingPoint = event.point;
-      const intersectionLEs = [];
-      while (true) {
-        prevEvent = event;
-        event = nextEvent;
-        events.push(event);
-        if (event.point === startingPoint) break;
-        while (true) {
-          const availableLEs = event.getAvailableLinkedEvents();
-          if (availableLEs.length === 0) {
-            const firstPt = events[0].point;
-            const lastPt = events[events.length - 1].point;
-            throw new Error(`Unable to complete output ring starting at [${firstPt.x}, ${firstPt.y}]. Last matching segment found ends at [${lastPt.x}, ${lastPt.y}].`);
-          }
-          if (availableLEs.length === 1) {
-            nextEvent = availableLEs[0].otherSE;
-            break;
-          }
-          let indexLE = null;
-          for (let j = 0, jMax = intersectionLEs.length; j < jMax; j++) {
-            if (intersectionLEs[j].point === event.point) {
-              indexLE = j;
-              break;
-            }
-          }
-          if (indexLE !== null) {
-            const intersectionLE = intersectionLEs.splice(indexLE)[0];
-            const ringEvents = events.splice(intersectionLE.index);
-            ringEvents.unshift(ringEvents[0].otherSE);
-            ringsOut.push(new RingOut(ringEvents.reverse()));
-            continue;
-          }
-          intersectionLEs.push({
-            index: events.length,
-            point: event.point
-          });
-          const comparator = event.getLeftmostComparator(prevEvent);
-          nextEvent = availableLEs.sort(comparator)[0].otherSE;
-          break;
-        }
-      }
-      ringsOut.push(new RingOut(events));
-    }
-    return ringsOut;
-  }
-  constructor(events) {
-    this.events = events;
-    for (let i = 0, iMax = events.length; i < iMax; i++) {
-      events[i].segment.ringOut = this;
-    }
-    this.poly = null;
-  }
-  getGeom() {
-    let prevPt = this.events[0].point;
-    const points2 = [prevPt];
-    for (let i = 1, iMax = this.events.length - 1; i < iMax; i++) {
-      const pt2 = this.events[i].point;
-      const nextPt2 = this.events[i + 1].point;
-      if (compareVectorAngles(pt2, prevPt, nextPt2) === 0) continue;
-      points2.push(pt2);
-      prevPt = pt2;
-    }
-    if (points2.length === 1) return null;
-    const pt = points2[0];
-    const nextPt = points2[1];
-    if (compareVectorAngles(pt, prevPt, nextPt) === 0) points2.shift();
-    points2.push(points2[0]);
-    const step = this.isExteriorRing() ? 1 : -1;
-    const iStart = this.isExteriorRing() ? 0 : points2.length - 1;
-    const iEnd = this.isExteriorRing() ? points2.length : -1;
-    const orderedPoints = [];
-    for (let i = iStart; i != iEnd; i += step) orderedPoints.push([points2[i].x, points2[i].y]);
-    return orderedPoints;
-  }
-  isExteriorRing() {
-    if (this._isExteriorRing === void 0) {
-      const enclosing = this.enclosingRing();
-      this._isExteriorRing = enclosing ? !enclosing.isExteriorRing() : true;
-    }
-    return this._isExteriorRing;
-  }
-  enclosingRing() {
-    if (this._enclosingRing === void 0) {
-      this._enclosingRing = this._calcEnclosingRing();
-    }
-    return this._enclosingRing;
-  }
-  /* Returns the ring that encloses this one, if any */
-  _calcEnclosingRing() {
-    let leftMostEvt = this.events[0];
-    for (let i = 1, iMax = this.events.length; i < iMax; i++) {
-      const evt = this.events[i];
-      if (SweepEvent.compare(leftMostEvt, evt) > 0) leftMostEvt = evt;
-    }
-    let prevSeg = leftMostEvt.segment.prevInResult();
-    let prevPrevSeg = prevSeg ? prevSeg.prevInResult() : null;
-    while (true) {
-      if (!prevSeg) return null;
-      if (!prevPrevSeg) return prevSeg.ringOut;
-      if (prevPrevSeg.ringOut !== prevSeg.ringOut) {
-        if (prevPrevSeg.ringOut.enclosingRing() !== prevSeg.ringOut) {
-          return prevSeg.ringOut;
-        } else return prevSeg.ringOut.enclosingRing();
-      }
-      prevSeg = prevPrevSeg.prevInResult();
-      prevPrevSeg = prevSeg ? prevSeg.prevInResult() : null;
-    }
-  }
-}
-class PolyOut {
-  constructor(exteriorRing) {
-    this.exteriorRing = exteriorRing;
-    exteriorRing.poly = this;
-    this.interiorRings = [];
-  }
-  addInterior(ring) {
-    this.interiorRings.push(ring);
-    ring.poly = this;
-  }
-  getGeom() {
-    const geom = [this.exteriorRing.getGeom()];
-    if (geom[0] === null) return null;
-    for (let i = 0, iMax = this.interiorRings.length; i < iMax; i++) {
-      const ringGeom = this.interiorRings[i].getGeom();
-      if (ringGeom === null) continue;
-      geom.push(ringGeom);
-    }
-    return geom;
-  }
-}
-class MultiPolyOut {
-  constructor(rings) {
-    this.rings = rings;
-    this.polys = this._composePolys(rings);
-  }
-  getGeom() {
-    const geom = [];
-    for (let i = 0, iMax = this.polys.length; i < iMax; i++) {
-      const polyGeom = this.polys[i].getGeom();
-      if (polyGeom === null) continue;
-      geom.push(polyGeom);
-    }
-    return geom;
-  }
-  _composePolys(rings) {
-    const polys = [];
-    for (let i = 0, iMax = rings.length; i < iMax; i++) {
-      const ring = rings[i];
-      if (ring.poly) continue;
-      if (ring.isExteriorRing()) polys.push(new PolyOut(ring));
-      else {
-        const enclosingRing = ring.enclosingRing();
-        if (!enclosingRing.poly) polys.push(new PolyOut(enclosingRing));
-        enclosingRing.poly.addInterior(ring);
-      }
-    }
-    return polys;
-  }
-}
-class SweepLine {
-  constructor(queue) {
-    let comparator = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : Segment.compare;
-    this.queue = queue;
-    this.tree = new Tree(comparator);
-    this.segments = [];
-  }
-  process(event) {
-    const segment = event.segment;
-    const newEvents = [];
-    if (event.consumedBy) {
-      if (event.isLeft) this.queue.remove(event.otherSE);
-      else this.tree.remove(segment);
-      return newEvents;
-    }
-    const node = event.isLeft ? this.tree.add(segment) : this.tree.find(segment);
-    if (!node) throw new Error(`Unable to find segment #${segment.id} [${segment.leftSE.point.x}, ${segment.leftSE.point.y}] -> [${segment.rightSE.point.x}, ${segment.rightSE.point.y}] in SweepLine tree.`);
-    let prevNode = node;
-    let nextNode = node;
-    let prevSeg = void 0;
-    let nextSeg = void 0;
-    while (prevSeg === void 0) {
-      prevNode = this.tree.prev(prevNode);
-      if (prevNode === null) prevSeg = null;
-      else if (prevNode.key.consumedBy === void 0) prevSeg = prevNode.key;
-    }
-    while (nextSeg === void 0) {
-      nextNode = this.tree.next(nextNode);
-      if (nextNode === null) nextSeg = null;
-      else if (nextNode.key.consumedBy === void 0) nextSeg = nextNode.key;
-    }
-    if (event.isLeft) {
-      let prevMySplitter = null;
-      if (prevSeg) {
-        const prevInter = prevSeg.getIntersection(segment);
-        if (prevInter !== null) {
-          if (!segment.isAnEndpoint(prevInter)) prevMySplitter = prevInter;
-          if (!prevSeg.isAnEndpoint(prevInter)) {
-            const newEventsFromSplit = this._splitSafely(prevSeg, prevInter);
-            for (let i = 0, iMax = newEventsFromSplit.length; i < iMax; i++) {
-              newEvents.push(newEventsFromSplit[i]);
-            }
-          }
-        }
-      }
-      let nextMySplitter = null;
-      if (nextSeg) {
-        const nextInter = nextSeg.getIntersection(segment);
-        if (nextInter !== null) {
-          if (!segment.isAnEndpoint(nextInter)) nextMySplitter = nextInter;
-          if (!nextSeg.isAnEndpoint(nextInter)) {
-            const newEventsFromSplit = this._splitSafely(nextSeg, nextInter);
-            for (let i = 0, iMax = newEventsFromSplit.length; i < iMax; i++) {
-              newEvents.push(newEventsFromSplit[i]);
-            }
-          }
-        }
-      }
-      if (prevMySplitter !== null || nextMySplitter !== null) {
-        let mySplitter = null;
-        if (prevMySplitter === null) mySplitter = nextMySplitter;
-        else if (nextMySplitter === null) mySplitter = prevMySplitter;
-        else {
-          const cmpSplitters = SweepEvent.comparePoints(prevMySplitter, nextMySplitter);
-          mySplitter = cmpSplitters <= 0 ? prevMySplitter : nextMySplitter;
-        }
-        this.queue.remove(segment.rightSE);
-        newEvents.push(segment.rightSE);
-        const newEventsFromSplit = segment.split(mySplitter);
-        for (let i = 0, iMax = newEventsFromSplit.length; i < iMax; i++) {
-          newEvents.push(newEventsFromSplit[i]);
-        }
-      }
-      if (newEvents.length > 0) {
-        this.tree.remove(segment);
-        newEvents.push(event);
-      } else {
-        this.segments.push(segment);
-        segment.prev = prevSeg;
-      }
-    } else {
-      if (prevSeg && nextSeg) {
-        const inter = prevSeg.getIntersection(nextSeg);
-        if (inter !== null) {
-          if (!prevSeg.isAnEndpoint(inter)) {
-            const newEventsFromSplit = this._splitSafely(prevSeg, inter);
-            for (let i = 0, iMax = newEventsFromSplit.length; i < iMax; i++) {
-              newEvents.push(newEventsFromSplit[i]);
-            }
-          }
-          if (!nextSeg.isAnEndpoint(inter)) {
-            const newEventsFromSplit = this._splitSafely(nextSeg, inter);
-            for (let i = 0, iMax = newEventsFromSplit.length; i < iMax; i++) {
-              newEvents.push(newEventsFromSplit[i]);
-            }
-          }
-        }
-      }
-      this.tree.remove(segment);
-    }
-    return newEvents;
-  }
-  /* Safely split a segment that is currently in the datastructures
-   * IE - a segment other than the one that is currently being processed. */
-  _splitSafely(seg, pt) {
-    this.tree.remove(seg);
-    const rightSE = seg.rightSE;
-    this.queue.remove(rightSE);
-    const newEvents = seg.split(pt);
-    newEvents.push(rightSE);
-    if (seg.consumedBy === void 0) this.tree.add(seg);
-    return newEvents;
-  }
-}
-const POLYGON_CLIPPING_MAX_QUEUE_SIZE = typeof process !== "undefined" && process.env.POLYGON_CLIPPING_MAX_QUEUE_SIZE || 1e6;
-const POLYGON_CLIPPING_MAX_SWEEPLINE_SEGMENTS = typeof process !== "undefined" && process.env.POLYGON_CLIPPING_MAX_SWEEPLINE_SEGMENTS || 1e6;
-class Operation {
-  run(type, geom, moreGeoms) {
-    operation.type = type;
-    rounder.reset();
-    const multipolys = [new MultiPolyIn(geom, true)];
-    for (let i = 0, iMax = moreGeoms.length; i < iMax; i++) {
-      multipolys.push(new MultiPolyIn(moreGeoms[i], false));
-    }
-    operation.numMultiPolys = multipolys.length;
-    if (operation.type === "difference") {
-      const subject = multipolys[0];
-      let i = 1;
-      while (i < multipolys.length) {
-        if (getBboxOverlap(multipolys[i].bbox, subject.bbox) !== null) i++;
-        else multipolys.splice(i, 1);
-      }
-    }
-    if (operation.type === "intersection") {
-      for (let i = 0, iMax = multipolys.length; i < iMax; i++) {
-        const mpA = multipolys[i];
-        for (let j = i + 1, jMax = multipolys.length; j < jMax; j++) {
-          if (getBboxOverlap(mpA.bbox, multipolys[j].bbox) === null) return [];
-        }
-      }
-    }
-    const queue = new Tree(SweepEvent.compare);
-    for (let i = 0, iMax = multipolys.length; i < iMax; i++) {
-      const sweepEvents = multipolys[i].getSweepEvents();
-      for (let j = 0, jMax = sweepEvents.length; j < jMax; j++) {
-        queue.insert(sweepEvents[j]);
-        if (queue.size > POLYGON_CLIPPING_MAX_QUEUE_SIZE) {
-          throw new Error("Infinite loop when putting segment endpoints in a priority queue (queue size too big).");
-        }
-      }
-    }
-    const sweepLine = new SweepLine(queue);
-    let prevQueueSize = queue.size;
-    let node = queue.pop();
-    while (node) {
-      const evt = node.key;
-      if (queue.size === prevQueueSize) {
-        const seg = evt.segment;
-        throw new Error(`Unable to pop() ${evt.isLeft ? "left" : "right"} SweepEvent [${evt.point.x}, ${evt.point.y}] from segment #${seg.id} [${seg.leftSE.point.x}, ${seg.leftSE.point.y}] -> [${seg.rightSE.point.x}, ${seg.rightSE.point.y}] from queue.`);
-      }
-      if (queue.size > POLYGON_CLIPPING_MAX_QUEUE_SIZE) {
-        throw new Error("Infinite loop when passing sweep line over endpoints (queue size too big).");
-      }
-      if (sweepLine.segments.length > POLYGON_CLIPPING_MAX_SWEEPLINE_SEGMENTS) {
-        throw new Error("Infinite loop when passing sweep line over endpoints (too many sweep line segments).");
-      }
-      const newEvents = sweepLine.process(evt);
-      for (let i = 0, iMax = newEvents.length; i < iMax; i++) {
-        const evt2 = newEvents[i];
-        if (evt2.consumedBy === void 0) queue.insert(evt2);
-      }
-      prevQueueSize = queue.size;
-      node = queue.pop();
-    }
-    rounder.reset();
-    const ringsOut = RingOut.factory(sweepLine.segments);
-    const result = new MultiPolyOut(ringsOut);
-    return result.getGeom();
-  }
-}
-const operation = new Operation();
-const union$1 = function(geom) {
-  for (var _len = arguments.length, moreGeoms = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-    moreGeoms[_key - 1] = arguments[_key];
-  }
-  return operation.run("union", geom, moreGeoms);
-};
-const intersection = function(geom) {
-  for (var _len2 = arguments.length, moreGeoms = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
-    moreGeoms[_key2 - 1] = arguments[_key2];
-  }
-  return operation.run("intersection", geom, moreGeoms);
-};
-const xor = function(geom) {
-  for (var _len3 = arguments.length, moreGeoms = new Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
-    moreGeoms[_key3 - 1] = arguments[_key3];
-  }
-  return operation.run("xor", geom, moreGeoms);
-};
-const difference$1 = function(subjectGeom) {
-  for (var _len4 = arguments.length, clippingGeoms = new Array(_len4 > 1 ? _len4 - 1 : 0), _key4 = 1; _key4 < _len4; _key4++) {
-    clippingGeoms[_key4 - 1] = arguments[_key4];
-  }
-  return operation.run("difference", subjectGeom, clippingGeoms);
-};
-var index = {
-  union: union$1,
-  intersection,
-  xor,
-  difference: difference$1
-};
-function difference(polygon1, polygon2) {
-  var geom1 = getGeom(polygon1);
-  var geom2 = getGeom(polygon2);
-  var properties = polygon1.properties || {};
-  var differenced = index.difference(
-    geom1.coordinates,
-    geom2.coordinates
-  );
-  if (differenced.length === 0) return null;
-  if (differenced.length === 1) return polygon(differenced[0], properties);
-  return multiPolygon(differenced, properties);
-}
-function union(poly1, poly2, options) {
-  if (options === void 0) {
-    options = {};
-  }
-  var geom1 = getGeom(poly1);
-  var geom2 = getGeom(poly2);
-  var unioned = index.union(geom1.coordinates, geom2.coordinates);
-  if (unioned.length === 0)
-    return null;
-  if (unioned.length === 1)
-    return polygon(unioned[0], options.properties);
-  else
-    return multiPolygon(unioned, options.properties);
-}
-function intersect(poly1, poly2, options) {
-  if (options === void 0) {
-    options = {};
-  }
-  var geom1 = getGeom(poly1);
-  var geom2 = getGeom(poly2);
-  var intersection2 = index.intersection(geom1.coordinates, geom2.coordinates);
-  if (intersection2.length === 0)
-    return null;
-  if (intersection2.length === 1)
-    return polygon(intersection2[0], options.properties);
-  return multiPolygon(intersection2, options.properties);
 }
 function setCustomFunction(Base) {
   class Mixin extends Base {
@@ -8377,6 +5291,7 @@ function setCustomFunction(Base) {
       __publicField(this, "icon");
       __publicField(this, "selectedIcon");
     }
+    // static isMapbox_ = false; // Removed - Mapbox support discontinued
     initialize(options) {
       var _a;
       options = normalizeArg(options);
@@ -8401,7 +5316,7 @@ function setCustomFunction(Base) {
         );
         mercs.push(mercs[0]);
         this.envelope = polygon([mercs]);
-        this.centroid = (_a = centroid$1(this.envelope).geometry) == null ? void 0 : _a.coordinates;
+        this.centroid = (_a = turf_centroid_default(this.envelope).geometry) == null ? void 0 : _a.coordinates;
       }
       for (let i = 0; i < META_KEYS.length; i++) {
         const key = META_KEYS[i];
@@ -8429,7 +5344,10 @@ function setCustomFunction(Base) {
       });
       const poisWait = this.resolvePois(options.pois);
       this.initialWait = Promise.all([poisWait, thumbWait]);
-      setupTileLoadFunction(this);
+      if (this.getTileLoadFunction && typeof this.getFormat !== "function" && this.getTileLoadFunction() !== null) {
+        console.log("Setting up tile load function for:", this.constructor.name);
+        setupTileLoadFunction(this);
+      }
     }
     static isBasemap() {
       return this.isBasemap_;
@@ -8447,7 +5365,7 @@ function setCustomFunction(Base) {
       return this.constructor.isWmts();
     }
     isMapbox() {
-      return this.constructor.isMapbox();
+      return false;
     }
     getCacheEnable() {
       return !!this.weiwudi;
@@ -8608,11 +5526,11 @@ function setCustomFunction(Base) {
         if (!this.insideCheckSysCoord(xys[0][0])) return false;
         const news = xys[0].slice(1);
         pos.rad = news.reduce(
-          (prev, curr, index2) => {
+          (prev, curr, index) => {
             const ret = prev + Math.sqrt(
               Math.pow(curr[0] - pos.xy[0], 2) + Math.pow(curr[1] - pos.xy[1], 2)
             );
-            return index2 === 3 ? ret / 4 : ret;
+            return index === 3 ? ret / 4 : ret;
           },
           0
         );
@@ -8770,11 +5688,11 @@ function setCustomFunction(Base) {
       }
       const radius = this.zoom2Radius(size, zoom);
       const crossDelta = this.rotateMatrix(MERC_CROSSMATRIX, rotate2);
-      const cross2 = crossDelta.map((xy) => [
+      const cross = crossDelta.map((xy) => [
         xy[0] * radius + center[0],
         xy[1] * radius + center[1]
       ]);
-      return [cross2, size];
+      return [cross, size];
     }
     // 地図座標5地点情報から地図サイズ情報（中心座標、サイズ、回転）を得る
     sysCoords2Viewpoint(sysCoords) {
@@ -8843,7 +5761,6 @@ function setCustomFunction(Base) {
   }
   __publicField(Mixin, "isBasemap_", false);
   __publicField(Mixin, "isWmts_", true);
-  __publicField(Mixin, "isMapbox_", false);
   return Mixin;
 }
 function setCustomFunctionBase(Base) {
@@ -8857,10 +5774,10 @@ function setCustomFunctionBase(Base) {
     }
     modulateXyInside(xy) {
       if (!this.centroid) return xy;
-      const expandLine = lineString([xy, this.centroid]);
-      const intersect2 = lineIntersect(this.envelope, expandLine);
-      if (intersect2.features.length > 0 && intersect2.features[0].geometry) {
-        return intersect2.features[0].geometry.coordinates;
+      const expandLine = lineString$1([xy, this.centroid]);
+      const intersect = lineIntersect(this.envelope, expandLine);
+      if (intersect.features.length > 0 && intersect.features[0].geometry) {
+        return intersect.features[0].geometry.coordinates;
       } else {
         return xy;
       }
@@ -9039,6 +5956,10 @@ function setupTileLoadFunction(target) {
         });
       };
       return function(tile, _src) {
+        if (!tile.getImage || typeof tile.getImage !== "function") {
+          console.log("Skipping tile load function for non-image tile");
+          return;
+        }
         const zoom = tile.tileCoord[0];
         let tileX = tile.tileCoord[1];
         let tileY = tile.tileCoord[2];
@@ -9119,7 +6040,11 @@ function setupTileLoadFunction(target) {
         ).then((rets) => {
           const err = rets.reduce((prev, ret) => prev && ret, true);
           if (err) {
-            tile.handleImageError_();
+            if (typeof tile.handleImageError_ === "function") {
+              tile.handleImageError_();
+            } else {
+              console.error("Error loading tile");
+            }
           } else {
             const dataUrl = tCanv.toDataURL();
             const image = tile.getImage();
@@ -9127,7 +6052,11 @@ function setupTileLoadFunction(target) {
             tileLoadFn(tile, dataUrl);
           }
         }).catch((_err) => {
-          tile.handleImageError_();
+          if (typeof tile.handleImageError_ === "function") {
+            tile.handleImageError_();
+          } else {
+            console.error("Error loading tile:", _err);
+          }
         });
       };
     }()
@@ -9247,19 +6176,19 @@ class Disposable {
   }
 }
 function binarySearch(haystack, needle, comparator) {
-  let mid, cmp2;
+  let mid, cmp;
   comparator = comparator || ascending;
   let low = 0;
   let high = haystack.length;
   let found = false;
   while (low < high) {
     mid = low + (high - low >> 1);
-    cmp2 = +comparator(haystack[mid], needle);
-    if (cmp2 < 0) {
+    cmp = +comparator(haystack[mid], needle);
+    if (cmp < 0) {
       low = mid + 1;
     } else {
       high = mid;
-      found = !cmp2;
+      found = !cmp;
     }
   }
   return found ? low : ~low;
@@ -9321,12 +6250,12 @@ function linearFindNearest(arr2, target, direction) {
 }
 function extend(arr2, data) {
   const extension = Array.isArray(data) ? data : [data];
-  const length2 = extension.length;
-  for (let i = 0; i < length2; i++) {
+  const length = extension.length;
+  for (let i = 0; i < length; i++) {
     arr2[arr2.length] = extension[i];
   }
 }
-function equals$1(arr1, arr2) {
+function equals(arr1, arr2) {
   const len1 = arr1.length;
   if (len1 !== arr2.length) {
     return false;
@@ -9337,6 +6266,16 @@ function equals$1(arr1, arr2) {
     }
   }
   return true;
+}
+function isSorted(arr2, func, strict) {
+  const compare = func || ascending;
+  return arr2.every(function(currentVal, index) {
+    if (index === 0) {
+      return true;
+    }
+    const res = compare(arr2[index - 1], currentVal);
+    return !(res > 0 || res === 0);
+  });
 }
 function TRUE() {
   return true;
@@ -9352,7 +6291,7 @@ function memoizeOne(fn) {
   let lastThis;
   return function() {
     const nextArgs = Array.prototype.slice.call(arguments);
-    if (!lastArgs || this !== lastThis || !equals$1(nextArgs, lastArgs)) {
+    if (!lastArgs || this !== lastThis || !equals(nextArgs, lastArgs)) {
       lastThis = this;
       lastArgs = nextArgs;
       lastResult = fn.apply(this, arguments);
@@ -9365,7 +6304,7 @@ function clear(object) {
     delete object[property];
   }
 }
-function isEmpty$1(object) {
+function isEmpty(object) {
   let property;
   for (property in object) {
     return false;
@@ -9408,13 +6347,13 @@ class Target extends Disposable {
    * @api
    */
   dispatchEvent(event) {
-    const isString2 = typeof event === "string";
-    const type = isString2 ? event : event.type;
+    const isString = typeof event === "string";
+    const type = isString ? event : event.type;
     const listeners = this.listeners_ && this.listeners_[type];
     if (!listeners) {
       return;
     }
-    const evt = isString2 ? new BaseEvent(event) : (
+    const evt = isString ? new BaseEvent(event) : (
       /** @type {Event} */
       event
     );
@@ -9492,13 +6431,13 @@ class Target extends Disposable {
     if (!listeners) {
       return;
     }
-    const index2 = listeners.indexOf(listener);
-    if (index2 !== -1) {
+    const index = listeners.indexOf(listener);
+    if (index !== -1) {
       if (this.pendingRemovals_ && type in this.pendingRemovals_) {
-        listeners[index2] = VOID;
+        listeners[index] = VOID;
         ++this.pendingRemovals_[type];
       } else {
-        listeners.splice(index2, 1);
+        listeners.splice(index, 1);
         if (listeners.length === 0) {
           delete this.listeners_[type];
         }
@@ -9506,7 +6445,7 @@ class Target extends Disposable {
     }
   }
 }
-View$1.prototype.getDecimalZoom = function() {
+View.prototype.getDecimalZoom = function() {
   const resolution = this.getResolution();
   const offset = (
     // NOTE: `resolution` maybe `undefined`
@@ -9526,6 +6465,21 @@ const Relationship = {
   BELOW: 8,
   LEFT: 16
 };
+function buffer(extent, value, dest) {
+  if (dest) {
+    dest[0] = extent[0] - value;
+    dest[1] = extent[1] - value;
+    dest[2] = extent[2] + value;
+    dest[3] = extent[3] + value;
+    return dest;
+  }
+  return [
+    extent[0] - value,
+    extent[1] - value,
+    extent[2] + value,
+    extent[3] + value
+  ];
+}
 function closestSquaredDistanceXY(extent, x, y) {
   let dx, dy;
   if (x < extent[0]) {
@@ -9543,6 +6497,9 @@ function closestSquaredDistanceXY(extent, x, y) {
     dy = 0;
   }
   return dx * dx + dy * dy;
+}
+function containsCoordinate(extent, coordinate) {
+  return containsXY(extent, coordinate[0], coordinate[1]);
 }
 function containsXY(extent, x, y) {
   return extent[0] <= x && x <= extent[2] && extent[1] <= y && y <= extent[3];
@@ -9573,7 +6530,7 @@ function coordinateRelationship(extent, coordinate) {
 function createEmpty() {
   return [Infinity, Infinity, -Infinity, -Infinity];
 }
-function createOrUpdate(minX, minY, maxX, maxY, dest) {
+function createOrUpdate$2(minX, minY, maxX, maxY, dest) {
   if (dest) {
     dest[0] = minX;
     dest[1] = minY;
@@ -9584,12 +6541,12 @@ function createOrUpdate(minX, minY, maxX, maxY, dest) {
   return [minX, minY, maxX, maxY];
 }
 function createOrUpdateEmpty(dest) {
-  return createOrUpdate(Infinity, Infinity, -Infinity, -Infinity, dest);
+  return createOrUpdate$2(Infinity, Infinity, -Infinity, -Infinity, dest);
 }
 function createOrUpdateFromCoordinate(coordinate, dest) {
   const x = coordinate[0];
   const y = coordinate[1];
-  return createOrUpdate(x, y, x, y, dest);
+  return createOrUpdate$2(x, y, x, y, dest);
 }
 function createOrUpdateFromFlatCoordinates(flatCoordinates, offset, end, stride, dest) {
   const extent = createOrUpdateEmpty(dest);
@@ -9636,47 +6593,51 @@ function getBottomRight(extent) {
 function getCenter(extent) {
   return [(extent[0] + extent[2]) / 2, (extent[1] + extent[3]) / 2];
 }
-function getForViewAndSize(center, resolution, rotation, size, dest) {
-  const [x0, y0, x1, y1, x2, y2, x3, y3] = getRotatedViewport(
-    center,
-    resolution,
-    rotation,
-    size
-  );
-  return createOrUpdate(
-    Math.min(x0, x1, x2, x3),
-    Math.min(y0, y1, y2, y3),
-    Math.max(x0, x1, x2, x3),
-    Math.max(y0, y1, y2, y3),
-    dest
-  );
-}
-function getRotatedViewport(center, resolution, rotation, size) {
-  const dx = resolution * size[0] / 2;
-  const dy = resolution * size[1] / 2;
-  const cosRotation = Math.cos(rotation);
-  const sinRotation = Math.sin(rotation);
-  const xCos = dx * cosRotation;
-  const xSin = dx * sinRotation;
-  const yCos = dy * cosRotation;
-  const ySin = dy * sinRotation;
-  const x = center[0];
-  const y = center[1];
-  return [
-    x - xCos + ySin,
-    y - xSin - yCos,
-    x - xCos - ySin,
-    y - xSin + yCos,
-    x + xCos - ySin,
-    y + xSin + yCos,
-    x + xCos + ySin,
-    y + xSin - yCos,
-    x - xCos + ySin,
-    y - xSin - yCos
-  ];
+function getCorner(extent, corner) {
+  let coordinate;
+  if (corner === "bottom-left") {
+    coordinate = getBottomLeft(extent);
+  } else if (corner === "bottom-right") {
+    coordinate = getBottomRight(extent);
+  } else if (corner === "top-left") {
+    coordinate = getTopLeft(extent);
+  } else if (corner === "top-right") {
+    coordinate = getTopRight(extent);
+  } else {
+    throw new Error("Invalid corner");
+  }
+  return coordinate;
 }
 function getHeight(extent) {
   return extent[3] - extent[1];
+}
+function getIntersection(extent1, extent2, dest) {
+  const intersection = dest ? dest : createEmpty();
+  if (intersects(extent1, extent2)) {
+    if (extent1[0] > extent2[0]) {
+      intersection[0] = extent1[0];
+    } else {
+      intersection[0] = extent2[0];
+    }
+    if (extent1[1] > extent2[1]) {
+      intersection[1] = extent1[1];
+    } else {
+      intersection[1] = extent2[1];
+    }
+    if (extent1[2] < extent2[2]) {
+      intersection[2] = extent1[2];
+    } else {
+      intersection[2] = extent2[2];
+    }
+    if (extent1[3] < extent2[3]) {
+      intersection[3] = extent1[3];
+    } else {
+      intersection[3] = extent2[3];
+    }
+  } else {
+    createOrUpdateEmpty(intersection);
+  }
+  return intersection;
 }
 function getTopLeft(extent) {
   return [extent[0], extent[3]];
@@ -9689,9 +6650,6 @@ function getWidth(extent) {
 }
 function intersects(extent1, extent2) {
   return extent1[0] <= extent2[2] && extent1[2] >= extent2[0] && extent1[1] <= extent2[3] && extent1[3] >= extent2[1];
-}
-function isEmpty(extent) {
-  return extent[2] < extent[0] || extent[3] < extent[1];
 }
 function returnOrUpdate(extent, dest) {
   if (dest) {
@@ -10055,7 +7013,7 @@ class BaseObject extends Observable {
     if (this.values_ && key in this.values_) {
       const oldValue = this.values_[key];
       delete this.values_[key];
-      if (isEmpty$1(this.values_)) {
+      if (isEmpty(this.values_)) {
         this.values_ = null;
       }
       if (!silent) {
@@ -10063,9 +7021,6 @@ class BaseObject extends Observable {
       }
     }
   }
-}
-function warn2(...args) {
-  console.warn(...args);
 }
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -10103,27 +7058,22 @@ function modulo(a, b) {
 function lerp(a, b, x) {
   return a + x * (b - a);
 }
+function toFixed(n, decimals) {
+  const factor = Math.pow(10, decimals);
+  return Math.round(n * factor) / factor;
+}
+function floor(n, decimals) {
+  return Math.floor(toFixed(n, decimals));
+}
+function ceil(n, decimals) {
+  return Math.ceil(toFixed(n, decimals));
+}
 function wrap(n, min, max) {
   if (n >= min && n < max) {
     return n;
   }
   const range = max - min;
   return ((n - min) % range + range) % range + min;
-}
-function add$2(coordinate, delta) {
-  coordinate[0] += +delta[0];
-  coordinate[1] += +delta[1];
-  return coordinate;
-}
-function equals(coordinate1, coordinate2) {
-  let equals2 = true;
-  for (let i = coordinate1.length - 1; i >= 0; --i) {
-    if (coordinate1[i] != coordinate2[i]) {
-      equals2 = false;
-      break;
-    }
-  }
-  return equals2;
 }
 function rotate$1(coordinate, angle) {
   const cosAngle = Math.cos(angle);
@@ -10134,7 +7084,7 @@ function rotate$1(coordinate, angle) {
   coordinate[1] = y;
   return coordinate;
 }
-function scale$1(coordinate, scale2) {
+function scale$2(coordinate, scale2) {
   coordinate[0] *= scale2;
   coordinate[1] *= scale2;
   return coordinate;
@@ -10322,17 +7272,17 @@ const PROJECTIONS$1 = [
   new EPSG3857Projection("http://www.opengis.net/gml/srs/epsg.xml#3857")
 ];
 function fromEPSG4326(input, output2, dimension, stride) {
-  const length2 = input.length;
+  const length = input.length;
   dimension = dimension > 1 ? dimension : 2;
   stride = stride ?? dimension;
   if (output2 === void 0) {
     if (dimension > 2) {
       output2 = input.slice();
     } else {
-      output2 = new Array(length2);
+      output2 = new Array(length);
     }
   }
-  for (let i = 0; i < length2; i += stride) {
+  for (let i = 0; i < length; i += stride) {
     output2[i] = HALF_SIZE * input[i] / 180;
     let y = RADIUS$1 * Math.log(Math.tan(Math.PI * (+input[i + 1] + 90) / 360));
     if (y > MAX_SAFE_Y) {
@@ -10345,17 +7295,17 @@ function fromEPSG4326(input, output2, dimension, stride) {
   return output2;
 }
 function toEPSG4326(input, output2, dimension, stride) {
-  const length2 = input.length;
+  const length = input.length;
   dimension = dimension > 1 ? dimension : 2;
   stride = stride ?? dimension;
   if (output2 === void 0) {
     if (dimension > 2) {
       output2 = input.slice();
     } else {
-      output2 = new Array(length2);
+      output2 = new Array(length);
     }
   }
-  for (let i = 0; i < length2; i += stride) {
+  for (let i = 0; i < length; i += stride) {
     output2[i] = 180 * input[i] / HALF_SIZE;
     output2[i + 1] = 360 * Math.atan(Math.exp(input[i + 1] / RADIUS$1)) / Math.PI - 90;
   }
@@ -10431,12 +7381,12 @@ const P2 = 3 / 2 * _E - 27 / 32 * _E3 + 269 / 512 * _E5;
 const P3 = 21 / 16 * _E2 - 55 / 32 * _E4;
 const P4 = 151 / 96 * _E3 - 417 / 128 * _E5;
 const P5 = 1097 / 512 * _E4;
-const R = 6378137;
+const R$1 = 6378137;
 function toLonLat(easting, northing, zone) {
   const x = easting - 5e5;
   const y = zone.north ? northing : northing - 1e7;
   const m = y / K0;
-  const mu = m / (R * M1);
+  const mu = m / (R$1 * M1);
   const pRad = mu + P2 * Math.sin(2 * mu) + P3 * Math.sin(4 * mu) + P4 * Math.sin(6 * mu) + P5 * Math.sin(8 * mu);
   const pSin = Math.sin(pRad);
   const pSin2 = pSin * pSin;
@@ -10446,7 +7396,7 @@ function toLonLat(easting, northing, zone) {
   const pTan4 = pTan2 * pTan2;
   const epSin = 1 - E * pSin2;
   const epSinSqrt = Math.sqrt(1 - E * pSin2);
-  const n = R / epSinSqrt;
+  const n = R$1 / epSinSqrt;
   const r = (1 - E) / epSin;
   const c = E_P2 * pCos ** 2;
   const c2 = c * c;
@@ -10485,7 +7435,7 @@ function fromLonLat(longitude, latitude, zone) {
   const lonRad = toRadians(longitude);
   const centralLon = zoneToCentralLongitude(zone.number);
   const centralLonRad = toRadians(centralLon);
-  const n = R / Math.sqrt(1 - E * latSin ** 2);
+  const n = R$1 / Math.sqrt(1 - E * latSin ** 2);
   const c = E_P2 * latCos ** 2;
   const a = latCos * wrap(lonRad - centralLonRad, -Math.PI, Math.PI);
   const a2 = a * a;
@@ -10493,7 +7443,7 @@ function fromLonLat(longitude, latitude, zone) {
   const a4 = a3 * a;
   const a5 = a4 * a;
   const a6 = a5 * a;
-  const m = R * (M1 * latRad - M2 * Math.sin(2 * latRad) + M3 * Math.sin(4 * latRad) - M4 * Math.sin(6 * latRad));
+  const m = R$1 * (M1 * latRad - M2 * Math.sin(2 * latRad) + M3 * Math.sin(4 * latRad) - M4 * Math.sin(6 * latRad));
   const easting = K0 * n * (a + a3 / 6 * (1 - latTan2 + c) + a5 / 120 * (5 - 18 * latTan2 + latTan4 + 72 * c - 58 * E_P2)) + 5e5;
   let northing = K0 * (m + n * latTan * (a2 / 2 + a4 / 24 * (5 - latTan2 + 9 * c + 4 * c ** 2) + a6 / 720 * (61 - 58 * latTan2 + latTan4 + 600 * c - 330 * E_P2)));
   if (!zone.north) {
@@ -10536,17 +7486,17 @@ function zoneFromCode(code) {
 }
 function makeTransformFunction(transformer, zone) {
   return function(input, output2, dimension, stride) {
-    const length2 = input.length;
+    const length = input.length;
     dimension = dimension > 1 ? dimension : 2;
     stride = stride ?? dimension;
     if (!output2) {
       if (dimension > 2) {
         output2 = input.slice();
       } else {
-        output2 = new Array(length2);
+        output2 = new Array(length);
       }
     }
-    for (let i = 0; i < length2; i += stride) {
+    for (let i = 0; i < length; i += stride) {
       const x = input[i];
       const y = input[i + 1];
       const coord = transformer(x, y, zone);
@@ -10575,10 +7525,6 @@ function makeTransforms(projection) {
 }
 const transformFactories = [makeTransforms];
 const projectionFactories = [makeProjection];
-let showCoordinateWarning = true;
-function disableCoordinateWarning(disable2) {
-  showCoordinateWarning = false;
-}
 function cloneTransform(input, output2) {
   if (output2 !== void 0) {
     for (let i = 0, ii = input.length; i < ii; ++i) {
@@ -10631,17 +7577,16 @@ function addEquivalentTransforms(projections1, projections2, forwardTransform, i
     });
   });
 }
-function createProjection(projection, defaultCode) {
-  if (!projection) {
-    return get(defaultCode);
+function equivalent(projection1, projection2) {
+  if (projection1 === projection2) {
+    return true;
   }
-  if (typeof projection === "string") {
-    return get(projection);
+  const equalUnits = projection1.getUnits() === projection2.getUnits();
+  if (projection1.getCode() === projection2.getCode()) {
+    return equalUnits;
   }
-  return (
-    /** @type {Projection} */
-    projection
-  );
+  const transformFunc = getTransformFromProjections(projection1, projection2);
+  return transformFunc === cloneTransform && equalUnits;
 }
 function getTransformFromProjections(source, destination) {
   const sourceCode = source.getCode();
@@ -10704,32 +7649,6 @@ function getTransform(source, destination) {
   const destinationProjection = get(destination);
   return getTransformFromProjections(sourceProjection, destinationProjection);
 }
-function toUserCoordinate(coordinate, sourceProjection) {
-  {
-    return coordinate;
-  }
-}
-function fromUserCoordinate(coordinate, destProjection) {
-  {
-    if (showCoordinateWarning && !equals(coordinate, [0, 0]) && coordinate[0] >= -180 && coordinate[0] <= 180 && coordinate[1] >= -90 && coordinate[1] <= 90) {
-      showCoordinateWarning = false;
-      warn2(
-        "Call useGeographic() from ol/proj once to work with [longitude, latitude] coordinates."
-      );
-    }
-    return coordinate;
-  }
-}
-function toUserExtent(extent, sourceProjection) {
-  {
-    return extent;
-  }
-}
-function fromUserExtent(extent, destProjection) {
-  {
-    return extent;
-  }
-}
 function addCommon() {
   addEquivalentProjections(PROJECTIONS$1);
   addEquivalentProjections(PROJECTIONS);
@@ -10765,13 +7684,13 @@ function transform2D(flatCoordinates, offset, end, stride, transform2, dest, des
   dest = dest ? dest : [];
   destinationStride = destinationStride ? destinationStride : 2;
   let i = 0;
-  for (let j = offset; j < end; j += stride) {
-    const x = flatCoordinates[j];
-    const y = flatCoordinates[j + 1];
+  for (let j2 = offset; j2 < end; j2 += stride) {
+    const x = flatCoordinates[j2];
+    const y = flatCoordinates[j2 + 1];
     dest[i++] = transform2[0] * x + transform2[2] * y + transform2[4];
     dest[i++] = transform2[1] * x + transform2[3] * y + transform2[5];
     for (let k = 2; k < destinationStride; k++) {
-      dest[i++] = flatCoordinates[j + k];
+      dest[i++] = flatCoordinates[j2 + k];
     }
   }
   if (dest && dest.length != i) {
@@ -10786,12 +7705,12 @@ function rotate(flatCoordinates, offset, end, stride, angle, anchor, dest) {
   const anchorX = anchor[0];
   const anchorY = anchor[1];
   let i = 0;
-  for (let j = offset; j < end; j += stride) {
-    const deltaX = flatCoordinates[j] - anchorX;
-    const deltaY = flatCoordinates[j + 1] - anchorY;
+  for (let j2 = offset; j2 < end; j2 += stride) {
+    const deltaX = flatCoordinates[j2] - anchorX;
+    const deltaY = flatCoordinates[j2 + 1] - anchorY;
     dest[i++] = anchorX + deltaX * cos - deltaY * sin;
     dest[i++] = anchorY + deltaX * sin + deltaY * cos;
-    for (let k = j + 2; k < j + stride; ++k) {
+    for (let k = j2 + 2; k < j2 + stride; ++k) {
       dest[i++] = flatCoordinates[k];
     }
   }
@@ -10800,17 +7719,17 @@ function rotate(flatCoordinates, offset, end, stride, angle, anchor, dest) {
   }
   return dest;
 }
-function scale(flatCoordinates, offset, end, stride, sx, sy, anchor, dest) {
+function scale$1(flatCoordinates, offset, end, stride, sx, sy, anchor, dest) {
   dest = dest ? dest : [];
   const anchorX = anchor[0];
   const anchorY = anchor[1];
   let i = 0;
-  for (let j = offset; j < end; j += stride) {
-    const deltaX = flatCoordinates[j] - anchorX;
-    const deltaY = flatCoordinates[j + 1] - anchorY;
+  for (let j2 = offset; j2 < end; j2 += stride) {
+    const deltaX = flatCoordinates[j2] - anchorX;
+    const deltaY = flatCoordinates[j2 + 1] - anchorY;
     dest[i++] = anchorX + sx * deltaX;
     dest[i++] = anchorY + sy * deltaY;
-    for (let k = j + 2; k < j + stride; ++k) {
+    for (let k = j2 + 2; k < j2 + stride; ++k) {
       dest[i++] = flatCoordinates[k];
     }
   }
@@ -10822,10 +7741,10 @@ function scale(flatCoordinates, offset, end, stride, sx, sy, anchor, dest) {
 function translate(flatCoordinates, offset, end, stride, deltaX, deltaY, dest) {
   dest = dest ? dest : [];
   let i = 0;
-  for (let j = offset; j < end; j += stride) {
-    dest[i++] = flatCoordinates[j] + deltaX;
-    dest[i++] = flatCoordinates[j + 1] + deltaY;
-    for (let k = j + 2; k < j + stride; ++k) {
+  for (let j2 = offset; j2 < end; j2 += stride) {
+    dest[i++] = flatCoordinates[j2] + deltaX;
+    dest[i++] = flatCoordinates[j2 + 1] + deltaY;
+    for (let k = j2 + 2; k < j2 + stride; ++k) {
       dest[i++] = flatCoordinates[k];
     }
   }
@@ -10834,7 +7753,7 @@ function translate(flatCoordinates, offset, end, stride, deltaX, deltaY, dest) {
   }
   return dest;
 }
-const tmpTransform = create();
+const tmpTransform$1 = create();
 const tmpPoint = [NaN, NaN];
 class Geometry extends BaseObject {
   constructor() {
@@ -11052,7 +7971,7 @@ class Geometry extends BaseObject {
       const projectedExtent = sourceProj.getWorldExtent();
       const scale2 = getHeight(projectedExtent) / getHeight(pixelExtent);
       compose(
-        tmpTransform,
+        tmpTransform$1,
         projectedExtent[0],
         projectedExtent[3],
         scale2,
@@ -11066,7 +7985,7 @@ class Geometry extends BaseObject {
         0,
         inCoordinates.length,
         stride,
-        tmpTransform,
+        tmpTransform$1,
         outCoordinates
       );
       const projTransform = getTransform(sourceProj, destination);
@@ -11284,7 +8203,7 @@ class SimpleGeometry extends Geometry {
     const flatCoordinates = this.getFlatCoordinates();
     if (flatCoordinates) {
       const stride = this.getStride();
-      scale(
+      scale$1(
         flatCoordinates,
         0,
         flatCoordinates.length,
@@ -11359,8 +8278,8 @@ function deflateCoordinate(flatCoordinates, offset, coordinate, stride) {
 function deflateCoordinates(flatCoordinates, offset, coordinates2, stride) {
   for (let i = 0, ii = coordinates2.length; i < ii; ++i) {
     const coordinate = coordinates2[i];
-    for (let j = 0; j < stride; ++j) {
-      flatCoordinates[offset++] = coordinate[j];
+    for (let j2 = 0; j2 < stride; ++j2) {
+      flatCoordinates[offset++] = coordinate[j2];
     }
   }
   return offset;
@@ -11368,11 +8287,11 @@ function deflateCoordinates(flatCoordinates, offset, coordinates2, stride) {
 function deflateCoordinatesArray(flatCoordinates, offset, coordinatess, stride, ends) {
   ends = ends ? ends : [];
   let i = 0;
-  for (let j = 0, jj = coordinatess.length; j < jj; ++j) {
+  for (let j2 = 0, jj = coordinatess.length; j2 < jj; ++j2) {
     const end = deflateCoordinates(
       flatCoordinates,
       offset,
-      coordinatess[j],
+      coordinatess[j2],
       stride
     );
     ends[i++] = end;
@@ -11380,6 +8299,26 @@ function deflateCoordinatesArray(flatCoordinates, offset, coordinatess, stride, 
   }
   ends.length = i;
   return ends;
+}
+function deflateMultiCoordinatesArray(flatCoordinates, offset, coordinatesss, stride, endss) {
+  endss = endss ? endss : [];
+  let i = 0;
+  for (let j2 = 0, jj = coordinatesss.length; j2 < jj; ++j2) {
+    const ends = deflateCoordinatesArray(
+      flatCoordinates,
+      offset,
+      coordinatesss[j2],
+      stride,
+      endss[i]
+    );
+    if (ends.length === 0) {
+      ends[0] = offset;
+    }
+    endss[i++] = ends;
+    offset = ends[ends.length - 1];
+  }
+  endss.length = i;
+  return endss;
 }
 class Circle extends SimpleGeometry {
   /**
@@ -11473,7 +8412,7 @@ class Circle extends SimpleGeometry {
   computeExtent(extent) {
     const flatCoordinates = this.flatCoordinates;
     const radius = flatCoordinates[this.stride] - flatCoordinates[0];
-    return createOrUpdate(
+    return createOrUpdate$2(
       flatCoordinates[0] - radius,
       flatCoordinates[1] - radius,
       flatCoordinates[0] + radius,
@@ -11627,6 +8566,15 @@ function linearRings(flatCoordinates, offset, ends, stride) {
   }
   return area;
 }
+function linearRingss$1(flatCoordinates, offset, endss, stride) {
+  let area = 0;
+  for (let i = 0, ii = endss.length; i < ii; ++i) {
+    const ends = endss[i];
+    area += linearRings(flatCoordinates, offset, ends, stride);
+    offset = ends[ends.length - 1];
+  }
+  return area;
+}
 function assignClosest(flatCoordinates, offset1, offset2, stride, x, y, closestPoint) {
   const x1 = flatCoordinates[offset1];
   const y1 = flatCoordinates[offset1 + 1];
@@ -11681,6 +8629,14 @@ function arrayMaxSquaredDelta(flatCoordinates, offset, ends, stride, max) {
   }
   return max;
 }
+function multiArrayMaxSquaredDelta(flatCoordinates, offset, endss, stride, max) {
+  for (let i = 0, ii = endss.length; i < ii; ++i) {
+    const ends = endss[i];
+    max = arrayMaxSquaredDelta(flatCoordinates, offset, ends, stride, max);
+    offset = ends[ends.length - 1];
+  }
+  return max;
+}
 function assignClosestPoint(flatCoordinates, offset, end, stride, maxDelta, isRing, x, y, closestPoint, minSquaredDistance, tmpPoint2) {
   if (offset == end) {
     return minSquaredDistance;
@@ -11703,12 +8659,12 @@ function assignClosestPoint(flatCoordinates, offset, end, stride, maxDelta, isRi
     return minSquaredDistance;
   }
   tmpPoint2 = tmpPoint2 ? tmpPoint2 : [NaN, NaN];
-  let index2 = offset + stride;
-  while (index2 < end) {
+  let index = offset + stride;
+  while (index < end) {
     assignClosest(
       flatCoordinates,
-      index2 - stride,
-      index2,
+      index - stride,
+      index,
       stride,
       x,
       y,
@@ -11721,9 +8677,9 @@ function assignClosestPoint(flatCoordinates, offset, end, stride, maxDelta, isRi
         closestPoint[i] = tmpPoint2[i];
       }
       closestPoint.length = stride;
-      index2 += stride;
+      index += stride;
     } else {
-      index2 += stride * Math.max(
+      index += stride * Math.max(
         (Math.sqrt(squaredDistance$1) - Math.sqrt(minSquaredDistance)) / maxDelta | 0,
         1
       );
@@ -11771,11 +8727,32 @@ function assignClosestArrayPoint(flatCoordinates, offset, ends, stride, maxDelta
   }
   return minSquaredDistance;
 }
+function assignClosestMultiArrayPoint(flatCoordinates, offset, endss, stride, maxDelta, isRing, x, y, closestPoint, minSquaredDistance, tmpPoint2) {
+  tmpPoint2 = tmpPoint2 ? tmpPoint2 : [NaN, NaN];
+  for (let i = 0, ii = endss.length; i < ii; ++i) {
+    const ends = endss[i];
+    minSquaredDistance = assignClosestArrayPoint(
+      flatCoordinates,
+      offset,
+      ends,
+      stride,
+      maxDelta,
+      isRing,
+      x,
+      y,
+      closestPoint,
+      minSquaredDistance,
+      tmpPoint2
+    );
+    offset = ends[ends.length - 1];
+  }
+  return minSquaredDistance;
+}
 function inflateCoordinates(flatCoordinates, offset, end, stride, coordinates2) {
   coordinates2 = coordinates2 !== void 0 ? coordinates2 : [];
   let i = 0;
-  for (let j = offset; j < end; j += stride) {
-    coordinates2[i++] = flatCoordinates.slice(j, j + stride);
+  for (let j2 = offset; j2 < end; j2 += stride) {
+    coordinates2[i++] = flatCoordinates.slice(j2, j2 + stride);
   }
   coordinates2.length = i;
   return coordinates2;
@@ -11783,8 +8760,8 @@ function inflateCoordinates(flatCoordinates, offset, end, stride, coordinates2) 
 function inflateCoordinatesArray(flatCoordinates, offset, ends, stride, coordinatess) {
   coordinatess = coordinatess !== void 0 ? coordinatess : [];
   let i = 0;
-  for (let j = 0, jj = ends.length; j < jj; ++j) {
-    const end = ends[j];
+  for (let j2 = 0, jj = ends.length; j2 < jj; ++j2) {
+    const end = ends[j2];
     coordinatess[i++] = inflateCoordinates(
       flatCoordinates,
       offset,
@@ -11796,6 +8773,23 @@ function inflateCoordinatesArray(flatCoordinates, offset, ends, stride, coordina
   }
   coordinatess.length = i;
   return coordinatess;
+}
+function inflateMultiCoordinatesArray(flatCoordinates, offset, endss, stride, coordinatesss) {
+  coordinatesss = coordinatesss !== void 0 ? coordinatesss : [];
+  let i = 0;
+  for (let j2 = 0, jj = endss.length; j2 < jj; ++j2) {
+    const ends = endss[j2];
+    coordinatesss[i++] = ends.length === 1 && ends[0] === offset ? [] : inflateCoordinatesArray(
+      flatCoordinates,
+      offset,
+      ends,
+      stride,
+      coordinatesss[i]
+    );
+    offset = ends[ends.length - 1];
+  }
+  coordinatesss.length = i;
+  return coordinatesss;
 }
 function douglasPeucker(flatCoordinates, offset, end, stride, squaredTolerance, simplifiedFlatCoordinates, simplifiedOffset) {
   const n = (end - offset) / stride;
@@ -11810,7 +8804,7 @@ function douglasPeucker(flatCoordinates, offset, end, stride, squaredTolerance, 
   markers[0] = 1;
   markers[n - 1] = 1;
   const stack = [offset, end - stride];
-  let index2 = 0;
+  let index = 0;
   while (stack.length > 0) {
     const last = stack.pop();
     const first = stack.pop();
@@ -11824,17 +8818,17 @@ function douglasPeucker(flatCoordinates, offset, end, stride, squaredTolerance, 
       const y = flatCoordinates[i + 1];
       const squaredDistance2 = squaredSegmentDistance(x, y, x1, y1, x2, y2);
       if (squaredDistance2 > maxSquaredDistance) {
-        index2 = i;
+        index = i;
         maxSquaredDistance = squaredDistance2;
       }
     }
     if (maxSquaredDistance > squaredTolerance) {
-      markers[(index2 - offset) / stride] = 1;
-      if (first + stride < index2) {
-        stack.push(first, index2);
+      markers[(index - offset) / stride] = 1;
+      if (first + stride < index) {
+        stack.push(first, index);
       }
-      if (index2 + stride < last) {
-        stack.push(index2, last);
+      if (index + stride < last) {
+        stack.push(index, last);
       }
     }
   }
@@ -11843,6 +8837,23 @@ function douglasPeucker(flatCoordinates, offset, end, stride, squaredTolerance, 
       simplifiedFlatCoordinates[simplifiedOffset++] = flatCoordinates[offset + i * stride];
       simplifiedFlatCoordinates[simplifiedOffset++] = flatCoordinates[offset + i * stride + 1];
     }
+  }
+  return simplifiedOffset;
+}
+function douglasPeuckerArray(flatCoordinates, offset, ends, stride, squaredTolerance, simplifiedFlatCoordinates, simplifiedOffset, simplifiedEnds) {
+  for (let i = 0, ii = ends.length; i < ii; ++i) {
+    const end = ends[i];
+    simplifiedOffset = douglasPeucker(
+      flatCoordinates,
+      offset,
+      end,
+      stride,
+      squaredTolerance,
+      simplifiedFlatCoordinates,
+      simplifiedOffset
+    );
+    simplifiedEnds.push(simplifiedOffset);
+    offset = end;
   }
   return simplifiedOffset;
 }
@@ -11910,6 +8921,25 @@ function quantizeArray(flatCoordinates, offset, ends, stride, tolerance, simplif
     );
     simplifiedEnds.push(simplifiedOffset);
     offset = end;
+  }
+  return simplifiedOffset;
+}
+function quantizeMultiArray(flatCoordinates, offset, endss, stride, tolerance, simplifiedFlatCoordinates, simplifiedOffset, simplifiedEndss) {
+  for (let i = 0, ii = endss.length; i < ii; ++i) {
+    const ends = endss[i];
+    const simplifiedEnds = [];
+    simplifiedOffset = quantizeArray(
+      flatCoordinates,
+      offset,
+      ends,
+      stride,
+      tolerance,
+      simplifiedFlatCoordinates,
+      simplifiedOffset,
+      simplifiedEnds
+    );
+    simplifiedEndss.push(simplifiedEnds);
+    offset = ends[ends.length - 1];
   }
   return simplifiedOffset;
 }
@@ -12080,23 +9110,23 @@ function interpolatePoint(flatCoordinates, offset, end, stride, fraction, dest, 
   } else if (n !== 0) {
     let x1 = flatCoordinates[offset];
     let y1 = flatCoordinates[offset + 1];
-    let length2 = 0;
+    let length = 0;
     const cumulativeLengths = [0];
     for (let i = offset + stride; i < end; i += stride) {
       const x2 = flatCoordinates[i];
       const y2 = flatCoordinates[i + 1];
-      length2 += Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
-      cumulativeLengths.push(length2);
+      length += Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+      cumulativeLengths.push(length);
       x1 = x2;
       y1 = y2;
     }
-    const target = fraction * length2;
-    const index2 = binarySearch(cumulativeLengths, target);
-    if (index2 < 0) {
-      t = (target - cumulativeLengths[-index2 - 2]) / (cumulativeLengths[-index2 - 1] - cumulativeLengths[-index2 - 2]);
-      o = offset + (-index2 - 2) * stride;
+    const target = fraction * length;
+    const index = binarySearch(cumulativeLengths, target);
+    if (index < 0) {
+      t = (target - cumulativeLengths[-index - 2]) / (cumulativeLengths[-index - 1] - cumulativeLengths[-index - 2]);
+      o = offset + (-index - 2) * stride;
     } else {
-      o = offset + index2 * stride;
+      o = offset + index * stride;
     }
   }
   dimension = dimension > 1 ? dimension : 2;
@@ -12159,6 +9189,56 @@ function lineStringCoordinateAtM(flatCoordinates, offset, end, stride, m, extrap
   coordinate.push(m);
   return coordinate;
 }
+function lineStringsCoordinateAtM(flatCoordinates, offset, ends, stride, m, extrapolate, interpolate) {
+  if (interpolate) {
+    return lineStringCoordinateAtM(
+      flatCoordinates,
+      offset,
+      ends[ends.length - 1],
+      stride,
+      m,
+      extrapolate
+    );
+  }
+  let coordinate;
+  if (m < flatCoordinates[stride - 1]) {
+    if (extrapolate) {
+      coordinate = flatCoordinates.slice(0, stride);
+      coordinate[stride - 1] = m;
+      return coordinate;
+    }
+    return null;
+  }
+  if (flatCoordinates[flatCoordinates.length - 1] < m) {
+    if (extrapolate) {
+      coordinate = flatCoordinates.slice(flatCoordinates.length - stride);
+      coordinate[stride - 1] = m;
+      return coordinate;
+    }
+    return null;
+  }
+  for (let i = 0, ii = ends.length; i < ii; ++i) {
+    const end = ends[i];
+    if (offset == end) {
+      continue;
+    }
+    if (m < flatCoordinates[offset + stride - 1]) {
+      return null;
+    }
+    if (m <= flatCoordinates[end - 1]) {
+      return lineStringCoordinateAtM(
+        flatCoordinates,
+        offset,
+        end,
+        stride,
+        m,
+        false
+      );
+    }
+    offset = end;
+  }
+  return null;
+}
 function linearRingContainsExtent(flatCoordinates, offset, end, stride, extent) {
   const outside = forEachCorner(
     extent,
@@ -12212,6 +9292,19 @@ function linearRingsContainsXY(flatCoordinates, offset, ends, stride, x, y) {
   }
   return true;
 }
+function linearRingssContainsXY(flatCoordinates, offset, endss, stride, x, y) {
+  if (endss.length === 0) {
+    return false;
+  }
+  for (let i = 0, ii = endss.length; i < ii; ++i) {
+    const ends = endss[i];
+    if (linearRingsContainsXY(flatCoordinates, offset, ends, stride, x, y)) {
+      return true;
+    }
+    offset = ends[ends.length - 1];
+  }
+  return false;
+}
 function forEach(flatCoordinates, offset, end, stride, callback) {
   let ret;
   offset += stride;
@@ -12249,6 +9342,15 @@ function intersectsLineString(flatCoordinates, offset, end, stride, extent, coor
       return intersectsSegment(extent, point1, point2);
     }
   );
+}
+function intersectsLineStringArray(flatCoordinates, offset, ends, stride, extent) {
+  for (let i = 0, ii = ends.length; i < ii; ++i) {
+    if (intersectsLineString(flatCoordinates, offset, ends[i], stride, extent)) {
+      return true;
+    }
+    offset = ends[i];
+  }
+  return false;
 }
 function intersectsLinearRing(flatCoordinates, offset, end, stride, extent) {
   if (intersectsLineString(flatCoordinates, offset, end, stride, extent)) {
@@ -12324,18 +9426,28 @@ function intersectsLinearRingArray(flatCoordinates, offset, ends, stride, extent
   }
   return true;
 }
+function intersectsLinearRingMultiArray(flatCoordinates, offset, endss, stride, extent) {
+  for (let i = 0, ii = endss.length; i < ii; ++i) {
+    const ends = endss[i];
+    if (intersectsLinearRingArray(flatCoordinates, offset, ends, stride, extent)) {
+      return true;
+    }
+    offset = ends[ends.length - 1];
+  }
+  return false;
+}
 function lineStringLength(flatCoordinates, offset, end, stride) {
   let x1 = flatCoordinates[offset];
   let y1 = flatCoordinates[offset + 1];
-  let length2 = 0;
+  let length = 0;
   for (let i = offset + stride; i < end; i += stride) {
     const x2 = flatCoordinates[i];
     const y2 = flatCoordinates[i + 1];
-    length2 += Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+    length += Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
     x1 = x2;
     y1 = y2;
   }
-  return length2;
+  return length;
 }
 class LineString extends SimpleGeometry {
   /**
@@ -12601,6 +9713,321 @@ class LineString extends SimpleGeometry {
     this.changed();
   }
 }
+class MultiLineString extends SimpleGeometry {
+  /**
+   * @param {Array<Array<import("../coordinate.js").Coordinate>|LineString>|Array<number>} coordinates
+   *     Coordinates or LineString geometries. (For internal use, flat coordinates in
+   *     combination with `layout` and `ends` are also accepted.)
+   * @param {import("./Geometry.js").GeometryLayout} [layout] Layout.
+   * @param {Array<number>} [ends] Flat coordinate ends for internal use.
+   */
+  constructor(coordinates2, layout, ends) {
+    super();
+    this.ends_ = [];
+    this.maxDelta_ = -1;
+    this.maxDeltaRevision_ = -1;
+    if (Array.isArray(coordinates2[0])) {
+      this.setCoordinates(
+        /** @type {Array<Array<import("../coordinate.js").Coordinate>>} */
+        coordinates2,
+        layout
+      );
+    } else if (layout !== void 0 && ends) {
+      this.setFlatCoordinates(
+        layout,
+        /** @type {Array<number>} */
+        coordinates2
+      );
+      this.ends_ = ends;
+    } else {
+      const lineStrings = (
+        /** @type {Array<LineString>} */
+        coordinates2
+      );
+      const flatCoordinates = [];
+      const ends2 = [];
+      for (let i = 0, ii = lineStrings.length; i < ii; ++i) {
+        const lineString2 = lineStrings[i];
+        extend(flatCoordinates, lineString2.getFlatCoordinates());
+        ends2.push(flatCoordinates.length);
+      }
+      const layout2 = lineStrings.length === 0 ? this.getLayout() : lineStrings[0].getLayout();
+      this.setFlatCoordinates(layout2, flatCoordinates);
+      this.ends_ = ends2;
+    }
+  }
+  /**
+   * Append the passed linestring to the multilinestring.
+   * @param {LineString} lineString LineString.
+   * @api
+   */
+  appendLineString(lineString2) {
+    extend(this.flatCoordinates, lineString2.getFlatCoordinates().slice());
+    this.ends_.push(this.flatCoordinates.length);
+    this.changed();
+  }
+  /**
+   * Make a complete copy of the geometry.
+   * @return {!MultiLineString} Clone.
+   * @api
+   * @override
+   */
+  clone() {
+    const multiLineString = new MultiLineString(
+      this.flatCoordinates.slice(),
+      this.layout,
+      this.ends_.slice()
+    );
+    multiLineString.applyProperties(this);
+    return multiLineString;
+  }
+  /**
+   * @param {number} x X.
+   * @param {number} y Y.
+   * @param {import("../coordinate.js").Coordinate} closestPoint Closest point.
+   * @param {number} minSquaredDistance Minimum squared distance.
+   * @return {number} Minimum squared distance.
+   * @override
+   */
+  closestPointXY(x, y, closestPoint, minSquaredDistance) {
+    if (minSquaredDistance < closestSquaredDistanceXY(this.getExtent(), x, y)) {
+      return minSquaredDistance;
+    }
+    if (this.maxDeltaRevision_ != this.getRevision()) {
+      this.maxDelta_ = Math.sqrt(
+        arrayMaxSquaredDelta(
+          this.flatCoordinates,
+          0,
+          this.ends_,
+          this.stride,
+          0
+        )
+      );
+      this.maxDeltaRevision_ = this.getRevision();
+    }
+    return assignClosestArrayPoint(
+      this.flatCoordinates,
+      0,
+      this.ends_,
+      this.stride,
+      this.maxDelta_,
+      false,
+      x,
+      y,
+      closestPoint,
+      minSquaredDistance
+    );
+  }
+  /**
+   * Returns the coordinate at `m` using linear interpolation, or `null` if no
+   * such coordinate exists.
+   *
+   * `extrapolate` controls extrapolation beyond the range of Ms in the
+   * MultiLineString. If `extrapolate` is `true` then Ms less than the first
+   * M will return the first coordinate and Ms greater than the last M will
+   * return the last coordinate.
+   *
+   * `interpolate` controls interpolation between consecutive LineStrings
+   * within the MultiLineString. If `interpolate` is `true` the coordinates
+   * will be linearly interpolated between the last coordinate of one LineString
+   * and the first coordinate of the next LineString.  If `interpolate` is
+   * `false` then the function will return `null` for Ms falling between
+   * LineStrings.
+   *
+   * @param {number} m M.
+   * @param {boolean} [extrapolate] Extrapolate. Default is `false`.
+   * @param {boolean} [interpolate] Interpolate. Default is `false`.
+   * @return {import("../coordinate.js").Coordinate|null} Coordinate.
+   * @api
+   */
+  getCoordinateAtM(m, extrapolate, interpolate) {
+    if (this.layout != "XYM" && this.layout != "XYZM" || this.flatCoordinates.length === 0) {
+      return null;
+    }
+    extrapolate = extrapolate !== void 0 ? extrapolate : false;
+    interpolate = interpolate !== void 0 ? interpolate : false;
+    return lineStringsCoordinateAtM(
+      this.flatCoordinates,
+      0,
+      this.ends_,
+      this.stride,
+      m,
+      extrapolate,
+      interpolate
+    );
+  }
+  /**
+   * Return the coordinates of the multilinestring.
+   * @return {Array<Array<import("../coordinate.js").Coordinate>>} Coordinates.
+   * @api
+   * @override
+   */
+  getCoordinates() {
+    return inflateCoordinatesArray(
+      this.flatCoordinates,
+      0,
+      this.ends_,
+      this.stride
+    );
+  }
+  /**
+   * @return {Array<number>} Ends.
+   */
+  getEnds() {
+    return this.ends_;
+  }
+  /**
+   * Return the linestring at the specified index.
+   * @param {number} index Index.
+   * @return {LineString} LineString.
+   * @api
+   */
+  getLineString(index) {
+    if (index < 0 || this.ends_.length <= index) {
+      return null;
+    }
+    return new LineString(
+      this.flatCoordinates.slice(
+        index === 0 ? 0 : this.ends_[index - 1],
+        this.ends_[index]
+      ),
+      this.layout
+    );
+  }
+  /**
+   * Return the linestrings of this multilinestring.
+   * @return {Array<LineString>} LineStrings.
+   * @api
+   */
+  getLineStrings() {
+    const flatCoordinates = this.flatCoordinates;
+    const ends = this.ends_;
+    const layout = this.layout;
+    const lineStrings = [];
+    let offset = 0;
+    for (let i = 0, ii = ends.length; i < ii; ++i) {
+      const end = ends[i];
+      const lineString2 = new LineString(
+        flatCoordinates.slice(offset, end),
+        layout
+      );
+      lineStrings.push(lineString2);
+      offset = end;
+    }
+    return lineStrings;
+  }
+  /**
+   * Return the sum of all line string lengths
+   * @return {number} Length (on projected plane).
+   * @api
+   */
+  getLength() {
+    const ends = this.ends_;
+    let start = 0;
+    let length = 0;
+    for (let i = 0, ii = ends.length; i < ii; ++i) {
+      length += lineStringLength(
+        this.flatCoordinates,
+        start,
+        ends[i],
+        this.stride
+      );
+      start = ends[i];
+    }
+    return length;
+  }
+  /**
+   * @return {Array<number>} Flat midpoints.
+   */
+  getFlatMidpoints() {
+    const midpoints = [];
+    const flatCoordinates = this.flatCoordinates;
+    let offset = 0;
+    const ends = this.ends_;
+    const stride = this.stride;
+    for (let i = 0, ii = ends.length; i < ii; ++i) {
+      const end = ends[i];
+      const midpoint = interpolatePoint(
+        flatCoordinates,
+        offset,
+        end,
+        stride,
+        0.5
+      );
+      extend(midpoints, midpoint);
+      offset = end;
+    }
+    return midpoints;
+  }
+  /**
+   * @param {number} squaredTolerance Squared tolerance.
+   * @return {MultiLineString} Simplified MultiLineString.
+   * @protected
+   * @override
+   */
+  getSimplifiedGeometryInternal(squaredTolerance) {
+    const simplifiedFlatCoordinates = [];
+    const simplifiedEnds = [];
+    simplifiedFlatCoordinates.length = douglasPeuckerArray(
+      this.flatCoordinates,
+      0,
+      this.ends_,
+      this.stride,
+      squaredTolerance,
+      simplifiedFlatCoordinates,
+      0,
+      simplifiedEnds
+    );
+    return new MultiLineString(simplifiedFlatCoordinates, "XY", simplifiedEnds);
+  }
+  /**
+   * Get the type of this geometry.
+   * @return {import("./Geometry.js").Type} Geometry type.
+   * @api
+   * @override
+   */
+  getType() {
+    return "MultiLineString";
+  }
+  /**
+   * Test if the geometry and the passed extent intersect.
+   * @param {import("../extent.js").Extent} extent Extent.
+   * @return {boolean} `true` if the geometry and the extent intersect.
+   * @api
+   * @override
+   */
+  intersectsExtent(extent) {
+    return intersectsLineStringArray(
+      this.flatCoordinates,
+      0,
+      this.ends_,
+      this.stride,
+      extent
+    );
+  }
+  /**
+   * Set the coordinates of the multilinestring.
+   * @param {!Array<Array<import("../coordinate.js").Coordinate>>} coordinates Coordinates.
+   * @param {import("./Geometry.js").GeometryLayout} [layout] Layout.
+   * @api
+   * @override
+   */
+  setCoordinates(coordinates2, layout) {
+    this.setLayout(layout, coordinates2, 2);
+    if (!this.flatCoordinates) {
+      this.flatCoordinates = [];
+    }
+    const ends = deflateCoordinatesArray(
+      this.flatCoordinates,
+      0,
+      coordinates2,
+      this.stride,
+      this.ends_
+    );
+    this.flatCoordinates.length = ends.length === 0 ? 0 : ends[ends.length - 1];
+    this.changed();
+  }
+}
 class Point extends SimpleGeometry {
   /**
    * @param {import("../coordinate.js").Coordinate} coordinates Coordinates.
@@ -12704,6 +10131,180 @@ class Point extends SimpleGeometry {
     this.changed();
   }
 }
+class MultiPoint extends SimpleGeometry {
+  /**
+   * @param {Array<import("../coordinate.js").Coordinate>|Array<number>} coordinates Coordinates.
+   *     For internal use, flat coordinates in combination with `layout` are also accepted.
+   * @param {import("./Geometry.js").GeometryLayout} [layout] Layout.
+   */
+  constructor(coordinates2, layout) {
+    super();
+    if (layout && !Array.isArray(coordinates2[0])) {
+      this.setFlatCoordinates(
+        layout,
+        /** @type {Array<number>} */
+        coordinates2
+      );
+    } else {
+      this.setCoordinates(
+        /** @type {Array<import("../coordinate.js").Coordinate>} */
+        coordinates2,
+        layout
+      );
+    }
+  }
+  /**
+   * Append the passed point to this multipoint.
+   * @param {Point} point Point.
+   * @api
+   */
+  appendPoint(point2) {
+    extend(this.flatCoordinates, point2.getFlatCoordinates());
+    this.changed();
+  }
+  /**
+   * Make a complete copy of the geometry.
+   * @return {!MultiPoint} Clone.
+   * @api
+   * @override
+   */
+  clone() {
+    const multiPoint = new MultiPoint(
+      this.flatCoordinates.slice(),
+      this.layout
+    );
+    multiPoint.applyProperties(this);
+    return multiPoint;
+  }
+  /**
+   * @param {number} x X.
+   * @param {number} y Y.
+   * @param {import("../coordinate.js").Coordinate} closestPoint Closest point.
+   * @param {number} minSquaredDistance Minimum squared distance.
+   * @return {number} Minimum squared distance.
+   * @override
+   */
+  closestPointXY(x, y, closestPoint, minSquaredDistance) {
+    if (minSquaredDistance < closestSquaredDistanceXY(this.getExtent(), x, y)) {
+      return minSquaredDistance;
+    }
+    const flatCoordinates = this.flatCoordinates;
+    const stride = this.stride;
+    for (let i = 0, ii = flatCoordinates.length; i < ii; i += stride) {
+      const squaredDistance$1 = squaredDistance(
+        x,
+        y,
+        flatCoordinates[i],
+        flatCoordinates[i + 1]
+      );
+      if (squaredDistance$1 < minSquaredDistance) {
+        minSquaredDistance = squaredDistance$1;
+        for (let j2 = 0; j2 < stride; ++j2) {
+          closestPoint[j2] = flatCoordinates[i + j2];
+        }
+        closestPoint.length = stride;
+      }
+    }
+    return minSquaredDistance;
+  }
+  /**
+   * Return the coordinates of the multipoint.
+   * @return {Array<import("../coordinate.js").Coordinate>} Coordinates.
+   * @api
+   * @override
+   */
+  getCoordinates() {
+    return inflateCoordinates(
+      this.flatCoordinates,
+      0,
+      this.flatCoordinates.length,
+      this.stride
+    );
+  }
+  /**
+   * Return the point at the specified index.
+   * @param {number} index Index.
+   * @return {Point} Point.
+   * @api
+   */
+  getPoint(index) {
+    const n = this.flatCoordinates.length / this.stride;
+    if (index < 0 || n <= index) {
+      return null;
+    }
+    return new Point(
+      this.flatCoordinates.slice(
+        index * this.stride,
+        (index + 1) * this.stride
+      ),
+      this.layout
+    );
+  }
+  /**
+   * Return the points of this multipoint.
+   * @return {Array<Point>} Points.
+   * @api
+   */
+  getPoints() {
+    const flatCoordinates = this.flatCoordinates;
+    const layout = this.layout;
+    const stride = this.stride;
+    const points = [];
+    for (let i = 0, ii = flatCoordinates.length; i < ii; i += stride) {
+      const point2 = new Point(flatCoordinates.slice(i, i + stride), layout);
+      points.push(point2);
+    }
+    return points;
+  }
+  /**
+   * Get the type of this geometry.
+   * @return {import("./Geometry.js").Type} Geometry type.
+   * @api
+   * @override
+   */
+  getType() {
+    return "MultiPoint";
+  }
+  /**
+   * Test if the geometry and the passed extent intersect.
+   * @param {import("../extent.js").Extent} extent Extent.
+   * @return {boolean} `true` if the geometry and the extent intersect.
+   * @api
+   * @override
+   */
+  intersectsExtent(extent) {
+    const flatCoordinates = this.flatCoordinates;
+    const stride = this.stride;
+    for (let i = 0, ii = flatCoordinates.length; i < ii; i += stride) {
+      const x = flatCoordinates[i];
+      const y = flatCoordinates[i + 1];
+      if (containsXY(extent, x, y)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  /**
+   * Set the coordinates of the multipoint.
+   * @param {!Array<import("../coordinate.js").Coordinate>} coordinates Coordinates.
+   * @param {import("./Geometry.js").GeometryLayout} [layout] Layout.
+   * @api
+   * @override
+   */
+  setCoordinates(coordinates2, layout) {
+    this.setLayout(layout, coordinates2, 1);
+    if (!this.flatCoordinates) {
+      this.flatCoordinates = [];
+    }
+    this.flatCoordinates.length = deflateCoordinates(
+      this.flatCoordinates,
+      0,
+      coordinates2,
+      this.stride
+    );
+    this.changed();
+  }
+}
 function getInteriorPointOfArray(flatCoordinates, offset, ends, stride, flatCenters, flatCentersOffset, dest) {
   let i, ii, x, x1, x2, y1, y2;
   const y = flatCenters[flatCentersOffset + 1];
@@ -12742,7 +10343,28 @@ function getInteriorPointOfArray(flatCoordinates, offset, ends, stride, flatCent
   if (isNaN(pointX)) {
     pointX = flatCenters[flatCentersOffset];
   }
+  if (dest) {
+    dest.push(pointX, y, maxSegmentLength);
+    return dest;
+  }
   return [pointX, y, maxSegmentLength];
+}
+function getInteriorPointsOfMultiArray(flatCoordinates, offset, endss, stride, flatCenters) {
+  let interiorPoints = [];
+  for (let i = 0, ii = endss.length; i < ii; ++i) {
+    const ends = endss[i];
+    interiorPoints = getInteriorPointOfArray(
+      flatCoordinates,
+      offset,
+      ends,
+      stride,
+      flatCenters,
+      2 * i,
+      interiorPoints
+    );
+    offset = ends[ends.length - 1];
+  }
+  return interiorPoints;
 }
 function coordinates(flatCoordinates, offset, end, stride) {
   while (offset < end - stride) {
@@ -12791,6 +10413,18 @@ function linearRingsAreOriented(flatCoordinates, offset, ends, stride, right) {
   }
   return true;
 }
+function linearRingssAreOriented(flatCoordinates, offset, endss, stride, right) {
+  for (let i = 0, ii = endss.length; i < ii; ++i) {
+    const ends = endss[i];
+    if (!linearRingsAreOriented(flatCoordinates, offset, ends, stride, right)) {
+      return false;
+    }
+    if (ends.length) {
+      offset = ends[ends.length - 1];
+    }
+  }
+  return true;
+}
 function orientLinearRings(flatCoordinates, offset, ends, stride, right) {
   right = right !== void 0 ? right : false;
   for (let i = 0, ii = ends.length; i < ii; ++i) {
@@ -12808,6 +10442,42 @@ function orientLinearRings(flatCoordinates, offset, ends, stride, right) {
     offset = end;
   }
   return offset;
+}
+function orientLinearRingsArray(flatCoordinates, offset, endss, stride, right) {
+  for (let i = 0, ii = endss.length; i < ii; ++i) {
+    offset = orientLinearRings(
+      flatCoordinates,
+      offset,
+      endss[i],
+      stride,
+      right
+    );
+  }
+  return offset;
+}
+function inflateEnds(flatCoordinates, ends) {
+  const endss = [];
+  let offset = 0;
+  let prevEndIndex = 0;
+  let startOrientation;
+  for (let i = 0, ii = ends.length; i < ii; ++i) {
+    const end = ends[i];
+    const orientation = linearRingIsClockwise(flatCoordinates, offset, end, 2);
+    if (startOrientation === void 0) {
+      startOrientation = orientation;
+    }
+    if (orientation === startOrientation) {
+      endss.push(ends.slice(prevEndIndex, i + 1));
+    } else {
+      if (endss.length === 0) {
+        continue;
+      }
+      endss[endss.length - 1].push(ends[prevEndIndex]);
+    }
+    prevEndIndex = i + 1;
+    offset = end;
+  }
+  return endss;
 }
 class Polygon extends SimpleGeometry {
   /**
@@ -13020,14 +10690,14 @@ class Polygon extends SimpleGeometry {
    * @return {LinearRing|null} Linear ring.
    * @api
    */
-  getLinearRing(index2) {
-    if (index2 < 0 || this.ends_.length <= index2) {
+  getLinearRing(index) {
+    if (index < 0 || this.ends_.length <= index) {
       return null;
     }
     return new LinearRing(
       this.flatCoordinates.slice(
-        index2 === 0 ? 0 : this.ends_[index2 - 1],
-        this.ends_[index2]
+        index === 0 ? 0 : this.ends_[index - 1],
+        this.ends_[index]
       ),
       this.layout
     );
@@ -13147,48 +10817,4139 @@ class Polygon extends SimpleGeometry {
     this.changed();
   }
 }
-function fromExtent(extent) {
-  if (isEmpty(extent)) {
-    throw new Error("Cannot create polygon from empty extent");
+function linearRingss(flatCoordinates, offset, endss, stride) {
+  const flatCenters = [];
+  let extent = createEmpty();
+  for (let i = 0, ii = endss.length; i < ii; ++i) {
+    const ends = endss[i];
+    extent = createOrUpdateFromFlatCoordinates(
+      flatCoordinates,
+      offset,
+      ends[0],
+      stride
+    );
+    flatCenters.push((extent[0] + extent[2]) / 2, (extent[1] + extent[3]) / 2);
+    offset = ends[ends.length - 1];
   }
-  const minX = extent[0];
-  const minY = extent[1];
-  const maxX = extent[2];
-  const maxY = extent[3];
-  const flatCoordinates = [
-    minX,
-    minY,
-    minX,
-    maxY,
-    maxX,
-    maxY,
-    maxX,
-    minY,
-    minX,
-    minY
-  ];
-  return new Polygon(flatCoordinates, "XY", [flatCoordinates.length]);
+  return flatCenters;
 }
-class NowMap extends setCustomFunctionBase(XYZ) {
-  constructor(options = {}) {
-    super(addCommonOptions(options));
-    if (options.mapID) {
-      this.mapID = options.mapID;
+class MultiPolygon extends SimpleGeometry {
+  /**
+   * @param {Array<Array<Array<import("../coordinate.js").Coordinate>>|Polygon>|Array<number>} coordinates Coordinates.
+   *     For internal use, flat coordinates in combination with `layout` and `endss` are also accepted.
+   * @param {import("./Geometry.js").GeometryLayout} [layout] Layout.
+   * @param {Array<Array<number>>} [endss] Array of ends for internal use with flat coordinates.
+   */
+  constructor(coordinates2, layout, endss) {
+    super();
+    this.endss_ = [];
+    this.flatInteriorPointsRevision_ = -1;
+    this.flatInteriorPoints_ = null;
+    this.maxDelta_ = -1;
+    this.maxDeltaRevision_ = -1;
+    this.orientedRevision_ = -1;
+    this.orientedFlatCoordinates_ = null;
+    if (!endss && !Array.isArray(coordinates2[0])) {
+      const polygons = (
+        /** @type {Array<Polygon>} */
+        coordinates2
+      );
+      const flatCoordinates = [];
+      const thisEndss = [];
+      for (let i = 0, ii = polygons.length; i < ii; ++i) {
+        const polygon2 = polygons[i];
+        const offset = flatCoordinates.length;
+        const ends = polygon2.getEnds();
+        for (let j2 = 0, jj = ends.length; j2 < jj; ++j2) {
+          ends[j2] += offset;
+        }
+        extend(flatCoordinates, polygon2.getFlatCoordinates());
+        thisEndss.push(ends);
+      }
+      layout = polygons.length === 0 ? this.getLayout() : polygons[0].getLayout();
+      coordinates2 = flatCoordinates;
+      endss = thisEndss;
     }
-    this.initialize(options);
+    if (layout !== void 0 && endss) {
+      this.setFlatCoordinates(
+        layout,
+        /** @type {Array<number>} */
+        coordinates2
+      );
+      this.endss_ = endss;
+    } else {
+      this.setCoordinates(
+        /** @type {Array<Array<Array<import("../coordinate.js").Coordinate>>>} */
+        coordinates2,
+        layout
+      );
+    }
+  }
+  /**
+   * Append the passed polygon to this multipolygon.
+   * @param {Polygon} polygon Polygon.
+   * @api
+   */
+  appendPolygon(polygon2) {
+    let ends;
+    if (!this.flatCoordinates) {
+      this.flatCoordinates = polygon2.getFlatCoordinates().slice();
+      ends = polygon2.getEnds().slice();
+      this.endss_.push();
+    } else {
+      const offset = this.flatCoordinates.length;
+      extend(this.flatCoordinates, polygon2.getFlatCoordinates());
+      ends = polygon2.getEnds().slice();
+      for (let i = 0, ii = ends.length; i < ii; ++i) {
+        ends[i] += offset;
+      }
+    }
+    this.endss_.push(ends);
+    this.changed();
+  }
+  /**
+   * Make a complete copy of the geometry.
+   * @return {!MultiPolygon} Clone.
+   * @api
+   * @override
+   */
+  clone() {
+    const len = this.endss_.length;
+    const newEndss = new Array(len);
+    for (let i = 0; i < len; ++i) {
+      newEndss[i] = this.endss_[i].slice();
+    }
+    const multiPolygon = new MultiPolygon(
+      this.flatCoordinates.slice(),
+      this.layout,
+      newEndss
+    );
+    multiPolygon.applyProperties(this);
+    return multiPolygon;
+  }
+  /**
+   * @param {number} x X.
+   * @param {number} y Y.
+   * @param {import("../coordinate.js").Coordinate} closestPoint Closest point.
+   * @param {number} minSquaredDistance Minimum squared distance.
+   * @return {number} Minimum squared distance.
+   * @override
+   */
+  closestPointXY(x, y, closestPoint, minSquaredDistance) {
+    if (minSquaredDistance < closestSquaredDistanceXY(this.getExtent(), x, y)) {
+      return minSquaredDistance;
+    }
+    if (this.maxDeltaRevision_ != this.getRevision()) {
+      this.maxDelta_ = Math.sqrt(
+        multiArrayMaxSquaredDelta(
+          this.flatCoordinates,
+          0,
+          this.endss_,
+          this.stride,
+          0
+        )
+      );
+      this.maxDeltaRevision_ = this.getRevision();
+    }
+    return assignClosestMultiArrayPoint(
+      this.getOrientedFlatCoordinates(),
+      0,
+      this.endss_,
+      this.stride,
+      this.maxDelta_,
+      true,
+      x,
+      y,
+      closestPoint,
+      minSquaredDistance
+    );
+  }
+  /**
+   * @param {number} x X.
+   * @param {number} y Y.
+   * @return {boolean} Contains (x, y).
+   * @override
+   */
+  containsXY(x, y) {
+    return linearRingssContainsXY(
+      this.getOrientedFlatCoordinates(),
+      0,
+      this.endss_,
+      this.stride,
+      x,
+      y
+    );
+  }
+  /**
+   * Return the area of the multipolygon on projected plane.
+   * @return {number} Area (on projected plane).
+   * @api
+   */
+  getArea() {
+    return linearRingss$1(
+      this.getOrientedFlatCoordinates(),
+      0,
+      this.endss_,
+      this.stride
+    );
+  }
+  /**
+   * Get the coordinate array for this geometry.  This array has the structure
+   * of a GeoJSON coordinate array for multi-polygons.
+   *
+   * @param {boolean} [right] Orient coordinates according to the right-hand
+   *     rule (counter-clockwise for exterior and clockwise for interior rings).
+   *     If `false`, coordinates will be oriented according to the left-hand rule
+   *     (clockwise for exterior and counter-clockwise for interior rings).
+   *     By default, coordinate orientation will depend on how the geometry was
+   *     constructed.
+   * @return {Array<Array<Array<import("../coordinate.js").Coordinate>>>} Coordinates.
+   * @api
+   * @override
+   */
+  getCoordinates(right) {
+    let flatCoordinates;
+    if (right !== void 0) {
+      flatCoordinates = this.getOrientedFlatCoordinates().slice();
+      orientLinearRingsArray(
+        flatCoordinates,
+        0,
+        this.endss_,
+        this.stride,
+        right
+      );
+    } else {
+      flatCoordinates = this.flatCoordinates;
+    }
+    return inflateMultiCoordinatesArray(
+      flatCoordinates,
+      0,
+      this.endss_,
+      this.stride
+    );
+  }
+  /**
+   * @return {Array<Array<number>>} Endss.
+   */
+  getEndss() {
+    return this.endss_;
+  }
+  /**
+   * @return {Array<number>} Flat interior points.
+   */
+  getFlatInteriorPoints() {
+    if (this.flatInteriorPointsRevision_ != this.getRevision()) {
+      const flatCenters = linearRingss(
+        this.flatCoordinates,
+        0,
+        this.endss_,
+        this.stride
+      );
+      this.flatInteriorPoints_ = getInteriorPointsOfMultiArray(
+        this.getOrientedFlatCoordinates(),
+        0,
+        this.endss_,
+        this.stride,
+        flatCenters
+      );
+      this.flatInteriorPointsRevision_ = this.getRevision();
+    }
+    return (
+      /** @type {Array<number>} */
+      this.flatInteriorPoints_
+    );
+  }
+  /**
+   * Return the interior points as {@link module:ol/geom/MultiPoint~MultiPoint multipoint}.
+   * @return {MultiPoint} Interior points as XYM coordinates, where M is
+   * the length of the horizontal intersection that the point belongs to.
+   * @api
+   */
+  getInteriorPoints() {
+    return new MultiPoint(this.getFlatInteriorPoints().slice(), "XYM");
+  }
+  /**
+   * @return {Array<number>} Oriented flat coordinates.
+   */
+  getOrientedFlatCoordinates() {
+    if (this.orientedRevision_ != this.getRevision()) {
+      const flatCoordinates = this.flatCoordinates;
+      if (linearRingssAreOriented(flatCoordinates, 0, this.endss_, this.stride)) {
+        this.orientedFlatCoordinates_ = flatCoordinates;
+      } else {
+        this.orientedFlatCoordinates_ = flatCoordinates.slice();
+        this.orientedFlatCoordinates_.length = orientLinearRingsArray(
+          this.orientedFlatCoordinates_,
+          0,
+          this.endss_,
+          this.stride
+        );
+      }
+      this.orientedRevision_ = this.getRevision();
+    }
+    return (
+      /** @type {Array<number>} */
+      this.orientedFlatCoordinates_
+    );
+  }
+  /**
+   * @param {number} squaredTolerance Squared tolerance.
+   * @return {MultiPolygon} Simplified MultiPolygon.
+   * @protected
+   * @override
+   */
+  getSimplifiedGeometryInternal(squaredTolerance) {
+    const simplifiedFlatCoordinates = [];
+    const simplifiedEndss = [];
+    simplifiedFlatCoordinates.length = quantizeMultiArray(
+      this.flatCoordinates,
+      0,
+      this.endss_,
+      this.stride,
+      Math.sqrt(squaredTolerance),
+      simplifiedFlatCoordinates,
+      0,
+      simplifiedEndss
+    );
+    return new MultiPolygon(simplifiedFlatCoordinates, "XY", simplifiedEndss);
+  }
+  /**
+   * Return the polygon at the specified index.
+   * @param {number} index Index.
+   * @return {Polygon} Polygon.
+   * @api
+   */
+  getPolygon(index) {
+    if (index < 0 || this.endss_.length <= index) {
+      return null;
+    }
+    let offset;
+    if (index === 0) {
+      offset = 0;
+    } else {
+      const prevEnds = this.endss_[index - 1];
+      offset = prevEnds[prevEnds.length - 1];
+    }
+    const ends = this.endss_[index].slice();
+    const end = ends[ends.length - 1];
+    if (offset !== 0) {
+      for (let i = 0, ii = ends.length; i < ii; ++i) {
+        ends[i] -= offset;
+      }
+    }
+    return new Polygon(
+      this.flatCoordinates.slice(offset, end),
+      this.layout,
+      ends
+    );
+  }
+  /**
+   * Return the polygons of this multipolygon.
+   * @return {Array<Polygon>} Polygons.
+   * @api
+   */
+  getPolygons() {
+    const layout = this.layout;
+    const flatCoordinates = this.flatCoordinates;
+    const endss = this.endss_;
+    const polygons = [];
+    let offset = 0;
+    for (let i = 0, ii = endss.length; i < ii; ++i) {
+      const ends = endss[i].slice();
+      const end = ends[ends.length - 1];
+      if (offset !== 0) {
+        for (let j2 = 0, jj = ends.length; j2 < jj; ++j2) {
+          ends[j2] -= offset;
+        }
+      }
+      const polygon2 = new Polygon(
+        flatCoordinates.slice(offset, end),
+        layout,
+        ends
+      );
+      polygons.push(polygon2);
+      offset = end;
+    }
+    return polygons;
+  }
+  /**
+   * Get the type of this geometry.
+   * @return {import("./Geometry.js").Type} Geometry type.
+   * @api
+   * @override
+   */
+  getType() {
+    return "MultiPolygon";
+  }
+  /**
+   * Test if the geometry and the passed extent intersect.
+   * @param {import("../extent.js").Extent} extent Extent.
+   * @return {boolean} `true` if the geometry and the extent intersect.
+   * @api
+   * @override
+   */
+  intersectsExtent(extent) {
+    return intersectsLinearRingMultiArray(
+      this.getOrientedFlatCoordinates(),
+      0,
+      this.endss_,
+      this.stride,
+      extent
+    );
+  }
+  /**
+   * Set the coordinates of the multipolygon.
+   * @param {!Array<Array<Array<import("../coordinate.js").Coordinate>>>} coordinates Coordinates.
+   * @param {import("./Geometry.js").GeometryLayout} [layout] Layout.
+   * @api
+   * @override
+   */
+  setCoordinates(coordinates2, layout) {
+    this.setLayout(layout, coordinates2, 3);
+    if (!this.flatCoordinates) {
+      this.flatCoordinates = [];
+    }
+    const endss = deflateMultiCoordinatesArray(
+      this.flatCoordinates,
+      0,
+      coordinates2,
+      this.stride,
+      this.endss_
+    );
+    if (endss.length === 0) {
+      this.flatCoordinates.length = 0;
+    } else {
+      const lastEnds = endss[endss.length - 1];
+      this.flatCoordinates.length = lastEnds.length === 0 ? 0 : lastEnds[lastEnds.length - 1];
+    }
+    this.changed();
   }
 }
-class MapboxMap extends NowMap {
-  constructor(options = {}) {
-    super(options);
-    __publicField(this, "style", "");
-    __publicField(this, "accessToken", "");
-    __publicField(this, "mapboxMap");
-    this.style = options.style;
-    this.mapboxMap = options.mapboxMap;
+const TileState = {
+  IDLE: 0,
+  LOADING: 1,
+  LOADED: 2,
+  /**
+   * Indicates that tile loading failed
+   * @type {number}
+   */
+  ERROR: 3,
+  EMPTY: 4
+};
+function easeIn(t) {
+  return Math.pow(t, 3);
+}
+function easeOut(t) {
+  return 1 - easeIn(1 - t);
+}
+function linear(t) {
+  return t;
+}
+class Tile extends Target {
+  /**
+   * @param {import("./tilecoord.js").TileCoord} tileCoord Tile coordinate.
+   * @param {import("./TileState.js").default} state State.
+   * @param {Options} [options] Tile options.
+   */
+  constructor(tileCoord, state, options) {
+    super();
+    options = options ? options : {};
+    this.tileCoord = tileCoord;
+    this.state = state;
+    this.key = "";
+    this.transition_ = options.transition === void 0 ? 250 : options.transition;
+    this.transitionStarts_ = {};
+    this.interpolate = !!options.interpolate;
+  }
+  /**
+   * @protected
+   */
+  changed() {
+    this.dispatchEvent(EventType.CHANGE);
+  }
+  /**
+   * Called by the tile cache when the tile is removed from the cache due to expiry
+   */
+  release() {
+    this.setState(TileState.EMPTY);
+  }
+  /**
+   * @return {string} Key.
+   */
+  getKey() {
+    return this.key + "/" + this.tileCoord;
+  }
+  /**
+   * Get the tile coordinate for this tile.
+   * @return {import("./tilecoord.js").TileCoord} The tile coordinate.
+   * @api
+   */
+  getTileCoord() {
+    return this.tileCoord;
+  }
+  /**
+   * @return {import("./TileState.js").default} State.
+   */
+  getState() {
+    return this.state;
+  }
+  /**
+   * Sets the state of this tile. If you write your own {@link module:ol/Tile~LoadFunction tileLoadFunction} ,
+   * it is important to set the state correctly to {@link module:ol/TileState~ERROR}
+   * when the tile cannot be loaded. Otherwise the tile cannot be removed from
+   * the tile queue and will block other requests.
+   * @param {import("./TileState.js").default} state State.
+   * @api
+   */
+  setState(state) {
+    if (this.state === TileState.EMPTY) {
+      return;
+    }
+    if (this.state !== TileState.ERROR && this.state > state) {
+      throw new Error("Tile load sequence violation");
+    }
+    this.state = state;
+    this.changed();
+  }
+  /**
+   * Load the image or retry if loading previously failed.
+   * Loading is taken care of by the tile queue, and calling this method is
+   * only needed for preloading or for reloading in case of an error.
+   * @abstract
+   * @api
+   */
+  load() {
+    abstract();
+  }
+  /**
+   * Get the alpha value for rendering.
+   * @param {string} id An id for the renderer.
+   * @param {number} time The render frame time.
+   * @return {number} A number between 0 and 1.
+   */
+  getAlpha(id, time) {
+    if (!this.transition_) {
+      return 1;
+    }
+    let start = this.transitionStarts_[id];
+    if (!start) {
+      start = time;
+      this.transitionStarts_[id] = start;
+    } else if (start === -1) {
+      return 1;
+    }
+    const delta = time - start + 1e3 / 60;
+    if (delta >= this.transition_) {
+      return 1;
+    }
+    return easeIn(delta / this.transition_);
+  }
+  /**
+   * Determine if a tile is in an alpha transition.  A tile is considered in
+   * transition if tile.getAlpha() has not yet been called or has been called
+   * and returned 1.
+   * @param {string} id An id for the renderer.
+   * @return {boolean} The tile is in transition.
+   */
+  inTransition(id) {
+    if (!this.transition_) {
+      return false;
+    }
+    return this.transitionStarts_[id] !== -1;
+  }
+  /**
+   * Mark a transition as complete.
+   * @param {string} id An id for the renderer.
+   */
+  endTransition(id) {
+    if (this.transition_) {
+      this.transitionStarts_[id] = -1;
+    }
+  }
+  /**
+   * @override
+   */
+  disposeInternal() {
+    this.release();
+    super.disposeInternal();
   }
 }
-__publicField(MapboxMap, "isMapbox_", true);
+const ua = typeof navigator !== "undefined" && typeof navigator.userAgent !== "undefined" ? navigator.userAgent.toLowerCase() : "";
+const SAFARI = ua.includes("safari") && !ua.includes("chrom");
+SAFARI && (ua.includes("version/15.4") || /cpu (os|iphone os) 15_4 like mac os x/.test(ua));
+const WEBKIT = ua.includes("webkit") && !ua.includes("edge");
+const MAC = ua.includes("macintosh");
+const WORKER_OFFSCREEN_CANVAS = typeof WorkerGlobalScope !== "undefined" && typeof OffscreenCanvas !== "undefined" && self instanceof WorkerGlobalScope;
+(function() {
+  let passive = false;
+  try {
+    const options = Object.defineProperty({}, "passive", {
+      get: function() {
+        passive = true;
+      }
+    });
+    window.addEventListener("_", null, options);
+    window.removeEventListener("_", null, options);
+  } catch {
+  }
+  return passive;
+})();
+function createCanvasContext2D(width, height, canvasPool2, settings) {
+  let canvas;
+  if (canvasPool2 && canvasPool2.length) {
+    canvas = /** @type {HTMLCanvasElement} */
+    canvasPool2.shift();
+  } else if (WORKER_OFFSCREEN_CANVAS) {
+    canvas = new OffscreenCanvas(width, height);
+  } else {
+    canvas = document.createElement("canvas");
+  }
+  {
+    canvas.width = width;
+  }
+  {
+    canvas.height = height;
+  }
+  return (
+    /** @type {CanvasRenderingContext2D} */
+    canvas.getContext("2d", settings)
+  );
+}
+function releaseCanvas(context) {
+  const canvas = context.canvas;
+  canvas.width = 1;
+  canvas.height = 1;
+  context.clearRect(0, 0, 1, 1);
+}
+const canvasPool = [];
+class VectorRenderTile extends Tile {
+  /**
+   * @param {import("./tilecoord.js").TileCoord} tileCoord Tile coordinate.
+   * @param {import("./TileState.js").default} state State.
+   * @param {import("./tilecoord.js").TileCoord} urlTileCoord Wrapped tile coordinate for source urls.
+   * @param {function(VectorRenderTile):Array<import("./VectorTile").default>} getSourceTiles Function.
+   * @param {function(VectorRenderTile):void} removeSourceTiles Function.
+   */
+  constructor(tileCoord, state, urlTileCoord, getSourceTiles, removeSourceTiles) {
+    super(tileCoord, state, { transition: 0 });
+    this.context_ = null;
+    this.executorGroups = {};
+    this.loadingSourceTiles = 0;
+    this.hitDetectionImageData = {};
+    this.replayState_ = {};
+    this.sourceTiles = [];
+    this.errorTileKeys = {};
+    this.wantedResolution;
+    this.getSourceTiles = getSourceTiles.bind(void 0, this);
+    this.removeSourceTiles_ = removeSourceTiles;
+    this.wrappedTileCoord = urlTileCoord;
+  }
+  /**
+   * @return {CanvasRenderingContext2D} The rendering context.
+   */
+  getContext() {
+    if (!this.context_) {
+      this.context_ = createCanvasContext2D(1, 1, canvasPool);
+    }
+    return this.context_;
+  }
+  /**
+   * @return {boolean} Tile has a rendering context.
+   */
+  hasContext() {
+    return !!this.context_;
+  }
+  /**
+   * Get the Canvas for this tile.
+   * @return {HTMLCanvasElement} Canvas.
+   */
+  getImage() {
+    return this.hasContext() ? this.getContext().canvas : null;
+  }
+  /**
+   * @param {import("./layer/Layer.js").default} layer Layer.
+   * @return {ReplayState} The replay state.
+   */
+  getReplayState(layer) {
+    const key = getUid(layer);
+    if (!(key in this.replayState_)) {
+      this.replayState_[key] = {
+        dirty: false,
+        renderedRenderOrder: null,
+        renderedResolution: NaN,
+        renderedRevision: -1,
+        renderedTileResolution: NaN,
+        renderedTileRevision: -1,
+        renderedTileZ: -1
+      };
+    }
+    return this.replayState_[key];
+  }
+  /**
+   * Load the tile.
+   * @override
+   */
+  load() {
+    this.getSourceTiles();
+  }
+  /**
+   * Remove from the cache due to expiry
+   * @override
+   */
+  release() {
+    if (this.context_) {
+      releaseCanvas(this.context_);
+      canvasPool.push(this.context_.canvas);
+      this.context_ = null;
+    }
+    this.removeSourceTiles_(this);
+    this.sourceTiles.length = 0;
+    super.release();
+  }
+}
+let VectorTile$1 = class VectorTile extends Tile {
+  /**
+   * @param {import("./tilecoord.js").TileCoord} tileCoord Tile coordinate.
+   * @param {import("./TileState.js").default} state State.
+   * @param {string} src Data source url.
+   * @param {import("./format/Feature.js").default<FeatureType>} format Feature format.
+   * @param {import("./Tile.js").LoadFunction} tileLoadFunction Tile load function.
+   * @param {import("./Tile.js").Options} [options] Tile options.
+   */
+  constructor(tileCoord, state, src, format, tileLoadFunction, options) {
+    super(tileCoord, state, options);
+    this.extent = null;
+    this.format_ = format;
+    this.features_ = null;
+    this.loader_;
+    this.projection = null;
+    this.resolution;
+    this.tileLoadFunction_ = tileLoadFunction;
+    this.url_ = src;
+    this.key = src;
+  }
+  /**
+   * @return {string} Tile url.
+   */
+  getTileUrl() {
+    return this.url_;
+  }
+  /**
+   * Get the feature format assigned for reading this tile's features.
+   * @return {import("./format/Feature.js").default<FeatureType>} Feature format.
+   * @api
+   */
+  getFormat() {
+    return this.format_;
+  }
+  /**
+   * Get the features for this tile. Geometries will be in the view projection.
+   * @return {Array<FeatureType>} Features.
+   * @api
+   */
+  getFeatures() {
+    return this.features_;
+  }
+  /**
+   * Load not yet loaded URI.
+   * @override
+   */
+  load() {
+    if (this.state == TileState.IDLE) {
+      this.setState(TileState.LOADING);
+      this.tileLoadFunction_(this, this.url_);
+      if (this.loader_) {
+        this.loader_(this.extent, this.resolution, this.projection);
+      }
+    }
+  }
+  /**
+   * Handler for successful tile load.
+   * @param {Array<FeatureType>} features The loaded features.
+   * @param {import("./proj/Projection.js").default} dataProjection Data projection.
+   */
+  onLoad(features, dataProjection) {
+    this.setFeatures(features);
+  }
+  /**
+   * Handler for tile load errors.
+   */
+  onError() {
+    this.setState(TileState.ERROR);
+  }
+  /**
+   * Function for use in a {@link module:ol/source/VectorTile~VectorTile}'s `tileLoadFunction`.
+   * Sets the features for the tile.
+   * @param {Array<FeatureType>} features Features.
+   * @api
+   */
+  setFeatures(features) {
+    this.features_ = features;
+    this.setState(TileState.LOADED);
+  }
+  /**
+   * Set the feature loader for reading this tile's features.
+   * @param {import("./featureloader.js").FeatureLoader<FeatureType>} loader Feature loader.
+   * @api
+   */
+  setLoader(loader) {
+    this.loader_ = loader;
+  }
+};
+let withCredentials = false;
+function loadFeaturesXhr(url, format, extent, resolution, projection, success, failure) {
+  const xhr = new XMLHttpRequest();
+  xhr.open(
+    "GET",
+    typeof url === "function" ? url(extent, resolution, projection) : url,
+    true
+  );
+  if (format.getType() == "arraybuffer") {
+    xhr.responseType = "arraybuffer";
+  }
+  xhr.withCredentials = withCredentials;
+  xhr.onload = function(event) {
+    if (!xhr.status || xhr.status >= 200 && xhr.status < 300) {
+      const type = format.getType();
+      try {
+        let source;
+        if (type == "text" || type == "json") {
+          source = xhr.responseText;
+        } else if (type == "xml") {
+          source = xhr.responseXML || xhr.responseText;
+        } else if (type == "arraybuffer") {
+          source = /** @type {ArrayBuffer} */
+          xhr.response;
+        }
+        if (source) {
+          success(
+            /** @type {Array<FeatureType>} */
+            format.readFeatures(source, {
+              extent,
+              featureProjection: projection
+            }),
+            format.readProjection(source)
+          );
+        } else {
+          failure();
+        }
+      } catch {
+        failure();
+      }
+    } else {
+      failure();
+    }
+  };
+  xhr.onerror = failure;
+  xhr.send();
+}
+function scale(size, ratio, dest) {
+  if (dest === void 0) {
+    dest = [0, 0];
+  }
+  dest[0] = size[0] * ratio + 0.5 | 0;
+  dest[1] = size[1] * ratio + 0.5 | 0;
+  return dest;
+}
+function toSize(size, dest) {
+  if (Array.isArray(size)) {
+    return size;
+  }
+  if (dest === void 0) {
+    dest = [size, size];
+  } else {
+    dest[0] = size;
+    dest[1] = size;
+  }
+  return dest;
+}
+class TileRange {
+  /**
+   * @param {number} minX Minimum X.
+   * @param {number} maxX Maximum X.
+   * @param {number} minY Minimum Y.
+   * @param {number} maxY Maximum Y.
+   */
+  constructor(minX, maxX, minY, maxY) {
+    this.minX = minX;
+    this.maxX = maxX;
+    this.minY = minY;
+    this.maxY = maxY;
+  }
+  /**
+   * @param {import("./tilecoord.js").TileCoord} tileCoord Tile coordinate.
+   * @return {boolean} Contains tile coordinate.
+   */
+  contains(tileCoord) {
+    return this.containsXY(tileCoord[1], tileCoord[2]);
+  }
+  /**
+   * @param {TileRange} tileRange Tile range.
+   * @return {boolean} Contains.
+   */
+  containsTileRange(tileRange) {
+    return this.minX <= tileRange.minX && tileRange.maxX <= this.maxX && this.minY <= tileRange.minY && tileRange.maxY <= this.maxY;
+  }
+  /**
+   * @param {number} x Tile coordinate x.
+   * @param {number} y Tile coordinate y.
+   * @return {boolean} Contains coordinate.
+   */
+  containsXY(x, y) {
+    return this.minX <= x && x <= this.maxX && this.minY <= y && y <= this.maxY;
+  }
+  /**
+   * @param {TileRange} tileRange Tile range.
+   * @return {boolean} Equals.
+   */
+  equals(tileRange) {
+    return this.minX == tileRange.minX && this.minY == tileRange.minY && this.maxX == tileRange.maxX && this.maxY == tileRange.maxY;
+  }
+  /**
+   * @param {TileRange} tileRange Tile range.
+   */
+  extend(tileRange) {
+    if (tileRange.minX < this.minX) {
+      this.minX = tileRange.minX;
+    }
+    if (tileRange.maxX > this.maxX) {
+      this.maxX = tileRange.maxX;
+    }
+    if (tileRange.minY < this.minY) {
+      this.minY = tileRange.minY;
+    }
+    if (tileRange.maxY > this.maxY) {
+      this.maxY = tileRange.maxY;
+    }
+  }
+  /**
+   * @return {number} Height.
+   */
+  getHeight() {
+    return this.maxY - this.minY + 1;
+  }
+  /**
+   * @return {import("./size.js").Size} Size.
+   */
+  getSize() {
+    return [this.getWidth(), this.getHeight()];
+  }
+  /**
+   * @return {number} Width.
+   */
+  getWidth() {
+    return this.maxX - this.minX + 1;
+  }
+  /**
+   * @param {TileRange} tileRange Tile range.
+   * @return {boolean} Intersects.
+   */
+  intersects(tileRange) {
+    return this.minX <= tileRange.maxX && this.maxX >= tileRange.minX && this.minY <= tileRange.maxY && this.maxY >= tileRange.minY;
+  }
+}
+function createOrUpdate$1(minX, maxX, minY, maxY, tileRange) {
+  if (tileRange !== void 0) {
+    tileRange.minX = minX;
+    tileRange.maxX = maxX;
+    tileRange.minY = minY;
+    tileRange.maxY = maxY;
+    return tileRange;
+  }
+  return new TileRange(minX, maxX, minY, maxY);
+}
+function createOrUpdate(z2, x, y, tileCoord) {
+  if (tileCoord !== void 0) {
+    tileCoord[0] = z2;
+    tileCoord[1] = x;
+    tileCoord[2] = y;
+    return tileCoord;
+  }
+  return [z2, x, y];
+}
+function hash(tileCoord) {
+  return hashZXY(tileCoord[0], tileCoord[1], tileCoord[2]);
+}
+function hashZXY(z2, x, y) {
+  return (x << z2) + y;
+}
+function withinExtentAndZ(tileCoord, tileGrid) {
+  const z2 = tileCoord[0];
+  const x = tileCoord[1];
+  const y = tileCoord[2];
+  if (tileGrid.getMinZoom() > z2 || z2 > tileGrid.getMaxZoom()) {
+    return false;
+  }
+  const tileRange = tileGrid.getFullTileRange(z2);
+  if (!tileRange) {
+    return true;
+  }
+  return tileRange.containsXY(x, y);
+}
+const DEFAULT_MAX_ZOOM = 42;
+const DEFAULT_TILE_SIZE = 256;
+const tmpTileCoord = [0, 0, 0];
+const DECIMALS = 5;
+class TileGrid {
+  /**
+   * @param {Options} options Tile grid options.
+   */
+  constructor(options) {
+    this.minZoom = options.minZoom !== void 0 ? options.minZoom : 0;
+    this.resolutions_ = options.resolutions;
+    assert(
+      isSorted(
+        this.resolutions_,
+        /**
+         * @param {number} a First resolution
+         * @param {number} b Second resolution
+         * @return {number} Comparison result
+         */
+        (a, b) => b - a
+      ),
+      "`resolutions` must be sorted in descending order"
+    );
+    let zoomFactor;
+    if (!options.origins) {
+      for (let i = 0, ii = this.resolutions_.length - 1; i < ii; ++i) {
+        if (!zoomFactor) {
+          zoomFactor = this.resolutions_[i] / this.resolutions_[i + 1];
+        } else {
+          if (this.resolutions_[i] / this.resolutions_[i + 1] !== zoomFactor) {
+            zoomFactor = void 0;
+            break;
+          }
+        }
+      }
+    }
+    this.zoomFactor_ = zoomFactor;
+    this.maxZoom = this.resolutions_.length - 1;
+    this.origin_ = options.origin !== void 0 ? options.origin : null;
+    this.origins_ = null;
+    if (options.origins !== void 0) {
+      this.origins_ = options.origins;
+      assert(
+        this.origins_.length == this.resolutions_.length,
+        "Number of `origins` and `resolutions` must be equal"
+      );
+    }
+    const extent = options.extent;
+    if (extent !== void 0 && !this.origin_ && !this.origins_) {
+      this.origin_ = getTopLeft(extent);
+    }
+    assert(
+      !this.origin_ && this.origins_ || this.origin_ && !this.origins_,
+      "Either `origin` or `origins` must be configured, never both"
+    );
+    this.tileSizes_ = null;
+    if (options.tileSizes !== void 0) {
+      this.tileSizes_ = options.tileSizes;
+      assert(
+        this.tileSizes_.length == this.resolutions_.length,
+        "Number of `tileSizes` and `resolutions` must be equal"
+      );
+    }
+    this.tileSize_ = options.tileSize !== void 0 ? options.tileSize : !this.tileSizes_ ? DEFAULT_TILE_SIZE : null;
+    assert(
+      !this.tileSize_ && this.tileSizes_ || this.tileSize_ && !this.tileSizes_,
+      "Either `tileSize` or `tileSizes` must be configured, never both"
+    );
+    this.extent_ = extent !== void 0 ? extent : null;
+    this.fullTileRanges_ = null;
+    this.tmpSize_ = [0, 0];
+    this.tmpExtent_ = [0, 0, 0, 0];
+    if (options.sizes !== void 0) {
+      this.fullTileRanges_ = options.sizes.map((size, z2) => {
+        const tileRange = new TileRange(
+          Math.min(0, size[0]),
+          Math.max(size[0] - 1, -1),
+          Math.min(0, size[1]),
+          Math.max(size[1] - 1, -1)
+        );
+        if (extent) {
+          const restrictedTileRange = this.getTileRangeForExtentAndZ(extent, z2);
+          tileRange.minX = Math.max(restrictedTileRange.minX, tileRange.minX);
+          tileRange.maxX = Math.min(restrictedTileRange.maxX, tileRange.maxX);
+          tileRange.minY = Math.max(restrictedTileRange.minY, tileRange.minY);
+          tileRange.maxY = Math.min(restrictedTileRange.maxY, tileRange.maxY);
+        }
+        return tileRange;
+      });
+    } else if (extent) {
+      this.calculateTileRanges_(extent);
+    }
+  }
+  /**
+   * Call a function with each tile coordinate for a given extent and zoom level.
+   *
+   * @param {import("../extent.js").Extent} extent Extent.
+   * @param {number} zoom Integer zoom level.
+   * @param {function(import("../tilecoord.js").TileCoord): void} callback Function called with each tile coordinate.
+   * @api
+   */
+  forEachTileCoord(extent, zoom, callback) {
+    const tileRange = this.getTileRangeForExtentAndZ(extent, zoom);
+    for (let i = tileRange.minX, ii = tileRange.maxX; i <= ii; ++i) {
+      for (let j2 = tileRange.minY, jj = tileRange.maxY; j2 <= jj; ++j2) {
+        callback([zoom, i, j2]);
+      }
+    }
+  }
+  /**
+   * @param {import("../tilecoord.js").TileCoord} tileCoord Tile coordinate.
+   * @param {function(number, import("../TileRange.js").default): boolean} callback Callback.
+   * @param {import("../TileRange.js").default} [tempTileRange] Temporary import("../TileRange.js").default object.
+   * @param {import("../extent.js").Extent} [tempExtent] Temporary import("../extent.js").Extent object.
+   * @return {boolean} Callback succeeded.
+   */
+  forEachTileCoordParentTileRange(tileCoord, callback, tempTileRange, tempExtent) {
+    let tileRange, x, y;
+    let tileCoordExtent = null;
+    let z2 = tileCoord[0] - 1;
+    if (this.zoomFactor_ === 2) {
+      x = tileCoord[1];
+      y = tileCoord[2];
+    } else {
+      tileCoordExtent = this.getTileCoordExtent(tileCoord, tempExtent);
+    }
+    while (z2 >= this.minZoom) {
+      if (x !== void 0 && y !== void 0) {
+        x = Math.floor(x / 2);
+        y = Math.floor(y / 2);
+        tileRange = createOrUpdate$1(x, x, y, y, tempTileRange);
+      } else {
+        tileRange = this.getTileRangeForExtentAndZ(
+          tileCoordExtent,
+          z2,
+          tempTileRange
+        );
+      }
+      if (callback(z2, tileRange)) {
+        return true;
+      }
+      --z2;
+    }
+    return false;
+  }
+  /**
+   * Get the extent for this tile grid, if it was configured.
+   * @return {import("../extent.js").Extent} Extent.
+   * @api
+   */
+  getExtent() {
+    return this.extent_;
+  }
+  /**
+   * Get the maximum zoom level for the grid.
+   * @return {number} Max zoom.
+   * @api
+   */
+  getMaxZoom() {
+    return this.maxZoom;
+  }
+  /**
+   * Get the minimum zoom level for the grid.
+   * @return {number} Min zoom.
+   * @api
+   */
+  getMinZoom() {
+    return this.minZoom;
+  }
+  /**
+   * Get the origin for the grid at the given zoom level.
+   * @param {number} z Integer zoom level.
+   * @return {import("../coordinate.js").Coordinate} Origin.
+   * @api
+   */
+  getOrigin(z2) {
+    if (this.origin_) {
+      return this.origin_;
+    }
+    return this.origins_[z2];
+  }
+  /**
+   * Get the resolution for the given zoom level.
+   * @param {number} z Integer zoom level.
+   * @return {number} Resolution.
+   * @api
+   */
+  getResolution(z2) {
+    return this.resolutions_[z2];
+  }
+  /**
+   * Get the list of resolutions for the tile grid.
+   * @return {Array<number>} Resolutions.
+   * @api
+   */
+  getResolutions() {
+    return this.resolutions_;
+  }
+  /**
+   * @param {import("../tilecoord.js").TileCoord} tileCoord Tile coordinate.
+   * @param {import("../TileRange.js").default} [tempTileRange] Temporary import("../TileRange.js").default object.
+   * @param {import("../extent.js").Extent} [tempExtent] Temporary import("../extent.js").Extent object.
+   * @return {import("../TileRange.js").default|null} Tile range.
+   */
+  getTileCoordChildTileRange(tileCoord, tempTileRange, tempExtent) {
+    if (tileCoord[0] < this.maxZoom) {
+      if (this.zoomFactor_ === 2) {
+        const minX = tileCoord[1] * 2;
+        const minY = tileCoord[2] * 2;
+        return createOrUpdate$1(
+          minX,
+          minX + 1,
+          minY,
+          minY + 1,
+          tempTileRange
+        );
+      }
+      const tileCoordExtent = this.getTileCoordExtent(
+        tileCoord,
+        tempExtent || this.tmpExtent_
+      );
+      return this.getTileRangeForExtentAndZ(
+        tileCoordExtent,
+        tileCoord[0] + 1,
+        tempTileRange
+      );
+    }
+    return null;
+  }
+  /**
+   * @param {import("../tilecoord.js").TileCoord} tileCoord Tile coordinate.
+   * @param {number} z Integer zoom level.
+   * @param {import("../TileRange.js").default} [tempTileRange] Temporary import("../TileRange.js").default object.
+   * @return {import("../TileRange.js").default|null} Tile range.
+   */
+  getTileRangeForTileCoordAndZ(tileCoord, z2, tempTileRange) {
+    if (z2 > this.maxZoom || z2 < this.minZoom) {
+      return null;
+    }
+    const tileCoordZ = tileCoord[0];
+    const tileCoordX = tileCoord[1];
+    const tileCoordY = tileCoord[2];
+    if (z2 === tileCoordZ) {
+      return createOrUpdate$1(
+        tileCoordX,
+        tileCoordY,
+        tileCoordX,
+        tileCoordY,
+        tempTileRange
+      );
+    }
+    if (this.zoomFactor_) {
+      const factor = Math.pow(this.zoomFactor_, z2 - tileCoordZ);
+      const minX = Math.floor(tileCoordX * factor);
+      const minY = Math.floor(tileCoordY * factor);
+      if (z2 < tileCoordZ) {
+        return createOrUpdate$1(minX, minX, minY, minY, tempTileRange);
+      }
+      const maxX = Math.floor(factor * (tileCoordX + 1)) - 1;
+      const maxY = Math.floor(factor * (tileCoordY + 1)) - 1;
+      return createOrUpdate$1(minX, maxX, minY, maxY, tempTileRange);
+    }
+    const tileCoordExtent = this.getTileCoordExtent(tileCoord, this.tmpExtent_);
+    return this.getTileRangeForExtentAndZ(tileCoordExtent, z2, tempTileRange);
+  }
+  /**
+   * Get a tile range for the given extent and integer zoom level.
+   * @param {import("../extent.js").Extent} extent Extent.
+   * @param {number} z Integer zoom level.
+   * @param {import("../TileRange.js").default} [tempTileRange] Temporary tile range object.
+   * @return {import("../TileRange.js").default} Tile range.
+   */
+  getTileRangeForExtentAndZ(extent, z2, tempTileRange) {
+    this.getTileCoordForXYAndZ_(extent[0], extent[3], z2, false, tmpTileCoord);
+    const minX = tmpTileCoord[1];
+    const minY = tmpTileCoord[2];
+    this.getTileCoordForXYAndZ_(extent[2], extent[1], z2, true, tmpTileCoord);
+    const maxX = tmpTileCoord[1];
+    const maxY = tmpTileCoord[2];
+    return createOrUpdate$1(minX, maxX, minY, maxY, tempTileRange);
+  }
+  /**
+   * @param {import("../tilecoord.js").TileCoord} tileCoord Tile coordinate.
+   * @return {import("../coordinate.js").Coordinate} Tile center.
+   */
+  getTileCoordCenter(tileCoord) {
+    const origin = this.getOrigin(tileCoord[0]);
+    const resolution = this.getResolution(tileCoord[0]);
+    const tileSize2 = toSize(this.getTileSize(tileCoord[0]), this.tmpSize_);
+    return [
+      origin[0] + (tileCoord[1] + 0.5) * tileSize2[0] * resolution,
+      origin[1] - (tileCoord[2] + 0.5) * tileSize2[1] * resolution
+    ];
+  }
+  /**
+   * Get the extent of a tile coordinate.
+   *
+   * @param {import("../tilecoord.js").TileCoord} tileCoord Tile coordinate.
+   * @param {import("../extent.js").Extent} [tempExtent] Temporary extent object.
+   * @return {import("../extent.js").Extent} Extent.
+   * @api
+   */
+  getTileCoordExtent(tileCoord, tempExtent) {
+    const origin = this.getOrigin(tileCoord[0]);
+    const resolution = this.getResolution(tileCoord[0]);
+    const tileSize2 = toSize(this.getTileSize(tileCoord[0]), this.tmpSize_);
+    const minX = origin[0] + tileCoord[1] * tileSize2[0] * resolution;
+    const minY = origin[1] - (tileCoord[2] + 1) * tileSize2[1] * resolution;
+    const maxX = minX + tileSize2[0] * resolution;
+    const maxY = minY + tileSize2[1] * resolution;
+    return createOrUpdate$2(minX, minY, maxX, maxY, tempExtent);
+  }
+  /**
+   * Get the tile coordinate for the given map coordinate and resolution.  This
+   * method considers that coordinates that intersect tile boundaries should be
+   * assigned the higher tile coordinate.
+   *
+   * @param {import("../coordinate.js").Coordinate} coordinate Coordinate.
+   * @param {number} resolution Resolution.
+   * @param {import("../tilecoord.js").TileCoord} [opt_tileCoord] Destination import("../tilecoord.js").TileCoord object.
+   * @return {import("../tilecoord.js").TileCoord} Tile coordinate.
+   * @api
+   */
+  getTileCoordForCoordAndResolution(coordinate, resolution, opt_tileCoord) {
+    return this.getTileCoordForXYAndResolution_(
+      coordinate[0],
+      coordinate[1],
+      resolution,
+      false,
+      opt_tileCoord
+    );
+  }
+  /**
+   * Note that this method should not be called for resolutions that correspond
+   * to an integer zoom level.  Instead call the `getTileCoordForXYAndZ_` method.
+   * @param {number} x X.
+   * @param {number} y Y.
+   * @param {number} resolution Resolution (for a non-integer zoom level).
+   * @param {boolean} reverseIntersectionPolicy Instead of letting edge
+   *     intersections go to the higher tile coordinate, let edge intersections
+   *     go to the lower tile coordinate.
+   * @param {import("../tilecoord.js").TileCoord} [opt_tileCoord] Temporary import("../tilecoord.js").TileCoord object.
+   * @return {import("../tilecoord.js").TileCoord} Tile coordinate.
+   * @private
+   */
+  getTileCoordForXYAndResolution_(x, y, resolution, reverseIntersectionPolicy, opt_tileCoord) {
+    const z2 = this.getZForResolution(resolution);
+    const scale2 = resolution / this.getResolution(z2);
+    const origin = this.getOrigin(z2);
+    const tileSize2 = toSize(this.getTileSize(z2), this.tmpSize_);
+    let tileCoordX = scale2 * (x - origin[0]) / resolution / tileSize2[0];
+    let tileCoordY = scale2 * (origin[1] - y) / resolution / tileSize2[1];
+    if (reverseIntersectionPolicy) {
+      tileCoordX = ceil(tileCoordX, DECIMALS) - 1;
+      tileCoordY = ceil(tileCoordY, DECIMALS) - 1;
+    } else {
+      tileCoordX = floor(tileCoordX, DECIMALS);
+      tileCoordY = floor(tileCoordY, DECIMALS);
+    }
+    return createOrUpdate(z2, tileCoordX, tileCoordY, opt_tileCoord);
+  }
+  /**
+   * Although there is repetition between this method and `getTileCoordForXYAndResolution_`,
+   * they should have separate implementations.  This method is for integer zoom
+   * levels.  The other method should only be called for resolutions corresponding
+   * to non-integer zoom levels.
+   * @param {number} x Map x coordinate.
+   * @param {number} y Map y coordinate.
+   * @param {number} z Integer zoom level.
+   * @param {boolean} reverseIntersectionPolicy Instead of letting edge
+   *     intersections go to the higher tile coordinate, let edge intersections
+   *     go to the lower tile coordinate.
+   * @param {import("../tilecoord.js").TileCoord} [opt_tileCoord] Temporary import("../tilecoord.js").TileCoord object.
+   * @return {import("../tilecoord.js").TileCoord} Tile coordinate.
+   * @private
+   */
+  getTileCoordForXYAndZ_(x, y, z2, reverseIntersectionPolicy, opt_tileCoord) {
+    const origin = this.getOrigin(z2);
+    const resolution = this.getResolution(z2);
+    const tileSize2 = toSize(this.getTileSize(z2), this.tmpSize_);
+    let tileCoordX = (x - origin[0]) / resolution / tileSize2[0];
+    let tileCoordY = (origin[1] - y) / resolution / tileSize2[1];
+    if (reverseIntersectionPolicy) {
+      tileCoordX = ceil(tileCoordX, DECIMALS) - 1;
+      tileCoordY = ceil(tileCoordY, DECIMALS) - 1;
+    } else {
+      tileCoordX = floor(tileCoordX, DECIMALS);
+      tileCoordY = floor(tileCoordY, DECIMALS);
+    }
+    return createOrUpdate(z2, tileCoordX, tileCoordY, opt_tileCoord);
+  }
+  /**
+   * Get a tile coordinate given a map coordinate and zoom level.
+   * @param {import("../coordinate.js").Coordinate} coordinate Coordinate.
+   * @param {number} z Integer zoom level, e.g. the result of a `getZForResolution()` method call
+   * @param {import("../tilecoord.js").TileCoord} [opt_tileCoord] Destination import("../tilecoord.js").TileCoord object.
+   * @return {import("../tilecoord.js").TileCoord} Tile coordinate.
+   * @api
+   */
+  getTileCoordForCoordAndZ(coordinate, z2, opt_tileCoord) {
+    return this.getTileCoordForXYAndZ_(
+      coordinate[0],
+      coordinate[1],
+      z2,
+      false,
+      opt_tileCoord
+    );
+  }
+  /**
+   * @param {import("../tilecoord.js").TileCoord} tileCoord Tile coordinate.
+   * @return {number} Tile resolution.
+   */
+  getTileCoordResolution(tileCoord) {
+    return this.resolutions_[tileCoord[0]];
+  }
+  /**
+   * Get the tile size for a zoom level. The type of the return value matches the
+   * `tileSize` or `tileSizes` that the tile grid was configured with. To always
+   * get an {@link import("../size.js").Size}, run the result through {@link module:ol/size.toSize}.
+   * @param {number} z Z.
+   * @return {number|import("../size.js").Size} Tile size.
+   * @api
+   */
+  getTileSize(z2) {
+    if (this.tileSize_) {
+      return this.tileSize_;
+    }
+    return this.tileSizes_[z2];
+  }
+  /**
+   * @param {number} z Zoom level.
+   * @return {import("../TileRange.js").default|null} Extent tile range for the specified zoom level.
+   */
+  getFullTileRange(z2) {
+    if (!this.fullTileRanges_) {
+      return this.extent_ ? this.getTileRangeForExtentAndZ(this.extent_, z2) : null;
+    }
+    return this.fullTileRanges_[z2];
+  }
+  /**
+   * @param {number} resolution Resolution.
+   * @param {number|import("../array.js").NearestDirectionFunction} [opt_direction]
+   *     If 0, the nearest resolution will be used.
+   *     If 1, the nearest higher resolution (lower Z) will be used. If -1, the
+   *     nearest lower resolution (higher Z) will be used. Default is 0.
+   *     Use a {@link module:ol/array~NearestDirectionFunction} for more precise control.
+   *
+   * For example to change tile Z at the midpoint of zoom levels
+   * ```js
+   * function(value, high, low) {
+   *   return value - low * Math.sqrt(high / low);
+   * }
+   * ```
+   * @return {number} Z.
+   * @api
+   */
+  getZForResolution(resolution, opt_direction) {
+    const z2 = linearFindNearest(
+      this.resolutions_,
+      resolution,
+      opt_direction || 0
+    );
+    return clamp(z2, this.minZoom, this.maxZoom);
+  }
+  /**
+   * The tile with the provided tile coordinate intersects the given viewport.
+   * @param {import('../tilecoord.js').TileCoord} tileCoord Tile coordinate.
+   * @param {Array<number>} viewport Viewport as returned from {@link module:ol/extent.getRotatedViewport}.
+   * @return {boolean} The tile with the provided tile coordinate intersects the given viewport.
+   */
+  tileCoordIntersectsViewport(tileCoord, viewport) {
+    return intersectsLinearRing(
+      viewport,
+      0,
+      viewport.length,
+      2,
+      this.getTileCoordExtent(tileCoord)
+    );
+  }
+  /**
+   * @param {!import("../extent.js").Extent} extent Extent for this tile grid.
+   * @private
+   */
+  calculateTileRanges_(extent) {
+    const length = this.resolutions_.length;
+    const fullTileRanges = new Array(length);
+    for (let z2 = this.minZoom; z2 < length; ++z2) {
+      fullTileRanges[z2] = this.getTileRangeForExtentAndZ(extent, z2);
+    }
+    this.fullTileRanges_ = fullTileRanges;
+  }
+}
+function getForProjection(projection) {
+  let tileGrid = projection.getDefaultTileGrid();
+  if (!tileGrid) {
+    tileGrid = createForProjection(projection);
+    projection.setDefaultTileGrid(tileGrid);
+  }
+  return tileGrid;
+}
+function wrapX(tileGrid, tileCoord, projection) {
+  const z2 = tileCoord[0];
+  const center = tileGrid.getTileCoordCenter(tileCoord);
+  const projectionExtent = extentFromProjection(projection);
+  if (!containsCoordinate(projectionExtent, center)) {
+    const worldWidth = getWidth(projectionExtent);
+    const worldsAway = Math.ceil(
+      (projectionExtent[0] - center[0]) / worldWidth
+    );
+    center[0] += worldWidth * worldsAway;
+    return tileGrid.getTileCoordForCoordAndZ(center, z2);
+  }
+  return tileCoord;
+}
+function createForExtent(extent, maxZoom, tileSize2, corner) {
+  corner = corner !== void 0 ? corner : "top-left";
+  const resolutions = resolutionsFromExtent(extent, maxZoom, tileSize2);
+  return new TileGrid({
+    extent,
+    origin: getCorner(extent, corner),
+    resolutions,
+    tileSize: tileSize2
+  });
+}
+function createXYZ(options) {
+  const xyzOptions = options || {};
+  const extent = xyzOptions.extent || get("EPSG:3857").getExtent();
+  const gridOptions = {
+    extent,
+    minZoom: xyzOptions.minZoom,
+    tileSize: xyzOptions.tileSize,
+    resolutions: resolutionsFromExtent(
+      extent,
+      xyzOptions.maxZoom,
+      xyzOptions.tileSize,
+      xyzOptions.maxResolution
+    )
+  };
+  return new TileGrid(gridOptions);
+}
+function resolutionsFromExtent(extent, maxZoom, tileSize2, maxResolution) {
+  maxZoom = maxZoom !== void 0 ? maxZoom : DEFAULT_MAX_ZOOM;
+  tileSize2 = toSize(tileSize2 !== void 0 ? tileSize2 : DEFAULT_TILE_SIZE);
+  const height = getHeight(extent);
+  const width = getWidth(extent);
+  maxResolution = maxResolution > 0 ? maxResolution : Math.max(width / tileSize2[0], height / tileSize2[1]);
+  const length = maxZoom + 1;
+  const resolutions = new Array(length);
+  for (let z2 = 0; z2 < length; ++z2) {
+    resolutions[z2] = maxResolution / Math.pow(2, z2);
+  }
+  return resolutions;
+}
+function createForProjection(projection, maxZoom, tileSize2, corner) {
+  const extent = extentFromProjection(projection);
+  return createForExtent(extent, maxZoom, tileSize2, corner);
+}
+function extentFromProjection(projection) {
+  projection = get(projection);
+  let extent = projection.getExtent();
+  if (!extent) {
+    const half = 180 * METERS_PER_UNIT$1.degrees / projection.getMetersPerUnit();
+    extent = createOrUpdate$2(-half, -half, half, half);
+  }
+  return extent;
+}
+const zRegEx = /\{z\}/g;
+const xRegEx = /\{x\}/g;
+const yRegEx = /\{y\}/g;
+const dashYRegEx = /\{-y\}/g;
+function renderXYZTemplate(template2, z2, x, y, maxY) {
+  return template2.replace(zRegEx, z2.toString()).replace(xRegEx, x.toString()).replace(yRegEx, y.toString()).replace(dashYRegEx, function() {
+    if (maxY === void 0) {
+      throw new Error(
+        "If the URL template has a {-y} placeholder, the grid extent must be known"
+      );
+    }
+    return (maxY - y).toString();
+  });
+}
+function expandUrl(url) {
+  const urls = [];
+  let match = /\{([a-z])-([a-z])\}/.exec(url);
+  if (match) {
+    const startCharCode = match[1].charCodeAt(0);
+    const stopCharCode = match[2].charCodeAt(0);
+    let charCode;
+    for (charCode = startCharCode; charCode <= stopCharCode; ++charCode) {
+      urls.push(url.replace(match[0], String.fromCharCode(charCode)));
+    }
+    return urls;
+  }
+  match = /\{(\d+)-(\d+)\}/.exec(url);
+  if (match) {
+    const stop = parseInt(match[2], 10);
+    for (let i = parseInt(match[1], 10); i <= stop; i++) {
+      urls.push(url.replace(match[0], i.toString()));
+    }
+    return urls;
+  }
+  urls.push(url);
+  return urls;
+}
+function createFromTemplate(template2, tileGrid) {
+  return (
+    /**
+     * @param {import("./tilecoord.js").TileCoord} tileCoord Tile Coordinate.
+     * @param {number} pixelRatio Pixel ratio.
+     * @param {import("./proj/Projection.js").default} projection Projection.
+     * @return {string|undefined} Tile URL.
+     */
+    function(tileCoord, pixelRatio, projection) {
+      if (!tileCoord) {
+        return void 0;
+      }
+      let maxY;
+      const z2 = tileCoord[0];
+      if (tileGrid) {
+        const range = tileGrid.getFullTileRange(z2);
+        if (range) {
+          maxY = range.getHeight() - 1;
+        }
+      }
+      return renderXYZTemplate(template2, z2, tileCoord[1], tileCoord[2], maxY);
+    }
+  );
+}
+function createFromTemplates(templates, tileGrid) {
+  const len = templates.length;
+  const tileUrlFunctions = new Array(len);
+  for (let i = 0; i < len; ++i) {
+    tileUrlFunctions[i] = createFromTemplate(templates[i], tileGrid);
+  }
+  return createFromTileUrlFunctions(tileUrlFunctions);
+}
+function createFromTileUrlFunctions(tileUrlFunctions) {
+  if (tileUrlFunctions.length === 1) {
+    return tileUrlFunctions[0];
+  }
+  return (
+    /**
+     * @param {import("./tilecoord.js").TileCoord} tileCoord Tile Coordinate.
+     * @param {number} pixelRatio Pixel ratio.
+     * @param {import("./proj/Projection.js").default} projection Projection.
+     * @return {string|undefined} Tile URL.
+     */
+    function(tileCoord, pixelRatio, projection) {
+      if (!tileCoord) {
+        return void 0;
+      }
+      const h = hash(tileCoord);
+      const index = modulo(h, tileUrlFunctions.length);
+      return tileUrlFunctions[index](tileCoord, pixelRatio, projection);
+    }
+  );
+}
+class Source extends BaseObject {
+  /**
+   * @param {Options} options Source options.
+   */
+  constructor(options) {
+    super();
+    this.projection = get(options.projection);
+    this.attributions_ = adaptAttributions(options.attributions);
+    this.attributionsCollapsible_ = options.attributionsCollapsible ?? true;
+    this.loading = false;
+    this.state_ = options.state !== void 0 ? options.state : "ready";
+    this.wrapX_ = options.wrapX !== void 0 ? options.wrapX : false;
+    this.interpolate_ = !!options.interpolate;
+    this.viewResolver = null;
+    this.viewRejector = null;
+    const self2 = this;
+    this.viewPromise_ = new Promise(function(resolve, reject) {
+      self2.viewResolver = resolve;
+      self2.viewRejector = reject;
+    });
+  }
+  /**
+   * Get the attribution function for the source.
+   * @return {?Attribution} Attribution function.
+   * @api
+   */
+  getAttributions() {
+    return this.attributions_;
+  }
+  /**
+   * @return {boolean} Attributions are collapsible.
+   * @api
+   */
+  getAttributionsCollapsible() {
+    return this.attributionsCollapsible_;
+  }
+  /**
+   * Get the projection of the source.
+   * @return {import("../proj/Projection.js").default|null} Projection.
+   * @api
+   */
+  getProjection() {
+    return this.projection;
+  }
+  /**
+   * @param {import("../proj/Projection").default} [projection] Projection.
+   * @return {Array<number>|null} Resolutions.
+   */
+  getResolutions(projection) {
+    return null;
+  }
+  /**
+   * @return {Promise<import("../View.js").ViewOptions>} A promise for view-related properties.
+   */
+  getView() {
+    return this.viewPromise_;
+  }
+  /**
+   * Get the state of the source, see {@link import("./Source.js").State} for possible states.
+   * @return {import("./Source.js").State} State.
+   * @api
+   */
+  getState() {
+    return this.state_;
+  }
+  /**
+   * @return {boolean|undefined} Wrap X.
+   */
+  getWrapX() {
+    return this.wrapX_;
+  }
+  /**
+   * @return {boolean} Use linear interpolation when resampling.
+   */
+  getInterpolate() {
+    return this.interpolate_;
+  }
+  /**
+   * Refreshes the source. The source will be cleared, and data from the server will be reloaded.
+   * @api
+   */
+  refresh() {
+    this.changed();
+  }
+  /**
+   * Set the attributions of the source.
+   * @param {AttributionLike|undefined} attributions Attributions.
+   *     Can be passed as `string`, `Array<string>`, {@link module:ol/source/Source~Attribution},
+   *     or `undefined`.
+   * @api
+   */
+  setAttributions(attributions) {
+    this.attributions_ = adaptAttributions(attributions);
+    this.changed();
+  }
+  /**
+   * Set the state of the source.
+   * @param {import("./Source.js").State} state State.
+   */
+  setState(state) {
+    this.state_ = state;
+    this.changed();
+  }
+}
+function adaptAttributions(attributionLike) {
+  if (!attributionLike) {
+    return null;
+  }
+  if (typeof attributionLike === "function") {
+    return attributionLike;
+  }
+  if (!Array.isArray(attributionLike)) {
+    attributionLike = [attributionLike];
+  }
+  return (frameState) => attributionLike;
+}
+class TileSource extends Source {
+  /**
+   * @param {Options} options SourceTile source options.
+   */
+  constructor(options) {
+    super({
+      attributions: options.attributions,
+      attributionsCollapsible: options.attributionsCollapsible,
+      projection: options.projection,
+      state: options.state,
+      wrapX: options.wrapX,
+      interpolate: options.interpolate
+    });
+    this.on;
+    this.once;
+    this.un;
+    this.tilePixelRatio_ = options.tilePixelRatio !== void 0 ? options.tilePixelRatio : 1;
+    this.tileGrid = options.tileGrid !== void 0 ? options.tileGrid : null;
+    const tileSize2 = [256, 256];
+    if (this.tileGrid) {
+      toSize(this.tileGrid.getTileSize(this.tileGrid.getMinZoom()), tileSize2);
+    }
+    this.tmpSize = [0, 0];
+    this.key_ = options.key || getUid(this);
+    this.tileOptions = {
+      transition: options.transition,
+      interpolate: options.interpolate
+    };
+    this.zDirection = options.zDirection ? options.zDirection : 0;
+  }
+  /**
+   * @param {import("../proj/Projection.js").default} projection Projection.
+   * @return {number} Gutter.
+   */
+  getGutterForProjection(projection) {
+    return 0;
+  }
+  /**
+   * Return the key to be used for all tiles in the source.
+   * @return {string} The key for all tiles.
+   */
+  getKey() {
+    return this.key_;
+  }
+  /**
+   * Set the value to be used as the key for all tiles in the source.
+   * @param {string} key The key for tiles.
+   * @protected
+   */
+  setKey(key) {
+    if (this.key_ !== key) {
+      this.key_ = key;
+      this.changed();
+    }
+  }
+  /**
+   * @param {import("../proj/Projection").default} [projection] Projection.
+   * @return {Array<number>|null} Resolutions.
+   * @override
+   */
+  getResolutions(projection) {
+    const tileGrid = projection ? this.getTileGridForProjection(projection) : this.tileGrid;
+    if (!tileGrid) {
+      return null;
+    }
+    return tileGrid.getResolutions();
+  }
+  /**
+   * @abstract
+   * @param {number} z Tile coordinate z.
+   * @param {number} x Tile coordinate x.
+   * @param {number} y Tile coordinate y.
+   * @param {number} pixelRatio Pixel ratio.
+   * @param {import("../proj/Projection.js").default} projection Projection.
+   * @return {TileType|null} Tile.
+   */
+  getTile(z2, x, y, pixelRatio, projection) {
+    return abstract();
+  }
+  /**
+   * Return the tile grid of the tile source.
+   * @return {import("../tilegrid/TileGrid.js").default|null} Tile grid.
+   * @api
+   */
+  getTileGrid() {
+    return this.tileGrid;
+  }
+  /**
+   * @param {import("../proj/Projection.js").default} projection Projection.
+   * @return {!import("../tilegrid/TileGrid.js").default} Tile grid.
+   */
+  getTileGridForProjection(projection) {
+    if (!this.tileGrid) {
+      return getForProjection(projection);
+    }
+    return this.tileGrid;
+  }
+  /**
+   * Get the tile pixel ratio for this source. Subclasses may override this
+   * method, which is meant to return a supported pixel ratio that matches the
+   * provided `pixelRatio` as close as possible.
+   * @param {number} pixelRatio Pixel ratio.
+   * @return {number} Tile pixel ratio.
+   */
+  getTilePixelRatio(pixelRatio) {
+    return this.tilePixelRatio_;
+  }
+  /**
+   * @param {number} z Z.
+   * @param {number} pixelRatio Pixel ratio.
+   * @param {import("../proj/Projection.js").default} projection Projection.
+   * @return {import("../size.js").Size} Tile size.
+   */
+  getTilePixelSize(z2, pixelRatio, projection) {
+    const tileGrid = this.getTileGridForProjection(projection);
+    const tilePixelRatio = this.getTilePixelRatio(pixelRatio);
+    const tileSize2 = toSize(tileGrid.getTileSize(z2), this.tmpSize);
+    if (tilePixelRatio == 1) {
+      return tileSize2;
+    }
+    return scale(tileSize2, tilePixelRatio, this.tmpSize);
+  }
+  /**
+   * Returns a tile coordinate wrapped around the x-axis. When the tile coordinate
+   * is outside the resolution and extent range of the tile grid, `null` will be
+   * returned.
+   * @param {import("../tilecoord.js").TileCoord} tileCoord Tile coordinate.
+   * @param {import("../proj/Projection.js").default} [projection] Projection.
+   * @return {import("../tilecoord.js").TileCoord} Tile coordinate to be passed to the tileUrlFunction or
+   *     null if no tile URL should be created for the passed `tileCoord`.
+   */
+  getTileCoordForTileUrlFunction(tileCoord, projection) {
+    const gridProjection = projection !== void 0 ? projection : this.getProjection();
+    const tileGrid = projection !== void 0 ? this.getTileGridForProjection(gridProjection) : this.tileGrid || this.getTileGridForProjection(gridProjection);
+    if (this.getWrapX() && gridProjection.isGlobal()) {
+      tileCoord = wrapX(tileGrid, tileCoord, gridProjection);
+    }
+    return withinExtentAndZ(tileCoord, tileGrid) ? tileCoord : null;
+  }
+  /**
+   * Remove all cached reprojected tiles from the source. The next render cycle will create new tiles.
+   * @api
+   */
+  clear() {
+  }
+  /**
+   * @override
+   */
+  refresh() {
+    this.clear();
+    super.refresh();
+  }
+}
+class TileSourceEvent extends BaseEvent {
+  /**
+   * @param {string} type Type.
+   * @param {import("../Tile.js").default} tile The tile.
+   */
+  constructor(type, tile) {
+    super(type);
+    this.tile = tile;
+  }
+}
+const TileEventType = {
+  /**
+   * Triggered when a tile starts loading.
+   * @event module:ol/source/Tile.TileSourceEvent#tileloadstart
+   * @api
+   */
+  TILELOADSTART: "tileloadstart",
+  /**
+   * Triggered when a tile finishes loading, either when its data is loaded,
+   * or when loading was aborted because the tile is no longer needed.
+   * @event module:ol/source/Tile.TileSourceEvent#tileloadend
+   * @api
+   */
+  TILELOADEND: "tileloadend",
+  /**
+   * Triggered if tile loading results in an error. Note that this is not the
+   * right place to re-fetch tiles. See {@link module:ol/ImageTile~ImageTile#load}
+   * for details.
+   * @event module:ol/source/Tile.TileSourceEvent#tileloaderror
+   * @api
+   */
+  TILELOADERROR: "tileloaderror"
+};
+class UrlTile extends TileSource {
+  /**
+   * @param {Options} options Image tile options.
+   */
+  constructor(options) {
+    super({
+      attributions: options.attributions,
+      cacheSize: options.cacheSize,
+      projection: options.projection,
+      state: options.state,
+      tileGrid: options.tileGrid,
+      tilePixelRatio: options.tilePixelRatio,
+      wrapX: options.wrapX,
+      transition: options.transition,
+      interpolate: options.interpolate,
+      key: options.key,
+      attributionsCollapsible: options.attributionsCollapsible,
+      zDirection: options.zDirection
+    });
+    this.generateTileUrlFunction_ = this.tileUrlFunction === UrlTile.prototype.tileUrlFunction;
+    this.tileLoadFunction = options.tileLoadFunction;
+    if (options.tileUrlFunction) {
+      this.tileUrlFunction = options.tileUrlFunction;
+    }
+    this.urls = null;
+    if (options.urls) {
+      this.setUrls(options.urls);
+    } else if (options.url) {
+      this.setUrl(options.url);
+    }
+    this.tileLoadingKeys_ = {};
+  }
+  /**
+   * Deprecated.  Use an ImageTile source instead.
+   * Return the tile load function of the source.
+   * @return {import("../Tile.js").LoadFunction} TileLoadFunction
+   * @api
+   */
+  getTileLoadFunction() {
+    return this.tileLoadFunction;
+  }
+  /**
+   * Deprecated.  Use an ImageTile source instead.
+   * Return the tile URL function of the source.
+   * @return {import("../Tile.js").UrlFunction} TileUrlFunction
+   * @api
+   */
+  getTileUrlFunction() {
+    return Object.getPrototypeOf(this).tileUrlFunction === this.tileUrlFunction ? this.tileUrlFunction.bind(this) : this.tileUrlFunction;
+  }
+  /**
+   * Deprecated.  Use an ImageTile source instead.
+   * Return the URLs used for this source.
+   * When a tileUrlFunction is used instead of url or urls,
+   * null will be returned.
+   * @return {!Array<string>|null} URLs.
+   * @api
+   */
+  getUrls() {
+    return this.urls;
+  }
+  /**
+   * Handle tile change events.
+   * @param {import("../events/Event.js").default} event Event.
+   * @protected
+   */
+  handleTileChange(event) {
+    const tile = (
+      /** @type {import("../Tile.js").default} */
+      event.target
+    );
+    const uid = getUid(tile);
+    const tileState = tile.getState();
+    let type;
+    if (tileState == TileState.LOADING) {
+      this.tileLoadingKeys_[uid] = true;
+      type = TileEventType.TILELOADSTART;
+    } else if (uid in this.tileLoadingKeys_) {
+      delete this.tileLoadingKeys_[uid];
+      type = tileState == TileState.ERROR ? TileEventType.TILELOADERROR : tileState == TileState.LOADED ? TileEventType.TILELOADEND : void 0;
+    }
+    if (type != void 0) {
+      this.dispatchEvent(new TileSourceEvent(type, tile));
+    }
+  }
+  /**
+   * Deprecated.  Use an ImageTile source instead.
+   * Set the tile load function of the source.
+   * @param {import("../Tile.js").LoadFunction} tileLoadFunction Tile load function.
+   * @api
+   */
+  setTileLoadFunction(tileLoadFunction) {
+    this.tileLoadFunction = tileLoadFunction;
+    this.changed();
+  }
+  /**
+   * Deprecated.  Use an ImageTile source instead.
+   * Set the tile URL function of the source.
+   * @param {import("../Tile.js").UrlFunction} tileUrlFunction Tile URL function.
+   * @param {string} [key] Optional new tile key for the source.
+   * @api
+   */
+  setTileUrlFunction(tileUrlFunction, key) {
+    this.tileUrlFunction = tileUrlFunction;
+    if (typeof key !== "undefined") {
+      this.setKey(key);
+    } else {
+      this.changed();
+    }
+  }
+  /**
+   * Set the URL to use for requests.
+   * @param {string} url URL.
+   * @api
+   */
+  setUrl(url) {
+    const urls = expandUrl(url);
+    this.urls = urls;
+    this.setUrls(urls);
+  }
+  /**
+   * Deprecated.  Use an ImageTile source instead.
+   * Set the URLs to use for requests.
+   * @param {Array<string>} urls URLs.
+   * @api
+   */
+  setUrls(urls) {
+    this.urls = urls;
+    const key = urls.join("\n");
+    if (this.generateTileUrlFunction_) {
+      this.setTileUrlFunction(createFromTemplates(urls, this.tileGrid), key);
+    } else {
+      this.setKey(key);
+    }
+  }
+  /**
+   * @param {import("../tilecoord.js").TileCoord} tileCoord Tile coordinate.
+   * @param {number} pixelRatio Pixel ratio.
+   * @param {import("../proj/Projection.js").default} projection Projection.
+   * @return {string|undefined} Tile URL.
+   */
+  tileUrlFunction(tileCoord, pixelRatio, projection) {
+    return void 0;
+  }
+}
+class VectorTile2 extends UrlTile {
+  /**
+   * @param {!Options<FeatureType>} options Vector tile options.
+   */
+  constructor(options) {
+    const projection = options.projection || "EPSG:3857";
+    const extent = options.extent || extentFromProjection(projection);
+    const tileGrid = options.tileGrid || createXYZ({
+      extent,
+      maxResolution: options.maxResolution,
+      maxZoom: options.maxZoom !== void 0 ? options.maxZoom : 22,
+      minZoom: options.minZoom,
+      tileSize: options.tileSize || 512
+    });
+    super({
+      attributions: options.attributions,
+      attributionsCollapsible: options.attributionsCollapsible,
+      cacheSize: options.cacheSize,
+      interpolate: true,
+      projection,
+      state: options.state,
+      tileGrid,
+      tileLoadFunction: options.tileLoadFunction ? options.tileLoadFunction : defaultLoadFunction,
+      tileUrlFunction: options.tileUrlFunction,
+      url: options.url,
+      urls: options.urls,
+      wrapX: options.wrapX === void 0 ? true : options.wrapX,
+      transition: options.transition,
+      zDirection: options.zDirection === void 0 ? 1 : options.zDirection
+    });
+    this.format_ = options.format ? options.format : null;
+    this.tileKeysBySourceTileUrl_ = {};
+    this.sourceTiles_ = {};
+    this.overlaps_ = options.overlaps == void 0 ? true : options.overlaps;
+    this.tileClass = options.tileClass ? options.tileClass : VectorTile$1;
+    this.tileGrids_ = {};
+  }
+  /**
+   * @return {boolean} The source can have overlapping geometries.
+   */
+  getOverlaps() {
+    return this.overlaps_;
+  }
+  /**
+   * @param {number} pixelRatio Pixel ratio.
+   * @param {import("../proj/Projection").default} projection Projection.
+   * @param {VectorRenderTile} tile Vector render tile.
+   * @return {Array<import("../VectorTile").default>} Tile keys.
+   */
+  getSourceTiles(pixelRatio, projection, tile) {
+    if (tile.getState() === TileState.IDLE) {
+      tile.setState(TileState.LOADING);
+      const urlTileCoord = tile.wrappedTileCoord;
+      const tileGrid = this.getTileGridForProjection(projection);
+      const extent = tileGrid.getTileCoordExtent(urlTileCoord);
+      const z2 = urlTileCoord[0];
+      const resolution = tileGrid.getResolution(z2);
+      buffer(extent, -resolution, extent);
+      const sourceTileGrid = this.tileGrid;
+      const sourceExtent = sourceTileGrid.getExtent();
+      if (sourceExtent) {
+        getIntersection(extent, sourceExtent, extent);
+      }
+      const sourceZ = sourceTileGrid.getZForResolution(
+        resolution,
+        this.zDirection
+      );
+      sourceTileGrid.forEachTileCoord(extent, sourceZ, (sourceTileCoord) => {
+        const tileUrl = this.tileUrlFunction(
+          sourceTileCoord,
+          pixelRatio,
+          projection
+        );
+        if (!this.sourceTiles_[tileUrl]) {
+          this.sourceTiles_[tileUrl] = new this.tileClass(
+            sourceTileCoord,
+            tileUrl ? TileState.IDLE : TileState.EMPTY,
+            tileUrl,
+            this.format_,
+            this.tileLoadFunction
+          );
+        }
+        const sourceTile = this.sourceTiles_[tileUrl];
+        tile.sourceTiles.push(sourceTile);
+        if (!this.tileKeysBySourceTileUrl_[tileUrl]) {
+          this.tileKeysBySourceTileUrl_[tileUrl] = [];
+        }
+        this.tileKeysBySourceTileUrl_[tileUrl].push(tile.getKey());
+        const sourceTileState = sourceTile.getState();
+        if (sourceTileState < TileState.LOADED) {
+          const listenChange = (event) => {
+            this.handleTileChange(event);
+            const state = sourceTile.getState();
+            if (state === TileState.LOADED || state === TileState.ERROR) {
+              const sourceTileKey = sourceTile.getKey();
+              if (sourceTileKey in tile.errorTileKeys) {
+                if (sourceTile.getState() === TileState.LOADED) {
+                  delete tile.errorTileKeys[sourceTileKey];
+                }
+              } else {
+                tile.loadingSourceTiles--;
+              }
+              if (state === TileState.ERROR) {
+                tile.errorTileKeys[sourceTileKey] = true;
+              } else {
+                sourceTile.removeEventListener(EventType.CHANGE, listenChange);
+              }
+              if (tile.loadingSourceTiles === 0) {
+                tile.setState(
+                  isEmpty(tile.errorTileKeys) ? TileState.LOADED : TileState.ERROR
+                );
+              }
+            }
+          };
+          sourceTile.addEventListener(EventType.CHANGE, listenChange);
+          tile.loadingSourceTiles++;
+        }
+        if (sourceTileState === TileState.IDLE) {
+          sourceTile.extent = sourceTileGrid.getTileCoordExtent(sourceTileCoord);
+          sourceTile.projection = projection;
+          sourceTile.resolution = sourceTileGrid.getResolution(
+            sourceTileCoord[0]
+          );
+          sourceTile.load();
+        }
+      });
+      if (!tile.loadingSourceTiles) {
+        tile.setState(
+          tile.sourceTiles.some(
+            (sourceTile) => sourceTile.getState() === TileState.ERROR
+          ) ? TileState.ERROR : TileState.LOADED
+        );
+      }
+    }
+    return tile.sourceTiles;
+  }
+  /**
+   * @param {VectorRenderTile} tile Vector render tile.
+   */
+  removeSourceTiles(tile) {
+    const tileKey = tile.getKey();
+    const sourceTiles = tile.sourceTiles;
+    for (let i = 0, ii = sourceTiles.length; i < ii; ++i) {
+      const sourceTileUrl = sourceTiles[i].getTileUrl();
+      if (!this.tileKeysBySourceTileUrl_[sourceTileUrl]) {
+        return;
+      }
+      const index = this.tileKeysBySourceTileUrl_[sourceTileUrl].indexOf(tileKey);
+      if (index === -1) {
+        continue;
+      }
+      this.tileKeysBySourceTileUrl_[sourceTileUrl].splice(index, 1);
+      if (this.tileKeysBySourceTileUrl_[sourceTileUrl].length === 0) {
+        delete this.tileKeysBySourceTileUrl_[sourceTileUrl];
+        delete this.sourceTiles_[sourceTileUrl];
+      }
+    }
+  }
+  /**
+   * @param {number} z Tile coordinate z.
+   * @param {number} x Tile coordinate x.
+   * @param {number} y Tile coordinate y.
+   * @param {number} pixelRatio Pixel ratio.
+   * @param {import("../proj/Projection.js").default} projection Projection.
+   * @return {!VectorRenderTile} Tile.
+   * @override
+   */
+  getTile(z2, x, y, pixelRatio, projection) {
+    const tileCoord = [z2, x, y];
+    let urlTileCoord = this.getTileCoordForTileUrlFunction(
+      tileCoord,
+      projection
+    );
+    const sourceExtent = this.getTileGrid().getExtent();
+    const tileGrid = this.getTileGridForProjection(projection);
+    if (urlTileCoord && sourceExtent) {
+      const tileExtent = tileGrid.getTileCoordExtent(urlTileCoord);
+      buffer(tileExtent, -tileGrid.getResolution(z2), tileExtent);
+      if (!intersects(sourceExtent, tileExtent)) {
+        urlTileCoord = null;
+      }
+    }
+    let empty = true;
+    if (urlTileCoord !== null) {
+      const sourceTileGrid = this.tileGrid;
+      const resolution = tileGrid.getResolution(z2);
+      const sourceZ = sourceTileGrid.getZForResolution(resolution, 1);
+      const extent = tileGrid.getTileCoordExtent(urlTileCoord);
+      buffer(extent, -resolution, extent);
+      sourceTileGrid.forEachTileCoord(extent, sourceZ, (sourceTileCoord) => {
+        empty = empty && !this.tileUrlFunction(sourceTileCoord, pixelRatio, projection);
+      });
+    }
+    const newTile = new VectorRenderTile(
+      tileCoord,
+      empty ? TileState.EMPTY : TileState.IDLE,
+      urlTileCoord,
+      this.getSourceTiles.bind(this, pixelRatio, projection),
+      this.removeSourceTiles.bind(this)
+    );
+    newTile.key = this.getKey();
+    return newTile;
+  }
+  /**
+   * @param {import("../proj/Projection.js").default} projection Projection.
+   * @return {!import("../tilegrid/TileGrid.js").default} Tile grid.
+   * @override
+   */
+  getTileGridForProjection(projection) {
+    const code = projection.getCode();
+    let tileGrid = this.tileGrids_[code];
+    if (!tileGrid) {
+      const sourceProjection = this.getProjection();
+      assert(
+        sourceProjection === null || equivalent(sourceProjection, projection),
+        "A VectorTile source can only be rendered if it has a projection compatible with the view projection."
+      );
+      const sourceTileGrid = this.tileGrid;
+      const resolutions = sourceTileGrid.getResolutions().slice();
+      const origins = resolutions.map(function(resolution, z2) {
+        return sourceTileGrid.getOrigin(z2);
+      });
+      const tileSizes = resolutions.map(function(resolution, z2) {
+        return sourceTileGrid.getTileSize(z2);
+      });
+      const length = DEFAULT_MAX_ZOOM + 1;
+      for (let z2 = resolutions.length; z2 < length; ++z2) {
+        resolutions.push(resolutions[z2 - 1] / 2);
+        origins.push(origins[z2 - 1]);
+        tileSizes.push(tileSizes[z2 - 1]);
+      }
+      tileGrid = new TileGrid({
+        extent: sourceTileGrid.getExtent(),
+        origins,
+        resolutions,
+        tileSizes
+      });
+      this.tileGrids_[code] = tileGrid;
+    }
+    return tileGrid;
+  }
+  /**
+   * Get the tile pixel ratio for this source.
+   * @param {number} pixelRatio Pixel ratio.
+   * @return {number} Tile pixel ratio.
+   * @override
+   */
+  getTilePixelRatio(pixelRatio) {
+    return pixelRatio;
+  }
+  /**
+   * @param {number} z Z.
+   * @param {number} pixelRatio Pixel ratio.
+   * @param {import("../proj/Projection.js").default} projection Projection.
+   * @return {import("../size.js").Size} Tile size.
+   * @override
+   */
+  getTilePixelSize(z2, pixelRatio, projection) {
+    const tileGrid = this.getTileGridForProjection(projection);
+    const tileSize2 = toSize(tileGrid.getTileSize(z2), this.tmpSize);
+    return [
+      Math.round(tileSize2[0] * pixelRatio),
+      Math.round(tileSize2[1] * pixelRatio)
+    ];
+  }
+  /**
+   * @param {boolean} overlaps The source has overlapping geometries.
+   */
+  setOverlaps(overlaps) {
+    this.overlaps_ = overlaps;
+    this.changed();
+  }
+}
+function defaultLoadFunction(tile, url) {
+  tile.setLoader(
+    /**
+     * @param {import("../extent.js").Extent} extent Extent.
+     * @param {number} resolution Resolution.
+     * @param {import("../proj/Projection.js").default} projection Projection.
+     */
+    function(extent, resolution, projection) {
+      loadFeaturesXhr(
+        url,
+        tile.getFormat(),
+        extent,
+        resolution,
+        projection,
+        tile.onLoad.bind(tile),
+        tile.onError.bind(tile)
+      );
+    }
+  );
+}
+const SHIFT_LEFT_32 = (1 << 16) * (1 << 16);
+const SHIFT_RIGHT_32 = 1 / SHIFT_LEFT_32;
+const TEXT_DECODER_MIN_LENGTH = 12;
+const utf8TextDecoder = typeof TextDecoder === "undefined" ? null : new TextDecoder("utf-8");
+const PBF_VARINT = 0;
+const PBF_FIXED64 = 1;
+const PBF_BYTES = 2;
+const PBF_FIXED32 = 5;
+class Pbf {
+  /**
+   * @param {Uint8Array | ArrayBuffer} [buf]
+   */
+  constructor(buf = new Uint8Array(16)) {
+    this.buf = ArrayBuffer.isView(buf) ? buf : new Uint8Array(buf);
+    this.dataView = new DataView(this.buf.buffer);
+    this.pos = 0;
+    this.type = 0;
+    this.length = this.buf.length;
+  }
+  // === READING =================================================================
+  /**
+   * @template T
+   * @param {(tag: number, result: T, pbf: Pbf) => void} readField
+   * @param {T} result
+   * @param {number} [end]
+   */
+  readFields(readField, result, end = this.length) {
+    while (this.pos < end) {
+      const val = this.readVarint(), tag = val >> 3, startPos = this.pos;
+      this.type = val & 7;
+      readField(tag, result, this);
+      if (this.pos === startPos) this.skip(val);
+    }
+    return result;
+  }
+  /**
+   * @template T
+   * @param {(tag: number, result: T, pbf: Pbf) => void} readField
+   * @param {T} result
+   */
+  readMessage(readField, result) {
+    return this.readFields(readField, result, this.readVarint() + this.pos);
+  }
+  readFixed32() {
+    const val = this.dataView.getUint32(this.pos, true);
+    this.pos += 4;
+    return val;
+  }
+  readSFixed32() {
+    const val = this.dataView.getInt32(this.pos, true);
+    this.pos += 4;
+    return val;
+  }
+  // 64-bit int handling is based on github.com/dpw/node-buffer-more-ints (MIT-licensed)
+  readFixed64() {
+    const val = this.dataView.getUint32(this.pos, true) + this.dataView.getUint32(this.pos + 4, true) * SHIFT_LEFT_32;
+    this.pos += 8;
+    return val;
+  }
+  readSFixed64() {
+    const val = this.dataView.getUint32(this.pos, true) + this.dataView.getInt32(this.pos + 4, true) * SHIFT_LEFT_32;
+    this.pos += 8;
+    return val;
+  }
+  readFloat() {
+    const val = this.dataView.getFloat32(this.pos, true);
+    this.pos += 4;
+    return val;
+  }
+  readDouble() {
+    const val = this.dataView.getFloat64(this.pos, true);
+    this.pos += 8;
+    return val;
+  }
+  /**
+   * @param {boolean} [isSigned]
+   */
+  readVarint(isSigned) {
+    const buf = this.buf;
+    let val, b;
+    b = buf[this.pos++];
+    val = b & 127;
+    if (b < 128) return val;
+    b = buf[this.pos++];
+    val |= (b & 127) << 7;
+    if (b < 128) return val;
+    b = buf[this.pos++];
+    val |= (b & 127) << 14;
+    if (b < 128) return val;
+    b = buf[this.pos++];
+    val |= (b & 127) << 21;
+    if (b < 128) return val;
+    b = buf[this.pos];
+    val |= (b & 15) << 28;
+    return readVarintRemainder(val, isSigned, this);
+  }
+  readVarint64() {
+    return this.readVarint(true);
+  }
+  readSVarint() {
+    const num = this.readVarint();
+    return num % 2 === 1 ? (num + 1) / -2 : num / 2;
+  }
+  readBoolean() {
+    return Boolean(this.readVarint());
+  }
+  readString() {
+    const end = this.readVarint() + this.pos;
+    const pos = this.pos;
+    this.pos = end;
+    if (end - pos >= TEXT_DECODER_MIN_LENGTH && utf8TextDecoder) {
+      return utf8TextDecoder.decode(this.buf.subarray(pos, end));
+    }
+    return readUtf8(this.buf, pos, end);
+  }
+  readBytes() {
+    const end = this.readVarint() + this.pos, buffer2 = this.buf.subarray(this.pos, end);
+    this.pos = end;
+    return buffer2;
+  }
+  // verbose for performance reasons; doesn't affect gzipped size
+  /**
+   * @param {number[]} [arr]
+   * @param {boolean} [isSigned]
+   */
+  readPackedVarint(arr2 = [], isSigned) {
+    const end = this.readPackedEnd();
+    while (this.pos < end) arr2.push(this.readVarint(isSigned));
+    return arr2;
+  }
+  /** @param {number[]} [arr] */
+  readPackedSVarint(arr2 = []) {
+    const end = this.readPackedEnd();
+    while (this.pos < end) arr2.push(this.readSVarint());
+    return arr2;
+  }
+  /** @param {boolean[]} [arr] */
+  readPackedBoolean(arr2 = []) {
+    const end = this.readPackedEnd();
+    while (this.pos < end) arr2.push(this.readBoolean());
+    return arr2;
+  }
+  /** @param {number[]} [arr] */
+  readPackedFloat(arr2 = []) {
+    const end = this.readPackedEnd();
+    while (this.pos < end) arr2.push(this.readFloat());
+    return arr2;
+  }
+  /** @param {number[]} [arr] */
+  readPackedDouble(arr2 = []) {
+    const end = this.readPackedEnd();
+    while (this.pos < end) arr2.push(this.readDouble());
+    return arr2;
+  }
+  /** @param {number[]} [arr] */
+  readPackedFixed32(arr2 = []) {
+    const end = this.readPackedEnd();
+    while (this.pos < end) arr2.push(this.readFixed32());
+    return arr2;
+  }
+  /** @param {number[]} [arr] */
+  readPackedSFixed32(arr2 = []) {
+    const end = this.readPackedEnd();
+    while (this.pos < end) arr2.push(this.readSFixed32());
+    return arr2;
+  }
+  /** @param {number[]} [arr] */
+  readPackedFixed64(arr2 = []) {
+    const end = this.readPackedEnd();
+    while (this.pos < end) arr2.push(this.readFixed64());
+    return arr2;
+  }
+  /** @param {number[]} [arr] */
+  readPackedSFixed64(arr2 = []) {
+    const end = this.readPackedEnd();
+    while (this.pos < end) arr2.push(this.readSFixed64());
+    return arr2;
+  }
+  readPackedEnd() {
+    return this.type === PBF_BYTES ? this.readVarint() + this.pos : this.pos + 1;
+  }
+  /** @param {number} val */
+  skip(val) {
+    const type = val & 7;
+    if (type === PBF_VARINT) while (this.buf[this.pos++] > 127) {
+    }
+    else if (type === PBF_BYTES) this.pos = this.readVarint() + this.pos;
+    else if (type === PBF_FIXED32) this.pos += 4;
+    else if (type === PBF_FIXED64) this.pos += 8;
+    else throw new Error(`Unimplemented type: ${type}`);
+  }
+  // === WRITING =================================================================
+  /**
+   * @param {number} tag
+   * @param {number} type
+   */
+  writeTag(tag, type) {
+    this.writeVarint(tag << 3 | type);
+  }
+  /** @param {number} min */
+  realloc(min) {
+    let length = this.length || 16;
+    while (length < this.pos + min) length *= 2;
+    if (length !== this.length) {
+      const buf = new Uint8Array(length);
+      buf.set(this.buf);
+      this.buf = buf;
+      this.dataView = new DataView(buf.buffer);
+      this.length = length;
+    }
+  }
+  finish() {
+    this.length = this.pos;
+    this.pos = 0;
+    return this.buf.subarray(0, this.length);
+  }
+  /** @param {number} val */
+  writeFixed32(val) {
+    this.realloc(4);
+    this.dataView.setInt32(this.pos, val, true);
+    this.pos += 4;
+  }
+  /** @param {number} val */
+  writeSFixed32(val) {
+    this.realloc(4);
+    this.dataView.setInt32(this.pos, val, true);
+    this.pos += 4;
+  }
+  /** @param {number} val */
+  writeFixed64(val) {
+    this.realloc(8);
+    this.dataView.setInt32(this.pos, val & -1, true);
+    this.dataView.setInt32(this.pos + 4, Math.floor(val * SHIFT_RIGHT_32), true);
+    this.pos += 8;
+  }
+  /** @param {number} val */
+  writeSFixed64(val) {
+    this.realloc(8);
+    this.dataView.setInt32(this.pos, val & -1, true);
+    this.dataView.setInt32(this.pos + 4, Math.floor(val * SHIFT_RIGHT_32), true);
+    this.pos += 8;
+  }
+  /** @param {number} val */
+  writeVarint(val) {
+    val = +val || 0;
+    if (val > 268435455 || val < 0) {
+      writeBigVarint(val, this);
+      return;
+    }
+    this.realloc(4);
+    this.buf[this.pos++] = val & 127 | (val > 127 ? 128 : 0);
+    if (val <= 127) return;
+    this.buf[this.pos++] = (val >>>= 7) & 127 | (val > 127 ? 128 : 0);
+    if (val <= 127) return;
+    this.buf[this.pos++] = (val >>>= 7) & 127 | (val > 127 ? 128 : 0);
+    if (val <= 127) return;
+    this.buf[this.pos++] = val >>> 7 & 127;
+  }
+  /** @param {number} val */
+  writeSVarint(val) {
+    this.writeVarint(val < 0 ? -val * 2 - 1 : val * 2);
+  }
+  /** @param {boolean} val */
+  writeBoolean(val) {
+    this.writeVarint(+val);
+  }
+  /** @param {string} str */
+  writeString(str) {
+    str = String(str);
+    this.realloc(str.length * 4);
+    this.pos++;
+    const startPos = this.pos;
+    this.pos = writeUtf8(this.buf, str, this.pos);
+    const len = this.pos - startPos;
+    if (len >= 128) makeRoomForExtraLength(startPos, len, this);
+    this.pos = startPos - 1;
+    this.writeVarint(len);
+    this.pos += len;
+  }
+  /** @param {number} val */
+  writeFloat(val) {
+    this.realloc(4);
+    this.dataView.setFloat32(this.pos, val, true);
+    this.pos += 4;
+  }
+  /** @param {number} val */
+  writeDouble(val) {
+    this.realloc(8);
+    this.dataView.setFloat64(this.pos, val, true);
+    this.pos += 8;
+  }
+  /** @param {Uint8Array} buffer */
+  writeBytes(buffer2) {
+    const len = buffer2.length;
+    this.writeVarint(len);
+    this.realloc(len);
+    for (let i = 0; i < len; i++) this.buf[this.pos++] = buffer2[i];
+  }
+  /**
+   * @template T
+   * @param {(obj: T, pbf: Pbf) => void} fn
+   * @param {T} obj
+   */
+  writeRawMessage(fn, obj) {
+    this.pos++;
+    const startPos = this.pos;
+    fn(obj, this);
+    const len = this.pos - startPos;
+    if (len >= 128) makeRoomForExtraLength(startPos, len, this);
+    this.pos = startPos - 1;
+    this.writeVarint(len);
+    this.pos += len;
+  }
+  /**
+   * @template T
+   * @param {number} tag
+   * @param {(obj: T, pbf: Pbf) => void} fn
+   * @param {T} obj
+   */
+  writeMessage(tag, fn, obj) {
+    this.writeTag(tag, PBF_BYTES);
+    this.writeRawMessage(fn, obj);
+  }
+  /**
+   * @param {number} tag
+   * @param {number[]} arr
+   */
+  writePackedVarint(tag, arr2) {
+    if (arr2.length) this.writeMessage(tag, writePackedVarint, arr2);
+  }
+  /**
+   * @param {number} tag
+   * @param {number[]} arr
+   */
+  writePackedSVarint(tag, arr2) {
+    if (arr2.length) this.writeMessage(tag, writePackedSVarint, arr2);
+  }
+  /**
+   * @param {number} tag
+   * @param {boolean[]} arr
+   */
+  writePackedBoolean(tag, arr2) {
+    if (arr2.length) this.writeMessage(tag, writePackedBoolean, arr2);
+  }
+  /**
+   * @param {number} tag
+   * @param {number[]} arr
+   */
+  writePackedFloat(tag, arr2) {
+    if (arr2.length) this.writeMessage(tag, writePackedFloat, arr2);
+  }
+  /**
+   * @param {number} tag
+   * @param {number[]} arr
+   */
+  writePackedDouble(tag, arr2) {
+    if (arr2.length) this.writeMessage(tag, writePackedDouble, arr2);
+  }
+  /**
+   * @param {number} tag
+   * @param {number[]} arr
+   */
+  writePackedFixed32(tag, arr2) {
+    if (arr2.length) this.writeMessage(tag, writePackedFixed32, arr2);
+  }
+  /**
+   * @param {number} tag
+   * @param {number[]} arr
+   */
+  writePackedSFixed32(tag, arr2) {
+    if (arr2.length) this.writeMessage(tag, writePackedSFixed32, arr2);
+  }
+  /**
+   * @param {number} tag
+   * @param {number[]} arr
+   */
+  writePackedFixed64(tag, arr2) {
+    if (arr2.length) this.writeMessage(tag, writePackedFixed64, arr2);
+  }
+  /**
+   * @param {number} tag
+   * @param {number[]} arr
+   */
+  writePackedSFixed64(tag, arr2) {
+    if (arr2.length) this.writeMessage(tag, writePackedSFixed64, arr2);
+  }
+  /**
+   * @param {number} tag
+   * @param {Uint8Array} buffer
+   */
+  writeBytesField(tag, buffer2) {
+    this.writeTag(tag, PBF_BYTES);
+    this.writeBytes(buffer2);
+  }
+  /**
+   * @param {number} tag
+   * @param {number} val
+   */
+  writeFixed32Field(tag, val) {
+    this.writeTag(tag, PBF_FIXED32);
+    this.writeFixed32(val);
+  }
+  /**
+   * @param {number} tag
+   * @param {number} val
+   */
+  writeSFixed32Field(tag, val) {
+    this.writeTag(tag, PBF_FIXED32);
+    this.writeSFixed32(val);
+  }
+  /**
+   * @param {number} tag
+   * @param {number} val
+   */
+  writeFixed64Field(tag, val) {
+    this.writeTag(tag, PBF_FIXED64);
+    this.writeFixed64(val);
+  }
+  /**
+   * @param {number} tag
+   * @param {number} val
+   */
+  writeSFixed64Field(tag, val) {
+    this.writeTag(tag, PBF_FIXED64);
+    this.writeSFixed64(val);
+  }
+  /**
+   * @param {number} tag
+   * @param {number} val
+   */
+  writeVarintField(tag, val) {
+    this.writeTag(tag, PBF_VARINT);
+    this.writeVarint(val);
+  }
+  /**
+   * @param {number} tag
+   * @param {number} val
+   */
+  writeSVarintField(tag, val) {
+    this.writeTag(tag, PBF_VARINT);
+    this.writeSVarint(val);
+  }
+  /**
+   * @param {number} tag
+   * @param {string} str
+   */
+  writeStringField(tag, str) {
+    this.writeTag(tag, PBF_BYTES);
+    this.writeString(str);
+  }
+  /**
+   * @param {number} tag
+   * @param {number} val
+   */
+  writeFloatField(tag, val) {
+    this.writeTag(tag, PBF_FIXED32);
+    this.writeFloat(val);
+  }
+  /**
+   * @param {number} tag
+   * @param {number} val
+   */
+  writeDoubleField(tag, val) {
+    this.writeTag(tag, PBF_FIXED64);
+    this.writeDouble(val);
+  }
+  /**
+   * @param {number} tag
+   * @param {boolean} val
+   */
+  writeBooleanField(tag, val) {
+    this.writeVarintField(tag, +val);
+  }
+}
+function readVarintRemainder(l, s, p) {
+  const buf = p.buf;
+  let h, b;
+  b = buf[p.pos++];
+  h = (b & 112) >> 4;
+  if (b < 128) return toNum(l, h, s);
+  b = buf[p.pos++];
+  h |= (b & 127) << 3;
+  if (b < 128) return toNum(l, h, s);
+  b = buf[p.pos++];
+  h |= (b & 127) << 10;
+  if (b < 128) return toNum(l, h, s);
+  b = buf[p.pos++];
+  h |= (b & 127) << 17;
+  if (b < 128) return toNum(l, h, s);
+  b = buf[p.pos++];
+  h |= (b & 127) << 24;
+  if (b < 128) return toNum(l, h, s);
+  b = buf[p.pos++];
+  h |= (b & 1) << 31;
+  if (b < 128) return toNum(l, h, s);
+  throw new Error("Expected varint not more than 10 bytes");
+}
+function toNum(low, high, isSigned) {
+  return isSigned ? high * 4294967296 + (low >>> 0) : (high >>> 0) * 4294967296 + (low >>> 0);
+}
+function writeBigVarint(val, pbf) {
+  let low, high;
+  if (val >= 0) {
+    low = val % 4294967296 | 0;
+    high = val / 4294967296 | 0;
+  } else {
+    low = ~(-val % 4294967296);
+    high = ~(-val / 4294967296);
+    if (low ^ 4294967295) {
+      low = low + 1 | 0;
+    } else {
+      low = 0;
+      high = high + 1 | 0;
+    }
+  }
+  if (val >= 18446744073709552e3 || val < -18446744073709552e3) {
+    throw new Error("Given varint doesn't fit into 10 bytes");
+  }
+  pbf.realloc(10);
+  writeBigVarintLow(low, high, pbf);
+  writeBigVarintHigh(high, pbf);
+}
+function writeBigVarintLow(low, high, pbf) {
+  pbf.buf[pbf.pos++] = low & 127 | 128;
+  low >>>= 7;
+  pbf.buf[pbf.pos++] = low & 127 | 128;
+  low >>>= 7;
+  pbf.buf[pbf.pos++] = low & 127 | 128;
+  low >>>= 7;
+  pbf.buf[pbf.pos++] = low & 127 | 128;
+  low >>>= 7;
+  pbf.buf[pbf.pos] = low & 127;
+}
+function writeBigVarintHigh(high, pbf) {
+  const lsb = (high & 7) << 4;
+  pbf.buf[pbf.pos++] |= lsb | ((high >>>= 3) ? 128 : 0);
+  if (!high) return;
+  pbf.buf[pbf.pos++] = high & 127 | ((high >>>= 7) ? 128 : 0);
+  if (!high) return;
+  pbf.buf[pbf.pos++] = high & 127 | ((high >>>= 7) ? 128 : 0);
+  if (!high) return;
+  pbf.buf[pbf.pos++] = high & 127 | ((high >>>= 7) ? 128 : 0);
+  if (!high) return;
+  pbf.buf[pbf.pos++] = high & 127 | ((high >>>= 7) ? 128 : 0);
+  if (!high) return;
+  pbf.buf[pbf.pos++] = high & 127;
+}
+function makeRoomForExtraLength(startPos, len, pbf) {
+  const extraLen = len <= 16383 ? 1 : len <= 2097151 ? 2 : len <= 268435455 ? 3 : Math.floor(Math.log(len) / (Math.LN2 * 7));
+  pbf.realloc(extraLen);
+  for (let i = pbf.pos - 1; i >= startPos; i--) pbf.buf[i + extraLen] = pbf.buf[i];
+}
+function writePackedVarint(arr2, pbf) {
+  for (let i = 0; i < arr2.length; i++) pbf.writeVarint(arr2[i]);
+}
+function writePackedSVarint(arr2, pbf) {
+  for (let i = 0; i < arr2.length; i++) pbf.writeSVarint(arr2[i]);
+}
+function writePackedFloat(arr2, pbf) {
+  for (let i = 0; i < arr2.length; i++) pbf.writeFloat(arr2[i]);
+}
+function writePackedDouble(arr2, pbf) {
+  for (let i = 0; i < arr2.length; i++) pbf.writeDouble(arr2[i]);
+}
+function writePackedBoolean(arr2, pbf) {
+  for (let i = 0; i < arr2.length; i++) pbf.writeBoolean(arr2[i]);
+}
+function writePackedFixed32(arr2, pbf) {
+  for (let i = 0; i < arr2.length; i++) pbf.writeFixed32(arr2[i]);
+}
+function writePackedSFixed32(arr2, pbf) {
+  for (let i = 0; i < arr2.length; i++) pbf.writeSFixed32(arr2[i]);
+}
+function writePackedFixed64(arr2, pbf) {
+  for (let i = 0; i < arr2.length; i++) pbf.writeFixed64(arr2[i]);
+}
+function writePackedSFixed64(arr2, pbf) {
+  for (let i = 0; i < arr2.length; i++) pbf.writeSFixed64(arr2[i]);
+}
+function readUtf8(buf, pos, end) {
+  let str = "";
+  let i = pos;
+  while (i < end) {
+    const b0 = buf[i];
+    let c = null;
+    let bytesPerSequence = b0 > 239 ? 4 : b0 > 223 ? 3 : b0 > 191 ? 2 : 1;
+    if (i + bytesPerSequence > end) break;
+    let b1, b2, b3;
+    if (bytesPerSequence === 1) {
+      if (b0 < 128) {
+        c = b0;
+      }
+    } else if (bytesPerSequence === 2) {
+      b1 = buf[i + 1];
+      if ((b1 & 192) === 128) {
+        c = (b0 & 31) << 6 | b1 & 63;
+        if (c <= 127) {
+          c = null;
+        }
+      }
+    } else if (bytesPerSequence === 3) {
+      b1 = buf[i + 1];
+      b2 = buf[i + 2];
+      if ((b1 & 192) === 128 && (b2 & 192) === 128) {
+        c = (b0 & 15) << 12 | (b1 & 63) << 6 | b2 & 63;
+        if (c <= 2047 || c >= 55296 && c <= 57343) {
+          c = null;
+        }
+      }
+    } else if (bytesPerSequence === 4) {
+      b1 = buf[i + 1];
+      b2 = buf[i + 2];
+      b3 = buf[i + 3];
+      if ((b1 & 192) === 128 && (b2 & 192) === 128 && (b3 & 192) === 128) {
+        c = (b0 & 15) << 18 | (b1 & 63) << 12 | (b2 & 63) << 6 | b3 & 63;
+        if (c <= 65535 || c >= 1114112) {
+          c = null;
+        }
+      }
+    }
+    if (c === null) {
+      c = 65533;
+      bytesPerSequence = 1;
+    } else if (c > 65535) {
+      c -= 65536;
+      str += String.fromCharCode(c >>> 10 & 1023 | 55296);
+      c = 56320 | c & 1023;
+    }
+    str += String.fromCharCode(c);
+    i += bytesPerSequence;
+  }
+  return str;
+}
+function writeUtf8(buf, str, pos) {
+  for (let i = 0, c, lead; i < str.length; i++) {
+    c = str.charCodeAt(i);
+    if (c > 55295 && c < 57344) {
+      if (lead) {
+        if (c < 56320) {
+          buf[pos++] = 239;
+          buf[pos++] = 191;
+          buf[pos++] = 189;
+          lead = c;
+          continue;
+        } else {
+          c = lead - 55296 << 10 | c - 56320 | 65536;
+          lead = null;
+        }
+      } else {
+        if (c > 56319 || i + 1 === str.length) {
+          buf[pos++] = 239;
+          buf[pos++] = 191;
+          buf[pos++] = 189;
+        } else {
+          lead = c;
+        }
+        continue;
+      }
+    } else if (lead) {
+      buf[pos++] = 239;
+      buf[pos++] = 191;
+      buf[pos++] = 189;
+      lead = null;
+    }
+    if (c < 128) {
+      buf[pos++] = c;
+    } else {
+      if (c < 2048) {
+        buf[pos++] = c >> 6 | 192;
+      } else {
+        if (c < 65536) {
+          buf[pos++] = c >> 12 | 224;
+        } else {
+          buf[pos++] = c >> 18 | 240;
+          buf[pos++] = c >> 12 & 63 | 128;
+        }
+        buf[pos++] = c >> 6 & 63 | 128;
+      }
+      buf[pos++] = c & 63 | 128;
+    }
+  }
+  return pos;
+}
+class Feature extends BaseObject {
+  /**
+   * @param {Geometry|ObjectWithGeometry<Geometry>} [geometryOrProperties]
+   *     You may pass a Geometry object directly, or an object literal containing
+   *     properties. If you pass an object literal, you may include a Geometry
+   *     associated with a `geometry` key.
+   */
+  constructor(geometryOrProperties) {
+    super();
+    this.on;
+    this.once;
+    this.un;
+    this.id_ = void 0;
+    this.geometryName_ = "geometry";
+    this.style_ = null;
+    this.styleFunction_ = void 0;
+    this.geometryChangeKey_ = null;
+    this.addChangeListener(this.geometryName_, this.handleGeometryChanged_);
+    if (geometryOrProperties) {
+      if (typeof /** @type {?} */
+      geometryOrProperties.getSimplifiedGeometry === "function") {
+        const geometry = (
+          /** @type {Geometry} */
+          geometryOrProperties
+        );
+        this.setGeometry(geometry);
+      } else {
+        const properties = geometryOrProperties;
+        this.setProperties(properties);
+      }
+    }
+  }
+  /**
+   * Clone this feature. If the original feature has a geometry it
+   * is also cloned. The feature id is not set in the clone.
+   * @return {Feature<Geometry>} The clone.
+   * @api
+   */
+  clone() {
+    const clone = (
+      /** @type {Feature<Geometry>} */
+      new Feature(this.hasProperties() ? this.getProperties() : null)
+    );
+    clone.setGeometryName(this.getGeometryName());
+    const geometry = this.getGeometry();
+    if (geometry) {
+      clone.setGeometry(
+        /** @type {Geometry} */
+        geometry.clone()
+      );
+    }
+    const style = this.getStyle();
+    if (style) {
+      clone.setStyle(style);
+    }
+    return clone;
+  }
+  /**
+   * Get the feature's default geometry.  A feature may have any number of named
+   * geometries.  The "default" geometry (the one that is rendered by default) is
+   * set when calling {@link module:ol/Feature~Feature#setGeometry}.
+   * @return {Geometry|undefined} The default geometry for the feature.
+   * @api
+   * @observable
+   */
+  getGeometry() {
+    return (
+      /** @type {Geometry|undefined} */
+      this.get(this.geometryName_)
+    );
+  }
+  /**
+   * Get the feature identifier.  This is a stable identifier for the feature and
+   * is either set when reading data from a remote source or set explicitly by
+   * calling {@link module:ol/Feature~Feature#setId}.
+   * @return {number|string|undefined} Id.
+   * @api
+   */
+  getId() {
+    return this.id_;
+  }
+  /**
+   * Get the name of the feature's default geometry.  By default, the default
+   * geometry is named `geometry`.
+   * @return {string} Get the property name associated with the default geometry
+   *     for this feature.
+   * @api
+   */
+  getGeometryName() {
+    return this.geometryName_;
+  }
+  /**
+   * Get the feature's style. Will return what was provided to the
+   * {@link module:ol/Feature~Feature#setStyle} method.
+   * @return {import("./style/Style.js").StyleLike|undefined} The feature style.
+   * @api
+   */
+  getStyle() {
+    return this.style_;
+  }
+  /**
+   * Get the feature's style function.
+   * @return {import("./style/Style.js").StyleFunction|undefined} Return a function
+   * representing the current style of this feature.
+   * @api
+   */
+  getStyleFunction() {
+    return this.styleFunction_;
+  }
+  /**
+   * @private
+   */
+  handleGeometryChange_() {
+    this.changed();
+  }
+  /**
+   * @private
+   */
+  handleGeometryChanged_() {
+    if (this.geometryChangeKey_) {
+      unlistenByKey(this.geometryChangeKey_);
+      this.geometryChangeKey_ = null;
+    }
+    const geometry = this.getGeometry();
+    if (geometry) {
+      this.geometryChangeKey_ = listen(
+        geometry,
+        EventType.CHANGE,
+        this.handleGeometryChange_,
+        this
+      );
+    }
+    this.changed();
+  }
+  /**
+   * Set the default geometry for the feature.  This will update the property
+   * with the name returned by {@link module:ol/Feature~Feature#getGeometryName}.
+   * @param {Geometry|undefined} geometry The new geometry.
+   * @api
+   * @observable
+   */
+  setGeometry(geometry) {
+    this.set(this.geometryName_, geometry);
+  }
+  /**
+   * Set the style for the feature to override the layer style.  This can be a
+   * single style object, an array of styles, or a function that takes a
+   * resolution and returns an array of styles. To unset the feature style, call
+   * `setStyle()` without arguments or a falsey value.
+   * @param {import("./style/Style.js").StyleLike} [style] Style for this feature.
+   * @api
+   * @fires module:ol/events/Event~BaseEvent#event:change
+   */
+  setStyle(style) {
+    this.style_ = style;
+    this.styleFunction_ = !style ? void 0 : createStyleFunction(style);
+    this.changed();
+  }
+  /**
+   * Set the feature id.  The feature id is considered stable and may be used when
+   * requesting features or comparing identifiers returned from a remote source.
+   * The feature id can be used with the
+   * {@link module:ol/source/Vector~VectorSource#getFeatureById} method.
+   * @param {number|string|undefined} id The feature id.
+   * @api
+   * @fires module:ol/events/Event~BaseEvent#event:change
+   */
+  setId(id) {
+    this.id_ = id;
+    this.changed();
+  }
+  /**
+   * Set the property name to be used when getting the feature's default geometry.
+   * When calling {@link module:ol/Feature~Feature#getGeometry}, the value of the property with
+   * this name will be returned.
+   * @param {string} name The property name of the default geometry.
+   * @api
+   */
+  setGeometryName(name) {
+    this.removeChangeListener(this.geometryName_, this.handleGeometryChanged_);
+    this.geometryName_ = name;
+    this.addChangeListener(this.geometryName_, this.handleGeometryChanged_);
+    this.handleGeometryChanged_();
+  }
+}
+function createStyleFunction(obj) {
+  if (typeof obj === "function") {
+    return obj;
+  }
+  let styles;
+  if (Array.isArray(obj)) {
+    styles = obj;
+  } else {
+    assert(
+      typeof /** @type {?} */
+      obj.getZIndex === "function",
+      "Expected an `ol/style/Style` or an array of `ol/style/Style.js`"
+    );
+    const style = (
+      /** @type {import("./style/Style.js").default} */
+      obj
+    );
+    styles = [style];
+  }
+  return function() {
+    return styles;
+  };
+}
+const tmpTransform = create();
+class RenderFeature {
+  /**
+   * @param {Type} type Geometry type.
+   * @param {Array<number>} flatCoordinates Flat coordinates. These always need
+   *     to be right-handed for polygons.
+   * @param {Array<number>} ends Ends.
+   * @param {number} stride Stride.
+   * @param {Object<string, *>} properties Properties.
+   * @param {number|string|undefined} id Feature id.
+   */
+  constructor(type, flatCoordinates, ends, stride, properties, id) {
+    this.styleFunction;
+    this.extent_;
+    this.id_ = id;
+    this.type_ = type;
+    this.flatCoordinates_ = flatCoordinates;
+    this.flatInteriorPoints_ = null;
+    this.flatMidpoints_ = null;
+    this.ends_ = ends || null;
+    this.properties_ = properties;
+    this.squaredTolerance_;
+    this.stride_ = stride;
+    this.simplifiedGeometry_;
+  }
+  /**
+   * Get a feature property by its key.
+   * @param {string} key Key
+   * @return {*} Value for the requested key.
+   * @api
+   */
+  get(key) {
+    return this.properties_[key];
+  }
+  /**
+   * Get the extent of this feature's geometry.
+   * @return {import("../extent.js").Extent} Extent.
+   * @api
+   */
+  getExtent() {
+    if (!this.extent_) {
+      this.extent_ = this.type_ === "Point" ? createOrUpdateFromCoordinate(this.flatCoordinates_) : createOrUpdateFromFlatCoordinates(
+        this.flatCoordinates_,
+        0,
+        this.flatCoordinates_.length,
+        2
+      );
+    }
+    return this.extent_;
+  }
+  /**
+   * @return {Array<number>} Flat interior points.
+   */
+  getFlatInteriorPoint() {
+    if (!this.flatInteriorPoints_) {
+      const flatCenter = getCenter(this.getExtent());
+      this.flatInteriorPoints_ = getInteriorPointOfArray(
+        this.flatCoordinates_,
+        0,
+        this.ends_,
+        2,
+        flatCenter,
+        0
+      );
+    }
+    return this.flatInteriorPoints_;
+  }
+  /**
+   * @return {Array<number>} Flat interior points.
+   */
+  getFlatInteriorPoints() {
+    if (!this.flatInteriorPoints_) {
+      const ends = inflateEnds(this.flatCoordinates_, this.ends_);
+      const flatCenters = linearRingss(this.flatCoordinates_, 0, ends, 2);
+      this.flatInteriorPoints_ = getInteriorPointsOfMultiArray(
+        this.flatCoordinates_,
+        0,
+        ends,
+        2,
+        flatCenters
+      );
+    }
+    return this.flatInteriorPoints_;
+  }
+  /**
+   * @return {Array<number>} Flat midpoint.
+   */
+  getFlatMidpoint() {
+    if (!this.flatMidpoints_) {
+      this.flatMidpoints_ = interpolatePoint(
+        this.flatCoordinates_,
+        0,
+        this.flatCoordinates_.length,
+        2,
+        0.5
+      );
+    }
+    return this.flatMidpoints_;
+  }
+  /**
+   * @return {Array<number>} Flat midpoints.
+   */
+  getFlatMidpoints() {
+    if (!this.flatMidpoints_) {
+      this.flatMidpoints_ = [];
+      const flatCoordinates = this.flatCoordinates_;
+      let offset = 0;
+      const ends = (
+        /** @type {Array<number>} */
+        this.ends_
+      );
+      for (let i = 0, ii = ends.length; i < ii; ++i) {
+        const end = ends[i];
+        const midpoint = interpolatePoint(flatCoordinates, offset, end, 2, 0.5);
+        extend(this.flatMidpoints_, midpoint);
+        offset = end;
+      }
+    }
+    return this.flatMidpoints_;
+  }
+  /**
+   * Get the feature identifier.  This is a stable identifier for the feature and
+   * is set when reading data from a remote source.
+   * @return {number|string|undefined} Id.
+   * @api
+   */
+  getId() {
+    return this.id_;
+  }
+  /**
+   * @return {Array<number>} Flat coordinates.
+   */
+  getOrientedFlatCoordinates() {
+    return this.flatCoordinates_;
+  }
+  /**
+   * For API compatibility with {@link module:ol/Feature~Feature}, this method is useful when
+   * determining the geometry type in style function (see {@link #getType}).
+   * @return {RenderFeature} Feature.
+   * @api
+   */
+  getGeometry() {
+    return this;
+  }
+  /**
+   * @param {number} squaredTolerance Squared tolerance.
+   * @return {RenderFeature} Simplified geometry.
+   */
+  getSimplifiedGeometry(squaredTolerance) {
+    return this;
+  }
+  /**
+   * Get a transformed and simplified version of the geometry.
+   * @param {number} squaredTolerance Squared tolerance.
+   * @param {import("../proj.js").TransformFunction} [transform] Optional transform function.
+   * @return {RenderFeature} Simplified geometry.
+   */
+  simplifyTransformed(squaredTolerance, transform2) {
+    return this;
+  }
+  /**
+   * Get the feature properties.
+   * @return {Object<string, *>} Feature properties.
+   * @api
+   */
+  getProperties() {
+    return this.properties_;
+  }
+  /**
+   * Get an object of all property names and values.  This has the same behavior as getProperties,
+   * but is here to conform with the {@link module:ol/Feature~Feature} interface.
+   * @return {Object<string, *>?} Object.
+   */
+  getPropertiesInternal() {
+    return this.properties_;
+  }
+  /**
+   * @return {number} Stride.
+   */
+  getStride() {
+    return this.stride_;
+  }
+  /**
+   * @return {import('../style/Style.js').StyleFunction|undefined} Style
+   */
+  getStyleFunction() {
+    return this.styleFunction;
+  }
+  /**
+   * Get the type of this feature's geometry.
+   * @return {Type} Geometry type.
+   * @api
+   */
+  getType() {
+    return this.type_;
+  }
+  /**
+   * Transform geometry coordinates from tile pixel space to projected.
+   *
+   * @param {import("../proj.js").ProjectionLike} projection The data projection
+   */
+  transform(projection) {
+    projection = get(projection);
+    const pixelExtent = projection.getExtent();
+    const projectedExtent = projection.getWorldExtent();
+    if (pixelExtent && projectedExtent) {
+      const scale2 = getHeight(projectedExtent) / getHeight(pixelExtent);
+      compose(
+        tmpTransform,
+        projectedExtent[0],
+        projectedExtent[3],
+        scale2,
+        -scale2,
+        0,
+        0,
+        0
+      );
+      transform2D(
+        this.flatCoordinates_,
+        0,
+        this.flatCoordinates_.length,
+        2,
+        tmpTransform,
+        this.flatCoordinates_
+      );
+    }
+  }
+  /**
+   * Apply a transform function to the coordinates of the geometry.
+   * The geometry is modified in place.
+   * If you do not want the geometry modified in place, first `clone()` it and
+   * then use this function on the clone.
+   * @param {import("../proj.js").TransformFunction} transformFn Transform function.
+   */
+  applyTransform(transformFn) {
+    transformFn(this.flatCoordinates_, this.flatCoordinates_, this.stride_);
+  }
+  /**
+   * @return {RenderFeature} A cloned render feature.
+   */
+  clone() {
+    var _a;
+    return new RenderFeature(
+      this.type_,
+      this.flatCoordinates_.slice(),
+      (_a = this.ends_) == null ? void 0 : _a.slice(),
+      this.stride_,
+      Object.assign({}, this.properties_),
+      this.id_
+    );
+  }
+  /**
+   * @return {Array<number>|null} Ends.
+   */
+  getEnds() {
+    return this.ends_;
+  }
+  /**
+   * Add transform and resolution based geometry simplification to this instance.
+   * @return {RenderFeature} This render feature.
+   */
+  enableSimplifyTransformed() {
+    this.simplifyTransformed = memoizeOne((squaredTolerance, transform2) => {
+      if (squaredTolerance === this.squaredTolerance_) {
+        return this.simplifiedGeometry_;
+      }
+      this.simplifiedGeometry_ = this.clone();
+      if (transform2) {
+        this.simplifiedGeometry_.applyTransform(transform2);
+      }
+      const simplifiedFlatCoordinates = this.simplifiedGeometry_.getFlatCoordinates();
+      let simplifiedEnds;
+      switch (this.type_) {
+        case "LineString":
+          simplifiedFlatCoordinates.length = douglasPeucker(
+            simplifiedFlatCoordinates,
+            0,
+            this.simplifiedGeometry_.flatCoordinates_.length,
+            this.simplifiedGeometry_.stride_,
+            squaredTolerance,
+            simplifiedFlatCoordinates,
+            0
+          );
+          simplifiedEnds = [simplifiedFlatCoordinates.length];
+          break;
+        case "MultiLineString":
+          simplifiedEnds = [];
+          simplifiedFlatCoordinates.length = douglasPeuckerArray(
+            simplifiedFlatCoordinates,
+            0,
+            this.simplifiedGeometry_.ends_,
+            this.simplifiedGeometry_.stride_,
+            squaredTolerance,
+            simplifiedFlatCoordinates,
+            0,
+            simplifiedEnds
+          );
+          break;
+        case "Polygon":
+          simplifiedEnds = [];
+          simplifiedFlatCoordinates.length = quantizeArray(
+            simplifiedFlatCoordinates,
+            0,
+            this.simplifiedGeometry_.ends_,
+            this.simplifiedGeometry_.stride_,
+            Math.sqrt(squaredTolerance),
+            simplifiedFlatCoordinates,
+            0,
+            simplifiedEnds
+          );
+          break;
+      }
+      if (simplifiedEnds) {
+        this.simplifiedGeometry_ = new RenderFeature(
+          this.type_,
+          simplifiedFlatCoordinates,
+          simplifiedEnds,
+          2,
+          this.properties_,
+          this.id_
+        );
+      }
+      this.squaredTolerance_ = squaredTolerance;
+      return this.simplifiedGeometry_;
+    });
+    return this;
+  }
+}
+RenderFeature.prototype.getFlatCoordinates = RenderFeature.prototype.getOrientedFlatCoordinates;
+class FeatureFormat {
+  constructor() {
+    this.dataProjection = void 0;
+    this.defaultFeatureProjection = void 0;
+    this.featureClass = /** @type {FeatureToFeatureClass<FeatureType>} */
+    Feature;
+    this.supportedMediaTypes = null;
+  }
+  /**
+   * Adds the data projection to the read options.
+   * @param {Document|Element|Object|string} source Source.
+   * @param {ReadOptions} [options] Options.
+   * @return {ReadOptions|undefined} Options.
+   * @protected
+   */
+  getReadOptions(source, options) {
+    if (options) {
+      let dataProjection = options.dataProjection ? get(options.dataProjection) : this.readProjection(source);
+      if (options.extent && dataProjection && dataProjection.getUnits() === "tile-pixels") {
+        dataProjection = get(dataProjection);
+        dataProjection.setWorldExtent(options.extent);
+      }
+      options = {
+        dataProjection,
+        featureProjection: options.featureProjection
+      };
+    }
+    return this.adaptOptions(options);
+  }
+  /**
+   * Sets the `dataProjection` on the options, if no `dataProjection`
+   * is set.
+   * @param {WriteOptions|ReadOptions|undefined} options
+   *     Options.
+   * @protected
+   * @return {WriteOptions|ReadOptions|undefined}
+   *     Updated options.
+   */
+  adaptOptions(options) {
+    return Object.assign(
+      {
+        dataProjection: this.dataProjection,
+        featureProjection: this.defaultFeatureProjection,
+        featureClass: this.featureClass
+      },
+      options
+    );
+  }
+  /**
+   * @abstract
+   * @return {Type} The format type.
+   */
+  getType() {
+    return abstract();
+  }
+  /**
+   * Read a single feature from a source.
+   *
+   * @abstract
+   * @param {Document|Element|Object|string} source Source.
+   * @param {ReadOptions} [options] Read options.
+   * @return {FeatureType|Array<FeatureType>} Feature.
+   */
+  readFeature(source, options) {
+    return abstract();
+  }
+  /**
+   * Read all features from a source.
+   *
+   * @abstract
+   * @param {Document|Element|ArrayBuffer|Object|string} source Source.
+   * @param {ReadOptions} [options] Read options.
+   * @return {Array<FeatureType>} Features.
+   */
+  readFeatures(source, options) {
+    return abstract();
+  }
+  /**
+   * Read a single geometry from a source.
+   *
+   * @abstract
+   * @param {Document|Element|Object|string} source Source.
+   * @param {ReadOptions} [options] Read options.
+   * @return {import("../geom/Geometry.js").default} Geometry.
+   */
+  readGeometry(source, options) {
+    return abstract();
+  }
+  /**
+   * Read the projection from a source.
+   *
+   * @abstract
+   * @param {Document|Element|Object|string} source Source.
+   * @return {import("../proj/Projection.js").default|undefined} Projection.
+   */
+  readProjection(source) {
+    return abstract();
+  }
+  /**
+   * Encode a feature in this format.
+   *
+   * @abstract
+   * @param {Feature} feature Feature.
+   * @param {WriteOptions} [options] Write options.
+   * @return {string|ArrayBuffer} Result.
+   */
+  writeFeature(feature2, options) {
+    return abstract();
+  }
+  /**
+   * Encode an array of features in this format.
+   *
+   * @abstract
+   * @param {Array<Feature>} features Features.
+   * @param {WriteOptions} [options] Write options.
+   * @return {string|ArrayBuffer} Result.
+   */
+  writeFeatures(features, options) {
+    return abstract();
+  }
+  /**
+   * Write a single geometry in this format.
+   *
+   * @abstract
+   * @param {import("../geom/Geometry.js").default} geometry Geometry.
+   * @param {WriteOptions} [options] Write options.
+   * @return {string|ArrayBuffer} Result.
+   */
+  writeGeometry(geometry, options) {
+    return abstract();
+  }
+}
+function transformGeometryWithOptions(geometry, write, options) {
+  const featureProjection = options ? get(options.featureProjection) : null;
+  const dataProjection = options ? get(options.dataProjection) : null;
+  let transformed = geometry;
+  if (featureProjection && dataProjection && !equivalent(featureProjection, dataProjection)) {
+    const fromProjection = dataProjection;
+    const toProjection = featureProjection;
+    if (fromProjection.getUnits() === "tile-pixels") {
+      transformed.transform(fromProjection, toProjection);
+    } else {
+      transformed.applyTransform(getTransform(fromProjection, toProjection));
+    }
+  }
+  return transformed;
+}
+class MVT extends FeatureFormat {
+  /**
+   * @param {Options<FeatureType>} [options] Options.
+   */
+  constructor(options) {
+    super();
+    options = options ? options : {};
+    this.dataProjection = new Projection({
+      code: "",
+      units: "tile-pixels"
+    });
+    this.featureClass = options.featureClass ? options.featureClass : (
+      /** @type {import('./Feature.js').FeatureToFeatureClass<FeatureType>} */
+      RenderFeature
+    );
+    this.geometryName_ = options.geometryName;
+    this.layerName_ = options.layerName ? options.layerName : "layer";
+    this.layers_ = options.layers ? options.layers : null;
+    this.idProperty_ = options.idProperty;
+    this.supportedMediaTypes = [
+      "application/vnd.mapbox-vector-tile",
+      "application/x-protobuf"
+    ];
+  }
+  /**
+   * Read the raw geometry from the pbf offset stored in a raw feature's geometry
+   * property.
+   * @param {PBF} pbf PBF.
+   * @param {Object} feature Raw feature.
+   * @param {Array<number>} flatCoordinates Array to store flat coordinates in.
+   * @param {Array<number>} ends Array to store ends in.
+   * @private
+   */
+  readRawGeometry_(pbf, feature2, flatCoordinates, ends) {
+    pbf.pos = feature2.geometry;
+    const end = pbf.readVarint() + pbf.pos;
+    let cmd = 1;
+    let length = 0;
+    let x = 0;
+    let y = 0;
+    let coordsLen = 0;
+    let currentEnd = 0;
+    while (pbf.pos < end) {
+      if (!length) {
+        const cmdLen = pbf.readVarint();
+        cmd = cmdLen & 7;
+        length = cmdLen >> 3;
+      }
+      length--;
+      if (cmd === 1 || cmd === 2) {
+        x += pbf.readSVarint();
+        y += pbf.readSVarint();
+        if (cmd === 1) {
+          if (coordsLen > currentEnd) {
+            ends.push(coordsLen);
+            currentEnd = coordsLen;
+          }
+        }
+        flatCoordinates.push(x, y);
+        coordsLen += 2;
+      } else if (cmd === 7) {
+        if (coordsLen > currentEnd) {
+          flatCoordinates.push(
+            flatCoordinates[currentEnd],
+            flatCoordinates[currentEnd + 1]
+          );
+          coordsLen += 2;
+        }
+      } else {
+        throw new Error("Invalid command found in the PBF");
+      }
+    }
+    if (coordsLen > currentEnd) {
+      ends.push(coordsLen);
+      currentEnd = coordsLen;
+    }
+  }
+  /**
+   * @private
+   * @param {PBF} pbf PBF
+   * @param {Object} rawFeature Raw Mapbox feature.
+   * @param {import("./Feature.js").ReadOptions} options Read options.
+   * @return {FeatureType|null} Feature.
+   */
+  createFeature_(pbf, rawFeature, options) {
+    const type = rawFeature.type;
+    if (type === 0) {
+      return null;
+    }
+    let feature2;
+    const values = rawFeature.properties;
+    let id;
+    if (!this.idProperty_) {
+      id = rawFeature.id;
+    } else {
+      id = values[this.idProperty_];
+      delete values[this.idProperty_];
+    }
+    values[this.layerName_] = rawFeature.layer.name;
+    const flatCoordinates = (
+      /** @type {Array<number>} */
+      []
+    );
+    const ends = (
+      /** @type {Array<number>} */
+      []
+    );
+    this.readRawGeometry_(pbf, rawFeature, flatCoordinates, ends);
+    const geometryType = getGeometryType(type, ends.length);
+    if (this.featureClass === RenderFeature) {
+      feature2 = new /** @type {import('./Feature.js').FeatureToFeatureClass<RenderFeature>} */
+      this.featureClass(geometryType, flatCoordinates, ends, 2, values, id);
+      feature2.transform(options.dataProjection);
+    } else {
+      let geom;
+      if (geometryType == "Polygon") {
+        const endss = inflateEnds(flatCoordinates, ends);
+        geom = endss.length > 1 ? new MultiPolygon(flatCoordinates, "XY", endss) : new Polygon(flatCoordinates, "XY", ends);
+      } else {
+        geom = geometryType === "Point" ? new Point(flatCoordinates, "XY") : geometryType === "LineString" ? new LineString(flatCoordinates, "XY") : geometryType === "MultiPoint" ? new MultiPoint(flatCoordinates, "XY") : geometryType === "MultiLineString" ? new MultiLineString(flatCoordinates, "XY", ends) : null;
+      }
+      const ctor = (
+        /** @type {typeof import("../Feature.js").default} */
+        this.featureClass
+      );
+      feature2 = new ctor();
+      if (this.geometryName_) {
+        feature2.setGeometryName(this.geometryName_);
+      }
+      const geometry = transformGeometryWithOptions(geom, false, options);
+      feature2.setGeometry(geometry);
+      if (id !== void 0) {
+        feature2.setId(id);
+      }
+      feature2.setProperties(values, true);
+    }
+    return (
+      /** @type {FeatureType} */
+      feature2
+    );
+  }
+  /**
+   * @return {import("./Feature.js").Type} Format.
+   * @override
+   */
+  getType() {
+    return "arraybuffer";
+  }
+  /**
+   * Read all features.
+   *
+   * @param {ArrayBuffer} source Source.
+   * @param {import("./Feature.js").ReadOptions} [options] Read options.
+   * @return {Array<FeatureType>} Features.
+   * @api
+   * @override
+   */
+  readFeatures(source, options) {
+    const layers = this.layers_;
+    options = this.adaptOptions(options);
+    const dataProjection = get(options.dataProjection);
+    dataProjection.setWorldExtent(options.extent);
+    options.dataProjection = dataProjection;
+    const pbf = new Pbf(
+      /** @type {ArrayBuffer} */
+      source
+    );
+    const pbfLayers = pbf.readFields(layersPBFReader, {});
+    const features = [];
+    for (const name in pbfLayers) {
+      if (layers && !layers.includes(name)) {
+        continue;
+      }
+      const pbfLayer = pbfLayers[name];
+      const extent = pbfLayer ? [0, 0, pbfLayer.extent, pbfLayer.extent] : null;
+      dataProjection.setExtent(extent);
+      for (let i = 0, ii = pbfLayer.length; i < ii; ++i) {
+        const rawFeature = readRawFeature(pbf, pbfLayer, i);
+        const feature2 = this.createFeature_(pbf, rawFeature, options);
+        if (feature2 !== null) {
+          features.push(feature2);
+        }
+      }
+    }
+    return (
+      /** @type {Array<FeatureType>} */
+      features
+    );
+  }
+  /**
+   * Read the projection from the source.
+   *
+   * @param {Document|Element|Object|string} source Source.
+   * @return {import("../proj/Projection.js").default} Projection.
+   * @api
+   * @override
+   */
+  readProjection(source) {
+    return this.dataProjection;
+  }
+  /**
+   * Sets the layers that features will be read from.
+   * @param {Array<string>} layers Layers.
+   * @api
+   */
+  setLayers(layers) {
+    this.layers_ = layers;
+  }
+}
+function layersPBFReader(tag, layers, pbf) {
+  if (tag === 3) {
+    const layer = {
+      keys: [],
+      values: [],
+      features: []
+    };
+    const end = pbf.readVarint() + pbf.pos;
+    pbf.readFields(layerPBFReader, layer, end);
+    layer.length = layer.features.length;
+    if (layer.length) {
+      layers[layer.name] = layer;
+    }
+  }
+}
+function layerPBFReader(tag, layer, pbf) {
+  if (tag === 15) {
+    layer.version = pbf.readVarint();
+  } else if (tag === 1) {
+    layer.name = pbf.readString();
+  } else if (tag === 5) {
+    layer.extent = pbf.readVarint();
+  } else if (tag === 2) {
+    layer.features.push(pbf.pos);
+  } else if (tag === 3) {
+    layer.keys.push(pbf.readString());
+  } else if (tag === 4) {
+    let value = null;
+    const end = pbf.readVarint() + pbf.pos;
+    while (pbf.pos < end) {
+      tag = pbf.readVarint() >> 3;
+      value = tag === 1 ? pbf.readString() : tag === 2 ? pbf.readFloat() : tag === 3 ? pbf.readDouble() : tag === 4 ? pbf.readVarint64() : tag === 5 ? pbf.readVarint() : tag === 6 ? pbf.readSVarint() : tag === 7 ? pbf.readBoolean() : null;
+    }
+    layer.values.push(value);
+  }
+}
+function featurePBFReader(tag, feature2, pbf) {
+  if (tag == 1) {
+    feature2.id = pbf.readVarint();
+  } else if (tag == 2) {
+    const end = pbf.readVarint() + pbf.pos;
+    while (pbf.pos < end) {
+      const key = feature2.layer.keys[pbf.readVarint()];
+      const value = feature2.layer.values[pbf.readVarint()];
+      feature2.properties[key] = value;
+    }
+  } else if (tag == 3) {
+    feature2.type = pbf.readVarint();
+  } else if (tag == 4) {
+    feature2.geometry = pbf.pos;
+  }
+}
+function readRawFeature(pbf, layer, i) {
+  pbf.pos = layer.features[i];
+  const end = pbf.readVarint() + pbf.pos;
+  const feature2 = {
+    layer,
+    type: 0,
+    properties: {}
+  };
+  pbf.readFields(featurePBFReader, feature2, end);
+  return feature2;
+}
+function getGeometryType(type, numEnds) {
+  let geometryType;
+  if (type === 1) {
+    geometryType = numEnds === 1 ? "Point" : "MultiPoint";
+  } else if (type === 2) {
+    geometryType = numEnds === 1 ? "LineString" : "MultiLineString";
+  } else if (type === 3) {
+    geometryType = "Polygon";
+  }
+  return geometryType;
+}
+class MapboxStyleMap extends setCustomFunctionBase(VectorTile2) {
+  constructor(option) {
+    const style = (option == null ? void 0 : option.style) || (option == null ? void 0 : option.url);
+    const accessToken = option == null ? void 0 : option.accessToken;
+    super({
+      format: new MVT(),
+      maxZoom: (option == null ? void 0 : option.maxZoom) || 22,
+      minZoom: (option == null ? void 0 : option.minZoom) || 0
+    });
+    __publicField(this, "style");
+    __publicField(this, "accessToken");
+    __publicField(this, "styleApplied", false);
+    __publicField(this, "stylePromise");
+    __publicField(this, "targetLayer");
+    __publicField(this, "styleJson");
+    console.log("MapboxStyleMap constructor called with option:", option);
+    this.style = style;
+    this.accessToken = accessToken;
+    if (option == null ? void 0 : option.mapID) {
+      this.mapID = option.mapID;
+    }
+    this.initialize(option || {});
+    console.log("MapboxStyleMap created with style:", this.style, "accessToken:", this.accessToken);
+  }
+  // This is a WMTS-compatible source
+  // Override to prevent tile load function setup
+  getTileLoadFunction() {
+    return null;
+  }
+  // Override setMap to apply style when added to map
+  setMap(map) {
+    console.log("MapboxStyleMap.setMap called");
+    super.setMap(map);
+    this._map = map;
+  }
+  // Method to set the target layer and apply style
+  setTargetLayer(layer) {
+    console.log("MapboxStyleMap.setTargetLayer called");
+    this.targetLayer = layer;
+    if (!this.stylePromise && this._map && this.style && layer) {
+      this.stylePromise = this.applyMapboxStyleAsync();
+    }
+  }
+  // Method to check if style is ready
+  async waitForStyle() {
+    if (this.stylePromise) {
+      await this.stylePromise;
+    }
+  }
+  async applyMapboxStyleAsync() {
+    if (this.styleApplied || !this.targetLayer) return;
+    console.log("Applying Mapbox style to layer");
+    if (this.targetLayer) {
+      try {
+        console.log("Found target layer, applying style");
+        console.log("Style URL:", this.style);
+        console.log("Access token:", this.accessToken);
+        const styleUrl = this.style.replace("mapbox://styles/", "https://api.mapbox.com/styles/v1/") + `?access_token=${this.accessToken}`;
+        console.log("Fetching style from:", styleUrl);
+        const response = await fetch(styleUrl);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch style: ${response.status} ${response.statusText}`);
+        }
+        const styleJson = await response.json();
+        console.log("Style JSON fetched successfully");
+        if (styleJson.sources) {
+          for (const [sourceName, sourceConfig] of Object.entries(styleJson.sources)) {
+            if (sourceConfig.type === "vector" && sourceConfig.url) {
+              const tilesetUrl = sourceConfig.url;
+              if (tilesetUrl.startsWith("mapbox://")) {
+                const tilesetId = tilesetUrl.replace("mapbox://", "");
+                const tileUrl = `https://api.mapbox.com/v4/${tilesetId}/{z}/{x}/{y}.mvt?access_token=${this.accessToken}`;
+                console.log("Setting tile URL:", tileUrl);
+                this.setUrl(tileUrl);
+                break;
+              }
+            }
+          }
+        }
+        this.styleJson = styleJson;
+        console.log("Setting up basic vector tile rendering");
+        const { Style: Style2, Fill: Fill2, Stroke: Stroke2 } = await import("ol/style");
+        this.targetLayer.setStyle((feature2, resolution) => {
+          return new Style2({
+            fill: new Fill2({
+              color: "rgba(250, 250, 250, 0.8)"
+            }),
+            stroke: new Stroke2({
+              color: "#666",
+              width: 1
+            })
+          });
+        });
+        this.styleApplied = true;
+        console.log("Basic vector tile style applied");
+        console.log("Full Mapbox style application is pending implementation");
+      } catch (error2) {
+        console.error("Failed to apply Mapbox style:", error2);
+      }
+    } else {
+      console.warn("No target layer set for Mapbox style");
+    }
+  }
+  // Override to handle Mapbox style
+  insideCheckSysCoord(_coord) {
+    return true;
+  }
+  // Override isMapbox to return false since this is not using Mapbox GL
+  static isMapbox() {
+    return false;
+  }
+  isMapbox() {
+    return false;
+  }
+}
+__publicField(MapboxStyleMap, "title", "MapboxStyle");
+__publicField(MapboxStyleMap, "isBasemap_", true);
+__publicField(MapboxStyleMap, "isWmts_", true);
 class GoogleMap extends setCustomFunctionBase(Google) {
   constructor(options = {}) {
     const parentOptions = Object.assign({}, options);
@@ -13201,2506 +14962,13 @@ class GoogleMap extends setCustomFunctionBase(Google) {
     this.initialize(options);
   }
 }
-const ViewHint = {
-  ANIMATING: 0,
-  INTERACTING: 1
-};
-const ViewProperty = {
-  CENTER: "center",
-  RESOLUTION: "resolution",
-  ROTATION: "rotation"
-};
-function createExtent(extent, onlyCenter, smooth) {
-  return (
-    /**
-     * @param {import("./coordinate.js").Coordinate|undefined} center Center.
-     * @param {number|undefined} resolution Resolution.
-     * @param {import("./size.js").Size} size Viewport size; unused if `onlyCenter` was specified.
-     * @param {boolean} [isMoving] True if an interaction or animation is in progress.
-     * @param {Array<number>} [centerShift] Shift between map center and viewport center.
-     * @return {import("./coordinate.js").Coordinate|undefined} Center.
-     */
-    function(center, resolution, size, isMoving, centerShift) {
-      if (!center) {
-        return void 0;
-      }
-      if (!resolution && !onlyCenter) {
-        return center;
-      }
-      const viewWidth = onlyCenter ? 0 : size[0] * resolution;
-      const viewHeight = onlyCenter ? 0 : size[1] * resolution;
-      const shiftX = centerShift ? centerShift[0] : 0;
-      const shiftY = centerShift ? centerShift[1] : 0;
-      let minX = extent[0] + viewWidth / 2 + shiftX;
-      let maxX = extent[2] - viewWidth / 2 + shiftX;
-      let minY = extent[1] + viewHeight / 2 + shiftY;
-      let maxY = extent[3] - viewHeight / 2 + shiftY;
-      if (minX > maxX) {
-        minX = (maxX + minX) / 2;
-        maxX = minX;
-      }
-      if (minY > maxY) {
-        minY = (maxY + minY) / 2;
-        maxY = minY;
-      }
-      let x = clamp(center[0], minX, maxX);
-      let y = clamp(center[1], minY, maxY);
-      if (isMoving && smooth && resolution) {
-        const ratio = 30 * resolution;
-        x += -ratio * Math.log(1 + Math.max(0, minX - center[0]) / ratio) + ratio * Math.log(1 + Math.max(0, center[0] - maxX) / ratio);
-        y += -ratio * Math.log(1 + Math.max(0, minY - center[1]) / ratio) + ratio * Math.log(1 + Math.max(0, center[1] - maxY) / ratio);
-      }
-      return [x, y];
-    }
-  );
-}
-function none$1(center) {
-  return center;
-}
-function easeIn(t) {
-  return Math.pow(t, 3);
-}
-function easeOut(t) {
-  return 1 - easeIn(1 - t);
-}
-function inAndOut(t) {
-  return 3 * t * t - 2 * t * t * t;
-}
-function linear(t) {
-  return t;
-}
-function getViewportClampedResolution(resolution, maxExtent, viewportSize, showFullExtent) {
-  const xResolution = getWidth(maxExtent) / viewportSize[0];
-  const yResolution = getHeight(maxExtent) / viewportSize[1];
-  if (showFullExtent) {
-    return Math.min(resolution, Math.max(xResolution, yResolution));
-  }
-  return Math.min(resolution, Math.min(xResolution, yResolution));
-}
-function getSmoothClampedResolution(resolution, maxResolution, minResolution) {
-  let result = Math.min(resolution, maxResolution);
-  const ratio = 50;
-  result *= Math.log(1 + ratio * Math.max(0, resolution / maxResolution - 1)) / ratio + 1;
-  if (minResolution) {
-    result = Math.max(result, minResolution);
-    result /= Math.log(1 + ratio * Math.max(0, minResolution / resolution - 1)) / ratio + 1;
-  }
-  return clamp(result, minResolution / 2, maxResolution * 2);
-}
-function createSnapToResolutions(resolutions, smooth, maxExtent, showFullExtent) {
-  smooth = smooth !== void 0 ? smooth : true;
-  return (
-    /**
-     * @param {number|undefined} resolution Resolution.
-     * @param {number} direction Direction.
-     * @param {import("./size.js").Size} size Viewport size.
-     * @param {boolean} [isMoving] True if an interaction or animation is in progress.
-     * @return {number|undefined} Resolution.
-     */
-    function(resolution, direction, size, isMoving) {
-      if (resolution !== void 0) {
-        const maxResolution = resolutions[0];
-        const minResolution = resolutions[resolutions.length - 1];
-        const cappedMaxRes = maxExtent ? getViewportClampedResolution(
-          maxResolution,
-          maxExtent,
-          size,
-          showFullExtent
-        ) : maxResolution;
-        if (isMoving) {
-          if (!smooth) {
-            return clamp(resolution, minResolution, cappedMaxRes);
-          }
-          return getSmoothClampedResolution(
-            resolution,
-            cappedMaxRes,
-            minResolution
-          );
-        }
-        const capped = Math.min(cappedMaxRes, resolution);
-        const z = Math.floor(linearFindNearest(resolutions, capped, direction));
-        if (resolutions[z] > cappedMaxRes && z < resolutions.length - 1) {
-          return resolutions[z + 1];
-        }
-        return resolutions[z];
-      }
-      return void 0;
-    }
-  );
-}
-function createSnapToPower(power, maxResolution, minResolution, smooth, maxExtent, showFullExtent) {
-  smooth = smooth !== void 0 ? smooth : true;
-  minResolution = minResolution !== void 0 ? minResolution : 0;
-  return (
-    /**
-     * @param {number|undefined} resolution Resolution.
-     * @param {number} direction Direction.
-     * @param {import("./size.js").Size} size Viewport size.
-     * @param {boolean} [isMoving] True if an interaction or animation is in progress.
-     * @return {number|undefined} Resolution.
-     */
-    function(resolution, direction, size, isMoving) {
-      if (resolution !== void 0) {
-        const cappedMaxRes = maxExtent ? getViewportClampedResolution(
-          maxResolution,
-          maxExtent,
-          size,
-          showFullExtent
-        ) : maxResolution;
-        if (isMoving) {
-          if (!smooth) {
-            return clamp(resolution, minResolution, cappedMaxRes);
-          }
-          return getSmoothClampedResolution(
-            resolution,
-            cappedMaxRes,
-            minResolution
-          );
-        }
-        const tolerance = 1e-9;
-        const minZoomLevel = Math.ceil(
-          Math.log(maxResolution / cappedMaxRes) / Math.log(power) - tolerance
-        );
-        const offset = -direction * (0.5 - tolerance) + 0.5;
-        const capped = Math.min(cappedMaxRes, resolution);
-        const cappedZoomLevel = Math.floor(
-          Math.log(maxResolution / capped) / Math.log(power) + offset
-        );
-        const zoomLevel = Math.max(minZoomLevel, cappedZoomLevel);
-        const newResolution = maxResolution / Math.pow(power, zoomLevel);
-        return clamp(newResolution, minResolution, cappedMaxRes);
-      }
-      return void 0;
-    }
-  );
-}
-function createMinMaxResolution(maxResolution, minResolution, smooth, maxExtent, showFullExtent) {
-  smooth = smooth !== void 0 ? smooth : true;
-  return (
-    /**
-     * @param {number|undefined} resolution Resolution.
-     * @param {number} direction Direction.
-     * @param {import("./size.js").Size} size Viewport size.
-     * @param {boolean} [isMoving] True if an interaction or animation is in progress.
-     * @return {number|undefined} Resolution.
-     */
-    function(resolution, direction, size, isMoving) {
-      if (resolution !== void 0) {
-        const cappedMaxRes = maxExtent ? getViewportClampedResolution(
-          maxResolution,
-          maxExtent,
-          size,
-          showFullExtent
-        ) : maxResolution;
-        if (!smooth || !isMoving) {
-          return clamp(resolution, minResolution, cappedMaxRes);
-        }
-        return getSmoothClampedResolution(
-          resolution,
-          cappedMaxRes,
-          minResolution
-        );
-      }
-      return void 0;
-    }
-  );
-}
-function disable(rotation) {
-  if (rotation !== void 0) {
-    return 0;
-  }
-  return void 0;
-}
-function none(rotation) {
-  if (rotation !== void 0) {
-    return rotation;
-  }
-  return void 0;
-}
-function createSnapToN(n) {
-  const theta = 2 * Math.PI / n;
-  return (
-    /**
-     * @param {number|undefined} rotation Rotation.
-     * @param {boolean} [isMoving] True if an interaction or animation is in progress.
-     * @return {number|undefined} Rotation.
-     */
-    function(rotation, isMoving) {
-      if (isMoving) {
-        return rotation;
-      }
-      if (rotation !== void 0) {
-        rotation = Math.floor(rotation / theta + 0.5) * theta;
-        return rotation;
-      }
-      return void 0;
-    }
-  );
-}
-function createSnapToZero(tolerance) {
-  const t = toRadians(5);
-  return (
-    /**
-     * @param {number|undefined} rotation Rotation.
-     * @param {boolean} [isMoving] True if an interaction or animation is in progress.
-     * @return {number|undefined} Rotation.
-     */
-    function(rotation, isMoving) {
-      if (isMoving || rotation === void 0) {
-        return rotation;
-      }
-      if (Math.abs(rotation) <= t) {
-        return 0;
-      }
-      return rotation;
-    }
-  );
-}
-const DEFAULT_TILE_SIZE = 256;
-const DEFAULT_MIN_ZOOM = 0;
-class View extends BaseObject {
-  /**
-   * @param {ViewOptions} [options] View options.
-   */
-  constructor(options) {
-    super();
-    this.on;
-    this.once;
-    this.un;
-    options = Object.assign({}, options);
-    this.hints_ = [0, 0];
-    this.animations_ = [];
-    this.updateAnimationKey_;
-    this.projection_ = createProjection(options.projection, "EPSG:3857");
-    this.viewportSize_ = [100, 100];
-    this.targetCenter_ = null;
-    this.targetResolution_;
-    this.targetRotation_;
-    this.nextCenter_ = null;
-    this.nextResolution_;
-    this.nextRotation_;
-    this.cancelAnchor_ = void 0;
-    if (options.projection) {
-      disableCoordinateWarning();
-    }
-    if (options.center) {
-      options.center = fromUserCoordinate(options.center, this.projection_);
-    }
-    if (options.extent) {
-      options.extent = fromUserExtent(options.extent, this.projection_);
-    }
-    this.applyOptions_(options);
-  }
-  /**
-   * Set up the view with the given options.
-   * @param {ViewOptions} options View options.
-   */
-  applyOptions_(options) {
-    const properties = Object.assign({}, options);
-    for (const key in ViewProperty) {
-      delete properties[key];
-    }
-    this.setProperties(properties, true);
-    const resolutionConstraintInfo = createResolutionConstraint(options);
-    this.maxResolution_ = resolutionConstraintInfo.maxResolution;
-    this.minResolution_ = resolutionConstraintInfo.minResolution;
-    this.zoomFactor_ = resolutionConstraintInfo.zoomFactor;
-    this.resolutions_ = options.resolutions;
-    this.padding_ = options.padding;
-    this.minZoom_ = resolutionConstraintInfo.minZoom;
-    const centerConstraint = createCenterConstraint(options);
-    const resolutionConstraint = resolutionConstraintInfo.constraint;
-    const rotationConstraint = createRotationConstraint(options);
-    this.constraints_ = {
-      center: centerConstraint,
-      resolution: resolutionConstraint,
-      rotation: rotationConstraint
-    };
-    this.setRotation(options.rotation !== void 0 ? options.rotation : 0);
-    this.setCenterInternal(
-      options.center !== void 0 ? options.center : null
-    );
-    if (options.resolution !== void 0) {
-      this.setResolution(options.resolution);
-    } else if (options.zoom !== void 0) {
-      this.setZoom(options.zoom);
-    }
-  }
-  /**
-   * Padding (in css pixels).
-   * If the map viewport is partially covered with other content (overlays) along
-   * its edges, this setting allows to shift the center of the viewport away from that
-   * content. The order of the values in the array is top, right, bottom, left.
-   * The default is no padding, which is equivalent to `[0, 0, 0, 0]`.
-   * @type {Array<number>|undefined}
-   * @api
-   */
-  get padding() {
-    return this.padding_;
-  }
-  set padding(padding) {
-    let oldPadding = this.padding_;
-    this.padding_ = padding;
-    const center = this.getCenterInternal();
-    if (center) {
-      const newPadding = padding || [0, 0, 0, 0];
-      oldPadding = oldPadding || [0, 0, 0, 0];
-      const resolution = this.getResolution();
-      const offsetX = resolution / 2 * (newPadding[3] - oldPadding[3] + oldPadding[1] - newPadding[1]);
-      const offsetY = resolution / 2 * (newPadding[0] - oldPadding[0] + oldPadding[2] - newPadding[2]);
-      this.setCenterInternal([center[0] + offsetX, center[1] - offsetY]);
-    }
-  }
-  /**
-   * Get an updated version of the view options used to construct the view.  The
-   * current resolution (or zoom), center, and rotation are applied to any stored
-   * options.  The provided options can be used to apply new min/max zoom or
-   * resolution limits.
-   * @param {ViewOptions} newOptions New options to be applied.
-   * @return {ViewOptions} New options updated with the current view state.
-   */
-  getUpdatedOptions_(newOptions) {
-    const options = this.getProperties();
-    if (options.resolution !== void 0) {
-      options.resolution = this.getResolution();
-    } else {
-      options.zoom = this.getZoom();
-    }
-    options.center = this.getCenterInternal();
-    options.rotation = this.getRotation();
-    return Object.assign({}, options, newOptions);
-  }
-  /**
-   * Animate the view.  The view's center, zoom (or resolution), and rotation
-   * can be animated for smooth transitions between view states.  For example,
-   * to animate the view to a new zoom level:
-   *
-   *     view.animate({zoom: view.getZoom() + 1});
-   *
-   * By default, the animation lasts one second and uses in-and-out easing.  You
-   * can customize this behavior by including `duration` (in milliseconds) and
-   * `easing` options (see {@link module:ol/easing}).
-   *
-   * To chain together multiple animations, call the method with multiple
-   * animation objects.  For example, to first zoom and then pan:
-   *
-   *     view.animate({zoom: 10}, {center: [0, 0]});
-   *
-   * If you provide a function as the last argument to the animate method, it
-   * will get called at the end of an animation series.  The callback will be
-   * called with `true` if the animation series completed on its own or `false`
-   * if it was cancelled.
-   *
-   * Animations are cancelled by user interactions (e.g. dragging the map) or by
-   * calling `view.setCenter()`, `view.setResolution()`, or `view.setRotation()`
-   * (or another method that calls one of these).
-   *
-   * @param {...(AnimationOptions|function(boolean): void)} var_args Animation
-   *     options.  Multiple animations can be run in series by passing multiple
-   *     options objects.  To run multiple animations in parallel, call the method
-   *     multiple times.  An optional callback can be provided as a final
-   *     argument.  The callback will be called with a boolean indicating whether
-   *     the animation completed without being cancelled.
-   * @api
-   */
-  animate(var_args) {
-    if (this.isDef() && !this.getAnimating()) {
-      this.resolveConstraints(0);
-    }
-    const args = new Array(arguments.length);
-    for (let i = 0; i < args.length; ++i) {
-      let options = arguments[i];
-      if (options.center) {
-        options = Object.assign({}, options);
-        options.center = fromUserCoordinate(
-          options.center,
-          this.getProjection()
-        );
-      }
-      if (options.anchor) {
-        options = Object.assign({}, options);
-        options.anchor = fromUserCoordinate(
-          options.anchor,
-          this.getProjection()
-        );
-      }
-      args[i] = options;
-    }
-    this.animateInternal.apply(this, args);
-  }
-  /**
-   * @param {...(AnimationOptions|function(boolean): void)} var_args Animation options.
-   */
-  animateInternal(var_args) {
-    let animationCount = arguments.length;
-    let callback;
-    if (animationCount > 1 && typeof arguments[animationCount - 1] === "function") {
-      callback = arguments[animationCount - 1];
-      --animationCount;
-    }
-    let i = 0;
-    for (; i < animationCount && !this.isDef(); ++i) {
-      const state = arguments[i];
-      if (state.center) {
-        this.setCenterInternal(state.center);
-      }
-      if (state.zoom !== void 0) {
-        this.setZoom(state.zoom);
-      } else if (state.resolution) {
-        this.setResolution(state.resolution);
-      }
-      if (state.rotation !== void 0) {
-        this.setRotation(state.rotation);
-      }
-    }
-    if (i === animationCount) {
-      if (callback) {
-        animationCallback(callback, true);
-      }
-      return;
-    }
-    let start = Date.now();
-    let center = this.targetCenter_.slice();
-    let resolution = this.targetResolution_;
-    let rotation = this.targetRotation_;
-    const series = [];
-    for (; i < animationCount; ++i) {
-      const options = (
-        /** @type {AnimationOptions} */
-        arguments[i]
-      );
-      const animation = {
-        start,
-        complete: false,
-        anchor: options.anchor,
-        duration: options.duration !== void 0 ? options.duration : 1e3,
-        easing: options.easing || inAndOut,
-        callback
-      };
-      if (options.center) {
-        animation.sourceCenter = center;
-        animation.targetCenter = options.center.slice();
-        center = animation.targetCenter;
-      }
-      if (options.zoom !== void 0) {
-        animation.sourceResolution = resolution;
-        animation.targetResolution = this.getResolutionForZoom(options.zoom);
-        resolution = animation.targetResolution;
-      } else if (options.resolution) {
-        animation.sourceResolution = resolution;
-        animation.targetResolution = options.resolution;
-        resolution = animation.targetResolution;
-      }
-      if (options.rotation !== void 0) {
-        animation.sourceRotation = rotation;
-        const delta = modulo(options.rotation - rotation + Math.PI, 2 * Math.PI) - Math.PI;
-        animation.targetRotation = rotation + delta;
-        rotation = animation.targetRotation;
-      }
-      if (isNoopAnimation(animation)) {
-        animation.complete = true;
-      } else {
-        start += animation.duration;
-      }
-      series.push(animation);
-    }
-    this.animations_.push(series);
-    this.setHint(ViewHint.ANIMATING, 1);
-    this.updateAnimations_();
-  }
-  /**
-   * Determine if the view is being animated.
-   * @return {boolean} The view is being animated.
-   * @api
-   */
-  getAnimating() {
-    return this.hints_[ViewHint.ANIMATING] > 0;
-  }
-  /**
-   * Determine if the user is interacting with the view, such as panning or zooming.
-   * @return {boolean} The view is being interacted with.
-   * @api
-   */
-  getInteracting() {
-    return this.hints_[ViewHint.INTERACTING] > 0;
-  }
-  /**
-   * Cancel any ongoing animations.
-   * @api
-   */
-  cancelAnimations() {
-    this.setHint(ViewHint.ANIMATING, -this.hints_[ViewHint.ANIMATING]);
-    let anchor;
-    for (let i = 0, ii = this.animations_.length; i < ii; ++i) {
-      const series = this.animations_[i];
-      if (series[0].callback) {
-        animationCallback(series[0].callback, false);
-      }
-      if (!anchor) {
-        for (let j = 0, jj = series.length; j < jj; ++j) {
-          const animation = series[j];
-          if (!animation.complete) {
-            anchor = animation.anchor;
-            break;
-          }
-        }
-      }
-    }
-    this.animations_.length = 0;
-    this.cancelAnchor_ = anchor;
-    this.nextCenter_ = null;
-    this.nextResolution_ = NaN;
-    this.nextRotation_ = NaN;
-  }
-  /**
-   * Update all animations.
-   */
-  updateAnimations_() {
-    if (this.updateAnimationKey_ !== void 0) {
-      cancelAnimationFrame(this.updateAnimationKey_);
-      this.updateAnimationKey_ = void 0;
-    }
-    if (!this.getAnimating()) {
-      return;
-    }
-    const now = Date.now();
-    let more = false;
-    for (let i = this.animations_.length - 1; i >= 0; --i) {
-      const series = this.animations_[i];
-      let seriesComplete = true;
-      for (let j = 0, jj = series.length; j < jj; ++j) {
-        const animation = series[j];
-        if (animation.complete) {
-          continue;
-        }
-        const elapsed = now - animation.start;
-        let fraction = animation.duration > 0 ? elapsed / animation.duration : 1;
-        if (fraction >= 1) {
-          animation.complete = true;
-          fraction = 1;
-        } else {
-          seriesComplete = false;
-        }
-        const progress = animation.easing(fraction);
-        if (animation.sourceCenter) {
-          const x0 = animation.sourceCenter[0];
-          const y0 = animation.sourceCenter[1];
-          const x1 = animation.targetCenter[0];
-          const y1 = animation.targetCenter[1];
-          this.nextCenter_ = animation.targetCenter;
-          const x = x0 + progress * (x1 - x0);
-          const y = y0 + progress * (y1 - y0);
-          this.targetCenter_ = [x, y];
-        }
-        if (animation.sourceResolution && animation.targetResolution) {
-          const resolution = progress === 1 ? animation.targetResolution : animation.sourceResolution + progress * (animation.targetResolution - animation.sourceResolution);
-          if (animation.anchor) {
-            const size = this.getViewportSize_(this.getRotation());
-            const constrainedResolution = this.constraints_.resolution(
-              resolution,
-              0,
-              size,
-              true
-            );
-            this.targetCenter_ = this.calculateCenterZoom(
-              constrainedResolution,
-              animation.anchor
-            );
-          }
-          this.nextResolution_ = animation.targetResolution;
-          this.targetResolution_ = resolution;
-          this.applyTargetState_(true);
-        }
-        if (animation.sourceRotation !== void 0 && animation.targetRotation !== void 0) {
-          const rotation = progress === 1 ? modulo(animation.targetRotation + Math.PI, 2 * Math.PI) - Math.PI : animation.sourceRotation + progress * (animation.targetRotation - animation.sourceRotation);
-          if (animation.anchor) {
-            const constrainedRotation = this.constraints_.rotation(
-              rotation,
-              true
-            );
-            this.targetCenter_ = this.calculateCenterRotate(
-              constrainedRotation,
-              animation.anchor
-            );
-          }
-          this.nextRotation_ = animation.targetRotation;
-          this.targetRotation_ = rotation;
-        }
-        this.applyTargetState_(true);
-        more = true;
-        if (!animation.complete) {
-          break;
-        }
-      }
-      if (seriesComplete) {
-        this.animations_[i] = null;
-        this.setHint(ViewHint.ANIMATING, -1);
-        this.nextCenter_ = null;
-        this.nextResolution_ = NaN;
-        this.nextRotation_ = NaN;
-        const callback = series[0].callback;
-        if (callback) {
-          animationCallback(callback, true);
-        }
-      }
-    }
-    this.animations_ = this.animations_.filter(Boolean);
-    if (more && this.updateAnimationKey_ === void 0) {
-      this.updateAnimationKey_ = requestAnimationFrame(
-        this.updateAnimations_.bind(this)
-      );
-    }
-  }
-  /**
-   * @param {number} rotation Target rotation.
-   * @param {import("./coordinate.js").Coordinate} anchor Rotation anchor.
-   * @return {import("./coordinate.js").Coordinate|undefined} Center for rotation and anchor.
-   */
-  calculateCenterRotate(rotation, anchor) {
-    let center;
-    const currentCenter = this.getCenterInternal();
-    if (currentCenter !== void 0) {
-      center = [currentCenter[0] - anchor[0], currentCenter[1] - anchor[1]];
-      rotate$1(center, rotation - this.getRotation());
-      add$2(center, anchor);
-    }
-    return center;
-  }
-  /**
-   * @param {number} resolution Target resolution.
-   * @param {import("./coordinate.js").Coordinate} anchor Zoom anchor.
-   * @return {import("./coordinate.js").Coordinate|undefined} Center for resolution and anchor.
-   */
-  calculateCenterZoom(resolution, anchor) {
-    let center;
-    const currentCenter = this.getCenterInternal();
-    const currentResolution = this.getResolution();
-    if (currentCenter !== void 0 && currentResolution !== void 0) {
-      const x = anchor[0] - resolution * (anchor[0] - currentCenter[0]) / currentResolution;
-      const y = anchor[1] - resolution * (anchor[1] - currentCenter[1]) / currentResolution;
-      center = [x, y];
-    }
-    return center;
-  }
-  /**
-   * Returns the current viewport size.
-   * @private
-   * @param {number} [rotation] Take into account the rotation of the viewport when giving the size
-   * @return {import("./size.js").Size} Viewport size or `[100, 100]` when no viewport is found.
-   */
-  getViewportSize_(rotation) {
-    const size = this.viewportSize_;
-    if (rotation) {
-      const w = size[0];
-      const h = size[1];
-      return [
-        Math.abs(w * Math.cos(rotation)) + Math.abs(h * Math.sin(rotation)),
-        Math.abs(w * Math.sin(rotation)) + Math.abs(h * Math.cos(rotation))
-      ];
-    }
-    return size;
-  }
-  /**
-   * Stores the viewport size on the view. The viewport size is not read every time from the DOM
-   * to avoid performance hit and layout reflow.
-   * This should be done on map size change.
-   * Note: the constraints are not resolved during an animation to avoid stopping it
-   * @param {import("./size.js").Size} [size] Viewport size; if undefined, [100, 100] is assumed
-   */
-  setViewportSize(size) {
-    this.viewportSize_ = Array.isArray(size) ? size.slice() : [100, 100];
-    if (!this.getAnimating()) {
-      this.resolveConstraints(0);
-    }
-  }
-  /**
-   * Get the view center.
-   * @return {import("./coordinate.js").Coordinate|undefined} The center of the view.
-   * @observable
-   * @api
-   */
-  getCenter() {
-    const center = this.getCenterInternal();
-    if (!center) {
-      return center;
-    }
-    return toUserCoordinate(center, this.getProjection());
-  }
-  /**
-   * Get the view center without transforming to user projection.
-   * @return {import("./coordinate.js").Coordinate|undefined} The center of the view.
-   */
-  getCenterInternal() {
-    return (
-      /** @type {import("./coordinate.js").Coordinate|undefined} */
-      this.get(ViewProperty.CENTER)
-    );
-  }
-  /**
-   * @return {Constraints} Constraints.
-   */
-  getConstraints() {
-    return this.constraints_;
-  }
-  /**
-   * @return {boolean} Resolution constraint is set
-   */
-  getConstrainResolution() {
-    return this.get("constrainResolution");
-  }
-  /**
-   * @param {Array<number>} [hints] Destination array.
-   * @return {Array<number>} Hint.
-   */
-  getHints(hints) {
-    if (hints !== void 0) {
-      hints[0] = this.hints_[0];
-      hints[1] = this.hints_[1];
-      return hints;
-    }
-    return this.hints_.slice();
-  }
-  /**
-   * Calculate the extent for the current view state and the passed box size.
-   * @param {import("./size.js").Size} [size] The pixel dimensions of the box
-   * into which the calculated extent should fit. Defaults to the size of the
-   * map the view is associated with.
-   * If no map or multiple maps are connected to the view, provide the desired
-   * box size (e.g. `map.getSize()`).
-   * @return {import("./extent.js").Extent} Extent.
-   * @api
-   */
-  calculateExtent(size) {
-    const extent = this.calculateExtentInternal(size);
-    return toUserExtent(extent, this.getProjection());
-  }
-  /**
-   * @param {import("./size.js").Size} [size] Box pixel size. If not provided,
-   * the map's last known viewport size will be used.
-   * @return {import("./extent.js").Extent} Extent.
-   */
-  calculateExtentInternal(size) {
-    size = size || this.getViewportSizeMinusPadding_();
-    const center = (
-      /** @type {!import("./coordinate.js").Coordinate} */
-      this.getCenterInternal()
-    );
-    assert(center, "The view center is not defined");
-    const resolution = (
-      /** @type {!number} */
-      this.getResolution()
-    );
-    assert(resolution !== void 0, "The view resolution is not defined");
-    const rotation = (
-      /** @type {!number} */
-      this.getRotation()
-    );
-    assert(rotation !== void 0, "The view rotation is not defined");
-    return getForViewAndSize(center, resolution, rotation, size);
-  }
-  /**
-   * Get the maximum resolution of the view.
-   * @return {number} The maximum resolution of the view.
-   * @api
-   */
-  getMaxResolution() {
-    return this.maxResolution_;
-  }
-  /**
-   * Get the minimum resolution of the view.
-   * @return {number} The minimum resolution of the view.
-   * @api
-   */
-  getMinResolution() {
-    return this.minResolution_;
-  }
-  /**
-   * Get the maximum zoom level for the view.
-   * @return {number} The maximum zoom level.
-   * @api
-   */
-  getMaxZoom() {
-    return (
-      /** @type {number} */
-      this.getZoomForResolution(this.minResolution_)
-    );
-  }
-  /**
-   * Set a new maximum zoom level for the view.
-   * @param {number} zoom The maximum zoom level.
-   * @api
-   */
-  setMaxZoom(zoom) {
-    this.applyOptions_(this.getUpdatedOptions_({ maxZoom: zoom }));
-  }
-  /**
-   * Get the minimum zoom level for the view.
-   * @return {number} The minimum zoom level.
-   * @api
-   */
-  getMinZoom() {
-    return (
-      /** @type {number} */
-      this.getZoomForResolution(this.maxResolution_)
-    );
-  }
-  /**
-   * Set a new minimum zoom level for the view.
-   * @param {number} zoom The minimum zoom level.
-   * @api
-   */
-  setMinZoom(zoom) {
-    this.applyOptions_(this.getUpdatedOptions_({ minZoom: zoom }));
-  }
-  /**
-   * Set whether the view should allow intermediary zoom levels.
-   * @param {boolean} enabled Whether the resolution is constrained.
-   * @api
-   */
-  setConstrainResolution(enabled) {
-    this.applyOptions_(this.getUpdatedOptions_({ constrainResolution: enabled }));
-  }
-  /**
-   * Get the view projection.
-   * @return {import("./proj/Projection.js").default} The projection of the view.
-   * @api
-   */
-  getProjection() {
-    return this.projection_;
-  }
-  /**
-   * Get the view resolution.
-   * @return {number|undefined} The resolution of the view.
-   * @observable
-   * @api
-   */
-  getResolution() {
-    return (
-      /** @type {number|undefined} */
-      this.get(ViewProperty.RESOLUTION)
-    );
-  }
-  /**
-   * Get the resolutions for the view. This returns the array of resolutions
-   * passed to the constructor of the View, or undefined if none were given.
-   * @return {Array<number>|undefined} The resolutions of the view.
-   * @api
-   */
-  getResolutions() {
-    return this.resolutions_;
-  }
-  /**
-   * Get the resolution for a provided extent (in map units) and size (in pixels).
-   * @param {import("./extent.js").Extent} extent Extent.
-   * @param {import("./size.js").Size} [size] Box pixel size.
-   * @return {number} The resolution at which the provided extent will render at
-   *     the given size.
-   * @api
-   */
-  getResolutionForExtent(extent, size) {
-    return this.getResolutionForExtentInternal(
-      fromUserExtent(extent, this.getProjection()),
-      size
-    );
-  }
-  /**
-   * Get the resolution for a provided extent (in map units) and size (in pixels).
-   * @param {import("./extent.js").Extent} extent Extent.
-   * @param {import("./size.js").Size} [size] Box pixel size.
-   * @return {number} The resolution at which the provided extent will render at
-   *     the given size.
-   */
-  getResolutionForExtentInternal(extent, size) {
-    size = size || this.getViewportSizeMinusPadding_();
-    const xResolution = getWidth(extent) / size[0];
-    const yResolution = getHeight(extent) / size[1];
-    return Math.max(xResolution, yResolution);
-  }
-  /**
-   * Return a function that returns a value between 0 and 1 for a
-   * resolution. Exponential scaling is assumed.
-   * @param {number} [power] Power.
-   * @return {function(number): number} Resolution for value function.
-   */
-  getResolutionForValueFunction(power) {
-    power = power || 2;
-    const maxResolution = this.getConstrainedResolution(this.maxResolution_);
-    const minResolution = this.minResolution_;
-    const max = Math.log(maxResolution / minResolution) / Math.log(power);
-    return (
-      /**
-       * @param {number} value Value.
-       * @return {number} Resolution.
-       */
-      function(value) {
-        const resolution = maxResolution / Math.pow(power, value * max);
-        return resolution;
-      }
-    );
-  }
-  /**
-   * Get the view rotation.
-   * @return {number} The rotation of the view in radians.
-   * @observable
-   * @api
-   */
-  getRotation() {
-    return (
-      /** @type {number} */
-      this.get(ViewProperty.ROTATION)
-    );
-  }
-  /**
-   * Return a function that returns a resolution for a value between
-   * 0 and 1. Exponential scaling is assumed.
-   * @param {number} [power] Power.
-   * @return {function(number): number} Value for resolution function.
-   */
-  getValueForResolutionFunction(power) {
-    const logPower = Math.log(power || 2);
-    const maxResolution = this.getConstrainedResolution(this.maxResolution_);
-    const minResolution = this.minResolution_;
-    const max = Math.log(maxResolution / minResolution) / logPower;
-    return (
-      /**
-       * @param {number} resolution Resolution.
-       * @return {number} Value.
-       */
-      function(resolution) {
-        const value = Math.log(maxResolution / resolution) / logPower / max;
-        return value;
-      }
-    );
-  }
-  /**
-   * Returns the size of the viewport minus padding.
-   * @private
-   * @param {number} [rotation] Take into account the rotation of the viewport when giving the size
-   * @return {import("./size.js").Size} Viewport size reduced by the padding.
-   */
-  getViewportSizeMinusPadding_(rotation) {
-    let size = this.getViewportSize_(rotation);
-    const padding = this.padding_;
-    if (padding) {
-      size = [
-        size[0] - padding[1] - padding[3],
-        size[1] - padding[0] - padding[2]
-      ];
-    }
-    return size;
-  }
-  /**
-   * @return {State} View state.
-   */
-  getState() {
-    const projection = this.getProjection();
-    const resolution = this.getResolution();
-    const rotation = this.getRotation();
-    let center = (
-      /** @type {import("./coordinate.js").Coordinate} */
-      this.getCenterInternal()
-    );
-    const padding = this.padding_;
-    if (padding) {
-      const reducedSize = this.getViewportSizeMinusPadding_();
-      center = calculateCenterOn(
-        center,
-        this.getViewportSize_(),
-        [reducedSize[0] / 2 + padding[3], reducedSize[1] / 2 + padding[0]],
-        resolution,
-        rotation
-      );
-    }
-    return {
-      center: center.slice(0),
-      projection: projection !== void 0 ? projection : null,
-      resolution,
-      nextCenter: this.nextCenter_,
-      nextResolution: this.nextResolution_,
-      nextRotation: this.nextRotation_,
-      rotation,
-      zoom: this.getZoom()
-    };
-  }
-  /**
-   * @return {ViewStateLayerStateExtent} Like `FrameState`, but just `viewState` and `extent`.
-   */
-  getViewStateAndExtent() {
-    return {
-      viewState: this.getState(),
-      extent: this.calculateExtent()
-    };
-  }
-  /**
-   * Get the current zoom level. This method may return non-integer zoom levels
-   * if the view does not constrain the resolution, or if an interaction or
-   * animation is underway.
-   * @return {number|undefined} Zoom.
-   * @api
-   */
-  getZoom() {
-    let zoom;
-    const resolution = this.getResolution();
-    if (resolution !== void 0) {
-      zoom = this.getZoomForResolution(resolution);
-    }
-    return zoom;
-  }
-  /**
-   * Get the zoom level for a resolution.
-   * @param {number} resolution The resolution.
-   * @return {number|undefined} The zoom level for the provided resolution.
-   * @api
-   */
-  getZoomForResolution(resolution) {
-    let offset = this.minZoom_ || 0;
-    let max, zoomFactor;
-    if (this.resolutions_) {
-      const nearest = linearFindNearest(this.resolutions_, resolution, 1);
-      offset = nearest;
-      max = this.resolutions_[nearest];
-      if (nearest == this.resolutions_.length - 1) {
-        zoomFactor = 2;
-      } else {
-        zoomFactor = max / this.resolutions_[nearest + 1];
-      }
-    } else {
-      max = this.maxResolution_;
-      zoomFactor = this.zoomFactor_;
-    }
-    return offset + Math.log(max / resolution) / Math.log(zoomFactor);
-  }
-  /**
-   * Get the resolution for a zoom level.
-   * @param {number} zoom Zoom level.
-   * @return {number} The view resolution for the provided zoom level.
-   * @api
-   */
-  getResolutionForZoom(zoom) {
-    var _a;
-    if ((_a = this.resolutions_) == null ? void 0 : _a.length) {
-      if (this.resolutions_.length === 1) {
-        return this.resolutions_[0];
-      }
-      const baseLevel = clamp(
-        Math.floor(zoom),
-        0,
-        this.resolutions_.length - 2
-      );
-      const zoomFactor = this.resolutions_[baseLevel] / this.resolutions_[baseLevel + 1];
-      return this.resolutions_[baseLevel] / Math.pow(zoomFactor, clamp(zoom - baseLevel, 0, 1));
-    }
-    return this.maxResolution_ / Math.pow(this.zoomFactor_, zoom - this.minZoom_);
-  }
-  /**
-   * Fit the given geometry or extent based on the given map size and border.
-   * The size is pixel dimensions of the box to fit the extent into.
-   * In most cases you will want to use the map size, that is `map.getSize()`.
-   * Takes care of the map angle.
-   * @param {import("./geom/SimpleGeometry.js").default|import("./extent.js").Extent} geometryOrExtent The geometry or
-   *     extent to fit the view to.
-   * @param {FitOptions} [options] Options.
-   * @api
-   */
-  fit(geometryOrExtent, options) {
-    let geometry2;
-    assert(
-      Array.isArray(geometryOrExtent) || typeof /** @type {?} */
-      geometryOrExtent.getSimplifiedGeometry === "function",
-      "Invalid extent or geometry provided as `geometry`"
-    );
-    if (Array.isArray(geometryOrExtent)) {
-      assert(
-        !isEmpty(geometryOrExtent),
-        "Cannot fit empty extent provided as `geometry`"
-      );
-      const extent = fromUserExtent(geometryOrExtent, this.getProjection());
-      geometry2 = fromExtent(extent);
-    } else if (geometryOrExtent.getType() === "Circle") {
-      const extent = fromUserExtent(
-        geometryOrExtent.getExtent(),
-        this.getProjection()
-      );
-      geometry2 = fromExtent(extent);
-      geometry2.rotate(this.getRotation(), getCenter(extent));
-    } else {
-      {
-        geometry2 = geometryOrExtent;
-      }
-    }
-    this.fitInternal(geometry2, options);
-  }
-  /**
-   * Calculate rotated extent
-   * @param {import("./geom/SimpleGeometry.js").default} geometry The geometry.
-   * @return {import("./extent").Extent} The rotated extent for the geometry.
-   */
-  rotatedExtentForGeometry(geometry2) {
-    const rotation = this.getRotation();
-    const cosAngle = Math.cos(rotation);
-    const sinAngle = Math.sin(-rotation);
-    const coords = geometry2.getFlatCoordinates();
-    const stride = geometry2.getStride();
-    let minRotX = Infinity;
-    let minRotY = Infinity;
-    let maxRotX = -Infinity;
-    let maxRotY = -Infinity;
-    for (let i = 0, ii = coords.length; i < ii; i += stride) {
-      const rotX = coords[i] * cosAngle - coords[i + 1] * sinAngle;
-      const rotY = coords[i] * sinAngle + coords[i + 1] * cosAngle;
-      minRotX = Math.min(minRotX, rotX);
-      minRotY = Math.min(minRotY, rotY);
-      maxRotX = Math.max(maxRotX, rotX);
-      maxRotY = Math.max(maxRotY, rotY);
-    }
-    return [minRotX, minRotY, maxRotX, maxRotY];
-  }
-  /**
-   * @param {import("./geom/SimpleGeometry.js").default} geometry The geometry.
-   * @param {FitOptions} [options] Options.
-   */
-  fitInternal(geometry2, options) {
-    options = options || {};
-    let size = options.size;
-    if (!size) {
-      size = this.getViewportSizeMinusPadding_();
-    }
-    const padding = options.padding !== void 0 ? options.padding : [0, 0, 0, 0];
-    const nearest = options.nearest !== void 0 ? options.nearest : false;
-    let minResolution;
-    if (options.minResolution !== void 0) {
-      minResolution = options.minResolution;
-    } else if (options.maxZoom !== void 0) {
-      minResolution = this.getResolutionForZoom(options.maxZoom);
-    } else {
-      minResolution = 0;
-    }
-    const rotatedExtent = this.rotatedExtentForGeometry(geometry2);
-    let resolution = this.getResolutionForExtentInternal(rotatedExtent, [
-      size[0] - padding[1] - padding[3],
-      size[1] - padding[0] - padding[2]
-    ]);
-    resolution = isNaN(resolution) ? minResolution : Math.max(resolution, minResolution);
-    resolution = this.getConstrainedResolution(resolution, nearest ? 0 : 1);
-    const rotation = this.getRotation();
-    const sinAngle = Math.sin(rotation);
-    const cosAngle = Math.cos(rotation);
-    const centerRot = getCenter(rotatedExtent);
-    centerRot[0] += (padding[1] - padding[3]) / 2 * resolution;
-    centerRot[1] += (padding[0] - padding[2]) / 2 * resolution;
-    const centerX = centerRot[0] * cosAngle - centerRot[1] * sinAngle;
-    const centerY = centerRot[1] * cosAngle + centerRot[0] * sinAngle;
-    const center = this.getConstrainedCenter([centerX, centerY], resolution);
-    const callback = options.callback ? options.callback : VOID;
-    if (options.duration !== void 0) {
-      this.animateInternal(
-        {
-          resolution,
-          center,
-          duration: options.duration,
-          easing: options.easing
-        },
-        callback
-      );
-    } else {
-      this.targetResolution_ = resolution;
-      this.targetCenter_ = center;
-      this.applyTargetState_(false, true);
-      animationCallback(callback, true);
-    }
-  }
-  /**
-   * Center on coordinate and view position.
-   * @param {import("./coordinate.js").Coordinate} coordinate Coordinate.
-   * @param {import("./size.js").Size} size Box pixel size.
-   * @param {import("./pixel.js").Pixel} position Position on the view to center on.
-   * @api
-   */
-  centerOn(coordinate, size, position) {
-    this.centerOnInternal(
-      fromUserCoordinate(coordinate, this.getProjection()),
-      size,
-      position
-    );
-  }
-  /**
-   * @param {import("./coordinate.js").Coordinate} coordinate Coordinate.
-   * @param {import("./size.js").Size} size Box pixel size.
-   * @param {import("./pixel.js").Pixel} position Position on the view to center on.
-   */
-  centerOnInternal(coordinate, size, position) {
-    this.setCenterInternal(
-      calculateCenterOn(
-        coordinate,
-        size,
-        position,
-        this.getResolution(),
-        this.getRotation()
-      )
-    );
-  }
-  /**
-   * Calculates the shift between map and viewport center.
-   * @param {import("./coordinate.js").Coordinate} center Center.
-   * @param {number} resolution Resolution.
-   * @param {number} rotation Rotation.
-   * @param {import("./size.js").Size} size Size.
-   * @return {Array<number>|undefined} Center shift.
-   */
-  calculateCenterShift(center, resolution, rotation, size) {
-    let centerShift;
-    const padding = this.padding_;
-    if (padding && center) {
-      const reducedSize = this.getViewportSizeMinusPadding_(-rotation);
-      const shiftedCenter = calculateCenterOn(
-        center,
-        size,
-        [reducedSize[0] / 2 + padding[3], reducedSize[1] / 2 + padding[0]],
-        resolution,
-        rotation
-      );
-      centerShift = [
-        center[0] - shiftedCenter[0],
-        center[1] - shiftedCenter[1]
-      ];
-    }
-    return centerShift;
-  }
-  /**
-   * @return {boolean} Is defined.
-   */
-  isDef() {
-    return !!this.getCenterInternal() && this.getResolution() !== void 0;
-  }
-  /**
-   * Adds relative coordinates to the center of the view. Any extent constraint will apply.
-   * @param {import("./coordinate.js").Coordinate} deltaCoordinates Relative value to add.
-   * @api
-   */
-  adjustCenter(deltaCoordinates) {
-    const center = toUserCoordinate(this.targetCenter_, this.getProjection());
-    this.setCenter([
-      center[0] + deltaCoordinates[0],
-      center[1] + deltaCoordinates[1]
-    ]);
-  }
-  /**
-   * Adds relative coordinates to the center of the view. Any extent constraint will apply.
-   * @param {import("./coordinate.js").Coordinate} deltaCoordinates Relative value to add.
-   */
-  adjustCenterInternal(deltaCoordinates) {
-    const center = this.targetCenter_;
-    this.setCenterInternal([
-      center[0] + deltaCoordinates[0],
-      center[1] + deltaCoordinates[1]
-    ]);
-  }
-  /**
-   * Multiply the view resolution by a ratio, optionally using an anchor. Any resolution
-   * constraint will apply.
-   * @param {number} ratio The ratio to apply on the view resolution.
-   * @param {import("./coordinate.js").Coordinate} [anchor] The origin of the transformation.
-   * @api
-   */
-  adjustResolution(ratio, anchor) {
-    anchor = anchor && fromUserCoordinate(anchor, this.getProjection());
-    this.adjustResolutionInternal(ratio, anchor);
-  }
-  /**
-   * Multiply the view resolution by a ratio, optionally using an anchor. Any resolution
-   * constraint will apply.
-   * @param {number} ratio The ratio to apply on the view resolution.
-   * @param {import("./coordinate.js").Coordinate} [anchor] The origin of the transformation.
-   */
-  adjustResolutionInternal(ratio, anchor) {
-    const isMoving = this.getAnimating() || this.getInteracting();
-    const size = this.getViewportSize_(this.getRotation());
-    const newResolution = this.constraints_.resolution(
-      this.targetResolution_ * ratio,
-      0,
-      size,
-      isMoving
-    );
-    if (anchor) {
-      this.targetCenter_ = this.calculateCenterZoom(newResolution, anchor);
-    }
-    this.targetResolution_ *= ratio;
-    this.applyTargetState_();
-  }
-  /**
-   * Adds a value to the view zoom level, optionally using an anchor. Any resolution
-   * constraint will apply.
-   * @param {number} delta Relative value to add to the zoom level.
-   * @param {import("./coordinate.js").Coordinate} [anchor] The origin of the transformation.
-   * @api
-   */
-  adjustZoom(delta, anchor) {
-    this.adjustResolution(Math.pow(this.zoomFactor_, -delta), anchor);
-  }
-  /**
-   * Adds a value to the view rotation, optionally using an anchor. Any rotation
-   * constraint will apply.
-   * @param {number} delta Relative value to add to the zoom rotation, in radians.
-   * @param {import("./coordinate.js").Coordinate} [anchor] The rotation center.
-   * @api
-   */
-  adjustRotation(delta, anchor) {
-    if (anchor) {
-      anchor = fromUserCoordinate(anchor, this.getProjection());
-    }
-    this.adjustRotationInternal(delta, anchor);
-  }
-  /**
-   * @param {number} delta Relative value to add to the zoom rotation, in radians.
-   * @param {import("./coordinate.js").Coordinate} [anchor] The rotation center.
-   */
-  adjustRotationInternal(delta, anchor) {
-    const isMoving = this.getAnimating() || this.getInteracting();
-    const newRotation = this.constraints_.rotation(
-      this.targetRotation_ + delta,
-      isMoving
-    );
-    if (anchor) {
-      this.targetCenter_ = this.calculateCenterRotate(newRotation, anchor);
-    }
-    this.targetRotation_ += delta;
-    this.applyTargetState_();
-  }
-  /**
-   * Set the center of the current view. Any extent constraint will apply.
-   * @param {import("./coordinate.js").Coordinate|undefined} center The center of the view.
-   * @observable
-   * @api
-   */
-  setCenter(center) {
-    this.setCenterInternal(
-      center ? fromUserCoordinate(center, this.getProjection()) : center
-    );
-  }
-  /**
-   * Set the center using the view projection (not the user projection).
-   * @param {import("./coordinate.js").Coordinate|undefined} center The center of the view.
-   */
-  setCenterInternal(center) {
-    this.targetCenter_ = center;
-    this.applyTargetState_();
-  }
-  /**
-   * @param {import("./ViewHint.js").default} hint Hint.
-   * @param {number} delta Delta.
-   * @return {number} New value.
-   */
-  setHint(hint, delta) {
-    this.hints_[hint] += delta;
-    this.changed();
-    return this.hints_[hint];
-  }
-  /**
-   * Set the resolution for this view. Any resolution constraint will apply.
-   * @param {number|undefined} resolution The resolution of the view.
-   * @observable
-   * @api
-   */
-  setResolution(resolution) {
-    this.targetResolution_ = resolution;
-    this.applyTargetState_();
-  }
-  /**
-   * Set the rotation for this view. Any rotation constraint will apply.
-   * @param {number} rotation The rotation of the view in radians.
-   * @observable
-   * @api
-   */
-  setRotation(rotation) {
-    this.targetRotation_ = rotation;
-    this.applyTargetState_();
-  }
-  /**
-   * Zoom to a specific zoom level. Any resolution constrain will apply.
-   * @param {number} zoom Zoom level.
-   * @api
-   */
-  setZoom(zoom) {
-    this.setResolution(this.getResolutionForZoom(zoom));
-  }
-  /**
-   * Recompute rotation/resolution/center based on target values.
-   * Note: we have to compute rotation first, then resolution and center considering that
-   * parameters can influence one another in case a view extent constraint is present.
-   * @param {boolean} [doNotCancelAnims] Do not cancel animations.
-   * @param {boolean} [forceMoving] Apply constraints as if the view is moving.
-   * @private
-   */
-  applyTargetState_(doNotCancelAnims, forceMoving) {
-    const isMoving = this.getAnimating() || this.getInteracting() || forceMoving;
-    const newRotation = this.constraints_.rotation(
-      this.targetRotation_,
-      isMoving
-    );
-    const size = this.getViewportSize_(newRotation);
-    const newResolution = this.constraints_.resolution(
-      this.targetResolution_,
-      0,
-      size,
-      isMoving
-    );
-    const newCenter = this.constraints_.center(
-      this.targetCenter_,
-      newResolution,
-      size,
-      isMoving,
-      this.calculateCenterShift(
-        this.targetCenter_,
-        newResolution,
-        newRotation,
-        size
-      )
-    );
-    if (this.get(ViewProperty.ROTATION) !== newRotation) {
-      this.set(ViewProperty.ROTATION, newRotation);
-    }
-    if (this.get(ViewProperty.RESOLUTION) !== newResolution) {
-      this.set(ViewProperty.RESOLUTION, newResolution);
-      this.set("zoom", this.getZoom(), true);
-    }
-    if (!newCenter || !this.get(ViewProperty.CENTER) || !equals(this.get(ViewProperty.CENTER), newCenter)) {
-      this.set(ViewProperty.CENTER, newCenter);
-    }
-    if (this.getAnimating() && !doNotCancelAnims) {
-      this.cancelAnimations();
-    }
-    this.cancelAnchor_ = void 0;
-  }
-  /**
-   * If any constraints need to be applied, an animation will be triggered.
-   * This is typically done on interaction end.
-   * Note: calling this with a duration of 0 will apply the constrained values straight away,
-   * without animation.
-   * @param {number} [duration] The animation duration in ms.
-   * @param {number} [resolutionDirection] Which direction to zoom.
-   * @param {import("./coordinate.js").Coordinate} [anchor] The origin of the transformation.
-   */
-  resolveConstraints(duration, resolutionDirection, anchor) {
-    duration = duration !== void 0 ? duration : 200;
-    const direction = resolutionDirection || 0;
-    const newRotation = this.constraints_.rotation(this.targetRotation_);
-    const size = this.getViewportSize_(newRotation);
-    const newResolution = this.constraints_.resolution(
-      this.targetResolution_,
-      direction,
-      size
-    );
-    const newCenter = this.constraints_.center(
-      this.targetCenter_,
-      newResolution,
-      size,
-      false,
-      this.calculateCenterShift(
-        this.targetCenter_,
-        newResolution,
-        newRotation,
-        size
-      )
-    );
-    if (duration === 0 && !this.cancelAnchor_) {
-      this.targetResolution_ = newResolution;
-      this.targetRotation_ = newRotation;
-      this.targetCenter_ = newCenter;
-      this.applyTargetState_();
-      return;
-    }
-    anchor = anchor || (duration === 0 ? this.cancelAnchor_ : void 0);
-    this.cancelAnchor_ = void 0;
-    if (this.getResolution() !== newResolution || this.getRotation() !== newRotation || !this.getCenterInternal() || !equals(this.getCenterInternal(), newCenter)) {
-      if (this.getAnimating()) {
-        this.cancelAnimations();
-      }
-      this.animateInternal({
-        rotation: newRotation,
-        center: newCenter,
-        resolution: newResolution,
-        duration,
-        easing: easeOut,
-        anchor
-      });
-    }
-  }
-  /**
-   * Notify the View that an interaction has started.
-   * The view state will be resolved to a stable one if needed
-   * (depending on its constraints).
-   * @api
-   */
-  beginInteraction() {
-    this.resolveConstraints(0);
-    this.setHint(ViewHint.INTERACTING, 1);
-  }
-  /**
-   * Notify the View that an interaction has ended. The view state will be resolved
-   * to a stable one if needed (depending on its constraints).
-   * @param {number} [duration] Animation duration in ms.
-   * @param {number} [resolutionDirection] Which direction to zoom.
-   * @param {import("./coordinate.js").Coordinate} [anchor] The origin of the transformation.
-   * @api
-   */
-  endInteraction(duration, resolutionDirection, anchor) {
-    anchor = anchor && fromUserCoordinate(anchor, this.getProjection());
-    this.endInteractionInternal(duration, resolutionDirection, anchor);
-  }
-  /**
-   * Notify the View that an interaction has ended. The view state will be resolved
-   * to a stable one if needed (depending on its constraints).
-   * @param {number} [duration] Animation duration in ms.
-   * @param {number} [resolutionDirection] Which direction to zoom.
-   * @param {import("./coordinate.js").Coordinate} [anchor] The origin of the transformation.
-   */
-  endInteractionInternal(duration, resolutionDirection, anchor) {
-    if (!this.getInteracting()) {
-      return;
-    }
-    this.setHint(ViewHint.INTERACTING, -1);
-    this.resolveConstraints(duration, resolutionDirection, anchor);
-  }
-  /**
-   * Get a valid position for the view center according to the current constraints.
-   * @param {import("./coordinate.js").Coordinate|undefined} targetCenter Target center position.
-   * @param {number} [targetResolution] Target resolution. If not supplied, the current one will be used.
-   * This is useful to guess a valid center position at a different zoom level.
-   * @return {import("./coordinate.js").Coordinate|undefined} Valid center position.
-   */
-  getConstrainedCenter(targetCenter, targetResolution) {
-    const size = this.getViewportSize_(this.getRotation());
-    return this.constraints_.center(
-      targetCenter,
-      targetResolution || this.getResolution(),
-      size
-    );
-  }
-  /**
-   * Get a valid zoom level according to the current view constraints.
-   * @param {number|undefined} targetZoom Target zoom.
-   * @param {number} [direction] Indicate which resolution should be used
-   * by a renderer if the view resolution does not match any resolution of the tile source.
-   * If 0, the nearest resolution will be used. If 1, the nearest lower resolution
-   * will be used. If -1, the nearest higher resolution will be used.
-   * @return {number|undefined} Valid zoom level.
-   */
-  getConstrainedZoom(targetZoom, direction) {
-    const targetRes = this.getResolutionForZoom(targetZoom);
-    return this.getZoomForResolution(
-      this.getConstrainedResolution(targetRes, direction)
-    );
-  }
-  /**
-   * Get a valid resolution according to the current view constraints.
-   * @param {number|undefined} targetResolution Target resolution.
-   * @param {number} [direction] Indicate which resolution should be used
-   * by a renderer if the view resolution does not match any resolution of the tile source.
-   * If 0, the nearest resolution will be used. If 1, the nearest lower resolution
-   * will be used. If -1, the nearest higher resolution will be used.
-   * @return {number|undefined} Valid resolution.
-   */
-  getConstrainedResolution(targetResolution, direction) {
-    direction = direction || 0;
-    const size = this.getViewportSize_(this.getRotation());
-    return this.constraints_.resolution(targetResolution, direction, size);
-  }
-}
-function animationCallback(callback, returnValue) {
-  setTimeout(function() {
-    callback(returnValue);
-  }, 0);
-}
-function createCenterConstraint(options) {
-  if (options.extent !== void 0) {
-    const smooth = options.smoothExtentConstraint !== void 0 ? options.smoothExtentConstraint : true;
-    return createExtent(options.extent, options.constrainOnlyCenter, smooth);
-  }
-  const projection = createProjection(options.projection, "EPSG:3857");
-  if (options.multiWorld !== true && projection.isGlobal()) {
-    const extent = projection.getExtent().slice();
-    extent[0] = -Infinity;
-    extent[2] = Infinity;
-    return createExtent(extent, false, false);
-  }
-  return none$1;
-}
-function createResolutionConstraint(options) {
-  let resolutionConstraint;
-  let maxResolution;
-  let minResolution;
-  const defaultMaxZoom = 28;
-  const defaultZoomFactor = 2;
-  let minZoom = options.minZoom !== void 0 ? options.minZoom : DEFAULT_MIN_ZOOM;
-  let maxZoom = options.maxZoom !== void 0 ? options.maxZoom : defaultMaxZoom;
-  const zoomFactor = options.zoomFactor !== void 0 ? options.zoomFactor : defaultZoomFactor;
-  const multiWorld = options.multiWorld !== void 0 ? options.multiWorld : false;
-  const smooth = options.smoothResolutionConstraint !== void 0 ? options.smoothResolutionConstraint : true;
-  const showFullExtent = options.showFullExtent !== void 0 ? options.showFullExtent : false;
-  const projection = createProjection(options.projection, "EPSG:3857");
-  const projExtent = projection.getExtent();
-  let constrainOnlyCenter = options.constrainOnlyCenter;
-  let extent = options.extent;
-  if (!multiWorld && !extent && projection.isGlobal()) {
-    constrainOnlyCenter = false;
-    extent = projExtent;
-  }
-  if (options.resolutions !== void 0) {
-    const resolutions = options.resolutions;
-    maxResolution = resolutions[minZoom];
-    minResolution = resolutions[maxZoom] !== void 0 ? resolutions[maxZoom] : resolutions[resolutions.length - 1];
-    if (options.constrainResolution) {
-      resolutionConstraint = createSnapToResolutions(
-        resolutions,
-        smooth,
-        !constrainOnlyCenter && extent,
-        showFullExtent
-      );
-    } else {
-      resolutionConstraint = createMinMaxResolution(
-        maxResolution,
-        minResolution,
-        smooth,
-        !constrainOnlyCenter && extent,
-        showFullExtent
-      );
-    }
-  } else {
-    const size = !projExtent ? (
-      // use an extent that can fit the whole world if need be
-      360 * METERS_PER_UNIT$1.degrees / projection.getMetersPerUnit()
-    ) : Math.max(getWidth(projExtent), getHeight(projExtent));
-    const defaultMaxResolution = size / DEFAULT_TILE_SIZE / Math.pow(defaultZoomFactor, DEFAULT_MIN_ZOOM);
-    const defaultMinResolution = defaultMaxResolution / Math.pow(defaultZoomFactor, defaultMaxZoom - DEFAULT_MIN_ZOOM);
-    maxResolution = options.maxResolution;
-    if (maxResolution !== void 0) {
-      minZoom = 0;
-    } else {
-      maxResolution = defaultMaxResolution / Math.pow(zoomFactor, minZoom);
-    }
-    minResolution = options.minResolution;
-    if (minResolution === void 0) {
-      if (options.maxZoom !== void 0) {
-        if (options.maxResolution !== void 0) {
-          minResolution = maxResolution / Math.pow(zoomFactor, maxZoom);
-        } else {
-          minResolution = defaultMaxResolution / Math.pow(zoomFactor, maxZoom);
-        }
-      } else {
-        minResolution = defaultMinResolution;
-      }
-    }
-    maxZoom = minZoom + Math.floor(
-      Math.log(maxResolution / minResolution) / Math.log(zoomFactor)
-    );
-    minResolution = maxResolution / Math.pow(zoomFactor, maxZoom - minZoom);
-    if (options.constrainResolution) {
-      resolutionConstraint = createSnapToPower(
-        zoomFactor,
-        maxResolution,
-        minResolution,
-        smooth,
-        !constrainOnlyCenter && extent,
-        showFullExtent
-      );
-    } else {
-      resolutionConstraint = createMinMaxResolution(
-        maxResolution,
-        minResolution,
-        smooth,
-        !constrainOnlyCenter && extent,
-        showFullExtent
-      );
-    }
-  }
-  return {
-    constraint: resolutionConstraint,
-    maxResolution,
-    minResolution,
-    minZoom,
-    zoomFactor
-  };
-}
-function createRotationConstraint(options) {
-  const enableRotation = options.enableRotation !== void 0 ? options.enableRotation : true;
-  if (enableRotation) {
-    const constrainRotation = options.constrainRotation;
-    if (constrainRotation === void 0 || constrainRotation === true) {
-      return createSnapToZero();
-    }
-    if (constrainRotation === false) {
-      return none;
-    }
-    if (typeof constrainRotation === "number") {
-      return createSnapToN(constrainRotation);
-    }
-    return none;
-  }
-  return disable;
-}
-function isNoopAnimation(animation) {
-  if (animation.sourceCenter && animation.targetCenter) {
-    if (!equals(animation.sourceCenter, animation.targetCenter)) {
-      return false;
-    }
-  }
-  if (animation.sourceResolution !== animation.targetResolution) {
-    return false;
-  }
-  if (animation.sourceRotation !== animation.targetRotation) {
-    return false;
-  }
-  return true;
-}
-function calculateCenterOn(coordinate, size, position, resolution, rotation) {
-  const cosAngle = Math.cos(-rotation);
-  let sinAngle = Math.sin(-rotation);
-  let rotX = coordinate[0] * cosAngle - coordinate[1] * sinAngle;
-  let rotY = coordinate[1] * cosAngle + coordinate[0] * sinAngle;
-  rotX += (size[0] / 2 - position[0]) * resolution;
-  rotY += (position[1] - size[1] / 2) * resolution;
-  sinAngle = -sinAngle;
-  const centerX = rotX * cosAngle - rotY * sinAngle;
-  const centerY = rotY * cosAngle + rotX * sinAngle;
-  return [centerX, centerY];
-}
-const RenderEventType = {
-  /**
-   * Triggered before layers are composed.  When dispatched by the map, the event object will not have
-   * a `context` set.  When dispatched by a layer, the event object will have a `context` set.  Only
-   * WebGL layers currently dispatch this event.
-   * @event module:ol/render/Event~RenderEvent#precompose
-   * @api
-   */
-  PRECOMPOSE: "precompose"
-};
-const LayerProperty = {
-  OPACITY: "opacity",
-  VISIBLE: "visible",
-  EXTENT: "extent",
-  Z_INDEX: "zIndex",
-  MAX_RESOLUTION: "maxResolution",
-  MIN_RESOLUTION: "minResolution",
-  MAX_ZOOM: "maxZoom",
-  MIN_ZOOM: "minZoom",
-  SOURCE: "source",
-  MAP: "map"
-};
-class BaseLayer extends BaseObject {
-  /**
-   * @param {Options} options Layer options.
-   */
-  constructor(options) {
-    super();
-    this.on;
-    this.once;
-    this.un;
-    this.background_ = options.background;
-    const properties = Object.assign({}, options);
-    if (typeof options.properties === "object") {
-      delete properties.properties;
-      Object.assign(properties, options.properties);
-    }
-    properties[LayerProperty.OPACITY] = options.opacity !== void 0 ? options.opacity : 1;
-    assert(
-      typeof properties[LayerProperty.OPACITY] === "number",
-      "Layer opacity must be a number"
-    );
-    properties[LayerProperty.VISIBLE] = options.visible !== void 0 ? options.visible : true;
-    properties[LayerProperty.Z_INDEX] = options.zIndex;
-    properties[LayerProperty.MAX_RESOLUTION] = options.maxResolution !== void 0 ? options.maxResolution : Infinity;
-    properties[LayerProperty.MIN_RESOLUTION] = options.minResolution !== void 0 ? options.minResolution : 0;
-    properties[LayerProperty.MIN_ZOOM] = options.minZoom !== void 0 ? options.minZoom : -Infinity;
-    properties[LayerProperty.MAX_ZOOM] = options.maxZoom !== void 0 ? options.maxZoom : Infinity;
-    this.className_ = properties.className !== void 0 ? properties.className : "ol-layer";
-    delete properties.className;
-    this.setProperties(properties);
-    this.state_ = null;
-  }
-  /**
-   * Get the background for this layer.
-   * @return {BackgroundColor|false} Layer background.
-   */
-  getBackground() {
-    return this.background_;
-  }
-  /**
-   * @return {string} CSS class name.
-   */
-  getClassName() {
-    return this.className_;
-  }
-  /**
-   * This method is not meant to be called by layers or layer renderers because the state
-   * is incorrect if the layer is included in a layer group.
-   *
-   * @param {boolean} [managed] Layer is managed.
-   * @return {import("./Layer.js").State} Layer state.
-   */
-  getLayerState(managed) {
-    const state = this.state_ || /** @type {?} */
-    {
-      layer: this,
-      managed: managed === void 0 ? true : managed
-    };
-    const zIndex = this.getZIndex();
-    state.opacity = clamp(Math.round(this.getOpacity() * 100) / 100, 0, 1);
-    state.visible = this.getVisible();
-    state.extent = this.getExtent();
-    state.zIndex = zIndex === void 0 && !state.managed ? Infinity : zIndex;
-    state.maxResolution = this.getMaxResolution();
-    state.minResolution = Math.max(this.getMinResolution(), 0);
-    state.minZoom = this.getMinZoom();
-    state.maxZoom = this.getMaxZoom();
-    this.state_ = state;
-    return state;
-  }
-  /**
-   * @abstract
-   * @param {Array<import("./Layer.js").default>} [array] Array of layers (to be
-   *     modified in place).
-   * @return {Array<import("./Layer.js").default>} Array of layers.
-   */
-  getLayersArray(array) {
-    return abstract();
-  }
-  /**
-   * @abstract
-   * @param {Array<import("./Layer.js").State>} [states] Optional list of layer
-   *     states (to be modified in place).
-   * @return {Array<import("./Layer.js").State>} List of layer states.
-   */
-  getLayerStatesArray(states) {
-    return abstract();
-  }
-  /**
-   * Return the {@link module:ol/extent~Extent extent} of the layer or `undefined` if it
-   * will be visible regardless of extent.
-   * @return {import("../extent.js").Extent|undefined} The layer extent.
-   * @observable
-   * @api
-   */
-  getExtent() {
-    return (
-      /** @type {import("../extent.js").Extent|undefined} */
-      this.get(LayerProperty.EXTENT)
-    );
-  }
-  /**
-   * Return the maximum resolution of the layer. Returns Infinity if
-   * the layer has no maximum resolution set.
-   * @return {number} The maximum resolution of the layer.
-   * @observable
-   * @api
-   */
-  getMaxResolution() {
-    return (
-      /** @type {number} */
-      this.get(LayerProperty.MAX_RESOLUTION)
-    );
-  }
-  /**
-   * Return the minimum resolution of the layer. Returns 0 if
-   * the layer has no minimum resolution set.
-   * @return {number} The minimum resolution of the layer.
-   * @observable
-   * @api
-   */
-  getMinResolution() {
-    return (
-      /** @type {number} */
-      this.get(LayerProperty.MIN_RESOLUTION)
-    );
-  }
-  /**
-   * Return the minimum zoom level of the layer. Returns -Infinity if
-   * the layer has no minimum zoom set.
-   * @return {number} The minimum zoom level of the layer.
-   * @observable
-   * @api
-   */
-  getMinZoom() {
-    return (
-      /** @type {number} */
-      this.get(LayerProperty.MIN_ZOOM)
-    );
-  }
-  /**
-   * Return the maximum zoom level of the layer. Returns Infinity if
-   * the layer has no maximum zoom set.
-   * @return {number} The maximum zoom level of the layer.
-   * @observable
-   * @api
-   */
-  getMaxZoom() {
-    return (
-      /** @type {number} */
-      this.get(LayerProperty.MAX_ZOOM)
-    );
-  }
-  /**
-   * Return the opacity of the layer (between 0 and 1).
-   * @return {number} The opacity of the layer.
-   * @observable
-   * @api
-   */
-  getOpacity() {
-    return (
-      /** @type {number} */
-      this.get(LayerProperty.OPACITY)
-    );
-  }
-  /**
-   * @abstract
-   * @return {import("../source/Source.js").State} Source state.
-   */
-  getSourceState() {
-    return abstract();
-  }
-  /**
-   * Return the value of this layer's `visible` property. To find out whether the layer
-   * is visible on a map, use `isVisible()` instead.
-   * @return {boolean} The value of the `visible` property of the layer.
-   * @observable
-   * @api
-   */
-  getVisible() {
-    return (
-      /** @type {boolean} */
-      this.get(LayerProperty.VISIBLE)
-    );
-  }
-  /**
-   * Return the Z-index of the layer, which is used to order layers before
-   * rendering. Returns undefined if the layer is unmanaged.
-   * @return {number|undefined} The Z-index of the layer.
-   * @observable
-   * @api
-   */
-  getZIndex() {
-    return (
-      /** @type {number|undefined} */
-      this.get(LayerProperty.Z_INDEX)
-    );
-  }
-  /**
-   * Sets the background color.
-   * @param {BackgroundColor} [background] Background color.
-   */
-  setBackground(background) {
-    this.background_ = background;
-    this.changed();
-  }
-  /**
-   * Set the extent at which the layer is visible.  If `undefined`, the layer
-   * will be visible at all extents.
-   * @param {import("../extent.js").Extent|undefined} extent The extent of the layer.
-   * @observable
-   * @api
-   */
-  setExtent(extent) {
-    this.set(LayerProperty.EXTENT, extent);
-  }
-  /**
-   * Set the maximum resolution at which the layer is visible.
-   * @param {number} maxResolution The maximum resolution of the layer.
-   * @observable
-   * @api
-   */
-  setMaxResolution(maxResolution) {
-    this.set(LayerProperty.MAX_RESOLUTION, maxResolution);
-  }
-  /**
-   * Set the minimum resolution at which the layer is visible.
-   * @param {number} minResolution The minimum resolution of the layer.
-   * @observable
-   * @api
-   */
-  setMinResolution(minResolution) {
-    this.set(LayerProperty.MIN_RESOLUTION, minResolution);
-  }
-  /**
-   * Set the maximum zoom (exclusive) at which the layer is visible.
-   * Note that the zoom levels for layer visibility are based on the
-   * view zoom level, which may be different from a tile source zoom level.
-   * @param {number} maxZoom The maximum zoom of the layer.
-   * @observable
-   * @api
-   */
-  setMaxZoom(maxZoom) {
-    this.set(LayerProperty.MAX_ZOOM, maxZoom);
-  }
-  /**
-   * Set the minimum zoom (inclusive) at which the layer is visible.
-   * Note that the zoom levels for layer visibility are based on the
-   * view zoom level, which may be different from a tile source zoom level.
-   * @param {number} minZoom The minimum zoom of the layer.
-   * @observable
-   * @api
-   */
-  setMinZoom(minZoom) {
-    this.set(LayerProperty.MIN_ZOOM, minZoom);
-  }
-  /**
-   * Set the opacity of the layer, allowed values range from 0 to 1.
-   * @param {number} opacity The opacity of the layer.
-   * @observable
-   * @api
-   */
-  setOpacity(opacity) {
-    assert(typeof opacity === "number", "Layer opacity must be a number");
-    this.set(LayerProperty.OPACITY, opacity);
-  }
-  /**
-   * Set the visibility of the layer (`true` or `false`).
-   * @param {boolean} visible The visibility of the layer.
-   * @observable
-   * @api
-   */
-  setVisible(visible) {
-    this.set(LayerProperty.VISIBLE, visible);
-  }
-  /**
-   * Set Z-index of the layer, which is used to order layers before rendering.
-   * The default Z-index is 0.
-   * @param {number} zindex The z-index of the layer.
-   * @observable
-   * @api
-   */
-  setZIndex(zindex) {
-    this.set(LayerProperty.Z_INDEX, zindex);
-  }
-  /**
-   * Clean up.
-   * @override
-   */
-  disposeInternal() {
-    if (this.state_) {
-      this.state_.layer = null;
-      this.state_ = null;
-    }
-    super.disposeInternal();
-  }
-}
-class Layer extends BaseLayer {
-  /**
-   * @param {Options<SourceType>} options Layer options.
-   */
-  constructor(options) {
-    const baseOptions = Object.assign({}, options);
-    delete baseOptions.source;
-    super(baseOptions);
-    this.on;
-    this.once;
-    this.un;
-    this.mapPrecomposeKey_ = null;
-    this.mapRenderKey_ = null;
-    this.sourceChangeKey_ = null;
-    this.renderer_ = null;
-    this.sourceReady_ = false;
-    this.rendered = false;
-    if (options.render) {
-      this.render = options.render;
-    }
-    if (options.map) {
-      this.setMap(options.map);
-    }
-    this.addChangeListener(
-      LayerProperty.SOURCE,
-      this.handleSourcePropertyChange_
-    );
-    const source = options.source ? (
-      /** @type {SourceType} */
-      options.source
-    ) : null;
-    this.setSource(source);
-  }
-  /**
-   * @param {Array<import("./Layer.js").default>} [array] Array of layers (to be modified in place).
-   * @return {Array<import("./Layer.js").default>} Array of layers.
-   * @override
-   */
-  getLayersArray(array) {
-    array = array ? array : [];
-    array.push(this);
-    return array;
-  }
-  /**
-   * @param {Array<import("./Layer.js").State>} [states] Optional list of layer states (to be modified in place).
-   * @return {Array<import("./Layer.js").State>} List of layer states.
-   * @override
-   */
-  getLayerStatesArray(states) {
-    states = states ? states : [];
-    states.push(this.getLayerState());
-    return states;
-  }
-  /**
-   * Get the layer source.
-   * @return {SourceType|null} The layer source (or `null` if not yet set).
-   * @observable
-   * @api
-   */
-  getSource() {
-    return (
-      /** @type {SourceType} */
-      this.get(LayerProperty.SOURCE) || null
-    );
-  }
-  /**
-   * @return {SourceType|null} The source being rendered.
-   */
-  getRenderSource() {
-    return this.getSource();
-  }
-  /**
-   * @return {import("../source/Source.js").State} Source state.
-   * @override
-   */
-  getSourceState() {
-    const source = this.getSource();
-    return !source ? "undefined" : source.getState();
-  }
-  /**
-   * @private
-   */
-  handleSourceChange_() {
-    this.changed();
-    if (this.sourceReady_ || this.getSource().getState() !== "ready") {
-      return;
-    }
-    this.sourceReady_ = true;
-    this.dispatchEvent("sourceready");
-  }
-  /**
-   * @private
-   */
-  handleSourcePropertyChange_() {
-    if (this.sourceChangeKey_) {
-      unlistenByKey(this.sourceChangeKey_);
-      this.sourceChangeKey_ = null;
-    }
-    this.sourceReady_ = false;
-    const source = this.getSource();
-    if (source) {
-      this.sourceChangeKey_ = listen(
-        source,
-        EventType.CHANGE,
-        this.handleSourceChange_,
-        this
-      );
-      if (source.getState() === "ready") {
-        this.sourceReady_ = true;
-        setTimeout(() => {
-          this.dispatchEvent("sourceready");
-        }, 0);
-      }
-    }
-    this.changed();
-  }
-  /**
-   * @param {import("../pixel").Pixel} pixel Pixel.
-   * @return {Promise<Array<import("../Feature").FeatureLike>>} Promise that resolves with
-   * an array of features.
-   */
-  getFeatures(pixel) {
-    if (!this.renderer_) {
-      return Promise.resolve([]);
-    }
-    return this.renderer_.getFeatures(pixel);
-  }
-  /**
-   * @param {import("../pixel").Pixel} pixel Pixel.
-   * @return {Uint8ClampedArray|Uint8Array|Float32Array|DataView|null} Pixel data.
-   */
-  getData(pixel) {
-    if (!this.renderer_ || !this.rendered) {
-      return null;
-    }
-    return this.renderer_.getData(pixel);
-  }
-  /**
-   * The layer is visible on the map view, i.e. within its min/max resolution or zoom and
-   * extent, not set to `visible: false`, and not inside a layer group that is set
-   * to `visible: false`.
-   * @param {View|import("../View.js").ViewStateLayerStateExtent} [view] View or {@link import("../Map.js").FrameState}.
-   * Only required when the layer is not added to a map.
-   * @return {boolean} The layer is visible in the map view.
-   * @api
-   */
-  isVisible(view) {
-    let frameState;
-    const map = this.getMapInternal();
-    if (!view && map) {
-      view = map.getView();
-    }
-    if (view instanceof View) {
-      frameState = {
-        viewState: view.getState(),
-        extent: view.calculateExtent()
-      };
-    } else {
-      frameState = view;
-    }
-    if (!frameState.layerStatesArray && map) {
-      frameState.layerStatesArray = map.getLayerGroup().getLayerStatesArray();
-    }
-    let layerState;
-    if (frameState.layerStatesArray) {
-      layerState = frameState.layerStatesArray.find(
-        (layerState2) => layerState2.layer === this
-      );
-      if (!layerState) {
-        return false;
-      }
-    } else {
-      layerState = this.getLayerState();
-    }
-    const layerExtent = this.getExtent();
-    return inView(layerState, frameState.viewState) && (!layerExtent || intersects(layerExtent, frameState.extent));
-  }
-  /**
-   * Get the attributions of the source of this layer for the given view.
-   * @param {View|import("../View.js").ViewStateLayerStateExtent} [view] View or {@link import("../Map.js").FrameState}.
-   * Only required when the layer is not added to a map.
-   * @return {Array<string>} Attributions for this layer at the given view.
-   * @api
-   */
-  getAttributions(view) {
-    var _a;
-    if (!this.isVisible(view)) {
-      return [];
-    }
-    const getAttributions = (_a = this.getSource()) == null ? void 0 : _a.getAttributions();
-    if (!getAttributions) {
-      return [];
-    }
-    const frameState = view instanceof View ? view.getViewStateAndExtent() : view;
-    let attributions = getAttributions(frameState);
-    if (!Array.isArray(attributions)) {
-      attributions = [attributions];
-    }
-    return attributions;
-  }
-  /**
-   * In charge to manage the rendering of the layer. One layer type is
-   * bounded with one layer renderer.
-   * @param {?import("../Map.js").FrameState} frameState Frame state.
-   * @param {HTMLElement} target Target which the renderer may (but need not) use
-   * for rendering its content.
-   * @return {HTMLElement|null} The rendered element.
-   */
-  render(frameState, target) {
-    const layerRenderer = this.getRenderer();
-    if (layerRenderer.prepareFrame(frameState)) {
-      this.rendered = true;
-      return layerRenderer.renderFrame(frameState, target);
-    }
-    return null;
-  }
-  /**
-   * Called when a layer is not visible during a map render.
-   */
-  unrender() {
-    this.rendered = false;
-  }
-  /** @return {string} Declutter */
-  getDeclutter() {
-    return void 0;
-  }
-  /**
-   * @param {import("../Map.js").FrameState} frameState Frame state.
-   * @param {import("../layer/Layer.js").State} layerState Layer state.
-   */
-  renderDeclutter(frameState, layerState) {
-  }
-  /**
-   * When the renderer follows a layout -> render approach, do the final rendering here.
-   * @param {import('../Map.js').FrameState} frameState Frame state
-   */
-  renderDeferred(frameState) {
-    const layerRenderer = this.getRenderer();
-    if (!layerRenderer) {
-      return;
-    }
-    layerRenderer.renderDeferred(frameState);
-  }
-  /**
-   * For use inside the library only.
-   * @param {import("../Map.js").default|null} map Map.
-   */
-  setMapInternal(map) {
-    if (!map) {
-      this.unrender();
-    }
-    this.set(LayerProperty.MAP, map);
-  }
-  /**
-   * For use inside the library only.
-   * @return {import("../Map.js").default|null} Map.
-   */
-  getMapInternal() {
-    return this.get(LayerProperty.MAP);
-  }
-  /**
-   * Sets the layer to be rendered on top of other layers on a map. The map will
-   * not manage this layer in its layers collection. This
-   * is useful for temporary layers. To remove an unmanaged layer from the map,
-   * use `#setMap(null)`.
-   *
-   * To add the layer to a map and have it managed by the map, use
-   * {@link module:ol/Map~Map#addLayer} instead.
-   * @param {import("../Map.js").default|null} map Map.
-   * @api
-   */
-  setMap(map) {
-    if (this.mapPrecomposeKey_) {
-      unlistenByKey(this.mapPrecomposeKey_);
-      this.mapPrecomposeKey_ = null;
-    }
-    if (!map) {
-      this.changed();
-    }
-    if (this.mapRenderKey_) {
-      unlistenByKey(this.mapRenderKey_);
-      this.mapRenderKey_ = null;
-    }
-    if (map) {
-      this.mapPrecomposeKey_ = listen(
-        map,
-        RenderEventType.PRECOMPOSE,
-        this.handlePrecompose_,
-        this
-      );
-      this.mapRenderKey_ = listen(this, EventType.CHANGE, map.render, map);
-      this.changed();
-    }
-  }
-  /**
-   * @param {import("../events/Event.js").default} renderEvent Render event
-   * @private
-   */
-  handlePrecompose_(renderEvent) {
-    const layerStatesArray = (
-      /** @type {import("../render/Event.js").default} */
-      renderEvent.frameState.layerStatesArray
-    );
-    const layerState = this.getLayerState(false);
-    assert(
-      !layerStatesArray.some(
-        (arrayLayerState) => arrayLayerState.layer === layerState.layer
-      ),
-      "A layer can only be added to the map once. Use either `layer.setMap()` or `map.addLayer()`, not both."
-    );
-    layerStatesArray.push(layerState);
-  }
-  /**
-   * Set the layer source.
-   * @param {SourceType|null} source The layer source.
-   * @observable
-   * @api
-   */
-  setSource(source) {
-    this.set(LayerProperty.SOURCE, source);
-  }
-  /**
-   * Get the renderer for this layer.
-   * @return {RendererType|null} The layer renderer.
-   */
-  getRenderer() {
-    if (!this.renderer_) {
-      this.renderer_ = this.createRenderer();
-    }
-    return this.renderer_;
-  }
-  /**
-   * @return {boolean} The layer has a renderer.
-   */
-  hasRenderer() {
-    return !!this.renderer_;
-  }
-  /**
-   * Create a renderer for this layer.
-   * @return {RendererType} A layer renderer.
-   * @protected
-   */
-  createRenderer() {
-    return null;
-  }
-  /**
-   * This will clear the renderer so that a new one can be created next time it is needed
-   */
-  clearRenderer() {
-    if (this.renderer_) {
-      this.renderer_.dispose();
-      delete this.renderer_;
-    }
-  }
-  /**
-   * Clean up.
-   * @override
-   */
-  disposeInternal() {
-    this.clearRenderer();
-    this.setSource(null);
-    super.disposeInternal();
-  }
-}
-function inView(layerState, viewState) {
-  if (!layerState.visible) {
-    return false;
-  }
-  const resolution = viewState.resolution;
-  if (resolution < layerState.minResolution || resolution >= layerState.maxResolution) {
-    return false;
-  }
-  const zoom = viewState.zoom;
-  return zoom > layerState.minZoom && zoom <= layerState.maxZoom;
-}
-class MapboxLayer extends Layer {
-  constructor(options) {
-    const render = function(frameState) {
-      const source = this.getSource();
-      const mbMap = source.mapboxMap;
-      mbMap.setStyle(source.style);
-      const canvas = mbMap.getCanvas();
-      const viewState = frameState.viewState;
-      const visible = this.getVisible();
-      canvas.style.display = visible ? "block" : "none";
-      const opacity = this.getOpacity();
-      canvas.style.opacity = opacity;
-      const newBearing = viewState.rotation * -180 / Math.PI;
-      const newLonLat = toLonLat$1(viewState.center);
-      const newZoom = viewState.zoom - 1;
-      const nowBearing = mbMap.getBearing();
-      const nowLonLat = mbMap.getCenter().toArray();
-      const nowZoom = mbMap.getZoom();
-      if (newBearing == nowBearing && newLonLat[0] == nowLonLat[0] && newLonLat[1] == nowLonLat[1] && newZoom == nowZoom) {
-        return canvas;
-      }
-      if (newBearing != nowBearing) {
-        mbMap.rotateTo(newBearing, {
-          animate: false
-        });
-      }
-      if (newLonLat[0] != nowLonLat[0] || newLonLat[1] != nowLonLat[1] || newZoom != nowZoom) {
-        mbMap.jumpTo({
-          center: newLonLat,
-          zoom: newZoom,
-          animate: false
-        });
-      }
-      if (mbMap._frame) {
-        mbMap._frame.cancel();
-        mbMap._frame = null;
-      }
-      mbMap._render();
-      return canvas;
-    };
-    super({
-      render,
-      source: options.source
-    });
+class NowMap extends setCustomFunctionBase(XYZ) {
+  constructor(options = {}) {
+    super(addCommonOptions(options));
+    if (options.mapID) {
+      this.mapID = options.mapID;
+    }
+    this.initialize(options);
   }
 }
 const bluedot = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACIAAAAiCAYAAAA6RwvCAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAABBF0RVh0WE1MOmNvbS5hZG9iZS54bXAAPD94cGFja2V0IGJlZ2luPSIgICAiIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4KPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNC4xLWMwMzQgNDYuMjcyOTc2LCBTYXQgSmFuIDI3IDIwMDcgMjI6MTE6NDEgICAgICAgICI+CiAgIDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+CiAgICAgIDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiCiAgICAgICAgICAgIHhtbG5zOnhhcD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLyI+CiAgICAgICAgIDx4YXA6Q3JlYXRvclRvb2w+QWRvYmUgRmlyZXdvcmtzIENTMzwveGFwOkNyZWF0b3JUb29sPgogICAgICAgICA8eGFwOkNyZWF0ZURhdGU+MjAxMS0xMC0yNlQyMTo1MjoxOFo8L3hhcDpDcmVhdGVEYXRlPgogICAgICAgICA8eGFwOk1vZGlmeURhdGU+MjAxMS0xMC0yN1QxNzo0MjowN1o8L3hhcDpNb2RpZnlEYXRlPgogICAgICA8L3JkZjpEZXNjcmlwdGlvbj4KICAgICAgPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIKICAgICAgICAgICAgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIj4KICAgICAgICAgPGRjOmZvcm1hdD5pbWFnZS9wbmc8L2RjOmZvcm1hdD4KICAgICAgPC9yZGY6RGVzY3JpcHRpb24+CiAgIDwvcmRmOlJERj4KPC94OnhtcG1ldGE+CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgkVIwmwAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTM5jWRgMAAAAWdEVYdENyZWF0aW9uIFRpbWUAMTAvMjYvMTHjwOqVAAARQHByVld4nMWbB3wURdvAd6/u3V6/27sts/PMQQhFpEU6SlNBRXqTfgkkQOhFSigHIgIWkJqAIJ1QBCz0KkJoQYrSQaQjioBKC+XezWU5fH2/3+/L8fu+fWd3bubZKf95nnlmdjeX2/dk602qD9UnooRc5YjkKp9KyIrkZikfkazcSFaWcuZmpUZScyOpWcqZm6rkU3OTIpGk3EhSViQpVTlzk5IiSUm5VCRC5UaorAiVqpy5VFKESspND6UY03O6U0oYGHo3NCg0ODSj59BQRmhYaHhoaDofFsJiGIVfC78e/hnOwwW4CI1Ttve/AlehLClH6oTrhl8N1wu3CIcFKhqWiwVpWvrG9EcjmXC2nC/1Sd+dHgonh1PCpxQ5nN4pfHHk3qGzOlFUepiiPk5PC/cO9wn3DfcL59deGOqWXC95Saigp/fCY8Lvh0e9Xm94q3DBlXLd2qm5kmRpSrdw9/CEqNwneWQ4HH6hXul6FHVs5Gfh2eGbI6eFp0fLxoZqhE/KC6P5Oa9lhzN7ymofy5PN4anhCRlfFpSVXxNeG26UQf0jyBSO5R1UcjTdF/3c8o+a66j11AbqhCrtpvZQe6lzqnSRukRdjtU8Q52lfqJuqNJt6g/qTzW/ltpKbaO2U99SO9QrF6j71AMqL9b2OvUr9VtMYmgLbaU9dIHkpwM0r+YdtJN20W76ytOa/zZWjpZpTANdNlr7NJVEv0RXpCtFpR+panR1ugZdPCodoGrTdei69MNou3p0ffoN+k36aT+rqcZqfheVQzWiW9HUP0Kn6BVEJ9DF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zV6+JT3q/K+UUkoppZ5Tl9rnzXTvZS/51pTrIJewYX0bzb5r+vfUX7X2ebU/rDnUmslszXqN0v99bSO/80ff/EtrIayb9PNrKMs56kf84zG7v5Te6HqW1yytUb8m7mzNaVbmv4r9stz7I1/WPPKc9sIzuc6ebST3XjlnDZd7OSawd7MmvNs6y5nriXWP9WbWmvq6UoX3Ota9TCttV8f0GZBXXqMep8R6JfdJl73upTKfo+6XbG+j/s9aG7ZmP75rNPZXvNzHLegjrPOtCT9WL+yXY17/tyH3IRB7GXXMtcq0VabZ8xrZt/8TQZzR/ZH/R2U+R33+P8X/GX/2/pB24py9GY74M//JWBN+ar36nJd7Avh6VKf0QbdPXs/yyrDRPhP3sz9znXmPynyutvB/30cpn1CmPC8x1jF+MpbRnteGn1Ivwhg3+I8AG9O+EHNt938fc3KP8pj/+X8i8yj1+93/szKfq2P+z7kdO/R+knUt9fEpfYO/iMs8tlX4MbtnGLbk/TrnYcZw4mLntDV7nfgz9yiPlYN/a/EhbSdtyp7ZyP+jMp/zLsh+W9YpfUffzrpij9FYRdxMr+fX/dn7wZpwwpbqlWHUg7mk+zfn8tE3GM/350Z59TDaQN+LTBsTP/Oelbn3tUtoab1APb70v1JKKaWUUkoppZRSSl1NOxERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERGRO+Qfh5eOajemXSYAAAFTbWtCVPrOyv4Af1WJAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB4nO3W4WmDYBSGUQdxEQdxEBdxEAdxEQexvIELt6Yh/4oJ54FDm0/7601szlOSJEmSJEmSJEmSJEmSJEmSJEkf0XEc577vT+c5y7V397+6T/dvXddzHMdzmqbHz+wY/Sz31L11FsuyPF7HMAx/vod077JjlX2zYXatzfs9tX/VN7/+je5ftut7Vjnrn+V6nX37xtm/ul7T/ctzvu9f/9fneX7aP9fs/31l23ru1+/btv36zPfnv/2/r/oe1/er90Cu1Xf7nEXVnx3Xa5IkSZIkSZIk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b24gcmRmOmFib3V0PSIiCiAgICAgICAgICAgIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyI+CiAgICAgICAgIDxkYzpmb3JtYXQ+aW1hZ2UvcG5nPC9kYzpmb3JtYXQ+CiAgICAgIDwvcmRmOkRlc2NyaXB0aW9uPgogICA8L3JkZjpSREY+CjwveDp4bXBtZXRhPgogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgIAo8P3hwYWNrZXQgZW5kPSJ3Ij8+zWqGFQAACShJREFUWIWVmGusXFUVx39r73POzJy5M3fmPtrblj7p7btYGigGmojExISHQQ0miDFA4lc0SCBRNH4gRhNJ/aIfNAIxUkKIkMgjBBKMCHwQEGKhpbS39HXfve+5M3fmnr23H84+M7e1PDyTlbPPnDl7//da//Vf64zwBQ9jjCilAiDyFgIaUP4nFjDAMtACWtbaRGvtPmte59Lb8gUW137hGCgDFaDkrzMwrABRBxaAWWDeX7esteZyoD4XSJIkorXO+cV7gQFg9fMvLdz74bHm+hOnTP/QsOmeaxBYoJTDbF2n5wa36At7d+XOfOOW0uPAmLcpYN4Y0wyC4LIeuiwQ55wC8kA/sHF62tz5+F/mDz7zytKOTxpBMKsCEq1BCWjBiQAOcRAYQylpcWW0bG6/Kf/Rvd/rfmP1Kn0YOANMAksiYj8XiAcRew9se/ZvtR8/+seFr3xQj3QtDHGhQCCIFtAqDYxICkoEnAProGkpLDXZK3Xzw7vLr3/ztq5Hc5Ec9x6qXwpGPgXEWmDngz+/cOjJN+zmsSCPCwWJgFBB4Bf2HsmAiBI/o0AAGINML7NmYZ5b9+izj/y07/6eijoCjFwKpg3Ec6LgQex+4OELv33iLbdpJspBJBAKcXeRXCw0l6G+1Oh4QXVMsu9EkC4HocWOGqoTC9y2KRl55Cf9P+rrUe/nIhk2xjQyzgi0syMHrAZ23/fQ5O+fepuNU7kchKALAVu2xQyshUIMjSUYG4dTnzSxznoQqgNG++tIUFWHdDnMx8tUz89xx6A997OH+u9bs0q/B4w755pKKacAfIqWgY0vvly7/7m37cbpKJeGIqfYsi1m1x7Yvx8OXAP798Gu7bBlcw6HAxxIx9K0cJCAS1Jw4Q0RM1sqvHDcrH/2+fkHp2bslUBZRDSkkYRUD3qnp82dv/zdwo2jYREiwYUQl2IG1sCmDXDN1bAuguHl1JfTCzA8GVNvNZBM2lSaQe3zsuASwWkIvxowutDLY8+NHrh2f+HuXC73665YakCijDECFIGBw0/P33BkMdI2TDlBoMgVFIU8lIopiBuBdSGUqhCXIV8GySskB5IXJO/PYbpN50g1twXSI+iDASfjiv7zU9MHT59PNgGxtVaUl+0SsPrplxs7F8Mw9VMooKDZtDTqsDAP5xvwd+A8UGtCw0Hd2FR3cwI5/BjIg+RoFwBnASvoGzSLvTFvHK1vPHOuuXVy2lZFJMhqR+WFl2r3HKtFgYsFiVSaljjqi4uMjZY4XQWn4HgVagmcHoOxKWjaFhIJEogPzUo98NkQdPJTCoI+EDA6UVTvv1f77hVro3f6e6KRDEj5g2NLG2dVmGpENqlLxerU6UXQRaYWIa6knhifgqFzTSTnf6/piFsmJ85P4cOUlchgrzD/WhcnhsauGB0v939pZxQFnqjx0BnTZ3XkU88DselsBseJMzVG5mKisqKxbGjRgswTASlZtX9OBHEpP8SXTJWjXSLVdkUriBifapVri0l1se6iDGd48qzpRqUEbU/oXHssIdTNEvWapF6IBGmT2u9YrZTIFAzhJZzJPLdBM/kOca2WFGfnbZg9rodrKqAgnRQUECWpJmja6kqYElkyQocgofj0TZ93XlqwWRaBFNJzFh6JYcmJWqwv54fHTZjpCBbnIUkbCAgCOI2vMVm8O16QUDrfqfQZBTjj7+e8R2KgAJKFUcBhaTVNODtndcYEs7rgEgC5qHYo0AoJFKJAtKRjLX7sPRGkYZJIUFG6GdGpN8iBdHkr0t6Aq0NMYo11JjHOKnxntX2DnsOCE7kETFZlV3BHr/BcVmO0D1vGqagTDimlQNqZA3De0FswjTDUjWJBtRS+vRvcEkwpY9NewvPjIs+srLSy8roTQrGS+ldLm5wZCCmlYZUAzMeOcLlFT0kWoyiY27opaCjSRndhz47c6WrSTIHgy3hWRX0WIEJbJPzYOc8jI7jEezTyWdIF0u0ta7cVmPcd5cYcfX3RBUTNrBvQSxmQ2dtu6Xr8ytyyoWm9EqYgRAkiCnGS7Tv9OD9ygjMCJg1pBkIVOyAopiAkSrlh3jKsq43Z7mrwitJ6DGgpa21C2m2Pf/tr+WOFpWbaWRVdmrJKgaQ7xwq41JyTdooikuqz54TqAqmAVDvekChN6+Q1S2lqlh2rZbJQLJ6olMMx51yifItfB8buuav7zd1SNzK9DJFNm5oqSDEVMJeFg4ycgsR+97EnZzdIj7dKqqqSS+uUPe8wrxo2T5+x+/aVPix2xR/t3RHOtBsjH56pvj59+P57y/9cvVDDjhik5FA9DukF1QOqAlIGVfKpWFxxroD0g/SlRsWnbj4F4erQfMKy9vxpDmxTQ/Xl/DMDA/lTuwbDJbyqYq01Pjxnbr+l6zc375RzlYkFzPEE1QtqLahVfpFquoiqpuCkF2SVt35/LvmMyXVALB0yVI+Osz+6MN3TV3yyUi29vXVjNOGcM6ysDCub58kpu+/hRyYOPTukrpjZXCG8KUB6lC+CXgtCv1jec6NIR3kzYro0HM0nLNWj41zrhud2Dxb+UO5b9eL2wdL73/p6NH9R85wd2etEs+XWXZi2V/3iV5OHXhxy6yZXV9EHA/T1Gsnqke6YZEVPeyCSemH5NYt7ZZmBkfNcHVyYGdwW/ylf6n11w/ryv39wZ9f0ZV8nLgUDDIxOmL3PvTD/wGN/nbnuZFzRiz1F1HUBwVWC2q46BUzT7n7Nxw7zH0fypiWeWWBwcsh+ebsaqvQUD0fFyj/WrikeqZT1zHdujc3Kdf8HyAoweaB/ZNwMDo8uf//w09PXv35kcfNIFKvZYpkkiGC9TkPiPeCGLWHSors+x5rFCbuzP5ncd1X5aNMWnilXSv9auyZ/8o6bCwtf6JXzEs7kgHKt7laNjCfrT59tbX333dpdJ4Zq68cnGuWpRRs3rCgjilhatjdvGtWyWuzri6bKFf1KVIhPlkpdx/v78yd3bo3G9+1Sjf/rJfwSMO2/JeZrtnJ2xKwaG09WzdeSSr2RxI1Gkm80ktAYbKDVUhDqOUTNONR4uRSO7d8TTe8aDJeMMebTQHwukMuAuuiPmqkZG05MmWBq1upGw7lSl2qtX6OX1g3oJaBljEk+a/GVx38B48qe/zjf0IEAAAAASUVORK5CYII=";
@@ -15748,7 +15016,7 @@ const markerDefaultStyle = new Style({
     src: defaultpin
   })
 });
-class MaplatMap extends Map$1 {
+class MaplatMap extends Map {
   constructor(optOptions) {
     optOptions = normalizeArg(optOptions || {});
     const vectorLayer = new Vector({
@@ -15794,7 +15062,7 @@ class MaplatMap extends Map$1 {
         markerLayer
       ],
       target: optOptions.div,
-      view: new View$1({
+      view: new View({
         center: optOptions.defaultCenter || [0, 0],
         zoom: optOptions.defaultZoom || 2,
         rotation: optOptions.defaultRotation || 0,
@@ -15838,19 +15106,23 @@ class MaplatMap extends Map$1 {
     });
   }
   static spawnLayer(layer, source, container) {
-    if (source instanceof MapboxMap || !(layer instanceof Tile)) {
-      if (source instanceof MapboxMap) {
-        layer = new MapboxLayer({
-          style: source.style,
-          accessToken: source.accessToken,
-          container,
-          source
+    if (source instanceof MapboxStyleMap) {
+      if (!(layer instanceof VectorTile$2)) {
+        layer = new VectorTile$2({
+          source,
+          declutter: true
         });
+        layer.set("name", "base");
       } else {
-        layer = new Tile({
-          source
-        });
+        layer.setSource(source);
       }
+      source.setTargetLayer(layer);
+      return layer;
+    }
+    if (!(layer instanceof Tile$1)) {
+      layer = new Tile$1({
+        source
+      });
       layer.set("name", "base");
     } else {
       layer.setSource(source);
@@ -15876,7 +15148,7 @@ class MaplatMap extends Map$1 {
   }
   setFeature(data, style, layer) {
     const src = this.getSource(layer);
-    const feature2 = new Feature(data);
+    const feature2 = new Feature$1(data);
     if (style) {
       feature2.setStyle(style);
     }
@@ -15948,10 +15220,10 @@ class MaplatMap extends Map$1 {
     if (style.stroke != null) option.stroke = new Stroke(style.stroke);
     if (style.fill != null) option.fill = new Fill(style.fill);
     const styleObj = new Style(option);
-    const geometry2 = type === "Line" ? new LineString(coords) : new Polygon(coords);
+    const geometry = type === "Line" ? new LineString(coords) : new Polygon(coords);
     return this.setFeature(
       {
-        geometry: geometry2,
+        geometry,
         name: type
       },
       styleObj,
@@ -15994,20 +15266,33 @@ class MaplatMap extends Map$1 {
       layer
     );
   }
-  exchangeSource(source = void 0) {
+  async exchangeSource(source = void 0) {
     const layers = this.getLayers();
     const prevLayer = layers.item(0);
+    const prevSource = prevLayer ? prevLayer.getSource() : null;
+    if (source && prevSource === source) {
+      return;
+    }
+    if (prevSource && typeof prevSource.hide === "function") {
+      prevSource.hide();
+    }
     const layer = MaplatMap.spawnLayer(prevLayer, source, this.getTarget());
     if (layer != prevLayer) layers.setAt(0, layer);
     if (source) {
       source.setMap(this);
+      if (source instanceof MapboxStyleMap && source.waitForStyle) {
+        await source.waitForStyle();
+      }
+      if (typeof source.show === "function") {
+        source.show();
+      }
     }
   }
   setLayer(source = void 0) {
     const layers = this.getLayer("overlay").getLayers();
     layers.clear();
     if (source) {
-      const layer = new Tile({
+      const layer = new Tile$1({
         source
       });
       layers.push(layer);
@@ -16180,26 +15465,6 @@ class DoubleClickZoom extends Interaction {
     return !stopEvent;
   }
 }
-const ua = typeof navigator !== "undefined" && typeof navigator.userAgent !== "undefined" ? navigator.userAgent.toLowerCase() : "";
-const SAFARI = ua.includes("safari") && !ua.includes("chrom");
-SAFARI && (ua.includes("version/15.4") || /cpu (os|iphone os) 15_4 like mac os x/.test(ua));
-const WEBKIT = ua.includes("webkit") && !ua.includes("edge");
-const MAC = ua.includes("macintosh");
-typeof WorkerGlobalScope !== "undefined" && typeof OffscreenCanvas !== "undefined" && self instanceof WorkerGlobalScope;
-(function() {
-  let passive = false;
-  try {
-    const options = Object.defineProperty({}, "passive", {
-      get: function() {
-        passive = true;
-      }
-    });
-    window.addEventListener("_", null, options);
-    window.removeEventListener("_", null, options);
-  } catch {
-  }
-  return passive;
-})();
 function all(var_args) {
   const conditions = arguments;
   return function(event) {
@@ -16490,14 +15755,14 @@ class PointerInteraction extends Interaction {
   }
 }
 function centroid(pointerEvents) {
-  const length2 = pointerEvents.length;
+  const length = pointerEvents.length;
   let clientX = 0;
   let clientY = 0;
-  for (let i = 0; i < length2; i++) {
+  for (let i = 0; i < length; i++) {
     clientX += pointerEvents[i].clientX;
     clientY += pointerEvents[i].clientY;
   }
-  return { clientX: clientX / length2, clientY: clientY / length2 };
+  return { clientX: clientX / length, clientY: clientY / length };
 }
 const DragBoxEventType = {
   /**
@@ -16731,7 +15996,7 @@ class DragPan extends PointerInteraction {
         ];
         const map2 = mapBrowserEvent.map;
         const view = map2.getView();
-        scale$1(delta, view.getResolution());
+        scale$2(delta, view.getResolution());
         rotate$1(delta, view.getRotation());
         view.adjustCenterInternal(delta);
       }
@@ -16801,6 +16066,12 @@ class DragPan extends PointerInteraction {
     }
     return false;
   }
+}
+function disable(rotation) {
+  if (rotation !== void 0) {
+    return 0;
+  }
+  return void 0;
 }
 class DragRotate extends PointerInteraction {
   /**
@@ -16980,15 +16251,15 @@ class DragZoom extends DragBox {
       /** @type {!import("../View.js").default} */
       map.getView()
     );
-    let geometry2 = this.getGeometry();
+    let geometry = this.getGeometry();
     if (this.out_) {
-      const rotatedExtent = view.rotatedExtentForGeometry(geometry2);
+      const rotatedExtent = view.rotatedExtentForGeometry(geometry);
       const resolution = view.getResolutionForExtentInternal(rotatedExtent);
       const factor = view.getResolution() / resolution;
-      geometry2 = geometry2.clone();
-      geometry2.scale(factor * factor);
+      geometry = geometry.clone();
+      geometry.scale(factor * factor);
     }
-    view.fitInternal(geometry2, {
+    view.fitInternal(geometry, {
       duration: this.duration_,
       easing: easeOut
     });
@@ -17017,10 +16288,10 @@ class CollectionEvent extends BaseEvent {
    * @param {T} element Element.
    * @param {number} index The index of the added or removed element.
    */
-  constructor(type, element, index2) {
+  constructor(type, element, index) {
     super(type);
     this.element = element;
-    this.index = index2;
+    this.index = index;
   }
 }
 class Collection extends BaseObject {
@@ -17095,8 +16366,8 @@ class Collection extends BaseObject {
    * @return {T} Element.
    * @api
    */
-  item(index2) {
-    return this.array_[index2];
+  item(index) {
+    return this.array_[index];
   }
   /**
    * Get the length of this collection.
@@ -17113,17 +16384,17 @@ class Collection extends BaseObject {
    * @param {T} elem Element.
    * @api
    */
-  insertAt(index2, elem) {
-    if (index2 < 0 || index2 > this.getLength()) {
-      throw new Error("Index out of bounds: " + index2);
+  insertAt(index, elem) {
+    if (index < 0 || index > this.getLength()) {
+      throw new Error("Index out of bounds: " + index);
     }
     if (this.unique_) {
       this.assertUnique_(elem);
     }
-    this.array_.splice(index2, 0, elem);
+    this.array_.splice(index, 0, elem);
     this.updateLength_();
     this.dispatchEvent(
-      new CollectionEvent(CollectionEventType.ADD, elem, index2)
+      new CollectionEvent(CollectionEventType.ADD, elem, index)
     );
   }
   /**
@@ -17171,16 +16442,16 @@ class Collection extends BaseObject {
    * @return {T|undefined} Value.
    * @api
    */
-  removeAt(index2) {
-    if (index2 < 0 || index2 >= this.getLength()) {
+  removeAt(index) {
+    if (index < 0 || index >= this.getLength()) {
       return void 0;
     }
-    const prev = this.array_[index2];
-    this.array_.splice(index2, 1);
+    const prev = this.array_[index];
+    this.array_.splice(index, 1);
     this.updateLength_();
     this.dispatchEvent(
       /** @type {CollectionEvent<T>} */
-      new CollectionEvent(CollectionEventType.REMOVE, prev, index2)
+      new CollectionEvent(CollectionEventType.REMOVE, prev, index)
     );
     return prev;
   }
@@ -17190,27 +16461,27 @@ class Collection extends BaseObject {
    * @param {T} elem Element.
    * @api
    */
-  setAt(index2, elem) {
+  setAt(index, elem) {
     const n = this.getLength();
-    if (index2 >= n) {
-      this.insertAt(index2, elem);
+    if (index >= n) {
+      this.insertAt(index, elem);
       return;
     }
-    if (index2 < 0) {
-      throw new Error("Index out of bounds: " + index2);
+    if (index < 0) {
+      throw new Error("Index out of bounds: " + index);
     }
     if (this.unique_) {
-      this.assertUnique_(elem, index2);
+      this.assertUnique_(elem, index);
     }
-    const prev = this.array_[index2];
-    this.array_[index2] = elem;
+    const prev = this.array_[index];
+    this.array_[index] = elem;
     this.dispatchEvent(
       /** @type {CollectionEvent<T>} */
-      new CollectionEvent(CollectionEventType.REMOVE, prev, index2)
+      new CollectionEvent(CollectionEventType.REMOVE, prev, index)
     );
     this.dispatchEvent(
       /** @type {CollectionEvent<T>} */
-      new CollectionEvent(CollectionEventType.ADD, elem, index2)
+      new CollectionEvent(CollectionEventType.ADD, elem, index)
     );
   }
   /**
@@ -17804,74 +17075,9 @@ function defaults(options) {
   }
   return interactions;
 }
-function hash(tileCoord) {
-  return hashZXY(tileCoord[0], tileCoord[1], tileCoord[2]);
-}
-function hashZXY(z, x, y) {
-  return (x << z) + y;
-}
-const zRegEx = /\{z\}/g;
-const xRegEx = /\{x\}/g;
-const yRegEx = /\{y\}/g;
-const dashYRegEx = /\{-y\}/g;
-function renderXYZTemplate(template2, z, x, y, maxY) {
-  return template2.replace(zRegEx, z.toString()).replace(xRegEx, x.toString()).replace(yRegEx, y.toString()).replace(dashYRegEx, function() {
-    {
-      throw new Error(
-        "If the URL template has a {-y} placeholder, the grid extent must be known"
-      );
-    }
-  });
-}
-function createFromTemplate(template2, tileGrid) {
-  return (
-    /**
-     * @param {import("./tilecoord.js").TileCoord} tileCoord Tile Coordinate.
-     * @param {number} pixelRatio Pixel ratio.
-     * @param {import("./proj/Projection.js").default} projection Projection.
-     * @return {string|undefined} Tile URL.
-     */
-    function(tileCoord, pixelRatio, projection) {
-      if (!tileCoord) {
-        return void 0;
-      }
-      const z = tileCoord[0];
-      return renderXYZTemplate(template2, z, tileCoord[1], tileCoord[2]);
-    }
-  );
-}
-function createFromTemplates(templates, tileGrid) {
-  const len = templates.length;
-  const tileUrlFunctions = new Array(len);
-  for (let i = 0; i < len; ++i) {
-    tileUrlFunctions[i] = createFromTemplate(templates[i]);
-  }
-  return createFromTileUrlFunctions(tileUrlFunctions);
-}
-function createFromTileUrlFunctions(tileUrlFunctions) {
-  if (tileUrlFunctions.length === 1) {
-    return tileUrlFunctions[0];
-  }
-  return (
-    /**
-     * @param {import("./tilecoord.js").TileCoord} tileCoord Tile Coordinate.
-     * @param {number} pixelRatio Pixel ratio.
-     * @param {import("./proj/Projection.js").default} projection Projection.
-     * @return {string|undefined} Tile URL.
-     */
-    function(tileCoord, pixelRatio, projection) {
-      if (!tileCoord) {
-        return void 0;
-      }
-      const h = hash(tileCoord);
-      const index2 = modulo(h, tileUrlFunctions.length);
-      return tileUrlFunctions[index2](tileCoord, pixelRatio, projection);
-    }
-  );
-}
-for (let z = 0; z < 9; z++) {
-  const key = `ZOOM:${z}`;
-  const maxxy = 256 * Math.pow(2, z);
+for (let z2 = 0; z2 < 9; z2++) {
+  const key = `ZOOM:${z2}`;
+  const maxxy = 256 * Math.pow(2, z2);
   (function(key2, maxxy2) {
     const projection = new Projection$1({
       code: key2,
@@ -17905,15 +17111,15 @@ class HistMap extends setCustomFunctionMaplat(XYZ) {
     const zH = Math.log2(options.height / tileSize);
     options.maxZoom = Math.ceil(Math.max(zW, zH));
     options.tileUrlFunction = options.tileUrlFunction || function(coord) {
-      const z = coord[0];
+      const z2 = coord[0];
       const x = coord[1];
       const y = coord[2];
       if (
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        x * tileSize * Math.pow(2, this.maxZoom - z) >= this.width || // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        x * tileSize * Math.pow(2, this.maxZoom - z2) >= this.width || // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        y * tileSize * Math.pow(2, this.maxZoom - z) >= this.height || x < 0 || y < 0
+        y * tileSize * Math.pow(2, this.maxZoom - z2) >= this.height || x < 0 || y < 0
       ) {
         return transPng;
       }
@@ -18169,28 +17375,102 @@ class Weiwudi extends EventTarget {
     }
   }
 }
-function transformDirect(src, dist2, xy) {
+function transformDirect(src, dist, xy) {
   const srcCode = typeof src === "string" ? src : src.getCode();
-  const distCode = typeof dist2 === "string" ? dist2 : dist2.getCode();
-  let func = getTransform$1(src, dist2);
+  const distCode = typeof dist === "string" ? dist : dist.getCode();
+  let func = getTransform$1(src, dist);
   if (func == identityTransform && srcCode != distCode) {
     const srcFunc = getTransform$1(src, "EPSG:3857");
-    const distFunc = getTransform$1("EPSG:3857", dist2);
+    const distFunc = getTransform$1("EPSG:3857", dist);
     if (srcFunc == identityTransform && srcCode != "EPSG:3857")
       throw "Transform of Source projection is not defined.";
     if (distFunc == identityTransform && distCode != "EPSG:3857")
       throw "Transform of Distination projection is not defined.";
     func = function(xy2) {
-      return transform(transform(xy2, src, "EPSG:3857"), "EPSG:3857", dist2);
+      return transform(transform(xy2, src, "EPSG:3857"), "EPSG:3857", dist);
     };
     const invFunc = function(xy2) {
-      return transform(transform(xy2, dist2, "EPSG:3857"), "EPSG:3857", src);
+      return transform(transform(xy2, dist, "EPSG:3857"), "EPSG:3857", src);
     };
-    addCoordinateTransforms(src, dist2, func, invFunc);
+    addCoordinateTransforms(src, dist, func, invFunc);
   }
   if (xy) {
     return func(xy);
   }
+}
+function pointInPolygon(p, polygon2) {
+  var i;
+  var ii;
+  var k = 0;
+  var f;
+  var u1;
+  var v1;
+  var u2;
+  var v2;
+  var currentP;
+  var nextP;
+  var x = p[0];
+  var y = p[1];
+  var numContours = polygon2.length;
+  for (i = 0; i < numContours; i++) {
+    ii = 0;
+    var contour = polygon2[i];
+    var contourLen = contour.length - 1;
+    currentP = contour[0];
+    if (currentP[0] !== contour[contourLen][0] && currentP[1] !== contour[contourLen][1]) {
+      throw new Error("First and last coordinates in a ring must be the same");
+    }
+    u1 = currentP[0] - x;
+    v1 = currentP[1] - y;
+    for (ii; ii < contourLen; ii++) {
+      nextP = contour[ii + 1];
+      u2 = nextP[0] - x;
+      v2 = nextP[1] - y;
+      if (v1 === 0 && v2 === 0) {
+        if (u2 <= 0 && u1 >= 0 || u1 <= 0 && u2 >= 0) {
+          return 0;
+        }
+      } else if (v2 >= 0 && v1 <= 0 || v2 <= 0 && v1 >= 0) {
+        f = orient2d(u1, u2, v1, v2, 0, 0);
+        if (f === 0) {
+          return 0;
+        }
+        if (f > 0 && v2 > 0 && v1 <= 0 || f < 0 && v2 <= 0 && v1 > 0) {
+          k++;
+        }
+      }
+      currentP = nextP;
+      v1 = v2;
+      u1 = u2;
+    }
+  }
+  if (k % 2 === 0) {
+    return false;
+  }
+  return true;
+}
+function getCoord(coord) {
+  if (!coord) {
+    throw new Error("coord is required");
+  }
+  if (!Array.isArray(coord)) {
+    if (coord.type === "Feature" && coord.geometry !== null && coord.geometry.type === "Point") {
+      return [...coord.geometry.coordinates];
+    }
+    if (coord.type === "Point") {
+      return [...coord.coordinates];
+    }
+  }
+  if (Array.isArray(coord) && coord.length >= 2 && !Array.isArray(coord[0]) && !Array.isArray(coord[1])) {
+    return [...coord];
+  }
+  throw new Error("coord must be GeoJSON Point or an Array of numbers");
+}
+function getGeom(geojson) {
+  if (geojson.type === "Feature") {
+    return geojson.geometry;
+  }
+  return geojson;
 }
 function booleanPointInPolygon(point2, polygon2, options = {}) {
   if (!point2) {
@@ -18204,2916 +17484,556 @@ function booleanPointInPolygon(point2, polygon2, options = {}) {
   const type = geom.type;
   const bbox2 = polygon2.bbox;
   let polys = geom.coordinates;
-  if (bbox2 && !inBBox(pt, bbox2)) {
+  if (bbox2 && inBBox(pt, bbox2) === false) {
     return false;
   }
   if (type === "Polygon") {
     polys = [polys];
   }
-  let insidePoly = false;
-  for (let i = 0; i < polys.length && !insidePoly; i++) {
-    const res = pointInPolygon2(pt, polys[i]);
-    if (res === 0 && !options.ignoreBoundary || res)
-      insidePoly = true;
+  let result = false;
+  for (var i = 0; i < polys.length; ++i) {
+    const polyResult = pointInPolygon(pt, polys[i]);
+    if (polyResult === 0) return options.ignoreBoundary ? false : true;
+    else if (polyResult) result = true;
   }
-  return insidePoly;
+  return result;
 }
 function inBBox(pt, bbox2) {
   return bbox2[0] <= pt[0] && bbox2[1] <= pt[1] && bbox2[2] >= pt[0] && bbox2[3] >= pt[1];
 }
-function pointInPolygon2(p, polygon2) {
-  let i = 0;
-  let ii = 0;
-  let k = 0;
-  let f = 0;
-  let u1 = 0;
-  let v1 = 0;
-  let u2 = 0;
-  let v2 = 0;
-  let currentP = null;
-  let nextP = null;
-  const x = p[0];
-  const y = p[1];
-  const numContours = polygon2.length;
-  for (i; i < numContours; i++) {
-    ii = 0;
-    const contourLen = polygon2[i].length - 1;
-    const contour = polygon2[i];
-    currentP = contour[0];
-    u1 = currentP[0] - x;
-    v1 = currentP[1] - y;
-    for (ii; ii < contourLen; ii++) {
-      nextP = contour[ii + 1];
-      v2 = nextP[1] - y;
-      if (v1 < 0 && v2 < 0 || v1 > 0 && v2 > 0) {
-        currentP = nextP;
-        v1 = v2;
-        u1 = currentP[0] - x;
-        continue;
+var turf_boolean_point_in_polygon_default = booleanPointInPolygon;
+var ot = Object.defineProperty;
+var at = (e, t, s) => t in e ? ot(e, t, { enumerable: true, configurable: true, writable: true, value: s }) : e[t] = s;
+var _23 = (e, t, s) => at(e, typeof t != "symbol" ? t + "" : t, s);
+const R = 11102230246251565e-32, I = 134217729, ft = (3 + 8 * R) * R;
+function V(e, t, s, r, a) {
+  let n, c, d, g2, l = t[0], y = r[0], o = 0, u2 = 0;
+  y > l == y > -l ? (n = l, l = t[++o]) : (n = y, y = r[++u2]);
+  let b = 0;
+  if (o < e && u2 < s)
+    for (y > l == y > -l ? (c = l + n, d = n - (c - l), l = t[++o]) : (c = y + n, d = n - (c - y), y = r[++u2]), n = c, d !== 0 && (a[b++] = d); o < e && u2 < s; )
+      y > l == y > -l ? (c = n + l, g2 = c - n, d = n - (c - g2) + (l - g2), l = t[++o]) : (c = n + y, g2 = c - n, d = n - (c - g2) + (y - g2), y = r[++u2]), n = c, d !== 0 && (a[b++] = d);
+  for (; o < e; )
+    c = n + l, g2 = c - n, d = n - (c - g2) + (l - g2), l = t[++o], n = c, d !== 0 && (a[b++] = d);
+  for (; u2 < s; )
+    c = n + y, g2 = c - n, d = n - (c - g2) + (y - g2), y = r[++u2], n = c, d !== 0 && (a[b++] = d);
+  return (n !== 0 || b === 0) && (a[b++] = n), b;
+}
+function ct(e, t) {
+  let s = t[0];
+  for (let r = 1; r < e; r++) s += t[r];
+  return s;
+}
+function $(e) {
+  return new Float64Array(e);
+}
+const ut = (3 + 16 * R) * R, ht = (2 + 12 * R) * R, gt = (9 + 64 * R) * R * R, F = $(4), q = $(8), L = $(12), G = $(16), P = $(4);
+function dt(e, t, s, r, a, n, c) {
+  let d, g2, l, y, o, u2, b, x, h, f, i, w, A, v, E4, m, M, T;
+  const S = e - a, p = s - a, k = t - n, N = r - n;
+  v = S * N, u2 = I * S, b = u2 - (u2 - S), x = S - b, u2 = I * N, h = u2 - (u2 - N), f = N - h, E4 = x * f - (v - b * h - x * h - b * f), m = k * p, u2 = I * k, b = u2 - (u2 - k), x = k - b, u2 = I * p, h = u2 - (u2 - p), f = p - h, M = x * f - (m - b * h - x * h - b * f), i = E4 - M, o = E4 - i, F[0] = E4 - (i + o) + (o - M), w = v + i, o = w - v, A = v - (w - o) + (i - o), i = A - m, o = A - i, F[1] = A - (i + o) + (o - m), T = w + i, o = T - w, F[2] = w - (T - o) + (i - o), F[3] = T;
+  let U = ct(4, F), X = ht * c;
+  if (U >= X || -U >= X || (o = e - S, d = e - (S + o) + (o - a), o = s - p, l = s - (p + o) + (o - a), o = t - k, g2 = t - (k + o) + (o - n), o = r - N, y = r - (N + o) + (o - n), d === 0 && g2 === 0 && l === 0 && y === 0) || (X = gt * c + ft * Math.abs(U), U += S * y + N * d - (k * l + p * g2), U >= X || -U >= X)) return U;
+  v = d * N, u2 = I * d, b = u2 - (u2 - d), x = d - b, u2 = I * N, h = u2 - (u2 - N), f = N - h, E4 = x * f - (v - b * h - x * h - b * f), m = g2 * p, u2 = I * g2, b = u2 - (u2 - g2), x = g2 - b, u2 = I * p, h = u2 - (u2 - p), f = p - h, M = x * f - (m - b * h - x * h - b * f), i = E4 - M, o = E4 - i, P[0] = E4 - (i + o) + (o - M), w = v + i, o = w - v, A = v - (w - o) + (i - o), i = A - m, o = A - i, P[1] = A - (i + o) + (o - m), T = w + i, o = T - w, P[2] = w - (T - o) + (i - o), P[3] = T;
+  const st = V(4, F, 4, P, q);
+  v = S * y, u2 = I * S, b = u2 - (u2 - S), x = S - b, u2 = I * y, h = u2 - (u2 - y), f = y - h, E4 = x * f - (v - b * h - x * h - b * f), m = k * l, u2 = I * k, b = u2 - (u2 - k), x = k - b, u2 = I * l, h = u2 - (u2 - l), f = l - h, M = x * f - (m - b * h - x * h - b * f), i = E4 - M, o = E4 - i, P[0] = E4 - (i + o) + (o - M), w = v + i, o = w - v, A = v - (w - o) + (i - o), i = A - m, o = A - i, P[1] = A - (i + o) + (o - m), T = w + i, o = T - w, P[2] = w - (T - o) + (i - o), P[3] = T;
+  const nt = V(st, q, 4, P, L);
+  v = d * y, u2 = I * d, b = u2 - (u2 - d), x = d - b, u2 = I * y, h = u2 - (u2 - y), f = y - h, E4 = x * f - (v - b * h - x * h - b * f), m = g2 * l, u2 = I * g2, b = u2 - (u2 - g2), x = g2 - b, u2 = I * l, h = u2 - (u2 - l), f = l - h, M = x * f - (m - b * h - x * h - b * f), i = E4 - M, o = E4 - i, P[0] = E4 - (i + o) + (o - M), w = v + i, o = w - v, A = v - (w - o) + (i - o), i = A - m, o = A - i, P[1] = A - (i + o) + (o - m), T = w + i, o = T - w, P[2] = w - (T - o) + (i - o), P[3] = T;
+  const it = V(nt, L, 4, P, G);
+  return G[it - 1];
+}
+function lt(e, t, s, r, a, n) {
+  const c = (t - n) * (s - a), d = (e - a) * (r - n), g2 = c - d, l = Math.abs(c + d);
+  return Math.abs(g2) >= ut * l ? g2 : -dt(e, t, s, r, a, n, l);
+}
+function yt(e, t) {
+  var s, r, a = 0, n, c, d, g2, l, y, o, u2 = e[0], b = e[1], x = t.length;
+  for (s = 0; s < x; s++) {
+    r = 0;
+    var h = t[s], f = h.length - 1;
+    if (y = h[0], y[0] !== h[f][0] && y[1] !== h[f][1])
+      throw new Error("First and last coordinates in a ring must be the same");
+    for (c = y[0] - u2, d = y[1] - b, r; r < f; r++) {
+      if (o = h[r + 1], g2 = o[0] - u2, l = o[1] - b, d === 0 && l === 0) {
+        if (g2 <= 0 && c >= 0 || c <= 0 && g2 >= 0)
+          return 0;
+      } else if (l >= 0 && d <= 0 || l <= 0 && d >= 0) {
+        if (n = lt(c, g2, d, l, 0, 0), n === 0)
+          return 0;
+        (n > 0 && l > 0 && d <= 0 || n < 0 && l <= 0 && d > 0) && a++;
       }
-      u2 = nextP[0] - p[0];
-      if (v2 > 0 && v1 <= 0) {
-        f = u1 * v2 - u2 * v1;
-        if (f > 0)
-          k = k + 1;
-        else if (f === 0)
-          return 0;
-      } else if (v1 > 0 && v2 <= 0) {
-        f = u1 * v2 - u2 * v1;
-        if (f < 0)
-          k = k + 1;
-        else if (f === 0)
-          return 0;
-      } else if (v2 === 0 && v1 < 0) {
-        f = u1 * v2 - u2 * v1;
-        if (f === 0)
-          return 0;
-      } else if (v1 === 0 && v2 < 0) {
-        f = u1 * v2 - u2 * v1;
-        if (f === 0)
-          return 0;
-      } else if (v1 === 0 && v2 === 0) {
-        if (u2 <= 0 && u1 >= 0) {
-          return 0;
-        } else if (u1 <= 0 && u2 >= 0) {
-          return 0;
+      y = o, d = l, c = g2;
+    }
+  }
+  return a % 2 !== 0;
+}
+function Z(e, t, s = {}) {
+  const r = { type: "Feature" };
+  return (s.id === 0 || s.id) && (r.id = s.id), s.bbox && (r.bbox = s.bbox), r.properties = t || {}, r.geometry = e, r;
+}
+function Y(e, t, s = {}) {
+  if (!e)
+    throw new Error("coordinates is required");
+  if (!Array.isArray(e))
+    throw new Error("coordinates must be an Array");
+  if (e.length < 2)
+    throw new Error("coordinates must be at least 2 numbers long");
+  if (!j(e[0]) || !j(e[1]))
+    throw new Error("coordinates must contain numbers");
+  return Z({
+    type: "Point",
+    coordinates: e
+  }, t, s);
+}
+function tt(e, t, s = {}) {
+  for (const a of e) {
+    if (a.length < 4)
+      throw new Error(
+        "Each LinearRing of a Polygon must have 4 or more Positions."
+      );
+    if (a[a.length - 1].length !== a[0].length)
+      throw new Error("First and last Position are not equivalent.");
+    for (let n = 0; n < a[a.length - 1].length; n++)
+      if (a[a.length - 1][n] !== a[0][n])
+        throw new Error("First and last Position are not equivalent.");
+  }
+  return Z({
+    type: "Polygon",
+    coordinates: e
+  }, t, s);
+}
+function B(e, t = {}) {
+  const s = { type: "FeatureCollection" };
+  return t.id && (s.id = t.id), t.bbox && (s.bbox = t.bbox), s.features = e, s;
+}
+function j(e) {
+  return !isNaN(e) && e !== null && !Array.isArray(e);
+}
+function bt(e) {
+  if (!e)
+    throw new Error("coord is required");
+  if (!Array.isArray(e)) {
+    if (e.type === "Feature" && e.geometry !== null && e.geometry.type === "Point")
+      return [...e.geometry.coordinates];
+    if (e.type === "Point")
+      return [...e.coordinates];
+  }
+  if (Array.isArray(e) && e.length >= 2 && !Array.isArray(e[0]) && !Array.isArray(e[1]))
+    return [...e];
+  throw new Error("coord must be GeoJSON Point or an Array of numbers");
+}
+function J(e) {
+  if (Array.isArray(e))
+    return e;
+  if (e.type === "Feature") {
+    if (e.geometry !== null)
+      return e.geometry.coordinates;
+  } else if (e.coordinates)
+    return e.coordinates;
+  throw new Error(
+    "coords must be GeoJSON Feature, Geometry Object or an Array"
+  );
+}
+function wt(e) {
+  return e.type === "Feature" ? e.geometry : e;
+}
+function mt(e, t, s = {}) {
+  if (!e)
+    throw new Error("point is required");
+  if (!t)
+    throw new Error("polygon is required");
+  const r = bt(e), a = wt(t), n = a.type, c = t.bbox;
+  let d = a.coordinates;
+  if (c && xt(r, c) === false)
+    return false;
+  n === "Polygon" && (d = [d]);
+  let g2 = false;
+  for (var l = 0; l < d.length; ++l) {
+    const y = yt(r, d[l]);
+    if (y === 0) return !s.ignoreBoundary;
+    y && (g2 = true);
+  }
+  return g2;
+}
+function xt(e, t) {
+  return t[0] <= e[0] && t[1] <= e[1] && t[2] >= e[0] && t[3] >= e[1];
+}
+var D = mt;
+function _t(e) {
+  const t = [0, 1, 2, 0].map((r) => e[r][0][0]), s = {
+    a: { geom: e[0][0][1], index: e[0][1] },
+    b: { geom: e[1][0][1], index: e[1][1] },
+    c: { geom: e[2][0][1], index: e[2][1] }
+  };
+  return tt([t], s);
+}
+function W(e, t, s, r, a, n = false, c) {
+  const d = e.map(
+    (g2) => {
+      (!c || c < 2.00703) && (g2 = et(g2));
+      const l = isFinite(g2) ? t[g2] : g2 === "c" ? r : g2 === "b0" ? a[0] : g2 === "b1" ? a[1] : g2 === "b2" ? a[2] : g2 === "b3" ? a[3] : function() {
+        const y = g2.match(/e(\d+)/);
+        if (y) {
+          const o = parseInt(y[1]);
+          return s[o];
         }
-      }
-      currentP = nextP;
-      v1 = v2;
-      u1 = u2;
+        throw "Bad index value for indexesToTri";
+      }();
+      return n ? [[l[1], l[0]], g2] : [[l[0], l[1]], g2];
     }
-  }
-  if (k % 2 === 0)
-    return false;
-  return true;
+  );
+  return _t(d);
 }
-function findIntersections(coords) {
-  const arcs = new ArcCollection(coords);
-  const xy = arcs.findSegmentIntersections();
-  return dedupIntersections(xy).reduce((prev, apoint, index2, array) => {
-    if (!prev)
-      prev = {};
-    prev[`${apoint.x}:${apoint.y}`] = apoint;
-    if (index2 != array.length - 1)
-      return prev;
-    return Object.keys(prev).map((key) => point([prev[key].x, prev[key].y]));
-  }, []);
+function et(e) {
+  return typeof e == "number" ? e : e.replace(/^(c|e|b)(?:ent|dgeNode|box)(\d+)?$/, "$1$2");
 }
-class ArcCollection {
-  constructor(coords) {
-    this._zlimit = 0;
-    this.initArcs(coords);
+function At(e, t) {
+  return t && t >= 2.00703 || Array.isArray(e[0]) ? e : e.map((s) => [
+    s.illstNodes,
+    s.mercNodes,
+    s.startEnd
+  ]);
+}
+function z(e, t) {
+  for (let s = 0; s < t.features.length; s++)
+    if (D(e, t.features[s]))
+      return t.features[s];
+}
+function rt(e, t, s) {
+  const r = t.geometry.coordinates[0][0], a = t.geometry.coordinates[0][1], n = t.geometry.coordinates[0][2], c = e.geometry.coordinates, d = t.properties.a.geom, g2 = t.properties.b.geom, l = t.properties.c.geom, y = [a[0] - r[0], a[1] - r[1]], o = [n[0] - r[0], n[1] - r[1]], u2 = [c[0] - r[0], c[1] - r[1]], b = [g2[0] - d[0], g2[1] - d[1]], x = [l[0] - d[0], l[1] - d[1]];
+  let h = (o[1] * u2[0] - o[0] * u2[1]) / (y[0] * o[1] - y[1] * o[0]), f = (y[0] * u2[1] - y[1] * u2[0]) / (y[0] * o[1] - y[1] * o[0]);
+  if (s) {
+    const i = s[t.properties.a.index], w = s[t.properties.b.index], A = s[t.properties.c.index];
+    let v;
+    if (h < 0 || f < 0 || 1 - h - f < 0) {
+      const E4 = h / (h + f), m = f / (h + f);
+      v = h / w / (E4 / w + m / A), f = f / A / (E4 / w + m / A);
+    } else
+      v = h / w / (h / w + f / A + (1 - h - f) / i), f = f / A / (h / w + f / A + (1 - h - f) / i);
+    h = v;
   }
-  initArcs(arcs) {
-    const xx = [], yy = [];
-    const nn = arcs.map((points2) => {
-      const n = points2 ? points2.length : 0;
-      for (let i = 0; i < n; i++) {
-        xx.push(points2[i][0]);
-        yy.push(points2[i][1]);
-      }
-      return n;
-    });
-    this.initXYData(nn, xx, yy);
-  }
-  initXYData(nn, xx, yy) {
-    const size = nn.length;
-    this._xx = new Float64Array(xx);
-    this._yy = new Float64Array(yy);
-    this._nn = new Uint32Array(nn);
-    this._zz = null;
-    this._zlimit = 0;
-    this._filteredArcIter = null;
-    this._ii = new Uint32Array(size);
-    let idx = 0;
-    for (let j = 0; j < size; j++) {
-      this._ii[j] = idx;
-      idx += nn[j];
+  return [
+    h * b[0] + f * x[0] + d[0],
+    h * b[1] + f * x[1] + d[1]
+  ];
+}
+function vt(e, t, s, r) {
+  const a = e.geometry.coordinates, n = s.geometry.coordinates, c = Math.atan2(a[0] - n[0], a[1] - n[1]), d = Et(c, t[0]);
+  if (d === void 0)
+    throw new Error("Unable to determine vertex index");
+  const g2 = t[1][d];
+  return rt(e, g2.features[0], r);
+}
+function Mt(e, t, s, r, a, n, c, d) {
+  let g2;
+  if (c && (g2 = z(e, B([c]))), !g2) {
+    if (s) {
+      const l = e.geometry.coordinates, y = s.gridNum, o = s.xOrigin, u2 = s.yOrigin, b = s.xUnit, x = s.yUnit, h = s.gridCache, f = C(l[0], o, b, y), i = C(l[1], u2, x, y), w = h[f] ? h[f][i] ? h[f][i] : [] : [];
+      t = B(w.map((A) => t.features[A]));
     }
-    if (idx != this._xx.length || this._xx.length != this._yy.length) {
-      error2("ArcCollection#initXYData() Counting error");
-    }
-    this.initBounds();
-    this._arcIter = new ArcIter(this._xx, this._yy);
+    g2 = z(e, t);
   }
-  initBounds() {
-    const data = this.calcArcBounds_(this._xx, this._yy, this._nn);
-    this._bb = data.bb;
-    this._allBounds = data.bounds;
-  }
-  calcArcBounds_(xx, yy, nn) {
-    const numArcs = nn.length, bb2 = new Float64Array(numArcs * 4), bounds = new Bounds();
-    let arcOffs = 0, arcLen, j, b;
-    for (let i = 0; i < numArcs; i++) {
-      arcLen = nn[i];
-      if (arcLen > 0) {
-        j = i * 4;
-        b = calcArcBounds(xx, yy, arcOffs, arcLen);
-        bb2[j++] = b[0];
-        bb2[j++] = b[1];
-        bb2[j++] = b[2];
-        bb2[j] = b[3];
-        arcOffs += arcLen;
-        bounds.mergeBounds(b);
-      }
-    }
-    return {
-      bb: bb2,
-      bounds
-    };
-  }
-  getBounds() {
-    return this._allBounds.clone();
-  }
-  forEachSegment(cb) {
-    let count = 0;
-    for (let i = 0, n = this.size(); i < n; i++) {
-      count += this.forEachArcSegment(i, cb);
-    }
-    return count;
-  }
-  size() {
-    return this._ii && this._ii.length || 0;
-  }
-  forEachArcSegment(arcId, cb) {
-    const fw = arcId >= 0, absId = fw ? arcId : ~arcId, zlim = this.getRetainedInterval(), n = this._nn[absId], step = fw ? 1 : -1;
-    let v1 = fw ? this._ii[absId] : this._ii[absId] + n - 1, v2 = v1, count = 0;
-    for (let j = 1; j < n; j++) {
-      v2 += step;
-      if (zlim === 0 || this._zz[v2] >= zlim) {
-        cb(v1, v2, this._xx, this._yy);
-        v1 = v2;
-        count++;
-      }
-    }
-    return count;
-  }
-  getRetainedInterval() {
-    return this._zlimit;
-  }
-  getVertexData() {
-    return {
-      xx: this._xx,
-      yy: this._yy,
-      zz: this._zz,
-      bb: this._bb,
-      nn: this._nn,
-      ii: this._ii
-    };
-  }
-  getUint32Array(count) {
-    const bytes = count * 4;
-    if (!this.buf || this.buf.byteLength < bytes) {
-      this.buf = new ArrayBuffer(bytes);
-    }
-    return new Uint32Array(this.buf, 0, count);
-  }
-  getAvgSegment2() {
-    let dx = 0, dy = 0;
-    const count = this.forEachSegment((i, j, xx, yy) => {
-      dx += Math.abs(xx[i] - xx[j]);
-      dy += Math.abs(yy[i] - yy[j]);
-    });
-    return [dx / count || 0, dy / count || 0];
-  }
-  calcSegmentIntersectionStripeCount() {
-    const yrange = this.getBounds().height(), segLen = this.getAvgSegment2()[1];
-    let count = 1;
-    if (segLen > 0 && yrange > 0) {
-      count = Math.ceil(yrange / segLen / 20);
-    }
-    return count || 1;
-  }
-  findSegmentIntersections() {
-    const bounds = this.getBounds(), ymin = bounds.ymin, yrange = bounds.ymax - ymin, stripeCount = this.calcSegmentIntersectionStripeCount(), stripeSizes = new Uint32Array(stripeCount), stripeId = stripeCount > 1 ? (y) => Math.floor((stripeCount - 1) * (y - ymin) / yrange) : () => 0;
-    let i, j;
-    this.forEachSegment((id1, id2, xx, yy) => {
-      let s1 = stripeId(yy[id1]);
-      const s2 = stripeId(yy[id2]);
-      while (true) {
-        stripeSizes[s1] = stripeSizes[s1] + 2;
-        if (s1 == s2)
-          break;
-        s1 += s2 > s1 ? 1 : -1;
-      }
-    });
-    const stripeData = this.getUint32Array(utilsSum(stripeSizes));
-    let offs = 0;
-    const stripes = [];
-    utilsForEach(stripeSizes, (stripeSize) => {
-      const start = offs;
-      offs += stripeSize;
-      stripes.push(stripeData.subarray(start, offs));
-    });
-    initializeArray(stripeSizes, 0);
-    this.forEachSegment((id1, id2, xx, yy) => {
-      let s1 = stripeId(yy[id1]);
-      const s2 = stripeId(yy[id2]);
-      let count, stripe;
-      while (true) {
-        count = stripeSizes[s1];
-        stripeSizes[s1] = count + 2;
-        stripe = stripes[s1];
-        stripe[count] = id1;
-        stripe[count + 1] = id2;
-        if (s1 == s2)
-          break;
-        s1 += s2 > s1 ? 1 : -1;
-      }
-    });
-    const raw = this.getVertexData(), intersections = [];
-    let arr2;
-    for (i = 0; i < stripeCount; i++) {
-      arr2 = intersectSegments$1(stripes[i], raw.xx, raw.yy);
-      for (j = 0; j < arr2.length; j++) {
-        intersections.push(arr2[j]);
-      }
-    }
-    return dedupIntersections(intersections);
-  }
+  return d && d(g2), g2 ? rt(e, g2, n) : vt(e, r, a, n);
 }
-function error2(...args) {
-  const msg = args.join(" ");
-  throw new Error(msg);
+function C(e, t, s, r) {
+  let a = Math.floor((e - t) / s);
+  return a >= r && (a = r - 1), a;
 }
-function isArrayLike(obj) {
-  if (!obj)
-    return false;
-  if (isArray$1(obj))
-    return true;
-  if (isString(obj))
-    return false;
-  if (obj.length === 0)
-    return true;
-  return obj.length > 0;
-}
-function isString(obj) {
-  return obj != null && obj.toString === String.prototype.toString;
-}
-function isArray$1(obj) {
-  return Array.isArray(obj);
-}
-function utilsSum(arr2, info) {
-  if (!isArrayLike(arr2))
-    error2("utils.sum() expects an array, received:", arr2);
-  let tot = 0, val;
-  for (let i = 0, n = arr2.length; i < n; i++) {
-    val = arr2[i];
-    if (val) {
-      tot += val;
-    }
-  }
-  return tot;
-}
-function utilsForEach(arr2, func, ctx) {
-  if (!isArrayLike(arr2)) {
-    throw new Error(`#forEach() takes an array-like argument. ${arr2}`);
-  }
-  for (let i = 0, n = arr2.length; i < n; i++) {
-    func.call(ctx, arr2[i], i);
-  }
-}
-function initializeArray(arr2, init) {
-  for (let i = 0, len = arr2.length; i < len; i++) {
-    arr2[i] = init;
-  }
-  return arr2;
-}
-function intersectSegments$1(ids, xx, yy) {
-  const lim = ids.length - 2, intersections = [];
-  let s1p1, s1p2, s2p1, s2p2, s1p1x, s1p2x, s2p1x, s2p2x, s1p1y, s1p2y, s2p1y, s2p2y, hit2, seg1, seg2, i, j;
-  sortSegmentIds(xx, ids);
-  i = 0;
-  while (i < lim) {
-    s1p1 = ids[i];
-    s1p2 = ids[i + 1];
-    s1p1x = xx[s1p1];
-    s1p2x = xx[s1p2];
-    s1p1y = yy[s1p1];
-    s1p2y = yy[s1p2];
-    j = i;
-    while (j < lim) {
-      j += 2;
-      s2p1 = ids[j];
-      s2p1x = xx[s2p1];
-      if (s1p2x < s2p1x)
-        break;
-      s2p1y = yy[s2p1];
-      s2p2 = ids[j + 1];
-      s2p2x = xx[s2p2];
-      s2p2y = yy[s2p2];
-      if (s1p1y >= s2p1y) {
-        if (s1p1y > s2p2y && s1p2y > s2p1y && s1p2y > s2p2y)
-          continue;
-      } else {
-        if (s1p1y < s2p2y && s1p2y < s2p1y && s1p2y < s2p2y)
-          continue;
-      }
-      if (s1p1 == s2p1 || s1p1 == s2p2 || s1p2 == s2p1 || s1p2 == s2p2) {
-        continue;
-      }
-      hit2 = segmentIntersection(s1p1x, s1p1y, s1p2x, s1p2y, s2p1x, s2p1y, s2p2x, s2p2y);
-      if (hit2) {
-        seg1 = [s1p1, s1p2];
-        seg2 = [s2p1, s2p2];
-        intersections.push(formatIntersection(hit2, seg1, seg2, xx, yy));
-        if (hit2.length == 4) {
-          intersections.push(formatIntersection(hit2.slice(2), seg1, seg2, xx, yy));
-        }
-      }
-    }
-    i += 2;
-  }
-  return intersections;
-}
-function segmentIntersection(ax, ay, bx, by, cx, cy, dx, dy) {
-  const hit2 = segmentHit(ax, ay, bx, by, cx, cy, dx, dy);
-  let p = null;
-  if (hit2) {
-    p = crossIntersection(ax, ay, bx, by, cx, cy, dx, dy);
-    if (!p) {
-      p = collinearIntersection(ax, ay, bx, by, cx, cy, dx, dy);
-    } else if (endpointHit(ax, ay, bx, by, cx, cy, dx, dy)) {
-      p = null;
-    }
-  }
-  return p;
-}
-function segmentHit(ax, ay, bx, by, cx, cy, dx, dy) {
-  return orient2D(ax, ay, bx, by, cx, cy) * orient2D(ax, ay, bx, by, dx, dy) <= 0 && orient2D(cx, cy, dx, dy, ax, ay) * orient2D(cx, cy, dx, dy, bx, by) <= 0;
-}
-function orient2D(ax, ay, bx, by, cx, cy) {
-  return determinant2D(ax - cx, ay - cy, bx - cx, by - cy);
-}
-function determinant2D(a, b, c, d) {
-  return a * d - b * c;
-}
-function crossIntersection(ax, ay, bx, by, cx, cy, dx, dy) {
-  let p = lineIntersection(ax, ay, bx, by, cx, cy, dx, dy);
-  let nearest;
-  if (p) {
-    nearest = nearestPoint(p[0], p[1], ax, ay, bx, by, cx, cy, dx, dy);
-    if (nearest == 1) {
-      p = lineIntersection(bx, by, ax, ay, cx, cy, dx, dy);
-    } else if (nearest == 2) {
-      p = lineIntersection(cx, cy, dx, dy, ax, ay, bx, by);
-    } else if (nearest == 3) {
-      p = lineIntersection(dx, dy, cx, cy, ax, ay, bx, by);
-    }
-  }
-  if (p) {
-    clampIntersectionPoint(p, ax, ay, bx, by, cx, cy, dx, dy);
-  }
-  return p;
-}
-function lineIntersection(ax, ay, bx, by, cx, cy, dx, dy) {
-  const den = determinant2D(bx - ax, by - ay, dx - cx, dy - cy);
-  const eps = 1e-18;
-  let p;
-  if (den === 0)
-    return null;
-  const m = orient2D(cx, cy, dx, dy, ax, ay) / den;
-  if (den <= eps && den >= -eps) {
-    p = findEndpointInRange(ax, ay, bx, by, cx, cy, dx, dy);
-  } else {
-    p = [ax + m * (bx - ax), ay + m * (by - ay)];
-  }
-  return p;
-}
-function findEndpointInRange(ax, ay, bx, by, cx, cy, dx, dy) {
-  let p = null;
-  if (!outsideRange(ax, cx, dx) && !outsideRange(ay, cy, dy)) {
-    p = [ax, ay];
-  } else if (!outsideRange(bx, cx, dx) && !outsideRange(by, cy, dy)) {
-    p = [bx, by];
-  } else if (!outsideRange(cx, ax, bx) && !outsideRange(cy, ay, by)) {
-    p = [cx, cy];
-  } else if (!outsideRange(dx, ax, bx) && !outsideRange(dy, ay, by)) {
-    p = [dx, dy];
-  }
-  return p;
-}
-function outsideRange(a, b, c) {
-  let out;
-  if (b < c) {
-    out = a < b || a > c;
-  } else if (b > c) {
-    out = a > b || a < c;
-  } else {
-    out = a != b;
-  }
-  return out;
-}
-function nearestPoint(x, y, ...args) {
-  let minIdx = -1, minDist = Infinity, dist2;
-  for (let i = 0, j = 0, n = args.length; j < n; i++, j += 2) {
-    dist2 = distanceSq(x, y, args[j], args[j + 1]);
-    if (dist2 < minDist) {
-      minDist = dist2;
-      minIdx = i;
-    }
-  }
-  return minIdx;
-}
-function distanceSq(ax, ay, bx, by) {
-  const dx = ax - bx, dy = ay - by;
-  return dx * dx + dy * dy;
-}
-function clampIntersectionPoint(p, ax, ay, bx, by, cx, cy, dx, dy) {
-  let x = p[0], y = p[1];
-  x = clampToCloseRange(x, ax, bx);
-  x = clampToCloseRange(x, cx, dx);
-  y = clampToCloseRange(y, ay, by);
-  y = clampToCloseRange(y, cy, dy);
-  p[0] = x;
-  p[1] = y;
-}
-function clampToCloseRange(a, b, c) {
-  let lim;
-  if (outsideRange(a, b, c)) {
-    lim = Math.abs(a - b) < Math.abs(a - c) ? b : c;
-    a = lim;
+function Et(e, t) {
+  let s = K(e - t[0]), r = Math.PI * 2, a;
+  for (let n = 0; n < t.length; n++) {
+    const c = (n + 1) % t.length, d = K(e - t[c]), g2 = Math.min(Math.abs(s), Math.abs(d));
+    s * d <= 0 && g2 < r && (r = g2, a = n), s = d;
   }
   return a;
 }
-function collinearIntersection(ax, ay, bx, by, cx, cy, dx, dy) {
-  const minX = Math.min(ax, bx, cx, dx), maxX = Math.max(ax, bx, cx, dx), minY = Math.min(ay, by, cy, dy), maxY = Math.max(ay, by, cy, dy), useY = maxY - minY > maxX - minX;
-  let coords = [];
-  if (useY ? inside(ay, minY, maxY) : inside(ax, minX, maxX)) {
-    coords.push(ax, ay);
-  }
-  if (useY ? inside(by, minY, maxY) : inside(bx, minX, maxX)) {
-    coords.push(bx, by);
-  }
-  if (useY ? inside(cy, minY, maxY) : inside(cx, minX, maxX)) {
-    coords.push(cx, cy);
-  }
-  if (useY ? inside(dy, minY, maxY) : inside(dx, minX, maxX)) {
-    coords.push(dx, dy);
-  }
-  if (coords.length != 2 && coords.length != 4) {
-    coords = null;
-  } else if (coords.length == 4 && coords[0] == coords[2] && coords[1] == coords[3]) {
-    coords = null;
-  }
-  return coords;
+function K(e, t = false) {
+  const s = t ? function(r) {
+    return !(r >= 0 && r < Math.PI * 2);
+  } : function(r) {
+    return !(r > -1 * Math.PI && r <= Math.PI);
+  };
+  for (; s(e); )
+    e = e + 2 * Math.PI * (e > 0 ? -1 : 1);
+  return e;
 }
-function endpointHit(ax, ay, bx, by, cx, cy, dx, dy) {
-  return ax == cx && ay == cy || ax == dx && ay == dy || bx == cx && by == cy || bx == dx && by == dy;
-}
-function inside(x, minX, maxX) {
-  return x > minX && x < maxX;
-}
-function sortSegmentIds(xx, ids) {
-  orderSegmentIds(xx, ids);
-  quicksortSegmentIds(xx, ids, 0, ids.length - 2);
-}
-function orderSegmentIds(xx, ids) {
-  for (let i = 0, n = ids.length; i < n; i += 2) {
-    if (xx[ids[i]] > xx[ids[i + 1]]) {
-      swap$1(ids, i, i + 1);
-    }
-  }
-}
-function swap$1(ids, i, j) {
-  const tmp = ids[i];
-  ids[i] = ids[j];
-  ids[j] = tmp;
-}
-function quicksortSegmentIds(a, ids, lo, hi) {
-  let i = lo, j = hi, pivot, tmp;
-  while (i < hi) {
-    pivot = a[ids[lo + hi >> 2 << 1]];
-    while (i <= j) {
-      while (a[ids[i]] < pivot)
-        i += 2;
-      while (a[ids[j]] > pivot)
-        j -= 2;
-      if (i <= j) {
-        tmp = ids[i];
-        ids[i] = ids[j];
-        ids[j] = tmp;
-        tmp = ids[i + 1];
-        ids[i + 1] = ids[j + 1];
-        ids[j + 1] = tmp;
-        i += 2;
-        j -= 2;
-      }
-    }
-    if (j - lo < 40)
-      insertionSortSegmentIds(a, ids, lo, j);
-    else
-      quicksortSegmentIds(a, ids, lo, j);
-    if (hi - i < 40) {
-      insertionSortSegmentIds(a, ids, i, hi);
-      return;
-    }
-    lo = i;
-    j = hi;
-  }
-}
-function insertionSortSegmentIds(arr2, ids, start, end) {
-  let id, id2;
-  for (let j = start + 2; j <= end; j += 2) {
-    id = ids[j];
-    id2 = ids[j + 1];
-    let i;
-    for (i = j - 2; i >= start && arr2[id] < arr2[ids[i]]; i -= 2) {
-      ids[i + 2] = ids[i];
-      ids[i + 3] = ids[i + 1];
-    }
-    ids[i + 2] = id;
-    ids[i + 3] = id2;
-  }
-}
-function formatIntersection(xy, s1, s2, xx, yy) {
-  const x = xy[0], y = xy[1];
-  s1 = formatIntersectingSegment(x, y, s1[0], s1[1], xx, yy);
-  s2 = formatIntersectingSegment(x, y, s2[0], s2[1], xx, yy);
-  const a = s1[0] < s2[0] ? s1 : s2;
-  const b = a == s1 ? s2 : s1;
-  return { x, y, a, b };
-}
-function formatIntersectingSegment(x, y, id1, id2, xx, yy) {
-  let i = id1 < id2 ? id1 : id2, j = i === id1 ? id2 : id1;
-  if (xx[i] == x && yy[i] == y) {
-    j = i;
-  } else if (xx[j] == x && yy[j] == y) {
-    i = j;
-  }
-  return [i, j];
-}
-function dedupIntersections(arr2) {
-  const index2 = {};
-  return arr2.filter((o) => {
-    const key = getIntersectionKey(o);
-    if (key in index2) {
-      return false;
-    }
-    index2[key] = true;
-    return true;
-  });
-}
-function getIntersectionKey(o) {
-  return `${o.a.join(",")};${o.b.join(",")}`;
-}
-class ArcIter {
-  constructor(xx, yy) {
-    this._i = 0;
-    this._n = 0;
-    this._inc = 1;
-    this.i = 0;
-    this.x = 0;
-    this.y = 0;
-    this._xx = xx;
-    this._yy = yy;
-  }
-}
-function calcArcBounds(xx, yy, start, len) {
-  let i = start | 0;
-  const n = isNaN(len) ? xx.length - i : len + i;
-  let x, y, xmin, ymin, xmax, ymax;
-  if (n > 0) {
-    xmin = xmax = xx[i];
-    ymin = ymax = yy[i];
-  } else
-    return [void 0, void 0, void 0, void 0];
-  for (i++; i < n; i++) {
-    x = xx[i];
-    y = yy[i];
-    if (x < xmin)
-      xmin = x;
-    if (x > xmax)
-      xmax = x;
-    if (y < ymin)
-      ymin = y;
-    if (y > ymax)
-      ymax = y;
-  }
-  return [xmin, ymin, xmax, ymax];
-}
-class Bounds {
-  constructor(...args) {
-    if (args.length > 0) {
-      this.setBounds(args);
-    }
-  }
-  cloneBounds() {
-    return this.clone();
-  }
-  clone() {
-    return new Bounds(this.xmin, this.ymin, this.xmax, this.ymax);
-  }
-  width() {
-    return this.xmax - this.xmin || 0;
-  }
-  height() {
-    return this.ymax - this.ymin || 0;
-  }
-  setBounds(a, b, c, d) {
-    if (arguments.length == 1) {
-      if (isArrayLike(a)) {
-        b = a[1];
-        c = a[2];
-        d = a[3];
-        a = a[0];
-      } else {
-        b = a.ymin;
-        c = a.xmax;
-        d = a.ymax;
-        a = a.xmin;
-      }
-    }
-    this.xmin = a;
-    this.ymin = b;
-    this.xmax = c;
-    this.ymax = d;
-    if (a > c || b > d)
-      this.update();
-    return this;
-  }
-  update() {
-    let tmp;
-    if (this.xmin > this.xmax) {
-      tmp = this.xmin;
-      this.xmin = this.xmax;
-      this.xmax = tmp;
-    }
-    if (this.ymin > this.ymax) {
-      tmp = this.ymin;
-      this.ymin = this.ymax;
-      this.ymax = tmp;
-    }
-  }
-  mergeBounds(bb2, ...args) {
-    let a, b, c, d;
-    if (bb2 instanceof Bounds) {
-      a = bb2.xmin;
-      b = bb2.ymin;
-      c = bb2.xmax;
-      d = bb2.ymax;
-    } else if (args.length == 3) {
-      a = bb2;
-      b = args[0];
-      c = args[1];
-      d = args[2];
-    } else if (bb2.length == 4) {
-      a = bb2[0];
-      b = bb2[1];
-      c = bb2[2];
-      d = bb2[3];
-    } else {
-      error2("Bounds#mergeBounds() invalid argument:", bb2);
-    }
-    if (this.xmin === void 0) {
-      this.setBounds(a, b, c, d);
-    } else {
-      if (a < this.xmin)
-        this.xmin = a;
-      if (b < this.ymin)
-        this.ymin = b;
-      if (c > this.xmax)
-        this.xmax = c;
-      if (d > this.ymax)
-        this.ymax = d;
-    }
-    return this;
-  }
-}
-const EPSILON = Math.pow(2, -52);
-const EDGE_STACK = new Uint32Array(512);
-class Delaunator {
-  static from(points2, getX = defaultGetX, getY = defaultGetY) {
-    const n = points2.length;
-    const coords = new Float64Array(n * 2);
-    for (let i = 0; i < n; i++) {
-      const p = points2[i];
-      coords[2 * i] = getX(p);
-      coords[2 * i + 1] = getY(p);
-    }
-    return new Delaunator(coords);
-  }
-  constructor(coords) {
-    const n = coords.length >> 1;
-    if (n > 0 && typeof coords[0] !== "number") throw new Error("Expected coords to contain numbers.");
-    this.coords = coords;
-    const maxTriangles = Math.max(2 * n - 5, 0);
-    this._triangles = new Uint32Array(maxTriangles * 3);
-    this._halfedges = new Int32Array(maxTriangles * 3);
-    this._hashSize = Math.ceil(Math.sqrt(n));
-    this._hullPrev = new Uint32Array(n);
-    this._hullNext = new Uint32Array(n);
-    this._hullTri = new Uint32Array(n);
-    this._hullHash = new Int32Array(this._hashSize);
-    this._ids = new Uint32Array(n);
-    this._dists = new Float64Array(n);
-    this.update();
-  }
-  update() {
-    const { coords, _hullPrev: hullPrev, _hullNext: hullNext, _hullTri: hullTri, _hullHash: hullHash } = this;
-    const n = coords.length >> 1;
-    let minX = Infinity;
-    let minY = Infinity;
-    let maxX = -Infinity;
-    let maxY = -Infinity;
-    for (let i = 0; i < n; i++) {
-      const x = coords[2 * i];
-      const y = coords[2 * i + 1];
-      if (x < minX) minX = x;
-      if (y < minY) minY = y;
-      if (x > maxX) maxX = x;
-      if (y > maxY) maxY = y;
-      this._ids[i] = i;
-    }
-    const cx = (minX + maxX) / 2;
-    const cy = (minY + maxY) / 2;
-    let i0, i1, i2;
-    for (let i = 0, minDist = Infinity; i < n; i++) {
-      const d = dist(cx, cy, coords[2 * i], coords[2 * i + 1]);
-      if (d < minDist) {
-        i0 = i;
-        minDist = d;
-      }
-    }
-    const i0x = coords[2 * i0];
-    const i0y = coords[2 * i0 + 1];
-    for (let i = 0, minDist = Infinity; i < n; i++) {
-      if (i === i0) continue;
-      const d = dist(i0x, i0y, coords[2 * i], coords[2 * i + 1]);
-      if (d < minDist && d > 0) {
-        i1 = i;
-        minDist = d;
-      }
-    }
-    let i1x = coords[2 * i1];
-    let i1y = coords[2 * i1 + 1];
-    let minRadius = Infinity;
-    for (let i = 0; i < n; i++) {
-      if (i === i0 || i === i1) continue;
-      const r = circumradius(i0x, i0y, i1x, i1y, coords[2 * i], coords[2 * i + 1]);
-      if (r < minRadius) {
-        i2 = i;
-        minRadius = r;
-      }
-    }
-    let i2x = coords[2 * i2];
-    let i2y = coords[2 * i2 + 1];
-    if (minRadius === Infinity) {
-      for (let i = 0; i < n; i++) {
-        this._dists[i] = coords[2 * i] - coords[0] || coords[2 * i + 1] - coords[1];
-      }
-      quicksort(this._ids, this._dists, 0, n - 1);
-      const hull = new Uint32Array(n);
-      let j = 0;
-      for (let i = 0, d0 = -Infinity; i < n; i++) {
-        const id = this._ids[i];
-        const d = this._dists[id];
-        if (d > d0) {
-          hull[j++] = id;
-          d0 = d;
-        }
-      }
-      this.hull = hull.subarray(0, j);
-      this.triangles = new Uint32Array(0);
-      this.halfedges = new Uint32Array(0);
-      return;
-    }
-    if (orient2d(i0x, i0y, i1x, i1y, i2x, i2y) < 0) {
-      const i = i1;
-      const x = i1x;
-      const y = i1y;
-      i1 = i2;
-      i1x = i2x;
-      i1y = i2y;
-      i2 = i;
-      i2x = x;
-      i2y = y;
-    }
-    const center = circumcenter(i0x, i0y, i1x, i1y, i2x, i2y);
-    this._cx = center.x;
-    this._cy = center.y;
-    for (let i = 0; i < n; i++) {
-      this._dists[i] = dist(coords[2 * i], coords[2 * i + 1], center.x, center.y);
-    }
-    quicksort(this._ids, this._dists, 0, n - 1);
-    this._hullStart = i0;
-    let hullSize = 3;
-    hullNext[i0] = hullPrev[i2] = i1;
-    hullNext[i1] = hullPrev[i0] = i2;
-    hullNext[i2] = hullPrev[i1] = i0;
-    hullTri[i0] = 0;
-    hullTri[i1] = 1;
-    hullTri[i2] = 2;
-    hullHash.fill(-1);
-    hullHash[this._hashKey(i0x, i0y)] = i0;
-    hullHash[this._hashKey(i1x, i1y)] = i1;
-    hullHash[this._hashKey(i2x, i2y)] = i2;
-    this.trianglesLen = 0;
-    this._addTriangle(i0, i1, i2, -1, -1, -1);
-    for (let k = 0, xp, yp; k < this._ids.length; k++) {
-      const i = this._ids[k];
-      const x = coords[2 * i];
-      const y = coords[2 * i + 1];
-      if (k > 0 && Math.abs(x - xp) <= EPSILON && Math.abs(y - yp) <= EPSILON) continue;
-      xp = x;
-      yp = y;
-      if (i === i0 || i === i1 || i === i2) continue;
-      let start = 0;
-      for (let j = 0, key = this._hashKey(x, y); j < this._hashSize; j++) {
-        start = hullHash[(key + j) % this._hashSize];
-        if (start !== -1 && start !== hullNext[start]) break;
-      }
-      start = hullPrev[start];
-      let e = start, q;
-      while (q = hullNext[e], orient2d(x, y, coords[2 * e], coords[2 * e + 1], coords[2 * q], coords[2 * q + 1]) >= 0) {
-        e = q;
-        if (e === start) {
-          e = -1;
-          break;
-        }
-      }
-      if (e === -1) continue;
-      let t = this._addTriangle(e, i, hullNext[e], -1, -1, hullTri[e]);
-      hullTri[i] = this._legalize(t + 2);
-      hullTri[e] = t;
-      hullSize++;
-      let n2 = hullNext[e];
-      while (q = hullNext[n2], orient2d(x, y, coords[2 * n2], coords[2 * n2 + 1], coords[2 * q], coords[2 * q + 1]) < 0) {
-        t = this._addTriangle(n2, i, q, hullTri[i], -1, hullTri[n2]);
-        hullTri[i] = this._legalize(t + 2);
-        hullNext[n2] = n2;
-        hullSize--;
-        n2 = q;
-      }
-      if (e === start) {
-        while (q = hullPrev[e], orient2d(x, y, coords[2 * q], coords[2 * q + 1], coords[2 * e], coords[2 * e + 1]) < 0) {
-          t = this._addTriangle(q, i, e, -1, hullTri[e], hullTri[q]);
-          this._legalize(t + 2);
-          hullTri[q] = t;
-          hullNext[e] = e;
-          hullSize--;
-          e = q;
-        }
-      }
-      this._hullStart = hullPrev[i] = e;
-      hullNext[e] = hullPrev[n2] = i;
-      hullNext[i] = n2;
-      hullHash[this._hashKey(x, y)] = i;
-      hullHash[this._hashKey(coords[2 * e], coords[2 * e + 1])] = e;
-    }
-    this.hull = new Uint32Array(hullSize);
-    for (let i = 0, e = this._hullStart; i < hullSize; i++) {
-      this.hull[i] = e;
-      e = hullNext[e];
-    }
-    this.triangles = this._triangles.subarray(0, this.trianglesLen);
-    this.halfedges = this._halfedges.subarray(0, this.trianglesLen);
-  }
-  _hashKey(x, y) {
-    return Math.floor(pseudoAngle(x - this._cx, y - this._cy) * this._hashSize) % this._hashSize;
-  }
-  _legalize(a) {
-    const { _triangles: triangles, _halfedges: halfedges, coords } = this;
-    let i = 0;
-    let ar = 0;
-    while (true) {
-      const b = halfedges[a];
-      const a0 = a - a % 3;
-      ar = a0 + (a + 2) % 3;
-      if (b === -1) {
-        if (i === 0) break;
-        a = EDGE_STACK[--i];
-        continue;
-      }
-      const b0 = b - b % 3;
-      const al = a0 + (a + 1) % 3;
-      const bl = b0 + (b + 2) % 3;
-      const p0 = triangles[ar];
-      const pr = triangles[a];
-      const pl = triangles[al];
-      const p1 = triangles[bl];
-      const illegal = inCircle(
-        coords[2 * p0],
-        coords[2 * p0 + 1],
-        coords[2 * pr],
-        coords[2 * pr + 1],
-        coords[2 * pl],
-        coords[2 * pl + 1],
-        coords[2 * p1],
-        coords[2 * p1 + 1]
-      );
-      if (illegal) {
-        triangles[a] = p1;
-        triangles[b] = p0;
-        const hbl = halfedges[bl];
-        if (hbl === -1) {
-          let e = this._hullStart;
-          do {
-            if (this._hullTri[e] === bl) {
-              this._hullTri[e] = a;
-              break;
-            }
-            e = this._hullPrev[e];
-          } while (e !== this._hullStart);
-        }
-        this._link(a, hbl);
-        this._link(b, halfedges[ar]);
-        this._link(ar, bl);
-        const br = b0 + (b + 1) % 3;
-        if (i < EDGE_STACK.length) {
-          EDGE_STACK[i++] = br;
-        }
-      } else {
-        if (i === 0) break;
-        a = EDGE_STACK[--i];
-      }
-    }
-    return ar;
-  }
-  _link(a, b) {
-    this._halfedges[a] = b;
-    if (b !== -1) this._halfedges[b] = a;
-  }
-  // add a new triangle given vertex indices and adjacent half-edge ids
-  _addTriangle(i0, i1, i2, a, b, c) {
-    const t = this.trianglesLen;
-    this._triangles[t] = i0;
-    this._triangles[t + 1] = i1;
-    this._triangles[t + 2] = i2;
-    this._link(t, a);
-    this._link(t + 1, b);
-    this._link(t + 2, c);
-    this.trianglesLen += 3;
-    return t;
-  }
-}
-function pseudoAngle(dx, dy) {
-  const p = dx / (Math.abs(dx) + Math.abs(dy));
-  return (dy > 0 ? 3 - p : 1 + p) / 4;
-}
-function dist(ax, ay, bx, by) {
-  const dx = ax - bx;
-  const dy = ay - by;
-  return dx * dx + dy * dy;
-}
-function inCircle(ax, ay, bx, by, cx, cy, px, py) {
-  const dx = ax - px;
-  const dy = ay - py;
-  const ex = bx - px;
-  const ey = by - py;
-  const fx = cx - px;
-  const fy = cy - py;
-  const ap = dx * dx + dy * dy;
-  const bp = ex * ex + ey * ey;
-  const cp = fx * fx + fy * fy;
-  return dx * (ey * cp - bp * fy) - dy * (ex * cp - bp * fx) + ap * (ex * fy - ey * fx) < 0;
-}
-function circumradius(ax, ay, bx, by, cx, cy) {
-  const dx = bx - ax;
-  const dy = by - ay;
-  const ex = cx - ax;
-  const ey = cy - ay;
-  const bl = dx * dx + dy * dy;
-  const cl = ex * ex + ey * ey;
-  const d = 0.5 / (dx * ey - dy * ex);
-  const x = (ey * bl - dy * cl) * d;
-  const y = (dx * cl - ex * bl) * d;
-  return x * x + y * y;
-}
-function circumcenter(ax, ay, bx, by, cx, cy) {
-  const dx = bx - ax;
-  const dy = by - ay;
-  const ex = cx - ax;
-  const ey = cy - ay;
-  const bl = dx * dx + dy * dy;
-  const cl = ex * ex + ey * ey;
-  const d = 0.5 / (dx * ey - dy * ex);
-  const x = ax + (ey * bl - dy * cl) * d;
-  const y = ay + (dx * cl - ex * bl) * d;
-  return { x, y };
-}
-function quicksort(ids, dists, left, right) {
-  if (right - left <= 20) {
-    for (let i = left + 1; i <= right; i++) {
-      const temp = ids[i];
-      const tempDist = dists[temp];
-      let j = i - 1;
-      while (j >= left && dists[ids[j]] > tempDist) ids[j + 1] = ids[j--];
-      ids[j + 1] = temp;
-    }
-  } else {
-    const median = left + right >> 1;
-    let i = left + 1;
-    let j = right;
-    swap(ids, median, i);
-    if (dists[ids[left]] > dists[ids[right]]) swap(ids, left, right);
-    if (dists[ids[i]] > dists[ids[right]]) swap(ids, i, right);
-    if (dists[ids[left]] > dists[ids[i]]) swap(ids, left, i);
-    const temp = ids[i];
-    const tempDist = dists[temp];
-    while (true) {
-      do
-        i++;
-      while (dists[ids[i]] < tempDist);
-      do
-        j--;
-      while (dists[ids[j]] > tempDist);
-      if (j < i) break;
-      swap(ids, i, j);
-    }
-    ids[left + 1] = ids[j];
-    ids[j] = temp;
-    if (right - i + 1 >= j - left) {
-      quicksort(ids, dists, i, right);
-      quicksort(ids, dists, left, j - 1);
-    } else {
-      quicksort(ids, dists, left, j - 1);
-      quicksort(ids, dists, i, right);
-    }
-  }
-}
-function swap(arr2, i, j) {
-  const tmp = arr2[i];
-  arr2[i] = arr2[j];
-  arr2[j] = tmp;
-}
-function defaultGetX(p) {
-  return p[0];
-}
-function defaultGetY(p) {
-  return p[1];
-}
-class BitSet {
-  constructor(W, bs) {
-    this.W = W;
-    this.bs = bs;
+const Q = 2.00703, O = class O2 {
+  constructor() {
+    _23(this, "points", []);
+    _23(this, "pointsWeightBuffer");
+    _23(this, "strict_status");
+    _23(this, "vertices_params");
+    _23(this, "centroid");
+    _23(this, "edgeNodes");
+    _23(this, "edges");
+    _23(this, "tins");
+    _23(this, "kinks");
+    _23(this, "yaxisMode", O2.YAXIS_INVERT);
+    _23(this, "strictMode", O2.MODE_AUTO);
+    _23(this, "vertexMode", O2.VERTEX_PLAIN);
+    _23(this, "bounds");
+    _23(this, "boundsPolygon");
+    _23(this, "wh");
+    _23(this, "xy");
+    _23(this, "indexedTins");
+    _23(this, "stateFull", false);
+    _23(this, "stateTriangle");
+    _23(this, "stateBackward");
   }
   /**
-   * Add a number to the set.
-   *
-   * @param idx The number to add. Must be 0 <= idx < len.
-   * @return this.
+   * コンパイルされた設定を適用します
+   * 
+   * @param compiled - コンパイルされた設定オブジェクト
+   * @returns 変換に必要な主要なオブジェクトのセット
+   * 
+   * 以下の処理を行います：
+   * 1. バージョンに応じた設定の解釈
+   * 2. 各種パラメータの復元
+   * 3. TINネットワークの再構築
+   * 4. インデックスの作成
    */
-  add(idx) {
-    const W = this.W, byte = idx / W | 0, bit = idx % W;
-    this.bs[byte] |= 1 << bit;
-    return this;
-  }
-  /**
-   * Delete a number from the set.
-   *
-   * @param idx The number to delete. Must be 0 <= idx < len.
-   * @return this.
-   */
-  delete(idx) {
-    const W = this.W, byte = idx / W | 0, bit = idx % W;
-    this.bs[byte] &= ~(1 << bit);
-    return this;
-  }
-  /**
-   * Add or delete a number in the set, depending on the second argument.
-   *
-   * @param idx The number to add or delete. Must be 0 <= idx < len.
-   * @param val If true, add the number, otherwise delete.
-   * @return val.
-   */
-  set(idx, val) {
-    const W = this.W, byte = idx / W | 0, bit = idx % W, m = 1 << bit;
-    this.bs[byte] ^= (-val ^ this.bs[byte]) & m;
-    return val;
-  }
-  /**
-   * Whether the number is in the set.
-   *
-   * @param idx The number to test. Must be 0 <= idx < len.
-   * @return True if the number is in the set.
-   */
-  has(idx) {
-    const W = this.W, byte = idx / W | 0, bit = idx % W;
-    return !!(this.bs[byte] & 1 << bit);
-  }
-  /**
-   * Iterate over the numbers that are in the set. The callback is invoked
-   * with each number that is set. It is allowed to change the BitSet during
-   * iteration. If it deletes a number that has not been iterated over, that
-   * number will not show up in a later call. If it adds a number during
-   * iteration, that number may or may not show up in a later call.
-   *
-   * @param fn The function to call for each number.
-   * @return this.
-   */
-  forEach(fn) {
-    const W = this.W, bs = this.bs, len = bs.length;
-    for (let byte = 0; byte < len; byte++) {
-      let bit = 0;
-      while (bs[byte] && bit < W) {
-        if (bs[byte] & 1 << bit) {
-          fn(byte * W + bit);
-        }
-        bit++;
-      }
-    }
-    return this;
-  }
-}
-class BitSet8 extends BitSet {
-  /**
-   * Create a bit set.
-   *
-   * @param len The length of the bit set, limiting the maximum value that
-   *        can be stored in it to len - 1.
-   */
-  constructor(len) {
-    const W = 8, bs = new Uint8Array(Math.ceil(len / W)).fill(0);
-    super(W, bs);
-  }
-}
-function nextEdge(e) {
-  return e % 3 === 2 ? e - 2 : e + 1;
-}
-function prevEdge(e) {
-  return e % 3 === 0 ? e + 2 : e - 1;
-}
-class Constrainautor {
-  /**
-   * Make a Constrainautor.
-   *
-   * @param del The triangulation output from Delaunator.
-   * @param edges If provided, constrain these edges as by constrainAll.
-   */
-  constructor(del, edges) {
-    if (!del || typeof del !== "object" || !del.triangles || !del.halfedges || !del.coords) {
-      throw new Error("Expected an object with Delaunator output");
-    }
-    if (del.triangles.length % 3 || del.halfedges.length !== del.triangles.length || del.coords.length % 2) {
-      throw new Error("Delaunator output appears inconsistent");
-    }
-    if (del.triangles.length < 3) {
-      throw new Error("No edges in triangulation");
-    }
-    this.del = del;
-    const U32NIL = 2 ** 32 - 1, numPoints = del.coords.length >> 1, numEdges = del.triangles.length;
-    this.vertMap = new Uint32Array(numPoints).fill(U32NIL);
-    this.flips = new BitSet8(numEdges);
-    this.consd = new BitSet8(numEdges);
-    for (let e = 0; e < numEdges; e++) {
-      const v2 = del.triangles[e];
-      if (this.vertMap[v2] === U32NIL) {
-        this.updateVert(e);
-      }
-    }
-    if (edges) {
-      this.constrainAll(edges);
-    }
-  }
-  /**
-   * Constrain the triangulation such that there is an edge between p1 and p2.
-   *
-   * @param segP1 The index of one segment end-point in the coords array.
-   * @param segP2 The index of the other segment end-point in the coords array.
-   * @return The id of the edge that points from p1 to p2. If the
-   *         constrained edge lies on the hull and points in the opposite
-   *         direction (p2 to p1), the negative of its id is returned.
-   */
-  constrainOne(segP1, segP2) {
-    const { triangles, halfedges } = this.del, vm = this.vertMap, consd = this.consd, start = vm[segP1];
-    let edg = start;
-    do {
-      const p4 = triangles[edg], nxt = nextEdge(edg);
-      if (p4 === segP2) {
-        return this.protect(edg);
-      }
-      const opp = prevEdge(edg), p3 = triangles[opp];
-      if (p3 === segP2) {
-        this.protect(nxt);
-        return nxt;
-      }
-      if (this.intersectSegments(segP1, segP2, p3, p4)) {
-        edg = opp;
-        break;
-      }
-      const adj = halfedges[nxt];
-      edg = adj;
-    } while (edg !== -1 && edg !== start);
-    let conEdge = edg;
-    let rescan = -1;
-    while (edg !== -1) {
-      const adj = halfedges[edg], bot = prevEdge(edg), top = prevEdge(adj), rgt = nextEdge(adj);
-      if (adj === -1) {
-        throw new Error("Constraining edge exited the hull");
-      }
-      if (consd.has(edg)) {
-        throw new Error("Edge intersects already constrained edge");
-      }
-      if (this.isCollinear(segP1, segP2, triangles[edg]) || this.isCollinear(segP1, segP2, triangles[adj])) {
-        throw new Error("Constraining edge intersects point");
-      }
-      const convex2 = this.intersectSegments(triangles[edg], triangles[adj], triangles[bot], triangles[top]);
-      if (!convex2) {
-        if (rescan === -1) {
-          rescan = edg;
-        }
-        if (triangles[top] === segP2) {
-          if (edg === rescan) {
-            throw new Error("Infinite loop: non-convex quadrilateral");
-          }
-          edg = rescan;
-          rescan = -1;
-          continue;
-        }
-        if (this.intersectSegments(segP1, segP2, triangles[top], triangles[adj])) {
-          edg = top;
-        } else if (this.intersectSegments(segP1, segP2, triangles[rgt], triangles[top])) {
-          edg = rgt;
-        } else if (rescan === edg) {
-          throw new Error("Infinite loop: no further intersect after non-convex");
-        }
-        continue;
-      }
-      this.flipDiagonal(edg);
-      if (this.intersectSegments(segP1, segP2, triangles[bot], triangles[top])) {
-        if (rescan === -1) {
-          rescan = bot;
-        }
-        if (rescan === bot) {
-          throw new Error("Infinite loop: flipped diagonal still intersects");
-        }
-      }
-      if (triangles[top] === segP2) {
-        conEdge = top;
-        edg = rescan;
-        rescan = -1;
-      } else if (this.intersectSegments(segP1, segP2, triangles[rgt], triangles[top])) {
-        edg = rgt;
-      }
-    }
-    const flips = this.flips;
-    this.protect(conEdge);
-    do {
-      var flipped = 0;
-      flips.forEach((edg2) => {
-        flips.delete(edg2);
-        const adj = halfedges[edg2];
-        if (adj === -1) {
-          return;
-        }
-        flips.delete(adj);
-        if (!this.isDelaunay(edg2)) {
-          this.flipDiagonal(edg2);
-          flipped++;
-        }
-      });
-    } while (flipped > 0);
-    return this.findEdge(segP1, segP2);
-  }
-  /**
-   * Fix the Delaunay condition. It is no longer necessary to call this
-   * method after constraining (many) edges, since constrainOne will do it
-   * after each.
-   *
-   * @param deep If true, keep checking & flipping edges until all
-   *        edges are Delaunay, otherwise only check the edges once.
-   * @return The triangulation object.
-   */
-  delaunify(deep = false) {
-    const halfedges = this.del.halfedges, flips = this.flips, consd = this.consd, len = halfedges.length;
-    do {
-      var flipped = 0;
-      for (let edg = 0; edg < len; edg++) {
-        if (consd.has(edg)) {
-          continue;
-        }
-        flips.delete(edg);
-        const adj = halfedges[edg];
-        if (adj === -1) {
-          continue;
-        }
-        flips.delete(adj);
-        if (!this.isDelaunay(edg)) {
-          this.flipDiagonal(edg);
-          flipped++;
-        }
-      }
-    } while (deep && flipped > 0);
-    return this;
-  }
-  /**
-   * Call constrainOne on each edge, and delaunify afterwards.
-   *
-   * @param edges The edges to constrain: each element is an array with
-   *        [p1, p2] which are indices into the points array originally
-   *        supplied to Delaunator.
-   * @return The triangulation object.
-   */
-  constrainAll(edges) {
-    const len = edges.length;
-    for (let i = 0; i < len; i++) {
-      const e = edges[i];
-      this.constrainOne(e[0], e[1]);
-    }
-    return this;
-  }
-  /**
-   * Whether an edge is a constrained edge.
-   *
-   * @param edg The edge id.
-   * @return True if the edge is constrained.
-   */
-  isConstrained(edg) {
-    return this.consd.has(edg);
-  }
-  /**
-   * Find the edge that points from p1 -> p2. If there is only an edge from
-   * p2 -> p1 (i.e. it is on the hull), returns the negative id of it.
-   *
-   * @param p1 The index of the first point into the points array.
-   * @param p2 The index of the second point into the points array.
-   * @return The id of the edge that points from p1 -> p2, or the negative
-   *         id of the edge that goes from p2 -> p1, or Infinity if there is
-   *         no edge between p1 and p2.
-   */
-  findEdge(p1, p2) {
-    const start1 = this.vertMap[p2], { triangles, halfedges } = this.del;
-    let edg = start1, prv = -1;
-    do {
-      if (triangles[edg] === p1) {
-        return edg;
-      }
-      prv = nextEdge(edg);
-      edg = halfedges[prv];
-    } while (edg !== -1 && edg !== start1);
-    if (triangles[nextEdge(prv)] === p1) {
-      return -prv;
-    }
-    return Infinity;
-  }
-  /**
-   * Mark an edge as constrained, i.e. should not be touched by `delaunify`.
-   *
-   * @private
-   * @param edg The edge id.
-   * @return If edg has an adjacent, returns that, otherwise -edg.
-   */
-  protect(edg) {
-    const adj = this.del.halfedges[edg], flips = this.flips, consd = this.consd;
-    flips.delete(edg);
-    consd.add(edg);
-    if (adj !== -1) {
-      flips.delete(adj);
-      consd.add(adj);
-      return adj;
-    }
-    return -edg;
-  }
-  /**
-   * Mark an edge as flipped, unless it is already marked as constrained.
-   *
-   * @private
-   * @param edg The edge id.
-   * @return True if edg was not constrained.
-   */
-  markFlip(edg) {
-    const halfedges = this.del.halfedges, flips = this.flips, consd = this.consd;
-    if (consd.has(edg)) {
-      return false;
-    }
-    const adj = halfedges[edg];
-    if (adj !== -1) {
-      flips.add(edg);
-      flips.add(adj);
-    }
-    return true;
-  }
-  /**
-   * Flip the edge shared by two triangles.
-   *
-   * @private
-   * @param edg The edge shared by the two triangles, must have an
-   *        adjacent half-edge.
-   * @return The new diagonal.
-   */
-  flipDiagonal(edg) {
-    const { triangles, halfedges } = this.del, flips = this.flips, consd = this.consd, adj = halfedges[edg], bot = prevEdge(edg), lft = nextEdge(edg), top = prevEdge(adj), rgt = nextEdge(adj), adjBot = halfedges[bot], adjTop = halfedges[top];
-    if (consd.has(edg)) {
-      throw new Error("Trying to flip a constrained edge");
-    }
-    triangles[edg] = triangles[top];
-    halfedges[edg] = adjTop;
-    if (!flips.set(edg, flips.has(top))) {
-      consd.set(edg, consd.has(top));
-    }
-    if (adjTop !== -1) {
-      halfedges[adjTop] = edg;
-    }
-    halfedges[bot] = top;
-    triangles[adj] = triangles[bot];
-    halfedges[adj] = adjBot;
-    if (!flips.set(adj, flips.has(bot))) {
-      consd.set(adj, consd.has(bot));
-    }
-    if (adjBot !== -1) {
-      halfedges[adjBot] = adj;
-    }
-    halfedges[top] = bot;
-    this.markFlip(edg);
-    this.markFlip(lft);
-    this.markFlip(adj);
-    this.markFlip(rgt);
-    flips.add(bot);
-    consd.delete(bot);
-    flips.add(top);
-    consd.delete(top);
-    this.updateVert(edg);
-    this.updateVert(lft);
-    this.updateVert(adj);
-    this.updateVert(rgt);
-    return bot;
-  }
-  /**
-   * Whether the two triangles sharing edg conform to the Delaunay condition.
-   * As a shortcut, if the given edge has no adjacent (is on the hull), it is
-   * certainly Delaunay.
-   *
-   * @private
-   * @param edg The edge shared by the triangles to test.
-   * @return True if they are Delaunay.
-   */
-  isDelaunay(edg) {
-    const { triangles, halfedges } = this.del, adj = halfedges[edg];
-    if (adj === -1) {
-      return true;
-    }
-    const p1 = triangles[prevEdge(edg)], p2 = triangles[edg], p3 = triangles[nextEdge(edg)], px = triangles[prevEdge(adj)];
-    return !this.inCircle(p1, p2, p3, px);
-  }
-  /**
-   * Update the vertex -> incoming edge map.
-   *
-   * @private
-   * @param start The id of an *outgoing* edge.
-   * @return The id of the right-most incoming edge.
-   */
-  updateVert(start) {
-    const { triangles, halfedges } = this.del, vm = this.vertMap, v2 = triangles[start];
-    let inc = prevEdge(start), adj = halfedges[inc];
-    while (adj !== -1 && adj !== start) {
-      inc = prevEdge(adj);
-      adj = halfedges[inc];
-    }
-    vm[v2] = inc;
-    return inc;
-  }
-  /**
-   * Whether the segment between [p1, p2] intersects with [p3, p4]. When the
-   * segments share an end-point (e.g. p1 == p3 etc.), they are not considered
-   * intersecting.
-   *
-   * @private
-   * @param p1 The index of point 1 into this.del.coords.
-   * @param p2 The index of point 2 into this.del.coords.
-   * @param p3 The index of point 3 into this.del.coords.
-   * @param p4 The index of point 4 into this.del.coords.
-   * @return True if the segments intersect.
-   */
-  intersectSegments(p1, p2, p3, p4) {
-    const pts = this.del.coords;
-    if (p1 === p3 || p1 === p4 || p2 === p3 || p2 === p4) {
-      return false;
-    }
-    return intersectSegments(pts[p1 * 2], pts[p1 * 2 + 1], pts[p2 * 2], pts[p2 * 2 + 1], pts[p3 * 2], pts[p3 * 2 + 1], pts[p4 * 2], pts[p4 * 2 + 1]);
-  }
-  /**
-   * Whether point px is in the circumcircle of the triangle formed by p1, p2,
-   * and p3 (which are in counter-clockwise order).
-   *
-   * @param p1 The index of point 1 into this.del.coords.
-   * @param p2 The index of point 2 into this.del.coords.
-   * @param p3 The index of point 3 into this.del.coords.
-   * @param px The index of point x into this.del.coords.
-   * @return True if (px, py) is in the circumcircle.
-   */
-  inCircle(p1, p2, p3, px) {
-    const pts = this.del.coords;
-    return incircle(pts[p1 * 2], pts[p1 * 2 + 1], pts[p2 * 2], pts[p2 * 2 + 1], pts[p3 * 2], pts[p3 * 2 + 1], pts[px * 2], pts[px * 2 + 1]) < 0;
-  }
-  /**
-   * Whether point p1, p2, and p are collinear.
-   *
-   * @private
-   * @param p1 The index of segment point 1 into this.del.coords.
-   * @param p2 The index of segment point 2 into this.del.coords.
-   * @param p The index of the point p into this.del.coords.
-   * @return True if the points are collinear.
-   */
-  isCollinear(p1, p2, p) {
-    const pts = this.del.coords;
-    return orient2d(pts[p1 * 2], pts[p1 * 2 + 1], pts[p2 * 2], pts[p2 * 2 + 1], pts[p * 2], pts[p * 2 + 1]) === 0;
-  }
-}
-Constrainautor.intersectSegments = intersectSegments;
-function intersectSegments(p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y) {
-  const x0 = orient2d(p1x, p1y, p3x, p3y, p4x, p4y), y0 = orient2d(p2x, p2y, p3x, p3y, p4x, p4y);
-  if (x0 > 0 && y0 > 0 || x0 < 0 && y0 < 0) {
-    return false;
-  }
-  const x1 = orient2d(p3x, p3y, p1x, p1y, p2x, p2y), y1 = orient2d(p4x, p4y, p1x, p1y, p2x, p2y);
-  if (x1 > 0 && y1 > 0 || x1 < 0 && y1 < 0) {
-    return false;
-  }
-  if (x0 === 0 && y0 === 0 && x1 === 0 && y1 === 0) {
-    return !(Math.max(p3x, p4x) < Math.min(p1x, p2x) || Math.max(p1x, p2x) < Math.min(p3x, p4x) || Math.max(p3y, p4y) < Math.min(p1y, p2y) || Math.max(p1y, p2y) < Math.min(p3y, p4y));
-  }
-  return true;
-}
-function constrainedTin(points2, edges, z) {
-  if (!edges)
-    edges = [];
-  if (typeof points2 !== "object" || points2.type !== "FeatureCollection")
-    throw "Argument points must be FeatureCollection";
-  if (!Array.isArray(edges))
-    throw "Argument points must be Array of Array";
-  const del_points = points2.features.map((point2) => point2.geometry.coordinates);
-  const del = Delaunator.from(del_points);
-  let con;
-  const tris = [];
-  if (del.triangles.length !== 0 && edges.length !== 0) {
-    con = new Constrainautor(del);
-    con.constrainAll(edges);
-  }
-  for (let i = 0; i < del.triangles.length; i += 3) {
-    tris.push([del.triangles[i], del.triangles[i + 1], del.triangles[i + 2]]);
-  }
-  const keys2 = ["a", "b", "c"];
-  return featureCollection$1(tris.map((indices) => {
-    const properties = {};
-    const coords = indices.map((index2, i) => {
-      const point2 = points2.features[index2];
-      const xyz = point2.geometry.coordinates;
-      const coord = [xyz[0], xyz[1]];
-      if (xyz.length === 3) {
-        coord[2] = xyz[2];
-      } else {
-        properties[keys2[i]] = point2.properties[z];
-      }
-      return coord;
-    });
-    coords[3] = coords[0];
-    return polygon([coords], properties);
-  }));
-}
-const format_version = 2.00703;
-class Tin {
-  constructor(options = {}) {
-    this.points = [];
-    if (options.bounds) {
-      this.setBounds(options.bounds);
-    } else {
-      this.setWh(options.wh);
-      this.vertexMode = options.vertexMode || Tin.VERTEX_PLAIN;
-    }
-    this.strictMode = options.strictMode || Tin.MODE_AUTO;
-    this.yaxisMode = options.yaxisMode || Tin.YAXIS_INVERT;
-    this.importance = options.importance || 0;
-    this.priority = options.priority || 0;
-    this.stateFull = options.stateFull || false;
-    if (options.points) {
-      this.setPoints(options.points);
-    }
-    if (options.edges) {
-      this.setEdges(options.edges);
-    }
-  }
-  getFormatVersion() {
-    return format_version;
-  }
-  setPoints(points2) {
-    if (this.yaxisMode == Tin.YAXIS_FOLLOW) {
-      points2 = points2.map((point2) => [point2[0], [point2[1][0], -1 * point2[1][1]]]);
-    }
-    this.points = points2;
-    this.tins = void 0;
-    this.indexedTins = void 0;
-  }
-  setEdges(edges = []) {
-    this.edges = normalizeEdges(edges);
-    this.edgeNodes = void 0;
-    this.tins = void 0;
-    this.indexedTins = void 0;
-  }
-  setBounds(bounds) {
-    this.bounds = bounds;
-    let minx = bounds[0][0];
-    let maxx = minx;
-    let miny = bounds[0][1];
-    let maxy = miny;
-    const coords = [bounds[0]];
-    for (let i = 1; i < bounds.length; i++) {
-      const xy = bounds[i];
-      if (xy[0] < minx)
-        minx = xy[0];
-      if (xy[0] > maxx)
-        maxx = xy[0];
-      if (xy[1] < miny)
-        miny = xy[1];
-      if (xy[1] > maxy)
-        maxy = xy[1];
-      coords.push(xy);
-    }
-    coords.push(bounds[0]);
-    this.boundsPolygon = polygon([coords]);
-    this.xy = [minx, miny];
-    this.wh = [maxx - minx, maxy - miny];
-    this.vertexMode = Tin.VERTEX_PLAIN;
-    this.tins = void 0;
-    this.indexedTins = void 0;
-  }
-  setCompiled(compiled) {
-    if (compiled.version || !compiled.tins && compiled.points && compiled.tins_points) {
-      this.points = compiled.points;
-      this.pointsWeightBuffer = !compiled.version || compiled.version < 2.00703 ? ["forw", "bakw"].reduce((bd, forb) => {
-        const base = compiled.weight_buffer[forb];
-        if (base) {
-          bd[forb] = Object.keys(base).reduce((buffer, key) => {
-            const normKey = normalizeNodeKey(key);
-            buffer[normKey] = base[key];
-            return buffer;
-          }, {});
-        }
-        return bd;
-      }, {}) : compiled.weight_buffer;
-      if (compiled.strict_status) {
-        this.strict_status = compiled.strict_status;
-      } else if (compiled.kinks_points) {
-        this.strict_status = Tin.STATUS_ERROR;
-      } else if (compiled.tins_points.length == 2) {
-        this.strict_status = Tin.STATUS_LOOSE;
-      } else {
-        this.strict_status = Tin.STATUS_STRICT;
-      }
-      this.vertices_params = {
-        forw: [compiled.vertices_params[0]],
-        bakw: [compiled.vertices_params[1]]
-      };
-      this.vertices_params.forw[1] = [0, 1, 2, 3].map((idx) => {
-        const idxNxt = (idx + 1) % 4;
-        const tri = indexesToTri(["c", `b${idx}`, `b${idxNxt}`], compiled.points, compiled.edgeNodes || [], compiled.centroid_point, compiled.vertices_points, false, format_version);
-        return featureCollection$1([tri]);
-      });
-      this.vertices_params.bakw[1] = [0, 1, 2, 3].map((idx) => {
-        const idxNxt = (idx + 1) % 4;
-        const tri = indexesToTri(["c", `b${idx}`, `b${idxNxt}`], compiled.points, compiled.edgeNodes || [], compiled.centroid_point, compiled.vertices_points, true, format_version);
-        return featureCollection$1([tri]);
-      });
-      this.centroid = {
-        forw: point(compiled.centroid_point[0], {
+  setCompiled(t) {
+    if (t.version || !t.tins && t.points && t.tins_points) {
+      this.points = t.points, this.pointsWeightBuffer = !t.version || t.version < 2.00703 ? ["forw", "bakw"].reduce((r, a) => {
+        const n = t.weight_buffer[a];
+        return n && (r[a] = Object.keys(n).reduce((c, d) => {
+          const g2 = et(d);
+          return c[g2] = n[d], c;
+        }, {})), r;
+      }, {}) : t.weight_buffer, t.strict_status ? this.strict_status = t.strict_status : t.kinks_points ? this.strict_status = O2.STATUS_ERROR : t.tins_points.length == 2 ? this.strict_status = O2.STATUS_LOOSE : this.strict_status = O2.STATUS_STRICT, this.vertices_params = {
+        forw: [t.vertices_params[0]],
+        bakw: [t.vertices_params[1]]
+      }, this.vertices_params.forw[1] = [0, 1, 2, 3].map((r) => {
+        const a = (r + 1) % 4, n = W(
+          ["c", `b${r}`, `b${a}`],
+          t.points,
+          t.edgeNodes || [],
+          t.centroid_point,
+          t.vertices_points,
+          false,
+          Q
+        );
+        return B([n]);
+      }), this.vertices_params.bakw[1] = [0, 1, 2, 3].map((r) => {
+        const a = (r + 1) % 4, n = W(
+          ["c", `b${r}`, `b${a}`],
+          t.points,
+          t.edgeNodes || [],
+          t.centroid_point,
+          t.vertices_points,
+          true,
+          Q
+        );
+        return B([n]);
+      }), this.centroid = {
+        forw: Y(t.centroid_point[0], {
           target: {
-            geom: compiled.centroid_point[1],
+            geom: t.centroid_point[1],
             index: "c"
           }
         }),
-        bakw: point(compiled.centroid_point[1], {
+        bakw: Y(t.centroid_point[1], {
           target: {
-            geom: compiled.centroid_point[0],
+            geom: t.centroid_point[0],
             index: "c"
           }
         })
-      };
-      this.edges = normalizeEdges(compiled.edges || []);
-      this.edgeNodes = compiled.edgeNodes || [];
-      const bakwI = compiled.tins_points.length == 1 ? 0 : 1;
+      }, this.edges = At(t.edges || []), this.edgeNodes = t.edgeNodes || [];
+      const s = t.tins_points.length == 1 ? 0 : 1;
       this.tins = {
-        forw: featureCollection$1(compiled.tins_points[0].map((idxes) => indexesToTri(idxes, compiled.points, compiled.edgeNodes || [], compiled.centroid_point, compiled.vertices_points, false, compiled.version))),
-        bakw: featureCollection$1(compiled.tins_points[bakwI].map((idxes) => indexesToTri(idxes, compiled.points, compiled.edgeNodes || [], compiled.centroid_point, compiled.vertices_points, true, compiled.version)))
-      };
-      this.addIndexedTin();
-      if (compiled.kinks_points) {
-        this.kinks = {
-          bakw: featureCollection$1(compiled.kinks_points.map((coord) => point(coord)))
-        };
-      }
-      if (compiled.yaxisMode) {
-        this.yaxisMode = compiled.yaxisMode;
-      } else {
-        this.yaxisMode = Tin.YAXIS_INVERT;
-      }
-      if (compiled.vertexMode) {
-        this.vertexMode = compiled.vertexMode;
-      }
-      if (compiled.strictMode) {
-        this.strictMode = compiled.strictMode;
-      }
-      if (compiled.bounds) {
-        this.bounds = compiled.bounds;
-        this.boundsPolygon = compiled.boundsPolygon;
-        this.xy = compiled.xy;
-        this.wh = compiled.wh;
-      } else {
-        this.xy = [0, 0];
-        if (compiled.wh)
-          this.wh = compiled.wh;
-        this.bounds = void 0;
-        this.boundsPolygon = void 0;
-      }
+        forw: B(
+          t.tins_points[0].map(
+            (r) => W(
+              r,
+              t.points,
+              t.edgeNodes || [],
+              t.centroid_point,
+              t.vertices_points,
+              false,
+              t.version
+            )
+          )
+        ),
+        bakw: B(
+          t.tins_points[s].map(
+            (r) => W(
+              r,
+              t.points,
+              t.edgeNodes || [],
+              t.centroid_point,
+              t.vertices_points,
+              true,
+              t.version
+            )
+          )
+        )
+      }, this.addIndexedTin(), t.kinks_points && (this.kinks = {
+        bakw: B(
+          t.kinks_points.map((r) => Y(r))
+        )
+      }), t.yaxisMode ? this.yaxisMode = t.yaxisMode : this.yaxisMode = O2.YAXIS_INVERT, t.vertexMode && (this.vertexMode = t.vertexMode), t.strictMode && (this.strictMode = t.strictMode), t.bounds ? (this.bounds = t.bounds, this.boundsPolygon = t.boundsPolygon, this.xy = t.xy, this.wh = t.wh) : (this.xy = [0, 0], t.wh && (this.wh = t.wh), this.bounds = void 0, this.boundsPolygon = void 0);
     } else {
-      compiled = JSON.parse(JSON.stringify(compiled).replace('"cent"', '"c"').replace(/"bbox(\d+)"/g, '"b$1"'));
-      this.tins = compiled.tins;
-      this.addIndexedTin();
-      this.strict_status = compiled.strict_status;
-      this.pointsWeightBuffer = compiled.weight_buffer;
-      this.vertices_params = compiled.vertices_params;
-      this.centroid = compiled.centroid;
-      this.kinks = compiled.kinks;
-      const points2 = [];
-      for (let i = 0; i < this.tins.forw.features.length; i++) {
-        const tri = this.tins.forw.features[i];
-        ["a", "b", "c"].map((key, idx) => {
-          const forw = tri.geometry.coordinates[0][idx];
-          const bakw = tri.properties[key].geom;
-          const pIdx = tri.properties[key].index;
-          points2[pIdx] = [forw, bakw];
+      t = JSON.parse(
+        JSON.stringify(t).replace('"cent"', '"c"').replace(/"bbox(\d+)"/g, '"b$1"')
+      ), this.tins = t.tins, this.addIndexedTin(), this.strict_status = t.strict_status, this.pointsWeightBuffer = t.weight_buffer, this.vertices_params = t.vertices_params, this.centroid = t.centroid, this.kinks = t.kinks;
+      const s = [];
+      for (let r = 0; r < this.tins.forw.features.length; r++) {
+        const a = this.tins.forw.features[r];
+        ["a", "b", "c"].map((n, c) => {
+          const d = a.geometry.coordinates[0][c], g2 = a.properties[n].geom, l = a.properties[n].index;
+          typeof l == "number" && (s[l] = [d, g2]);
         });
       }
-      this.points = points2;
+      this.points = s;
     }
-    return {
-      tins: this.tins,
-      strict_status: this.strict_status,
-      weight_buffer: this.pointsWeightBuffer,
-      vertices_params: this.vertices_params,
-      centroid: this.centroid,
-      kinks: this.kinks
-    };
   }
-  getCompiled() {
-    const compiled = {};
-    compiled.version = format_version;
-    compiled.points = this.points;
-    compiled.weight_buffer = this.pointsWeightBuffer;
-    compiled.centroid_point = [
-      this.centroid.forw.geometry.coordinates,
-      this.centroid.forw.properties.target.geom
-    ];
-    compiled.vertices_params = [
-      this.vertices_params.forw[0],
-      this.vertices_params.bakw[0]
-    ];
-    compiled.vertices_points = [];
-    const vertices = this.vertices_params.forw[1];
-    [0, 1, 2, 3].map((i) => {
-      const vertex_data = vertices[i].features[0];
-      const forw = vertex_data.geometry.coordinates[0][1];
-      const bakw = vertex_data.properties.b.geom;
-      compiled.vertices_points[i] = [forw, bakw];
-    });
-    compiled.strict_status = this.strict_status;
-    compiled.tins_points = [[]];
-    this.tins.forw.features.map((tin) => {
-      compiled.tins_points[0].push(["a", "b", "c"].map((idx) => tin.properties[idx].index));
-    });
-    if (this.strict_status == Tin.STATUS_LOOSE) {
-      compiled.tins_points[1] = [];
-      this.tins.bakw.features.map((tin) => {
-        compiled.tins_points[1].push(["a", "b", "c"].map((idx) => tin.properties[idx].index));
-      });
-    } else if (this.strict_status == Tin.STATUS_ERROR) {
-      compiled.kinks_points = this.kinks.bakw.features.map((kink) => kink.geometry.coordinates);
-    }
-    compiled.yaxisMode = this.yaxisMode;
-    compiled.vertexMode = this.vertexMode;
-    compiled.strictMode = this.strictMode;
-    if (this.bounds) {
-      compiled.bounds = this.bounds;
-      compiled.boundsPolygon = this.boundsPolygon;
-      compiled.xy = this.xy;
-      compiled.wh = this.wh;
-    } else {
-      compiled.wh = this.wh;
-    }
-    compiled.edges = this.edges;
-    compiled.edgeNodes = this.edgeNodes;
-    return compiled;
-  }
+  /**
+   * TINネットワークのインデックスを作成します
+   * 
+   * インデックスは変換処理を高速化するために使用されます。
+   * グリッド形式のインデックスを作成し、各グリッドに
+   * 含まれる三角形を記録します。
+   */
   addIndexedTin() {
-    const tins = this.tins;
-    const forw = tins.forw;
-    const bakw = tins.bakw;
-    const gridNum = Math.ceil(Math.sqrt(forw.features.length));
-    if (gridNum < 3) {
+    const t = this.tins, s = t.forw, r = t.bakw, a = Math.ceil(Math.sqrt(s.features.length));
+    if (a < 3) {
       this.indexedTins = void 0;
       return;
     }
-    let forwBound = [];
-    let bakwBound = [];
-    const forwEachBound = forw.features.map((tri) => {
-      let eachBound = [];
-      getCoords(tri)[0].map((point2) => {
-        if (forwBound.length === 0)
-          forwBound = [Array.from(point2), Array.from(point2)];
-        else {
-          if (point2[0] < forwBound[0][0])
-            forwBound[0][0] = point2[0];
-          if (point2[0] > forwBound[1][0])
-            forwBound[1][0] = point2[0];
-          if (point2[1] < forwBound[0][1])
-            forwBound[0][1] = point2[1];
-          if (point2[1] > forwBound[1][1])
-            forwBound[1][1] = point2[1];
+    let n = [], c = [];
+    const d = s.features.map((h) => {
+      let f = [];
+      return J(h)[0].map((i) => {
+        n.length === 0 ? n = [Array.from(i), Array.from(i)] : (i[0] < n[0][0] && (n[0][0] = i[0]), i[0] > n[1][0] && (n[1][0] = i[0]), i[1] < n[0][1] && (n[0][1] = i[1]), i[1] > n[1][1] && (n[1][1] = i[1])), f.length === 0 ? f = [Array.from(i), Array.from(i)] : (i[0] < f[0][0] && (f[0][0] = i[0]), i[0] > f[1][0] && (f[1][0] = i[0]), i[1] < f[0][1] && (f[0][1] = i[1]), i[1] > f[1][1] && (f[1][1] = i[1]));
+      }), f;
+    }), g2 = (n[1][0] - n[0][0]) / a, l = (n[1][1] - n[0][1]) / a, y = d.reduce(
+      (h, f, i) => {
+        const w = C(
+          f[0][0],
+          n[0][0],
+          g2,
+          a
+        ), A = C(
+          f[1][0],
+          n[0][0],
+          g2,
+          a
+        ), v = C(
+          f[0][1],
+          n[0][1],
+          l,
+          a
+        ), E4 = C(
+          f[1][1],
+          n[0][1],
+          l,
+          a
+        );
+        for (let m = w; m <= A; m++) {
+          h[m] || (h[m] = []);
+          for (let M = v; M <= E4; M++)
+            h[m][M] || (h[m][M] = []), h[m][M].push(i);
         }
-        if (eachBound.length === 0)
-          eachBound = [Array.from(point2), Array.from(point2)];
-        else {
-          if (point2[0] < eachBound[0][0])
-            eachBound[0][0] = point2[0];
-          if (point2[0] > eachBound[1][0])
-            eachBound[1][0] = point2[0];
-          if (point2[1] < eachBound[0][1])
-            eachBound[0][1] = point2[1];
-          if (point2[1] > eachBound[1][1])
-            eachBound[1][1] = point2[1];
+        return h;
+      },
+      []
+    ), o = r.features.map((h) => {
+      let f = [];
+      return J(h)[0].map((i) => {
+        c.length === 0 ? c = [Array.from(i), Array.from(i)] : (i[0] < c[0][0] && (c[0][0] = i[0]), i[0] > c[1][0] && (c[1][0] = i[0]), i[1] < c[0][1] && (c[0][1] = i[1]), i[1] > c[1][1] && (c[1][1] = i[1])), f.length === 0 ? f = [Array.from(i), Array.from(i)] : (i[0] < f[0][0] && (f[0][0] = i[0]), i[0] > f[1][0] && (f[1][0] = i[0]), i[1] < f[0][1] && (f[0][1] = i[1]), i[1] > f[1][1] && (f[1][1] = i[1]));
+      }), f;
+    }), u2 = (c[1][0] - c[0][0]) / a, b = (c[1][1] - c[0][1]) / a, x = o.reduce(
+      (h, f, i) => {
+        const w = C(
+          f[0][0],
+          c[0][0],
+          u2,
+          a
+        ), A = C(
+          f[1][0],
+          c[0][0],
+          u2,
+          a
+        ), v = C(
+          f[0][1],
+          c[0][1],
+          b,
+          a
+        ), E4 = C(
+          f[1][1],
+          c[0][1],
+          b,
+          a
+        );
+        for (let m = w; m <= A; m++) {
+          h[m] || (h[m] = []);
+          for (let M = v; M <= E4; M++)
+            h[m][M] || (h[m][M] = []), h[m][M].push(i);
         }
-      });
-      return eachBound;
-    });
-    const forwXUnit = (forwBound[1][0] - forwBound[0][0]) / gridNum;
-    const forwYUnit = (forwBound[1][1] - forwBound[0][1]) / gridNum;
-    const forwGridCache = forwEachBound.reduce((prev, bound, index2) => {
-      const normXMin = unitCalc(bound[0][0], forwBound[0][0], forwXUnit, gridNum);
-      const normXMax = unitCalc(bound[1][0], forwBound[0][0], forwXUnit, gridNum);
-      const normYMin = unitCalc(bound[0][1], forwBound[0][1], forwYUnit, gridNum);
-      const normYMax = unitCalc(bound[1][1], forwBound[0][1], forwYUnit, gridNum);
-      for (let cx = normXMin; cx <= normXMax; cx++) {
-        if (!prev[cx])
-          prev[cx] = [];
-        for (let cy = normYMin; cy <= normYMax; cy++) {
-          if (!prev[cx][cy])
-            prev[cx][cy] = [];
-          prev[cx][cy].push(index2);
-        }
-      }
-      return prev;
-    }, []);
-    const bakwEachBound = bakw.features.map((tri) => {
-      let eachBound = [];
-      getCoords(tri)[0].map((point2) => {
-        if (bakwBound.length === 0)
-          bakwBound = [Array.from(point2), Array.from(point2)];
-        else {
-          if (point2[0] < bakwBound[0][0])
-            bakwBound[0][0] = point2[0];
-          if (point2[0] > bakwBound[1][0])
-            bakwBound[1][0] = point2[0];
-          if (point2[1] < bakwBound[0][1])
-            bakwBound[0][1] = point2[1];
-          if (point2[1] > bakwBound[1][1])
-            bakwBound[1][1] = point2[1];
-        }
-        if (eachBound.length === 0)
-          eachBound = [Array.from(point2), Array.from(point2)];
-        else {
-          if (point2[0] < eachBound[0][0])
-            eachBound[0][0] = point2[0];
-          if (point2[0] > eachBound[1][0])
-            eachBound[1][0] = point2[0];
-          if (point2[1] < eachBound[0][1])
-            eachBound[0][1] = point2[1];
-          if (point2[1] > eachBound[1][1])
-            eachBound[1][1] = point2[1];
-        }
-      });
-      return eachBound;
-    });
-    const bakwXUnit = (bakwBound[1][0] - bakwBound[0][0]) / gridNum;
-    const bakwYUnit = (bakwBound[1][1] - bakwBound[0][1]) / gridNum;
-    const bakwGridCache = bakwEachBound.reduce((prev, bound, index2) => {
-      const normXMin = unitCalc(bound[0][0], bakwBound[0][0], bakwXUnit, gridNum);
-      const normXMax = unitCalc(bound[1][0], bakwBound[0][0], bakwXUnit, gridNum);
-      const normYMin = unitCalc(bound[0][1], bakwBound[0][1], bakwYUnit, gridNum);
-      const normYMax = unitCalc(bound[1][1], bakwBound[0][1], bakwYUnit, gridNum);
-      for (let cx = normXMin; cx <= normXMax; cx++) {
-        if (!prev[cx])
-          prev[cx] = [];
-        for (let cy = normYMin; cy <= normYMax; cy++) {
-          if (!prev[cx][cy])
-            prev[cx][cy] = [];
-          prev[cx][cy].push(index2);
-        }
-      }
-      return prev;
-    }, []);
+        return h;
+      },
+      []
+    );
     this.indexedTins = {
       forw: {
-        gridNum,
-        xOrigin: forwBound[0][0],
-        yOrigin: forwBound[0][1],
-        xUnit: forwXUnit,
-        yUnit: forwYUnit,
-        gridCache: forwGridCache
+        gridNum: a,
+        xOrigin: n[0][0],
+        yOrigin: n[0][1],
+        xUnit: g2,
+        yUnit: l,
+        gridCache: y
       },
       bakw: {
-        gridNum,
-        xOrigin: bakwBound[0][0],
-        yOrigin: bakwBound[0][1],
-        xUnit: bakwXUnit,
-        yUnit: bakwYUnit,
-        gridCache: bakwGridCache
+        gridNum: a,
+        xOrigin: c[0][0],
+        yOrigin: c[0][1],
+        xUnit: u2,
+        yUnit: b,
+        gridCache: x
       }
     };
   }
-  setWh(wh) {
-    this.wh = wh;
-    this.xy = [0, 0];
-    this.bounds = void 0;
-    this.boundsPolygon = void 0;
-    this.tins = void 0;
-    this.indexedTins = void 0;
-  }
-  setVertexMode(mode) {
-    this.vertexMode = mode;
-    this.tins = void 0;
-    this.indexedTins = void 0;
-  }
-  setStrictMode(mode) {
-    this.strictMode = mode;
-    this.tins = void 0;
-    this.indexedTins = void 0;
-  }
-  calcurateStrictTinAsync() {
-    const edges = this.pointsSet.edges;
-    return Promise.all(this.tins.forw.features.map((tri) => Promise.resolve(counterTri(tri)))).then((tris) => {
-      this.tins.bakw = featureCollection$1(tris);
-    }).then(() => {
-      const searchIndex = {};
-      return Promise.all(this.tins.forw.features.map((forTri, index2) => {
-        const bakTri = this.tins.bakw.features[index2];
-        return Promise.resolve(insertSearchIndex(searchIndex, { forw: forTri, bakw: bakTri }));
-      })).then(() => Promise.all([
-        overlapCheckAsync(searchIndex),
-        Promise.resolve(searchIndex)
-      ])).catch((err) => {
-        throw err;
-      });
-    }).then((prevResult) => {
-      const overlapped = prevResult[0];
-      const searchIndex = prevResult[1];
-      if (overlapped.bakw)
-        Object.keys(overlapped.bakw).map((key) => {
-          if (overlapped.bakw[key] == "Not include case")
-            return;
-          const trises = searchIndex[key];
-          const forUnion = union(trises[0].forw, trises[1].forw);
-          const forConvex = convex(featureCollection$1([trises[0].forw, trises[1].forw]));
-          const forDiff = difference(forConvex, forUnion);
-          if (forDiff)
-            return;
-          const splittedKey = key.split("-");
-          if (splittedKey[0].match(/^[0-9]+$/) && splittedKey[1].match(/^[0-9]+$/)) {
-            const numberKey = splittedKey.map((key2) => parseInt(key2)).sort((a, b) => a < b ? -1 : 1);
-            for (let i = 0; i < edges.length - 1; i++) {
-              if (numberKey[0] == edges[i][0] && numberKey[1] == edges[i][1])
-                return;
-            }
-          }
-          const sharedVtx = splittedKey.map((val) => ["a", "b", "c"].map((alpha, index2) => {
-            const prop = trises[0].bakw.properties[alpha];
-            const geom = trises[0].bakw.geometry.coordinates[0][index2];
-            return { geom, prop };
-          }).filter((vtx) => vtx.prop.index == val)[0]);
-          const nonSharedVtx = trises.map((tris) => ["a", "b", "c"].map((alpha, index2) => {
-            const prop = tris.bakw.properties[alpha];
-            const geom = tris.bakw.geometry.coordinates[0][index2];
-            return { geom, prop };
-          }).filter((vtx) => vtx.prop.index != sharedVtx[0].prop.index && vtx.prop.index != sharedVtx[1].prop.index)[0]);
-          removeSearchIndex(searchIndex, trises[0], this.tins);
-          removeSearchIndex(searchIndex, trises[1], this.tins);
-          sharedVtx.map((sVtx) => {
-            const newTriCoords = [
-              sVtx.geom,
-              nonSharedVtx[0].geom,
-              nonSharedVtx[1].geom,
-              sVtx.geom
-            ];
-            const newTriProp = {
-              a: sVtx.prop,
-              b: nonSharedVtx[0].prop,
-              c: nonSharedVtx[1].prop
-            };
-            const newBakTri = polygon([newTriCoords], newTriProp);
-            const newForTri = counterTri(newBakTri);
-            insertSearchIndex(searchIndex, { forw: newForTri, bakw: newBakTri }, this.tins);
-          });
-        });
-      return Promise.all(["forw", "bakw"].map((direc) => new Promise((resolve) => {
-        const coords = this.tins[direc].features.map((poly) => poly.geometry.coordinates[0]);
-        resolve(findIntersections(coords));
-      }).catch((err) => {
-        throw err;
-      }))).then((result) => {
-        if (result[0].length == 0 && result[1].length == 0) {
-          this.strict_status = Tin.STATUS_STRICT;
-          delete this.kinks;
-        } else {
-          this.strict_status = Tin.STATUS_ERROR;
-          this.kinks = {};
-          if (result[0].length > 0)
-            this.kinks.forw = featureCollection$1(result[0]);
-          if (result[1].length > 0)
-            this.kinks.bakw = featureCollection$1(result[1]);
-        }
-      }).catch((err) => {
-        throw err;
-      });
-    }).catch((err) => {
-      throw err;
-    });
-  }
-  generatePointsSet() {
-    const pointsArray = { forw: [], bakw: [] };
-    for (let i = 0; i < this.points.length; i++) {
-      const mapxy = this.points[i][0];
-      const mercs = this.points[i][1];
-      const forPoint = createPoint(mapxy, mercs, i);
-      pointsArray.forw.push(forPoint);
-      pointsArray.bakw.push(counterPoint(forPoint));
-    }
-    const edges = [];
-    let edgeNodeIndex = 0;
-    this.edgeNodes = [];
-    if (!this.edges)
-      this.edges = [];
-    for (let i = 0; i < this.edges.length; i++) {
-      const startEnd = this.edges[i][2];
-      const illstNodes = Object.assign([], this.edges[i][0]);
-      const mercNodes = Object.assign([], this.edges[i][1]);
-      if (illstNodes.length === 0 && mercNodes.length === 0) {
-        edges.push(startEnd);
-        continue;
-      }
-      illstNodes.unshift(this.points[startEnd[0]][0]);
-      illstNodes.push(this.points[startEnd[1]][0]);
-      mercNodes.unshift(this.points[startEnd[0]][1]);
-      mercNodes.push(this.points[startEnd[1]][1]);
-      const lengths = [illstNodes, mercNodes].map((nodes) => {
-        const eachLengths = nodes.map((node, index2, arr2) => {
-          if (index2 === 0)
-            return 0;
-          const prev = arr2[index2 - 1];
-          return Math.sqrt(Math.pow(node[0] - prev[0], 2) + Math.pow(node[1] - prev[1], 2));
-        });
-        const sumLengths = eachLengths.reduce((prev, node, index2) => {
-          if (index2 === 0)
-            return [0];
-          prev.push(prev[index2 - 1] + node);
-          return prev;
-        }, []);
-        return sumLengths.map((eachSum, index2, arr2) => {
-          const ratio = eachSum / arr2[arr2.length - 1];
-          return [nodes[index2], eachLengths[index2], sumLengths[index2], ratio];
-        });
-      });
-      lengths.map((thisLengths, i2) => {
-        const anotherLengths = lengths[i2 ? 0 : 1];
-        return thisLengths.filter((val, index2) => !(index2 === 0 || index2 === thisLengths.length - 1 || val[4] === "handled")).map((lengthItem) => {
-          const node = lengthItem[0];
-          const ratio = lengthItem[3];
-          const anotherSets = anotherLengths.reduce((prev, item, index2, arr2) => {
-            if (prev)
-              return prev;
-            const next = arr2[index2 + 1];
-            if (item[3] === ratio) {
-              item[4] = "handled";
-              return [item];
-            }
-            if (item[3] < ratio && next[3] > ratio)
-              return [item, next];
-            return;
-          }, void 0);
-          if (anotherSets.length === 1) {
-            return i2 === 0 ? [node, anotherSets[0][0], ratio] : [anotherSets[0][0], node, ratio];
-          } else {
-            const anotherPrev = anotherSets[0];
-            const anotherNext = anotherSets[1];
-            const ratioDelta = ratio - anotherPrev[3];
-            const ratioAnother = anotherNext[3] - anotherPrev[3];
-            const ratioInEdge = ratioDelta / ratioAnother;
-            const anotherNode = [
-              (anotherNext[0][0] - anotherPrev[0][0]) * ratioInEdge + anotherPrev[0][0],
-              (anotherNext[0][1] - anotherPrev[0][1]) * ratioInEdge + anotherPrev[0][1]
-            ];
-            return i2 === 0 ? [node, anotherNode, ratio] : [anotherNode, node, ratio];
-          }
-        });
-      }).reduce((prev, nodes) => prev.concat(nodes), []).sort((a, b) => a[2] < b[2] ? -1 : 1).map((node, index2, arr2) => {
-        this.edgeNodes[edgeNodeIndex] = [node[0], node[1]];
-        const forPoint = createPoint(node[0], node[1], `e${edgeNodeIndex}`);
-        edgeNodeIndex++;
-        pointsArray.forw.push(forPoint);
-        pointsArray.bakw.push(counterPoint(forPoint));
-        if (index2 === 0) {
-          edges.push([startEnd[0], pointsArray.forw.length - 1]);
-        } else {
-          edges.push([
-            pointsArray.forw.length - 2,
-            pointsArray.forw.length - 1
-          ]);
-        }
-        if (index2 === arr2.length - 1) {
-          edges.push([pointsArray.forw.length - 1, startEnd[1]]);
-        }
-      });
-    }
-    return {
-      forw: featureCollection$1(pointsArray.forw),
-      bakw: featureCollection$1(pointsArray.bakw),
-      edges
-    };
-  }
-  updateTinAsync() {
-    let strict = this.strictMode;
-    const minx = this.xy[0] - 0.05 * this.wh[0];
-    const maxx = this.xy[0] + 1.05 * this.wh[0];
-    const miny = this.xy[1] - 0.05 * this.wh[1];
-    const maxy = this.xy[1] + 1.05 * this.wh[1];
-    const insideCheck = this.bounds ? (xy) => booleanPointInPolygon(xy, this.boundsPolygon) : (xy) => xy[0] >= this.xy[0] && xy[0] <= this.xy[0] + this.wh[0] && xy[1] >= this.xy[1] && xy[1] <= this.xy[1] + this.wh[1];
-    const inside2 = this.points.reduce((prev, curr) => prev && insideCheck(curr[0]), true);
-    if (!inside2) {
-      return new Promise((resolve, reject) => {
-        reject("SOME POINTS OUTSIDE");
-      });
-    }
-    return new Promise((resolve) => {
-      if (strict != Tin.MODE_STRICT && strict != Tin.MODE_LOOSE)
-        strict = Tin.MODE_AUTO;
-      let bbox2 = [];
-      if (this.wh) {
-        bbox2 = [
-          [minx, miny],
-          [maxx, miny],
-          [minx, maxy],
-          [maxx, maxy]
-        ];
-      }
-      const pointsSet = this.generatePointsSet();
-      resolve([pointsSet, bbox2]);
-    }).then((prevResults) => {
-      const pointsSet = prevResults[0];
-      return Promise.all([
-        new Promise((resolve) => {
-          resolve(constrainedTin(pointsSet.forw, pointsSet.edges, "target"));
-        }),
-        new Promise((resolve) => {
-          resolve(constrainedTin(pointsSet.bakw, pointsSet.edges, "target"));
-        }),
-        new Promise((resolve) => {
-          resolve(centroid$1(pointsSet.forw));
-        }),
-        Promise.resolve(prevResults)
-      ]).catch((err) => {
-        throw err;
-      });
-    }).then((prevResults) => {
-      const tinForCentroid = prevResults[0];
-      const tinBakCentroid = prevResults[1];
-      const forCentroidFt = prevResults[2];
-      const pointsSetBbox = prevResults[3];
-      const pointsSet = pointsSetBbox[0];
-      if (tinForCentroid.features.length == 0 || tinBakCentroid.features.length == 0)
-        throw "TOO LINEAR1";
-      const centroid2 = {
-        forw: forCentroidFt.geometry.coordinates,
-        bakw: transformArr(forCentroidFt, tinForCentroid)
-      };
-      const forwBuf = createPoint(centroid2.forw, centroid2.bakw, "c");
-      this.centroid = {
-        forw: forwBuf,
-        bakw: counterPoint(forwBuf)
-      };
-      const convexBuf = {};
-      return Promise.all([
-        new Promise((resolve) => {
-          const forConvex = convex(pointsSet.forw).geometry.coordinates[0];
-          let vconvex;
-          try {
-            vconvex = forConvex.map((forw) => ({
-              forw,
-              bakw: transformArr(point(forw), tinForCentroid)
-            }));
-          } catch (e) {
-            throw "TOO LINEAR2";
-          }
-          vconvex.map((vertex) => {
-            convexBuf[`${vertex.forw[0]}:${vertex.forw[1]}`] = vertex;
-          });
-          resolve(void 0);
-        }),
-        new Promise((resolve) => {
-          const bakConvex = convex(pointsSet.bakw).geometry.coordinates[0];
-          let vconvex;
-          try {
-            vconvex = bakConvex.map((bakw) => ({
-              bakw,
-              forw: transformArr(point(bakw), tinBakCentroid)
-            }));
-          } catch (e) {
-            throw "TOO LINEAR2";
-          }
-          vconvex.map((vertex) => {
-            convexBuf[`${vertex.forw[0]}:${vertex.forw[1]}`] = vertex;
-          });
-          resolve(void 0);
-        })
-      ]).then(() => [centroid2, convexBuf, pointsSetBbox]).catch((err) => {
-        throw err;
-      });
-    }).then((prevResults) => {
-      const centroid2 = prevResults[0];
-      const convexBuf = prevResults[1];
-      const pointsSetBbox = prevResults[2];
-      const expandConvex = Object.keys(convexBuf).reduce((prev, key, _23, _array) => {
-        const forVertex = convexBuf[key].forw;
-        const bakVertex = convexBuf[key].bakw;
-        const vertexDelta = {
-          forw: [
-            forVertex[0] - centroid2.forw[0],
-            forVertex[1] - centroid2.forw[1]
-          ]
-        };
-        vertexDelta.bakw = [
-          bakVertex[0] - centroid2.bakw[0],
-          bakVertex[1] - centroid2.bakw[1]
-        ];
-        const xRate = vertexDelta.forw[0] == 0 ? Infinity : ((vertexDelta.forw[0] < 0 ? minx : maxx) - centroid2.forw[0]) / vertexDelta.forw[0];
-        const yRate = vertexDelta.forw[1] == 0 ? Infinity : ((vertexDelta.forw[1] < 0 ? miny : maxy) - centroid2.forw[1]) / vertexDelta.forw[1];
-        if (Math.abs(xRate) / Math.abs(yRate) < 1.1) {
-          const point2 = {
-            forw: [
-              vertexDelta.forw[0] * xRate + centroid2.forw[0],
-              vertexDelta.forw[1] * xRate + centroid2.forw[1]
-            ],
-            bakw: [
-              vertexDelta.bakw[0] * xRate + centroid2.bakw[0],
-              vertexDelta.bakw[1] * xRate + centroid2.bakw[1]
-            ]
-          };
-          if (vertexDelta.forw[0] < 0)
-            prev[3].push(point2);
-          else
-            prev[1].push(point2);
-        }
-        if (Math.abs(yRate) / Math.abs(xRate) < 1.1) {
-          const point2 = {
-            forw: [
-              vertexDelta.forw[0] * yRate + centroid2.forw[0],
-              vertexDelta.forw[1] * yRate + centroid2.forw[1]
-            ],
-            bakw: [
-              vertexDelta.bakw[0] * yRate + centroid2.bakw[0],
-              vertexDelta.bakw[1] * yRate + centroid2.bakw[1]
-            ]
-          };
-          if (vertexDelta.forw[1] < 0)
-            prev[0].push(point2);
-          else
-            prev[2].push(point2);
-        }
-        return prev;
-      }, [[], [], [], []]);
-      let orthant = Object.keys(convexBuf).reduce((prev, key, idx, array) => {
-        const forVertex = convexBuf[key].forw;
-        const bakVertex = convexBuf[key].bakw;
-        const vertexDelta = {
-          forw: [
-            forVertex[0] - centroid2.forw[0],
-            forVertex[1] - centroid2.forw[1]
-          ]
-        };
-        vertexDelta.bakw = [
-          bakVertex[0] - centroid2.bakw[0],
-          centroid2.bakw[1] - bakVertex[1]
-        ];
-        if (vertexDelta.forw[0] == 0 || vertexDelta.forw[1] == 0)
-          return prev;
-        let index2 = 0;
-        if (vertexDelta.forw[0] > 0)
-          index2 += 1;
-        if (vertexDelta.forw[1] > 0)
-          index2 += 2;
-        prev[index2].push([
-          vertexDelta.forw,
-          vertexDelta.bakw
-        ]);
-        if (idx == array.length - 1) {
-          return prev.length == prev.filter((val) => val.length > 0).length && this.vertexMode == Tin.VERTEX_BIRDEYE ? prev : prev.reduce((pre, cur) => [pre[0].concat(cur)], [[]]);
-        }
-        return prev;
-      }, [[], [], [], []]).map((item) => item.reduce((prev, curr, index2, arr2) => {
-        if (!prev)
-          prev = [Infinity, 0, 0];
-        let distanceSum = Math.sqrt(Math.pow(curr[0][0], 2) + Math.pow(curr[0][1], 2)) / Math.sqrt(Math.pow(curr[1][0], 2) + Math.pow(curr[1][1], 2));
-        distanceSum = distanceSum < prev[0] ? distanceSum : prev[0];
-        const thetaDelta = Math.atan2(curr[0][0], curr[0][1]) - Math.atan2(curr[1][0], curr[1][1]);
-        const sumThetaX = prev[1] + Math.cos(thetaDelta);
-        const sumThetaY = prev[2] + Math.sin(thetaDelta);
-        if (index2 == arr2.length - 1) {
-          return [distanceSum, Math.atan2(sumThetaY, sumThetaX)];
-        }
-        return [distanceSum, sumThetaX, sumThetaY];
-      }, null));
-      if (orthant.length == 1)
-        orthant = [orthant[0], orthant[0], orthant[0], orthant[0]];
-      return [orthant, centroid2, expandConvex, pointsSetBbox];
-    }).then((prevResults) => {
-      const orthant = prevResults[0];
-      const centroid2 = prevResults[1];
-      const expandConvex = prevResults[2];
-      const pointsSet = prevResults[3][0];
-      const bbox2 = prevResults[3][1];
-      let verticesSet = orthant.map((delta, index2) => {
-        const forVertex = bbox2[index2];
-        const forDelta = [
-          forVertex[0] - centroid2.forw[0],
-          forVertex[1] - centroid2.forw[1]
-        ];
-        const forDistance = Math.sqrt(Math.pow(forDelta[0], 2) + Math.pow(forDelta[1], 2));
-        const bakDistance = forDistance / delta[0];
-        const forTheta = Math.atan2(forDelta[0], forDelta[1]);
-        const bakTheta = forTheta - delta[1];
-        const bakVertex = [
-          centroid2.bakw[0] + bakDistance * Math.sin(bakTheta),
-          centroid2.bakw[1] - bakDistance * Math.cos(bakTheta)
-        ];
-        return { forw: forVertex, bakw: bakVertex };
-      });
-      const swap2 = verticesSet[2];
-      verticesSet[2] = verticesSet[3];
-      verticesSet[3] = swap2;
-      const expandRate = [1, 1, 1, 1];
-      for (let i = 0; i < 4; i++) {
-        const j = (i + 1) % 4;
-        const side = lineString([verticesSet[i].bakw, verticesSet[j].bakw]);
-        const expands = expandConvex[i];
-        expands.map((expand) => {
-          const expandLine = lineString([centroid2.bakw, expand.bakw]);
-          const intersect2 = lineIntersect(side, expandLine);
-          if (intersect2.features.length > 0 && intersect2.features[0].geometry) {
-            const intersect_ = intersect2.features[0];
-            const expandDist = Math.sqrt(Math.pow(expand.bakw[0] - centroid2.bakw[0], 2) + Math.pow(expand.bakw[1] - centroid2.bakw[1], 2));
-            const onSideDist = Math.sqrt(Math.pow(intersect_.geometry.coordinates[0] - centroid2.bakw[0], 2) + Math.pow(intersect_.geometry.coordinates[1] - centroid2.bakw[1], 2));
-            const rate = expandDist / onSideDist;
-            if (rate > expandRate[i])
-              expandRate[i] = rate;
-            if (rate > expandRate[j])
-              expandRate[j] = rate;
-          }
-        });
-      }
-      verticesSet = verticesSet.map((vertex, index2) => {
-        const rate = expandRate[index2];
-        const point2 = [
-          (vertex.bakw[0] - centroid2.bakw[0]) * rate + centroid2.bakw[0],
-          (vertex.bakw[1] - centroid2.bakw[1]) * rate + centroid2.bakw[1]
-        ];
-        return { forw: vertex.forw, bakw: point2 };
-      });
-      return [verticesSet, pointsSet];
-    }).then((prevResults) => {
-      const verticesSet = prevResults[0];
-      const pointsSet = prevResults[1];
-      const verticesList = { forw: [], bakw: [] };
-      for (let i = 0; i < verticesSet.length; i++) {
-        const forVertex = verticesSet[i].forw;
-        const bakVertex = verticesSet[i].bakw;
-        const forVertexFt = createPoint(forVertex, bakVertex, `b${i}`);
-        const bakVertexFt = counterPoint(forVertexFt);
-        pointsSet.forw.features.push(forVertexFt);
-        pointsSet.bakw.features.push(bakVertexFt);
-        verticesList.forw.push(forVertexFt);
-        verticesList.bakw.push(bakVertexFt);
-      }
-      this.pointsSet = pointsSet;
-      this.tins = {
-        forw: rotateVerticesTriangle(constrainedTin(pointsSet.forw, pointsSet.edges, "target"))
-      };
-      let prom;
-      if (strict == Tin.MODE_STRICT || strict == Tin.MODE_AUTO) {
-        prom = this.calcurateStrictTinAsync();
-      } else {
-        prom = Promise.resolve();
-      }
-      return prom.then(() => {
-        if (strict == Tin.MODE_LOOSE || strict == Tin.MODE_AUTO && this.strict_status == Tin.STATUS_ERROR) {
-          this.tins.bakw = rotateVerticesTriangle(constrainedTin(pointsSet.bakw, pointsSet.edges, "target"));
-          delete this.kinks;
-          this.strict_status = Tin.STATUS_LOOSE;
-        }
-        this.vertices_params = {
-          forw: vertexCalc(verticesList.forw, this.centroid.forw),
-          bakw: vertexCalc(verticesList.bakw, this.centroid.bakw)
-        };
-        this.addIndexedTin();
-        return this.calculatePointsWeightAsync();
-      }).catch((err) => {
-        throw err;
-      });
-    }).catch((err) => {
-      throw err;
-    });
-  }
-  transform(apoint, backward, ignoreBounds) {
-    if (backward && this.strict_status == Tin.STATUS_ERROR)
+  /**
+   * 座標変換を実行します
+   * 
+   * @param apoint - 変換する座標
+   * @param backward - 逆方向の変換かどうか
+   * @param ignoreBounds - 境界チェックを無視するかどうか
+   * @returns 変換後の座標、または境界外の場合はfalse
+   * 
+   * @throws {Error} 逆方向変換が許可されていない状態での逆変換時
+   */
+  transform(t, s, r) {
+    if (s && this.strict_status == O2.STATUS_ERROR)
       throw 'Backward transform is not allowed if strict_status == "strict_error"';
-    if (this.yaxisMode == Tin.YAXIS_FOLLOW && backward) {
-      apoint = [apoint[0], -1 * apoint[1]];
-    }
-    const tpoint = point(apoint);
-    if (this.bounds && !backward && !ignoreBounds) {
-      if (!booleanPointInPolygon(tpoint, this.boundsPolygon))
-        return false;
-    }
-    const tins = backward ? this.tins.bakw : this.tins.forw;
-    const indexedTins = backward ? this.indexedTins.bakw : this.indexedTins.forw;
-    const verticesParams = backward ? this.vertices_params.bakw : this.vertices_params.forw;
-    const centroid2 = backward ? this.centroid.bakw : this.centroid.forw;
-    const weightBuffer = backward ? this.pointsWeightBuffer.bakw : this.pointsWeightBuffer.forw;
-    let stateTriangle = void 0, stateSetFunc = void 0;
-    if (this.stateFull) {
-      if (this.stateBackward == backward) {
-        stateTriangle = this.stateTriangle;
-      } else {
-        this.stateBackward = backward;
-        this.stateTriangle = void 0;
-      }
-      stateSetFunc = (tri) => {
-        this.stateTriangle = tri;
-      };
-    }
-    let ret = transformArr(tpoint, tins, indexedTins, verticesParams, centroid2, weightBuffer, stateTriangle, stateSetFunc);
-    if (this.bounds && backward && !ignoreBounds) {
-      const rpoint = point(ret);
-      if (!booleanPointInPolygon(rpoint, this.boundsPolygon))
-        return false;
-    } else if (this.yaxisMode == Tin.YAXIS_FOLLOW && !backward) {
-      ret = [ret[0], -1 * ret[1]];
-    }
-    return ret;
-  }
-  calculatePointsWeightAsync() {
-    const calcTargets = ["forw"];
-    if (this.strict_status == Tin.STATUS_LOOSE)
-      calcTargets.push("bakw");
-    const weightBuffer = {};
-    return Promise.all(calcTargets.map((target) => {
-      weightBuffer[target] = {};
-      const alreadyChecked = {};
-      const tin = this.tins[target];
-      return Promise.all(tin.features.map((tri) => {
-        const vtxes = ["a", "b", "c"];
-        return new Promise((resolve) => {
-          for (let i = 0; i < 3; i++) {
-            const j = (i + 1) % 3;
-            const vi = vtxes[i];
-            const vj = vtxes[j];
-            const indexi = tri.properties[vi].index;
-            const indexj = tri.properties[vj].index;
-            const key = [indexi, indexj].sort().join("-");
-            if (!alreadyChecked[key]) {
-              const fromi = tri.geometry.coordinates[0][i];
-              const fromj = tri.geometry.coordinates[0][j];
-              const toi = tri.properties[vi].geom;
-              const toj = tri.properties[vj].geom;
-              alreadyChecked[key] = 1;
-              const weight = Math.sqrt(Math.pow(toi[0] - toj[0], 2) + Math.pow(toi[1] - toj[1], 2)) / Math.sqrt(Math.pow(fromi[0] - fromj[0], 2) + Math.pow(fromi[1] - fromj[1], 2));
-              if (!weightBuffer[target][indexi])
-                weightBuffer[target][indexi] = {};
-              if (!weightBuffer[target][indexj])
-                weightBuffer[target][indexj] = {};
-              weightBuffer[target][indexi][key] = weight;
-              weightBuffer[target][indexj][key] = weight;
-            }
-          }
-          resolve(void 0);
-        });
-      })).catch((err) => {
-        throw err;
-      });
-    })).then(() => {
-      const pointsWeightBuffer = {};
-      calcTargets.map((target) => {
-        pointsWeightBuffer[target] = {};
-        if (this.strict_status == Tin.STATUS_STRICT)
-          pointsWeightBuffer["bakw"] = {};
-        Object.keys(weightBuffer[target]).map((vtx) => {
-          pointsWeightBuffer[target][vtx] = Object.keys(weightBuffer[target][vtx]).reduce((prev, key, idx, arr2) => {
-            prev = prev + weightBuffer[target][vtx][key];
-            return idx == arr2.length - 1 ? prev / arr2.length : prev;
-          }, 0);
-          if (this.strict_status == Tin.STATUS_STRICT)
-            pointsWeightBuffer["bakw"][vtx] = 1 / pointsWeightBuffer[target][vtx];
-        });
-        pointsWeightBuffer[target]["c"] = [0, 1, 2, 3].reduce((prev, curr) => {
-          const key = `b${curr}`;
-          prev = prev + pointsWeightBuffer[target][key];
-          return curr == 3 ? prev / 4 : prev;
-        }, 0);
-        if (this.strict_status == Tin.STATUS_STRICT)
-          pointsWeightBuffer["bakw"]["c"] = 1 / pointsWeightBuffer[target]["c"];
-      });
-      this.pointsWeightBuffer = pointsWeightBuffer;
-    }).catch((err) => {
-      throw err;
+    this.yaxisMode == O2.YAXIS_FOLLOW && s && (t = [t[0], -1 * t[1]]);
+    const a = Y(t);
+    if (this.bounds && !s && !r && !D(a, this.boundsPolygon))
+      return false;
+    const n = s ? this.tins.bakw : this.tins.forw, c = s ? this.indexedTins.bakw : this.indexedTins.forw, d = s ? this.vertices_params.bakw : this.vertices_params.forw, g2 = s ? this.centroid.bakw : this.centroid.forw, l = s ? this.pointsWeightBuffer.bakw : this.pointsWeightBuffer.forw;
+    let y, o;
+    this.stateFull && (this.stateBackward == s ? y = this.stateTriangle : (this.stateBackward = s, this.stateTriangle = void 0), o = (b) => {
+      this.stateTriangle = b;
     });
+    let u2 = Mt(
+      a,
+      n,
+      c,
+      d,
+      g2,
+      l,
+      y,
+      o
+    );
+    if (this.bounds && s && !r) {
+      const b = Y(u2);
+      if (!D(b, this.boundsPolygon)) return false;
+    } else this.yaxisMode == O2.YAXIS_FOLLOW && !s && (u2 = [u2[0], -1 * u2[1]]);
+    return u2;
   }
-}
-Tin.VERTEX_PLAIN = "plain";
-Tin.VERTEX_BIRDEYE = "birdeye";
-Tin.MODE_STRICT = "strict";
-Tin.MODE_AUTO = "auto";
-Tin.MODE_LOOSE = "loose";
-Tin.STATUS_STRICT = "strict";
-Tin.STATUS_ERROR = "strict_error";
-Tin.STATUS_LOOSE = "loose";
-Tin.YAXIS_FOLLOW = "follow";
-Tin.YAXIS_INVERT = "invert";
-function rotateVerticesTriangle(tins) {
-  const features = tins.features;
-  for (let i = 0; i < features.length; i++) {
-    const feature2 = features[i];
-    if (`${feature2.properties.a.index}`.substring(0, 1) === "b" && `${feature2.properties.b.index}`.substring(0, 1) === "b") {
-      features[i] = {
-        geometry: {
-          type: "Polygon",
-          coordinates: [
-            [
-              feature2.geometry.coordinates[0][2],
-              feature2.geometry.coordinates[0][0],
-              feature2.geometry.coordinates[0][1],
-              feature2.geometry.coordinates[0][2]
-            ]
-          ]
-        },
-        properties: {
-          a: {
-            geom: feature2.properties.c.geom,
-            index: feature2.properties.c.index
-          },
-          b: {
-            geom: feature2.properties.a.geom,
-            index: feature2.properties.a.index
-          },
-          c: {
-            geom: feature2.properties.b.geom,
-            index: feature2.properties.b.index
-          }
-        },
-        type: "Feature"
-      };
-    } else if (`${feature2.properties.c.index}`.substring(0, 1) === "b" && `${feature2.properties.a.index}`.substring(0, 1) === "b") {
-      features[i] = {
-        geometry: {
-          type: "Polygon",
-          coordinates: [
-            [
-              feature2.geometry.coordinates[0][1],
-              feature2.geometry.coordinates[0][2],
-              feature2.geometry.coordinates[0][0],
-              feature2.geometry.coordinates[0][1]
-            ]
-          ]
-        },
-        properties: {
-          a: {
-            geom: feature2.properties.b.geom,
-            index: feature2.properties.b.index
-          },
-          b: {
-            geom: feature2.properties.c.geom,
-            index: feature2.properties.c.index
-          },
-          c: {
-            geom: feature2.properties.a.geom,
-            index: feature2.properties.a.index
-          }
-        },
-        type: "Feature"
-      };
-    }
-  }
-  return tins;
-}
-function vertexCalc(list, centroid2) {
-  const centCoord = centroid2.geometry.coordinates;
-  return [0, 1, 2, 3].map((i) => {
-    const j = (i + 1) % 4;
-    const itemi = list[i];
-    const itemj = list[j];
-    const coord = itemi.geometry.coordinates;
-    const radian = Math.atan2(coord[0] - centCoord[0], coord[1] - centCoord[1]);
-    const coordinates2 = [centroid2, itemi, itemj, centroid2].map((point2) => point2.geometry.coordinates);
-    const properties = {
-      a: {
-        geom: centroid2.properties.target.geom,
-        index: centroid2.properties.target.index
-      },
-      b: {
-        geom: itemi.properties.target.geom,
-        index: itemi.properties.target.index
-      },
-      c: {
-        geom: itemj.properties.target.geom,
-        index: itemj.properties.target.index
-      }
-    };
-    const tin = featureCollection$1([polygon([coordinates2], properties)]);
-    return [radian, tin];
-  }).reduce((prev, curr) => {
-    prev[0].push(curr[0]);
-    prev[1].push(curr[1]);
-    return prev;
-  }, [[], []]);
-}
-function normalizeRadian(target, noNegative = false) {
-  const rangeFunc = noNegative ? function(val) {
-    return !(val >= 0 && val < Math.PI * 2);
-  } : function(val) {
-    return !(val > -1 * Math.PI && val <= Math.PI);
-  };
-  while (rangeFunc(target)) {
-    target = target + 2 * Math.PI * (target > 0 ? -1 : 1);
-  }
-  return target;
-}
-function decideUseVertex(radian, radianList) {
-  let idel = normalizeRadian(radian - radianList[0]);
-  let minTheta = Math.PI * 2;
-  let minIndex;
-  for (let i = 0; i < radianList.length; i++) {
-    const j = (i + 1) % radianList.length;
-    const jdel = normalizeRadian(radian - radianList[j]);
-    const minDel = Math.min(Math.abs(idel), Math.abs(jdel));
-    if (idel * jdel <= 0 && minDel < minTheta) {
-      minTheta = minDel;
-      minIndex = i;
-    }
-    idel = jdel;
-  }
-  return minIndex;
-}
-function createPoint(xy, geom, index2) {
-  return point(xy, { target: { geom, index: index2 } });
-}
-function counterPoint(apoint) {
-  return point(apoint.properties.target.geom, {
-    target: {
-      geom: apoint.geometry.coordinates,
-      index: apoint.properties.target.index
-    }
-  });
-}
-function transformTinArr(of, tri, weightBuffer) {
-  const a = tri.geometry.coordinates[0][0];
-  const b = tri.geometry.coordinates[0][1];
-  const c = tri.geometry.coordinates[0][2];
-  const o = of.geometry.coordinates;
-  const ad = tri.properties.a.geom;
-  const bd = tri.properties.b.geom;
-  const cd = tri.properties.c.geom;
-  const ab2 = [b[0] - a[0], b[1] - a[1]];
-  const ac = [c[0] - a[0], c[1] - a[1]];
-  const ao = [o[0] - a[0], o[1] - a[1]];
-  const abd = [bd[0] - ad[0], bd[1] - ad[1]];
-  const acd = [cd[0] - ad[0], cd[1] - ad[1]];
-  let abv = (ac[1] * ao[0] - ac[0] * ao[1]) / (ab2[0] * ac[1] - ab2[1] * ac[0]);
-  let acv = (ab2[0] * ao[1] - ab2[1] * ao[0]) / (ab2[0] * ac[1] - ab2[1] * ac[0]);
-  if (weightBuffer) {
-    const aW = weightBuffer[tri.properties.a.index];
-    const bW = weightBuffer[tri.properties.b.index];
-    const cW = weightBuffer[tri.properties.c.index];
-    let nabv;
-    if (abv < 0 || acv < 0 || 1 - abv - acv < 0) {
-      const normB = abv / (abv + acv);
-      const normC = acv / (abv + acv);
-      nabv = abv / bW / (normB / bW + normC / cW);
-      acv = acv / cW / (normB / bW + normC / cW);
-    } else {
-      nabv = abv / bW / (abv / bW + acv / cW + (1 - abv - acv) / aW);
-      acv = acv / cW / (abv / bW + acv / cW + (1 - abv - acv) / aW);
-    }
-    abv = nabv;
-  }
-  return [
-    abv * abd[0] + acv * acd[0] + ad[0],
-    abv * abd[1] + acv * acd[1] + ad[1]
-  ];
-}
-function useVerticesArr(o, verticesParams, centroid2, weightBuffer) {
-  const coord = o.geometry.coordinates;
-  const centCoord = centroid2.geometry.coordinates;
-  const radian = Math.atan2(coord[0] - centCoord[0], coord[1] - centCoord[1]);
-  const index2 = decideUseVertex(radian, verticesParams[0]);
-  const tin = verticesParams[1][index2];
-  return transformTinArr(o, tin.features[0], weightBuffer);
-}
-function hit(point2, tins) {
-  for (let i = 0; i < tins.features.length; i++) {
-    const inside2 = booleanPointInPolygon(point2, tins.features[i]);
-    if (inside2) {
-      return tins.features[i];
-    }
-  }
-}
-function unitCalc(coord, origin, unit, gridNum) {
-  let normCoord = Math.floor((coord - origin) / unit);
-  if (normCoord >= gridNum)
-    normCoord = gridNum - 1;
-  return normCoord;
-}
-function transformArr(point2, tins, indexedTins, verticesParams, centroid2, weightBuffer, stateTriangle, stateSetFunc) {
-  let tin;
-  if (stateTriangle) {
-    tin = hit(point2, featureCollection$1([stateTriangle]));
-  }
-  if (!tin) {
-    if (indexedTins) {
-      const coords = point2.geometry.coordinates;
-      const gridNum = indexedTins.gridNum;
-      const xOrigin = indexedTins.xOrigin;
-      const yOrigin = indexedTins.yOrigin;
-      const xUnit = indexedTins.xUnit;
-      const yUnit = indexedTins.yUnit;
-      const gridCache = indexedTins.gridCache;
-      const normX = unitCalc(coords[0], xOrigin, xUnit, gridNum);
-      const normY = unitCalc(coords[1], yOrigin, yUnit, gridNum);
-      const tinsKey = gridCache[normX] ? gridCache[normX][normY] ? gridCache[normX][normY] : [] : [];
-      tins = featureCollection$1(tinsKey.map((key) => tins.features[key]));
-    }
-    tin = hit(point2, tins);
-  }
-  if (stateSetFunc)
-    stateSetFunc(tin);
-  return tin ? transformTinArr(point2, tin, weightBuffer) : useVerticesArr(point2, verticesParams, centroid2, weightBuffer);
-}
-function counterTri(tri) {
-  const coordinates2 = ["a", "b", "c", "a"].map((key) => tri.properties[key].geom);
-  const geoms = tri.geometry.coordinates[0];
-  const props = tri.properties;
-  const properties = {
-    a: { geom: geoms[0], index: props["a"].index },
-    b: { geom: geoms[1], index: props["b"].index },
-    c: { geom: geoms[2], index: props["c"].index }
-  };
-  return polygon([coordinates2], properties);
-}
-function buildTri(points2) {
-  const coordinates2 = [0, 1, 2, 0].map((i) => points2[i][0][0]);
-  const properties = {
-    a: { geom: points2[0][0][1], index: points2[0][1] },
-    b: { geom: points2[1][0][1], index: points2[1][1] },
-    c: { geom: points2[2][0][1], index: points2[2][1] }
-  };
-  return polygon([coordinates2], properties);
-}
-function indexesToTri(indexes, points2, edgeNodes, cent, bboxes, bakw = false, version) {
-  const points_ = indexes.map((index2) => {
-    if (!version || version < 2.00703)
-      index2 = normalizeNodeKey(index2);
-    const point_base = isFinite(index2) ? points2[index2] : index2 === "c" ? cent : index2 === "b0" ? bboxes[0] : index2 === "b1" ? bboxes[1] : index2 === "b2" ? bboxes[2] : index2 === "b3" ? bboxes[3] : function() {
-      const match = index2.match(/e(\d+)/);
-      if (match) {
-        const nodeIndex = parseInt(match[1]);
-        return edgeNodes[nodeIndex];
-      }
-      throw "Bad index value for indexesToTri";
-    }();
-    return bakw ? [[point_base[1], point_base[0]], index2] : [[point_base[0], point_base[1]], index2];
-  });
-  return buildTri(points_);
-}
-function normalizeNodeKey(index2) {
-  if (typeof index2 === "number")
-    return index2;
-  return index2.replace(/^(c|e|b)(?:ent|dgeNode|box)(\d+)?$/, "$1$2");
-}
-function normalizeEdges(edges, version) {
-  if (Array.isArray(edges[0]))
-    return edges;
-  return edges.map((edge) => [
-    edge.illstNodes,
-    edge.mercNodes,
-    edge.startEnd
-  ]);
-}
-function overlapCheckAsync(searchIndex) {
-  const retValue = { forw: {}, bakw: {} };
-  return Promise.all(Object.keys(searchIndex).map((key) => new Promise((resolve) => {
-    const searchResult = searchIndex[key];
-    if (searchResult.length < 2)
-      return resolve(void 0);
-    ["forw", "bakw"].map((dir) => {
-      const result = intersect(searchResult[0][dir], searchResult[1][dir]);
-      if (!result || result.geometry.type == "Point" || result.geometry.type == "LineString")
-        return resolve(void 0);
-      resolve(void 0);
-    });
-  }))).then(() => {
-    if (Object.keys(retValue.forw).length == 0)
-      delete retValue.forw;
-    if (Object.keys(retValue.bakw).length == 0)
-      delete retValue.bakw;
-    return retValue;
-  }).catch((err) => {
-    throw err;
-  });
-}
-function insertSearchIndex(searchIndex, tris, tins) {
-  const keys2 = calcSearchKeys(tris.forw);
-  const bakKeys = calcSearchKeys(tris.bakw);
-  if (JSON.stringify(keys2) != JSON.stringify(bakKeys))
-    throw `${JSON.stringify(tris, null, 2)}
-${JSON.stringify(keys2)}
-${JSON.stringify(bakKeys)}`;
-  for (let i = 0; i < keys2.length; i++) {
-    const key = keys2[i];
-    if (!searchIndex[key])
-      searchIndex[key] = [];
-    searchIndex[key].push(tris);
-  }
-  if (tins) {
-    tins.forw.features.push(tris.forw);
-    tins.bakw.features.push(tris.bakw);
-  }
-}
-function removeSearchIndex(searchIndex, tris, tins) {
-  const keys2 = calcSearchKeys(tris.forw);
-  const bakKeys = calcSearchKeys(tris.bakw);
-  if (JSON.stringify(keys2) != JSON.stringify(bakKeys))
-    throw `${JSON.stringify(tris, null, 2)}
-${JSON.stringify(keys2)}
-${JSON.stringify(bakKeys)}`;
-  for (let i = 0; i < keys2.length; i++) {
-    const key = keys2[i];
-    const newArray = searchIndex[key].filter((eachTris) => eachTris.forw != tris.forw);
-    if (newArray.length == 0)
-      delete searchIndex[key];
-    else
-      searchIndex[key] = newArray;
-  }
-  if (tins) {
-    let newArray = tins.forw.features.filter((eachTri) => eachTri != tris.forw);
-    tins.forw.features = newArray;
-    newArray = tins.bakw.features.filter((eachTri) => eachTri != tris.bakw);
-    tins.bakw.features = newArray;
-  }
-}
-function calcSearchKeys(tri) {
-  const vtx = ["a", "b", "c"].map((key) => tri.properties[key].index);
-  return [
-    [0, 1],
-    [0, 2],
-    [1, 2],
-    [0, 1, 2]
-  ].map((set) => set.map((i) => vtx[i]).sort().join("-")).sort();
-}
-globalThis.Tin = Tin;
+};
+_23(O, "VERTEX_PLAIN", "plain"), _23(O, "VERTEX_BIRDEYE", "birdeye"), _23(O, "MODE_STRICT", "strict"), _23(O, "MODE_AUTO", "auto"), _23(O, "MODE_LOOSE", "loose"), _23(O, "STATUS_STRICT", "strict"), _23(O, "STATUS_ERROR", "strict_error"), _23(O, "STATUS_LOOSE", "loose"), _23(O, "YAXIS_FOLLOW", "follow"), _23(O, "YAXIS_INVERT", "invert");
+let H = O;
 const keys = [
   "title",
   "attr",
@@ -21138,6 +18058,7 @@ async function store2HistMap4Core(store) {
   return store2HistMap_internal(store, false, true);
 }
 async function store2HistMap_internal(store, byCompiled, coreLogic) {
+  var _a, _b;
   const ret = coreLogic ? store : {};
   const tins = [];
   keys.forEach((key) => {
@@ -21146,20 +18067,17 @@ async function store2HistMap_internal(store, byCompiled, coreLogic) {
   if (store["imageExtention"] || store["imageExtension"])
     ret["imageExtension"] = store["imageExtension"] || store["imageExtention"];
   if (store.compiled) {
-    const opt = {};
-    if (!store.compiled.wh) opt.wh = [store.width, store.height];
-    if (!store.compiled.strictMode) opt.strictMode = store.strictMode;
-    if (!store.compiled.vertexMode) opt.vertexMode = store.vertexMode;
-    if (!store.compiled.yaxisMode) opt.yaxisMode = store.yaxisMode;
-    let tin = new Tin(opt);
+    let tin = new H();
     tin.setCompiled(store.compiled);
-    ret.strictMode = tin.strictMode;
-    ret.vertexMode = tin.vertexMode;
-    ret.yaxisMode = tin.yaxisMode;
-    ret.width = tin.wh[0];
-    ret.height = tin.wh[1];
-    ret.gcps = tin.points;
-    ret.edges = tin.edges;
+    tin.addIndexedTin();
+    const transform2 = tin;
+    ret.strictMode = transform2.strictMode;
+    ret.vertexMode = transform2.vertexMode;
+    ret.yaxisMode = transform2.yaxisMode;
+    ret.width = (_a = transform2.wh) == null ? void 0 : _a[0];
+    ret.height = (_b = transform2.wh) == null ? void 0 : _b[1];
+    ret.gcps = transform2.points;
+    ret.edges = transform2.edges;
     tins.push(tin);
   } else {
     ret.strictMode = store.strictMode;
@@ -21187,12 +18105,9 @@ async function store2HistMap_internal(store, byCompiled, coreLogic) {
       sub.importance = sub_map.importance;
       sub.priority = sub_map.priority;
       if (sub_map.compiled) {
-        const opt = {};
-        if (!sub_map.compiled.strictMode) opt.strictMode = store.strictMode;
-        if (!sub_map.compiled.vertexMode) opt.vertexMode = store.vertexMode;
-        if (!sub_map.compiled.yaxisMode) opt.yaxisMode = store.yaxisMode;
-        let tin = new Tin(opt);
+        let tin = new H();
         tin.setCompiled(sub_map.compiled);
+        tin.addIndexedTin();
         sub.bounds = tin.bounds;
         sub.gcps = tin.points;
         sub.edges = tin.edges;
@@ -21220,35 +18135,9 @@ async function store2HistMap_internal(store, byCompiled, coreLogic) {
 }
 async function createTinFromGcpsAsync(strict, vertex, yaxis, gcps = [], edges = [], wh, bounds) {
   if (gcps.length < 3) return "tooLessGcps";
-  const tin = new Tin({
-    yaxisMode: yaxis
-  });
-  if (wh) {
-    tin.setWh(wh);
-  } else if (bounds) {
-    tin.setBounds(bounds);
-  } else {
-    throw "Both wh and bounds are missing";
-  }
-  tin.setStrictMode(strict);
-  tin.setVertexMode(vertex);
-  tin.setPoints(gcps);
-  tin.setEdges(edges);
-  try {
-    await tin.updateTinAsync();
-    return tin;
-  } catch (err) {
-    console.log(err);
-    if (err == "SOME POINTS OUTSIDE") {
-      return "pointsOutside";
-    } else if (err.indexOf("TOO LINEAR") == 0) {
-      return "tooLinear";
-    } else if (err.indexOf("Vertex indices of edge") > -1 || err.indexOf("is degenerate!") > -1 || err.indexOf("already exists or intersects with an existing edge!") > -1) {
-      return "edgeError";
-    } else {
-      throw err;
-    }
-  }
+  console.error("@maplat/transform requires pre-compiled data. Cannot create from GCPs.");
+  console.error("Please use @maplat/editor or a separate tool to generate compiled data.");
+  return "compiledRequired";
 }
 class HistMap_tin extends HistMap {
   constructor(options = {}) {
@@ -21276,9 +18165,9 @@ class HistMap_tin extends HistMap {
     transformDirect("EPSG:4326", proj);
     if (options.sub_maps) {
       options.sub_maps.map((sub_map, i) => {
-        const index2 = i + 1;
-        const projKey = `Illst:${obj.mapID}#${index2}`;
-        const tin = obj.tins[index2];
+        const index = i + 1;
+        const projKey = `Illst:${obj.mapID}#${index}`;
+        const tin = obj.tins[index];
         const proj2 = new Projection({
           code: projKey,
           extent: [tin.xy[0], tin.xy[1], tin.wh[0], tin.wh[1]],
@@ -21317,13 +18206,13 @@ class HistMap_tin extends HistMap {
   }
   xy2MercAsync_returnLayer(xy) {
     return new Promise((resolve, reject) => {
-      const tinSorted = this.tins.map((tin, index2) => [index2, tin]).sort((a, b) => a[1].priority < b[1].priority ? 1 : -1);
+      const tinSorted = this.tins.map((tin, index) => [index, tin]).sort((a, b) => a[1].priority < b[1].priority ? 1 : -1);
       for (let i = 0; i < tinSorted.length; i++) {
-        const index2 = tinSorted[i][0];
+        const index = tinSorted[i][0];
         const tin = tinSorted[i][1];
-        if (index2 == 0 || booleanPointInPolygon$1(xy, tin.xyBounds)) {
-          this.xy2MercAsync_specifyLayer(xy, index2).then((merc) => {
-            resolve([index2, merc]);
+        if (index == 0 || turf_boolean_point_in_polygon_default(xy, tin.xyBounds)) {
+          this.xy2MercAsync_specifyLayer(xy, index).then((merc) => {
+            resolve([index, merc]);
           }).catch((err) => {
             reject(err);
           });
@@ -21335,12 +18224,12 @@ class HistMap_tin extends HistMap {
   merc2XyAsync_returnLayer(merc) {
     return Promise.all(
       this.tins.map(
-        (tin, index2) => new Promise((resolve, reject) => {
-          this.merc2XyAsync_specifyLayer(merc, index2).then((xy) => {
-            if (index2 === 0 || booleanPointInPolygon$1(xy, tin.xyBounds)) {
-              resolve([tin, index2, xy]);
+        (tin, index) => new Promise((resolve, reject) => {
+          this.merc2XyAsync_specifyLayer(merc, index).then((xy) => {
+            if (index === 0 || turf_boolean_point_in_polygon_default(xy, tin.xyBounds)) {
+              resolve([tin, index, xy]);
             } else {
-              resolve([tin, index2]);
+              resolve([tin, index]);
             }
           }).catch((err) => {
             reject(err);
@@ -21351,30 +18240,30 @@ class HistMap_tin extends HistMap {
       (results) => results.sort((a, b) => a[0].priority < b[0].priority ? 1 : -1).reduce(
         (ret, result, priIndex, arry) => {
           const tin = result[0];
-          const index2 = result[1];
+          const index = result[1];
           const xy = result[2];
           if (!xy) return ret;
           for (let i = 0; i < priIndex; i++) {
             const targetTin = arry[i][0];
             const targetIndex = arry[i][1];
-            if (targetIndex === 0 || booleanPointInPolygon$1(xy, targetTin.xyBounds)) {
+            if (targetIndex === 0 || turf_boolean_point_in_polygon_default(xy, targetTin.xyBounds)) {
               if (ret.length) {
                 const hide = !ret[0];
                 const storedTin = hide ? ret[1][2] : ret[0][2];
                 if (!hide || tin.importance < storedTin.importance) {
                   return ret;
                 } else {
-                  return [void 0, [index2, xy, tin]];
+                  return [void 0, [index, xy, tin]];
                 }
               } else {
-                return [void 0, [index2, xy, tin]];
+                return [void 0, [index, xy, tin]];
               }
             }
           }
           if (!ret.length || !ret[0]) {
-            return [[index2, xy, tin]];
+            return [[index, xy, tin]];
           } else {
-            ret.push([index2, xy, tin]);
+            ret.push([index, xy, tin]);
             return ret.sort((a, b) => a[2].importance < b[2].importance ? 1 : -1).filter((_row, i) => i < 2);
           }
         },
@@ -21388,7 +18277,7 @@ class HistMap_tin extends HistMap {
   setupMapParameter(callback) {
     const xy = [this.width / 2, this.height / 2];
     this.xy2MercAsync_returnLayer(xy).then((results) => {
-      const index2 = results[0];
+      const index = results[0];
       const mercCenter = results[1];
       const dir4 = [
         [xy[0] - 150, xy[1]],
@@ -21404,7 +18293,7 @@ class HistMap_tin extends HistMap {
       ];
       const proms = [];
       for (let i = 0; i < 9; i++) {
-        const prom = i < 4 ? this.xy2MercAsync_specifyLayer(dir4[i], index2) : i == 4 ? Promise.resolve(mercCenter) : this.xy2MercAsync_specifyLayer(envelope[i - 5], 0);
+        const prom = i < 4 ? this.xy2MercAsync_specifyLayer(dir4[i], index) : i == 4 ? Promise.resolve(mercCenter) : this.xy2MercAsync_specifyLayer(envelope[i - 5], 0);
         proms.push(prom);
       }
       Promise.all(proms).then((mercs) => {
@@ -21439,13 +18328,13 @@ class HistMap_tin extends HistMap {
               hide = true;
               return;
             }
-            const index2 = result[0];
+            const index = result[0];
             const centerXy = result[1];
             if (i !== 0 && !hide) return Promise.resolve([centerXy]);
             return Promise.all(
-              mercs[0].map((merc, j) => {
-                if (j === 0) return Promise.resolve(centerXy);
-                return this.merc2XyAsync_specifyLayer(merc, index2);
+              mercs[0].map((merc, j2) => {
+                if (j2 === 0) return Promise.resolve(centerXy);
+                return this.merc2XyAsync_specifyLayer(merc, index);
               })
             );
           })
@@ -21483,14 +18372,14 @@ class HistMap_tin extends HistMap {
   // 画面サイズと地図ズームから、メルカトル座標上での5座標を取得する。zoom, rotate無指定の場合は自動取得
   viewpoint2MercsAsync(viewpoint, size) {
     const sysCoords = this.viewpoint2SysCoords(viewpoint, size);
-    const cross2 = this.sysCoords2Xys(sysCoords);
-    const promise = this.xy2MercAsync_returnLayer(cross2[0][0]);
+    const cross = this.sysCoords2Xys(sysCoords);
+    const promise = this.xy2MercAsync_returnLayer(cross[0][0]);
     return promise.then((results) => {
-      const index2 = results[0];
+      const index = results[0];
       const centerMerc = results[1];
-      const promises = cross2[0].map((val, i) => {
+      const promises = cross[0].map((val, i) => {
         if (i === 0) return Promise.resolve(centerMerc);
-        return this.xy2MercAsync_specifyLayer(val, index2);
+        return this.xy2MercAsync_specifyLayer(val, index);
       });
       return Promise.all(promises).then((mercs) => [mercs, size]);
     });
@@ -21499,12 +18388,12 @@ class HistMap_tin extends HistMap {
     const promises = this.merc2XyAsync_returnLayer(mercs[0][0]).then(
       (results) => {
         const result = results[0] || results[1];
-        const index2 = result[0];
+        const index = result[0];
         const centerXy = result[1];
         return Promise.all(
           mercs[0].map((merc, i) => {
             if (i === 0) return centerXy;
-            return this.merc2XyAsync_specifyLayer(merc, index2);
+            return this.merc2XyAsync_specifyLayer(merc, index);
           })
         );
       }
@@ -21859,9 +18748,9 @@ function decode(body) {
   var form = new FormData();
   body.trim().split("&").forEach(function(bytes) {
     if (bytes) {
-      var split2 = bytes.split("=");
-      var name = split2.shift().replace(/\+/g, " ");
-      var value = split2.join("=").replace(/\+/g, " ");
+      var split = bytes.split("=");
+      var name = split.shift().replace(/\+/g, " ");
+      var value = split.join("=").replace(/\+/g, " ");
       form.append(decodeURIComponent(name), decodeURIComponent(value));
     }
   });
@@ -21879,8 +18768,8 @@ function parseHeaders(rawHeaders) {
       var value = parts.join(":").trim();
       try {
         headers.append(key, value);
-      } catch (error3) {
-        console.warn("Response " + error3.message);
+      } catch (error2) {
+        console.warn("Response " + error2.message);
       }
     }
   });
@@ -21935,8 +18824,8 @@ try {
   DOMException = function(message, name) {
     this.message = message;
     this.name = name;
-    var error3 = Error(message);
-    this.stack = error3.stack;
+    var error2 = Error(message);
+    this.stack = error2.stack;
   };
   DOMException.prototype = Object.create(Error.prototype);
   DOMException.prototype.constructor = DOMException;
@@ -22106,7 +18995,7 @@ async function mapSourceFactory(options, commonOptions) {
   options = normalizeArg(Object.assign(options, commonOptions));
   options.label = options.label || options.year;
   if (checkMapTypeIsWMTS(options.maptype)) {
-    const targetSrc = options.maptype === "base" ? NowMap : options.maptype === "overlay" ? TmsMap : options.maptype === "mapbox" ? MapboxMap : GoogleMap;
+    const targetSrc = options.maptype === "base" ? NowMap : options.maptype === "overlay" ? TmsMap : options.maptype === "mapbox" ? MapboxStyleMap : GoogleMap;
     if (!targetSrc.isBasemap()) {
       if (!options.homePosition) options.homePosition = options.homePos;
       if (!options.mercZoom) options.mercZoom = options.defZoom;
@@ -22152,12 +19041,12 @@ async function mapSourceFactory(options, commonOptions) {
           if (typeof resp != "object") resp = JSON.parse(resp);
           options = normalizeArg(Object.assign(resp, options));
           options.label = options.label || resp.year;
-          if (options.translator) {
+          if (options.translator && options.url) {
             options.url = options.translator(options.url);
           }
           if (!options.maptype) options.maptype = "maplat";
           if (checkMapTypeIsWMTS(options.maptype)) {
-            const targetSrc = options.maptype === "base" ? NowMap : options.maptype === "overlay" ? TmsMap : options.maptype === "mapbox" ? MapboxMap : GoogleMap;
+            const targetSrc = options.maptype === "base" ? NowMap : options.maptype === "overlay" ? TmsMap : options.maptype === "mapbox" ? MapboxStyleMap : GoogleMap;
             if (!targetSrc.isBasemap()) {
               if (!options.homePosition) options.homePosition = options.homePos;
               if (!options.mercZoom) options.mercZoom = options.defZoom;
@@ -22251,8 +19140,8 @@ async function registerMapToSW(options) {
       },
       [Infinity, -Infinity, Infinity, -Infinity]
     );
-    ["minLng", "maxLng", "minLat", "maxLat"].map((key, index2) => {
-      setting[key] = minMax[index2];
+    ["minLng", "maxLng", "minLat", "maxLat"].map((key, index) => {
+      setting[key] = minMax[index];
     });
   }
   let ret;
@@ -22290,9 +19179,9 @@ var freeGlobal = typeof globalThis == "object" && globalThis && globalThis.Objec
 var freeSelf = typeof self == "object" && self && self.Object === Object && self;
 var root = freeGlobal || freeSelf || Function("return this")();
 function arrayMap(array, iteratee) {
-  var index2 = -1, length2 = array == null ? 0 : array.length, result = Array(length2);
-  while (++index2 < length2) {
-    result[index2] = iteratee(array[index2], index2, array);
+  var index = -1, length = array == null ? 0 : array.length, result = Array(length);
+  while (++index < length) {
+    result[index] = iteratee(array[index], index, array);
   }
   return result;
 }
@@ -22463,16 +19352,16 @@ lodash_template.exports;
     return func.apply(thisArg, args);
   }
   function arrayMap2(array, iteratee) {
-    var index2 = -1, length2 = array == null ? 0 : array.length, result = Array(length2);
-    while (++index2 < length2) {
-      result[index2] = iteratee(array[index2], index2, array);
+    var index = -1, length = array == null ? 0 : array.length, result = Array(length);
+    while (++index < length) {
+      result[index] = iteratee(array[index], index, array);
     }
     return result;
   }
   function baseTimes(n, iteratee) {
-    var index2 = -1, result = Array(n);
-    while (++index2 < n) {
-      result[index2] = iteratee(index2);
+    var index = -1, result = Array(n);
+    while (++index < n) {
+      result[index] = iteratee(index);
     }
     return result;
   }
@@ -22522,13 +19411,13 @@ lodash_template.exports;
   var nativeIsBuffer = Buffer2 ? Buffer2.isBuffer : void 0, nativeKeys = overArg(Object.keys, Object), nativeMax = Math.max, nativeNow = Date.now;
   var symbolProto2 = Symbol2 ? Symbol2.prototype : void 0, symbolToString2 = symbolProto2 ? symbolProto2.toString : void 0;
   function arrayLikeKeys(value, inherited) {
-    var isArr = isArray2(value), isArg = !isArr && isArguments(value), isBuff = !isArr && !isArg && isBuffer(value), isType = !isArr && !isArg && !isBuff && isTypedArray(value), skipIndexes = isArr || isArg || isBuff || isType, result = skipIndexes ? baseTimes(value.length, String) : [], length2 = result.length;
+    var isArr = isArray2(value), isArg = !isArr && isArguments(value), isBuff = !isArr && !isArg && isBuffer(value), isType = !isArr && !isArg && !isBuff && isTypedArray(value), skipIndexes = isArr || isArg || isBuff || isType, result = skipIndexes ? baseTimes(value.length, String) : [], length = result.length;
     for (var key in value) {
       if ((inherited || hasOwnProperty2.call(value, key)) && !(skipIndexes && // Safari 9 has enumerable `arguments.length` in strict mode.
       (key == "length" || // Node.js 0.10 has enumerable non-index properties on buffers.
       isBuff && (key == "offset" || key == "parent") || // PhantomJS 2 has enumerable non-index properties on typed arrays.
       isType && (key == "buffer" || key == "byteLength" || key == "byteOffset") || // Skip index properties.
-      isIndex(key, length2)))) {
+      isIndex(key, length)))) {
         result.push(key);
       }
     }
@@ -22622,9 +19511,9 @@ lodash_template.exports;
   function copyObject(source, props, object, customizer) {
     var isNew = !object;
     object || (object = {});
-    var index2 = -1, length2 = props.length;
-    while (++index2 < length2) {
-      var key = props[index2];
+    var index = -1, length = props.length;
+    while (++index < length) {
+      var key = props[index];
       var newValue = customizer ? customizer(object[key], source[key], key, object, source) : void 0;
       if (newValue === void 0) {
         newValue = source[key];
@@ -22639,17 +19528,17 @@ lodash_template.exports;
   }
   function createAssigner(assigner) {
     return baseRest(function(object, sources) {
-      var index2 = -1, length2 = sources.length, customizer = length2 > 1 ? sources[length2 - 1] : void 0, guard = length2 > 2 ? sources[2] : void 0;
-      customizer = assigner.length > 3 && typeof customizer == "function" ? (length2--, customizer) : void 0;
+      var index = -1, length = sources.length, customizer = length > 1 ? sources[length - 1] : void 0, guard = length > 2 ? sources[2] : void 0;
+      customizer = assigner.length > 3 && typeof customizer == "function" ? (length--, customizer) : void 0;
       if (guard && isIterateeCall(sources[0], sources[1], guard)) {
-        customizer = length2 < 3 ? void 0 : customizer;
-        length2 = 1;
+        customizer = length < 3 ? void 0 : customizer;
+        length = 1;
       }
       object = Object(object);
-      while (++index2 < length2) {
-        var source = sources[index2];
+      while (++index < length) {
+        var source = sources[index];
         if (source) {
-          assigner(object, source, index2, customizer);
+          assigner(object, source, index, customizer);
         }
       }
       return object;
@@ -22682,18 +19571,18 @@ lodash_template.exports;
     }
     return result;
   }
-  function isIndex(value, length2) {
+  function isIndex(value, length) {
     var type = typeof value;
-    length2 = length2 == null ? MAX_SAFE_INTEGER : length2;
-    return !!length2 && (type == "number" || type != "symbol" && reIsUint.test(value)) && (value > -1 && value % 1 == 0 && value < length2);
+    length = length == null ? MAX_SAFE_INTEGER : length;
+    return !!length && (type == "number" || type != "symbol" && reIsUint.test(value)) && (value > -1 && value % 1 == 0 && value < length);
   }
-  function isIterateeCall(value, index2, object) {
+  function isIterateeCall(value, index, object) {
     if (!isObject2(object)) {
       return false;
     }
-    var type = typeof index2;
-    if (type == "number" ? isArrayLike2(object) && isIndex(index2, object.length) : type == "string" && index2 in object) {
-      return eq(object[index2], value);
+    var type = typeof index;
+    if (type == "number" ? isArrayLike(object) && isIndex(index, object.length) : type == "string" && index in object) {
+      return eq(object[index], value);
     }
     return false;
   }
@@ -22719,14 +19608,14 @@ lodash_template.exports;
   function overRest(func, start, transform2) {
     start = nativeMax(start === void 0 ? func.length - 1 : start, 0);
     return function() {
-      var args = arguments, index2 = -1, length2 = nativeMax(args.length - start, 0), array = Array(length2);
-      while (++index2 < length2) {
-        array[index2] = args[start + index2];
+      var args = arguments, index = -1, length = nativeMax(args.length - start, 0), array = Array(length);
+      while (++index < length) {
+        array[index] = args[start + index];
       }
-      index2 = -1;
+      index = -1;
       var otherArgs = Array(start + 1);
-      while (++index2 < start) {
-        otherArgs[index2] = args[index2];
+      while (++index < start) {
+        otherArgs[index] = args[index];
       }
       otherArgs[start] = transform2(array);
       return apply(func, this, otherArgs);
@@ -22770,7 +19659,7 @@ lodash_template.exports;
     return isObjectLike2(value) && hasOwnProperty2.call(value, "callee") && !propertyIsEnumerable.call(value, "callee");
   };
   var isArray2 = Array.isArray;
-  function isArrayLike2(value) {
+  function isArrayLike(value) {
     return value != null && isLength(value.length) && !isFunction(value);
   }
   var isBuffer = nativeIsBuffer || stubFalse;
@@ -22820,10 +19709,10 @@ lodash_template.exports;
     copyObject(source, keysIn(source), object, customizer);
   });
   function keys2(object) {
-    return isArrayLike2(object) ? arrayLikeKeys(object) : baseKeys(object);
+    return isArrayLike(object) ? arrayLikeKeys(object) : baseKeys(object);
   }
   function keysIn(object) {
-    return isArrayLike2(object) ? arrayLikeKeys(object, true) : baseKeysIn(object);
+    return isArrayLike(object) ? arrayLikeKeys(object, true) : baseKeysIn(object);
   }
   function template2(string, options, guard) {
     var settings = templateSettings2.imports._.templateSettings || templateSettings2;
@@ -22833,7 +19722,7 @@ lodash_template.exports;
     string = toString2(string);
     options = assignInWith({}, options, settings, customDefaultsAssignIn);
     var imports = assignInWith({}, options.imports, settings.imports, customDefaultsAssignIn), importsKeys = keys2(imports), importsValues = baseValues(imports, importsKeys);
-    var isEscaping, isEvaluating, index2 = 0, interpolate = options.interpolate || reNoMatch, source = "__p += '";
+    var isEscaping, isEvaluating, index = 0, interpolate = options.interpolate || reNoMatch, source = "__p += '";
     var reDelimiters = RegExp(
       (options.escape || reNoMatch).source + "|" + interpolate.source + "|" + (interpolate === reInterpolate2 ? reEsTemplate : reNoMatch).source + "|" + (options.evaluate || reNoMatch).source + "|$",
       "g"
@@ -22841,7 +19730,7 @@ lodash_template.exports;
     var sourceURL = hasOwnProperty2.call(options, "sourceURL") ? "//# sourceURL=" + (options.sourceURL + "").replace(/[\r\n]/g, " ") + "\n" : "";
     string.replace(reDelimiters, function(match, escapeValue, interpolateValue, esTemplateValue, evaluateValue, offset) {
       interpolateValue || (interpolateValue = esTemplateValue);
-      source += string.slice(index2, offset).replace(reUnescapedString, escapeStringChar);
+      source += string.slice(index, offset).replace(reUnescapedString, escapeStringChar);
       if (escapeValue) {
         isEscaping = true;
         source += "' +\n__e(" + escapeValue + ") +\n'";
@@ -22853,7 +19742,7 @@ lodash_template.exports;
       if (interpolateValue) {
         source += "' +\n((__t = (" + interpolateValue + ")) == null ? '' : __t) +\n'";
       }
-      index2 = offset + match.length;
+      index = offset + match.length;
       return match;
     });
     source += "';\n";
@@ -22942,12 +19831,12 @@ const GeolocationErrorType = {
   ERROR: "error"
 };
 class GeolocationError extends BaseEvent {
-  constructor(error3) {
+  constructor(error2) {
     super(GeolocationErrorType.ERROR);
     __publicField(this, "code");
     __publicField(this, "message");
-    this.code = error3.code;
-    this.message = error3.message;
+    this.code = error2.code;
+    this.message = error2.message;
   }
 }
 class Geolocation extends BaseObject {
@@ -23039,14 +19928,14 @@ class Geolocation extends BaseObject {
   }
   timerPositionError_() {
     const code = Math.floor(Math.random() * 3) + 1;
-    const error3 = {
+    const error2 = {
       code,
       message: code === 1 ? "User denied Geolocation" : code === 2 ? "Position unavailable" : "Timeout expired"
     };
-    this.positionError_(error3);
+    this.positionError_(error2);
   }
-  positionError_(error3) {
-    const desc = new GeolocationError(error3);
+  positionError_(error2) {
+    const desc = new GeolocationError(error2);
     this.dispatchEvent(desc);
   }
   getAccuracy() {
@@ -23134,7 +20023,7 @@ class MaplatApp extends Target {
     __publicField(this, "vectors", []);
     __publicField(this, "mapDivDocument");
     __publicField(this, "mapObject");
-    __publicField(this, "mapboxMap");
+    // mapboxMap: any; // Removed - Mapbox GL JS support discontinued
     __publicField(this, "googleApiKey");
     __publicField(this, "pois");
     __publicField(this, "poiTemplate");
@@ -23161,9 +20050,8 @@ class MaplatApp extends Target {
     appOption = normalizeArg(appOption);
     this.appid = appOption.appid || "sample";
     if (appOption.mapboxToken) {
-      if (typeof mapboxgl !== "undefined" && mapboxgl) {
-        mapboxgl.accessToken = appOption.mapboxToken;
-      }
+      console.error("Mapbox GL JS support has been removed. Please use OpenLayers with Mapbox styles instead.");
+      console.error("Set 'maptype: 'mapbox'' in your source configuration and provide a 'style' URL.");
     }
     if (appOption.googleApiKey) {
       this.googleApiKey = appOption.googleApiKey;
@@ -23481,29 +20369,6 @@ class MaplatApp extends Target {
         div: backDiv
       });
     }
-    if (typeof mapboxgl !== "undefined" && mapboxgl) {
-      const mapboxDiv = `${this.mapDiv}_mapbox`;
-      newElem = createElement(
-        `<div id="${mapboxDiv}" class="map" style="top:0; left:0; right:0; bottom:0; position:absolute;visibility:hidden;"></div>`
-      )[0];
-      this.mapDivDocument.insertBefore(
-        newElem,
-        this.mapDivDocument.firstChild
-      );
-      this.mapboxMap = new mapboxgl.Map({
-        attributionControl: false,
-        boxZoom: false,
-        container: mapboxDiv,
-        doubleClickZoom: false,
-        dragPan: false,
-        dragRotate: false,
-        interactive: false,
-        keyboard: false,
-        pitchWithRotate: false,
-        scrollZoom: false,
-        touchZoomRotate: false
-      });
-    }
     this.startFrom = this.appData.startFrom;
     return {
       homePos,
@@ -23529,12 +20394,6 @@ class MaplatApp extends Target {
     for (let i = 0; i < sources.length; i++) {
       const source = sources[i];
       source.setMap(this.mapObject);
-      if (source.isMapbox()) {
-        if (!this.mapboxMap) {
-          throw "Mapbox GL support is being removed. Please use OpenLayers vector tiles instead.";
-        }
-        source.mapboxMap = this.mapboxMap;
-      }
       cache2.push(source);
       this.cacheHash[source.mapID] = source;
     }
@@ -23700,9 +20559,9 @@ class MaplatApp extends Target {
   setMouseCursor() {
     const moveHandler = (evt) => {
       const pixel = evt.target.getEventPixel(evt.originalEvent);
-      const hit2 = evt.target.hasFeatureAtPixel(pixel);
+      const hit = evt.target.hasFeatureAtPixel(pixel);
       const target = evt.target.getTarget();
-      if (hit2) {
+      if (hit) {
         const feature2 = evt.target.forEachFeatureAtPixel(
           evt.pixel,
           (feature22) => {
@@ -24189,7 +21048,7 @@ class MaplatApp extends Target {
     }
     return this.changeMapSeq = this.changeMapSeq.then(
       () => new Promise((resolve, _reject) => {
-        this.convertParametersFromCurrent(to, (size) => {
+        this.convertParametersFromCurrent(to, async (size) => {
           let backSrc = null;
           let backTo = null;
           const backRestore = restore.backgroundID ? this.cacheHash[restore.backgroundID] : void 0;
@@ -24198,7 +21057,7 @@ class MaplatApp extends Target {
             if (!to.isWmts()) {
               if (backRestore) {
                 backTo = backRestore;
-                this.backMap.exchangeSource(backTo);
+                await this.backMap.exchangeSource(backTo);
               } else {
                 if (!backSrc) {
                   backTo = now;
@@ -24208,30 +21067,30 @@ class MaplatApp extends Target {
                       this.from
                     );
                   }
-                  this.backMap.exchangeSource(backTo);
+                  await this.backMap.exchangeSource(backTo);
                 } else {
                   backTo = backSrc;
                 }
               }
               this.requestUpdateState({ backgroundID: backTo.mapID });
             } else {
-              this.backMap.exchangeSource();
+              await this.backMap.exchangeSource();
             }
           }
           if (to instanceof TmsMap) {
             this.mapObject.setLayer(to);
             if (backRestore) {
-              this.mapObject.exchangeSource(backRestore);
+              await this.mapObject.exchangeSource(backRestore);
             } else if (!this.from.isWmts()) {
               const backToLocal = backSrc || now;
-              this.mapObject.exchangeSource(backToLocal);
+              await this.mapObject.exchangeSource(backToLocal);
             }
             this.requestUpdateState({
               backgroundID: this.mapObject.getSource().mapID
             });
           } else {
             this.mapObject.setLayer();
-            this.mapObject.exchangeSource(to);
+            await this.mapObject.exchangeSource(to);
           }
           const updateState = {
             mapID: to.mapID
@@ -24442,9 +21301,9 @@ class MaplatApp extends Target {
       10
     );
     if (this.mercBuffer && this.mercBuffer.mercs && this.mercBuffer.buffer[this.from.mapID]) {
-      const buffer = this.mercBuffer.buffer[this.from.mapID];
-      if (buffer[0][0] == current[0][0] && buffer[0][1] == current[0][1] && buffer[1] == current[1] && buffer[2] == current[2]) {
-        this.logger.debug(buffer);
+      const buffer2 = this.mercBuffer.buffer[this.from.mapID];
+      if (buffer2[0][0] == current[0][0] && buffer2[0][1] == current[0][1] && buffer2[1] == current[1] && buffer2[2] == current[2]) {
+        this.logger.debug(buffer2);
         this.logger.debug(current);
         this.logger.debug("From: Use buffer");
         fromPromise = new Promise((res, _rej) => {
@@ -24523,9 +21382,6 @@ class MaplatApp extends Target {
     });
   }
   remove() {
-    if (this.mapboxMap) {
-      this.mapboxMap.remove();
-    }
     this.mapDivDocument.innerHTML = "";
     this.mapDivDocument.classList.remove("maplat");
   }

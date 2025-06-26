@@ -66,7 +66,7 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
     selectedIcon?: string;
     static isBasemap_ = false;
     static isWmts_ = true;
-    static isMapbox_ = false;
+    // static isMapbox_ = false; // Removed - Mapbox support discontinued
 
     initialize(options: any) {
       options = normalizeArg(options);
@@ -126,7 +126,12 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
       const poisWait = this.resolvePois(options.pois);
       this.initialWait = Promise.all([poisWait, thumbWait]);
 
-      setupTileLoadFunction(this);
+      // Only setup tile load function for XYZ sources (not VectorTile)
+      // VectorTileSource has getFormat method, XYZ does not
+      if (this.getTileLoadFunction && typeof this.getFormat !== 'function' && this.getTileLoadFunction() !== null) {
+        console.log('Setting up tile load function for:', this.constructor.name);
+        setupTileLoadFunction(this);
+      }
     }
 
     static isBasemap() {
@@ -138,9 +143,8 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
     }
 
     static isMapbox() {
-      // TODO: Remove when Mapbox support is removed
-      return false; // Temporarily disabled
-      // return this.isMapbox_;
+      // Mapbox support has been removed
+      return false;
     }
 
     isBasemap() { 
@@ -156,9 +160,8 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
     }
 
     isMapbox() {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      return this.constructor.isMapbox();
+      // Mapbox support has been removed
+      return false;
     }
 
     abstract insideCheckSysCoord(sysCoord: Coordinate): boolean;
@@ -961,6 +964,12 @@ export function setupTileLoadFunction(target: any) {
         });
       };
       return function (tile: any, _src: any) {
+        // Skip processing for VectorTiles
+        if (!tile.getImage || typeof tile.getImage !== 'function') {
+          console.log('Skipping tile load function for non-image tile');
+          return;
+        }
+        
         const zoom = tile.tileCoord[0];
         let tileX = tile.tileCoord[1];
         let tileY = tile.tileCoord[2];
@@ -1046,7 +1055,13 @@ export function setupTileLoadFunction(target: any) {
           .then(rets => {
             const err = rets.reduce((prev, ret) => prev && ret, true);
             if (err) {
-              tile.handleImageError_();
+              // Check if this is an ImageTile (has handleImageError_)
+              if (typeof tile.handleImageError_ === 'function') {
+                tile.handleImageError_();
+              } else {
+                // For VectorTile or other types, just log the error
+                console.error('Error loading tile');
+              }
             } else {
               const dataUrl = tCanv.toDataURL();
               const image = tile.getImage();
@@ -1055,7 +1070,13 @@ export function setupTileLoadFunction(target: any) {
             }
           })
           .catch(_err => {
-            tile.handleImageError_();
+            // Check if this is an ImageTile (has handleImageError_)
+            if (typeof tile.handleImageError_ === 'function') {
+              tile.handleImageError_();
+            } else {
+              // For VectorTile or other types, just log the error
+              console.error('Error loading tile:', _err);
+            }
           });
       };
     })()
