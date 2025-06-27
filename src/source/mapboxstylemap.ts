@@ -123,11 +123,49 @@ export class MapboxStyleMap extends setCustomFunctionBase(VectorTileSource) {
         console.log('Setting up basic vector tile rendering');
         
         // Import style classes
-        const { Style, Fill, Stroke } = await import('ol/style');
+        const { Style, Fill, Stroke, Circle } = await import('ol/style');
         
         // Set a basic style function that can render the tiles
         this.targetLayer.setStyle((feature: any, resolution: any) => {
-          // For now, just render with a basic style to verify tiles are loading
+          const geomType = feature.getGeometry()?.getType();
+          
+          // Different styles for different geometry types
+          if (geomType === 'Point' || geomType === 'MultiPoint') {
+            // Style for POIs
+            return new Style({
+              image: new Circle({
+                radius: 5,
+                fill: new Fill({
+                  color: 'rgba(0, 153, 255, 0.6)'
+                }),
+                stroke: new Stroke({
+                  color: '#0099ff',
+                  width: 1
+                })
+              })
+            });
+          } else if (geomType === 'LineString' || geomType === 'MultiLineString') {
+            // Style for roads, etc.
+            return new Style({
+              stroke: new Stroke({
+                color: '#0099ff',
+                width: 1
+              })
+            });
+          } else if (geomType === 'Polygon' || geomType === 'MultiPolygon') {
+            // Style for buildings, areas, etc.
+            return new Style({
+              fill: new Fill({
+                color: 'rgba(250, 250, 250, 0.8)'
+              }),
+              stroke: new Stroke({
+                color: '#0099ff',
+                width: 1
+              })
+            });
+          }
+          
+          // Default style
           return new Style({
             fill: new Fill({
               color: 'rgba(250, 250, 250, 0.8)'

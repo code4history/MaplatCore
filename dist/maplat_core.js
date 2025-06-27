@@ -14913,8 +14913,41 @@ class MapboxStyleMap extends setCustomFunctionBase(VectorTile2) {
         }
         this.styleJson = styleJson;
         console.log("Setting up basic vector tile rendering");
-        const { Style: Style2, Fill: Fill2, Stroke: Stroke2 } = await import("ol/style");
+        const { Style: Style2, Fill: Fill2, Stroke: Stroke2, Circle: Circle2 } = await import("ol/style");
         this.targetLayer.setStyle((feature2, resolution) => {
+          var _a;
+          const geomType = (_a = feature2.getGeometry()) == null ? void 0 : _a.getType();
+          if (geomType === "Point" || geomType === "MultiPoint") {
+            return new Style2({
+              image: new Circle2({
+                radius: 5,
+                fill: new Fill2({
+                  color: "rgba(0, 153, 255, 0.6)"
+                }),
+                stroke: new Stroke2({
+                  color: "#0099ff",
+                  width: 1
+                })
+              })
+            });
+          } else if (geomType === "LineString" || geomType === "MultiLineString") {
+            return new Style2({
+              stroke: new Stroke2({
+                color: "#0099ff",
+                width: 1
+              })
+            });
+          } else if (geomType === "Polygon" || geomType === "MultiPolygon") {
+            return new Style2({
+              fill: new Fill2({
+                color: "rgba(250, 250, 250, 0.8)"
+              }),
+              stroke: new Stroke2({
+                color: "#0099ff",
+                width: 1
+              })
+            });
+          }
           return new Style2({
             fill: new Fill2({
               color: "rgba(250, 250, 250, 0.8)"
