@@ -36,6 +36,10 @@ export default defineConfig({
           if (assetInfo.name === "style.css") {
             return "maplat_core.css";
           }
+          // Vite 6.x uses "core.css" instead of "style.css"
+          if (assetInfo.name === "core.css") {
+            return "maplat_core.css";
+          }
           return assetInfo.name;
         }
       }
