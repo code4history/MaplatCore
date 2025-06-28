@@ -58,18 +58,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "ol/proj", "../const_ex", "../normalize_pois", "../functions", "@turf/helpers", "@turf/centroid"], factory);
+        define(["require", "exports", "ol/proj", "../const_ex", "../normalize_pois", "../functions", "@turf/helpers", "@turf/centroid", "@turf/turf"], factory);
     }
 })(function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.setupTileLoadFunction = exports.setCustomInitialize = exports.META_KEYS = exports.setCustomFunction = void 0;
+    exports.setupTileLoadFunction = exports.addCommonOptions = exports.META_KEYS = exports.setCustomFunctionMaplat = exports.setCustomFunctionOverlay = exports.setCustomFunctionBase = exports.setCustomFunction = void 0;
     var proj_1 = require("ol/proj");
     var const_ex_1 = require("../const_ex");
     var normalize_pois_1 = require("../normalize_pois");
     var functions_1 = require("../functions");
     var helpers_1 = require("@turf/helpers");
     var centroid_1 = __importDefault(require("@turf/centroid"));
+    var turf_1 = require("@turf/turf");
     function setCustomFunction(Base) {
         var Mixin = (function (_super) {
             __extends(Mixin, _super);
@@ -80,8 +81,88 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 _this.mapID = "";
                 _this.label = "";
                 _this.homeMarginPixels = 0;
+                _this.mercatorXShift = 0;
+                _this.mercatorYShift = 0;
                 return _this;
             }
+            Mixin.prototype.initialize = function (options) {
+                var _this = this;
+                var _a;
+                options = (0, functions_1.normalizeArg)(options);
+                this.mapID = options.mapID;
+                this.homePosition = options.homePosition;
+                this.mercZoom = options.mercZoom;
+                this.label = options.label;
+                this.maxZoom = options.maxZoom;
+                this.minZoom = options.minZoom;
+                this.poiTemplate = options.poiTemplate;
+                this.poiStyle = options.poiStyle;
+                this.iconTemplate = options.iconTemplate;
+                this.icon = options.icon;
+                this.selectedIcon = options.selectedIcon;
+                this.mercatorXShift = options.mercatorXShift;
+                this.mercatorYShift = options.mercatorYShift;
+                this.weiwudi = options.weiwudi;
+                if (options.envelopeLngLats) {
+                    var lngLats = options.envelopeLngLats;
+                    var mercs = lngLats.map(function (lnglat) {
+                        return (0, proj_1.transform)(lnglat, "EPSG:4326", "EPSG:3857");
+                    });
+                    mercs.push(mercs[0]);
+                    this.envelope = (0, helpers_1.polygon)([mercs]);
+                    this.centroid = (_a = (0, centroid_1.default)(this.envelope).geometry) === null || _a === void 0 ? void 0 : _a.coordinates;
+                }
+                for (var i = 0; i < exports.META_KEYS.length; i++) {
+                    var key = exports.META_KEYS[i];
+                    var option_key = META_KEYS_OPTION[i];
+                    this.set(key, options[option_key] || options[key]);
+                }
+                var thumbWait = options.thumbnail
+                    ? new Promise(function (resolve) {
+                        _this.thumbnail = options.thumbnail;
+                        resolve(undefined);
+                    })
+                    : new Promise(function (resolve) {
+                        _this.thumbnail = "./tmbs/".concat(options.mapID, ".jpg");
+                        fetch(_this.thumbnail)
+                            .then(function (response) {
+                            if (response.ok) {
+                                resolve(undefined);
+                            }
+                            else {
+                                _this.thumbnail = "./tmbs/".concat(options.mapID, "_menu.jpg");
+                                resolve(undefined);
+                            }
+                        })
+                            .catch(function (_error) {
+                            _this.thumbnail = "./tmbs/".concat(options.mapID, "_menu.jpg");
+                            resolve(undefined);
+                        });
+                    }).catch(function (_error) {
+                        _this.thumbnail = "./tmbs/".concat(options.mapID || options.sourceID, "_menu.jpg");
+                    });
+                var poisWait = this.resolvePois(options.pois);
+                this.initialWait = Promise.all([poisWait, thumbWait]);
+                setupTileLoadFunction(this);
+            };
+            Mixin.isBasemap = function () {
+                return this.isBasemap_;
+            };
+            Mixin.isWmts = function () {
+                return this.isWmts_;
+            };
+            Mixin.isMapbox = function () {
+                return this.isMapbox_;
+            };
+            Mixin.prototype.isBasemap = function () {
+                return this.constructor.isBasemap();
+            };
+            Mixin.prototype.isWmts = function () {
+                return this.constructor.isWmts();
+            };
+            Mixin.prototype.isMapbox = function () {
+                return this.constructor.isMapbox();
+            };
             Mixin.prototype.getCacheEnable = function () {
                 return !!this.weiwudi;
             };
@@ -317,10 +398,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                     var xys = hide ? results[1] : results[0];
                     var sub = !hide ? results[1] : null;
                     var pos = { xy: xys[0][0] };
-                    if (!_this.insideCheckSysCoord(xys[0][0])) {
-                        map === null || map === void 0 ? void 0 : map.handleGPS(false, true);
+                    if (!_this.insideCheckSysCoord(xys[0][0]))
                         return false;
-                    }
                     var news = xys[0].slice(1);
                     pos.rad = news.reduce(function (prev, curr, index) {
                         var ret = prev +
@@ -584,11 +663,167 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 var _this = this;
                 return Promise.all(xys[0].map(function (xy) { return _this.xy2MercAsync(xy); })).then(function (mercs) { return [mercs, xys[1]]; });
             };
+            Mixin.createAsync = function (options) {
+                return __awaiter(this, void 0, void 0, function () {
+                    return __generator(this, function (_a) {
+                        return [2, new this(options)];
+                    });
+                });
+            };
+            Mixin.isBasemap_ = false;
+            Mixin.isWmts_ = true;
+            Mixin.isMapbox_ = false;
             return Mixin;
         }(Base));
         return Mixin;
     }
     exports.setCustomFunction = setCustomFunction;
+    function setCustomFunctionBase(Base) {
+        var Mixin = (function (_super) {
+            __extends(Mixin, _super);
+            function Mixin() {
+                return _super !== null && _super.apply(this, arguments) || this;
+            }
+            Mixin.prototype.insideCheckXy = function (xy) {
+                if (!this.envelope)
+                    return true;
+                return (0, turf_1.booleanPointInPolygon)(xy, this.envelope);
+            };
+            Mixin.prototype.insideCheckSysCoord = function (histCoords) {
+                return this.insideCheckXy(histCoords);
+            };
+            Mixin.prototype.modulateXyInside = function (xy) {
+                if (!this.centroid)
+                    return xy;
+                var expandLine = (0, turf_1.lineString)([xy, this.centroid]);
+                var intersect = (0, turf_1.lineIntersect)(this.envelope, expandLine);
+                if (intersect.features.length > 0 && intersect.features[0].geometry) {
+                    return intersect.features[0].geometry.coordinates;
+                }
+                else {
+                    return xy;
+                }
+            };
+            Mixin.prototype.modulateSysCoordInside = function (histCoords) {
+                return this.modulateXyInside(histCoords);
+            };
+            Mixin.prototype.merc2XyAsync = function (merc) {
+                return Promise.resolve(merc);
+            };
+            Mixin.prototype.merc2XyAsync_ignoreBackground = function (merc) {
+                return this.merc2XyAsync(merc);
+            };
+            Mixin.prototype.xy2MercAsync = function (xy) {
+                return Promise.resolve(xy);
+            };
+            Mixin.prototype.xy2SysCoord = function (xy) {
+                return xy;
+            };
+            Mixin.prototype.sysCoord2Xy = function (sysCoord) {
+                return sysCoord;
+            };
+            Mixin.prototype.viewpoint2MercsAsync = function (viewpoint, size) {
+                var sysCoords = this.viewpoint2SysCoords(viewpoint, size);
+                var xys = this.sysCoords2Xys(sysCoords);
+                return this.xys2MercsAsync(xys);
+            };
+            Mixin.prototype.mercs2ViewpointAsync = function (mercs) {
+                var _this = this;
+                return this.mercs2XysAsync(mercs).then(function (xys) {
+                    var sysCoords = _this.xys2SysCoords(xys);
+                    return _this.sysCoords2Viewpoint(sysCoords);
+                });
+            };
+            Mixin.prototype.mercs2SysCoordsAsync_multiLayer = function (mercs) {
+                var _this = this;
+                return Promise.all(mercs[0].map(function (merc) { return _this.merc2SysCoordAsync(merc); })).then(function (xys) { return [[xys, mercs[1]]]; });
+            };
+            Mixin.prototype.defZoom = function () {
+                return this.mercZoom;
+            };
+            Mixin.isBasemap_ = true;
+            Mixin.isWmts_ = true;
+            return Mixin;
+        }(setCustomFunction(Base)));
+        return Mixin;
+    }
+    exports.setCustomFunctionBase = setCustomFunctionBase;
+    function setCustomFunctionOverlay(Base) {
+        var Mixin = (function (_super) {
+            __extends(Mixin, _super);
+            function Mixin() {
+                return _super !== null && _super.apply(this, arguments) || this;
+            }
+            return Mixin;
+        }(setCustomFunction(Base)));
+        return Mixin;
+    }
+    exports.setCustomFunctionOverlay = setCustomFunctionOverlay;
+    function setCustomFunctionMaplat(Base) {
+        var Mixin = (function (_super) {
+            __extends(Mixin, _super);
+            function Mixin() {
+                var _this = _super !== null && _super.apply(this, arguments) || this;
+                _this.width = 0;
+                _this.height = 0;
+                _this._maxxy = 0;
+                return _this;
+            }
+            Mixin.prototype.insideCheckXy = function (xy) {
+                return !(xy[0] < 0 ||
+                    xy[0] > this.width ||
+                    xy[1] < 0 ||
+                    xy[1] > this.height);
+            };
+            Mixin.prototype.insideCheckSysCoord = function (sysCoord) {
+                return this.insideCheckXy(this.sysCoord2Xy(sysCoord));
+            };
+            Mixin.prototype.modulateXyInside = function (xy) {
+                var dx = xy[0] / (this.width / 2) - 1;
+                var dy = xy[1] / (this.height / 2) - 1;
+                var da = Math.max(Math.abs(dx), Math.abs(dy));
+                return [
+                    ((dx / da + 1) * this.width) / 2,
+                    ((dy / da + 1) * this.height) / 2
+                ];
+            };
+            Mixin.prototype.modulateSysCoordInside = function (histCoords) {
+                var xy = this.sysCoord2Xy(histCoords);
+                var ret = this.modulateXyInside(xy);
+                return this.xy2SysCoord(ret);
+            };
+            Mixin.prototype.xy2SysCoord = function (xy) {
+                var sysCoordX = (xy[0] * (2 * const_ex_1.MERC_MAX)) / this._maxxy - const_ex_1.MERC_MAX;
+                var sysCoordY = -1 * ((xy[1] * (2 * const_ex_1.MERC_MAX)) / this._maxxy - const_ex_1.MERC_MAX);
+                return [sysCoordX, sysCoordY];
+            };
+            Mixin.prototype.sysCoord2Xy = function (sysCoord) {
+                var x = ((sysCoord[0] + const_ex_1.MERC_MAX) * this._maxxy) / (2 * const_ex_1.MERC_MAX);
+                var y = ((-sysCoord[1] + const_ex_1.MERC_MAX) * this._maxxy) / (2 * const_ex_1.MERC_MAX);
+                return [x, y];
+            };
+            Mixin.prototype.defZoom = function (screenSize) {
+                var screenWidth = screenSize[0];
+                var screenHeight = screenSize[1];
+                var delZoomOfWidth = Math.log2((screenWidth - 10) / this.width);
+                var delZoomOfHeight = Math.log2((screenHeight - 10) / this.height);
+                var maxZoom = this.maxZoom;
+                var delZoom;
+                if (delZoomOfHeight > delZoomOfWidth) {
+                    delZoom = delZoomOfHeight;
+                }
+                else {
+                    delZoom = delZoomOfWidth;
+                }
+                return maxZoom + delZoom;
+            };
+            Mixin.isBasemap_ = false;
+            Mixin.isWmts_ = false;
+            return Mixin;
+        }(setCustomFunction(Base)));
+        return Mixin;
+    }
+    exports.setCustomFunctionMaplat = setCustomFunctionMaplat;
     exports.META_KEYS = [
         "title",
         "officialTitle",
@@ -619,65 +854,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         "reference",
         "description"
     ];
-    function setCustomInitialize(self, options) {
-        var _a;
+    function addCommonOptions(options) {
         options = (0, functions_1.normalizeArg)(options);
-        self.mapID = options.mapID;
-        self.homePosition = options.homePosition;
-        self.mercZoom = options.mercZoom;
-        self.label = options.label;
-        self.maxZoom = options.maxZoom;
-        self.minZoom = options.minZoom;
-        self.poiTemplate = options.poiTemplate;
-        self.poiStyle = options.poiStyle;
-        self.iconTemplate = options.iconTemplate;
-        self.icon = options.icon;
-        self.selectedIcon = options.selectedIcon;
-        self.mercatorXShift = options.mercatorXShift;
-        self.mercatorYShift = options.mercatorYShift;
-        self.weiwudi = options.weiwudi;
-        if (options.envelopeLngLats) {
-            var lngLats = options.envelopeLngLats;
-            var mercs = lngLats.map(function (lnglat) {
-                return (0, proj_1.transform)(lnglat, "EPSG:4326", "EPSG:3857");
-            });
-            mercs.push(mercs[0]);
-            self.envelope = (0, helpers_1.polygon)([mercs]);
-            self.centroid = (_a = (0, centroid_1.default)(self.envelope).geometry) === null || _a === void 0 ? void 0 : _a.coordinates;
+        if (!options.imageExtension)
+            options.imageExtension = "jpg";
+        if (options.mapID && !options.url && !options.urls) {
+            options.url = options.tms
+                ? "tiles/".concat(options.mapID, "/{z}/{x}/{-y}.").concat(options.imageExtension)
+                : "tiles/".concat(options.mapID, "/{z}/{x}/{y}.").concat(options.imageExtension);
         }
-        for (var i = 0; i < exports.META_KEYS.length; i++) {
-            var key = exports.META_KEYS[i];
-            var option_key = META_KEYS_OPTION[i];
-            self[key] = options[option_key] || options[key];
-        }
-        var thumbWait = options.thumbnail
-            ? new Promise(function (resolve) {
-                self.thumbnail = options.thumbnail;
-                resolve(undefined);
-            })
-            : new Promise(function (resolve) {
-                self.thumbnail = "./tmbs/".concat(options.mapID, ".jpg");
-                fetch(self.thumbnail)
-                    .then(function (response) {
-                    if (response.ok) {
-                        resolve(undefined);
-                    }
-                    else {
-                        self.thumbnail = "./tmbs/".concat(options.mapID, "_menu.jpg");
-                        resolve(undefined);
-                    }
-                })
-                    .catch(function (_error) {
-                    self.thumbnail = "./tmbs/".concat(options.mapID, "_menu.jpg");
-                    resolve(undefined);
-                });
-            }).catch(function (_error) {
-                self.thumbnail = "./tmbs/".concat(options.mapID || options.sourceID, "_menu.jpg");
-            });
-        var poisWait = self.resolvePois(options.pois);
-        self.initialWait = Promise.all([poisWait, thumbWait]);
+        return options;
     }
-    exports.setCustomInitialize = setCustomInitialize;
+    exports.addCommonOptions = addCommonOptions;
     function setupTileLoadFunction(target) {
         var self = target;
         target.setTileLoadFunction((function () {

@@ -3,8 +3,14 @@ import Weiwudi from "weiwudi";
 import { NowMap } from "./source/nowmap";
 import { TmsMap } from "./source/tmsmap";
 import { MapboxMap } from "./source/mapboxmap";
+import { MapLibreMap } from "./source/maplibremap";
+import { GoogleMap } from "./source/googlemap";
+import { HistMap } from "./source/histmap";
 import { HistMap_tin } from "./source/histmap_tin";
 import "whatwg-fetch";
+
+export type MaplatSource = HistMap | NowMap | GoogleMap;
+export type BackmapSource = NowMap | GoogleMap;
 
 import osm from "../parts/osm.jpg";
 import gsi from "../parts/gsi.jpg";
@@ -70,6 +76,8 @@ const baseDict = {
   }
 };
 
+const checkMapTypeIsWMTS = (maptype?: string) => (maptype || '').match(/^(?:base|overlay|google(?:_(?:roadmap|satellite|hybrid|terrain))?|mapbox|maplibre|osm)$/);
+
 export async function mapSourceFactory(options: any, commonOptions: any) {
   if (typeof options === "string") {
     options = (baseDict as any)[options];
@@ -77,18 +85,18 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
 
   options = normalizeArg(Object.assign(options, commonOptions));
   options.label = options.label || options.year;
-  if (
-    options.maptype === "base" ||
-    options.maptype === "overlay" ||
-    options.maptype === "mapbox"
-  ) {
+  if (checkMapTypeIsWMTS(options.maptype)) {
     const targetSrc =
       options.maptype === "base"
         ? NowMap
         : options.maptype === "overlay"
         ? TmsMap
-        : MapboxMap;
-    if (targetSrc instanceof TmsMap) {
+        : options.maptype === "mapbox"
+        ? MapboxMap
+        : options.maptype === "maplibre"
+        ? MapLibreMap
+        : GoogleMap;
+    if (!targetSrc.isBasemap()) {
       if (!options.homePosition) options.homePosition = options.homePos;
       if (!options.mercZoom) options.mercZoom = options.defZoom;
     } else {
@@ -129,7 +137,7 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
 
   return new Promise((resolve, reject) => {
     const url = options.settingFile || `maps/${options.mapID}.json`;
-    const xhr = new XMLHttpRequest(); // eslint-disable-line no-undef
+    const xhr = new XMLHttpRequest();  
     xhr.open("GET", url, true);
     xhr.responseType = "json";
 
@@ -146,18 +154,18 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
           }
           if (!options.maptype) options.maptype = "maplat";
 
-          if (
-            options.maptype === "base" ||
-            options.maptype === "overlay" ||
-            options.maptype === "mapbox"
-          ) {
+          if (checkMapTypeIsWMTS(options.maptype)) {
             const targetSrc =
               options.maptype === "base"
                 ? NowMap
                 : options.maptype === "overlay"
                 ? TmsMap
-                : MapboxMap;
-            if (targetSrc instanceof TmsMap) {
+                : options.maptype === "mapbox"
+                ? MapboxMap
+                : options.maptype === "maplibre"
+                ? MapLibreMap
+                : GoogleMap;
+            if (!targetSrc.isBasemap()) {
               if (!options.homePosition) options.homePosition = options.homePos;
               if (!options.mercZoom) options.mercZoom = options.defZoom;
             } else {
@@ -190,7 +198,7 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
               try {
                 await obj.initialWait;
                 resolve(obj);
-              } catch (e) {
+              } catch (_e) {
                 resolve(obj);
               }
             } catch (e) {
@@ -217,7 +225,7 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
             try {
               await obj.initialWait;
               obj.setupMapParameter(resolve);
-            } catch (e) {
+            } catch (_e) {
               obj.setupMapParameter(resolve);
             }
           } catch (e) {
@@ -237,7 +245,7 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
 
 export async function registerMapToSW(options: any) {
   const setting: any = {};
-  if (options.maptype === "mapbox" || !options.enableCache) return;
+  if (options.maptype === "mapbox" || options.maptype === "maplibre" || options.maptype === "google" || !options.enableCache) return;
   else if (options.maptype === "base" || options.maptype === "overlay")
     setting.type = "wmts";
   else setting.type = "xyz";
@@ -265,8 +273,8 @@ export async function registerMapToSW(options: any) {
   let ret;
   try {
     ret = await Weiwudi.registerMap(options.mapID, setting);
-  } catch (e) {
-    // eslint-disable-line no-empty
+  } catch (_e) {
+    // Ignore error
   }
   return ret;
 }

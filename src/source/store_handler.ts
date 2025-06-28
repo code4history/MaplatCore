@@ -1,17 +1,17 @@
 "use strict";
 
-import Tin, {
-  Options,
+import {
+  Transform,
   Compiled,
   PointSet,
-  Edge,
+  EdgeSet,
   StrictMode,
   VertexMode,
   YaxisMode
-} from "@maplat/tin";
-import { Position } from "@turf/turf";
+} from "@maplat/transform";
+import type { Position } from "geojson";
 type LangResource = string | Record<string, string>;
-type TinLike = string | Tin | Compiled;
+type TinLike = string | Transform | Compiled;
 
 interface HistMapStore {
   title: LangResource;
@@ -36,7 +36,7 @@ interface HistMapStore {
   width?: number;
   height?: number;
   gcps?: PointSet[];
-  edges?: Edge[];
+  edges?: EdgeSet[];
   compiled?: Compiled;
   sub_maps: SubMap[];
   homePosition: Position;
@@ -45,7 +45,7 @@ interface HistMapStore {
 
 interface SubMap {
   gcps?: PointSet[];
-  edges?: Edge[];
+  edges?: EdgeSet[];
   compiled?: Compiled;
   priority: number;
   importance: number;
@@ -96,26 +96,25 @@ async function store2HistMap_internal(
   keys.forEach(key => {
     ret[key] = store[key];
   });
-  if ((store as any)["imageExtention"])
-    ret["imageExtension"] = (store as any)["imageExtention"];
+  if ((store as any)["imageExtention"] || (store as any)["imageExtension"])
+    ret["imageExtension"] = (store as any)["imageExtension"] || (store as any)["imageExtention"];
   if (store.compiled) {
-    const opt: Partial<Options> = {} as Options;
-    if (!store.compiled.wh) opt.wh = [store.width!, store.height!];
-    if (!store.compiled.strictMode) opt.strictMode = store.strictMode;
-    if (!store.compiled.vertexMode) opt.vertexMode = store.vertexMode;
-    if (!store.compiled.yaxisMode) opt.yaxisMode = store.yaxisMode;
-    let tin: TinLike = new Tin(opt);
-    tin.setCompiled(store.compiled);
+    let tin: TinLike = new Transform();
+    (tin as Transform).setCompiled(store.compiled);
+    // Add indexed tin for performance
+    (tin as Transform).addIndexedTin();
     if (byCompiled) {
-      tin = tin.getCompiled();
+      tin = store.compiled;
     }
-    ret.strictMode = tin.strictMode;
-    ret.vertexMode = tin.vertexMode;
-    ret.yaxisMode = tin.yaxisMode;
-    ret.width = tin.wh![0];
-    ret.height = tin.wh![1];
-    ret.gcps = tin.points;
-    ret.edges = tin.edges;
+    // Transform instance properties might need to be accessed directly
+    const transform = tin as Transform;
+    ret.strictMode = transform.strictMode;
+    ret.vertexMode = transform.vertexMode;
+    ret.yaxisMode = transform.yaxisMode;
+    ret.width = transform.wh?.[0];
+    ret.height = transform.wh?.[1];
+    ret.gcps = transform.points;
+    ret.edges = transform.edges;
     tins.push(tin);
   } else {
     ret.strictMode = store.strictMode;
@@ -133,7 +132,7 @@ async function store2HistMap_internal(
       store.edges,
       [store.width!, store.height!]
     );
-    if (byCompiled && typeof tin !== "string") tin = (tin as Tin).getCompiled();
+    if (byCompiled && typeof tin !== "string") tin = store.compiled!;
     tins.push(tin);
   }
 
@@ -145,14 +144,12 @@ async function store2HistMap_internal(
       sub.importance = sub_map.importance;
       sub.priority = sub_map.priority;
       if (sub_map.compiled) {
-        const opt: Partial<Options> = {} as Options;
-        if (!sub_map.compiled.strictMode) opt.strictMode = store.strictMode;
-        if (!sub_map.compiled.vertexMode) opt.vertexMode = store.vertexMode;
-        if (!sub_map.compiled.yaxisMode) opt.yaxisMode = store.yaxisMode;
-        let tin: TinLike = new Tin(opt);
-        tin.setCompiled(sub_map.compiled);
+        let tin: TinLike = new Transform();
+        (tin as Transform).setCompiled(sub_map.compiled);
+        // Add indexed tin for performance
+        (tin as Transform).addIndexedTin();
         if (byCompiled) {
-          tin = tin.getCompiled();
+          tin = sub_map.compiled;
         }
         sub.bounds = tin.bounds;
         sub.gcps = tin.points;
@@ -172,7 +169,7 @@ async function store2HistMap_internal(
           sub_map.bounds
         );
         if (byCompiled && typeof tin !== "string")
-          tin = (tin as Tin).getCompiled();
+          tin = sub_map.compiled!;
         tins.push(tin);
       }
       sub_maps.push(sub as SubMap);
@@ -190,8 +187,8 @@ export async function histMap2Store(
   keys.forEach(key => {
     ret[key] = histmap[key];
   });
-  if ((histmap as any)["imageExtention"])
-    ret["imageExtension"] = (histmap as any)["imageExtention"];
+  if ((histmap as any)["imageExtention"] || (histmap as any)["imageExtension"])
+    ret["imageExtension"] = (histmap as any)["imageExtension"] || (histmap as any)["imageExtention"];
   const tin = tins.shift();
   if (typeof tin === "string") {
     ret.width = histmap.width;
@@ -202,7 +199,7 @@ export async function histMap2Store(
     ret.vertexMode = histmap.vertexMode;
     ret.yaxisMode = histmap.yaxisMode;
   } else {
-    ret.compiled = (tin as any).getCompiled ? (tin as Tin).getCompiled() : tin;
+    ret.compiled = tin as Compiled;
   }
 
   ret.sub_maps =
@@ -218,9 +215,7 @@ export async function histMap2Store(
             sub.edges = sub_map.edges;
             sub.bounds = sub_map.bounds;
           } else {
-            sub.compiled = (tin as any).getCompiled
-              ? (tin as Tin).getCompiled()
-              : tin;
+            sub.compiled = tin as Compiled;
           }
           return sub as SubMap;
         })
@@ -230,47 +225,19 @@ export async function histMap2Store(
 }
 
 async function createTinFromGcpsAsync(
-  strict: StrictMode,
-  vertex: VertexMode,
-  yaxis?: YaxisMode,
+  _strict: StrictMode,
+  _vertex: VertexMode,
+  _yaxis?: YaxisMode,
   gcps: PointSet[] = [],
-  edges: Edge[] = [],
-  wh?: number[],
-  bounds?: number[][]
+  _edges: EdgeSet[] = [],
+  _wh?: number[],
+  _bounds?: number[][]
 ): Promise<TinLike> {
   if (gcps.length < 3) return "tooLessGcps";
-  //return new Promise((resolve, reject) => {
-  const tin = new Tin({
-    yaxisMode: yaxis
-  });
-  if (wh) {
-    tin.setWh(wh);
-  } else if (bounds) {
-    tin.setBounds(bounds);
-  } else {
-    throw "Both wh and bounds are missing";
-  }
-  tin.setStrictMode(strict);
-  tin.setVertexMode(vertex);
-  tin.setPoints(gcps);
-  tin.setEdges(edges);
-  try {
-    await tin.updateTinAsync();
-    return tin;
-  } catch (err: any) {
-    console.log(err); // eslint-disable-line no-console,no-undef
-    if (err == "SOME POINTS OUTSIDE") {
-      return "pointsOutside";
-    } else if (err.indexOf("TOO LINEAR") == 0) {
-      return "tooLinear";
-    } else if (
-      err.indexOf("Vertex indices of edge") > -1 ||
-      err.indexOf("is degenerate!") > -1 ||
-      err.indexOf("already exists or intersects with an existing edge!") > -1
-    ) {
-      return "edgeError";
-    } else {
-      throw err;
-    }
-  }
+  
+  // @maplat/transform does not support creating compiled data from GCPs
+  // Pre-compiled data is required
+  console.error('@maplat/transform requires pre-compiled data. Cannot create from GCPs.');
+  console.error('Please use @maplat/editor or a separate tool to generate compiled data.');
+  return "compiledRequired";
 }

@@ -2,15 +2,11 @@
 import { addCoordinateTransforms, addProjection, Projection } from "ol/proj";
 import { MERC_MAX, tileSize, transPng } from "../const_ex";
 import {
-  setCustomFunction,
-  setCustomInitialize,
-  setupTileLoadFunction
+  addCommonOptions,
+  setCustomFunctionMaplat
 } from "./mixin";
 import { XYZ } from "ol/source";
-import { normalizeArg } from "../functions";
-import { createFromTemplates, expandUrl } from "ol/tileurlfunction";
-import { Coordinate } from "ol/coordinate";
-import { Size } from "ol/size";
+import { createFromTemplates } from "ol/tileurlfunction";
 
 for (let z = 0; z < 9; z++) {
   const key = `ZOOM:${z}`;
@@ -47,7 +43,6 @@ for (let z = 0; z < 9; z++) {
   })(key, maxxy);
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 /*type Constructor<T = {}> = new (...args: any[]) => T;
 
 export function setCustomFunctionForHistmap<TBase extends Constructor>(Base: TBase) {
@@ -63,50 +58,35 @@ export function setCustomInitializeForHistmap(self: any, options: any) {
   setupTileLoadFunction(this);
 }*/
 
-export abstract class HistMap extends setCustomFunction(XYZ) {
-  width: number;
-  height: number;
-  _maxxy: number;
-
+export abstract class HistMap extends setCustomFunctionMaplat(XYZ) {
   constructor(options: any = {}) {
-    super(
-      (options = (() => {
-        options = normalizeArg(options);
-
-        options.wrapX = false;
-        if (!options.imageExtension) options.imageExtension = "jpg";
-        if (options.mapID && !options.url && !options.urls) {
-          options.url = `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtension}`;
+    options = addCommonOptions(options);
+    options.wrapX = false;
+    const zW = Math.log2(options.width / tileSize);
+    const zH = Math.log2(options.height / tileSize);
+    options.maxZoom = Math.ceil(Math.max(zW, zH));
+    options.tileUrlFunction =
+      options.tileUrlFunction ||
+      function (this: HistMap, coord: any) {
+        const z = coord[0];
+        const x = coord[1];
+        const y = coord[2];
+        if (
+           
+          // @ts-ignore
+          x * tileSize * Math.pow(2, this.maxZoom - z) >= this.width ||
+           
+          // @ts-ignore
+          y * tileSize * Math.pow(2, this.maxZoom - z) >= this.height ||
+          x < 0 ||
+          y < 0
+        ) {
+          return transPng;
         }
-
-        const zW = Math.log2(options.width / tileSize);
-        const zH = Math.log2(options.height / tileSize);
-        options.maxZoom = Math.ceil(Math.max(zW, zH));
-
-        options.tileUrlFunction =
-          options.tileUrlFunction ||
-          function (this: HistMap, coord: any) {
-            const z = coord[0];
-            const x = coord[1];
-            const y = coord[2];
-            if (
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              x * tileSize * Math.pow(2, this.maxZoom - z) >= this.width ||
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              y * tileSize * Math.pow(2, this.maxZoom - z) >= this.height ||
-              x < 0 ||
-              y < 0
-            ) {
-              return transPng;
-            }
-            // @ts-expect-error ts-migrate(2683)
-            return this._tileUrlFunction(coord);
-          };
-        return options;
-      })() as any)
-    );
+        // @ts-expect-error ts-migrate(2683)
+        return this._tileUrlFunction(coord);
+      };
+    super(options);
 
     if (options.mapID) {
       this.mapID = options.mapID;
@@ -116,7 +96,8 @@ export abstract class HistMap extends setCustomFunction(XYZ) {
       this._tileUrlFunction = createFromTemplates(options.urls);
     } else if (options.url) {
       // @ts-expect-error ts-migrate(2554)
-      this._tileUrlFunction = createFromTemplates(expandUrl(options.url));
+      // In newer versions of OpenLayers, expandUrl is included in createFromTemplates
+      this._tileUrlFunction = createFromTemplates(Array.isArray(options.url) ? options.url : [options.url]);
     }
 
     this.width = options.width;
@@ -124,66 +105,6 @@ export abstract class HistMap extends setCustomFunction(XYZ) {
     this.maxZoom = options.maxZoom;
     this._maxxy = Math.pow(2, this.maxZoom as number) * tileSize;
 
-    setCustomInitialize(this, options);
-    setupTileLoadFunction(this);
-  }
-
-  insideCheckXy(xy: Coordinate) {
-    return !(
-      xy[0] < 0 ||
-      xy[0] > this.width ||
-      xy[1] < 0 ||
-      xy[1] > this.height
-    );
-  }
-
-  insideCheckSysCoord(sysCoord: Coordinate) {
-    return this.insideCheckXy(this.sysCoord2Xy(sysCoord));
-  }
-
-  modulateXyInside(xy: any) {
-    const dx = xy[0] / (this.width / 2) - 1;
-    const dy = xy[1] / (this.height / 2) - 1;
-    const da = Math.max(Math.abs(dx), Math.abs(dy));
-    return [
-      ((dx / da + 1) * this.width) / 2,
-      ((dy / da + 1) * this.height) / 2
-    ];
-  }
-
-  modulateSysCoordInside(histCoords: any) {
-    const xy = this.sysCoord2Xy(histCoords);
-    const ret = this.modulateXyInside(xy);
-    return this.xy2SysCoord(ret);
-  }
-
-  // unifyTerm対応
-  // https://github.com/code4history/MaplatCore/issues/19
-
-  xy2SysCoord(xy: Coordinate): Coordinate {
-    const sysCoordX = (xy[0] * (2 * MERC_MAX)) / this._maxxy - MERC_MAX;
-    const sysCoordY = -1 * ((xy[1] * (2 * MERC_MAX)) / this._maxxy - MERC_MAX);
-    return [sysCoordX, sysCoordY];
-  }
-
-  sysCoord2Xy(sysCoord: Coordinate): Coordinate {
-    const x = ((sysCoord[0] + MERC_MAX) * this._maxxy) / (2 * MERC_MAX);
-    const y = ((-sysCoord[1] + MERC_MAX) * this._maxxy) / (2 * MERC_MAX);
-    return [x, y];
-  }
-
-  defZoom(screenSize?: Size): number {
-    const screenWidth = screenSize![0];
-    const screenHeight = screenSize![1];
-    const delZoomOfWidth = Math.log2((screenWidth - 10) / this.width);
-    const delZoomOfHeight = Math.log2((screenHeight - 10) / this.height);
-    const maxZoom = this.maxZoom!;
-    let delZoom;
-    if (delZoomOfHeight > delZoomOfWidth) {
-      delZoom = delZoomOfHeight;
-    } else {
-      delZoom = delZoomOfWidth;
-    }
-    return maxZoom + delZoom;
+    this.initialize(options);
   }
 }

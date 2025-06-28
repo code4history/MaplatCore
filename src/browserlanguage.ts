@@ -21,7 +21,7 @@ const browserLanguage = (): string => {
       ).split(";");
       return lang[0];
     }
-  } catch (e) {
+  } catch (_e) {
     return "";
   }
 };

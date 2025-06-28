@@ -9,10 +9,10 @@
       content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no"
     />
     <link rel="icon" type="image/png" href="parts/favicon.png" />
-    <link
-      href="https://api.tiles.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.css"
-      rel="stylesheet"
-    />
+    <!-- Mapbox GL JS -->
+    <link href="https://api.tiles.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.css" rel="stylesheet" />
+    <!-- MapLibre GL JS -->
+    <link href="https://unpkg.com/maplibre-gl@4.5.0/dist/maplibre-gl.css" rel="stylesheet" />
     <link href="dist_packed/assets/maplat_core.css" rel="stylesheet" />
     <style>
       .mainview {
@@ -54,17 +54,18 @@
       <button id="osm">OSM</button>
       <button id="gsi">地理院</button>
       <button id="mapbox">Mapbox</button>
+      <button id="maplibre">MapLibre</button>
       <button id="map_remove">Remove Map</button>
     </div>
     <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.js"></script>
+    <script src="https://unpkg.com/maplibre-gl@4.5.0/dist/maplibre-gl.js"></script>
     <script src="dist_packed/assets/maplat_core.js"></script>
   </body>
   <script>
     var option = {
       mapboxgl: mapboxgl,
-      //mapboxToken: 'YOUR-ACCESS-TOKEN'
-      mapboxToken:
-        "pk.eyJ1IjoicmVraXNoaWtva3VkbyIsImEiOiJjazRoMmF3dncwODU2M2ttdzI2aDVqYXVwIn0.8Hb9sekgjfck6Setxk5uVg"
+      maplibregl: maplibregl,
+      mapboxToken: "pk.eyJ1IjoicmVraXNoaWtva3VkbyIsImEiOiJjazRoMmF3dncwODU2M2ttdzI2aDVqYXVwIn0.8Hb9sekgjfck6Setxk5uVg"
     };
     var hashes = window.location.href
       .slice(window.location.href.indexOf("?") + 1)
@@ -201,6 +202,9 @@
       });
       document.getElementById("mapbox").addEventListener("click", function (e) {
         app.changeMap("mapbox");
+      });
+      document.getElementById("maplibre").addEventListener("click", function (e) {
+        app.changeMap("maplibre");
       });
       document
         .getElementById("map_remove")

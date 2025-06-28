@@ -1,17 +1,82 @@
-package-lock.json
-apps
-maps
-pois
-tiles
-tmpl
-index.html
-index_packed.html
-webpack_config
-gulpfile.js
-server.js
-jest_config
-babel.config.js
-.eslintrc.json
+# Source files (built files are in dist/)
+src/
+*.ts
+!dist/*.d.ts
+
+# Test files
+spec/
+vitest.config.ts
+coverage/
+
+# Development files
+.eslintrc*
+eslint.config.mjs
 .prettierrc
-distribution.zip
+tsconfig.json
+tsconfig.build.json
+ts_config/
+vite.config.ts
+
+# Old build configs
+webpack_config/
+babel.config.js
+jest_config/
+gulpfile.js
+
+# Build artifacts
+lib/
+es5/
+dist_packed/
+
+# Deno specific files
+deno.json
+jsr.json
+import_map.json
+examples/deno-example.ts
+docs/DENO_USAGE.md
+
+# Documentation
+*.md
+!README.md
+!README.ja.md
+docs/
+
+# Git and IDE
+.git*
+.vscode/
+.idea/
+
+# CI/CD
+.github/
+
+# Scripts
+scripts/
+bin/freezer.js
+
+# Test data
+tiles/
+parts_test/
+maps/
+pois/
+apps/
+
+# Build artifacts
+*.log
+*.tgz
+.DS_Store
+
+# Test images
+*.png
+*.jpg
+*.jpeg
+*.gif
+
+# Local configuration
+.env
+.env.*
+
+# Examples
 example.zip
+index.html
+test.html
+public/

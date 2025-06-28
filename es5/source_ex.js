@@ -43,7 +43,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "./functions", "weiwudi", "./source/nowmap", "./source/tmsmap", "./source/mapboxmap", "./source/histmap_tin", "whatwg-fetch", "../parts/osm.jpg", "../parts/gsi.jpg", "../parts/gsi_ortho.jpg"], factory);
+        define(["require", "exports", "./functions", "weiwudi", "./source/nowmap", "./source/tmsmap", "./source/mapboxmap", "./source/googlemap", "./source/histmap_tin", "whatwg-fetch", "../parts/osm.jpg", "../parts/gsi.jpg", "../parts/gsi_ortho.jpg"], factory);
     }
 })(function (require, exports) {
     "use strict";
@@ -54,6 +54,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     var nowmap_1 = require("./source/nowmap");
     var tmsmap_1 = require("./source/tmsmap");
     var mapboxmap_1 = require("./source/mapboxmap");
+    var googlemap_1 = require("./source/googlemap");
     var histmap_tin_1 = require("./source/histmap_tin");
     require("whatwg-fetch");
     var osm_jpg_1 = __importDefault(require("../parts/osm.jpg"));
@@ -118,6 +119,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             thumbnail: gsi_ortho_jpg_1.default
         }
     };
+    var checkMapTypeIsWMTS = function (maptype) { return (maptype || '').match(/^(?:base|overlay|google(?:_(?:roadmap|satellite|hybrid|terrain))?|mapbox|osm)$/); };
     function mapSourceFactory(options, commonOptions) {
         return __awaiter(this, void 0, void 0, function () {
             var targetSrc, _a, obj;
@@ -129,15 +131,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                         }
                         options = (0, functions_1.normalizeArg)(Object.assign(options, commonOptions));
                         options.label = options.label || options.year;
-                        if (!(options.maptype === "base" ||
-                            options.maptype === "overlay" ||
-                            options.maptype === "mapbox")) return [3, 4];
+                        if (!checkMapTypeIsWMTS(options.maptype)) return [3, 4];
                         targetSrc = options.maptype === "base"
                             ? nowmap_1.NowMap
                             : options.maptype === "overlay"
                                 ? tmsmap_1.TmsMap
-                                : mapboxmap_1.MapboxMap;
-                        if (targetSrc instanceof tmsmap_1.TmsMap) {
+                                : options.maptype === "mapbox"
+                                    ? mapboxmap_1.MapboxMap
+                                    : googlemap_1.GoogleMap;
+                        if (!targetSrc.isBasemap()) {
                             if (!options.homePosition)
                                 options.homePosition = options.homePos;
                             if (!options.mercZoom)
@@ -213,15 +215,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                                                 }
                                                 if (!options.maptype)
                                                     options.maptype = "maplat";
-                                                if (!(options.maptype === "base" ||
-                                                    options.maptype === "overlay" ||
-                                                    options.maptype === "mapbox")) return [3, 11];
+                                                if (!checkMapTypeIsWMTS(options.maptype)) return [3, 11];
                                                 targetSrc = options.maptype === "base"
                                                     ? nowmap_1.NowMap
                                                     : options.maptype === "overlay"
                                                         ? tmsmap_1.TmsMap
-                                                        : mapboxmap_1.MapboxMap;
-                                                if (targetSrc instanceof tmsmap_1.TmsMap) {
+                                                        : options.maptype === "mapbox"
+                                                            ? mapboxmap_1.MapboxMap
+                                                            : googlemap_1.GoogleMap;
+                                                if (!targetSrc.isBasemap()) {
                                                     if (!options.homePosition)
                                                         options.homePosition = options.homePos;
                                                     if (!options.mercZoom)
@@ -347,7 +349,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 switch (_a.label) {
                     case 0:
                         setting = {};
-                        if (options.maptype === "mapbox" || !options.enableCache)
+                        if (options.maptype === "mapbox" || options.maptype === "google" || !options.enableCache)
                             return [2];
                         else if (options.maptype === "base" || options.maptype === "overlay")
                             setting.type = "wmts";

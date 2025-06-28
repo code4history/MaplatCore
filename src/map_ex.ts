@@ -1,14 +1,16 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { Feature, Geolocation, Map, MapEvent } from "ol";
+import { Feature, Map } from "ol";
 import { View } from "./view_ex";
 import { Group, Tile, Vector as layerVector } from "ol/layer";
 import { Vector as sourceVector } from "ol/source";
 import { Circle, LineString, Point, Polygon } from "ol/geom";
 import { Fill, Icon, Stroke, Style } from "ol/style";
 import { MapboxMap } from "./source/mapboxmap";
+import { MapLibreMap } from "./source/maplibremap";
+import { GoogleMap } from "./source/googlemap";
 import { NowMap } from "./source/nowmap";
-import { getDistance, randomFromCenter } from "./math_ex";
 import { MapboxLayer } from "./layer_mapbox";
+import { MapLibreLayer } from "./layer_maplibre";
 import { normalizeArg } from "./functions";
 
 // @ts-ignore
@@ -16,30 +18,28 @@ import bluedot from "../parts/bluedot.png";                         // @ts-ignor
 import bluedot_transparent from "../parts/bluedot_transparent.png"; // @ts-ignore
 import bluedot_small from "../parts/bluedot_small.png";             // @ts-ignore
 import defaultpin from "../parts/defaultpin.png";
-import IconAnchorUnits from "ol/style/IconAnchorUnits";
-import { HistMap } from "./source/histmap";
 
 const gpsStyle = new Style({
   image: new Icon({
     anchor: [0.5, 0.5],
-    anchorXUnits: IconAnchorUnits.FRACTION,
-    anchorYUnits: IconAnchorUnits.FRACTION,
+    anchorXUnits: 'fraction',
+    anchorYUnits: 'fraction',
     src: bluedot
   })
 });
 const gpsHideStyle = new Style({
   image: new Icon({
     anchor: [0.5, 0.5],
-    anchorXUnits: IconAnchorUnits.FRACTION,
-    anchorYUnits: IconAnchorUnits.FRACTION,
+    anchorXUnits: 'fraction',
+    anchorYUnits: 'fraction',
     src: bluedot_transparent
   })
 });
 const gpsSubStyle = new Style({
   image: new Icon({
     anchor: [0.5, 0.5],
-    anchorXUnits: IconAnchorUnits.FRACTION,
-    anchorYUnits: IconAnchorUnits.FRACTION,
+    anchorXUnits: 'fraction',
+    anchorYUnits: 'fraction',
     src: bluedot_small
   })
 });
@@ -55,23 +55,24 @@ const accCircleStyle = new Style({
 const markerDefaultStyle = new Style({
   image: new Icon({
     anchor: [0.5, 1.0],
-    anchorXUnits: IconAnchorUnits.FRACTION,
-    anchorYUnits: IconAnchorUnits.FRACTION,
+    anchorXUnits: 'fraction',
+    anchorYUnits: 'fraction',
     src: defaultpin
   })
 });
+
 export class MaplatMap extends Map {
-  _first_gps_request: any;
-  _overlay_group: any;
   fakeGps: any;
   fakeRadius: any;
   geolocation: any;
   homePosition: any;
-  __AvoidFirstMoveStart: boolean;
   northUp: boolean;
   tapDuration: number;
   homeMarginPixels: number;
   tapUIVanish: boolean;
+  alwaysGpsOn: boolean;
+  private __ignore_first_move: boolean;
+
   constructor(optOptions: any) {
     optOptions = normalizeArg(optOptions || {});
     const vectorLayer = new layerVector({
@@ -128,7 +129,6 @@ export class MaplatMap extends Map {
       (options as any).interactions = optOptions.interactions;
     }
     super(options);
-    this._overlay_group = overlayLayer;
     this.fakeGps = optOptions.fakeGps;
     this.fakeRadius = optOptions.fakeRadius;
     this.homePosition = optOptions.homePosition;
@@ -136,24 +136,43 @@ export class MaplatMap extends Map {
     this.tapDuration = optOptions.tapDuration;
     this.homeMarginPixels = optOptions.homeMarginPixels;
     this.tapUIVanish = optOptions.tapUIVanish;
+    this.alwaysGpsOn = optOptions.alwaysGpsOn || false;
     const view = this.getView();
-    this.__AvoidFirstMoveStart = true;
+    this.__ignore_first_move = true;
     const movestart = () => {
-      if (!this.__AvoidFirstMoveStart) this.dispatchEvent("movestart");
-      this.__AvoidFirstMoveStart = false;
+      if (!this.__ignore_first_move) this.dispatchEvent("movestart");
+      this.__ignore_first_move = false;
       view.un("propertychange", movestart);
     };
     view.on("propertychange", movestart);
     this.on("moveend", () => {
       view.on("propertychange", movestart);
     });
+    
+    // Debug zoom changes
+    view.on('change:resolution', () => {
+      const source = this.getSource();
+      if (source && (source instanceof MapboxMap || source instanceof MapLibreMap)) {
+        // console.log('View zoom change:', {
+        //   baseMapType: source.constructor.name,
+        //   viewZoom: view.getZoom(),
+        //   resolution: view.getResolution()
+        // });
+      }
+    });
   }
   static spawnLayer(layer: any, source: any, container: any) {
-    if (source instanceof MapboxMap || !(layer instanceof Tile)) {
+    if (source instanceof MapboxMap || source instanceof MapLibreMap || !(layer instanceof Tile)) {
       if (source instanceof MapboxMap) {
         layer = new MapboxLayer({
           style: source.style,
           accessToken: source.accessToken,
+          container,
+          source
+        });
+      } else if (source instanceof MapLibreMap) {
+        layer = new MapLibreLayer({
+          style: source.style,
           container,
           source
         });
@@ -238,8 +257,8 @@ export class MaplatMap extends Map {
       markerStyle = new Style({
         image: new Icon({
           anchor: [0.5, 1.0],
-          anchorXUnits: IconAnchorUnits.FRACTION,
-          anchorYUnits: IconAnchorUnits.FRACTION,
+          anchorXUnits: 'fraction',
+          anchorYUnits: 'fraction',
           src: markerStyle
         })
       });
@@ -327,6 +346,13 @@ export class MaplatMap extends Map {
     const layers = this.getLayer("overlay").getLayers();
     layers.clear();
     if (source) {
+      // console.log('Creating TMS overlay layer:', {
+      //   sourceType: source.constructor.name,
+      //   mapID: source.mapID,
+      //   maxZoom: source.maxZoom,
+      //   minZoom: source.minZoom,
+      //   tileGrid: source.getTileGrid()
+      // });
       const layer = new Tile({
         source
       });
@@ -336,7 +362,7 @@ export class MaplatMap extends Map {
   setTransparency(percentage: any) {
     const opacity = (100 - percentage) / 100;
     const source = this.getSource();
-    if (source instanceof NowMap) {
+    if (source instanceof NowMap || source instanceof GoogleMap) {
       this.getLayers().item(0).setOpacity(1);
       this.getLayers().item(1).setOpacity(opacity);
     } else {
@@ -347,78 +373,5 @@ export class MaplatMap extends Map {
     // alert("ol.MaplatMap.prototype.setGPSMarker");
     const source = (this.getLayers().item(0) as any).getSource();
     source.setGPSMarker(position, ignoreMove);
-  }
-  handleGPS(launch: any, avoidEventForOff: any) {
-    //const map = this;
-    if (launch) {
-      this.dispatchEvent("gps_request");
-      this._first_gps_request = true;
-      if (!this.geolocation) {
-        const geolocation = (this.geolocation = new Geolocation({
-          tracking: true
-        }));
-        // listen to changes in position
-        geolocation.on("change", _evt => {
-          const overlayLayer = this.getLayer("overlay").getLayers().item(0);
-          const source = overlayLayer
-            ? overlayLayer.getSource()
-            : (this.getLayers().item(0) as any).getSource();
-          let lnglat = geolocation.getPosition();
-          let acc = geolocation.getAccuracy();
-          if (
-            this.fakeGps &&
-            getDistance(this.homePosition, lnglat as [number, number]) >
-              this.fakeGps
-          ) {
-            lnglat = [
-              randomFromCenter(this.homePosition[0], 0.001),
-              randomFromCenter(this.homePosition[1], 0.001)
-            ];
-            acc = randomFromCenter(15.0, 10);
-          }
-          let gpsVal: any = { lnglat, acc };
-          source
-            .setGPSMarkerAsync(gpsVal, !this._first_gps_request)
-            .then((result: any) => {
-              if (!result) {
-                gpsVal = { error: "gps_out" };
-              }
-              this._first_gps_request = false;
-              this.dispatchEvent(new MapEvent("gps_result", this, gpsVal));
-            });
-        });
-        geolocation.on("error", _evt => {
-          const source = (this.getLayers().item(0) as any).getSource();
-          let gpsVal: any = null;
-          if (this.fakeGps) {
-            const lnglat = [
-              randomFromCenter(this.homePosition[0], 0.001),
-              randomFromCenter(this.homePosition[1], 0.001)
-            ];
-            const acc = randomFromCenter(15.0, 10);
-            gpsVal = { lnglat, acc };
-          }
-          (source as NowMap | HistMap)
-            .setGPSMarkerAsync(gpsVal, !this._first_gps_request)
-            .then((result: any) => {
-              if (!result) {
-                gpsVal = { error: "gps_out" };
-              }
-              this._first_gps_request = false;
-              this.dispatchEvent(new MapEvent("gps_result", this, gpsVal));
-            });
-        });
-      } else {
-        this.geolocation.setTracking(true);
-      }
-    } else {
-      if (this.geolocation) this.geolocation.setTracking(false);
-      const source = (this.getLayers().item(0) as any).getSource();
-      source.setGPSMarker();
-      if (!avoidEventForOff)
-        this.dispatchEvent(
-          new MapEvent("gps_result", this, { error: "gps_off" } as any)
-        );
-    }
   }
 }

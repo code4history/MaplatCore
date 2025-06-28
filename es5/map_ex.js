@@ -22,7 +22,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "ol", "./view_ex", "ol/layer", "ol/source", "ol/geom", "ol/style", "./source/mapboxmap", "./source/nowmap", "./math_ex", "./layer_mapbox", "./functions", "../parts/bluedot.png", "../parts/bluedot_transparent.png", "../parts/bluedot_small.png", "../parts/defaultpin.png", "ol/style/IconAnchorUnits"], factory);
+        define(["require", "exports", "ol", "./view_ex", "ol/layer", "ol/source", "ol/geom", "ol/style", "./source/mapboxmap", "./source/googlemap", "./source/nowmap", "./layer_mapbox", "./functions", "../parts/bluedot.png", "../parts/bluedot_transparent.png", "../parts/bluedot_small.png", "../parts/defaultpin.png"], factory);
     }
 })(function (require, exports) {
     "use strict";
@@ -35,36 +35,35 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     var geom_1 = require("ol/geom");
     var style_1 = require("ol/style");
     var mapboxmap_1 = require("./source/mapboxmap");
+    var googlemap_1 = require("./source/googlemap");
     var nowmap_1 = require("./source/nowmap");
-    var math_ex_1 = require("./math_ex");
     var layer_mapbox_1 = require("./layer_mapbox");
     var functions_1 = require("./functions");
     var bluedot_png_1 = __importDefault(require("../parts/bluedot.png"));
     var bluedot_transparent_png_1 = __importDefault(require("../parts/bluedot_transparent.png"));
     var bluedot_small_png_1 = __importDefault(require("../parts/bluedot_small.png"));
     var defaultpin_png_1 = __importDefault(require("../parts/defaultpin.png"));
-    var IconAnchorUnits_1 = __importDefault(require("ol/style/IconAnchorUnits"));
     var gpsStyle = new style_1.Style({
         image: new style_1.Icon({
             anchor: [0.5, 0.5],
-            anchorXUnits: IconAnchorUnits_1.default.FRACTION,
-            anchorYUnits: IconAnchorUnits_1.default.FRACTION,
+            anchorXUnits: 'fraction',
+            anchorYUnits: 'fraction',
             src: bluedot_png_1.default
         })
     });
     var gpsHideStyle = new style_1.Style({
         image: new style_1.Icon({
             anchor: [0.5, 0.5],
-            anchorXUnits: IconAnchorUnits_1.default.FRACTION,
-            anchorYUnits: IconAnchorUnits_1.default.FRACTION,
+            anchorXUnits: 'fraction',
+            anchorYUnits: 'fraction',
             src: bluedot_transparent_png_1.default
         })
     });
     var gpsSubStyle = new style_1.Style({
         image: new style_1.Icon({
             anchor: [0.5, 0.5],
-            anchorXUnits: IconAnchorUnits_1.default.FRACTION,
-            anchorYUnits: IconAnchorUnits_1.default.FRACTION,
+            anchorXUnits: 'fraction',
+            anchorYUnits: 'fraction',
             src: bluedot_small_png_1.default
         })
     });
@@ -80,8 +79,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     var markerDefaultStyle = new style_1.Style({
         image: new style_1.Icon({
             anchor: [0.5, 1.0],
-            anchorXUnits: IconAnchorUnits_1.default.FRACTION,
-            anchorYUnits: IconAnchorUnits_1.default.FRACTION,
+            anchorXUnits: 'fraction',
+            anchorYUnits: 'fraction',
             src: defaultpin_png_1.default
         })
     });
@@ -140,7 +139,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 options.interactions = optOptions.interactions;
             }
             _this = _super.call(this, options) || this;
-            _this._overlay_group = overlayLayer;
+            _this.__first_gps_request = true;
             _this.fakeGps = optOptions.fakeGps;
             _this.fakeRadius = optOptions.fakeRadius;
             _this.homePosition = optOptions.homePosition;
@@ -148,12 +147,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             _this.tapDuration = optOptions.tapDuration;
             _this.homeMarginPixels = optOptions.homeMarginPixels;
             _this.tapUIVanish = optOptions.tapUIVanish;
+            _this.alwaysGpsOn = optOptions.alwaysGpsOn || false;
             var view = _this.getView();
-            _this.__AvoidFirstMoveStart = true;
+            _this.__ignore_first_move = true;
             var movestart = function () {
-                if (!_this.__AvoidFirstMoveStart)
+                if (!_this.__ignore_first_move)
                     _this.dispatchEvent("movestart");
-                _this.__AvoidFirstMoveStart = false;
+                _this.__ignore_first_move = false;
                 view.un("propertychange", movestart);
             };
             view.on("propertychange", movestart);
@@ -254,8 +254,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 markerStyle = new style_1.Style({
                     image: new style_1.Icon({
                         anchor: [0.5, 1.0],
-                        anchorXUnits: IconAnchorUnits_1.default.FRACTION,
-                        anchorYUnits: IconAnchorUnits_1.default.FRACTION,
+                        anchorXUnits: 'fraction',
+                        anchorYUnits: 'fraction',
                         src: markerStyle
                     })
                 });
@@ -317,7 +317,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         MaplatMap.prototype.setFillEnvelope = function (xys, stroke, fill, layer) {
             if (!layer)
                 layer = "envelope";
-            var style = null;
+            var style;
             if (stroke != null || fill != null) {
                 var option = {};
                 if (stroke != null)
@@ -355,7 +355,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         MaplatMap.prototype.setTransparency = function (percentage) {
             var opacity = (100 - percentage) / 100;
             var source = this.getSource();
-            if (source instanceof nowmap_1.NowMap) {
+            if (source instanceof nowmap_1.NowMap || source instanceof googlemap_1.GoogleMap) {
                 this.getLayers().item(0).setOpacity(1);
                 this.getLayers().item(1).setOpacity(opacity);
             }
@@ -366,77 +366,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         MaplatMap.prototype.setGPSMarker = function (position, ignoreMove) {
             var source = this.getLayers().item(0).getSource();
             source.setGPSMarker(position, ignoreMove);
-        };
-        MaplatMap.prototype.handleGPS = function (launch, avoidEventForOff) {
-            var _this = this;
-            if (launch) {
-                this.dispatchEvent("gps_request");
-                this._first_gps_request = true;
-                if (!this.geolocation) {
-                    var geolocation_1 = (this.geolocation = new ol_1.Geolocation({
-                        tracking: true
-                    }));
-                    geolocation_1.on("change", function (_evt) {
-                        var overlayLayer = _this.getLayer("overlay").getLayers().item(0);
-                        var source = overlayLayer
-                            ? overlayLayer.getSource()
-                            : _this.getLayers().item(0).getSource();
-                        var lnglat = geolocation_1.getPosition();
-                        var acc = geolocation_1.getAccuracy();
-                        if (_this.fakeGps &&
-                            (0, math_ex_1.getDistance)(_this.homePosition, lnglat) >
-                                _this.fakeGps) {
-                            lnglat = [
-                                (0, math_ex_1.randomFromCenter)(_this.homePosition[0], 0.001),
-                                (0, math_ex_1.randomFromCenter)(_this.homePosition[1], 0.001)
-                            ];
-                            acc = (0, math_ex_1.randomFromCenter)(15.0, 10);
-                        }
-                        var gpsVal = { lnglat: lnglat, acc: acc };
-                        source
-                            .setGPSMarkerAsync(gpsVal, !_this._first_gps_request)
-                            .then(function (result) {
-                            if (!result) {
-                                gpsVal = { error: "gps_out" };
-                            }
-                            _this._first_gps_request = false;
-                            _this.dispatchEvent(new ol_1.MapEvent("gps_result", _this, gpsVal));
-                        });
-                    });
-                    geolocation_1.on("error", function (_evt) {
-                        var source = _this.getLayers().item(0).getSource();
-                        var gpsVal = null;
-                        if (_this.fakeGps) {
-                            var lnglat = [
-                                (0, math_ex_1.randomFromCenter)(_this.homePosition[0], 0.001),
-                                (0, math_ex_1.randomFromCenter)(_this.homePosition[1], 0.001)
-                            ];
-                            var acc = (0, math_ex_1.randomFromCenter)(15.0, 10);
-                            gpsVal = { lnglat: lnglat, acc: acc };
-                        }
-                        source
-                            .setGPSMarkerAsync(gpsVal, !_this._first_gps_request)
-                            .then(function (result) {
-                            if (!result) {
-                                gpsVal = { error: "gps_out" };
-                            }
-                            _this._first_gps_request = false;
-                            _this.dispatchEvent(new ol_1.MapEvent("gps_result", _this, gpsVal));
-                        });
-                    });
-                }
-                else {
-                    this.geolocation.setTracking(true);
-                }
-            }
-            else {
-                if (this.geolocation)
-                    this.geolocation.setTracking(false);
-                var source = this.getLayers().item(0).getSource();
-                source.setGPSMarker();
-                if (!avoidEventForOff)
-                    this.dispatchEvent(new ol_1.MapEvent("gps_result", this, { error: "gps_off" }));
-            }
         };
         return MaplatMap;
     }(ol_1.Map));

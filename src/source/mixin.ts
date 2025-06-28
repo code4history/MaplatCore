@@ -1,6 +1,7 @@
 import Weiwudi from "weiwudi";
 import { MaplatMap } from "../map_ex";
 import { Coordinate } from "ol/coordinate";
+import { Size } from "ol/size";
 import { transform } from "ol/proj";
 import { canvBase, MERC_CROSSMATRIX, MERC_MAX } from "../const_ex";
 import {
@@ -10,14 +11,15 @@ import {
   normalizePoi
 } from "../normalize_pois";
 import { normalizeArg } from "../functions";
-import { polygon } from "@turf/helpers";
+import { polygon, lineString } from "@turf/helpers";
 import centroid from "@turf/centroid";
-import { Feature, Polygon } from "@turf/turf";
-import { Size } from "ol/size";
+import type { Feature, Polygon, GeoJsonProperties } from "geojson";
+import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
+import lineIntersect from "@turf/line-intersect";
 import { View as mlView } from "../view_ex";
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-type Constructor<T = {}> = new (...args: any[]) => T;
+//type SourceConstructor<T> = new (...args: any[]) => T;
+type SourceConstructor<T = object> = new (...args: any[]) => T;
 type ViewpointObject = {
   x?: number;
   y?: number;
@@ -34,7 +36,7 @@ export type CrossCoordinatesArray = [
   Size? // size
 ];
 
-export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
+export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) {
   abstract class Mixin extends Base {
     weiwudi?: Weiwudi;
     _map?: MaplatMap;
@@ -51,6 +53,123 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
     envelope?: Feature<Polygon>;
     centroid?: number[];
     homeMarginPixels = 0;
+    thumbnail?: string;
+    poiTemplate?: string;
+    poiStyle?: string;
+    iconTemplate?: string;
+    startFrom?: string;
+    controls?: any[];
+    northUp?: boolean;
+    tapDuration?: number;
+    mercatorXShift = 0;
+    mercatorYShift = 0;
+    icon?: string;
+    selectedIcon?: string;
+    static isBasemap_ = false;
+    static isWmts_ = true;
+    static isMapbox_ = false;
+    static isMapLibre_ = false;
+
+    initialize(options: any) {
+      options = normalizeArg(options);
+      this.mapID = options.mapID;
+      this.homePosition = options.homePosition;
+      this.mercZoom = options.mercZoom;
+      this.label = options.label;
+      this.maxZoom = options.maxZoom;
+      this.minZoom = options.minZoom;
+      this.poiTemplate = options.poiTemplate;
+      this.poiStyle = options.poiStyle;
+      this.iconTemplate = options.iconTemplate;
+      this.icon = options.icon;
+      this.selectedIcon = options.selectedIcon;
+      this.mercatorXShift = options.mercatorXShift;
+      this.mercatorYShift = options.mercatorYShift;
+      this.weiwudi = options.weiwudi;
+      if (options.envelopeLngLats) {
+        const lngLats = options.envelopeLngLats;
+        const mercs = lngLats.map((lnglat: Coordinate) =>
+          transform(lnglat, "EPSG:4326", "EPSG:3857")
+        );
+        mercs.push(mercs[0]);
+        this.envelope = polygon([mercs]) as Feature<Polygon, GeoJsonProperties>;
+        this.centroid = centroid(this.envelope).geometry?.coordinates;
+      }
+
+      for (let i = 0; i < META_KEYS.length; i++) {
+        const key = META_KEYS[i];
+        const option_key = META_KEYS_OPTION[i];
+        (this as any).set(key, options[option_key] || options[key]);
+      }
+
+      const thumbWait = options.thumbnail
+        ? new Promise(resolve => {
+          this.thumbnail = options.thumbnail;
+          resolve(undefined);
+        })
+        : new Promise(resolve => {
+          this.thumbnail = `./tmbs/${options.mapID}.jpg`;
+          fetch(this.thumbnail)
+            .then(response => {
+              if (response.ok) {
+                resolve(undefined);
+              } else {
+                this.thumbnail = `./tmbs/${options.mapID}_menu.jpg`;
+                resolve(undefined);
+              }
+            })
+            .catch(_error => {
+              this.thumbnail = `./tmbs/${options.mapID}_menu.jpg`;
+              resolve(undefined);
+            });
+        }).catch(_error => {
+          this.thumbnail = `./tmbs/${options.mapID || options.sourceID}_menu.jpg`;
+        });
+      const poisWait = this.resolvePois(options.pois);
+      this.initialWait = Promise.all([poisWait, thumbWait]);
+
+      setupTileLoadFunction(this);
+    }
+
+    static isBasemap() {
+      return this.isBasemap_;
+    }
+    
+    static isWmts() { 
+      return this.isWmts_;
+    }
+
+    static isMapbox() {
+      return !!this.isMapbox_;
+    }
+    
+    static isMapLibre() {
+      return !!this.isMapLibre_;
+    }
+
+    isBasemap() { 
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      return this.constructor.isBasemap();
+    }
+
+    isWmts() {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      return this.constructor.isWmts();
+    }
+
+    isMapbox() {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      return this.constructor.isMapbox();
+    }
+    
+    isMapLibre() {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      return this.constructor.isMapLibre && this.constructor.isMapLibre();
+    }
 
     abstract insideCheckSysCoord(sysCoord: Coordinate): boolean;
 
@@ -62,7 +181,7 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
       if (!this.weiwudi) return {};
       try {
         return await this.weiwudi.stats();
-      } catch (e) {
+      } catch (_e) {
         return {};
       }
     }
@@ -90,21 +209,27 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
         this.weiwudi.addEventListener("stop", deleteListner);
         this.weiwudi.addEventListener("canceled", deleteListner);
         await this.weiwudi.fetchAll();
-      } catch (e) {} // eslint-disable-line no-empty
+      } catch (_e) {
+        // Tile cache errors are ignored
+      }
     }
 
     async cancelTileCacheAsync() {
       if (!this.weiwudi) return;
       try {
         await this.weiwudi.cancel();
-      } catch (e) {} // eslint-disable-line no-empty
+      } catch (_e) {
+        // Cancel errors are ignored
+      }
     }
 
     async clearTileCacheAsync() {
       if (!this.weiwudi) return;
       try {
         await this.weiwudi.clean();
-      } catch (e) {} // eslint-disable-line no-empty
+      } catch (_e) {
+        // Clear cache errors are ignored
+      }
     }
 
     getMap() {
@@ -228,10 +353,7 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
           const xys = hide ? results[1]! : results[0]!;
           const sub = !hide ? results[1] : null;
           const pos: any = { xy: xys[0][0] };
-          if (!this.insideCheckSysCoord(xys[0][0]!)) {
-            map?.handleGPS(false, true);
-            return false;
-          }
+          if (!this.insideCheckSysCoord(xys[0][0]!)) return false;
           const news = xys[0].slice(1);
 
           pos.rad = news.reduce(
@@ -534,8 +656,171 @@ export function setCustomFunction<TBase extends Constructor>(Base: TBase) {
         mercs => [mercs, xys[1]]
       );
     }
+
+    static async createAsync(options: any) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      return new this(options);
+    }
   }
 
+  return Mixin;
+}
+
+export function setCustomFunctionBase<TBase extends SourceConstructor>(Base: TBase) {
+  abstract class Mixin extends setCustomFunction(Base) {
+    static isBasemap_ = true;
+    static isWmts_ = true;
+
+    insideCheckXy(xy: Coordinate) {
+      if (!this.envelope) return true;
+      return booleanPointInPolygon(xy, this.envelope);
+    }
+
+    insideCheckSysCoord(histCoords: Coordinate) {
+      return this.insideCheckXy(histCoords);
+    }
+
+    modulateXyInside(xy: any) {
+      if (!this.centroid) return xy;
+      const expandLine = lineString([xy, this.centroid]);
+      const intersect = lineIntersect(this.envelope as any, expandLine as any);
+      if (intersect.features.length > 0 && intersect.features[0].geometry) {
+        return intersect.features[0].geometry.coordinates;
+      } else {
+        return xy;
+      }
+    }
+
+    modulateSysCoordInside(histCoords: any) {
+      return this.modulateXyInside(histCoords);
+    }
+
+    // unifyTerm対応
+    // https://github.com/code4history/MaplatCore/issues/19
+
+    merc2XyAsync(merc: Coordinate): Promise<Coordinate> {
+      return Promise.resolve(merc);
+    }
+
+    merc2XyAsync_ignoreBackground(merc: Coordinate): Promise<Coordinate | void> {
+      return this.merc2XyAsync(merc);
+    }
+
+    xy2MercAsync(xy: Coordinate): Promise<Coordinate> {
+      return Promise.resolve(xy);
+    }
+
+    xy2SysCoord(xy: Coordinate): Coordinate {
+      return xy;
+    }
+
+    sysCoord2Xy(sysCoord: Coordinate): Coordinate {
+      return sysCoord;
+    }
+
+    viewpoint2MercsAsync(viewpoint?: ViewpointArray, size?: Size) {
+      const sysCoords = this.viewpoint2SysCoords(viewpoint, size);
+      const xys = this.sysCoords2Xys(sysCoords);
+      return this.xys2MercsAsync(xys);
+    }
+
+    mercs2ViewpointAsync(mercs: CrossCoordinatesArray): Promise<ViewpointArray> {
+      return this.mercs2XysAsync(mercs).then(xys => {
+        const sysCoords = this.xys2SysCoords(xys);
+        return this.sysCoords2Viewpoint(sysCoords);
+      });
+    }
+
+    mercs2SysCoordsAsync_multiLayer(
+      mercs: CrossCoordinatesArray
+    ): Promise<(CrossCoordinatesArray | undefined)[]> {
+      return Promise.all(
+        mercs[0].map(merc => this.merc2SysCoordAsync(merc))
+      ).then(xys => [[xys, mercs[1]]]);
+    }
+
+    defZoom(): number {
+      return this.mercZoom!;
+    }
+  }
+  return Mixin;
+}
+
+export function setCustomFunctionOverlay<TBase extends SourceConstructor>(Base: TBase) {
+  abstract class Mixin extends setCustomFunction(Base) {
+
+  }
+  return Mixin;
+}
+
+export function setCustomFunctionMaplat<TBase extends SourceConstructor>(Base: TBase) {
+  abstract class Mixin extends setCustomFunction(Base) {
+    static isBasemap_ = false;
+    static isWmts_ = false;
+    width = 0;
+    height = 0;
+    _maxxy= 0;
+
+    insideCheckXy(xy: Coordinate) {
+      return !(
+        xy[0] < 0 ||
+        xy[0] > this.width ||
+        xy[1] < 0 ||
+        xy[1] > this.height
+      );
+    }
+
+    insideCheckSysCoord(sysCoord: Coordinate) {
+      return this.insideCheckXy(this.sysCoord2Xy(sysCoord));
+    }
+
+    modulateXyInside(xy: any) {
+      const dx = xy[0] / (this.width / 2) - 1;
+      const dy = xy[1] / (this.height / 2) - 1;
+      const da = Math.max(Math.abs(dx), Math.abs(dy));
+      return [
+        ((dx / da + 1) * this.width) / 2,
+        ((dy / da + 1) * this.height) / 2
+      ];
+    }
+
+    modulateSysCoordInside(histCoords: any) {
+      const xy = this.sysCoord2Xy(histCoords);
+      const ret = this.modulateXyInside(xy);
+      return this.xy2SysCoord(ret);
+    }
+
+    // unifyTerm対応
+    // https://github.com/code4history/MaplatCore/issues/19
+
+    xy2SysCoord(xy: Coordinate): Coordinate {
+      const sysCoordX = (xy[0] * (2 * MERC_MAX)) / this._maxxy - MERC_MAX;
+      const sysCoordY = -1 * ((xy[1] * (2 * MERC_MAX)) / this._maxxy - MERC_MAX);
+      return [sysCoordX, sysCoordY];
+    }
+
+    sysCoord2Xy(sysCoord: Coordinate): Coordinate {
+      const x = ((sysCoord[0] + MERC_MAX) * this._maxxy) / (2 * MERC_MAX);
+      const y = ((-sysCoord[1] + MERC_MAX) * this._maxxy) / (2 * MERC_MAX);
+      return [x, y];
+    }
+
+    defZoom(screenSize?: Size): number {
+      const screenWidth = screenSize![0];
+      const screenHeight = screenSize![1];
+      const delZoomOfWidth = Math.log2((screenWidth - 10) / this.width);
+      const delZoomOfHeight = Math.log2((screenHeight - 10) / this.height);
+      const maxZoom = this.maxZoom!;
+      let delZoom;
+      if (delZoomOfHeight > delZoomOfWidth) {
+        delZoom = delZoomOfHeight;
+      } else {
+        delZoom = delZoomOfWidth;
+      }
+      return maxZoom + delZoom;
+    }
+  }
   return Mixin;
 }
 
@@ -570,64 +855,75 @@ const META_KEYS_OPTION = [
   "description"
 ];
 
-export function setCustomInitialize(self: any, options: any) {
+export function addCommonOptions(options: any) { 
   options = normalizeArg(options);
-  self.mapID = options.mapID;
-  self.homePosition = options.homePosition;
-  self.mercZoom = options.mercZoom;
-  self.label = options.label;
-  self.maxZoom = options.maxZoom;
-  self.minZoom = options.minZoom;
-  self.poiTemplate = options.poiTemplate;
-  self.poiStyle = options.poiStyle;
-  self.iconTemplate = options.iconTemplate;
-  self.icon = options.icon;
-  self.selectedIcon = options.selectedIcon;
-  self.mercatorXShift = options.mercatorXShift;
-  self.mercatorYShift = options.mercatorYShift;
-  self.weiwudi = options.weiwudi;
+  if (!options.imageExtension) options.imageExtension = "jpg";
+  if (options.mapID && !options.url && !options.urls) {
+    options.url = options.tms
+      ? `tiles/${options.mapID}/{z}/{x}/{-y}.${options.imageExtension}`
+      : `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtension}`;
+  }
+  return options;
+}
+
+/*export function setCustomInitialize(this: any, options: any) {
+  options = normalizeArg(options);
+  this.mapID = options.mapID;
+  this.homePosition = options.homePosition;
+  this.mercZoom = options.mercZoom;
+  this.label = options.label;
+  this.maxZoom = options.maxZoom;
+  this.minZoom = options.minZoom;
+  this.poiTemplate = options.poiTemplate;
+  this.poiStyle = options.poiStyle;
+  this.iconTemplate = options.iconTemplate;
+  this.icon = options.icon;
+  this.selectedIcon = options.selectedIcon;
+  this.mercatorXShift = options.mercatorXShift;
+  this.mercatorYShift = options.mercatorYShift;
+  this.weiwudi = options.weiwudi;
   if (options.envelopeLngLats) {
     const lngLats = options.envelopeLngLats;
     const mercs = lngLats.map((lnglat: Coordinate) =>
       transform(lnglat, "EPSG:4326", "EPSG:3857")
     );
     mercs.push(mercs[0]);
-    self.envelope = polygon([mercs]);
-    self.centroid = centroid(self.envelope).geometry?.coordinates;
+    this.envelope = polygon([mercs]);
+    this.centroid = centroid(this.envelope).geometry?.coordinates;
   }
 
   for (let i = 0; i < META_KEYS.length; i++) {
     const key = META_KEYS[i];
     const option_key = META_KEYS_OPTION[i];
-    self[key] = options[option_key] || options[key];
+    this[key] = options[option_key] || options[key];
   }
 
   const thumbWait = options.thumbnail
     ? new Promise(resolve => {
-        self.thumbnail = options.thumbnail;
+        this.thumbnail = options.thumbnail;
         resolve(undefined);
       })
     : new Promise(resolve => {
-        self.thumbnail = `./tmbs/${options.mapID}.jpg`;
-        fetch(self.thumbnail)
+        this.thumbnail = `./tmbs/${options.mapID}.jpg`;
+        fetch(this.thumbnail)
           .then(response => {
             if (response.ok) {
               resolve(undefined);
             } else {
-              self.thumbnail = `./tmbs/${options.mapID}_menu.jpg`;
+              this.thumbnail = `./tmbs/${options.mapID}_menu.jpg`;
               resolve(undefined);
             }
           })
           .catch(_error => {
-            self.thumbnail = `./tmbs/${options.mapID}_menu.jpg`;
+            this.thumbnail = `./tmbs/${options.mapID}_menu.jpg`;
             resolve(undefined);
           });
       }).catch(_error => {
-        self.thumbnail = `./tmbs/${options.mapID || options.sourceID}_menu.jpg`;
+        this.thumbnail = `./tmbs/${options.mapID || options.sourceID}_menu.jpg`;
       });
-  const poisWait = self.resolvePois(options.pois);
-  self.initialWait = Promise.all([poisWait, thumbWait]);
-}
+  const poisWait = this.resolvePois(options.pois);
+  this.initialWait = Promise.all([poisWait, thumbWait]);
+}*/
 
 export function setupTileLoadFunction(target: any) {
   const self = target;
@@ -650,7 +946,7 @@ export function setupTileLoadFunction(target: any) {
               // console.log('loading');
             }
             ++numLoadingTiles;
-            const tImage = document.createElement("img"); // eslint-disable-line no-undef
+            const tImage = document.createElement("img");  
             tImage.crossOrigin = "Anonymous";
             tImage.onload = tImage.onerror = function () {
               if (tImage.width && tImage.height) {

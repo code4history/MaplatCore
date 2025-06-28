@@ -1,4 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+// Import styles
+import '../less/core.less';
+
 import i18n from "i18next";
 import i18nxhr from "i18next-xhr-backend";
 import CustomEvent from "./customevent";
@@ -16,10 +19,8 @@ import { MaplatMap } from "./map_ex";
 import { defaults, DragRotateAndZoom } from "ol/interaction";
 import { altKeyOnly } from "ol/events/condition";
 import { HistMap } from "./source/histmap";
-import { NowMap } from "./source/nowmap";
 import { TmsMap } from "./source/tmsmap";
-import { MapboxMap } from "./source/mapboxmap";
-import { mapSourceFactory } from "./source_ex";
+import { BackmapSource, MaplatSource, mapSourceFactory } from "./source_ex";
 import { META_KEYS, ViewpointArray } from "./source/mixin";
 import { recursiveRound } from "./math_ex";
 import locales from "./freeze_locales";
@@ -30,12 +31,15 @@ import {
   normalizePoi
 } from "./normalize_pois";
 import { createIconSet, createHtmlFromTemplate } from "./template_works";
+// import mapboxgl from "mapbox-gl"; // TODO: Remove mapbox dependency
+import { Geolocation } from './geolocation';
 
 // @ts-ignore
 import redcircle from "../parts/redcircle.png";                     // @ts-ignore  
 import defaultpin_selected from "../parts/defaultpin_selected.png"; // @ts-ignore
 import defaultpin from "../parts/defaultpin.png";
 import { Coordinate } from "ol/coordinate";
+import BaseEvent from "ol/events/Event";
 
 interface AppData {
   sources: string[];
@@ -71,12 +75,36 @@ interface Restore {
   hideLayer?: string;
 }
 
+export class GPSErrorEvent extends BaseEvent {
+  detail: string;
+  constructor(detail: string) {
+    super("gps_error");
+    this.detail = detail;
+  }
+}
+
+export class GPSResultEvent extends BaseEvent {
+  detail: any;
+  constructor(detail: any) {
+    super("gps_result");
+    this.detail = detail;
+  }
+}
+
+export class GPSRequestEvent extends BaseEvent {
+  constructor() {
+    super("gps_request");
+  }
+} 
+
 export class MaplatApp extends EventTarget {
+  // Static method declaration
+  static createObject: (option: any) => Promise<MaplatApp>;
+  
   appid: string;
   translateUI = false;
   noRotate = false;
   initialRestore: Restore = {};
-  mapboxgl: any;
   mapDiv = "map_div";
   restoreSession = false;
   enableCache: false;
@@ -91,18 +119,20 @@ export class MaplatApp extends EventTarget {
   appData?: AppData;
   appLang = "ja";
   backMap?: MaplatMap;
-  mercSrc?: NowMap;
+  mercSrc?: BackmapSource;
   mercBuffer: any;
   timer: any = undefined;
   appName: any;
   cacheHash: any;
   currentPosition: any;
   startFrom? = "";
-  from?: NowMap | HistMap;
+  from?: MaplatSource;
   vectors: any = [];
   mapDivDocument: HTMLElement | null;
   mapObject: any;
   mapboxMap: any;
+  maplibreMap: any;
+  googleApiKey?: string;
   pois: any;
   poiTemplate?: string;
   poiStyle?: string;
@@ -110,24 +140,38 @@ export class MaplatApp extends EventTarget {
   logger: Logger;
   icon?: string;
   selectedIcon?: string;
-  __backMapMoving = false;
-  __selectedMarker: any;
-  __init = true;
-  __redrawMarkerBlock = false;
-  __redrawMarkerThrottle: (NowMap | HistMap)[] = [];
-  __transparency: any;
+  fakeGps = false;
+  fakeRadius?: number;
+  homePosition?: [number, number];
+  geolocation?: Geolocation;
+  moveTo_ = false;
+  gpsEnabled_ = false;
+  alwaysGpsOn = false;
+  firstGpsRequest_ = false;
+  private __backMapMoving = false;
+  private __selectedMarker: any;
+  private __init = true;
+  private __redrawMarkerBlock = false;
+  private __redrawMarkerThrottle: MaplatSource[] = [];
+  private __transparency: any;
+
   lastClickEvent: any;
   // Maplat App Class
   constructor(appOption: any) {
     super();
     appOption = normalizeArg(appOption);
     this.appid = appOption.appid || "sample";
-    if (appOption.mapboxgl) {
-      this.mapboxgl = appOption.mapboxgl;
-      if (appOption.mapboxToken) {
-        this.mapboxgl.accessToken = appOption.mapboxToken;
-      }
+    // Mapbox GL JS support
+    const mapboxgl = appOption.mapboxgl || (typeof window !== 'undefined' ? (window as any).mapboxgl : undefined);
+    if (mapboxgl && appOption.mapboxToken) {
+      mapboxgl.accessToken = appOption.mapboxToken;
     }
+    
+    // MapLibre GL JS support (separate from Mapbox)
+    if (appOption.googleApiKey) {
+      this.googleApiKey = appOption.googleApiKey;
+    }
+
     this.mapDiv = appOption.div || "map_div";
     this.mapDivDocument = document.querySelector(`#${this.mapDiv}`);
     this.mapDivDocument!.classList.add("maplat");
@@ -259,7 +303,10 @@ export class MaplatApp extends EventTarget {
       mercMinZoom: mapReturnValue.mercMinZoom,
       mercMaxZoom: mapReturnValue.mercMaxZoom,
       enableCache: this.enableCache,
-      translator: (fragment: any) => this.translate(fragment)
+      key: this.googleApiKey,
+      translator: (fragment: any) => this.translate(fragment),
+      mapboxMap: this.mapboxMap, // Pass mapbox map instance
+      maplibreMap: this.maplibreMap // Pass maplibre map instance
     };
     for (let i = 0; i < dataSource.length; i++) {
       const option = dataSource[i];
@@ -273,8 +320,150 @@ export class MaplatApp extends EventTarget {
     if (!this.lang && this.appData.lang) {
       this.lang = this.appData.lang;
     }
-    return this.i18nLoader().then(x => this.handleI18n(x, appOption));
+    return this.i18nLoader()
+      .then(x => this.handleI18n(x, appOption))
+      .then(() => this.initGeolocation(appOption));
   }
+  // Async Initializers 2.5: For geolocation settings
+  initGeolocation(appOption: any) {
+    this.alwaysGpsOn = appOption.alwaysGpsOn || false;
+    const geolocation = this.geolocation = new Geolocation({
+      timerBase: appOption.fake as boolean,
+      homePosition: this.appData!.homePosition!
+    });
+    
+    // alwaysGpsOnモードでは起動時からGPS有効、そうでなければ無効
+    if (this.alwaysGpsOn) {
+      geolocation.setTracking(true);
+      this.gpsEnabled_ = true;
+    } else {
+      geolocation.setTracking(false);
+      this.gpsEnabled_ = false;
+    }
+
+    geolocation.on("change", () => {
+      const map = this.mapObject;
+      const overlayLayer = map.getLayer("overlay").getLayers().item(0);
+      const firstLayer = map.getLayers().item(0);
+      const source = (overlayLayer ? overlayLayer.getSource() : firstLayer.getSource());
+      const lnglat = geolocation.getPosition();
+      const acc = geolocation.getAccuracy();
+      if (!lnglat || !acc) return;
+      
+      source.setGPSMarkerAsync({ lnglat, acc }, !this.moveTo_ && !this.firstGpsRequest_).then((insideCheck: boolean) => {
+        this.moveTo_ = false;
+        this.firstGpsRequest_ = false;
+        if (!insideCheck) {
+          // 本流モードでは範囲外エラー時にGPSオフ、傍流モードでは継続
+          if (!this.alwaysGpsOn) {
+            this.handleGPS(false, false); // UIに状態変更を通知するためavoidEventForOffをfalseに
+            return;
+          }
+          source.setGPSMarker();
+        }
+        // GPS結果をUI側に通知
+        this.dispatchEvent(new GPSResultEvent(insideCheck ? { lnglat, acc } : { error: "gps_out" }));
+      });
+    });
+
+    geolocation.on("error", (evt: any) => {
+      const code = evt.code;
+      if (code === 3) return;
+      
+      // GPS無効化
+      geolocation.setTracking(false);
+      this.gpsEnabled_ = false;
+      
+      // マーカークリア
+      const map = this.mapObject;
+      const overlayLayer = map.getLayer("overlay").getLayers().item(0);
+      const firstLayer = map.getLayers().item(0);
+      const source = (overlayLayer ? overlayLayer.getSource() : firstLayer.getSource());
+      source.setGPSMarker();
+      
+      // エラーイベント発火
+      this.dispatchEvent(new GPSErrorEvent(code === 1 ? "user_gps_deny" : code === 2 ? "gps_miss" : "gps_timeout"));
+      this.dispatchEvent(new GPSResultEvent({ error: "gps_off" }));
+    });
+
+    this.addEventListener("mapChanged", () => {
+      if (geolocation.getTracking()) {
+        const map = this.mapObject;
+        const overlayLayer = map.getLayer("overlay").getLayers().item(0);
+        const firstLayer = map.getLayers().item(0);
+        const source = (overlayLayer ? overlayLayer.getSource() : firstLayer.getSource());
+        const lnglat = geolocation.getPosition();
+        const acc = geolocation.getAccuracy();
+        if (!lnglat || !acc) return;
+        source.setGPSMarkerAsync({ lnglat, acc }, true).then((insideCheck: boolean) => {
+          if (!insideCheck) {
+            // 本流モードでは範囲外エラー時にGPSオフ、傍流モードでは継続
+            if (!this.alwaysGpsOn) {
+              this.handleGPS(false, false); // UIに状態変更を通知するためavoidEventForOffをfalseに
+              return;
+            }
+            source.setGPSMarker();
+          }
+          // 地図変更時のGPS結果をUI側に通知
+          this.dispatchEvent(new GPSResultEvent(insideCheck ? { lnglat, acc } : { error: "gps_out" }));
+        });
+      }
+    });
+
+  }
+  
+  // GPS handling methods
+  handleGPS(enable: boolean, avoidEventForOff = false) {
+    if (!this.geolocation) return;
+    
+    if (enable) {
+      // alwaysGpsOnモードでは既に有効、本流モードではリクエスト時に有効化
+      if (!this.alwaysGpsOn) {
+        this.firstGpsRequest_ = true;
+        this.geolocation.setTracking(true);
+        this.gpsEnabled_ = true;
+        this.dispatchEvent(new GPSRequestEvent());
+      } else {
+        // alwaysGpsOnモードでは位置移動のみ
+        this.moveTo_ = true;
+        const lnglat = this.geolocation.getPosition();
+        const acc = this.geolocation.getAccuracy();
+        if (lnglat && acc) {
+          const map = this.mapObject;
+          const overlayLayer = map.getLayer("overlay").getLayers().item(0);
+          const firstLayer = map.getLayers().item(0);
+          const source = (overlayLayer ? overlayLayer.getSource() : firstLayer.getSource());
+          source.setGPSMarkerAsync({ lnglat, acc }, false).then((insideCheck: boolean) => {
+            if (!insideCheck) {
+              source.setGPSMarker();
+            }
+          });
+        }
+      }
+    } else {
+      // GPS無効化
+      if (!this.alwaysGpsOn) {
+        this.geolocation.setTracking(false);
+        this.gpsEnabled_ = false;
+        
+        // マーカークリア
+        const map = this.mapObject;
+        const overlayLayer = map.getLayer("overlay").getLayers().item(0);
+        const firstLayer = map.getLayers().item(0);
+        const source = (overlayLayer ? overlayLayer.getSource() : firstLayer.getSource());
+        source.setGPSMarker();
+        
+        if (!avoidEventForOff) {
+          this.dispatchEvent(new GPSResultEvent({ error: "gps_off" }));
+        }
+      }
+    }
+  }
+  
+  getGPSEnabled(): boolean {
+    return this.gpsEnabled_;
+  }
+  
   // Async initializers 4: Handle i18n setting
   handleI18n(i18nObj: any, appOption: any) {
     this.i18n = i18nObj[1];
@@ -313,6 +502,10 @@ export class MaplatApp extends EventTarget {
         `position:absolute;"></div>`
     )[0];
     this.mapDivDocument!.insertBefore(newElem, this.mapDivDocument!.firstChild);
+    this.fakeGps = fakeGps as boolean;
+    this.fakeRadius = fakeRadius as number;
+    this.homePosition = homePos as [number, number];
+
     this.mapObject = new MaplatMap({
       div: frontDiv,
       controls: this.appData!.controls || [],
@@ -330,7 +523,8 @@ export class MaplatApp extends EventTarget {
       tapDuration: appOption.tapDuration || this.appData!.tapDuration || 3000,
       homeMarginPixels:
         appOption.homeMarginPixels || this.appData!.homeMarginPixels || 50,
-      tapUIVanish: appOption.tapUIVanish || this.appData!.tapUIVanish || false  
+      tapUIVanish: appOption.tapUIVanish || this.appData!.tapUIVanish || false,
+      alwaysGpsOn: appOption.alwaysGpsOn || false
     });
     let backDiv: any = null;
     if (this.overlay) {
@@ -348,9 +542,9 @@ export class MaplatApp extends EventTarget {
         div: backDiv
       });
     }
-    if (this.mapboxgl) {
-      const mapboxgl = this.mapboxgl;
-      delete this.mapboxgl;
+    // Mapbox GL JS support
+    const mapboxgl = appOption.mapboxgl || (typeof window !== 'undefined' ? (window as any).mapboxgl : undefined);
+    if (mapboxgl) {
       const mapboxDiv = `${this.mapDiv}_mapbox`;
       newElem = createElement(
         `<div id="${mapboxDiv}" class="map" style="top:0; left:0; right:0; bottom:0; ` +
@@ -360,7 +554,7 @@ export class MaplatApp extends EventTarget {
         newElem,
         this.mapDivDocument!.firstChild
       );
-      this.mapboxMap = new mapboxgl.Map({
+      this.mapboxMap = new (mapboxgl as any).Map({
         attributionControl: false,
         boxZoom: false,
         container: mapboxDiv,
@@ -372,6 +566,39 @@ export class MaplatApp extends EventTarget {
         pitchWithRotate: false,
         scrollZoom: false,
         touchZoomRotate: false
+      });
+    }
+    
+    // MapLibre GL JS support (separate instance)
+    const maplibregl = appOption.maplibregl || (typeof window !== 'undefined' ? (window as any).maplibregl : undefined);
+    if (maplibregl) {
+      const maplibreDiv = `${this.mapDiv}_maplibre`;
+      newElem = createElement(
+        `<div id="${maplibreDiv}" class="map" style="top:0; left:0; right:0; bottom:0; ` +
+          `position:absolute;visibility:hidden;"></div>`
+      )[0];
+      this.mapDivDocument!.insertBefore(
+        newElem,
+        this.mapDivDocument!.firstChild
+      );
+      this.maplibreMap = new (maplibregl as any).Map({
+        attributionControl: false,
+        boxZoom: false,
+        container: maplibreDiv,
+        doubleClickZoom: false,
+        dragPan: false,
+        dragRotate: false,
+        interactive: false,
+        keyboard: false,
+        pitchWithRotate: false,
+        scrollZoom: false,
+        touchZoomRotate: false,
+        // Set a basic style to prevent render errors
+        style: {
+          version: 8,
+          sources: {},
+          layers: []
+        }
       });
     }
     this.startFrom = this.appData!.startFrom;
@@ -392,18 +619,23 @@ export class MaplatApp extends EventTarget {
   handleSources(sources: any) {
     this.mercSrc = sources.reduce((prev: any, curr: any) => {
       if (prev) return prev;
-      if (curr instanceof NowMap && !(curr instanceof TmsMap)) return curr;
+      if (curr.isBasemap()) return curr;
     }, null);
     const cache: any[] = [];
     this.cacheHash = {};
     for (let i = 0; i < sources.length; i++) {
       const source = sources[i];
       source.setMap(this.mapObject);
-      if (source instanceof MapboxMap) {
+      if (source.isMapbox()) {
         if (!this.mapboxMap) {
-          throw "To use mapbox gl based base map, you have to make Maplat object with specifying 'mapboxgl' option.";
+          throw "To use Mapbox based maps, you need to include Mapbox GL JS and provide it via mapboxgl option.";
         }
         source.mapboxMap = this.mapboxMap;
+      } else if (source.isMapLibre && source.isMapLibre()) {
+        if (!this.maplibreMap) {
+          throw "To use MapLibre based maps, you need to include MapLibre GL JS and provide it via maplibregl option.";
+        }
+        source.maplibreMap = this.maplibreMap;
       }
       cache.push(source);
       this.cacheHash[source.mapID] = source;
@@ -418,13 +650,13 @@ export class MaplatApp extends EventTarget {
     this.raiseChangeViewpoint();
   }
   // Async initializer 10: Handle initial map
-  async setInitialMap(cache: (HistMap | NowMap)[]) {
+  async setInitialMap(cache: MaplatSource[]) {
     const initial: string =
       this.initialRestore.mapID ||
       this.startFrom ||
       cache[cache.length - 1].mapID;
     this.from = cache.reduce(
-      (prev: HistMap | NowMap | undefined, curr: HistMap | NowMap) => {
+      (prev: MaplatSource | undefined, curr: MaplatSource) => {
         if (prev) {
           return !(prev instanceof HistMap) && curr.mapID != initial
             ? curr
@@ -453,7 +685,7 @@ export class MaplatApp extends EventTarget {
       } else {
         const xy = evt.coordinate;
         this.dispatchEvent(new CustomEvent("clickMapXy", xy));
-        (this.from as NowMap | HistMap)
+        (this.from as MaplatSource)
           .sysCoord2MercAsync(xy)
           .then((merc: any) => {
             this.dispatchEvent(new CustomEvent("clickMapMerc", merc));
@@ -476,7 +708,7 @@ export class MaplatApp extends EventTarget {
     const pointerCounter: any = {};
     const pointermoveHandler = (xy: any) => {
       this.dispatchEvent(new CustomEvent("pointerMoveOnMapXy", xy));
-      (this.from as HistMap | NowMap)
+      (this.from as MaplatSource)
         .sysCoord2MercAsync(xy)
         .then((merc: any) => {
           this.dispatchEvent(new CustomEvent("pointerMoveOnMapMerc", merc));
@@ -605,8 +837,8 @@ export class MaplatApp extends EventTarget {
     const mapOutHandler = (evt: any) => {
       let histCoord = evt.frameState.viewState.center;
       const source = this.from;
-      if (!(source as HistMap | NowMap).insideCheckSysCoord(histCoord)) {
-        histCoord = (source as HistMap | NowMap).modulateSysCoordInside(
+      if (!(source as MaplatSource).insideCheckSysCoord(histCoord)) {
+        histCoord = (source as MaplatSource).modulateSysCoordInside(
           histCoord
         );
         evt.target.getView().setCenter(histCoord);
@@ -640,50 +872,45 @@ export class MaplatApp extends EventTarget {
   }
   // Async initializer 16: Handle back map's behavior
   raiseChangeViewpoint() {
-    this.mapObject.on("postrender", (_evt: any) => {
+    this.mapObject.on("postrender", async (_evt: any) => {
       const view = this.mapObject.getView();
       const center = view.getCenter();
       const zoom = view.getDecimalZoom();
       const rotation = normalizeDegree((view.getRotation() * 180) / Math.PI);
-      (this.from as HistMap | NowMap)
-        .viewpoint2MercsAsync()
-        .then(mercs => (this.mercSrc as NowMap).mercs2ViewpointAsync(mercs))
-        .then(viewpoint => {
-          if (
-            this.mobileMapMoveBuffer &&
-            this.mobileMapMoveBuffer[0]![0] == viewpoint[0]![0] &&
-            this.mobileMapMoveBuffer[0]![1] == viewpoint[0]![1] &&
-            this.mobileMapMoveBuffer[1] == viewpoint[1] &&
-            this.mobileMapMoveBuffer[2] == viewpoint[2]
-          ) {
-            return;
-          }
-          this.mobileMapMoveBuffer = viewpoint;
-          const ll = transform(viewpoint[0]!, "EPSG:3857", "EPSG:4326");
-          const direction = normalizeDegree((viewpoint[2]! * 180) / Math.PI);
-          this.dispatchEvent(
-            new CustomEvent("changeViewpoint", {
-              x: center[0],
-              y: center[1],
-              longitude: ll[0],
-              latitude: ll[1],
-              mercator_x: viewpoint[0]![0],
-              mercator_y: viewpoint[0]![1],
-              zoom,
-              mercZoom: viewpoint[1],
-              direction,
-              rotation
-            })
-          );
-          this.requestUpdateState({
-            position: {
-              x: center[0],
-              y: center[1],
-              zoom,
-              rotation
-            }
-          });
-        });
+      const mercs = await this.from!.viewpoint2MercsAsync();
+      const viewpoint = await this.mercSrc!.mercs2ViewpointAsync(mercs);
+      if (
+        this.mobileMapMoveBuffer &&
+        this.mobileMapMoveBuffer[0]![0] == viewpoint[0]![0] &&
+        this.mobileMapMoveBuffer[0]![1] == viewpoint[0]![1] &&
+        this.mobileMapMoveBuffer[1] == viewpoint[1] &&
+        this.mobileMapMoveBuffer[2] == viewpoint[2]
+      ) return;
+      this.mobileMapMoveBuffer = viewpoint;
+      const ll = transform(viewpoint[0]!, "EPSG:3857", "EPSG:4326");
+      const direction = normalizeDegree((viewpoint[2]! * 180) / Math.PI);
+      this.dispatchEvent(
+        new CustomEvent("changeViewpoint", {
+          x: center[0],
+          y: center[1],
+          longitude: ll[0],
+          latitude: ll[1],
+          mercator_x: viewpoint[0]![0],
+          mercator_y: viewpoint[0]![1],
+          zoom,
+          mercZoom: viewpoint[1],
+          direction,
+          rotation
+        })
+      );
+      this.requestUpdateState({
+        position: {
+          x: center[0],
+          y: center[1],
+          zoom,
+          rotation
+        }
+      });
     });
   }
   currentMapInfo() {
@@ -711,23 +938,23 @@ export class MaplatApp extends EventTarget {
       : defaultpin;
     const promise = coords
       ? (function () {
-          return (src as HistMap | NowMap).merc2SysCoordAsync_ignoreBackground(
-            coords
-          );
-        })()
+        return (src as MaplatSource).merc2SysCoordAsync_ignoreBackground(
+          coords
+        );
+      })()
       : x && y
       ? new Promise(resolve => {
           resolve((src as HistMap).xy2SysCoord([x, y]));
         })
       : (function () {
           const merc = transform(lnglat, "EPSG:4326", "EPSG:3857");
-          return (src as HistMap | NowMap).merc2SysCoordAsync_ignoreBackground(
+          return (src as MaplatSource).merc2SysCoordAsync_ignoreBackground(
             merc
           );
         })();
     return promise.then((xy: any) => {
       if (!xy) return;
-      if ((src as HistMap | NowMap).insideCheckSysCoord(xy)) {
+      if ((src as MaplatSource).insideCheckSysCoord(xy)) {
         this.mapObject.setMarker(xy, { datum: data }, icon);
       }
     });
@@ -756,7 +983,7 @@ export class MaplatApp extends EventTarget {
             return merc2XyRecurse(coord, isLnglat);
           } else {
             if (isLnglat) coord = transform(coord, "EPSG:4326", "EPSG:3857");
-            return (this.from as HistMap | NowMap).merc2SysCoordAsync(coord);
+            return (this.from as MaplatSource).merc2SysCoordAsync(coord);
           }
         })
       );
@@ -778,7 +1005,7 @@ export class MaplatApp extends EventTarget {
     // Ready for Polygon
     this.mapObject.resetVector();
   }
-  redrawMarkers(source: HistMap | NowMap | undefined = undefined) {
+  redrawMarkers(source: MaplatSource | undefined = undefined) {
     if (!source) {
       source = this.from;
     }
@@ -786,7 +1013,7 @@ export class MaplatApp extends EventTarget {
       if (!this.__redrawMarkerThrottle) this.__redrawMarkerThrottle = [];
       const throttle = this.__redrawMarkerThrottle;
       if (throttle.length == 0 || throttle[throttle.length - 1] !== source) {
-        throttle.push(source as HistMap | NowMap);
+        throttle.push(source as MaplatSource);
         return;
       }
     }
@@ -1017,7 +1244,7 @@ export class MaplatApp extends EventTarget {
           ? layer.hide
           : true
       );
-    const mapPois = (this.from as HistMap | NowMap).listPoiLayers(
+    const mapPois = (this.from as MaplatSource).listPoiLayers(
       hideOnly,
       nonzero
     );
@@ -1120,12 +1347,12 @@ export class MaplatApp extends EventTarget {
   }
   setGPSMarker(position: any) {
     this.currentPosition = position;
-    (this.from as HistMap | NowMap).setGPSMarker(position, true);
+    (this.from as MaplatSource).setGPSMarker(position, true);
   }
   changeMap(mapID: string, restore?: Restore) {
     if (restore === undefined) restore = {};
     const now = this.mercSrc;
-    const to: NowMap | HistMap = this.cacheHash[mapID];
+    const to: MaplatSource = this.cacheHash[mapID];
     if (!this.changeMapSeq) {
       this.changeMapSeq = Promise.resolve();
     }
@@ -1141,7 +1368,7 @@ export class MaplatApp extends EventTarget {
             if (this.backMap) {
               // Overlay = true case:
               backSrc = this.backMap.getSource(); // Get current source of background map
-              if (!(to instanceof NowMap)) {
+              if (!to.isWmts()) {
                 // If new foreground source is nonlinear map:
                 if (backRestore) {
                   backTo = backRestore;
@@ -1150,7 +1377,7 @@ export class MaplatApp extends EventTarget {
                   if (!backSrc) {
                     // If current background source is not set, specify it
                     backTo = now as any;
-                    if (this.from instanceof NowMap) {
+                    if (this.from!.isWmts()) {
                       backTo =
                         this.from instanceof TmsMap
                           ? this.mapObject.getSource()
@@ -1176,7 +1403,7 @@ export class MaplatApp extends EventTarget {
               // If current foreground is basemap then set it as basemap layer
               if (backRestore) {
                 this.mapObject.exchangeSource(backRestore);
-              } else if (!(this.from instanceof NowMap)) {
+              } else if (!this.from!.isWmts()) {
                 const backToLocal = backSrc || now;
                 this.mapObject.exchangeSource(backToLocal);
               }
@@ -1191,7 +1418,7 @@ export class MaplatApp extends EventTarget {
             const updateState = {
               mapID: to.mapID
             };
-            if (to instanceof NowMap && !(to instanceof TmsMap)) {
+            if (to.isBasemap()) {
               (updateState as any).backgroundID = "____delete____";
             }
             this.requestUpdateState(updateState);
@@ -1238,7 +1465,7 @@ export class MaplatApp extends EventTarget {
               new CustomEvent("mapChanged", this.getMapMeta(to.mapID))
             );
             this.mapObject.updateSize();
-            this.mapObject.renderSync();
+            this.mapObject.render();
             if (restore!.position) {
               this.__init = false;
               to.setViewpoint(restore!.position);
@@ -1256,7 +1483,7 @@ export class MaplatApp extends EventTarget {
                 view.setZoom(size[1]);
                 view.setRotation(this.noRotate ? 0 : size[2]);
                 (this.backMap as MaplatMap).updateSize();
-                (this.backMap as MaplatMap).renderSync();
+                (this.backMap as MaplatMap).render();
               });
             }
             resolve(undefined);
@@ -1300,9 +1527,9 @@ export class MaplatApp extends EventTarget {
     return this.__transparency == null ? 0 : this.__transparency;
   }
   setViewpoint(cond: any) {
-    (this.from as HistMap | NowMap).setViewpoint(cond);
+    (this.from as MaplatSource).setViewpoint(cond);
   }
-  goHome(useTo?: HistMap | NowMap) {
+  goHome(useTo?: MaplatSource) {
     const src = useTo || this.from!;
     src.goHome();
   }
@@ -1316,7 +1543,7 @@ export class MaplatApp extends EventTarget {
     this.from!.resetCirculation();
   }
   getMapMeta(mapID: any) {
-    let source: NowMap | HistMap | undefined;
+    let source: MaplatSource | undefined;
     if (!mapID) {
       source = this.from;
     } else {
@@ -1325,7 +1552,7 @@ export class MaplatApp extends EventTarget {
     if (!source) return;
     return META_KEYS.reduce(
       (prev: any, curr: string) => {
-        prev[curr] = (source as any)[curr];
+        prev[curr] = (source as any).get(curr);
         return prev;
       },
       {
@@ -1335,7 +1562,7 @@ export class MaplatApp extends EventTarget {
     );
   }
   getMapCacheEnable(mapID: string) {
-    let source: NowMap | HistMap | undefined;
+    let source: MaplatSource | undefined;
     if (!mapID) {
       source = this.from;
     } else {
@@ -1345,7 +1572,7 @@ export class MaplatApp extends EventTarget {
     return source.getCacheEnable();
   }
   async getMapTileCacheStatsAsync(mapID: string) {
-    let source: NowMap | HistMap | undefined;
+    let source: MaplatSource | undefined;
     if (!mapID) {
       source = this.from;
     } else {
@@ -1359,7 +1586,7 @@ export class MaplatApp extends EventTarget {
     return stats.size || 0;
   }
   async clearMapTileCacheAsync(mapID: string) {
-    let source: NowMap | HistMap | undefined;
+    let source: MaplatSource | undefined;
     if (!mapID) {
       source = this.from;
     } else {
@@ -1369,7 +1596,7 @@ export class MaplatApp extends EventTarget {
     await source.clearTileCacheAsync();
   }
   async fetchAllMapTileCacheAsync(mapID: string, callback: any) {
-    let source: NowMap | HistMap | undefined;
+    let source: MaplatSource | undefined;
     if (!mapID) {
       source = this.from;
     } else {
@@ -1382,7 +1609,7 @@ export class MaplatApp extends EventTarget {
     await source.fetchAllTileCacheAsync(callback);
   }
   async cancelMapTileCacheAsync(mapID: string) {
-    let source: NowMap | HistMap | undefined;
+    let source: MaplatSource | undefined;
     if (!mapID) {
       source = this.from;
     } else {
@@ -1393,7 +1620,7 @@ export class MaplatApp extends EventTarget {
   }
   convertParametersFromCurrent(to: any, callback: any) {
     const view = this.mapObject.getView();
-    let fromPromise = (this.from as HistMap | NowMap).viewpoint2MercsAsync();
+    let fromPromise = (this.from as MaplatSource).viewpoint2MercsAsync();
     const current = recursiveRound(
       [view.getCenter(), view.getZoom(), view.getRotation()],
       10
@@ -1401,10 +1628,10 @@ export class MaplatApp extends EventTarget {
     if (
       this.mercBuffer &&
       this.mercBuffer.mercs &&
-      this.mercBuffer.buffer[(this.from as HistMap | NowMap).mapID]
+      this.mercBuffer.buffer[(this.from as MaplatSource).mapID]
     ) {
       const buffer =
-        this.mercBuffer.buffer[(this.from as HistMap | NowMap).mapID];
+        this.mercBuffer.buffer[(this.from as MaplatSource).mapID];
       if (
         buffer[0][0] == current[0][0] &&
         buffer[0][1] == current[0][1] &&
@@ -1421,18 +1648,18 @@ export class MaplatApp extends EventTarget {
         this.mercBuffer = {
           buffer: {}
         };
-        this.mercBuffer.buffer[(this.from as HistMap | NowMap).mapID] = current;
+        this.mercBuffer.buffer[(this.from as MaplatSource).mapID] = current;
       }
     } else {
       this.mercBuffer = {
         buffer: {}
       };
-      this.mercBuffer.buffer[(this.from as HistMap | NowMap).mapID] = current;
+      this.mercBuffer.buffer[(this.from as MaplatSource).mapID] = current;
     }
     this.logger.debug(
       `From: Center: ${current[0]} Zoom: ${current[1]} Rotation: ${current[2]}`
     );
-    this.logger.debug(`From: ${(this.from as HistMap | NowMap).mapID}`);
+    this.logger.debug(`From: ${(this.from as MaplatSource).mapID}`);
     fromPromise
       .then((mercs: any) => {
         this.mercBuffer.mercs = mercs;
@@ -1507,3 +1734,22 @@ export class MaplatApp extends EventTarget {
 }
 export { createElement };
 export { CustomEvent };
+
+// Static method for cleaner initialization
+MaplatApp.createObject = function(option: any): Promise<MaplatApp> {
+  return new Promise((resolve) => {
+    const app = new MaplatApp(option);
+    app.waitReady.then(() => {
+      resolve(app);
+    });
+  });
+};
+
+// For backward compatibility - Maplat namespace
+if (typeof window !== 'undefined') {
+  const Maplat = {
+    createObject: MaplatApp.createObject
+  };
+  (window as any).Maplat = Maplat;
+  (window as any).MaplatApp = MaplatApp;
+}

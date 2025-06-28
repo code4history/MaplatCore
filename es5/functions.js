@@ -110,9 +110,8 @@
             mercator_y_shift: "mercatorYShift"
         };
         return Object.keys(table).reduce(function (opt, key) {
-            if (opt[key]) {
-                opt[table[key]] = opt[key];
-                delete opt[key];
+            if (opt[key] !== undefined) {
+                throw new Error("Invalid Maplat option key: ".concat(key, ". Use \"").concat(table[key], "\" instead."));
             }
             return opt;
         }, options);

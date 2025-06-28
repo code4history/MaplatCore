@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset="UTF-8"/><title>Maplat</title><meta content="yes" name="apple-mobile-web-app-capable"/><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"/><link rel="icon" type="image/png" href="parts/favicon.png"/><link href="https://api.tiles.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.css" rel="stylesheet"/><style>.mainview {
+<!doctype html><html><head><meta charset="UTF-8"/><title>Maplat</title><meta content="yes" name="apple-mobile-web-app-capable"/><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"/><link rel="icon" type="image/png" href="parts/favicon.png"/><link href="https://api.tiles.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.css" rel="stylesheet"/><style>.mainview {
         position: absolute;
         top: 5%;
         bottom: 5%;
@@ -11,14 +11,18 @@
         bottom: 0%;
         left: 5%;
         right: 5%;
-      }</style><script defer="defer" src="./assets/maplat_core.js"></script><link href="./assets/maplat_core.css" rel="stylesheet"></head><body><div class="mainview"><div id="map_div"><span class="ol-control"></span></div></div><div class="button"><button id="show">showLayer(Main)</button> <button id="hide">hideLayer(Main)</button> <button id="clear">clearMarker(Main)</button> <button id="move">moveMarker(Main)</button> <button id="remove">removeMarker(Main)</button> <button id="add2">addMarker(Main2)</button> <button id="clear2">clearMarker(Main2)</button> <button id="addMap">addMarker(Map)</button> <button id="clearMap">clearMarker(Map)</button> <button id="unSelect">unSelect</button> <button id="showAll">showAll</button> <button id="hideAll">hideAll</button> <button id="morioka">盛岡城</button> <button id="maplat">盛岡(Maplat)</button> <button id="tms">盛岡(TMS)</button> <button id="osm">OSM</button> <button id="gsi">地理院</button> <button id="mapbox">Mapbox</button> <button id="go_home">ホームへ</button> <button id="reset_rotation">回転オフ</button> <button id="reset_direction">北を上に</button> <button id="reset_circulation">北を上に（northUp）</button></div><script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.js"></script></body><script>document.addEventListener('DOMContentLoaded', () => {
+      }</style><script defer="defer" src="./assets/maplat_core.js"></script><link href="./assets/maplat_core.css" rel="stylesheet"></head><body><div class="mainview"><div id="map_div"><span class="ol-control"></span></div></div><div class="button"><button id="show">showLayer(Main)</button> <button id="hide">hideLayer(Main)</button> <button id="clear">clearMarker(Main)</button> <button id="move">moveMarker(Main)</button> <button id="remove">removeMarker(Main)</button> <button id="add2">addMarker(Main2)</button> <button id="clear2">clearMarker(Main2)</button> <button id="addMap">addMarker(Map)</button> <button id="clearMap">clearMarker(Map)</button> <button id="unSelect">unSelect</button> <button id="showAll">showAll</button> <button id="hideAll">hideAll</button> <button id="morioka">盛岡城</button> <button id="maplat">盛岡(Maplat)</button> <button id="tms">盛岡(TMS)</button> <button id="osm">OSM</button> <button id="gsi">地理院</button> <button id="mapbox">Mapbox</button> <button id="google">Google</button> <button id="google_sat">Google 衛星</button> <button id="go_home">ホームへ</button> <button id="reset_rotation">回転オフ</button> <button id="reset_direction">北を上に</button> <button id="reset_circulation">北を上に（northUp）</button> <button id="gps_on">GPS トグル</button></div><script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js"></script></body><script>document.addEventListener('DOMContentLoaded', () => {
+      let gps_on = false;
       var option = {
+        //fake: true,
         mapboxgl: mapboxgl,
-        mapboxToken: 'YOUR-ACCESS-TOKEN',
+        mapboxToken: 'pk.eyJ1Ijoia29jaGl6dWZhbiIsImEiOiJjbHRnaWhzOW8wd2p4MmtvZDFsOWJiOG40In0.FYTPboTqXKv5a_onOaW1vQ',
+        googleApiKey: 'AIzaSyB0v_F9EVPbE7R2uOm6Mixrtzts21DEICc',
         northUp: true,
         tapDuration: 60000,
         homeMarginPixels: 100,
-        tapUIVanish: true
+        tapUIVanish: true,
+        alwaysGpsOn: false
       };
       var hashes = window.location.href
         .slice(window.location.href.indexOf("?") + 1)
@@ -32,9 +36,6 @@
       // new MaplatApp(option).waitReady.then(function (app) {
       Maplat.createObject(option).then(function (app) {
         console.log("####Message appReady");
-        console.log(app);
-        console.log(app.currentMapInfo());
-        console.log(app.mapInfo("gsi"));
         var moveFlag = false;
         app.addEventListener("clickMarker", function (evt) {
           app.selectMarker(evt.detail.namespaceID);
@@ -142,12 +143,40 @@
           app.clearMarker("main2");
         });
         document.getElementById("addMap").addEventListener("click", function (e) {
-          app.addMarker(
+          for (let i=0;i<100;i++) {
+            const dx = Math.random() * 0.02 - 0.01;
+            const dy = Math.random() * 0.02 - 0.01;
+            const ll = [141.1501111 + dx, 39.69994722 + dy];
+            app.addMarker({
+              address: "岩手県盛岡市内丸1-37",
+              desc:
+                "南部（盛岡）藩南部氏の居城である。西部を流れる北上川と南東部を流れる中津川の合流地、現在の盛岡市中心部にあった花崗岩丘陵に築城された連郭式平山城。",
+              icon: `data:image/svg+xml,${encodeURIComponent(`<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+x="0px" y="0px" width="30.021484375px" height="20px"
+viewBox="0 0 30.021484375 20" enable-background="new 0 0 30.021484375 20" xml:space="preserve">
+<polygon x="0" y="0" points="0,0 30.021484375,0 30.021484375,16 19.0107421875,16
+15.0107421875,20 11.0107421875,16 0,16 0,0" stroke="#000000" fill="#DEEFAE"
+stroke-width="2"></polygon>
+<text x="5" y="13" fill="#000000" font-family="Arial" font-size="12" font-weight="normal">${i+1}</text></svg>`)}`,
+              image: "moriokajo.jpg",
+              lnglat: ll,
+              name: { ja: "盛岡城", en: "Morioka Castle" },
+              selectedIcon: undefined,
+              start: 1598
+            });
+          }
+          /*app.addMarker(
             {
               address: "岩手県盛岡市内丸1-37",
               desc:
                 "南部（盛岡）藩南部氏の居城である。西部を流れる北上川と南東部を流れる中津川の合流地、現在の盛岡市中心部にあった花崗岩丘陵に築城された連郭式平山城。",
-              icon: undefined,
+              icon: `data:image/svg+xml,${encodeURIComponent(`<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+x="0px" y="0px" width="30.021484375px" height="20px"
+viewBox="0 0 30.021484375 20" enable-background="new 0 0 30.021484375 20" xml:space="preserve">
+<polygon x="0" y="0" points="0,0 30.021484375,0 30.021484375,16 19.0107421875,16
+15.0107421875,20 11.0107421875,16 0,16 0,0" stroke="#000000" fill="#DEEFAE"
+stroke-width="2"></polygon>
+<text x="5" y="13" fill="#000000" font-family="Arial" font-size="12" font-weight="normal">168</text></svg>`)}`,
               image: "moriokajo.jpg",
               lnglat: [141.1501111, 39.69994722],
               name: { ja: "盛岡城", en: "Morioka Castle" },
@@ -155,7 +184,7 @@
               start: 1598
             },
             "morioka_ndl2#main2"
-          );
+          );*/
         });
         document
           .getElementById("clearMap")
@@ -197,6 +226,12 @@
         document.getElementById("mapbox").addEventListener("click", function (e) {
           app.changeMap("mapbox");
         });
+        document.getElementById("google").addEventListener("click", function (e) {
+          app.changeMap("google");
+        });
+        document.getElementById("google_sat").addEventListener("click", function (e) {
+          app.changeMap("google_sat");
+        });
         document.getElementById("go_home").addEventListener("click", function (e) {
           app.goHome();
         });
@@ -207,12 +242,23 @@
           app.resetDirection();
         });
         document.getElementById("reset_circulation").addEventListener("click", function (e) {
+          console.log("Click reset_circulation");
           app.resetCirculation();
         });
-        document
+        /*document
           .getElementById("map_remove")
           .addEventListener("click", function (e) {
             app.remove();
-          });
+        });*/
+        document
+          .getElementById("gps_on")
+          .addEventListener("click", function (e) {
+            console.log("Click GPS on/off");
+            gps_on = !gps_on;
+            app.mapObject.handleGPS(gps_on);
+        });
+        app.mapObject.addEventListener("gps_result", (evt) => {
+          console.log(evt);
+        });
       });
     });</script></html>

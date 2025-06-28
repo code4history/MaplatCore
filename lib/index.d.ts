@@ -3,10 +3,11 @@ import { Logger } from "./logger";
 import { createElement } from "./functions";
 import EventTarget from "ol/events/Target";
 import { MaplatMap } from "./map_ex";
-import { HistMap } from "./source/histmap";
-import { NowMap } from "./source/nowmap";
+import { BackmapSource, MaplatSource } from "./source_ex";
 import { ViewpointArray } from "./source/mixin";
+import { Geolocation } from './geolocation';
 import { Coordinate } from "ol/coordinate";
+import BaseEvent from "ol/events/Event";
 interface AppData {
     sources: string[];
     lang?: string;
@@ -44,12 +45,15 @@ interface Restore {
     hideMarker?: number;
     hideLayer?: string;
 }
+export declare class GPSErrorEvent extends BaseEvent {
+    detail: string;
+    constructor(detail: string);
+}
 export declare class MaplatApp extends EventTarget {
     appid: string;
     translateUI: boolean;
     noRotate: boolean;
     initialRestore: Restore;
-    mapboxgl: any;
     mapDiv: string;
     restoreSession: boolean;
     enableCache: false;
@@ -64,18 +68,19 @@ export declare class MaplatApp extends EventTarget {
     appData?: AppData;
     appLang: string;
     backMap?: MaplatMap;
-    mercSrc?: NowMap;
+    mercSrc?: BackmapSource;
     mercBuffer: any;
     timer: any;
     appName: any;
     cacheHash: any;
     currentPosition: any;
     startFrom?: string | undefined;
-    from?: NowMap | HistMap;
+    from?: MaplatSource;
     vectors: any;
     mapDivDocument: HTMLElement | null;
     mapObject: any;
     mapboxMap: any;
+    googleApiKey?: string;
     pois: any;
     poiTemplate?: string;
     poiStyle?: string;
@@ -83,18 +88,24 @@ export declare class MaplatApp extends EventTarget {
     logger: Logger;
     icon?: string;
     selectedIcon?: string;
-    __backMapMoving: boolean;
-    __selectedMarker: any;
-    __init: boolean;
-    __redrawMarkerBlock: boolean;
-    __redrawMarkerThrottle: (NowMap | HistMap)[];
-    __transparency: any;
+    fakeGps: boolean;
+    fakeRadius?: number;
+    homePosition?: [number, number];
+    geolocation?: Geolocation;
+    moveTo_: boolean;
+    private __backMapMoving;
+    private __selectedMarker;
+    private __init;
+    private __redrawMarkerBlock;
+    private __redrawMarkerThrottle;
+    private __transparency;
     lastClickEvent: any;
     constructor(appOption: any);
     settingLoader(setting: any): Promise<any>;
     i18nLoader(): Promise<unknown>;
-    sourcesLoader(mapReturnValue: any): Promise<unknown[]>;
+    sourcesLoader(mapReturnValue: any): Promise<any[]>;
     handleSetting(setting: any, appOption: any): Promise<void>;
+    initGeolocation(appOption: any): void;
     handleI18n(i18nObj: any, appOption: any): Promise<void>;
     prepareMap(appOption: any): {
         homePos: Coordinate | undefined;
@@ -105,7 +116,7 @@ export declare class MaplatApp extends EventTarget {
     };
     handlePois(pois: any, mapReturnValue: any): Promise<void>;
     handleSources(sources: any): void;
-    setInitialMap(cache: (HistMap | NowMap)[]): Promise<void>;
+    setInitialMap(cache: MaplatSource[]): Promise<void>;
     setMapClick(): void;
     setPointerEvents(): void;
     setMapOnOff(): void;
@@ -120,7 +131,7 @@ export declare class MaplatApp extends EventTarget {
     setVector(data: any): void;
     resetLine(): void;
     resetVector(): void;
-    redrawMarkers(source?: HistMap | NowMap | undefined): void;
+    redrawMarkers(source?: MaplatSource | undefined): void;
     selectMarker(id: any): void;
     unselectMarker(): void;
     getMarker(id: any): any;
@@ -147,7 +158,7 @@ export declare class MaplatApp extends EventTarget {
     setTransparency(percentage: any): void;
     getTransparency(): any;
     setViewpoint(cond: any): void;
-    goHome(useTo?: HistMap | NowMap): void;
+    goHome(useTo?: MaplatSource): void;
     resetRotation(): void;
     resetDirection(): void;
     resetCirculation(): void;

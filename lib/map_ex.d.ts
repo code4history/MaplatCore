@@ -1,16 +1,17 @@
 import { Feature, Map } from "ol";
 export declare class MaplatMap extends Map {
-    _first_gps_request: any;
-    _overlay_group: any;
     fakeGps: any;
     fakeRadius: any;
     geolocation: any;
     homePosition: any;
-    __AvoidFirstMoveStart: boolean;
     northUp: boolean;
     tapDuration: number;
     homeMarginPixels: number;
     tapUIVanish: boolean;
+    alwaysGpsOn: boolean;
+    private __timer_id?;
+    private __first_gps_request;
+    private __ignore_first_move;
     constructor(optOptions: any);
     static spawnLayer(layer: any, source: any, container: any): any;
     getLayer(name?: string): any;
@@ -33,5 +34,4 @@ export declare class MaplatMap extends Map {
     setLayer(source?: any): void;
     setTransparency(percentage: any): void;
     setGPSMarker(position: any, ignoreMove: any): void;
-    handleGPS(launch: any, avoidEventForOff: any): void;
 }

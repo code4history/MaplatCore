@@ -36,6 +36,18 @@
         {
             "mapID" : "mapbox",
             "label" : "Mapbox"
+        },
+        {
+            "mapID" : "maplibre",
+            "label" : "MapLibre"
+        },
+        {
+            "mapID" : "google",
+            "label" : "Google"
+        },
+        {
+            "mapID": "google_sat",
+            "label": "Google Satellite"
         }
     ], 
     "pois" : "morioka_all_poi.json"
