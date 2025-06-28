@@ -161,7 +161,8 @@ export class MaplatApp extends EventTarget {
     appOption = normalizeArg(appOption);
     this.appid = appOption.appid || "sample";
     if (appOption.mapboxToken) {
-      if (typeof mapboxgl !== 'undefined' && mapboxgl) {
+      const mapboxgl = appOption.mapboxgl || (typeof window !== 'undefined' ? (window as any).mapboxgl : undefined);
+      if (mapboxgl) {
         mapboxgl.accessToken = appOption.mapboxToken;
       }
     }
@@ -301,7 +302,8 @@ export class MaplatApp extends EventTarget {
       mercMaxZoom: mapReturnValue.mercMaxZoom,
       enableCache: this.enableCache,
       key: this.googleApiKey,
-      translator: (fragment: any) => this.translate(fragment)
+      translator: (fragment: any) => this.translate(fragment),
+      mapboxMap: this.mapboxMap // Pass mapbox map instance
     };
     for (let i = 0; i < dataSource.length; i++) {
       const option = dataSource[i];
@@ -538,7 +540,8 @@ export class MaplatApp extends EventTarget {
       });
     }
     // TODO: Remove mapbox support
-    if (typeof mapboxgl !== 'undefined' && mapboxgl) {
+    const mapboxgl = appOption.mapboxgl || (typeof window !== 'undefined' ? (window as any).mapboxgl : undefined);
+    if (mapboxgl) {
       const mapboxDiv = `${this.mapDiv}_mapbox`;
       newElem = createElement(
         `<div id="${mapboxDiv}" class="map" style="top:0; left:0; right:0; bottom:0; ` +

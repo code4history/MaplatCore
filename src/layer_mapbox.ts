@@ -7,6 +7,10 @@ export class MapboxLayer extends Layer {
       // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
       const source = this.getSource();
       const mbMap = source.mapboxMap;
+      if (!mbMap) {
+        console.error('MapboxLayer: mapboxMap is undefined!');
+        return null;
+      }
       mbMap.setStyle(source.style);
       const canvas = mbMap.getCanvas();
       const viewState = frameState.viewState;

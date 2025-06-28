@@ -11,6 +11,8 @@
     />
     <link rel="icon" type="image/png" href="parts/favicon.png" />
     <!-- Mapbox CSS will be removed in future versions -->
+    <link href="https://api.tiles.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.css" rel="stylesheet" />
+    <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.js"></script>
     <style>
       .mainview {
         position: absolute;
@@ -74,8 +76,8 @@
         fake: true,
         fakeGps: [141.1501111, 39.69994722], // 盛岡城
         fakeRadius: 50,
-        // mapboxgl will be removed in future versions
-        // mapboxToken: 'pk.eyJ1Ijoia29jaGl6dWZhbiIsImEiOiJjbHRnaWhzOW8wd2p4MmtvZDFsOWJiOG40In0.FYTPboTqXKv5a_onOaW1vQ',
+        mapboxgl: mapboxgl,
+        mapboxToken: 'pk.eyJ1Ijoia29jaGl6dWZhbiIsImEiOiJjbHRnaWhzOW8wd2p4MmtvZDFsOWJiOG40In0.FYTPboTqXKv5a_onOaW1vQ',
         googleApiKey: 'AIzaSyB0v_F9EVPbE7R2uOm6Mixrtzts21DEICc',
         northUp: true,
         tapDuration: 60000,
