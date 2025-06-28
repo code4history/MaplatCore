@@ -5,8 +5,8 @@ import { Size } from 'ol/size';
 import { default as __DTS_DEFAULT_0__ } from 'weiwudi';
 import { MaplatMap } from '../map_ex';
 declare const GoogleMap_base: ((abstract new (...args: any[]) => {
-    insideCheckXy(xy: Coordinate): any;
-    insideCheckSysCoord(histCoords: Coordinate): any;
+    insideCheckXy(xy: Coordinate): boolean;
+    insideCheckSysCoord(histCoords: Coordinate): boolean;
     modulateXyInside(xy: any): any;
     modulateSysCoordInside(histCoords: any): any;
     merc2XyAsync(merc: Coordinate): Promise< Coordinate>;
@@ -116,10 +116,11 @@ declare const GoogleMap_base: ((abstract new (...args: any[]) => {
     isBasemap_: boolean;
     isWmts_: boolean;
     isMapbox_: boolean;
+    isMapLibre_: boolean;
     isBasemap(): boolean;
     isWmts(): boolean;
     isMapbox(): boolean;
-    isMapLibre(): any;
+    isMapLibre(): boolean;
     createAsync(options: any): Promise<any>;
 }) & typeof Google;
 export declare class GoogleMap extends GoogleMap_base {

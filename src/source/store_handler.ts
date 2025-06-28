@@ -9,7 +9,7 @@ import {
   VertexMode,
   YaxisMode
 } from "@maplat/transform";
-import { Position } from "@turf/turf";
+import type { Position } from "@turf/helpers";
 type LangResource = string | Record<string, string>;
 type TinLike = string | Transform | Compiled;
 

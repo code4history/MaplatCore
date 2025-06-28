@@ -50,10 +50,10 @@
   },
   "homepage": "https://github.com/code4history/MaplatCore/wiki",
   "dependencies": {
-    "@maplat/transform": "^0.2.2",
+    "@maplat/transform": "^0.2.3",
     "@turf/centroid": "^7.2.0",
-    "@turf/line-intersect": "^6.5.0",
-    "@turf/turf": "^6.5.0",
+    "@turf/line-intersect": "^7.2.0",
+    "@turf/turf": "^7.2.0",
     "argv": "^0.0.2",
     "caniuse-lite": "^1.0.30001591",
     "delaunator": "^5.0.1",
@@ -64,15 +64,17 @@
     "whatwg-fetch": "^3.6.2"
   },
   "peerDependencies": {
-    "ol": "^9.0.0"
+    "ol": "^9.0.0",
+    "mapbox-gl": "^1.0.0 || ^2.0.0 || ^3.0.0",
+    "maplibre-gl": "^3.0.0 || ^4.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
     "@types/lodash.template": "^4.5.1",
     "@types/node": "^22.10.2",
-    "@typescript-eslint/eslint-plugin": "^8.19.0",
-    "@typescript-eslint/parser": "^8.19.0",
-    "@vitest/coverage-v8": "^1.6.0",
+    "@typescript-eslint/eslint-plugin": "^8.18.2",
+    "@typescript-eslint/parser": "^8.18.2",
+    "@vitest/coverage-v8": "^3.2.4",
     "ajv": "^8.17.1",
     "cross-env": "^7.0.3",
     "eslint": "^9.17.0",
@@ -82,19 +84,15 @@
     "ol": "^10.6.1",
     "prettier": "^3.4.2",
     "typescript": "^5.7.2",
-    "vite": "^5.4.11",
+    "vite": "^6.3.5",
     "vite-plugin-dts": "^4.4.0",
-    "vitest": "^1.6.0"
+    "vitest": "^3.2.4"
   },
   "overrides": {
     "@babel/traverse": "7.23.2",
     "glob-parent": "5.1.2",
     "axios": "1.6.0",
     "minimist": "1.2.8"
-  },
-  "peerDependencies": {
-    "mapbox-gl": "^1.0.0 || ^2.0.0 || ^3.0.0",
-    "maplibre-gl": "^3.0.0 || ^4.0.0"
   },
   "peerDependenciesMeta": {
     "mapbox-gl": {

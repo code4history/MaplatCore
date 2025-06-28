@@ -13,7 +13,10 @@ import {
 import { normalizeArg } from "../functions";
 import { polygon } from "@turf/helpers";
 import centroid from "@turf/centroid";
-import { booleanPointInPolygon, Feature, lineIntersect, lineString, Polygon, Properties } from "@turf/turf";
+import type { Feature, Polygon, Properties } from "@turf/helpers";
+import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
+import lineIntersect from "@turf/line-intersect";
+import { lineString } from "@turf/helpers";
 import { View as mlView } from "../view_ex";
 
 //type SourceConstructor<T> = new (...args: any[]) => T;
@@ -67,6 +70,7 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
     static isBasemap_ = false;
     static isWmts_ = true;
     static isMapbox_ = false;
+    static isMapLibre_ = false;
 
     initialize(options: any) {
       options = normalizeArg(options);

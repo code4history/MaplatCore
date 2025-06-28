@@ -119,10 +119,11 @@ declare const HistMap_base: ((abstract new (...args: any[]) => {
     isBasemap_: boolean;
     isWmts_: boolean;
     isMapbox_: boolean;
+    isMapLibre_: boolean;
     isBasemap(): boolean;
     isWmts(): boolean;
     isMapbox(): boolean;
-    isMapLibre(): any;
+    isMapLibre(): boolean;
     createAsync(options: any): Promise<any>;
 }) & typeof XYZ;
 export declare abstract class HistMap extends HistMap_base {

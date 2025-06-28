@@ -2,7 +2,7 @@ import { default as Weiwudi } from 'weiwudi';
 import { MaplatMap } from '../map_ex';
 import { Coordinate } from 'ol/coordinate';
 import { Size } from 'ol/size';
-import { Feature, Polygon } from '@turf/turf';
+import { Feature, Polygon } from '@turf/helpers';
 type SourceConstructor<T = {}> = new (...args: any[]) => T;
 type ViewpointObject = {
     x?: number;
@@ -110,15 +110,16 @@ export declare function setCustomFunction<TBase extends SourceConstructor>(Base:
     isBasemap_: boolean;
     isWmts_: boolean;
     isMapbox_: boolean;
+    isMapLibre_: boolean;
     isBasemap(): boolean;
     isWmts(): boolean;
     isMapbox(): boolean;
-    isMapLibre(): any;
+    isMapLibre(): boolean;
     createAsync(options: any): Promise<any>;
 }) & TBase;
 export declare function setCustomFunctionBase<TBase extends SourceConstructor>(Base: TBase): ((abstract new (...args: any[]) => {
-    insideCheckXy(xy: Coordinate): any;
-    insideCheckSysCoord(histCoords: Coordinate): any;
+    insideCheckXy(xy: Coordinate): boolean;
+    insideCheckSysCoord(histCoords: Coordinate): boolean;
     modulateXyInside(xy: any): any;
     modulateSysCoordInside(histCoords: any): any;
     merc2XyAsync(merc: Coordinate): Promise<Coordinate>;
@@ -210,10 +211,11 @@ export declare function setCustomFunctionBase<TBase extends SourceConstructor>(B
     isBasemap_: boolean;
     isWmts_: boolean;
     isMapbox_: boolean;
+    isMapLibre_: boolean;
     isBasemap(): boolean;
     isWmts(): boolean;
     isMapbox(): boolean;
-    isMapLibre(): any;
+    isMapLibre(): boolean;
     createAsync(options: any): Promise<any>;
 }) & TBase;
 export declare function setCustomFunctionOverlay<TBase extends SourceConstructor>(Base: TBase): ((abstract new (...args: any[]) => {
@@ -307,10 +309,11 @@ export declare function setCustomFunctionOverlay<TBase extends SourceConstructor
     isBasemap_: boolean;
     isWmts_: boolean;
     isMapbox_: boolean;
+    isMapLibre_: boolean;
     isBasemap(): boolean;
     isWmts(): boolean;
     isMapbox(): boolean;
-    isMapLibre(): any;
+    isMapLibre(): boolean;
     createAsync(options: any): Promise<any>;
 }) & TBase;
 export declare function setCustomFunctionMaplat<TBase extends SourceConstructor>(Base: TBase): ((abstract new (...args: any[]) => {
@@ -410,10 +413,11 @@ export declare function setCustomFunctionMaplat<TBase extends SourceConstructor>
     isBasemap_: boolean;
     isWmts_: boolean;
     isMapbox_: boolean;
+    isMapLibre_: boolean;
     isBasemap(): boolean;
     isWmts(): boolean;
     isMapbox(): boolean;
-    isMapLibre(): any;
+    isMapLibre(): boolean;
     createAsync(options: any): Promise<any>;
 }) & TBase;
 export declare const META_KEYS: string[];
