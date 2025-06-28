@@ -43,7 +43,6 @@ for (let z = 0; z < 9; z++) {
   })(key, maxxy);
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 /*type Constructor<T = {}> = new (...args: any[]) => T;
 
 export function setCustomFunctionForHistmap<TBase extends Constructor>(Base: TBase) {
@@ -73,10 +72,10 @@ export abstract class HistMap extends setCustomFunctionMaplat(XYZ) {
         const x = coord[1];
         const y = coord[2];
         if (
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+           
           // @ts-ignore
           x * tileSize * Math.pow(2, this.maxZoom - z) >= this.width ||
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+           
           // @ts-ignore
           y * tileSize * Math.pow(2, this.maxZoom - z) >= this.height ||
           x < 0 ||

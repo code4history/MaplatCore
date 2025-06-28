@@ -4,6 +4,7 @@ import { ViewpointArray, CrossCoordinatesArray } from './mixin';
 import { Size } from 'ol/size';
 import { default as __DTS_DEFAULT_0__ } from 'weiwudi';
 import { MaplatMap } from '../map_ex';
+import { Feature, Polygon } from 'geojson';
 declare const NowMap_base: ((abstract new (...args: any[]) => {
     insideCheckXy(xy: Coordinate): boolean;
     insideCheckSysCoord(histCoords: Coordinate): boolean;

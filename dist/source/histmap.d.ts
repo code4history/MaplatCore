@@ -3,6 +3,7 @@ import { Coordinate } from 'ol/coordinate';
 import { Size } from 'ol/size';
 import { default as __DTS_DEFAULT_0__ } from 'weiwudi';
 import { MaplatMap } from '../map_ex';
+import { Feature, Polygon } from 'geojson';
 import { ViewpointArray, CrossCoordinatesArray } from './mixin';
 declare const HistMap_base: ((abstract new (...args: any[]) => {
     width: number;

@@ -7,7 +7,7 @@ import { polygon } from "@turf/helpers";
 import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
 import { MERC_MAX } from "../const_ex";
 import { Coordinate } from "ol/coordinate";
-import type { Feature, Polygon } from "@turf/helpers";
+import type { Feature, Polygon } from "geojson";
 import { store2HistMap4Core } from "./store_handler";
 import { Size } from "ol/size";
 import { CrossCoordinatesArray, ViewpointArray } from "./mixin";

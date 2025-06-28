@@ -12,9 +12,10 @@ export const LOGGER_LEVEL = {
   OFF: 99
 } as const;
 
-// eslint-disable-next-line
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging, @typescript-eslint/no-empty-object-type
 export interface Logger extends TLogger {}
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class Logger {
   constructor(
     public level: typeof LOGGER_LEVEL[AllLoggerLevelKeys] = LOGGER_LEVEL.INFO

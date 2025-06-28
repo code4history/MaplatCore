@@ -2,8 +2,8 @@ import { default as Weiwudi } from 'weiwudi';
 import { MaplatMap } from '../map_ex';
 import { Coordinate } from 'ol/coordinate';
 import { Size } from 'ol/size';
-import { Feature, Polygon } from '@turf/helpers';
-type SourceConstructor<T = {}> = new (...args: any[]) => T;
+import { Feature, Polygon } from 'geojson';
+type SourceConstructor<T = object> = new (...args: any[]) => T;
 type ViewpointObject = {
     x?: number;
     y?: number;

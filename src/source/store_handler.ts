@@ -9,7 +9,7 @@ import {
   VertexMode,
   YaxisMode
 } from "@maplat/transform";
-import type { Position } from "@turf/helpers";
+import type { Position } from "geojson";
 type LangResource = string | Record<string, string>;
 type TinLike = string | Transform | Compiled;
 
@@ -132,7 +132,7 @@ async function store2HistMap_internal(
       store.edges,
       [store.width!, store.height!]
     );
-    if (byCompiled && typeof tin !== "string") tin = store.compiled;
+    if (byCompiled && typeof tin !== "string") tin = store.compiled!;
     tins.push(tin);
   }
 
@@ -169,7 +169,7 @@ async function store2HistMap_internal(
           sub_map.bounds
         );
         if (byCompiled && typeof tin !== "string")
-          tin = sub_map.compiled;
+          tin = sub_map.compiled!;
         tins.push(tin);
       }
       sub_maps.push(sub as SubMap);
@@ -225,13 +225,13 @@ export async function histMap2Store(
 }
 
 async function createTinFromGcpsAsync(
-  strict: StrictMode,
-  vertex: VertexMode,
-  yaxis?: YaxisMode,
+  _strict: StrictMode,
+  _vertex: VertexMode,
+  _yaxis?: YaxisMode,
   gcps: PointSet[] = [],
-  edges: EdgeSet[] = [],
-  wh?: number[],
-  bounds?: number[][]
+  _edges: EdgeSet[] = [],
+  _wh?: number[],
+  _bounds?: number[][]
 ): Promise<TinLike> {
   if (gcps.length < 3) return "tooLessGcps";
   

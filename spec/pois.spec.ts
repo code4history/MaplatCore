@@ -16,7 +16,7 @@ describe("normalizePois test", () => {
     { input: poitest3Input, expect: poitest3Expect }
   ];
 
-  testCases.forEach((testCase, index) => {
+  testCases.forEach((testCase, _index) => {
     it(testCase.input.title, async () => {
       const testout = await normalizeLayers(testCase.input.data, testCase.input.options);
       // Deep clone to avoid reference issues

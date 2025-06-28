@@ -1,6 +1,6 @@
 {
   "name": "@maplat/core",
-  "version": "0.10.6",
+  "version": "0.10.7",
   "description": "Maplat is the cool Historical Map/Illustrated Map Viewer API.\nIt can transform each map coordinates with nonlinear but homeomorphic projection and makes possible that the maps can collaborate with GPS/accurate maps, without distorting original maps.",
   "type": "module",
   "main": "./dist/maplat_core.cjs",
@@ -33,7 +33,15 @@
     "lint": "eslint src spec --fix",
     "format": "prettier --write \"src/**/*.{ts,js}\" \"spec/**/*.{ts,js}\"",
     "preview": "vite preview",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run lint && npm run typecheck && npm run test && npm run build",
+    "version:bump": "node scripts/bump-version.js",
+    "version:sync": "node scripts/sync-version.js",
+    "publish:npm": "node scripts/publish-npm.js",
+    "publish:npm:dry": "node scripts/publish-npm.js --dry-run",
+    "publish:deno": "node scripts/publish-deno.js",
+    "publish:deno:dry": "node scripts/publish-deno.js --dry-run",
+    "publish:all": "node scripts/publish-all.js",
+    "publish:all:dry": "node scripts/publish-all.js --dry-run"
   },
   "repository": {
     "type": "git",
@@ -64,12 +72,21 @@
     "whatwg-fetch": "^3.6.2"
   },
   "peerDependencies": {
-    "ol": "^9.0.0",
     "mapbox-gl": "^1.0.0 || ^2.0.0 || ^3.0.0",
-    "maplibre-gl": "^3.0.0 || ^4.0.0"
+    "maplibre-gl": "^3.0.0 || ^4.0.0",
+    "ol": "^9.0.0"
+  },
+  "peerDependenciesMeta": {
+    "mapbox-gl": {
+      "optional": true
+    },
+    "maplibre-gl": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
+    "@types/geojson": "^7946.0.16",
     "@types/lodash.template": "^4.5.1",
     "@types/node": "^22.10.2",
     "@typescript-eslint/eslint-plugin": "^8.18.2",
@@ -84,6 +101,7 @@
     "ol": "^10.6.1",
     "prettier": "^3.4.2",
     "typescript": "^5.7.2",
+    "typescript-eslint": "^8.35.0",
     "vite": "^6.3.5",
     "vite-plugin-dts": "^4.4.0",
     "vitest": "^3.2.4"
@@ -93,13 +111,5 @@
     "glob-parent": "5.1.2",
     "axios": "1.6.0",
     "minimist": "1.2.8"
-  },
-  "peerDependenciesMeta": {
-    "mapbox-gl": {
-      "optional": true
-    },
-    "maplibre-gl": {
-      "optional": true
-    }
   }
 }

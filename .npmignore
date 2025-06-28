@@ -13,6 +13,7 @@ coverage/
 eslint.config.mjs
 .prettierrc
 tsconfig.json
+tsconfig.build.json
 ts_config/
 vite.config.ts
 
@@ -27,9 +28,17 @@ lib/
 es5/
 dist_packed/
 
+# Deno specific files
+deno.json
+jsr.json
+import_map.json
+examples/deno-example.ts
+docs/DENO_USAGE.md
+
 # Documentation
 *.md
 !README.md
+!README.ja.md
 docs/
 
 # Git and IDE
@@ -42,6 +51,7 @@ docs/
 
 # Scripts
 scripts/
+bin/freezer.js
 
 # Test data
 tiles/
@@ -54,6 +64,16 @@ apps/
 *.log
 *.tgz
 .DS_Store
+
+# Test images
+*.png
+*.jpg
+*.jpeg
+*.gif
+
+# Local configuration
+.env
+.env.*
 
 # Examples
 example.zip

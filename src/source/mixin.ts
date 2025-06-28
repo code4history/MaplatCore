@@ -11,17 +11,15 @@ import {
   normalizePoi
 } from "../normalize_pois";
 import { normalizeArg } from "../functions";
-import { polygon } from "@turf/helpers";
+import { polygon, lineString } from "@turf/helpers";
 import centroid from "@turf/centroid";
-import type { Feature, Polygon, Properties } from "@turf/helpers";
+import type { Feature, Polygon, GeoJsonProperties } from "geojson";
 import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
 import lineIntersect from "@turf/line-intersect";
-import { lineString } from "@turf/helpers";
 import { View as mlView } from "../view_ex";
 
 //type SourceConstructor<T> = new (...args: any[]) => T;
-// eslint-disable-next-line @typescript-eslint/ban-types
-type SourceConstructor<T = {}> = new (...args: any[]) => T;
+type SourceConstructor<T = object> = new (...args: any[]) => T;
 type ViewpointObject = {
   x?: number;
   y?: number;
@@ -94,7 +92,7 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
           transform(lnglat, "EPSG:4326", "EPSG:3857")
         );
         mercs.push(mercs[0]);
-        this.envelope = polygon([mercs]) as Feature<Polygon, Properties>;
+        this.envelope = polygon([mercs]) as Feature<Polygon, GeoJsonProperties>;
         this.centroid = centroid(this.envelope).geometry?.coordinates;
       }
 
@@ -183,7 +181,7 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
       if (!this.weiwudi) return {};
       try {
         return await this.weiwudi.stats();
-      } catch (e) {
+      } catch (_e) {
         return {};
       }
     }
@@ -211,21 +209,27 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
         this.weiwudi.addEventListener("stop", deleteListner);
         this.weiwudi.addEventListener("canceled", deleteListner);
         await this.weiwudi.fetchAll();
-      } catch (e) {} // eslint-disable-line no-empty
+      } catch (_e) {
+        // Tile cache errors are ignored
+      }
     }
 
     async cancelTileCacheAsync() {
       if (!this.weiwudi) return;
       try {
         await this.weiwudi.cancel();
-      } catch (e) {} // eslint-disable-line no-empty
+      } catch (_e) {
+        // Cancel errors are ignored
+      }
     }
 
     async clearTileCacheAsync() {
       if (!this.weiwudi) return;
       try {
         await this.weiwudi.clean();
-      } catch (e) {} // eslint-disable-line no-empty
+      } catch (_e) {
+        // Clear cache errors are ignored
+      }
     }
 
     getMap() {
@@ -942,7 +946,7 @@ export function setupTileLoadFunction(target: any) {
               // console.log('loading');
             }
             ++numLoadingTiles;
-            const tImage = document.createElement("img"); // eslint-disable-line no-undef
+            const tImage = document.createElement("img");  
             tImage.crossOrigin = "Anonymous";
             tImage.onload = tImage.onerror = function () {
               if (tImage.width && tImage.height) {

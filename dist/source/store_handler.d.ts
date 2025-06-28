@@ -1,5 +1,5 @@
 import { Transform, Compiled, PointSet, EdgeSet, StrictMode, VertexMode, YaxisMode } from '@maplat/transform';
-import { Position } from '@turf/helpers';
+import { Position } from 'geojson';
 type LangResource = string | Record<string, string>;
 type TinLike = string | Transform | Compiled;
 interface HistMapStore {

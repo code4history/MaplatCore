@@ -66,11 +66,8 @@ export class Geolocation extends BaseObject {
   constructor(options?: GeolocationOptions) {
     super();
 
-    this.on;
-
-    this.once;
-
-    this.un;
+    // Methods are inherited from BaseObject
+    // this.on, this.once, this.un are available
 
     options = options || {} as GeolocationOptions;
 
@@ -112,7 +109,7 @@ export class Geolocation extends BaseObject {
           setTimeout(this.timerPositionError_.bind(this), trackingOptions.maximumAge * 10);
         }
       } else if (!tracking && this.task_id_ !== undefined) {
-        clearInterval(this.task_id_ as NodeJS.Timer);
+        clearInterval(this.task_id_ as number);
         this.task_id_ = undefined;
       }
     } else {

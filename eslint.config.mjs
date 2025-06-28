@@ -1,37 +1,20 @@
-// @ts-nocheck // TypeScriptの型チェックを無効化
+// @ts-nocheck
 import js from "@eslint/js";
-import * as tseslint from "@typescript-eslint/eslint-plugin";
-import * as tsParser from "@typescript-eslint/parser";
+import tseslint from "typescript-eslint";
 import prettier from "eslint-config-prettier";
 
-const config = [
+export default tseslint.config(
   {
-    ignores: ["dist/**", "lib/**", "es5/**", "node_modules/**", "tiles/**", "parts/**", "parts_test/**", "*.js", "*.mjs", "webpack_config/**", "ts_config/**", "jest_config/**", "bin/**"]
+    ignores: ["dist/**", "lib/**", "es5/**", "node_modules/**", "tiles/**", "parts/**", "parts_test/**", "*.js", "*.mjs", "webpack_config/**", "ts_config/**", "jest_config/**", "bin/**", "spec/puppeteer.spec.js"]
   },
-  {
-    linterOptions: {
-      reportUnusedDisableDirectives: true,
-    }
-  },
-  
-  {
-    files: ["**/*.{js,mjs,cjs,jsx,mjsx,ts,tsx,mtsx}"],
-    ...js.configs.recommended,
-    rules: {
-      'no-unused-vars': 'off',
-    }
-  },
-  
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
   {
     files: ["**/*.{ts,tsx,mtsx}"],
     languageOptions: {
-      parser: tsParser,
       parserOptions: {
-        project: ["./tsconfig.json"]
+        project: "./tsconfig.json"
       }
-    },
-    plugins: {
-      "@typescript-eslint": tseslint
     },
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
@@ -67,28 +50,5 @@ const config = [
       "yield-star-spacing": "error"
     }
   },
-
-  prettier,
-
-  {
-    ignores: ["dist/**", "node_modules/**", "*.js"],
-    languageOptions: {
-      sourceType: "module",
-      globals: {
-        document: "readonly",
-        navigator: "readonly",
-        window: "readonly",
-        require: "readonly",
-        process: "readonly",
-        global: "readonly",
-        console: "readonly",
-        __dirname: "readonly",
-        Buffer: "readonly",
-        URL: "readonly",
-        URLSearchParams: "readonly"
-      }
-    }
-  }
-];
-
-export default config;
+  prettier
+);

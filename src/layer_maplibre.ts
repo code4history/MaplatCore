@@ -67,22 +67,7 @@ export class MapLibreLayer extends Layer {
       const center = toLonLat(viewState.center);
       const zoom = viewState.zoom - 1;
       
-      // Debug: Check zoom levels and resolution
-      const currentMLZoom = mlMap.getZoom();
-      const olResolution = frameState.viewState.resolution;
-      const expectedZoom = Math.log2(156543.03392804097 / olResolution) - 1; // OL to ML zoom conversion
-      
-      // console.log('MapLibre render:', {
-      //   viewStateZoom: viewState.zoom,
-      //   targetZoom: zoom,
-      //   currentMLZoom: currentMLZoom,
-      //   expectedZoom: expectedZoom,
-      //   olResolution: olResolution,
-      //   frameStateSize: frameState.size
-      // });
-      
       if (
-        // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         mlMap.getCenter().toArray().toString() !== center.toString() ||
         mlMap.getZoom() !== zoom
       ) {

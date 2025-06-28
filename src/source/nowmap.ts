@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
+ 
 import { XYZ } from "ol/source";
 import {
   addCommonOptions,

@@ -37,6 +37,16 @@ The easiest way to install maplat_core is with [`npm`][npm].
 npm install @maplat/core
 ```
 
+### Deno
+
+NOTICE: Maplat Core is a browser-only library. Use it with Deno web frameworks like Fresh.
+
+#### Using npm specifier in Deno
+
+```typescript
+import { MaplatApp } from "npm:@maplat/core@0.10.7";
+```
+
 ### Peer Dependencies
 
 Maplat Core supports both Mapbox GL JS and MapLibre GL JS for vector tile based maps.

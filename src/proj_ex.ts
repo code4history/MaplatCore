@@ -34,7 +34,7 @@ export function transformDirect(
     addCoordinateTransforms(src, dist, func, invFunc);
   }
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+   
   if (xy) {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore

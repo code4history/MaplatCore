@@ -137,7 +137,7 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
 
   return new Promise((resolve, reject) => {
     const url = options.settingFile || `maps/${options.mapID}.json`;
-    const xhr = new XMLHttpRequest(); // eslint-disable-line no-undef
+    const xhr = new XMLHttpRequest();  
     xhr.open("GET", url, true);
     xhr.responseType = "json";
 
@@ -198,7 +198,7 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
               try {
                 await obj.initialWait;
                 resolve(obj);
-              } catch (e) {
+              } catch (_e) {
                 resolve(obj);
               }
             } catch (e) {
@@ -225,7 +225,7 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
             try {
               await obj.initialWait;
               obj.setupMapParameter(resolve);
-            } catch (e) {
+            } catch (_e) {
               obj.setupMapParameter(resolve);
             }
           } catch (e) {
@@ -273,8 +273,8 @@ export async function registerMapToSW(options: any) {
   let ret;
   try {
     ret = await Weiwudi.registerMap(options.mapID, setting);
-  } catch (e) {
-    // eslint-disable-line no-empty
+  } catch (_e) {
+    // Ignore error
   }
   return ret;
 }

@@ -1,5 +1,5 @@
-/* eslint-disable no-undef */
-/* eslint-disable @typescript-eslint/no-var-requires */
+ 
+ 
 const sleep = require("sleep-promise");
 
 describe("Puppeteer test", () => {

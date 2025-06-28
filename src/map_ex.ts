@@ -71,8 +71,6 @@ export class MaplatMap extends Map {
   homeMarginPixels: number;
   tapUIVanish: boolean;
   alwaysGpsOn: boolean;
-  private __timer_id?: number;
-  private __first_gps_request = true;
   private __ignore_first_move: boolean;
 
   constructor(optOptions: any) {

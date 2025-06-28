@@ -3002,7 +3002,7 @@ const browserLanguage = () => {
       lang = (navigator.browserLanguage || navigator.language || navigator.userLanguage).split(";");
       return lang[0];
     }
-  } catch (e) {
+  } catch (_e) {
     return "";
   }
 };
@@ -4047,7 +4047,7 @@ function setCustomFunction(Base) {
       if (!this.weiwudi) return {};
       try {
         return await this.weiwudi.stats();
-      } catch (e) {
+      } catch (_e) {
         return {};
       }
     }
@@ -4073,21 +4073,21 @@ function setCustomFunction(Base) {
         this.weiwudi.addEventListener("stop", deleteListner);
         this.weiwudi.addEventListener("canceled", deleteListner);
         await this.weiwudi.fetchAll();
-      } catch (e) {
+      } catch (_e) {
       }
     }
     async cancelTileCacheAsync() {
       if (!this.weiwudi) return;
       try {
         await this.weiwudi.cancel();
-      } catch (e) {
+      } catch (_e) {
       }
     }
     async clearTileCacheAsync() {
       if (!this.weiwudi) return;
       try {
         await this.weiwudi.clean();
-      } catch (e) {
+      } catch (_e) {
       }
     }
     getMap() {
@@ -5103,7 +5103,6 @@ View$1.prototype.getDecimalZoom = function() {
   const offset = (
     // NOTE: `resolution` maybe `undefined`
     // NOTE: `offset` maybe `NaN`
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     Math.log(this.maxResolution_ / resolution) / Math.log(2)
@@ -11343,12 +11342,7 @@ class MapLibreLayer extends Layer {
       }
       const center = toLonLat$1(viewState.center);
       const zoom = viewState.zoom - 1;
-      mlMap.getZoom();
-      frameState.viewState.resolution;
-      if (
-        // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        mlMap.getCenter().toArray().toString() !== center.toString() || mlMap.getZoom() !== zoom
-      ) {
+      if (mlMap.getCenter().toArray().toString() !== center.toString() || mlMap.getZoom() !== zoom) {
         mlMap.jumpTo({
           center,
           zoom,
@@ -11491,8 +11485,6 @@ class MaplatMap extends Map {
     __publicField(this, "homeMarginPixels");
     __publicField(this, "tapUIVanish");
     __publicField(this, "alwaysGpsOn");
-    __publicField(this, "__timer_id");
-    __publicField(this, "__first_gps_request", true);
     __publicField(this, "__ignore_first_move");
     this.fakeGps = optOptions.fakeGps;
     this.fakeRadius = optOptions.fakeRadius;
@@ -13595,10 +13587,8 @@ class HistMap extends setCustomFunctionMaplat(XYZ) {
       const x = coord[1];
       const y = coord[2];
       if (
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        x * tileSize * Math.pow(2, this.maxZoom - z2) >= this.width || // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
+        x * tileSize * Math.pow(2, this.maxZoom - z2) >= this.width || // @ts-ignore
         y * tileSize * Math.pow(2, this.maxZoom - z2) >= this.height || x < 0 || y < 0
       ) {
         return transPng;
@@ -14509,7 +14499,7 @@ async function store2HistMap_internal(store, byCompiled, coreLogic) {
   }
   return [ret, tins];
 }
-async function createTinFromGcpsAsync(strict, vertex, yaxis, gcps = [], edges = [], wh, bounds) {
+async function createTinFromGcpsAsync(_strict, _vertex, _yaxis, gcps = [], _edges = [], _wh, _bounds) {
   if (gcps.length < 3) return "tooLessGcps";
   console.error("@maplat/transform requires pre-compiled data. Cannot create from GCPs.");
   console.error("Please use @maplat/editor or a separate tool to generate compiled data.");
@@ -15451,7 +15441,7 @@ async function mapSourceFactory(options, commonOptions) {
               try {
                 await obj.initialWait;
                 resolve(obj);
-              } catch (e) {
+              } catch (_e2) {
                 resolve(obj);
               }
             } catch (e) {
@@ -15477,7 +15467,7 @@ async function mapSourceFactory(options, commonOptions) {
             try {
               await obj.initialWait;
               obj.setupMapParameter(resolve);
-            } catch (e) {
+            } catch (_e2) {
               obj.setupMapParameter(resolve);
             }
           } catch (e) {
@@ -15523,7 +15513,7 @@ async function registerMapToSW(options) {
   let ret;
   try {
     ret = await Weiwudi.registerMap(options.mapID, setting);
-  } catch (e) {
+  } catch (_e) {
   }
   return ret;
 }
@@ -16244,9 +16234,6 @@ class Geolocation extends BaseObject {
     __publicField(this, "task_id_");
     __publicField(this, "timer_base_", false);
     __publicField(this, "home_position_", false);
-    this.on;
-    this.once;
-    this.un;
     options = options || {};
     this.timer_base_ = options.timerBase !== void 0 ? options.timerBase : false;
     this.task_id_ = void 0;
@@ -16453,7 +16440,6 @@ class MaplatApp extends Target {
     if (mapboxgl && appOption.mapboxToken) {
       mapboxgl.accessToken = appOption.mapboxToken;
     }
-    appOption.maplibregl || (typeof window !== "undefined" ? window.maplibregl : void 0);
     if (appOption.googleApiKey) {
       this.googleApiKey = appOption.googleApiKey;
     }

@@ -9,8 +9,6 @@ export declare class MaplatMap extends Map {
     homeMarginPixels: number;
     tapUIVanish: boolean;
     alwaysGpsOn: boolean;
-    private __timer_id?;
-    private __first_gps_request;
     private __ignore_first_move;
     constructor(optOptions: any);
     static spawnLayer(layer: any, source: any, container: any): any;

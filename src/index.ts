@@ -168,7 +168,6 @@ export class MaplatApp extends EventTarget {
     }
     
     // MapLibre GL JS support (separate from Mapbox)
-    const maplibregl = appOption.maplibregl || (typeof window !== 'undefined' ? (window as any).maplibregl : undefined);
     if (appOption.googleApiKey) {
       this.googleApiKey = appOption.googleApiKey;
     }

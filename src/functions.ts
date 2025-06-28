@@ -43,7 +43,7 @@ export function createElement(domStr: string) {
   return nodes;
 }
 export function normalizeDegree(degree: number) {
-  // eslint-disable-next-line no-constant-condition
+   
   while (1) {
     if (degree <= 180 && degree > -180) break;
     const times = degree > 0 ? -1.0 : 1.0;
