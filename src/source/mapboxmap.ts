@@ -10,5 +10,6 @@ export class MapboxMap extends NowMap {
     super(options);
     this.style = options.style;
     this.mapboxMap = options.mapboxMap;
+    this.accessToken = options.accessToken;
   }
 }

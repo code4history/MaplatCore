@@ -3,6 +3,7 @@ import Weiwudi from "weiwudi";
 import { NowMap } from "./source/nowmap";
 import { TmsMap } from "./source/tmsmap";
 import { MapboxMap } from "./source/mapboxmap";
+import { MapLibreMap } from "./source/maplibremap";
 import { GoogleMap } from "./source/googlemap";
 import { HistMap } from "./source/histmap";
 import { HistMap_tin } from "./source/histmap_tin";
@@ -75,7 +76,7 @@ const baseDict = {
   }
 };
 
-const checkMapTypeIsWMTS = (maptype?: string) => (maptype || '').match(/^(?:base|overlay|google(?:_(?:roadmap|satellite|hybrid|terrain))?|mapbox|osm)$/);
+const checkMapTypeIsWMTS = (maptype?: string) => (maptype || '').match(/^(?:base|overlay|google(?:_(?:roadmap|satellite|hybrid|terrain))?|mapbox|maplibre|osm)$/);
 
 export async function mapSourceFactory(options: any, commonOptions: any) {
   if (typeof options === "string") {
@@ -92,6 +93,8 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
         ? TmsMap
         : options.maptype === "mapbox"
         ? MapboxMap
+        : options.maptype === "maplibre"
+        ? MapLibreMap
         : GoogleMap;
     if (!targetSrc.isBasemap()) {
       if (!options.homePosition) options.homePosition = options.homePos;
@@ -159,6 +162,8 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
                 ? TmsMap
                 : options.maptype === "mapbox"
                 ? MapboxMap
+                : options.maptype === "maplibre"
+                ? MapLibreMap
                 : GoogleMap;
             if (!targetSrc.isBasemap()) {
               if (!options.homePosition) options.homePosition = options.homePos;
@@ -240,7 +245,7 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
 
 export async function registerMapToSW(options: any) {
   const setting: any = {};
-  if (options.maptype === "mapbox" || options.maptype === "google" || !options.enableCache) return;
+  if (options.maptype === "mapbox" || options.maptype === "maplibre" || options.maptype === "google" || !options.enableCache) return;
   else if (options.maptype === "base" || options.maptype === "overlay")
     setting.type = "wmts";
   else setting.type = "xyz";

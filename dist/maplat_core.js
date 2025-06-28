@@ -2,7 +2,7 @@ var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 import { transform, toLonLat as toLonLat$1, Projection as Projection$1, addProjection as addProjection$1, addCoordinateTransforms, getTransform as getTransform$1, identityTransform } from "ol/proj";
-import { View as View$1, Map as Map$1, Feature } from "ol";
+import { View as View$1, Map, Feature } from "ol";
 import { Vector, Group, Tile } from "ol/layer";
 import { XYZ, Google, Vector as Vector$1 } from "ol/source";
 import { Style, Icon, Stroke, Fill } from "ol/style";
@@ -188,7 +188,7 @@ var Logger$1 = function() {
     }
   }, {
     key: "error",
-    value: function error3() {
+    value: function error2() {
       for (var _len3 = arguments.length, args = new Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
         args[_key3] = arguments[_key3];
       }
@@ -464,12 +464,12 @@ function deepFind(obj, path) {
       return void 0;
     }
     if (current[paths[i]] === void 0) {
-      var j = 2;
-      var p = paths.slice(i, i + j).join(keySeparator);
+      var j2 = 2;
+      var p = paths.slice(i, i + j2).join(keySeparator);
       var mix = current[p];
-      while (mix === void 0 && paths.length > i + j) {
-        j++;
-        p = paths.slice(i, i + j).join(keySeparator);
+      while (mix === void 0 && paths.length > i + j2) {
+        j2++;
+        p = paths.slice(i, i + j2).join(keySeparator);
         mix = current[p];
       }
       if (mix === void 0) return void 0;
@@ -478,7 +478,7 @@ function deepFind(obj, path) {
         if (typeof mix === "string") return mix;
         if (p && typeof mix[p] === "string") return mix[p];
       }
-      var joinedPath = paths.slice(i + j).join(keySeparator);
+      var joinedPath = paths.slice(i + j2).join(keySeparator);
       if (joinedPath) return deepFind(mix, joinedPath, keySeparator);
       return void 0;
     }
@@ -520,9 +520,9 @@ var ResourceStore = function(_EventEmitter) {
   }, {
     key: "removeNamespaces",
     value: function removeNamespaces(ns) {
-      var index2 = this.options.ns.indexOf(ns);
-      if (index2 > -1) {
-        this.options.ns.splice(index2, 1);
+      var index = this.options.ns.indexOf(ns);
+      if (index > -1) {
+        this.options.ns.splice(index, 1);
       }
     }
   }, {
@@ -627,8 +627,8 @@ var ResourceStore = function(_EventEmitter) {
     value: function hasLanguageSomeTranslations(lng) {
       var data = this.getDataByLanguage(lng);
       var n = data && Object.keys(data) || [];
-      return !!n.find(function(v2) {
-        return data[v2] && Object.keys(data[v2]).length > 0;
+      return !!n.find(function(v) {
+        return data[v] && Object.keys(data[v]).length > 0;
       });
     }
   }, {
@@ -1701,8 +1701,8 @@ var Interpolator = function() {
           value = "";
         }
         if (doReduce) {
-          value = formatters.reduce(function(v2, f) {
-            return _this2.format(v2, f, options.lng, _objectSpread$3(_objectSpread$3({}, options), {}, {
+          value = formatters.reduce(function(v, f) {
+            return _this2.format(v, f, options.lng, _objectSpread$3(_objectSpread$3({}, options), {}, {
               interpolationkey: match[1].trim()
             }));
           }, value.trim());
@@ -1860,8 +1860,8 @@ var Formatter = function() {
             var valOptions = options && options.formatParams && options.formatParams[options.interpolationkey] || {};
             var l = valOptions.locale || valOptions.lng || options.locale || options.lng || lng;
             formatted = _this.formats[formatName](mem, l, _objectSpread$4(_objectSpread$4(_objectSpread$4({}, formatOptions), options), valOptions));
-          } catch (error3) {
-            _this.logger.warn(error3);
+          } catch (error2) {
+            _this.logger.warn(error2);
           }
           return formatted;
         } else {
@@ -1929,10 +1929,10 @@ function _isNativeReflectConstruct$2() {
     return false;
   }
 }
-function removePending(q, name) {
-  if (q.pending[name] !== void 0) {
-    delete q.pending[name];
-    q.pendingCount--;
+function removePending(q2, name) {
+  if (q2.pending[name] !== void 0) {
+    delete q2.pending[name];
+    q2.pendingCount--;
   }
 }
 var Connector = function(_EventEmitter) {
@@ -2019,31 +2019,31 @@ var Connector = function(_EventEmitter) {
       }
       this.state[name] = err ? -1 : 2;
       var loaded2 = {};
-      this.queue.forEach(function(q) {
-        pushPath(q.loaded, [lng], ns);
-        removePending(q, name);
-        if (err) q.errors.push(err);
-        if (q.pendingCount === 0 && !q.done) {
-          Object.keys(q.loaded).forEach(function(l) {
+      this.queue.forEach(function(q2) {
+        pushPath(q2.loaded, [lng], ns);
+        removePending(q2, name);
+        if (err) q2.errors.push(err);
+        if (q2.pendingCount === 0 && !q2.done) {
+          Object.keys(q2.loaded).forEach(function(l) {
             if (!loaded2[l]) loaded2[l] = {};
-            var loadedKeys = q.loaded[l];
+            var loadedKeys = q2.loaded[l];
             if (loadedKeys.length) {
               loadedKeys.forEach(function(ns2) {
                 if (loaded2[l][ns2] === void 0) loaded2[l][ns2] = true;
               });
             }
           });
-          q.done = true;
-          if (q.errors.length) {
-            q.callback(q.errors);
+          q2.done = true;
+          if (q2.errors.length) {
+            q2.callback(q2.errors);
           } else {
-            q.callback();
+            q2.callback();
           }
         }
       });
       this.emit("loaded", loaded2);
-      this.queue = this.queue.filter(function(q) {
-        return !q.done;
+      this.queue = this.queue.filter(function(q2) {
+        return !q2.done;
       });
     }
   }, {
@@ -3076,10 +3076,10 @@ async function normalizeLayers(layers, options) {
   if (Array.isArray(layers)) {
     layers = await Promise.all(layers.map(async (x) => await nodesLoader(x)));
     if (layers.length > 0 && layers[0].type === "FeatureCollection") {
-      layers = layers.reduce((prev, layer, index2) => {
+      layers = layers.reduce((prev, layer, index) => {
         let key = layer.id || layer.properties && layer.properties.id;
         if (!key) {
-          if (index2 === 0) key = "main";
+          if (index === 0) key = "main";
           else throw "POI layers include bad key setting";
         }
         prev[key] = normalizeLayer(layer, key, options);
@@ -3161,58 +3161,174 @@ function addIdToPoi(layers, key, options) {
     }
   });
 }
-var earthRadius = 63710088e-1;
-var factors = {
-  centimeters: earthRadius * 100,
-  centimetres: earthRadius * 100,
-  degrees: earthRadius / 111325,
-  feet: earthRadius * 3.28084,
-  inches: earthRadius * 39.37,
-  kilometers: earthRadius / 1e3,
-  kilometres: earthRadius / 1e3,
-  meters: earthRadius,
-  metres: earthRadius,
-  miles: earthRadius / 1609.344,
-  millimeters: earthRadius * 1e3,
-  millimetres: earthRadius * 1e3,
-  nauticalmiles: earthRadius / 1852,
-  radians: 1,
-  yards: earthRadius * 1.0936
-};
-var unitsFactors = {
-  centimeters: 100,
-  centimetres: 100,
-  degrees: 1 / 111325,
-  feet: 3.28084,
-  inches: 39.37,
-  kilometers: 1 / 1e3,
-  kilometres: 1 / 1e3,
-  meters: 1,
-  metres: 1,
-  miles: 1 / 1609.344,
-  millimeters: 1e3,
-  millimetres: 1e3,
-  nauticalmiles: 1 / 1852,
-  radians: 1 / earthRadius,
-  yards: 1.0936133
-};
-var areaFactors = {
-  acres: 247105e-9,
-  centimeters: 1e4,
-  centimetres: 1e4,
-  feet: 10.763910417,
-  hectares: 1e-4,
-  inches: 1550.003100006,
-  kilometers: 1e-6,
-  kilometres: 1e-6,
-  meters: 1,
-  metres: 1,
-  miles: 386e-9,
-  millimeters: 1e6,
-  millimetres: 1e6,
-  yards: 1.195990046
-};
-function feature(geom, properties, options) {
+function feature$4(geom, properties, options = {}) {
+  const feat = { type: "Feature" };
+  if (options.id === 0 || options.id) {
+    feat.id = options.id;
+  }
+  if (options.bbox) {
+    feat.bbox = options.bbox;
+  }
+  feat.properties = properties || {};
+  feat.geometry = geom;
+  return feat;
+}
+function point$2(coordinates2, properties, options = {}) {
+  if (!coordinates2) {
+    throw new Error("coordinates is required");
+  }
+  if (!Array.isArray(coordinates2)) {
+    throw new Error("coordinates must be an Array");
+  }
+  if (coordinates2.length < 2) {
+    throw new Error("coordinates must be at least 2 numbers long");
+  }
+  if (!isNumber$2(coordinates2[0]) || !isNumber$2(coordinates2[1])) {
+    throw new Error("coordinates must contain numbers");
+  }
+  const geom = {
+    type: "Point",
+    coordinates: coordinates2
+  };
+  return feature$4(geom, properties, options);
+}
+function polygon(coordinates2, properties, options = {}) {
+  for (const ring of coordinates2) {
+    if (ring.length < 4) {
+      throw new Error(
+        "Each LinearRing of a Polygon must have 4 or more Positions."
+      );
+    }
+    if (ring[ring.length - 1].length !== ring[0].length) {
+      throw new Error("First and last Position are not equivalent.");
+    }
+    for (let j2 = 0; j2 < ring[ring.length - 1].length; j2++) {
+      if (ring[ring.length - 1][j2] !== ring[0][j2]) {
+        throw new Error("First and last Position are not equivalent.");
+      }
+    }
+  }
+  const geom = {
+    type: "Polygon",
+    coordinates: coordinates2
+  };
+  return feature$4(geom, properties, options);
+}
+function isNumber$2(num) {
+  return !isNaN(num) && num !== null && !Array.isArray(num);
+}
+function coordEach$1(geojson, callback, excludeWrapCoord) {
+  if (geojson === null) return;
+  var j2, k, l, geometry, stopG, coords, geometryMaybeCollection, wrapShrink = 0, coordIndex = 0, isGeometryCollection, type = geojson.type, isFeatureCollection = type === "FeatureCollection", isFeature = type === "Feature", stop = isFeatureCollection ? geojson.features.length : 1;
+  for (var featureIndex = 0; featureIndex < stop; featureIndex++) {
+    geometryMaybeCollection = isFeatureCollection ? geojson.features[featureIndex].geometry : isFeature ? geojson.geometry : geojson;
+    isGeometryCollection = geometryMaybeCollection ? geometryMaybeCollection.type === "GeometryCollection" : false;
+    stopG = isGeometryCollection ? geometryMaybeCollection.geometries.length : 1;
+    for (var geomIndex = 0; geomIndex < stopG; geomIndex++) {
+      var multiFeatureIndex = 0;
+      var geometryIndex = 0;
+      geometry = isGeometryCollection ? geometryMaybeCollection.geometries[geomIndex] : geometryMaybeCollection;
+      if (geometry === null) continue;
+      coords = geometry.coordinates;
+      var geomType = geometry.type;
+      wrapShrink = geomType === "Polygon" || geomType === "MultiPolygon" ? 1 : 0;
+      switch (geomType) {
+        case null:
+          break;
+        case "Point":
+          if (callback(
+            coords,
+            coordIndex,
+            featureIndex,
+            multiFeatureIndex,
+            geometryIndex
+          ) === false)
+            return false;
+          coordIndex++;
+          multiFeatureIndex++;
+          break;
+        case "LineString":
+        case "MultiPoint":
+          for (j2 = 0; j2 < coords.length; j2++) {
+            if (callback(
+              coords[j2],
+              coordIndex,
+              featureIndex,
+              multiFeatureIndex,
+              geometryIndex
+            ) === false)
+              return false;
+            coordIndex++;
+            if (geomType === "MultiPoint") multiFeatureIndex++;
+          }
+          if (geomType === "LineString") multiFeatureIndex++;
+          break;
+        case "Polygon":
+        case "MultiLineString":
+          for (j2 = 0; j2 < coords.length; j2++) {
+            for (k = 0; k < coords[j2].length - wrapShrink; k++) {
+              if (callback(
+                coords[j2][k],
+                coordIndex,
+                featureIndex,
+                multiFeatureIndex,
+                geometryIndex
+              ) === false)
+                return false;
+              coordIndex++;
+            }
+            if (geomType === "MultiLineString") multiFeatureIndex++;
+            if (geomType === "Polygon") geometryIndex++;
+          }
+          if (geomType === "Polygon") multiFeatureIndex++;
+          break;
+        case "MultiPolygon":
+          for (j2 = 0; j2 < coords.length; j2++) {
+            geometryIndex = 0;
+            for (k = 0; k < coords[j2].length; k++) {
+              for (l = 0; l < coords[j2][k].length - wrapShrink; l++) {
+                if (callback(
+                  coords[j2][k][l],
+                  coordIndex,
+                  featureIndex,
+                  multiFeatureIndex,
+                  geometryIndex
+                ) === false)
+                  return false;
+                coordIndex++;
+              }
+              geometryIndex++;
+            }
+            multiFeatureIndex++;
+          }
+          break;
+        case "GeometryCollection":
+          for (j2 = 0; j2 < geometry.geometries.length; j2++)
+            if (coordEach$1(geometry.geometries[j2], callback) === false)
+              return false;
+          break;
+        default:
+          throw new Error("Unknown Geometry Type");
+      }
+    }
+  }
+}
+function centroid$1(geojson, options = {}) {
+  let xSum = 0;
+  let ySum = 0;
+  let len = 0;
+  coordEach$1(
+    geojson,
+    function(coord) {
+      xSum += coord[0];
+      ySum += coord[1];
+      len++;
+    }
+  );
+  return point$2([xSum / len, ySum / len], options.properties);
+}
+var turf_centroid_default = centroid$1;
+function feature$3(geom, properties, options) {
   if (options === void 0) {
     options = {};
   }
@@ -3227,25 +3343,7 @@ function feature(geom, properties, options) {
   feat.geometry = geom;
   return feat;
 }
-function geometry(type, coordinates2, _options) {
-  switch (type) {
-    case "Point":
-      return point(coordinates2).geometry;
-    case "LineString":
-      return lineString(coordinates2).geometry;
-    case "Polygon":
-      return polygon(coordinates2).geometry;
-    case "MultiPoint":
-      return multiPoint(coordinates2).geometry;
-    case "MultiLineString":
-      return multiLineString(coordinates2).geometry;
-    case "MultiPolygon":
-      return multiPolygon(coordinates2).geometry;
-    default:
-      throw new Error(type + " is invalid");
-  }
-}
-function point(coordinates2, properties, options) {
+function point$1(coordinates2, properties, options) {
   if (options === void 0) {
     options = {};
   }
@@ -3258,53 +3356,16 @@ function point(coordinates2, properties, options) {
   if (coordinates2.length < 2) {
     throw new Error("coordinates must be at least 2 numbers long");
   }
-  if (!isNumber(coordinates2[0]) || !isNumber(coordinates2[1])) {
+  if (!isNumber$1(coordinates2[0]) || !isNumber$1(coordinates2[1])) {
     throw new Error("coordinates must contain numbers");
   }
   var geom = {
     type: "Point",
     coordinates: coordinates2
   };
-  return feature(geom, properties, options);
+  return feature$3(geom, properties, options);
 }
-function points(coordinates2, properties, options) {
-  if (options === void 0) {
-    options = {};
-  }
-  return featureCollection$1(coordinates2.map(function(coords) {
-    return point(coords, properties);
-  }), options);
-}
-function polygon(coordinates2, properties, options) {
-  if (options === void 0) {
-    options = {};
-  }
-  for (var _i = 0, coordinates_1 = coordinates2; _i < coordinates_1.length; _i++) {
-    var ring = coordinates_1[_i];
-    if (ring.length < 4) {
-      throw new Error("Each LinearRing of a Polygon must have 4 or more Positions.");
-    }
-    for (var j = 0; j < ring[ring.length - 1].length; j++) {
-      if (ring[ring.length - 1][j] !== ring[0][j]) {
-        throw new Error("First and last Position are not equivalent.");
-      }
-    }
-  }
-  var geom = {
-    type: "Polygon",
-    coordinates: coordinates2
-  };
-  return feature(geom, properties, options);
-}
-function polygons(coordinates2, properties, options) {
-  if (options === void 0) {
-    options = {};
-  }
-  return featureCollection$1(coordinates2.map(function(coords) {
-    return polygon(coords, properties);
-  }), options);
-}
-function lineString(coordinates2, properties, options) {
+function lineString$2(coordinates2, properties, options) {
   if (options === void 0) {
     options = {};
   }
@@ -3315,216 +3376,17 @@ function lineString(coordinates2, properties, options) {
     type: "LineString",
     coordinates: coordinates2
   };
-  return feature(geom, properties, options);
+  return feature$3(geom, properties, options);
 }
-function lineStrings(coordinates2, properties, options) {
-  if (options === void 0) {
-    options = {};
-  }
-  return featureCollection$1(coordinates2.map(function(coords) {
-    return lineString(coords, properties);
-  }), options);
-}
-function featureCollection$1(features, options) {
-  if (options === void 0) {
-    options = {};
-  }
-  var fc = { type: "FeatureCollection" };
-  if (options.id) {
-    fc.id = options.id;
-  }
-  if (options.bbox) {
-    fc.bbox = options.bbox;
-  }
-  fc.features = features;
-  return fc;
-}
-function multiLineString(coordinates2, properties, options) {
-  if (options === void 0) {
-    options = {};
-  }
-  var geom = {
-    type: "MultiLineString",
-    coordinates: coordinates2
-  };
-  return feature(geom, properties, options);
-}
-function multiPoint(coordinates2, properties, options) {
-  if (options === void 0) {
-    options = {};
-  }
-  var geom = {
-    type: "MultiPoint",
-    coordinates: coordinates2
-  };
-  return feature(geom, properties, options);
-}
-function multiPolygon(coordinates2, properties, options) {
-  if (options === void 0) {
-    options = {};
-  }
-  var geom = {
-    type: "MultiPolygon",
-    coordinates: coordinates2
-  };
-  return feature(geom, properties, options);
-}
-function geometryCollection(geometries, properties, options) {
-  if (options === void 0) {
-    options = {};
-  }
-  var geom = {
-    type: "GeometryCollection",
-    geometries
-  };
-  return feature(geom, properties, options);
-}
-function round(num, precision) {
-  if (precision === void 0) {
-    precision = 0;
-  }
-  if (precision && !(precision >= 0)) {
-    throw new Error("precision must be a positive number");
-  }
-  var multiplier = Math.pow(10, precision || 0);
-  return Math.round(num * multiplier) / multiplier;
-}
-function radiansToLength(radians, units) {
-  if (units === void 0) {
-    units = "kilometers";
-  }
-  var factor = factors[units];
-  if (!factor) {
-    throw new Error(units + " units is invalid");
-  }
-  return radians * factor;
-}
-function lengthToRadians(distance, units) {
-  if (units === void 0) {
-    units = "kilometers";
-  }
-  var factor = factors[units];
-  if (!factor) {
-    throw new Error(units + " units is invalid");
-  }
-  return distance / factor;
-}
-function lengthToDegrees(distance, units) {
-  return radiansToDegrees(lengthToRadians(distance, units));
-}
-function bearingToAzimuth(bearing) {
-  var angle = bearing % 360;
-  if (angle < 0) {
-    angle += 360;
-  }
-  return angle;
-}
-function radiansToDegrees(radians) {
-  var degrees = radians % (2 * Math.PI);
-  return degrees * 180 / Math.PI;
-}
-function degreesToRadians(degrees) {
-  var radians = degrees % 360;
-  return radians * Math.PI / 180;
-}
-function convertLength(length2, originalUnit, finalUnit) {
-  if (originalUnit === void 0) {
-    originalUnit = "kilometers";
-  }
-  if (finalUnit === void 0) {
-    finalUnit = "kilometers";
-  }
-  if (!(length2 >= 0)) {
-    throw new Error("length must be a positive number");
-  }
-  return radiansToLength(lengthToRadians(length2, originalUnit), finalUnit);
-}
-function convertArea(area, originalUnit, finalUnit) {
-  if (originalUnit === void 0) {
-    originalUnit = "meters";
-  }
-  if (finalUnit === void 0) {
-    finalUnit = "kilometers";
-  }
-  if (!(area >= 0)) {
-    throw new Error("area must be a positive number");
-  }
-  var startFactor = areaFactors[originalUnit];
-  if (!startFactor) {
-    throw new Error("invalid original units");
-  }
-  var finalFactor = areaFactors[finalUnit];
-  if (!finalFactor) {
-    throw new Error("invalid final units");
-  }
-  return area / startFactor * finalFactor;
-}
-function isNumber(num) {
+function isNumber$1(num) {
   return !isNaN(num) && num !== null && !Array.isArray(num);
 }
 function isObject(input) {
   return !!input && input.constructor === Object;
 }
-function validateBBox(bbox2) {
-  if (!bbox2) {
-    throw new Error("bbox is required");
-  }
-  if (!Array.isArray(bbox2)) {
-    throw new Error("bbox must be an Array");
-  }
-  if (bbox2.length !== 4 && bbox2.length !== 6) {
-    throw new Error("bbox must be an Array of 4 or 6 numbers");
-  }
-  bbox2.forEach(function(num) {
-    if (!isNumber(num)) {
-      throw new Error("bbox must only contain numbers");
-    }
-  });
-}
-function validateId(id) {
-  if (!id) {
-    throw new Error("id is required");
-  }
-  if (["string", "number"].indexOf(typeof id) === -1) {
-    throw new Error("id must be a number or a string");
-  }
-}
-const es$2 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
-  __proto__: null,
-  areaFactors,
-  bearingToAzimuth,
-  convertArea,
-  convertLength,
-  degreesToRadians,
-  earthRadius,
-  factors,
-  feature,
-  featureCollection: featureCollection$1,
-  geometry,
-  geometryCollection,
-  isNumber,
-  isObject,
-  lengthToDegrees,
-  lengthToRadians,
-  lineString,
-  lineStrings,
-  multiLineString,
-  multiPoint,
-  multiPolygon,
-  point,
-  points,
-  polygon,
-  polygons,
-  radiansToDegrees,
-  radiansToLength,
-  round,
-  unitsFactors,
-  validateBBox,
-  validateId
-}, Symbol.toStringTag, { value: "Module" }));
 function coordEach(geojson, callback, excludeWrapCoord) {
   if (geojson === null) return;
-  var j, k, l, geometry2, stopG, coords, geometryMaybeCollection, wrapShrink = 0, coordIndex = 0, isGeometryCollection, type = geojson.type, isFeatureCollection = type === "FeatureCollection", isFeature = type === "Feature", stop = isFeatureCollection ? geojson.features.length : 1;
+  var j2, k, l, geometry, stopG, coords, geometryMaybeCollection, wrapShrink = 0, coordIndex = 0, isGeometryCollection, type = geojson.type, isFeatureCollection = type === "FeatureCollection", isFeature = type === "Feature", stop = isFeatureCollection ? geojson.features.length : 1;
   for (var featureIndex = 0; featureIndex < stop; featureIndex++) {
     geometryMaybeCollection = isFeatureCollection ? geojson.features[featureIndex].geometry : isFeature ? geojson.geometry : geojson;
     isGeometryCollection = geometryMaybeCollection ? geometryMaybeCollection.type === "GeometryCollection" : false;
@@ -3532,10 +3394,10 @@ function coordEach(geojson, callback, excludeWrapCoord) {
     for (var geomIndex = 0; geomIndex < stopG; geomIndex++) {
       var multiFeatureIndex = 0;
       var geometryIndex = 0;
-      geometry2 = isGeometryCollection ? geometryMaybeCollection.geometries[geomIndex] : geometryMaybeCollection;
-      if (geometry2 === null) continue;
-      coords = geometry2.coordinates;
-      var geomType = geometry2.type;
+      geometry = isGeometryCollection ? geometryMaybeCollection.geometries[geomIndex] : geometryMaybeCollection;
+      if (geometry === null) continue;
+      coords = geometry.coordinates;
+      var geomType = geometry.type;
       wrapShrink = excludeWrapCoord && (geomType === "Polygon" || geomType === "MultiPolygon") ? 1 : 0;
       switch (geomType) {
         case null:
@@ -3554,9 +3416,9 @@ function coordEach(geojson, callback, excludeWrapCoord) {
           break;
         case "LineString":
         case "MultiPoint":
-          for (j = 0; j < coords.length; j++) {
+          for (j2 = 0; j2 < coords.length; j2++) {
             if (callback(
-              coords[j],
+              coords[j2],
               coordIndex,
               featureIndex,
               multiFeatureIndex,
@@ -3570,10 +3432,10 @@ function coordEach(geojson, callback, excludeWrapCoord) {
           break;
         case "Polygon":
         case "MultiLineString":
-          for (j = 0; j < coords.length; j++) {
-            for (k = 0; k < coords[j].length - wrapShrink; k++) {
+          for (j2 = 0; j2 < coords.length; j2++) {
+            for (k = 0; k < coords[j2].length - wrapShrink; k++) {
               if (callback(
-                coords[j][k],
+                coords[j2][k],
                 coordIndex,
                 featureIndex,
                 multiFeatureIndex,
@@ -3588,12 +3450,12 @@ function coordEach(geojson, callback, excludeWrapCoord) {
           if (geomType === "Polygon") multiFeatureIndex++;
           break;
         case "MultiPolygon":
-          for (j = 0; j < coords.length; j++) {
+          for (j2 = 0; j2 < coords.length; j2++) {
             geometryIndex = 0;
-            for (k = 0; k < coords[j].length; k++) {
-              for (l = 0; l < coords[j][k].length - wrapShrink; l++) {
+            for (k = 0; k < coords[j2].length; k++) {
+              for (l = 0; l < coords[j2][k].length - wrapShrink; l++) {
                 if (callback(
-                  coords[j][k][l],
+                  coords[j2][k][l],
                   coordIndex,
                   featureIndex,
                   multiFeatureIndex,
@@ -3608,8 +3470,8 @@ function coordEach(geojson, callback, excludeWrapCoord) {
           }
           break;
         case "GeometryCollection":
-          for (j = 0; j < geometry2.geometries.length; j++)
-            if (coordEach(geometry2.geometries[j], callback, excludeWrapCoord) === false)
+          for (j2 = 0; j2 < geometry.geometries.length; j2++)
+            if (coordEach(geometry.geometries[j2], callback, excludeWrapCoord) === false)
               return false;
           break;
         default:
@@ -3688,7 +3550,7 @@ function coordAll(geojson) {
   return coords;
 }
 function geomEach(geojson, callback) {
-  var i, j, g2, geometry2, stopG, geometryMaybeCollection, isGeometryCollection, featureProperties, featureBBox, featureId, featureIndex = 0, isFeatureCollection = geojson.type === "FeatureCollection", isFeature = geojson.type === "Feature", stop = isFeatureCollection ? geojson.features.length : 1;
+  var i, j2, g2, geometry, stopG, geometryMaybeCollection, isGeometryCollection, featureProperties, featureBBox, featureId, featureIndex = 0, isFeatureCollection = geojson.type === "FeatureCollection", isFeature = geojson.type === "Feature", stop = isFeatureCollection ? geojson.features.length : 1;
   for (i = 0; i < stop; i++) {
     geometryMaybeCollection = isFeatureCollection ? geojson.features[i].geometry : isFeature ? geojson.geometry : geojson;
     featureProperties = isFeatureCollection ? geojson.features[i].properties : isFeature ? geojson.properties : {};
@@ -3697,8 +3559,8 @@ function geomEach(geojson, callback) {
     isGeometryCollection = geometryMaybeCollection ? geometryMaybeCollection.type === "GeometryCollection" : false;
     stopG = isGeometryCollection ? geometryMaybeCollection.geometries.length : 1;
     for (g2 = 0; g2 < stopG; g2++) {
-      geometry2 = isGeometryCollection ? geometryMaybeCollection.geometries[g2] : geometryMaybeCollection;
-      if (geometry2 === null) {
+      geometry = isGeometryCollection ? geometryMaybeCollection.geometries[g2] : geometryMaybeCollection;
+      if (geometry === null) {
         if (callback(
           null,
           featureIndex,
@@ -3709,7 +3571,7 @@ function geomEach(geojson, callback) {
           return false;
         continue;
       }
-      switch (geometry2.type) {
+      switch (geometry.type) {
         case "Point":
         case "LineString":
         case "MultiPoint":
@@ -3717,7 +3579,7 @@ function geomEach(geojson, callback) {
         case "MultiLineString":
         case "MultiPolygon": {
           if (callback(
-            geometry2,
+            geometry,
             featureIndex,
             featureProperties,
             featureBBox,
@@ -3727,9 +3589,9 @@ function geomEach(geojson, callback) {
           break;
         }
         case "GeometryCollection": {
-          for (j = 0; j < geometry2.geometries.length; j++) {
+          for (j2 = 0; j2 < geometry.geometries.length; j2++) {
             if (callback(
-              geometry2.geometries[j],
+              geometry.geometries[j2],
               featureIndex,
               featureProperties,
               featureBBox,
@@ -3767,15 +3629,15 @@ function geomReduce(geojson, callback, initialValue) {
   return previousValue;
 }
 function flattenEach(geojson, callback) {
-  geomEach(geojson, function(geometry2, featureIndex, properties, bbox2, id) {
-    var type = geometry2 === null ? null : geometry2.type;
+  geomEach(geojson, function(geometry, featureIndex, properties, bbox2, id) {
+    var type = geometry === null ? null : geometry.type;
     switch (type) {
       case null:
       case "Point":
       case "LineString":
       case "Polygon":
         if (callback(
-          feature(geometry2, properties, { bbox: bbox2, id }),
+          feature$3(geometry, properties, { bbox: bbox2, id }),
           featureIndex,
           0
         ) === false)
@@ -3794,13 +3656,13 @@ function flattenEach(geojson, callback) {
         geomType = "Polygon";
         break;
     }
-    for (var multiFeatureIndex = 0; multiFeatureIndex < geometry2.coordinates.length; multiFeatureIndex++) {
-      var coordinate = geometry2.coordinates[multiFeatureIndex];
+    for (var multiFeatureIndex = 0; multiFeatureIndex < geometry.coordinates.length; multiFeatureIndex++) {
+      var coordinate = geometry.coordinates[multiFeatureIndex];
       var geom = {
         type: geomType,
         coordinates: coordinate
       };
-      if (callback(feature(geom, properties), featureIndex, multiFeatureIndex) === false)
+      if (callback(feature$3(geom, properties), featureIndex, multiFeatureIndex) === false)
         return false;
     }
   });
@@ -3844,7 +3706,7 @@ function segmentEach(geojson, callback) {
           segmentIndex = 0;
           return;
         }
-        var currentSegment = lineString(
+        var currentSegment = lineString$2(
           [previousCoords, currentCoord],
           feature2.properties
         );
@@ -3899,7 +3761,7 @@ function lineEach(geojson, callback) {
       case "Polygon":
         for (var geometryIndex = 0; geometryIndex < coords.length; geometryIndex++) {
           if (callback(
-            lineString(coords[geometryIndex], feature2.properties),
+            lineString$2(coords[geometryIndex], feature2.properties),
             featureIndex,
             multiFeatureIndex,
             geometryIndex
@@ -3937,17 +3799,17 @@ function findSegment(geojson, options) {
   var geometryIndex = options.geometryIndex || 0;
   var segmentIndex = options.segmentIndex || 0;
   var properties = options.properties;
-  var geometry2;
+  var geometry;
   switch (geojson.type) {
     case "FeatureCollection":
       if (featureIndex < 0)
         featureIndex = geojson.features.length + featureIndex;
       properties = properties || geojson.features[featureIndex].properties;
-      geometry2 = geojson.features[featureIndex].geometry;
+      geometry = geojson.features[featureIndex].geometry;
       break;
     case "Feature":
       properties = properties || geojson.properties;
-      geometry2 = geojson.geometry;
+      geometry = geojson.geometry;
       break;
     case "Point":
     case "MultiPoint":
@@ -3956,20 +3818,20 @@ function findSegment(geojson, options) {
     case "Polygon":
     case "MultiLineString":
     case "MultiPolygon":
-      geometry2 = geojson;
+      geometry = geojson;
       break;
     default:
       throw new Error("geojson is invalid");
   }
-  if (geometry2 === null) return null;
-  var coords = geometry2.coordinates;
-  switch (geometry2.type) {
+  if (geometry === null) return null;
+  var coords = geometry.coordinates;
+  switch (geometry.type) {
     case "Point":
     case "MultiPoint":
       return null;
     case "LineString":
       if (segmentIndex < 0) segmentIndex = coords.length + segmentIndex - 1;
-      return lineString(
+      return lineString$2(
         [coords[segmentIndex], coords[segmentIndex + 1]],
         properties,
         options
@@ -3978,7 +3840,7 @@ function findSegment(geojson, options) {
       if (geometryIndex < 0) geometryIndex = coords.length + geometryIndex;
       if (segmentIndex < 0)
         segmentIndex = coords[geometryIndex].length + segmentIndex - 1;
-      return lineString(
+      return lineString$2(
         [
           coords[geometryIndex][segmentIndex],
           coords[geometryIndex][segmentIndex + 1]
@@ -3991,7 +3853,7 @@ function findSegment(geojson, options) {
         multiFeatureIndex = coords.length + multiFeatureIndex;
       if (segmentIndex < 0)
         segmentIndex = coords[multiFeatureIndex].length + segmentIndex - 1;
-      return lineString(
+      return lineString$2(
         [
           coords[multiFeatureIndex][segmentIndex],
           coords[multiFeatureIndex][segmentIndex + 1]
@@ -4006,7 +3868,7 @@ function findSegment(geojson, options) {
         geometryIndex = coords[multiFeatureIndex].length + geometryIndex;
       if (segmentIndex < 0)
         segmentIndex = coords[multiFeatureIndex][geometryIndex].length - segmentIndex - 1;
-      return lineString(
+      return lineString$2(
         [
           coords[multiFeatureIndex][geometryIndex][segmentIndex],
           coords[multiFeatureIndex][geometryIndex][segmentIndex + 1]
@@ -4025,17 +3887,17 @@ function findPoint(geojson, options) {
   var geometryIndex = options.geometryIndex || 0;
   var coordIndex = options.coordIndex || 0;
   var properties = options.properties;
-  var geometry2;
+  var geometry;
   switch (geojson.type) {
     case "FeatureCollection":
       if (featureIndex < 0)
         featureIndex = geojson.features.length + featureIndex;
       properties = properties || geojson.features[featureIndex].properties;
-      geometry2 = geojson.features[featureIndex].geometry;
+      geometry = geojson.features[featureIndex].geometry;
       break;
     case "Feature":
       properties = properties || geojson.properties;
-      geometry2 = geojson.geometry;
+      geometry = geojson.geometry;
       break;
     case "Point":
     case "MultiPoint":
@@ -4044,34 +3906,34 @@ function findPoint(geojson, options) {
     case "Polygon":
     case "MultiLineString":
     case "MultiPolygon":
-      geometry2 = geojson;
+      geometry = geojson;
       break;
     default:
       throw new Error("geojson is invalid");
   }
-  if (geometry2 === null) return null;
-  var coords = geometry2.coordinates;
-  switch (geometry2.type) {
+  if (geometry === null) return null;
+  var coords = geometry.coordinates;
+  switch (geometry.type) {
     case "Point":
-      return point(coords, properties, options);
+      return point$1(coords, properties, options);
     case "MultiPoint":
       if (multiFeatureIndex < 0)
         multiFeatureIndex = coords.length + multiFeatureIndex;
-      return point(coords[multiFeatureIndex], properties, options);
+      return point$1(coords[multiFeatureIndex], properties, options);
     case "LineString":
       if (coordIndex < 0) coordIndex = coords.length + coordIndex;
-      return point(coords[coordIndex], properties, options);
+      return point$1(coords[coordIndex], properties, options);
     case "Polygon":
       if (geometryIndex < 0) geometryIndex = coords.length + geometryIndex;
       if (coordIndex < 0)
         coordIndex = coords[geometryIndex].length + coordIndex;
-      return point(coords[geometryIndex][coordIndex], properties, options);
+      return point$1(coords[geometryIndex][coordIndex], properties, options);
     case "MultiLineString":
       if (multiFeatureIndex < 0)
         multiFeatureIndex = coords.length + multiFeatureIndex;
       if (coordIndex < 0)
         coordIndex = coords[multiFeatureIndex].length + coordIndex;
-      return point(coords[multiFeatureIndex][coordIndex], properties, options);
+      return point$1(coords[multiFeatureIndex][coordIndex], properties, options);
     case "MultiPolygon":
       if (multiFeatureIndex < 0)
         multiFeatureIndex = coords.length + multiFeatureIndex;
@@ -4079,7 +3941,7 @@ function findPoint(geojson, options) {
         geometryIndex = coords[multiFeatureIndex].length + geometryIndex;
       if (coordIndex < 0)
         coordIndex = coords[multiFeatureIndex][geometryIndex].length - coordIndex;
-      return point(
+      return point$1(
         coords[multiFeatureIndex][geometryIndex][coordIndex],
         properties,
         options
@@ -4107,20 +3969,6 @@ const es$1 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty
   segmentEach,
   segmentReduce
 }, Symbol.toStringTag, { value: "Module" }));
-function centroid$1(geojson, options) {
-  if (options === void 0) {
-    options = {};
-  }
-  var xSum = 0;
-  var ySum = 0;
-  var len = 0;
-  coordEach(geojson, function(coord) {
-    xSum += coord[0];
-    ySum += coord[1];
-    len++;
-  }, true);
-  return point([xSum / len, ySum / len], options.properties);
-}
 function bbox$1(geojson) {
   var result = [Infinity, Infinity, -Infinity, -Infinity];
   coordEach(geojson, function(coord) {
@@ -4144,7 +3992,7 @@ const es = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   default: bbox$1
 }, Symbol.toStringTag, { value: "Module" }));
-function getCoord(coord) {
+function getCoord$1(coord) {
   if (!coord) {
     throw new Error("coord is required");
   }
@@ -4176,7 +4024,7 @@ function getCoords(coords) {
   }
   throw new Error("coords must be GeoJSON Feature, Geometry Object or an Array");
 }
-function getGeom(geojson) {
+function getGeom$1(geojson) {
   if (geojson.type === "Feature") {
     return geojson.geometry;
   }
@@ -4210,674 +4058,33 @@ function getAugmentedNamespace(n) {
   });
   return a;
 }
-var concaveman$2 = { exports: {} };
-var rbush_min$1 = { exports: {} };
-(function(module, exports) {
-  !function(t, i) {
-    module.exports = i();
-  }(commonjsGlobal, function() {
-    function t(t2, r2, e2, a2, h2) {
-      !function t3(n2, r3, e3, a3, h3) {
-        for (; a3 > e3; ) {
-          if (a3 - e3 > 600) {
-            var o2 = a3 - e3 + 1, s2 = r3 - e3 + 1, l2 = Math.log(o2), f2 = 0.5 * Math.exp(2 * l2 / 3), u3 = 0.5 * Math.sqrt(l2 * f2 * (o2 - f2) / o2) * (s2 - o2 / 2 < 0 ? -1 : 1), m2 = Math.max(e3, Math.floor(r3 - s2 * f2 / o2 + u3)), c2 = Math.min(a3, Math.floor(r3 + (o2 - s2) * f2 / o2 + u3));
-            t3(n2, r3, m2, c2, h3);
-          }
-          var p2 = n2[r3], d2 = e3, x = a3;
-          for (i(n2, e3, r3), h3(n2[a3], p2) > 0 && i(n2, e3, a3); d2 < x; ) {
-            for (i(n2, d2, x), d2++, x--; h3(n2[d2], p2) < 0; ) d2++;
-            for (; h3(n2[x], p2) > 0; ) x--;
-          }
-          0 === h3(n2[e3], p2) ? i(n2, e3, x) : i(n2, ++x, a3), x <= r3 && (e3 = x + 1), r3 <= x && (a3 = x - 1);
-        }
-      }(t2, r2, e2 || 0, a2 || t2.length - 1, h2 || n);
-    }
-    function i(t2, i2, n2) {
-      var r2 = t2[i2];
-      t2[i2] = t2[n2], t2[n2] = r2;
-    }
-    function n(t2, i2) {
-      return t2 < i2 ? -1 : t2 > i2 ? 1 : 0;
-    }
-    var r = function(t2) {
-      void 0 === t2 && (t2 = 9), this._maxEntries = Math.max(4, t2), this._minEntries = Math.max(2, Math.ceil(0.4 * this._maxEntries)), this.clear();
-    };
-    function e(t2, i2, n2) {
-      if (!n2) return i2.indexOf(t2);
-      for (var r2 = 0; r2 < i2.length; r2++) if (n2(t2, i2[r2])) return r2;
-      return -1;
-    }
-    function a(t2, i2) {
-      h(t2, 0, t2.children.length, i2, t2);
-    }
-    function h(t2, i2, n2, r2, e2) {
-      e2 || (e2 = p(null)), e2.minX = 1 / 0, e2.minY = 1 / 0, e2.maxX = -1 / 0, e2.maxY = -1 / 0;
-      for (var a2 = i2; a2 < n2; a2++) {
-        var h2 = t2.children[a2];
-        o(e2, t2.leaf ? r2(h2) : h2);
-      }
-      return e2;
-    }
-    function o(t2, i2) {
-      return t2.minX = Math.min(t2.minX, i2.minX), t2.minY = Math.min(t2.minY, i2.minY), t2.maxX = Math.max(t2.maxX, i2.maxX), t2.maxY = Math.max(t2.maxY, i2.maxY), t2;
-    }
-    function s(t2, i2) {
-      return t2.minX - i2.minX;
-    }
-    function l(t2, i2) {
-      return t2.minY - i2.minY;
-    }
-    function f(t2) {
-      return (t2.maxX - t2.minX) * (t2.maxY - t2.minY);
-    }
-    function u2(t2) {
-      return t2.maxX - t2.minX + (t2.maxY - t2.minY);
-    }
-    function m(t2, i2) {
-      return t2.minX <= i2.minX && t2.minY <= i2.minY && i2.maxX <= t2.maxX && i2.maxY <= t2.maxY;
-    }
-    function c(t2, i2) {
-      return i2.minX <= t2.maxX && i2.minY <= t2.maxY && i2.maxX >= t2.minX && i2.maxY >= t2.minY;
-    }
-    function p(t2) {
-      return { children: t2, height: 1, leaf: true, minX: 1 / 0, minY: 1 / 0, maxX: -1 / 0, maxY: -1 / 0 };
-    }
-    function d(i2, n2, r2, e2, a2) {
-      for (var h2 = [n2, r2]; h2.length; ) if (!((r2 = h2.pop()) - (n2 = h2.pop()) <= e2)) {
-        var o2 = n2 + Math.ceil((r2 - n2) / e2 / 2) * e2;
-        t(i2, o2, n2, r2, a2), h2.push(n2, o2, o2, r2);
-      }
-    }
-    return r.prototype.all = function() {
-      return this._all(this.data, []);
-    }, r.prototype.search = function(t2) {
-      var i2 = this.data, n2 = [];
-      if (!c(t2, i2)) return n2;
-      for (var r2 = this.toBBox, e2 = []; i2; ) {
-        for (var a2 = 0; a2 < i2.children.length; a2++) {
-          var h2 = i2.children[a2], o2 = i2.leaf ? r2(h2) : h2;
-          c(t2, o2) && (i2.leaf ? n2.push(h2) : m(t2, o2) ? this._all(h2, n2) : e2.push(h2));
-        }
-        i2 = e2.pop();
-      }
-      return n2;
-    }, r.prototype.collides = function(t2) {
-      var i2 = this.data;
-      if (!c(t2, i2)) return false;
-      for (var n2 = []; i2; ) {
-        for (var r2 = 0; r2 < i2.children.length; r2++) {
-          var e2 = i2.children[r2], a2 = i2.leaf ? this.toBBox(e2) : e2;
-          if (c(t2, a2)) {
-            if (i2.leaf || m(t2, a2)) return true;
-            n2.push(e2);
-          }
-        }
-        i2 = n2.pop();
-      }
-      return false;
-    }, r.prototype.load = function(t2) {
-      if (!t2 || !t2.length) return this;
-      if (t2.length < this._minEntries) {
-        for (var i2 = 0; i2 < t2.length; i2++) this.insert(t2[i2]);
-        return this;
-      }
-      var n2 = this._build(t2.slice(), 0, t2.length - 1, 0);
-      if (this.data.children.length) if (this.data.height === n2.height) this._splitRoot(this.data, n2);
-      else {
-        if (this.data.height < n2.height) {
-          var r2 = this.data;
-          this.data = n2, n2 = r2;
-        }
-        this._insert(n2, this.data.height - n2.height - 1, true);
-      }
-      else this.data = n2;
-      return this;
-    }, r.prototype.insert = function(t2) {
-      return t2 && this._insert(t2, this.data.height - 1), this;
-    }, r.prototype.clear = function() {
-      return this.data = p([]), this;
-    }, r.prototype.remove = function(t2, i2) {
-      if (!t2) return this;
-      for (var n2, r2, a2, h2 = this.data, o2 = this.toBBox(t2), s2 = [], l2 = []; h2 || s2.length; ) {
-        if (h2 || (h2 = s2.pop(), r2 = s2[s2.length - 1], n2 = l2.pop(), a2 = true), h2.leaf) {
-          var f2 = e(t2, h2.children, i2);
-          if (-1 !== f2) return h2.children.splice(f2, 1), s2.push(h2), this._condense(s2), this;
-        }
-        a2 || h2.leaf || !m(h2, o2) ? r2 ? (n2++, h2 = r2.children[n2], a2 = false) : h2 = null : (s2.push(h2), l2.push(n2), n2 = 0, r2 = h2, h2 = h2.children[0]);
-      }
-      return this;
-    }, r.prototype.toBBox = function(t2) {
-      return t2;
-    }, r.prototype.compareMinX = function(t2, i2) {
-      return t2.minX - i2.minX;
-    }, r.prototype.compareMinY = function(t2, i2) {
-      return t2.minY - i2.minY;
-    }, r.prototype.toJSON = function() {
-      return this.data;
-    }, r.prototype.fromJSON = function(t2) {
-      return this.data = t2, this;
-    }, r.prototype._all = function(t2, i2) {
-      for (var n2 = []; t2; ) t2.leaf ? i2.push.apply(i2, t2.children) : n2.push.apply(n2, t2.children), t2 = n2.pop();
-      return i2;
-    }, r.prototype._build = function(t2, i2, n2, r2) {
-      var e2, h2 = n2 - i2 + 1, o2 = this._maxEntries;
-      if (h2 <= o2) return a(e2 = p(t2.slice(i2, n2 + 1)), this.toBBox), e2;
-      r2 || (r2 = Math.ceil(Math.log(h2) / Math.log(o2)), o2 = Math.ceil(h2 / Math.pow(o2, r2 - 1))), (e2 = p([])).leaf = false, e2.height = r2;
-      var s2 = Math.ceil(h2 / o2), l2 = s2 * Math.ceil(Math.sqrt(o2));
-      d(t2, i2, n2, l2, this.compareMinX);
-      for (var f2 = i2; f2 <= n2; f2 += l2) {
-        var u3 = Math.min(f2 + l2 - 1, n2);
-        d(t2, f2, u3, s2, this.compareMinY);
-        for (var m2 = f2; m2 <= u3; m2 += s2) {
-          var c2 = Math.min(m2 + s2 - 1, u3);
-          e2.children.push(this._build(t2, m2, c2, r2 - 1));
-        }
-      }
-      return a(e2, this.toBBox), e2;
-    }, r.prototype._chooseSubtree = function(t2, i2, n2, r2) {
-      for (; r2.push(i2), !i2.leaf && r2.length - 1 !== n2; ) {
-        for (var e2 = 1 / 0, a2 = 1 / 0, h2 = void 0, o2 = 0; o2 < i2.children.length; o2++) {
-          var s2 = i2.children[o2], l2 = f(s2), u3 = (m2 = t2, c2 = s2, (Math.max(c2.maxX, m2.maxX) - Math.min(c2.minX, m2.minX)) * (Math.max(c2.maxY, m2.maxY) - Math.min(c2.minY, m2.minY)) - l2);
-          u3 < a2 ? (a2 = u3, e2 = l2 < e2 ? l2 : e2, h2 = s2) : u3 === a2 && l2 < e2 && (e2 = l2, h2 = s2);
-        }
-        i2 = h2 || i2.children[0];
-      }
-      var m2, c2;
-      return i2;
-    }, r.prototype._insert = function(t2, i2, n2) {
-      var r2 = n2 ? t2 : this.toBBox(t2), e2 = [], a2 = this._chooseSubtree(r2, this.data, i2, e2);
-      for (a2.children.push(t2), o(a2, r2); i2 >= 0 && e2[i2].children.length > this._maxEntries; ) this._split(e2, i2), i2--;
-      this._adjustParentBBoxes(r2, e2, i2);
-    }, r.prototype._split = function(t2, i2) {
-      var n2 = t2[i2], r2 = n2.children.length, e2 = this._minEntries;
-      this._chooseSplitAxis(n2, e2, r2);
-      var h2 = this._chooseSplitIndex(n2, e2, r2), o2 = p(n2.children.splice(h2, n2.children.length - h2));
-      o2.height = n2.height, o2.leaf = n2.leaf, a(n2, this.toBBox), a(o2, this.toBBox), i2 ? t2[i2 - 1].children.push(o2) : this._splitRoot(n2, o2);
-    }, r.prototype._splitRoot = function(t2, i2) {
-      this.data = p([t2, i2]), this.data.height = t2.height + 1, this.data.leaf = false, a(this.data, this.toBBox);
-    }, r.prototype._chooseSplitIndex = function(t2, i2, n2) {
-      for (var r2, e2, a2, o2, s2, l2, u3, m2 = 1 / 0, c2 = 1 / 0, p2 = i2; p2 <= n2 - i2; p2++) {
-        var d2 = h(t2, 0, p2, this.toBBox), x = h(t2, p2, n2, this.toBBox), v2 = (e2 = d2, a2 = x, o2 = void 0, s2 = void 0, l2 = void 0, u3 = void 0, o2 = Math.max(e2.minX, a2.minX), s2 = Math.max(e2.minY, a2.minY), l2 = Math.min(e2.maxX, a2.maxX), u3 = Math.min(e2.maxY, a2.maxY), Math.max(0, l2 - o2) * Math.max(0, u3 - s2)), M = f(d2) + f(x);
-        v2 < m2 ? (m2 = v2, r2 = p2, c2 = M < c2 ? M : c2) : v2 === m2 && M < c2 && (c2 = M, r2 = p2);
-      }
-      return r2 || n2 - i2;
-    }, r.prototype._chooseSplitAxis = function(t2, i2, n2) {
-      var r2 = t2.leaf ? this.compareMinX : s, e2 = t2.leaf ? this.compareMinY : l;
-      this._allDistMargin(t2, i2, n2, r2) < this._allDistMargin(t2, i2, n2, e2) && t2.children.sort(r2);
-    }, r.prototype._allDistMargin = function(t2, i2, n2, r2) {
-      t2.children.sort(r2);
-      for (var e2 = this.toBBox, a2 = h(t2, 0, i2, e2), s2 = h(t2, n2 - i2, n2, e2), l2 = u2(a2) + u2(s2), f2 = i2; f2 < n2 - i2; f2++) {
-        var m2 = t2.children[f2];
-        o(a2, t2.leaf ? e2(m2) : m2), l2 += u2(a2);
-      }
-      for (var c2 = n2 - i2 - 1; c2 >= i2; c2--) {
-        var p2 = t2.children[c2];
-        o(s2, t2.leaf ? e2(p2) : p2), l2 += u2(s2);
-      }
-      return l2;
-    }, r.prototype._adjustParentBBoxes = function(t2, i2, n2) {
-      for (var r2 = n2; r2 >= 0; r2--) o(i2[r2], t2);
-    }, r.prototype._condense = function(t2) {
-      for (var i2 = t2.length - 1, n2 = void 0; i2 >= 0; i2--) 0 === t2[i2].children.length ? i2 > 0 ? (n2 = t2[i2 - 1].children).splice(n2.indexOf(t2[i2]), 1) : this.clear() : a(t2[i2], this.toBBox);
-    }, r;
-  });
-})(rbush_min$1);
-var rbush_minExports$1 = rbush_min$1.exports;
-class TinyQueue {
-  constructor(data = [], compare = defaultCompare) {
-    this.data = data;
-    this.length = this.data.length;
-    this.compare = compare;
-    if (this.length > 0) {
-      for (let i = (this.length >> 1) - 1; i >= 0; i--) this._down(i);
-    }
-  }
-  push(item) {
-    this.data.push(item);
-    this.length++;
-    this._up(this.length - 1);
-  }
-  pop() {
-    if (this.length === 0) return void 0;
-    const top = this.data[0];
-    const bottom = this.data.pop();
-    this.length--;
-    if (this.length > 0) {
-      this.data[0] = bottom;
-      this._down(0);
-    }
-    return top;
-  }
-  peek() {
-    return this.data[0];
-  }
-  _up(pos) {
-    const { data, compare } = this;
-    const item = data[pos];
-    while (pos > 0) {
-      const parent = pos - 1 >> 1;
-      const current = data[parent];
-      if (compare(item, current) >= 0) break;
-      data[pos] = current;
-      pos = parent;
-    }
-    data[pos] = item;
-  }
-  _down(pos) {
-    const { data, compare } = this;
-    const halfLength = this.length >> 1;
-    const item = data[pos];
-    while (pos < halfLength) {
-      let left = (pos << 1) + 1;
-      let best = data[left];
-      const right = left + 1;
-      if (right < this.length && compare(data[right], best) < 0) {
-        left = right;
-        best = data[right];
-      }
-      if (compare(best, item) >= 0) break;
-      data[pos] = best;
-      pos = left;
-    }
-    data[pos] = item;
-  }
-}
-function defaultCompare(a, b) {
-  return a < b ? -1 : a > b ? 1 : 0;
-}
-const tinyqueue = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
-  __proto__: null,
-  default: TinyQueue
-}, Symbol.toStringTag, { value: "Module" }));
-const require$$1$1 = /* @__PURE__ */ getAugmentedNamespace(tinyqueue);
-var pointInPolygon$2 = { exports: {} };
-var flat = function pointInPolygonFlat(point2, vs, start, end) {
-  var x = point2[0], y = point2[1];
-  var inside2 = false;
-  if (start === void 0) start = 0;
-  if (end === void 0) end = vs.length;
-  var len = (end - start) / 2;
-  for (var i = 0, j = len - 1; i < len; j = i++) {
-    var xi = vs[start + i * 2 + 0], yi = vs[start + i * 2 + 1];
-    var xj = vs[start + j * 2 + 0], yj = vs[start + j * 2 + 1];
-    var intersect2 = yi > y !== yj > y && x < (xj - xi) * (y - yi) / (yj - yi) + xi;
-    if (intersect2) inside2 = !inside2;
-  }
-  return inside2;
-};
-var nested = function pointInPolygonNested(point2, vs, start, end) {
-  var x = point2[0], y = point2[1];
-  var inside2 = false;
-  if (start === void 0) start = 0;
-  if (end === void 0) end = vs.length;
-  var len = end - start;
-  for (var i = 0, j = len - 1; i < len; j = i++) {
-    var xi = vs[i + start][0], yi = vs[i + start][1];
-    var xj = vs[j + start][0], yj = vs[j + start][1];
-    var intersect2 = yi > y !== yj > y && x < (xj - xi) * (y - yi) / (yj - yi) + xi;
-    if (intersect2) inside2 = !inside2;
-  }
-  return inside2;
-};
-var pointInPolygonFlat2 = flat;
-var pointInPolygonNested2 = nested;
-pointInPolygon$2.exports = function pointInPolygon(point2, vs, start, end) {
-  if (vs.length > 0 && Array.isArray(vs[0])) {
-    return pointInPolygonNested2(point2, vs, start, end);
-  } else {
-    return pointInPolygonFlat2(point2, vs, start, end);
-  }
-};
-pointInPolygon$2.exports.nested = pointInPolygonNested2;
-pointInPolygon$2.exports.flat = pointInPolygonFlat2;
-var pointInPolygonExports = pointInPolygon$2.exports;
-var orient2d_min = { exports: {} };
-(function(module, exports) {
-  !function(t, e) {
-    e(exports);
-  }(commonjsGlobal, function(t) {
-    const e = 134217729, n = 33306690738754706e-32;
-    function r(t2, e2, n2, r2, o2) {
-      let f2, i2, u3, c2, s2 = e2[0], a2 = r2[0], d2 = 0, l2 = 0;
-      a2 > s2 == a2 > -s2 ? (f2 = s2, s2 = e2[++d2]) : (f2 = a2, a2 = r2[++l2]);
-      let p = 0;
-      if (d2 < t2 && l2 < n2) for (a2 > s2 == a2 > -s2 ? (u3 = f2 - ((i2 = s2 + f2) - s2), s2 = e2[++d2]) : (u3 = f2 - ((i2 = a2 + f2) - a2), a2 = r2[++l2]), f2 = i2, 0 !== u3 && (o2[p++] = u3); d2 < t2 && l2 < n2; ) a2 > s2 == a2 > -s2 ? (u3 = f2 - ((i2 = f2 + s2) - (c2 = i2 - f2)) + (s2 - c2), s2 = e2[++d2]) : (u3 = f2 - ((i2 = f2 + a2) - (c2 = i2 - f2)) + (a2 - c2), a2 = r2[++l2]), f2 = i2, 0 !== u3 && (o2[p++] = u3);
-      for (; d2 < t2; ) u3 = f2 - ((i2 = f2 + s2) - (c2 = i2 - f2)) + (s2 - c2), s2 = e2[++d2], f2 = i2, 0 !== u3 && (o2[p++] = u3);
-      for (; l2 < n2; ) u3 = f2 - ((i2 = f2 + a2) - (c2 = i2 - f2)) + (a2 - c2), a2 = r2[++l2], f2 = i2, 0 !== u3 && (o2[p++] = u3);
-      return 0 === f2 && 0 !== p || (o2[p++] = f2), p;
-    }
-    function o(t2) {
-      return new Float64Array(t2);
-    }
-    const f = 33306690738754716e-32, i = 22204460492503146e-32, u2 = 11093356479670487e-47, c = o(4), s = o(8), a = o(12), d = o(16), l = o(4);
-    t.orient2d = function(t2, o2, p, b, y, h) {
-      const M = (o2 - h) * (p - y), x = (t2 - y) * (b - h), j = M - x;
-      if (0 === M || 0 === x || M > 0 != x > 0) return j;
-      const m = Math.abs(M + x);
-      return Math.abs(j) >= f * m ? j : -function(t3, o3, f2, p2, b2, y2, h2) {
-        let M5, x2, j2, m2, _23, v2, w, A, F, O, P, g2, k, q, z, B2, C, D2;
-        const E4 = t3 - b2, G = f2 - b2, H = o3 - y2, I = p2 - y2;
-        _23 = (z = (A = E4 - (w = (v2 = e * E4) - (v2 - E4))) * (O = I - (F = (v2 = e * I) - (v2 - I))) - ((q = E4 * I) - w * F - A * F - w * O)) - (P = z - (C = (A = H - (w = (v2 = e * H) - (v2 - H))) * (O = G - (F = (v2 = e * G) - (v2 - G))) - ((B2 = H * G) - w * F - A * F - w * O))), c[0] = z - (P + _23) + (_23 - C), _23 = (k = q - ((g2 = q + P) - (_23 = g2 - q)) + (P - _23)) - (P = k - B2), c[1] = k - (P + _23) + (_23 - B2), _23 = (D2 = g2 + P) - g2, c[2] = g2 - (D2 - _23) + (P - _23), c[3] = D2;
-        let J = function(t4, e2) {
-          let n2 = e2[0];
-          for (let r2 = 1; r2 < t4; r2++) n2 += e2[r2];
-          return n2;
-        }(4, c), K = i * h2;
-        if (J >= K || -J >= K) return J;
-        if (M5 = t3 - (E4 + (_23 = t3 - E4)) + (_23 - b2), j2 = f2 - (G + (_23 = f2 - G)) + (_23 - b2), x2 = o3 - (H + (_23 = o3 - H)) + (_23 - y2), m2 = p2 - (I + (_23 = p2 - I)) + (_23 - y2), 0 === M5 && 0 === x2 && 0 === j2 && 0 === m2) return J;
-        if (K = u2 * h2 + n * Math.abs(J), (J += E4 * m2 + I * M5 - (H * j2 + G * x2)) >= K || -J >= K) return J;
-        _23 = (z = (A = M5 - (w = (v2 = e * M5) - (v2 - M5))) * (O = I - (F = (v2 = e * I) - (v2 - I))) - ((q = M5 * I) - w * F - A * F - w * O)) - (P = z - (C = (A = x2 - (w = (v2 = e * x2) - (v2 - x2))) * (O = G - (F = (v2 = e * G) - (v2 - G))) - ((B2 = x2 * G) - w * F - A * F - w * O))), l[0] = z - (P + _23) + (_23 - C), _23 = (k = q - ((g2 = q + P) - (_23 = g2 - q)) + (P - _23)) - (P = k - B2), l[1] = k - (P + _23) + (_23 - B2), _23 = (D2 = g2 + P) - g2, l[2] = g2 - (D2 - _23) + (P - _23), l[3] = D2;
-        const L = r(4, c, 4, l, s);
-        _23 = (z = (A = E4 - (w = (v2 = e * E4) - (v2 - E4))) * (O = m2 - (F = (v2 = e * m2) - (v2 - m2))) - ((q = E4 * m2) - w * F - A * F - w * O)) - (P = z - (C = (A = H - (w = (v2 = e * H) - (v2 - H))) * (O = j2 - (F = (v2 = e * j2) - (v2 - j2))) - ((B2 = H * j2) - w * F - A * F - w * O))), l[0] = z - (P + _23) + (_23 - C), _23 = (k = q - ((g2 = q + P) - (_23 = g2 - q)) + (P - _23)) - (P = k - B2), l[1] = k - (P + _23) + (_23 - B2), _23 = (D2 = g2 + P) - g2, l[2] = g2 - (D2 - _23) + (P - _23), l[3] = D2;
-        const N = r(L, s, 4, l, a);
-        _23 = (z = (A = M5 - (w = (v2 = e * M5) - (v2 - M5))) * (O = m2 - (F = (v2 = e * m2) - (v2 - m2))) - ((q = M5 * m2) - w * F - A * F - w * O)) - (P = z - (C = (A = x2 - (w = (v2 = e * x2) - (v2 - x2))) * (O = j2 - (F = (v2 = e * j2) - (v2 - j2))) - ((B2 = x2 * j2) - w * F - A * F - w * O))), l[0] = z - (P + _23) + (_23 - C), _23 = (k = q - ((g2 = q + P) - (_23 = g2 - q)) + (P - _23)) - (P = k - B2), l[1] = k - (P + _23) + (_23 - B2), _23 = (D2 = g2 + P) - g2, l[2] = g2 - (D2 - _23) + (P - _23), l[3] = D2;
-        const Q = r(N, a, 4, l, d);
-        return d[Q - 1];
-      }(t2, o2, p, b, y, h, m);
-    }, t.orient2dfast = function(t2, e2, n2, r2, o2, f2) {
-      return (e2 - f2) * (n2 - o2) - (t2 - o2) * (r2 - f2);
-    }, Object.defineProperty(t, "__esModule", { value: true });
-  });
-})(orient2d_min, orient2d_min.exports);
-var orient2d_minExports = orient2d_min.exports;
-var RBush = rbush_minExports$1;
-var Queue = require$$1$1;
-var pointInPolygon$1 = pointInPolygonExports;
-var orient = orient2d_minExports.orient2d;
-if (Queue.default) {
-  Queue = Queue.default;
-}
-concaveman$2.exports = concaveman;
-concaveman$2.exports.default = concaveman;
-function concaveman(points2, concavity, lengthThreshold) {
-  concavity = Math.max(0, concavity === void 0 ? 2 : concavity);
-  lengthThreshold = lengthThreshold || 0;
-  var hull = fastConvexHull(points2);
-  var tree = new RBush(16);
-  tree.toBBox = function(a2) {
-    return {
-      minX: a2[0],
-      minY: a2[1],
-      maxX: a2[0],
-      maxY: a2[1]
-    };
-  };
-  tree.compareMinX = function(a2, b2) {
-    return a2[0] - b2[0];
-  };
-  tree.compareMinY = function(a2, b2) {
-    return a2[1] - b2[1];
-  };
-  tree.load(points2);
-  var queue = [];
-  for (var i = 0, last; i < hull.length; i++) {
-    var p = hull[i];
-    tree.remove(p);
-    last = insertNode(p, last);
-    queue.push(last);
-  }
-  var segTree = new RBush(16);
-  for (i = 0; i < queue.length; i++) segTree.insert(updateBBox(queue[i]));
-  var sqConcavity = concavity * concavity;
-  var sqLenThreshold = lengthThreshold * lengthThreshold;
-  while (queue.length) {
-    var node = queue.shift();
-    var a = node.p;
-    var b = node.next.p;
-    var sqLen = getSqDist(a, b);
-    if (sqLen < sqLenThreshold) continue;
-    var maxSqLen = sqLen / sqConcavity;
-    p = findCandidate(tree, node.prev.p, a, b, node.next.next.p, maxSqLen, segTree);
-    if (p && Math.min(getSqDist(p, a), getSqDist(p, b)) <= maxSqLen) {
-      queue.push(node);
-      queue.push(insertNode(p, node));
-      tree.remove(p);
-      segTree.remove(node);
-      segTree.insert(updateBBox(node));
-      segTree.insert(updateBBox(node.next));
-    }
-  }
-  node = last;
-  var concave = [];
-  do {
-    concave.push(node.p);
-    node = node.next;
-  } while (node !== last);
-  concave.push(node.p);
-  return concave;
-}
-function findCandidate(tree, a, b, c, d, maxDist, segTree) {
-  var queue = new Queue([], compareDist);
-  var node = tree.data;
-  while (node) {
-    for (var i = 0; i < node.children.length; i++) {
-      var child = node.children[i];
-      var dist2 = node.leaf ? sqSegDist(child, b, c) : sqSegBoxDist(b, c, child);
-      if (dist2 > maxDist) continue;
-      queue.push({
-        node: child,
-        dist: dist2
-      });
-    }
-    while (queue.length && !queue.peek().node.children) {
-      var item = queue.pop();
-      var p = item.node;
-      var d0 = sqSegDist(p, a, b);
-      var d1 = sqSegDist(p, c, d);
-      if (item.dist < d0 && item.dist < d1 && noIntersections(b, p, segTree) && noIntersections(c, p, segTree)) return p;
-    }
-    node = queue.pop();
-    if (node) node = node.node;
-  }
-  return null;
-}
-function compareDist(a, b) {
-  return a.dist - b.dist;
-}
-function sqSegBoxDist(a, b, bbox2) {
-  if (inside$1(a, bbox2) || inside$1(b, bbox2)) return 0;
-  var d1 = sqSegSegDist(a[0], a[1], b[0], b[1], bbox2.minX, bbox2.minY, bbox2.maxX, bbox2.minY);
-  if (d1 === 0) return 0;
-  var d2 = sqSegSegDist(a[0], a[1], b[0], b[1], bbox2.minX, bbox2.minY, bbox2.minX, bbox2.maxY);
-  if (d2 === 0) return 0;
-  var d3 = sqSegSegDist(a[0], a[1], b[0], b[1], bbox2.maxX, bbox2.minY, bbox2.maxX, bbox2.maxY);
-  if (d3 === 0) return 0;
-  var d4 = sqSegSegDist(a[0], a[1], b[0], b[1], bbox2.minX, bbox2.maxY, bbox2.maxX, bbox2.maxY);
-  if (d4 === 0) return 0;
-  return Math.min(d1, d2, d3, d4);
-}
-function inside$1(a, bbox2) {
-  return a[0] >= bbox2.minX && a[0] <= bbox2.maxX && a[1] >= bbox2.minY && a[1] <= bbox2.maxY;
-}
-function noIntersections(a, b, segTree) {
-  var minX = Math.min(a[0], b[0]);
-  var minY = Math.min(a[1], b[1]);
-  var maxX = Math.max(a[0], b[0]);
-  var maxY = Math.max(a[1], b[1]);
-  var edges = segTree.search({ minX, minY, maxX, maxY });
-  for (var i = 0; i < edges.length; i++) {
-    if (intersects$2(edges[i].p, edges[i].next.p, a, b)) return false;
-  }
-  return true;
-}
-function cross(p1, p2, p3) {
-  return orient(p1[0], p1[1], p2[0], p2[1], p3[0], p3[1]);
-}
-function intersects$2(p1, q1, p2, q2) {
-  return p1 !== q2 && q1 !== p2 && cross(p1, q1, p2) > 0 !== cross(p1, q1, q2) > 0 && cross(p2, q2, p1) > 0 !== cross(p2, q2, q1) > 0;
-}
-function updateBBox(node) {
-  var p1 = node.p;
-  var p2 = node.next.p;
-  node.minX = Math.min(p1[0], p2[0]);
-  node.minY = Math.min(p1[1], p2[1]);
-  node.maxX = Math.max(p1[0], p2[0]);
-  node.maxY = Math.max(p1[1], p2[1]);
-  return node;
-}
-function fastConvexHull(points2) {
-  var left = points2[0];
-  var top = points2[0];
-  var right = points2[0];
-  var bottom = points2[0];
-  for (var i = 0; i < points2.length; i++) {
-    var p = points2[i];
-    if (p[0] < left[0]) left = p;
-    if (p[0] > right[0]) right = p;
-    if (p[1] < top[1]) top = p;
-    if (p[1] > bottom[1]) bottom = p;
-  }
-  var cull = [left, top, right, bottom];
-  var filtered = cull.slice();
-  for (i = 0; i < points2.length; i++) {
-    if (!pointInPolygon$1(points2[i], cull)) filtered.push(points2[i]);
-  }
-  return convexHull(filtered);
-}
-function insertNode(p, prev) {
-  var node = {
-    p,
-    prev: null,
-    next: null,
-    minX: 0,
-    minY: 0,
-    maxX: 0,
-    maxY: 0
-  };
-  if (!prev) {
-    node.prev = node;
-    node.next = node;
-  } else {
-    node.next = prev.next;
-    node.prev = prev;
-    prev.next.prev = node;
-    prev.next = node;
-  }
-  return node;
-}
-function getSqDist(p1, p2) {
-  var dx = p1[0] - p2[0], dy = p1[1] - p2[1];
-  return dx * dx + dy * dy;
-}
-function sqSegDist(p, p1, p2) {
-  var x = p1[0], y = p1[1], dx = p2[0] - x, dy = p2[1] - y;
-  if (dx !== 0 || dy !== 0) {
-    var t = ((p[0] - x) * dx + (p[1] - y) * dy) / (dx * dx + dy * dy);
-    if (t > 1) {
-      x = p2[0];
-      y = p2[1];
-    } else if (t > 0) {
-      x += dx * t;
-      y += dy * t;
-    }
-  }
-  dx = p[0] - x;
-  dy = p[1] - y;
-  return dx * dx + dy * dy;
-}
-function sqSegSegDist(x0, y0, x1, y1, x2, y2, x3, y3) {
-  var ux = x1 - x0;
-  var uy = y1 - y0;
-  var vx = x3 - x2;
-  var vy = y3 - y2;
-  var wx = x0 - x2;
-  var wy = y0 - y2;
-  var a = ux * ux + uy * uy;
-  var b = ux * vx + uy * vy;
-  var c = vx * vx + vy * vy;
-  var d = ux * wx + uy * wy;
-  var e = vx * wx + vy * wy;
-  var D2 = a * c - b * b;
-  var sc, sN, tc, tN;
-  var sD = D2;
-  var tD = D2;
-  if (D2 === 0) {
-    sN = 0;
-    sD = 1;
-    tN = e;
-    tD = c;
-  } else {
-    sN = b * e - c * d;
-    tN = a * e - b * d;
-    if (sN < 0) {
-      sN = 0;
-      tN = e;
-      tD = c;
-    } else if (sN > sD) {
-      sN = sD;
-      tN = e + b;
-      tD = c;
-    }
-  }
-  if (tN < 0) {
-    tN = 0;
-    if (-d < 0) sN = 0;
-    else if (-d > a) sN = sD;
-    else {
-      sN = -d;
-      sD = a;
-    }
-  } else if (tN > tD) {
-    tN = tD;
-    if (-d + b < 0) sN = 0;
-    else if (-d + b > a) sN = sD;
-    else {
-      sN = -d + b;
-      sD = a;
-    }
-  }
-  sc = sN === 0 ? 0 : sN / sD;
-  tc = tN === 0 ? 0 : tN / tD;
-  var cx = (1 - sc) * x0 + sc * x1;
-  var cy = (1 - sc) * y0 + sc * y1;
-  var cx2 = (1 - tc) * x2 + tc * x3;
-  var cy2 = (1 - tc) * y2 + tc * y3;
-  var dx = cx2 - cx;
-  var dy = cy2 - cy;
-  return dx * dx + dy * dy;
-}
-function compareByX(a, b) {
-  return a[0] === b[0] ? a[1] - b[1] : a[0] - b[0];
-}
-function convexHull(points2) {
-  points2.sort(compareByX);
-  var lower = [];
-  for (var i = 0; i < points2.length; i++) {
-    while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], points2[i]) <= 0) {
-      lower.pop();
-    }
-    lower.push(points2[i]);
-  }
-  var upper = [];
-  for (var ii = points2.length - 1; ii >= 0; ii--) {
-    while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], points2[ii]) <= 0) {
-      upper.pop();
-    }
-    upper.push(points2[ii]);
-  }
-  upper.pop();
-  lower.pop();
-  return lower.concat(upper);
-}
-var concavemanExports = concaveman$2.exports;
-const concaveman$1 = /* @__PURE__ */ getDefaultExportFromCjs(concavemanExports);
-function convex(geojson, options) {
+function feature$2(geom, properties, options) {
   if (options === void 0) {
     options = {};
   }
-  options.concavity = options.concavity || Infinity;
-  var points2 = [];
-  coordEach(geojson, function(coord) {
-    points2.push([coord[0], coord[1]]);
-  });
-  if (!points2.length) {
-    return null;
+  var feat = { type: "Feature" };
+  if (options.id === 0 || options.id) {
+    feat.id = options.id;
   }
-  var convexHull2 = concaveman$1(points2, options.concavity);
-  if (convexHull2.length > 3) {
-    return polygon([convexHull2]);
+  if (options.bbox) {
+    feat.bbox = options.bbox;
   }
-  return null;
+  feat.properties = {};
+  feat.geometry = geom;
+  return feat;
+}
+function lineString$1(coordinates2, properties, options) {
+  if (options === void 0) {
+    options = {};
+  }
+  if (coordinates2.length < 2) {
+    throw new Error("coordinates must be an array of two or more positions");
+  }
+  var geom = {
+    type: "LineString",
+    coordinates: coordinates2
+  };
+  return feature$2(geom, properties, options);
 }
 function booleanPointInPolygon$1(point2, polygon2, options) {
   if (options === void 0) {
@@ -4889,8 +4096,8 @@ function booleanPointInPolygon$1(point2, polygon2, options) {
   if (!polygon2) {
     throw new Error("polygon is required");
   }
-  var pt = getCoord(point2);
-  var geom = getGeom(polygon2);
+  var pt = getCoord$1(point2);
+  var geom = getGeom$1(polygon2);
   var type = geom.type;
   var bbox2 = polygon2.bbox;
   var polys = geom.coordinates;
@@ -4923,17 +4130,17 @@ function inRing(pt, ring, ignoreBoundary) {
   if (ring[0][0] === ring[ring.length - 1][0] && ring[0][1] === ring[ring.length - 1][1]) {
     ring = ring.slice(0, ring.length - 1);
   }
-  for (var i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+  for (var i = 0, j2 = ring.length - 1; i < ring.length; j2 = i++) {
     var xi = ring[i][0];
     var yi = ring[i][1];
-    var xj = ring[j][0];
-    var yj = ring[j][1];
+    var xj = ring[j2][0];
+    var yj = ring[j2][1];
     var onBoundary = pt[1] * (xi - xj) + yi * (xj - pt[0]) + yj * (pt[0] - xi) === 0 && (xi - pt[0]) * (xj - pt[0]) <= 0 && (yi - pt[1]) * (yj - pt[1]) <= 0;
     if (onBoundary) {
       return !ignoreBoundary;
     }
-    var intersect2 = yi > pt[1] !== yj > pt[1] && pt[0] < (xj - xi) * (pt[1] - yi) / (yj - yi) + xi;
-    if (intersect2) {
+    var intersect = yi > pt[1] !== yj > pt[1] && pt[0] < (xj - xi) * (pt[1] - yi) / (yj - yi) + xi;
+    if (intersect) {
       isInside = !isInside;
     }
   }
@@ -4941,6 +4148,102 @@ function inRing(pt, ring, ignoreBoundary) {
 }
 function inBBox$1(pt, bbox2) {
   return bbox2[0] <= pt[0] && bbox2[1] <= pt[1] && bbox2[2] >= pt[0] && bbox2[3] >= pt[1];
+}
+function feature$1(geom, properties, options) {
+  if (options === void 0) {
+    options = {};
+  }
+  var feat = { type: "Feature" };
+  if (options.id === 0 || options.id) {
+    feat.id = options.id;
+  }
+  if (options.bbox) {
+    feat.bbox = options.bbox;
+  }
+  feat.properties = {};
+  feat.geometry = geom;
+  return feat;
+}
+function point(coordinates2, properties, options) {
+  if (options === void 0) {
+    options = {};
+  }
+  if (!coordinates2) {
+    throw new Error("coordinates is required");
+  }
+  if (!Array.isArray(coordinates2)) {
+    throw new Error("coordinates must be an Array");
+  }
+  if (coordinates2.length < 2) {
+    throw new Error("coordinates must be at least 2 numbers long");
+  }
+  if (!isNumber(coordinates2[0]) || !isNumber(coordinates2[1])) {
+    throw new Error("coordinates must contain numbers");
+  }
+  var geom = {
+    type: "Point",
+    coordinates: coordinates2
+  };
+  return feature$1(geom, properties, options);
+}
+function featureCollection$2(features, options) {
+  if (options === void 0) {
+    options = {};
+  }
+  var fc = { type: "FeatureCollection" };
+  if (options.id) {
+    fc.id = options.id;
+  }
+  if (options.bbox) {
+    fc.bbox = options.bbox;
+  }
+  fc.features = features;
+  return fc;
+}
+function isNumber(num) {
+  return !isNaN(num) && num !== null && !Array.isArray(num);
+}
+function feature(geom, properties, options) {
+  if (options === void 0) {
+    options = {};
+  }
+  var feat = { type: "Feature" };
+  if (options.id === 0 || options.id) {
+    feat.id = options.id;
+  }
+  if (options.bbox) {
+    feat.bbox = options.bbox;
+  }
+  feat.properties = properties || {};
+  feat.geometry = geom;
+  return feat;
+}
+function lineString(coordinates2, properties, options) {
+  if (options === void 0) {
+    options = {};
+  }
+  if (coordinates2.length < 2) {
+    throw new Error("coordinates must be an array of two or more positions");
+  }
+  var geom = {
+    type: "LineString",
+    coordinates: coordinates2
+  };
+  return feature(geom, properties, options);
+}
+function featureCollection$1(features, options) {
+  if (options === void 0) {
+    options = {};
+  }
+  var fc = { type: "FeatureCollection" };
+  if (options.id) {
+    fc.id = options.id;
+  }
+  if (options.bbox) {
+    fc.bbox = options.bbox;
+  }
+  fc.features = features;
+  return fc;
 }
 function lineSegment(geojson) {
   if (!geojson) {
@@ -4954,14 +4257,14 @@ function lineSegment(geojson) {
 }
 function lineSegmentFeature(geojson, results) {
   var coords = [];
-  var geometry2 = geojson.geometry;
-  if (geometry2 !== null) {
-    switch (geometry2.type) {
+  var geometry = geojson.geometry;
+  if (geometry !== null) {
+    switch (geometry.type) {
       case "Polygon":
-        coords = getCoords(geometry2);
+        coords = getCoords(geometry);
         break;
       case "LineString":
-        coords = [getCoords(geometry2)];
+        coords = [getCoords(geometry)];
     }
     coords.forEach(function(coord) {
       var segments = createSegments(coord, geojson.properties);
@@ -5180,8 +4483,8 @@ var rbush_min = { exports: {} };
       this.data = p([t2, i2]), this.data.height = t2.height + 1, this.data.leaf = false, a(this.data, this.toBBox);
     }, r.prototype._chooseSplitIndex = function(t2, i2, n2) {
       for (var r2, e2, a2, o2, s2, l2, u3, m2 = 1 / 0, c2 = 1 / 0, p2 = i2; p2 <= n2 - i2; p2++) {
-        var d2 = h(t2, 0, p2, this.toBBox), x = h(t2, p2, n2, this.toBBox), v2 = (e2 = d2, a2 = x, o2 = void 0, s2 = void 0, l2 = void 0, u3 = void 0, o2 = Math.max(e2.minX, a2.minX), s2 = Math.max(e2.minY, a2.minY), l2 = Math.min(e2.maxX, a2.maxX), u3 = Math.min(e2.maxY, a2.maxY), Math.max(0, l2 - o2) * Math.max(0, u3 - s2)), M = f(d2) + f(x);
-        v2 < m2 ? (m2 = v2, r2 = p2, c2 = M < c2 ? M : c2) : v2 === m2 && M < c2 && (c2 = M, r2 = p2);
+        var d2 = h(t2, 0, p2, this.toBBox), x = h(t2, p2, n2, this.toBBox), v = (e2 = d2, a2 = x, o2 = void 0, s2 = void 0, l2 = void 0, u3 = void 0, o2 = Math.max(e2.minX, a2.minX), s2 = Math.max(e2.minY, a2.minY), l2 = Math.min(e2.maxX, a2.maxX), u3 = Math.min(e2.maxY, a2.maxY), Math.max(0, l2 - o2) * Math.max(0, u3 - s2)), M = f(d2) + f(x);
+        v < m2 ? (m2 = v, r2 = p2, c2 = M < c2 ? M : c2) : v === m2 && M < c2 && (c2 = M, r2 = p2);
       }
       return r2 || n2 - i2;
     }, r.prototype._chooseSplitAxis = function(t2, i2, n2) {
@@ -5206,11 +4509,368 @@ var rbush_min = { exports: {} };
   });
 })(rbush_min);
 var rbush_minExports = rbush_min.exports;
-const require$$1 = /* @__PURE__ */ getAugmentedNamespace(es$2);
+var js = {};
+(function(exports) {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.earthRadius = 63710088e-1;
+  exports.factors = {
+    centimeters: exports.earthRadius * 100,
+    centimetres: exports.earthRadius * 100,
+    degrees: exports.earthRadius / 111325,
+    feet: exports.earthRadius * 3.28084,
+    inches: exports.earthRadius * 39.37,
+    kilometers: exports.earthRadius / 1e3,
+    kilometres: exports.earthRadius / 1e3,
+    meters: exports.earthRadius,
+    metres: exports.earthRadius,
+    miles: exports.earthRadius / 1609.344,
+    millimeters: exports.earthRadius * 1e3,
+    millimetres: exports.earthRadius * 1e3,
+    nauticalmiles: exports.earthRadius / 1852,
+    radians: 1,
+    yards: exports.earthRadius * 1.0936
+  };
+  exports.unitsFactors = {
+    centimeters: 100,
+    centimetres: 100,
+    degrees: 1 / 111325,
+    feet: 3.28084,
+    inches: 39.37,
+    kilometers: 1 / 1e3,
+    kilometres: 1 / 1e3,
+    meters: 1,
+    metres: 1,
+    miles: 1 / 1609.344,
+    millimeters: 1e3,
+    millimetres: 1e3,
+    nauticalmiles: 1 / 1852,
+    radians: 1 / exports.earthRadius,
+    yards: 1.0936133
+  };
+  exports.areaFactors = {
+    acres: 247105e-9,
+    centimeters: 1e4,
+    centimetres: 1e4,
+    feet: 10.763910417,
+    hectares: 1e-4,
+    inches: 1550.003100006,
+    kilometers: 1e-6,
+    kilometres: 1e-6,
+    meters: 1,
+    metres: 1,
+    miles: 386e-9,
+    millimeters: 1e6,
+    millimetres: 1e6,
+    yards: 1.195990046
+  };
+  function feature2(geom, properties, options) {
+    if (options === void 0) {
+      options = {};
+    }
+    var feat = { type: "Feature" };
+    if (options.id === 0 || options.id) {
+      feat.id = options.id;
+    }
+    if (options.bbox) {
+      feat.bbox = options.bbox;
+    }
+    feat.properties = properties || {};
+    feat.geometry = geom;
+    return feat;
+  }
+  exports.feature = feature2;
+  function geometry(type, coordinates2, _options) {
+    switch (type) {
+      case "Point":
+        return point2(coordinates2).geometry;
+      case "LineString":
+        return lineString2(coordinates2).geometry;
+      case "Polygon":
+        return polygon2(coordinates2).geometry;
+      case "MultiPoint":
+        return multiPoint(coordinates2).geometry;
+      case "MultiLineString":
+        return multiLineString(coordinates2).geometry;
+      case "MultiPolygon":
+        return multiPolygon(coordinates2).geometry;
+      default:
+        throw new Error(type + " is invalid");
+    }
+  }
+  exports.geometry = geometry;
+  function point2(coordinates2, properties, options) {
+    if (options === void 0) {
+      options = {};
+    }
+    if (!coordinates2) {
+      throw new Error("coordinates is required");
+    }
+    if (!Array.isArray(coordinates2)) {
+      throw new Error("coordinates must be an Array");
+    }
+    if (coordinates2.length < 2) {
+      throw new Error("coordinates must be at least 2 numbers long");
+    }
+    if (!isNumber2(coordinates2[0]) || !isNumber2(coordinates2[1])) {
+      throw new Error("coordinates must contain numbers");
+    }
+    var geom = {
+      type: "Point",
+      coordinates: coordinates2
+    };
+    return feature2(geom, properties, options);
+  }
+  exports.point = point2;
+  function points(coordinates2, properties, options) {
+    if (options === void 0) {
+      options = {};
+    }
+    return featureCollection2(coordinates2.map(function(coords) {
+      return point2(coords, properties);
+    }), options);
+  }
+  exports.points = points;
+  function polygon2(coordinates2, properties, options) {
+    if (options === void 0) {
+      options = {};
+    }
+    for (var _i = 0, coordinates_1 = coordinates2; _i < coordinates_1.length; _i++) {
+      var ring = coordinates_1[_i];
+      if (ring.length < 4) {
+        throw new Error("Each LinearRing of a Polygon must have 4 or more Positions.");
+      }
+      for (var j2 = 0; j2 < ring[ring.length - 1].length; j2++) {
+        if (ring[ring.length - 1][j2] !== ring[0][j2]) {
+          throw new Error("First and last Position are not equivalent.");
+        }
+      }
+    }
+    var geom = {
+      type: "Polygon",
+      coordinates: coordinates2
+    };
+    return feature2(geom, properties, options);
+  }
+  exports.polygon = polygon2;
+  function polygons(coordinates2, properties, options) {
+    if (options === void 0) {
+      options = {};
+    }
+    return featureCollection2(coordinates2.map(function(coords) {
+      return polygon2(coords, properties);
+    }), options);
+  }
+  exports.polygons = polygons;
+  function lineString2(coordinates2, properties, options) {
+    if (options === void 0) {
+      options = {};
+    }
+    if (coordinates2.length < 2) {
+      throw new Error("coordinates must be an array of two or more positions");
+    }
+    var geom = {
+      type: "LineString",
+      coordinates: coordinates2
+    };
+    return feature2(geom, properties, options);
+  }
+  exports.lineString = lineString2;
+  function lineStrings(coordinates2, properties, options) {
+    if (options === void 0) {
+      options = {};
+    }
+    return featureCollection2(coordinates2.map(function(coords) {
+      return lineString2(coords, properties);
+    }), options);
+  }
+  exports.lineStrings = lineStrings;
+  function featureCollection2(features, options) {
+    if (options === void 0) {
+      options = {};
+    }
+    var fc = { type: "FeatureCollection" };
+    if (options.id) {
+      fc.id = options.id;
+    }
+    if (options.bbox) {
+      fc.bbox = options.bbox;
+    }
+    fc.features = features;
+    return fc;
+  }
+  exports.featureCollection = featureCollection2;
+  function multiLineString(coordinates2, properties, options) {
+    if (options === void 0) {
+      options = {};
+    }
+    var geom = {
+      type: "MultiLineString",
+      coordinates: coordinates2
+    };
+    return feature2(geom, properties, options);
+  }
+  exports.multiLineString = multiLineString;
+  function multiPoint(coordinates2, properties, options) {
+    if (options === void 0) {
+      options = {};
+    }
+    var geom = {
+      type: "MultiPoint",
+      coordinates: coordinates2
+    };
+    return feature2(geom, properties, options);
+  }
+  exports.multiPoint = multiPoint;
+  function multiPolygon(coordinates2, properties, options) {
+    if (options === void 0) {
+      options = {};
+    }
+    var geom = {
+      type: "MultiPolygon",
+      coordinates: coordinates2
+    };
+    return feature2(geom, properties, options);
+  }
+  exports.multiPolygon = multiPolygon;
+  function geometryCollection(geometries, properties, options) {
+    if (options === void 0) {
+      options = {};
+    }
+    var geom = {
+      type: "GeometryCollection",
+      geometries
+    };
+    return feature2(geom, properties, options);
+  }
+  exports.geometryCollection = geometryCollection;
+  function round(num, precision) {
+    if (precision === void 0) {
+      precision = 0;
+    }
+    if (precision && !(precision >= 0)) {
+      throw new Error("precision must be a positive number");
+    }
+    var multiplier = Math.pow(10, precision || 0);
+    return Math.round(num * multiplier) / multiplier;
+  }
+  exports.round = round;
+  function radiansToLength(radians, units) {
+    if (units === void 0) {
+      units = "kilometers";
+    }
+    var factor = exports.factors[units];
+    if (!factor) {
+      throw new Error(units + " units is invalid");
+    }
+    return radians * factor;
+  }
+  exports.radiansToLength = radiansToLength;
+  function lengthToRadians(distance, units) {
+    if (units === void 0) {
+      units = "kilometers";
+    }
+    var factor = exports.factors[units];
+    if (!factor) {
+      throw new Error(units + " units is invalid");
+    }
+    return distance / factor;
+  }
+  exports.lengthToRadians = lengthToRadians;
+  function lengthToDegrees(distance, units) {
+    return radiansToDegrees(lengthToRadians(distance, units));
+  }
+  exports.lengthToDegrees = lengthToDegrees;
+  function bearingToAzimuth(bearing) {
+    var angle = bearing % 360;
+    if (angle < 0) {
+      angle += 360;
+    }
+    return angle;
+  }
+  exports.bearingToAzimuth = bearingToAzimuth;
+  function radiansToDegrees(radians) {
+    var degrees = radians % (2 * Math.PI);
+    return degrees * 180 / Math.PI;
+  }
+  exports.radiansToDegrees = radiansToDegrees;
+  function degreesToRadians(degrees) {
+    var radians = degrees % 360;
+    return radians * Math.PI / 180;
+  }
+  exports.degreesToRadians = degreesToRadians;
+  function convertLength(length, originalUnit, finalUnit) {
+    if (originalUnit === void 0) {
+      originalUnit = "kilometers";
+    }
+    if (finalUnit === void 0) {
+      finalUnit = "kilometers";
+    }
+    if (!(length >= 0)) {
+      throw new Error("length must be a positive number");
+    }
+    return radiansToLength(lengthToRadians(length, originalUnit), finalUnit);
+  }
+  exports.convertLength = convertLength;
+  function convertArea(area, originalUnit, finalUnit) {
+    if (originalUnit === void 0) {
+      originalUnit = "meters";
+    }
+    if (finalUnit === void 0) {
+      finalUnit = "kilometers";
+    }
+    if (!(area >= 0)) {
+      throw new Error("area must be a positive number");
+    }
+    var startFactor = exports.areaFactors[originalUnit];
+    if (!startFactor) {
+      throw new Error("invalid original units");
+    }
+    var finalFactor = exports.areaFactors[finalUnit];
+    if (!finalFactor) {
+      throw new Error("invalid final units");
+    }
+    return area / startFactor * finalFactor;
+  }
+  exports.convertArea = convertArea;
+  function isNumber2(num) {
+    return !isNaN(num) && num !== null && !Array.isArray(num);
+  }
+  exports.isNumber = isNumber2;
+  function isObject2(input) {
+    return !!input && input.constructor === Object;
+  }
+  exports.isObject = isObject2;
+  function validateBBox(bbox2) {
+    if (!bbox2) {
+      throw new Error("bbox is required");
+    }
+    if (!Array.isArray(bbox2)) {
+      throw new Error("bbox must be an Array");
+    }
+    if (bbox2.length !== 4 && bbox2.length !== 6) {
+      throw new Error("bbox must be an Array of 4 or 6 numbers");
+    }
+    bbox2.forEach(function(num) {
+      if (!isNumber2(num)) {
+        throw new Error("bbox must only contain numbers");
+      }
+    });
+  }
+  exports.validateBBox = validateBBox;
+  function validateId(id) {
+    if (!id) {
+      throw new Error("id is required");
+    }
+    if (["string", "number"].indexOf(typeof id) === -1) {
+      throw new Error("id must be a number or a string");
+    }
+  }
+  exports.validateId = validateId;
+})(js);
 const require$$2 = /* @__PURE__ */ getAugmentedNamespace(es$1);
 const require$$3 = /* @__PURE__ */ getAugmentedNamespace(es);
 var rbush = rbush_minExports;
-var helpers = require$$1;
+var helpers = js;
 var meta = require$$2;
 var turfBBox = require$$3.default;
 var featureEach = meta.featureEach;
@@ -5291,33 +4951,33 @@ function lineIntersect(line1, line2) {
   var unique = {};
   var results = [];
   if (line1.type === "LineString") {
-    line1 = feature(line1);
+    line1 = feature$1(line1);
   }
   if (line2.type === "LineString") {
-    line2 = feature(line2);
+    line2 = feature$1(line2);
   }
   if (line1.type === "Feature" && line2.type === "Feature" && line1.geometry !== null && line2.geometry !== null && line1.geometry.type === "LineString" && line2.geometry.type === "LineString" && line1.geometry.coordinates.length === 2 && line2.geometry.coordinates.length === 2) {
-    var intersect2 = intersects$1(line1, line2);
-    if (intersect2) {
-      results.push(intersect2);
+    var intersect = intersects$1(line1, line2);
+    if (intersect) {
+      results.push(intersect);
     }
-    return featureCollection$1(results);
+    return featureCollection$2(results);
   }
   var tree = rbush$1();
   tree.load(lineSegment(line2));
   featureEach$1(lineSegment(line1), function(segment) {
     featureEach$1(tree.search(segment), function(match) {
-      var intersect3 = intersects$1(segment, match);
-      if (intersect3) {
-        var key = getCoords(intersect3).join(",");
+      var intersect2 = intersects$1(segment, match);
+      if (intersect2) {
+        var key = getCoords(intersect2).join(",");
         if (!unique[key]) {
           unique[key] = true;
-          results.push(intersect3);
+          results.push(intersect2);
         }
       }
     });
   });
-  return featureCollection$1(results);
+  return featureCollection$2(results);
 }
 function intersects$1(line1, line2) {
   var coords1 = getCoords(line1);
@@ -5354,824 +5014,96 @@ function intersects$1(line1, line2) {
   }
   return null;
 }
-/**
- * splaytree v3.1.2
- * Fast Splay tree for Node and browser
- *
- * @author Alexander Milevski <info@w8r.name>
- * @license MIT
- * @preserve
- */
-/*! *****************************************************************************
-Copyright (c) Microsoft Corporation. All rights reserved.
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use
-this file except in compliance with the License. You may obtain a copy of the
-License at http://www.apache.org/licenses/LICENSE-2.0
-
-THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
-WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
-MERCHANTABLITY OR NON-INFRINGEMENT.
-
-See the Apache Version 2.0 License for specific language governing permissions
-and limitations under the License.
-***************************************************************************** */
-function __generator(thisArg, body) {
-  var _23 = { label: 0, sent: function() {
-    if (t[0] & 1) throw t[1];
-    return t[1];
-  }, trys: [], ops: [] }, f, y, t, g2;
-  return g2 = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g2[Symbol.iterator] = function() {
-    return this;
-  }), g2;
-  function verb(n) {
-    return function(v2) {
-      return step([n, v2]);
-    };
-  }
-  function step(op) {
-    if (f) throw new TypeError("Generator is already executing.");
-    while (_23) try {
-      if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-      if (y = 0, t) op = [op[0] & 2, t.value];
-      switch (op[0]) {
-        case 0:
-        case 1:
-          t = op;
-          break;
-        case 4:
-          _23.label++;
-          return { value: op[1], done: false };
-        case 5:
-          _23.label++;
-          y = op[1];
-          op = [0];
-          continue;
-        case 7:
-          op = _23.ops.pop();
-          _23.trys.pop();
-          continue;
-        default:
-          if (!(t = _23.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
-            _23 = 0;
-            continue;
-          }
-          if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
-            _23.label = op[1];
-            break;
-          }
-          if (op[0] === 6 && _23.label < t[1]) {
-            _23.label = t[1];
-            t = op;
-            break;
-          }
-          if (t && _23.label < t[2]) {
-            _23.label = t[2];
-            _23.ops.push(op);
-            break;
-          }
-          if (t[2]) _23.ops.pop();
-          _23.trys.pop();
-          continue;
-      }
-      op = body.call(thisArg, _23);
-    } catch (e) {
-      op = [6, e];
-      y = 0;
-    } finally {
-      f = t = 0;
-    }
-    if (op[0] & 5) throw op[1];
-    return { value: op[0] ? op[1] : void 0, done: true };
-  }
-}
-var Node = (
-  /** @class */
-  /* @__PURE__ */ function() {
-    function Node2(key, data) {
-      this.next = null;
-      this.key = key;
-      this.data = data;
-      this.left = null;
-      this.right = null;
-    }
-    return Node2;
-  }()
-);
-function DEFAULT_COMPARE(a, b) {
-  return a > b ? 1 : a < b ? -1 : 0;
-}
-function splay(i, t, comparator) {
-  var N = new Node(null, null);
-  var l = N;
-  var r = N;
-  while (true) {
-    var cmp2 = comparator(i, t.key);
-    if (cmp2 < 0) {
-      if (t.left === null)
-        break;
-      if (comparator(i, t.left.key) < 0) {
-        var y = t.left;
-        t.left = y.right;
-        y.right = t;
-        t = y;
-        if (t.left === null)
-          break;
-      }
-      r.left = t;
-      r = t;
-      t = t.left;
-    } else if (cmp2 > 0) {
-      if (t.right === null)
-        break;
-      if (comparator(i, t.right.key) > 0) {
-        var y = t.right;
-        t.right = y.left;
-        y.left = t;
-        t = y;
-        if (t.right === null)
-          break;
-      }
-      l.right = t;
-      l = t;
-      t = t.right;
-    } else
-      break;
-  }
-  l.right = t.left;
-  r.left = t.right;
-  t.left = N.right;
-  t.right = N.left;
-  return t;
-}
-function insert(i, data, t, comparator) {
-  var node = new Node(i, data);
-  if (t === null) {
-    node.left = node.right = null;
-    return node;
-  }
-  t = splay(i, t, comparator);
-  var cmp2 = comparator(i, t.key);
-  if (cmp2 < 0) {
-    node.left = t.left;
-    node.right = t;
-    t.left = null;
-  } else if (cmp2 >= 0) {
-    node.right = t.right;
-    node.left = t;
-    t.right = null;
-  }
-  return node;
-}
-function split(key, v2, comparator) {
-  var left = null;
-  var right = null;
-  if (v2) {
-    v2 = splay(key, v2, comparator);
-    var cmp2 = comparator(v2.key, key);
-    if (cmp2 === 0) {
-      left = v2.left;
-      right = v2.right;
-    } else if (cmp2 < 0) {
-      right = v2.right;
-      v2.right = null;
-      left = v2;
-    } else {
-      left = v2.left;
-      v2.left = null;
-      right = v2;
-    }
-  }
-  return { left, right };
-}
-function merge(left, right, comparator) {
-  if (right === null)
-    return left;
-  if (left === null)
-    return right;
-  right = splay(left.key, right, comparator);
-  right.left = left;
-  return right;
-}
-function printRow(root2, prefix, isTail, out, printNode) {
-  if (root2) {
-    out("" + prefix + (isTail ? "└── " : "├── ") + printNode(root2) + "\n");
-    var indent = prefix + (isTail ? "    " : "│   ");
-    if (root2.left)
-      printRow(root2.left, indent, false, out, printNode);
-    if (root2.right)
-      printRow(root2.right, indent, true, out, printNode);
-  }
-}
-var Tree = (
-  /** @class */
-  function() {
-    function Tree2(comparator) {
-      if (comparator === void 0) {
-        comparator = DEFAULT_COMPARE;
-      }
-      this._root = null;
-      this._size = 0;
-      this._comparator = comparator;
-    }
-    Tree2.prototype.insert = function(key, data) {
-      this._size++;
-      return this._root = insert(key, data, this._root, this._comparator);
-    };
-    Tree2.prototype.add = function(key, data) {
-      var node = new Node(key, data);
-      if (this._root === null) {
-        node.left = node.right = null;
-        this._size++;
-        this._root = node;
-      }
-      var comparator = this._comparator;
-      var t = splay(key, this._root, comparator);
-      var cmp2 = comparator(key, t.key);
-      if (cmp2 === 0)
-        this._root = t;
-      else {
-        if (cmp2 < 0) {
-          node.left = t.left;
-          node.right = t;
-          t.left = null;
-        } else if (cmp2 > 0) {
-          node.right = t.right;
-          node.left = t;
-          t.right = null;
-        }
-        this._size++;
-        this._root = node;
-      }
-      return this._root;
-    };
-    Tree2.prototype.remove = function(key) {
-      this._root = this._remove(key, this._root, this._comparator);
-    };
-    Tree2.prototype._remove = function(i, t, comparator) {
-      var x;
-      if (t === null)
-        return null;
-      t = splay(i, t, comparator);
-      var cmp2 = comparator(i, t.key);
-      if (cmp2 === 0) {
-        if (t.left === null) {
-          x = t.right;
-        } else {
-          x = splay(i, t.left, comparator);
-          x.right = t.right;
-        }
-        this._size--;
-        return x;
-      }
-      return t;
-    };
-    Tree2.prototype.pop = function() {
-      var node = this._root;
-      if (node) {
-        while (node.left)
-          node = node.left;
-        this._root = splay(node.key, this._root, this._comparator);
-        this._root = this._remove(node.key, this._root, this._comparator);
-        return { key: node.key, data: node.data };
-      }
-      return null;
-    };
-    Tree2.prototype.findStatic = function(key) {
-      var current = this._root;
-      var compare = this._comparator;
-      while (current) {
-        var cmp2 = compare(key, current.key);
-        if (cmp2 === 0)
-          return current;
-        else if (cmp2 < 0)
-          current = current.left;
-        else
-          current = current.right;
-      }
-      return null;
-    };
-    Tree2.prototype.find = function(key) {
-      if (this._root) {
-        this._root = splay(key, this._root, this._comparator);
-        if (this._comparator(key, this._root.key) !== 0)
-          return null;
-      }
-      return this._root;
-    };
-    Tree2.prototype.contains = function(key) {
-      var current = this._root;
-      var compare = this._comparator;
-      while (current) {
-        var cmp2 = compare(key, current.key);
-        if (cmp2 === 0)
-          return true;
-        else if (cmp2 < 0)
-          current = current.left;
-        else
-          current = current.right;
-      }
-      return false;
-    };
-    Tree2.prototype.forEach = function(visitor, ctx) {
-      var current = this._root;
-      var Q = [];
-      var done = false;
-      while (!done) {
-        if (current !== null) {
-          Q.push(current);
-          current = current.left;
-        } else {
-          if (Q.length !== 0) {
-            current = Q.pop();
-            visitor.call(ctx, current);
-            current = current.right;
-          } else
-            done = true;
-        }
-      }
-      return this;
-    };
-    Tree2.prototype.range = function(low, high, fn, ctx) {
-      var Q = [];
-      var compare = this._comparator;
-      var node = this._root;
-      var cmp2;
-      while (Q.length !== 0 || node) {
-        if (node) {
-          Q.push(node);
-          node = node.left;
-        } else {
-          node = Q.pop();
-          cmp2 = compare(node.key, high);
-          if (cmp2 > 0) {
-            break;
-          } else if (compare(node.key, low) >= 0) {
-            if (fn.call(ctx, node))
-              return this;
-          }
-          node = node.right;
-        }
-      }
-      return this;
-    };
-    Tree2.prototype.keys = function() {
-      var keys2 = [];
-      this.forEach(function(_a) {
-        var key = _a.key;
-        return keys2.push(key);
-      });
-      return keys2;
-    };
-    Tree2.prototype.values = function() {
-      var values = [];
-      this.forEach(function(_a) {
-        var data = _a.data;
-        return values.push(data);
-      });
-      return values;
-    };
-    Tree2.prototype.min = function() {
-      if (this._root)
-        return this.minNode(this._root).key;
-      return null;
-    };
-    Tree2.prototype.max = function() {
-      if (this._root)
-        return this.maxNode(this._root).key;
-      return null;
-    };
-    Tree2.prototype.minNode = function(t) {
-      if (t === void 0) {
-        t = this._root;
-      }
-      if (t)
-        while (t.left)
-          t = t.left;
-      return t;
-    };
-    Tree2.prototype.maxNode = function(t) {
-      if (t === void 0) {
-        t = this._root;
-      }
-      if (t)
-        while (t.right)
-          t = t.right;
-      return t;
-    };
-    Tree2.prototype.at = function(index2) {
-      var current = this._root;
-      var done = false;
-      var i = 0;
-      var Q = [];
-      while (!done) {
-        if (current) {
-          Q.push(current);
-          current = current.left;
-        } else {
-          if (Q.length > 0) {
-            current = Q.pop();
-            if (i === index2)
-              return current;
-            i++;
-            current = current.right;
-          } else
-            done = true;
-        }
-      }
-      return null;
-    };
-    Tree2.prototype.next = function(d) {
-      var root2 = this._root;
-      var successor = null;
-      if (d.right) {
-        successor = d.right;
-        while (successor.left)
-          successor = successor.left;
-        return successor;
-      }
-      var comparator = this._comparator;
-      while (root2) {
-        var cmp2 = comparator(d.key, root2.key);
-        if (cmp2 === 0)
-          break;
-        else if (cmp2 < 0) {
-          successor = root2;
-          root2 = root2.left;
-        } else
-          root2 = root2.right;
-      }
-      return successor;
-    };
-    Tree2.prototype.prev = function(d) {
-      var root2 = this._root;
-      var predecessor = null;
-      if (d.left !== null) {
-        predecessor = d.left;
-        while (predecessor.right)
-          predecessor = predecessor.right;
-        return predecessor;
-      }
-      var comparator = this._comparator;
-      while (root2) {
-        var cmp2 = comparator(d.key, root2.key);
-        if (cmp2 === 0)
-          break;
-        else if (cmp2 < 0)
-          root2 = root2.left;
-        else {
-          predecessor = root2;
-          root2 = root2.right;
-        }
-      }
-      return predecessor;
-    };
-    Tree2.prototype.clear = function() {
-      this._root = null;
-      this._size = 0;
-      return this;
-    };
-    Tree2.prototype.toList = function() {
-      return toList(this._root);
-    };
-    Tree2.prototype.load = function(keys2, values, presort) {
-      if (values === void 0) {
-        values = [];
-      }
-      if (presort === void 0) {
-        presort = false;
-      }
-      var size = keys2.length;
-      var comparator = this._comparator;
-      if (presort)
-        sort(keys2, values, 0, size - 1, comparator);
-      if (this._root === null) {
-        this._root = loadRecursive(keys2, values, 0, size);
-        this._size = size;
-      } else {
-        var mergedList = mergeLists(this.toList(), createList(keys2, values), comparator);
-        size = this._size + size;
-        this._root = sortedListToBST({ head: mergedList }, 0, size);
-      }
-      return this;
-    };
-    Tree2.prototype.isEmpty = function() {
-      return this._root === null;
-    };
-    Object.defineProperty(Tree2.prototype, "size", {
-      get: function() {
-        return this._size;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Object.defineProperty(Tree2.prototype, "root", {
-      get: function() {
-        return this._root;
-      },
-      enumerable: true,
-      configurable: true
-    });
-    Tree2.prototype.toString = function(printNode) {
-      if (printNode === void 0) {
-        printNode = function(n) {
-          return String(n.key);
-        };
-      }
-      var out = [];
-      printRow(this._root, "", true, function(v2) {
-        return out.push(v2);
-      }, printNode);
-      return out.join("");
-    };
-    Tree2.prototype.update = function(key, newKey, newData) {
-      var comparator = this._comparator;
-      var _a = split(key, this._root, comparator), left = _a.left, right = _a.right;
-      if (comparator(key, newKey) < 0) {
-        right = insert(newKey, newData, right, comparator);
-      } else {
-        left = insert(newKey, newData, left, comparator);
-      }
-      this._root = merge(left, right, comparator);
-    };
-    Tree2.prototype.split = function(key) {
-      return split(key, this._root, this._comparator);
-    };
-    Tree2.prototype[Symbol.iterator] = function() {
-      var current, Q, done;
-      return __generator(this, function(_a) {
-        switch (_a.label) {
-          case 0:
-            current = this._root;
-            Q = [];
-            done = false;
-            _a.label = 1;
-          case 1:
-            if (!!done) return [3, 6];
-            if (!(current !== null)) return [3, 2];
-            Q.push(current);
-            current = current.left;
-            return [3, 5];
-          case 2:
-            if (!(Q.length !== 0)) return [3, 4];
-            current = Q.pop();
-            return [4, current];
-          case 3:
-            _a.sent();
-            current = current.right;
-            return [3, 5];
-          case 4:
-            done = true;
-            _a.label = 5;
-          case 5:
-            return [3, 1];
-          case 6:
-            return [
-              2
-              /*return*/
-            ];
-        }
-      });
-    };
-    return Tree2;
-  }()
-);
-function loadRecursive(keys2, values, start, end) {
-  var size = end - start;
-  if (size > 0) {
-    var middle = start + Math.floor(size / 2);
-    var key = keys2[middle];
-    var data = values[middle];
-    var node = new Node(key, data);
-    node.left = loadRecursive(keys2, values, start, middle);
-    node.right = loadRecursive(keys2, values, middle + 1, end);
-    return node;
-  }
-  return null;
-}
-function createList(keys2, values) {
-  var head = new Node(null, null);
-  var p = head;
-  for (var i = 0; i < keys2.length; i++) {
-    p = p.next = new Node(keys2[i], values[i]);
-  }
-  p.next = null;
-  return head.next;
-}
-function toList(root2) {
-  var current = root2;
-  var Q = [];
-  var done = false;
-  var head = new Node(null, null);
-  var p = head;
-  while (!done) {
-    if (current) {
-      Q.push(current);
-      current = current.left;
-    } else {
-      if (Q.length > 0) {
-        current = p = p.next = Q.pop();
-        current = current.right;
-      } else
-        done = true;
-    }
-  }
-  p.next = null;
-  return head.next;
-}
-function sortedListToBST(list, start, end) {
-  var size = end - start;
-  if (size > 0) {
-    var middle = start + Math.floor(size / 2);
-    var left = sortedListToBST(list, start, middle);
-    var root2 = list.head;
-    root2.left = left;
-    list.head = list.head.next;
-    root2.right = sortedListToBST(list, middle + 1, end);
-    return root2;
-  }
-  return null;
-}
-function mergeLists(l1, l2, compare) {
-  var head = new Node(null, null);
-  var p = head;
-  var p1 = l1;
-  var p2 = l2;
-  while (p1 !== null && p2 !== null) {
-    if (compare(p1.key, p2.key) < 0) {
-      p.next = p1;
-      p1 = p1.next;
-    } else {
-      p.next = p2;
-      p2 = p2.next;
-    }
-    p = p.next;
-  }
-  if (p1 !== null) {
-    p.next = p1;
-  } else if (p2 !== null) {
-    p.next = p2;
-  }
-  return head.next;
-}
-function sort(keys2, values, left, right, compare) {
-  if (left >= right)
-    return;
-  var pivot = keys2[left + right >> 1];
-  var i = left - 1;
-  var j = right + 1;
-  while (true) {
-    do
-      i++;
-    while (compare(keys2[i], pivot) < 0);
-    do
-      j--;
-    while (compare(keys2[j], pivot) > 0);
-    if (i >= j)
-      break;
-    var tmp = keys2[i];
-    keys2[i] = keys2[j];
-    keys2[j] = tmp;
-    tmp = values[i];
-    values[i] = values[j];
-    values[j] = tmp;
-  }
-  sort(keys2, values, left, j, compare);
-  sort(keys2, values, j + 1, right, compare);
-}
-const epsilon$1 = 11102230246251565e-32;
+const epsilon = 11102230246251565e-32;
 const splitter = 134217729;
-const resulterrbound = (3 + 8 * epsilon$1) * epsilon$1;
+const resulterrbound = (3 + 8 * epsilon) * epsilon;
 function sum(elen, e, flen, f, h) {
-  let Q, Qnew, hh, bvirt;
+  let Q2, Qnew, hh, bvirt;
   let enow = e[0];
   let fnow = f[0];
   let eindex = 0;
   let findex = 0;
   if (fnow > enow === fnow > -enow) {
-    Q = enow;
+    Q2 = enow;
     enow = e[++eindex];
   } else {
-    Q = fnow;
+    Q2 = fnow;
     fnow = f[++findex];
   }
   let hindex = 0;
   if (eindex < elen && findex < flen) {
     if (fnow > enow === fnow > -enow) {
-      Qnew = enow + Q;
-      hh = Q - (Qnew - enow);
+      Qnew = enow + Q2;
+      hh = Q2 - (Qnew - enow);
       enow = e[++eindex];
     } else {
-      Qnew = fnow + Q;
-      hh = Q - (Qnew - fnow);
+      Qnew = fnow + Q2;
+      hh = Q2 - (Qnew - fnow);
       fnow = f[++findex];
     }
-    Q = Qnew;
+    Q2 = Qnew;
     if (hh !== 0) {
       h[hindex++] = hh;
     }
     while (eindex < elen && findex < flen) {
       if (fnow > enow === fnow > -enow) {
-        Qnew = Q + enow;
-        bvirt = Qnew - Q;
-        hh = Q - (Qnew - bvirt) + (enow - bvirt);
+        Qnew = Q2 + enow;
+        bvirt = Qnew - Q2;
+        hh = Q2 - (Qnew - bvirt) + (enow - bvirt);
         enow = e[++eindex];
       } else {
-        Qnew = Q + fnow;
-        bvirt = Qnew - Q;
-        hh = Q - (Qnew - bvirt) + (fnow - bvirt);
+        Qnew = Q2 + fnow;
+        bvirt = Qnew - Q2;
+        hh = Q2 - (Qnew - bvirt) + (fnow - bvirt);
         fnow = f[++findex];
       }
-      Q = Qnew;
+      Q2 = Qnew;
       if (hh !== 0) {
         h[hindex++] = hh;
       }
     }
   }
   while (eindex < elen) {
-    Qnew = Q + enow;
-    bvirt = Qnew - Q;
-    hh = Q - (Qnew - bvirt) + (enow - bvirt);
+    Qnew = Q2 + enow;
+    bvirt = Qnew - Q2;
+    hh = Q2 - (Qnew - bvirt) + (enow - bvirt);
     enow = e[++eindex];
-    Q = Qnew;
+    Q2 = Qnew;
     if (hh !== 0) {
       h[hindex++] = hh;
     }
   }
   while (findex < flen) {
-    Qnew = Q + fnow;
-    bvirt = Qnew - Q;
-    hh = Q - (Qnew - bvirt) + (fnow - bvirt);
+    Qnew = Q2 + fnow;
+    bvirt = Qnew - Q2;
+    hh = Q2 - (Qnew - bvirt) + (fnow - bvirt);
     fnow = f[++findex];
-    Q = Qnew;
+    Q2 = Qnew;
     if (hh !== 0) {
       h[hindex++] = hh;
     }
   }
-  if (Q !== 0 || hindex === 0) {
-    h[hindex++] = Q;
-  }
-  return hindex;
-}
-function sum_three(alen, a, blen, b, clen, c, tmp, out) {
-  return sum(sum(alen, a, blen, b, tmp), tmp, clen, c, out);
-}
-function scale$2(elen, e, b, h) {
-  let Q, sum2, hh, product1, product0;
-  let bvirt, c, ahi, alo, bhi, blo;
-  c = splitter * b;
-  bhi = c - (c - b);
-  blo = b - bhi;
-  let enow = e[0];
-  Q = enow * b;
-  c = splitter * enow;
-  ahi = c - (c - enow);
-  alo = enow - ahi;
-  hh = alo * blo - (Q - ahi * bhi - alo * bhi - ahi * blo);
-  let hindex = 0;
-  if (hh !== 0) {
-    h[hindex++] = hh;
-  }
-  for (let i = 1; i < elen; i++) {
-    enow = e[i];
-    product1 = enow * b;
-    c = splitter * enow;
-    ahi = c - (c - enow);
-    alo = enow - ahi;
-    product0 = alo * blo - (product1 - ahi * bhi - alo * bhi - ahi * blo);
-    sum2 = Q + product0;
-    bvirt = sum2 - Q;
-    hh = Q - (sum2 - bvirt) + (product0 - bvirt);
-    if (hh !== 0) {
-      h[hindex++] = hh;
-    }
-    Q = product1 + sum2;
-    hh = sum2 - (Q - product1);
-    if (hh !== 0) {
-      h[hindex++] = hh;
-    }
-  }
-  if (Q !== 0 || hindex === 0) {
-    h[hindex++] = Q;
+  if (Q2 !== 0 || hindex === 0) {
+    h[hindex++] = Q2;
   }
   return hindex;
 }
 function estimate(elen, e) {
-  let Q = e[0];
-  for (let i = 1; i < elen; i++) Q += e[i];
-  return Q;
+  let Q2 = e[0];
+  for (let i = 1; i < elen; i++) Q2 += e[i];
+  return Q2;
 }
 function vec(n) {
   return new Float64Array(n);
 }
-const ccwerrboundA = (3 + 16 * epsilon$1) * epsilon$1;
-const ccwerrboundB = (2 + 12 * epsilon$1) * epsilon$1;
-const ccwerrboundC = (9 + 64 * epsilon$1) * epsilon$1 * epsilon$1;
-const B = vec(4);
+const ccwerrboundA = (3 + 16 * epsilon) * epsilon;
+const ccwerrboundB = (2 + 12 * epsilon) * epsilon;
+const ccwerrboundC = (9 + 64 * epsilon) * epsilon * epsilon;
+const B$1 = vec(4);
 const C1 = vec(8);
 const C2 = vec(12);
-const D = vec(16);
-const u$1 = vec(4);
+const D$1 = vec(16);
+const u = vec(4);
 function orient2dadapt(ax, ay, bx, by, cx, cy, detsum) {
   let acxtail, acytail, bcxtail, bcytail;
   let bvirt, c, ahi, alo, bhi, blo, _i, _j, _0, s1, s0, t1, t0, u3;
@@ -6197,18 +5129,18 @@ function orient2dadapt(ax, ay, bx, by, cx, cy, detsum) {
   t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
   _i = s0 - t0;
   bvirt = s0 - _i;
-  B[0] = s0 - (_i + bvirt) + (bvirt - t0);
+  B$1[0] = s0 - (_i + bvirt) + (bvirt - t0);
   _j = s1 + _i;
   bvirt = _j - s1;
   _0 = s1 - (_j - bvirt) + (_i - bvirt);
   _i = _0 - t1;
   bvirt = _0 - _i;
-  B[1] = _0 - (_i + bvirt) + (bvirt - t1);
+  B$1[1] = _0 - (_i + bvirt) + (bvirt - t1);
   u3 = _j + _i;
   bvirt = u3 - _j;
-  B[2] = _j - (u3 - bvirt) + (_i - bvirt);
-  B[3] = u3;
-  let det = estimate(4, B);
+  B$1[2] = _j - (u3 - bvirt) + (_i - bvirt);
+  B$1[3] = u3;
+  let det = estimate(4, B$1);
   let errbound = ccwerrboundB * detsum;
   if (det >= errbound || -det >= errbound) {
     return det;
@@ -6245,18 +5177,18 @@ function orient2dadapt(ax, ay, bx, by, cx, cy, detsum) {
   t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
   _i = s0 - t0;
   bvirt = s0 - _i;
-  u$1[0] = s0 - (_i + bvirt) + (bvirt - t0);
+  u[0] = s0 - (_i + bvirt) + (bvirt - t0);
   _j = s1 + _i;
   bvirt = _j - s1;
   _0 = s1 - (_j - bvirt) + (_i - bvirt);
   _i = _0 - t1;
   bvirt = _0 - _i;
-  u$1[1] = _0 - (_i + bvirt) + (bvirt - t1);
+  u[1] = _0 - (_i + bvirt) + (bvirt - t1);
   u3 = _j + _i;
   bvirt = u3 - _j;
-  u$1[2] = _j - (u3 - bvirt) + (_i - bvirt);
-  u$1[3] = u3;
-  const C1len = sum(4, B, 4, u$1, C1);
+  u[2] = _j - (u3 - bvirt) + (_i - bvirt);
+  u[3] = u3;
+  const C1len = sum(4, B$1, 4, u, C1);
   s1 = acx * bcytail;
   c = splitter * acx;
   ahi = c - (c - acx);
@@ -6275,18 +5207,18 @@ function orient2dadapt(ax, ay, bx, by, cx, cy, detsum) {
   t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
   _i = s0 - t0;
   bvirt = s0 - _i;
-  u$1[0] = s0 - (_i + bvirt) + (bvirt - t0);
+  u[0] = s0 - (_i + bvirt) + (bvirt - t0);
   _j = s1 + _i;
   bvirt = _j - s1;
   _0 = s1 - (_j - bvirt) + (_i - bvirt);
   _i = _0 - t1;
   bvirt = _0 - _i;
-  u$1[1] = _0 - (_i + bvirt) + (bvirt - t1);
+  u[1] = _0 - (_i + bvirt) + (bvirt - t1);
   u3 = _j + _i;
   bvirt = u3 - _j;
-  u$1[2] = _j - (u3 - bvirt) + (_i - bvirt);
-  u$1[3] = u3;
-  const C2len = sum(C1len, C1, 4, u$1, C2);
+  u[2] = _j - (u3 - bvirt) + (_i - bvirt);
+  u[3] = u3;
+  const C2len = sum(C1len, C1, 4, u, C2);
   s1 = acxtail * bcytail;
   c = splitter * acxtail;
   ahi = c - (c - acxtail);
@@ -6305,19 +5237,19 @@ function orient2dadapt(ax, ay, bx, by, cx, cy, detsum) {
   t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
   _i = s0 - t0;
   bvirt = s0 - _i;
-  u$1[0] = s0 - (_i + bvirt) + (bvirt - t0);
+  u[0] = s0 - (_i + bvirt) + (bvirt - t0);
   _j = s1 + _i;
   bvirt = _j - s1;
   _0 = s1 - (_j - bvirt) + (_i - bvirt);
   _i = _0 - t1;
   bvirt = _0 - _i;
-  u$1[1] = _0 - (_i + bvirt) + (bvirt - t1);
+  u[1] = _0 - (_i + bvirt) + (bvirt - t1);
   u3 = _j + _i;
   bvirt = u3 - _j;
-  u$1[2] = _j - (u3 - bvirt) + (_i - bvirt);
-  u$1[3] = u3;
-  const Dlen = sum(C2len, C2, 4, u$1, D);
-  return D[Dlen - 1];
+  u[2] = _j - (u3 - bvirt) + (_i - bvirt);
+  u[3] = u3;
+  const Dlen = sum(C2len, C2, 4, u, D$1);
+  return D$1[Dlen - 1];
 }
 function orient2d(ax, ay, bx, by, cx, cy) {
   const detleft = (ay - cy) * (bx - cx);
@@ -6326,2024 +5258,6 @@ function orient2d(ax, ay, bx, by, cx, cy) {
   const detsum = Math.abs(detleft + detright);
   if (Math.abs(det) >= ccwerrboundA * detsum) return det;
   return -orient2dadapt(ax, ay, bx, by, cx, cy, detsum);
-}
-const iccerrboundA = (10 + 96 * epsilon$1) * epsilon$1;
-const iccerrboundB = (4 + 48 * epsilon$1) * epsilon$1;
-const iccerrboundC = (44 + 576 * epsilon$1) * epsilon$1 * epsilon$1;
-const bc = vec(4);
-const ca = vec(4);
-const ab = vec(4);
-const aa = vec(4);
-const bb = vec(4);
-const cc = vec(4);
-const u = vec(4);
-const v = vec(4);
-const axtbc = vec(8);
-const aytbc = vec(8);
-const bxtca = vec(8);
-const bytca = vec(8);
-const cxtab = vec(8);
-const cytab = vec(8);
-const abt = vec(8);
-const bct = vec(8);
-const cat = vec(8);
-const abtt = vec(4);
-const bctt = vec(4);
-const catt = vec(4);
-const _82 = vec(8);
-const _162 = vec(16);
-const _16b = vec(16);
-const _16c = vec(16);
-const _32 = vec(32);
-const _32b = vec(32);
-const _48 = vec(48);
-const _64 = vec(64);
-let fin = vec(1152);
-let fin2 = vec(1152);
-function finadd(finlen, a, alen) {
-  finlen = sum(finlen, fin, a, alen, fin2);
-  const tmp = fin;
-  fin = fin2;
-  fin2 = tmp;
-  return finlen;
-}
-function incircleadapt(ax, ay, bx, by, cx, cy, dx, dy, permanent) {
-  let finlen;
-  let adxtail, bdxtail, cdxtail, adytail, bdytail, cdytail;
-  let axtbclen, aytbclen, bxtcalen, bytcalen, cxtablen, cytablen;
-  let abtlen, bctlen, catlen;
-  let abttlen, bcttlen, cattlen;
-  let n1, n0;
-  let bvirt, c, ahi, alo, bhi, blo, _i, _j, _0, s1, s0, t1, t0, u3;
-  const adx = ax - dx;
-  const bdx = bx - dx;
-  const cdx = cx - dx;
-  const ady = ay - dy;
-  const bdy = by - dy;
-  const cdy = cy - dy;
-  s1 = bdx * cdy;
-  c = splitter * bdx;
-  ahi = c - (c - bdx);
-  alo = bdx - ahi;
-  c = splitter * cdy;
-  bhi = c - (c - cdy);
-  blo = cdy - bhi;
-  s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
-  t1 = cdx * bdy;
-  c = splitter * cdx;
-  ahi = c - (c - cdx);
-  alo = cdx - ahi;
-  c = splitter * bdy;
-  bhi = c - (c - bdy);
-  blo = bdy - bhi;
-  t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
-  _i = s0 - t0;
-  bvirt = s0 - _i;
-  bc[0] = s0 - (_i + bvirt) + (bvirt - t0);
-  _j = s1 + _i;
-  bvirt = _j - s1;
-  _0 = s1 - (_j - bvirt) + (_i - bvirt);
-  _i = _0 - t1;
-  bvirt = _0 - _i;
-  bc[1] = _0 - (_i + bvirt) + (bvirt - t1);
-  u3 = _j + _i;
-  bvirt = u3 - _j;
-  bc[2] = _j - (u3 - bvirt) + (_i - bvirt);
-  bc[3] = u3;
-  s1 = cdx * ady;
-  c = splitter * cdx;
-  ahi = c - (c - cdx);
-  alo = cdx - ahi;
-  c = splitter * ady;
-  bhi = c - (c - ady);
-  blo = ady - bhi;
-  s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
-  t1 = adx * cdy;
-  c = splitter * adx;
-  ahi = c - (c - adx);
-  alo = adx - ahi;
-  c = splitter * cdy;
-  bhi = c - (c - cdy);
-  blo = cdy - bhi;
-  t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
-  _i = s0 - t0;
-  bvirt = s0 - _i;
-  ca[0] = s0 - (_i + bvirt) + (bvirt - t0);
-  _j = s1 + _i;
-  bvirt = _j - s1;
-  _0 = s1 - (_j - bvirt) + (_i - bvirt);
-  _i = _0 - t1;
-  bvirt = _0 - _i;
-  ca[1] = _0 - (_i + bvirt) + (bvirt - t1);
-  u3 = _j + _i;
-  bvirt = u3 - _j;
-  ca[2] = _j - (u3 - bvirt) + (_i - bvirt);
-  ca[3] = u3;
-  s1 = adx * bdy;
-  c = splitter * adx;
-  ahi = c - (c - adx);
-  alo = adx - ahi;
-  c = splitter * bdy;
-  bhi = c - (c - bdy);
-  blo = bdy - bhi;
-  s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
-  t1 = bdx * ady;
-  c = splitter * bdx;
-  ahi = c - (c - bdx);
-  alo = bdx - ahi;
-  c = splitter * ady;
-  bhi = c - (c - ady);
-  blo = ady - bhi;
-  t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
-  _i = s0 - t0;
-  bvirt = s0 - _i;
-  ab[0] = s0 - (_i + bvirt) + (bvirt - t0);
-  _j = s1 + _i;
-  bvirt = _j - s1;
-  _0 = s1 - (_j - bvirt) + (_i - bvirt);
-  _i = _0 - t1;
-  bvirt = _0 - _i;
-  ab[1] = _0 - (_i + bvirt) + (bvirt - t1);
-  u3 = _j + _i;
-  bvirt = u3 - _j;
-  ab[2] = _j - (u3 - bvirt) + (_i - bvirt);
-  ab[3] = u3;
-  finlen = sum(
-    sum(
-      sum(
-        scale$2(scale$2(4, bc, adx, _82), _82, adx, _162),
-        _162,
-        scale$2(scale$2(4, bc, ady, _82), _82, ady, _16b),
-        _16b,
-        _32
-      ),
-      _32,
-      sum(
-        scale$2(scale$2(4, ca, bdx, _82), _82, bdx, _162),
-        _162,
-        scale$2(scale$2(4, ca, bdy, _82), _82, bdy, _16b),
-        _16b,
-        _32b
-      ),
-      _32b,
-      _64
-    ),
-    _64,
-    sum(
-      scale$2(scale$2(4, ab, cdx, _82), _82, cdx, _162),
-      _162,
-      scale$2(scale$2(4, ab, cdy, _82), _82, cdy, _16b),
-      _16b,
-      _32
-    ),
-    _32,
-    fin
-  );
-  let det = estimate(finlen, fin);
-  let errbound = iccerrboundB * permanent;
-  if (det >= errbound || -det >= errbound) {
-    return det;
-  }
-  bvirt = ax - adx;
-  adxtail = ax - (adx + bvirt) + (bvirt - dx);
-  bvirt = ay - ady;
-  adytail = ay - (ady + bvirt) + (bvirt - dy);
-  bvirt = bx - bdx;
-  bdxtail = bx - (bdx + bvirt) + (bvirt - dx);
-  bvirt = by - bdy;
-  bdytail = by - (bdy + bvirt) + (bvirt - dy);
-  bvirt = cx - cdx;
-  cdxtail = cx - (cdx + bvirt) + (bvirt - dx);
-  bvirt = cy - cdy;
-  cdytail = cy - (cdy + bvirt) + (bvirt - dy);
-  if (adxtail === 0 && bdxtail === 0 && cdxtail === 0 && adytail === 0 && bdytail === 0 && cdytail === 0) {
-    return det;
-  }
-  errbound = iccerrboundC * permanent + resulterrbound * Math.abs(det);
-  det += (adx * adx + ady * ady) * (bdx * cdytail + cdy * bdxtail - (bdy * cdxtail + cdx * bdytail)) + 2 * (adx * adxtail + ady * adytail) * (bdx * cdy - bdy * cdx) + ((bdx * bdx + bdy * bdy) * (cdx * adytail + ady * cdxtail - (cdy * adxtail + adx * cdytail)) + 2 * (bdx * bdxtail + bdy * bdytail) * (cdx * ady - cdy * adx)) + ((cdx * cdx + cdy * cdy) * (adx * bdytail + bdy * adxtail - (ady * bdxtail + bdx * adytail)) + 2 * (cdx * cdxtail + cdy * cdytail) * (adx * bdy - ady * bdx));
-  if (det >= errbound || -det >= errbound) {
-    return det;
-  }
-  if (bdxtail !== 0 || bdytail !== 0 || cdxtail !== 0 || cdytail !== 0) {
-    s1 = adx * adx;
-    c = splitter * adx;
-    ahi = c - (c - adx);
-    alo = adx - ahi;
-    s0 = alo * alo - (s1 - ahi * ahi - (ahi + ahi) * alo);
-    t1 = ady * ady;
-    c = splitter * ady;
-    ahi = c - (c - ady);
-    alo = ady - ahi;
-    t0 = alo * alo - (t1 - ahi * ahi - (ahi + ahi) * alo);
-    _i = s0 + t0;
-    bvirt = _i - s0;
-    aa[0] = s0 - (_i - bvirt) + (t0 - bvirt);
-    _j = s1 + _i;
-    bvirt = _j - s1;
-    _0 = s1 - (_j - bvirt) + (_i - bvirt);
-    _i = _0 + t1;
-    bvirt = _i - _0;
-    aa[1] = _0 - (_i - bvirt) + (t1 - bvirt);
-    u3 = _j + _i;
-    bvirt = u3 - _j;
-    aa[2] = _j - (u3 - bvirt) + (_i - bvirt);
-    aa[3] = u3;
-  }
-  if (cdxtail !== 0 || cdytail !== 0 || adxtail !== 0 || adytail !== 0) {
-    s1 = bdx * bdx;
-    c = splitter * bdx;
-    ahi = c - (c - bdx);
-    alo = bdx - ahi;
-    s0 = alo * alo - (s1 - ahi * ahi - (ahi + ahi) * alo);
-    t1 = bdy * bdy;
-    c = splitter * bdy;
-    ahi = c - (c - bdy);
-    alo = bdy - ahi;
-    t0 = alo * alo - (t1 - ahi * ahi - (ahi + ahi) * alo);
-    _i = s0 + t0;
-    bvirt = _i - s0;
-    bb[0] = s0 - (_i - bvirt) + (t0 - bvirt);
-    _j = s1 + _i;
-    bvirt = _j - s1;
-    _0 = s1 - (_j - bvirt) + (_i - bvirt);
-    _i = _0 + t1;
-    bvirt = _i - _0;
-    bb[1] = _0 - (_i - bvirt) + (t1 - bvirt);
-    u3 = _j + _i;
-    bvirt = u3 - _j;
-    bb[2] = _j - (u3 - bvirt) + (_i - bvirt);
-    bb[3] = u3;
-  }
-  if (adxtail !== 0 || adytail !== 0 || bdxtail !== 0 || bdytail !== 0) {
-    s1 = cdx * cdx;
-    c = splitter * cdx;
-    ahi = c - (c - cdx);
-    alo = cdx - ahi;
-    s0 = alo * alo - (s1 - ahi * ahi - (ahi + ahi) * alo);
-    t1 = cdy * cdy;
-    c = splitter * cdy;
-    ahi = c - (c - cdy);
-    alo = cdy - ahi;
-    t0 = alo * alo - (t1 - ahi * ahi - (ahi + ahi) * alo);
-    _i = s0 + t0;
-    bvirt = _i - s0;
-    cc[0] = s0 - (_i - bvirt) + (t0 - bvirt);
-    _j = s1 + _i;
-    bvirt = _j - s1;
-    _0 = s1 - (_j - bvirt) + (_i - bvirt);
-    _i = _0 + t1;
-    bvirt = _i - _0;
-    cc[1] = _0 - (_i - bvirt) + (t1 - bvirt);
-    u3 = _j + _i;
-    bvirt = u3 - _j;
-    cc[2] = _j - (u3 - bvirt) + (_i - bvirt);
-    cc[3] = u3;
-  }
-  if (adxtail !== 0) {
-    axtbclen = scale$2(4, bc, adxtail, axtbc);
-    finlen = finadd(finlen, sum_three(
-      scale$2(axtbclen, axtbc, 2 * adx, _162),
-      _162,
-      scale$2(scale$2(4, cc, adxtail, _82), _82, bdy, _16b),
-      _16b,
-      scale$2(scale$2(4, bb, adxtail, _82), _82, -cdy, _16c),
-      _16c,
-      _32,
-      _48
-    ), _48);
-  }
-  if (adytail !== 0) {
-    aytbclen = scale$2(4, bc, adytail, aytbc);
-    finlen = finadd(finlen, sum_three(
-      scale$2(aytbclen, aytbc, 2 * ady, _162),
-      _162,
-      scale$2(scale$2(4, bb, adytail, _82), _82, cdx, _16b),
-      _16b,
-      scale$2(scale$2(4, cc, adytail, _82), _82, -bdx, _16c),
-      _16c,
-      _32,
-      _48
-    ), _48);
-  }
-  if (bdxtail !== 0) {
-    bxtcalen = scale$2(4, ca, bdxtail, bxtca);
-    finlen = finadd(finlen, sum_three(
-      scale$2(bxtcalen, bxtca, 2 * bdx, _162),
-      _162,
-      scale$2(scale$2(4, aa, bdxtail, _82), _82, cdy, _16b),
-      _16b,
-      scale$2(scale$2(4, cc, bdxtail, _82), _82, -ady, _16c),
-      _16c,
-      _32,
-      _48
-    ), _48);
-  }
-  if (bdytail !== 0) {
-    bytcalen = scale$2(4, ca, bdytail, bytca);
-    finlen = finadd(finlen, sum_three(
-      scale$2(bytcalen, bytca, 2 * bdy, _162),
-      _162,
-      scale$2(scale$2(4, cc, bdytail, _82), _82, adx, _16b),
-      _16b,
-      scale$2(scale$2(4, aa, bdytail, _82), _82, -cdx, _16c),
-      _16c,
-      _32,
-      _48
-    ), _48);
-  }
-  if (cdxtail !== 0) {
-    cxtablen = scale$2(4, ab, cdxtail, cxtab);
-    finlen = finadd(finlen, sum_three(
-      scale$2(cxtablen, cxtab, 2 * cdx, _162),
-      _162,
-      scale$2(scale$2(4, bb, cdxtail, _82), _82, ady, _16b),
-      _16b,
-      scale$2(scale$2(4, aa, cdxtail, _82), _82, -bdy, _16c),
-      _16c,
-      _32,
-      _48
-    ), _48);
-  }
-  if (cdytail !== 0) {
-    cytablen = scale$2(4, ab, cdytail, cytab);
-    finlen = finadd(finlen, sum_three(
-      scale$2(cytablen, cytab, 2 * cdy, _162),
-      _162,
-      scale$2(scale$2(4, aa, cdytail, _82), _82, bdx, _16b),
-      _16b,
-      scale$2(scale$2(4, bb, cdytail, _82), _82, -adx, _16c),
-      _16c,
-      _32,
-      _48
-    ), _48);
-  }
-  if (adxtail !== 0 || adytail !== 0) {
-    if (bdxtail !== 0 || bdytail !== 0 || cdxtail !== 0 || cdytail !== 0) {
-      s1 = bdxtail * cdy;
-      c = splitter * bdxtail;
-      ahi = c - (c - bdxtail);
-      alo = bdxtail - ahi;
-      c = splitter * cdy;
-      bhi = c - (c - cdy);
-      blo = cdy - bhi;
-      s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
-      t1 = bdx * cdytail;
-      c = splitter * bdx;
-      ahi = c - (c - bdx);
-      alo = bdx - ahi;
-      c = splitter * cdytail;
-      bhi = c - (c - cdytail);
-      blo = cdytail - bhi;
-      t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
-      _i = s0 + t0;
-      bvirt = _i - s0;
-      u[0] = s0 - (_i - bvirt) + (t0 - bvirt);
-      _j = s1 + _i;
-      bvirt = _j - s1;
-      _0 = s1 - (_j - bvirt) + (_i - bvirt);
-      _i = _0 + t1;
-      bvirt = _i - _0;
-      u[1] = _0 - (_i - bvirt) + (t1 - bvirt);
-      u3 = _j + _i;
-      bvirt = u3 - _j;
-      u[2] = _j - (u3 - bvirt) + (_i - bvirt);
-      u[3] = u3;
-      s1 = cdxtail * -bdy;
-      c = splitter * cdxtail;
-      ahi = c - (c - cdxtail);
-      alo = cdxtail - ahi;
-      c = splitter * -bdy;
-      bhi = c - (c - -bdy);
-      blo = -bdy - bhi;
-      s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
-      t1 = cdx * -bdytail;
-      c = splitter * cdx;
-      ahi = c - (c - cdx);
-      alo = cdx - ahi;
-      c = splitter * -bdytail;
-      bhi = c - (c - -bdytail);
-      blo = -bdytail - bhi;
-      t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
-      _i = s0 + t0;
-      bvirt = _i - s0;
-      v[0] = s0 - (_i - bvirt) + (t0 - bvirt);
-      _j = s1 + _i;
-      bvirt = _j - s1;
-      _0 = s1 - (_j - bvirt) + (_i - bvirt);
-      _i = _0 + t1;
-      bvirt = _i - _0;
-      v[1] = _0 - (_i - bvirt) + (t1 - bvirt);
-      u3 = _j + _i;
-      bvirt = u3 - _j;
-      v[2] = _j - (u3 - bvirt) + (_i - bvirt);
-      v[3] = u3;
-      bctlen = sum(4, u, 4, v, bct);
-      s1 = bdxtail * cdytail;
-      c = splitter * bdxtail;
-      ahi = c - (c - bdxtail);
-      alo = bdxtail - ahi;
-      c = splitter * cdytail;
-      bhi = c - (c - cdytail);
-      blo = cdytail - bhi;
-      s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
-      t1 = cdxtail * bdytail;
-      c = splitter * cdxtail;
-      ahi = c - (c - cdxtail);
-      alo = cdxtail - ahi;
-      c = splitter * bdytail;
-      bhi = c - (c - bdytail);
-      blo = bdytail - bhi;
-      t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
-      _i = s0 - t0;
-      bvirt = s0 - _i;
-      bctt[0] = s0 - (_i + bvirt) + (bvirt - t0);
-      _j = s1 + _i;
-      bvirt = _j - s1;
-      _0 = s1 - (_j - bvirt) + (_i - bvirt);
-      _i = _0 - t1;
-      bvirt = _0 - _i;
-      bctt[1] = _0 - (_i + bvirt) + (bvirt - t1);
-      u3 = _j + _i;
-      bvirt = u3 - _j;
-      bctt[2] = _j - (u3 - bvirt) + (_i - bvirt);
-      bctt[3] = u3;
-      bcttlen = 4;
-    } else {
-      bct[0] = 0;
-      bctlen = 1;
-      bctt[0] = 0;
-      bcttlen = 1;
-    }
-    if (adxtail !== 0) {
-      const len = scale$2(bctlen, bct, adxtail, _16c);
-      finlen = finadd(finlen, sum(
-        scale$2(axtbclen, axtbc, adxtail, _162),
-        _162,
-        scale$2(len, _16c, 2 * adx, _32),
-        _32,
-        _48
-      ), _48);
-      const len2 = scale$2(bcttlen, bctt, adxtail, _82);
-      finlen = finadd(finlen, sum_three(
-        scale$2(len2, _82, 2 * adx, _162),
-        _162,
-        scale$2(len2, _82, adxtail, _16b),
-        _16b,
-        scale$2(len, _16c, adxtail, _32),
-        _32,
-        _32b,
-        _64
-      ), _64);
-      if (bdytail !== 0) {
-        finlen = finadd(finlen, scale$2(scale$2(4, cc, adxtail, _82), _82, bdytail, _162), _162);
-      }
-      if (cdytail !== 0) {
-        finlen = finadd(finlen, scale$2(scale$2(4, bb, -adxtail, _82), _82, cdytail, _162), _162);
-      }
-    }
-    if (adytail !== 0) {
-      const len = scale$2(bctlen, bct, adytail, _16c);
-      finlen = finadd(finlen, sum(
-        scale$2(aytbclen, aytbc, adytail, _162),
-        _162,
-        scale$2(len, _16c, 2 * ady, _32),
-        _32,
-        _48
-      ), _48);
-      const len2 = scale$2(bcttlen, bctt, adytail, _82);
-      finlen = finadd(finlen, sum_three(
-        scale$2(len2, _82, 2 * ady, _162),
-        _162,
-        scale$2(len2, _82, adytail, _16b),
-        _16b,
-        scale$2(len, _16c, adytail, _32),
-        _32,
-        _32b,
-        _64
-      ), _64);
-    }
-  }
-  if (bdxtail !== 0 || bdytail !== 0) {
-    if (cdxtail !== 0 || cdytail !== 0 || adxtail !== 0 || adytail !== 0) {
-      s1 = cdxtail * ady;
-      c = splitter * cdxtail;
-      ahi = c - (c - cdxtail);
-      alo = cdxtail - ahi;
-      c = splitter * ady;
-      bhi = c - (c - ady);
-      blo = ady - bhi;
-      s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
-      t1 = cdx * adytail;
-      c = splitter * cdx;
-      ahi = c - (c - cdx);
-      alo = cdx - ahi;
-      c = splitter * adytail;
-      bhi = c - (c - adytail);
-      blo = adytail - bhi;
-      t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
-      _i = s0 + t0;
-      bvirt = _i - s0;
-      u[0] = s0 - (_i - bvirt) + (t0 - bvirt);
-      _j = s1 + _i;
-      bvirt = _j - s1;
-      _0 = s1 - (_j - bvirt) + (_i - bvirt);
-      _i = _0 + t1;
-      bvirt = _i - _0;
-      u[1] = _0 - (_i - bvirt) + (t1 - bvirt);
-      u3 = _j + _i;
-      bvirt = u3 - _j;
-      u[2] = _j - (u3 - bvirt) + (_i - bvirt);
-      u[3] = u3;
-      n1 = -cdy;
-      n0 = -cdytail;
-      s1 = adxtail * n1;
-      c = splitter * adxtail;
-      ahi = c - (c - adxtail);
-      alo = adxtail - ahi;
-      c = splitter * n1;
-      bhi = c - (c - n1);
-      blo = n1 - bhi;
-      s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
-      t1 = adx * n0;
-      c = splitter * adx;
-      ahi = c - (c - adx);
-      alo = adx - ahi;
-      c = splitter * n0;
-      bhi = c - (c - n0);
-      blo = n0 - bhi;
-      t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
-      _i = s0 + t0;
-      bvirt = _i - s0;
-      v[0] = s0 - (_i - bvirt) + (t0 - bvirt);
-      _j = s1 + _i;
-      bvirt = _j - s1;
-      _0 = s1 - (_j - bvirt) + (_i - bvirt);
-      _i = _0 + t1;
-      bvirt = _i - _0;
-      v[1] = _0 - (_i - bvirt) + (t1 - bvirt);
-      u3 = _j + _i;
-      bvirt = u3 - _j;
-      v[2] = _j - (u3 - bvirt) + (_i - bvirt);
-      v[3] = u3;
-      catlen = sum(4, u, 4, v, cat);
-      s1 = cdxtail * adytail;
-      c = splitter * cdxtail;
-      ahi = c - (c - cdxtail);
-      alo = cdxtail - ahi;
-      c = splitter * adytail;
-      bhi = c - (c - adytail);
-      blo = adytail - bhi;
-      s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
-      t1 = adxtail * cdytail;
-      c = splitter * adxtail;
-      ahi = c - (c - adxtail);
-      alo = adxtail - ahi;
-      c = splitter * cdytail;
-      bhi = c - (c - cdytail);
-      blo = cdytail - bhi;
-      t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
-      _i = s0 - t0;
-      bvirt = s0 - _i;
-      catt[0] = s0 - (_i + bvirt) + (bvirt - t0);
-      _j = s1 + _i;
-      bvirt = _j - s1;
-      _0 = s1 - (_j - bvirt) + (_i - bvirt);
-      _i = _0 - t1;
-      bvirt = _0 - _i;
-      catt[1] = _0 - (_i + bvirt) + (bvirt - t1);
-      u3 = _j + _i;
-      bvirt = u3 - _j;
-      catt[2] = _j - (u3 - bvirt) + (_i - bvirt);
-      catt[3] = u3;
-      cattlen = 4;
-    } else {
-      cat[0] = 0;
-      catlen = 1;
-      catt[0] = 0;
-      cattlen = 1;
-    }
-    if (bdxtail !== 0) {
-      const len = scale$2(catlen, cat, bdxtail, _16c);
-      finlen = finadd(finlen, sum(
-        scale$2(bxtcalen, bxtca, bdxtail, _162),
-        _162,
-        scale$2(len, _16c, 2 * bdx, _32),
-        _32,
-        _48
-      ), _48);
-      const len2 = scale$2(cattlen, catt, bdxtail, _82);
-      finlen = finadd(finlen, sum_three(
-        scale$2(len2, _82, 2 * bdx, _162),
-        _162,
-        scale$2(len2, _82, bdxtail, _16b),
-        _16b,
-        scale$2(len, _16c, bdxtail, _32),
-        _32,
-        _32b,
-        _64
-      ), _64);
-      if (cdytail !== 0) {
-        finlen = finadd(finlen, scale$2(scale$2(4, aa, bdxtail, _82), _82, cdytail, _162), _162);
-      }
-      if (adytail !== 0) {
-        finlen = finadd(finlen, scale$2(scale$2(4, cc, -bdxtail, _82), _82, adytail, _162), _162);
-      }
-    }
-    if (bdytail !== 0) {
-      const len = scale$2(catlen, cat, bdytail, _16c);
-      finlen = finadd(finlen, sum(
-        scale$2(bytcalen, bytca, bdytail, _162),
-        _162,
-        scale$2(len, _16c, 2 * bdy, _32),
-        _32,
-        _48
-      ), _48);
-      const len2 = scale$2(cattlen, catt, bdytail, _82);
-      finlen = finadd(finlen, sum_three(
-        scale$2(len2, _82, 2 * bdy, _162),
-        _162,
-        scale$2(len2, _82, bdytail, _16b),
-        _16b,
-        scale$2(len, _16c, bdytail, _32),
-        _32,
-        _32b,
-        _64
-      ), _64);
-    }
-  }
-  if (cdxtail !== 0 || cdytail !== 0) {
-    if (adxtail !== 0 || adytail !== 0 || bdxtail !== 0 || bdytail !== 0) {
-      s1 = adxtail * bdy;
-      c = splitter * adxtail;
-      ahi = c - (c - adxtail);
-      alo = adxtail - ahi;
-      c = splitter * bdy;
-      bhi = c - (c - bdy);
-      blo = bdy - bhi;
-      s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
-      t1 = adx * bdytail;
-      c = splitter * adx;
-      ahi = c - (c - adx);
-      alo = adx - ahi;
-      c = splitter * bdytail;
-      bhi = c - (c - bdytail);
-      blo = bdytail - bhi;
-      t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
-      _i = s0 + t0;
-      bvirt = _i - s0;
-      u[0] = s0 - (_i - bvirt) + (t0 - bvirt);
-      _j = s1 + _i;
-      bvirt = _j - s1;
-      _0 = s1 - (_j - bvirt) + (_i - bvirt);
-      _i = _0 + t1;
-      bvirt = _i - _0;
-      u[1] = _0 - (_i - bvirt) + (t1 - bvirt);
-      u3 = _j + _i;
-      bvirt = u3 - _j;
-      u[2] = _j - (u3 - bvirt) + (_i - bvirt);
-      u[3] = u3;
-      n1 = -ady;
-      n0 = -adytail;
-      s1 = bdxtail * n1;
-      c = splitter * bdxtail;
-      ahi = c - (c - bdxtail);
-      alo = bdxtail - ahi;
-      c = splitter * n1;
-      bhi = c - (c - n1);
-      blo = n1 - bhi;
-      s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
-      t1 = bdx * n0;
-      c = splitter * bdx;
-      ahi = c - (c - bdx);
-      alo = bdx - ahi;
-      c = splitter * n0;
-      bhi = c - (c - n0);
-      blo = n0 - bhi;
-      t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
-      _i = s0 + t0;
-      bvirt = _i - s0;
-      v[0] = s0 - (_i - bvirt) + (t0 - bvirt);
-      _j = s1 + _i;
-      bvirt = _j - s1;
-      _0 = s1 - (_j - bvirt) + (_i - bvirt);
-      _i = _0 + t1;
-      bvirt = _i - _0;
-      v[1] = _0 - (_i - bvirt) + (t1 - bvirt);
-      u3 = _j + _i;
-      bvirt = u3 - _j;
-      v[2] = _j - (u3 - bvirt) + (_i - bvirt);
-      v[3] = u3;
-      abtlen = sum(4, u, 4, v, abt);
-      s1 = adxtail * bdytail;
-      c = splitter * adxtail;
-      ahi = c - (c - adxtail);
-      alo = adxtail - ahi;
-      c = splitter * bdytail;
-      bhi = c - (c - bdytail);
-      blo = bdytail - bhi;
-      s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
-      t1 = bdxtail * adytail;
-      c = splitter * bdxtail;
-      ahi = c - (c - bdxtail);
-      alo = bdxtail - ahi;
-      c = splitter * adytail;
-      bhi = c - (c - adytail);
-      blo = adytail - bhi;
-      t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
-      _i = s0 - t0;
-      bvirt = s0 - _i;
-      abtt[0] = s0 - (_i + bvirt) + (bvirt - t0);
-      _j = s1 + _i;
-      bvirt = _j - s1;
-      _0 = s1 - (_j - bvirt) + (_i - bvirt);
-      _i = _0 - t1;
-      bvirt = _0 - _i;
-      abtt[1] = _0 - (_i + bvirt) + (bvirt - t1);
-      u3 = _j + _i;
-      bvirt = u3 - _j;
-      abtt[2] = _j - (u3 - bvirt) + (_i - bvirt);
-      abtt[3] = u3;
-      abttlen = 4;
-    } else {
-      abt[0] = 0;
-      abtlen = 1;
-      abtt[0] = 0;
-      abttlen = 1;
-    }
-    if (cdxtail !== 0) {
-      const len = scale$2(abtlen, abt, cdxtail, _16c);
-      finlen = finadd(finlen, sum(
-        scale$2(cxtablen, cxtab, cdxtail, _162),
-        _162,
-        scale$2(len, _16c, 2 * cdx, _32),
-        _32,
-        _48
-      ), _48);
-      const len2 = scale$2(abttlen, abtt, cdxtail, _82);
-      finlen = finadd(finlen, sum_three(
-        scale$2(len2, _82, 2 * cdx, _162),
-        _162,
-        scale$2(len2, _82, cdxtail, _16b),
-        _16b,
-        scale$2(len, _16c, cdxtail, _32),
-        _32,
-        _32b,
-        _64
-      ), _64);
-      if (adytail !== 0) {
-        finlen = finadd(finlen, scale$2(scale$2(4, bb, cdxtail, _82), _82, adytail, _162), _162);
-      }
-      if (bdytail !== 0) {
-        finlen = finadd(finlen, scale$2(scale$2(4, aa, -cdxtail, _82), _82, bdytail, _162), _162);
-      }
-    }
-    if (cdytail !== 0) {
-      const len = scale$2(abtlen, abt, cdytail, _16c);
-      finlen = finadd(finlen, sum(
-        scale$2(cytablen, cytab, cdytail, _162),
-        _162,
-        scale$2(len, _16c, 2 * cdy, _32),
-        _32,
-        _48
-      ), _48);
-      const len2 = scale$2(abttlen, abtt, cdytail, _82);
-      finlen = finadd(finlen, sum_three(
-        scale$2(len2, _82, 2 * cdy, _162),
-        _162,
-        scale$2(len2, _82, cdytail, _16b),
-        _16b,
-        scale$2(len, _16c, cdytail, _32),
-        _32,
-        _32b,
-        _64
-      ), _64);
-    }
-  }
-  return fin[finlen - 1];
-}
-function incircle(ax, ay, bx, by, cx, cy, dx, dy) {
-  const adx = ax - dx;
-  const bdx = bx - dx;
-  const cdx = cx - dx;
-  const ady = ay - dy;
-  const bdy = by - dy;
-  const cdy = cy - dy;
-  const bdxcdy = bdx * cdy;
-  const cdxbdy = cdx * bdy;
-  const alift = adx * adx + ady * ady;
-  const cdxady = cdx * ady;
-  const adxcdy = adx * cdy;
-  const blift = bdx * bdx + bdy * bdy;
-  const adxbdy = adx * bdy;
-  const bdxady = bdx * ady;
-  const clift = cdx * cdx + cdy * cdy;
-  const det = alift * (bdxcdy - cdxbdy) + blift * (cdxady - adxcdy) + clift * (adxbdy - bdxady);
-  const permanent = (Math.abs(bdxcdy) + Math.abs(cdxbdy)) * alift + (Math.abs(cdxady) + Math.abs(adxcdy)) * blift + (Math.abs(adxbdy) + Math.abs(bdxady)) * clift;
-  const errbound = iccerrboundA * permanent;
-  if (det > errbound || -det > errbound) {
-    return det;
-  }
-  return incircleadapt(ax, ay, bx, by, cx, cy, dx, dy, permanent);
-}
-const isInBbox = (bbox2, point2) => {
-  return bbox2.ll.x <= point2.x && point2.x <= bbox2.ur.x && bbox2.ll.y <= point2.y && point2.y <= bbox2.ur.y;
-};
-const getBboxOverlap = (b1, b2) => {
-  if (b2.ur.x < b1.ll.x || b1.ur.x < b2.ll.x || b2.ur.y < b1.ll.y || b1.ur.y < b2.ll.y) return null;
-  const lowerX = b1.ll.x < b2.ll.x ? b2.ll.x : b1.ll.x;
-  const upperX = b1.ur.x < b2.ur.x ? b1.ur.x : b2.ur.x;
-  const lowerY = b1.ll.y < b2.ll.y ? b2.ll.y : b1.ll.y;
-  const upperY = b1.ur.y < b2.ur.y ? b1.ur.y : b2.ur.y;
-  return {
-    ll: {
-      x: lowerX,
-      y: lowerY
-    },
-    ur: {
-      x: upperX,
-      y: upperY
-    }
-  };
-};
-let epsilon = Number.EPSILON;
-if (epsilon === void 0) epsilon = Math.pow(2, -52);
-const EPSILON_SQ = epsilon * epsilon;
-const cmp = (a, b) => {
-  if (-epsilon < a && a < epsilon) {
-    if (-epsilon < b && b < epsilon) {
-      return 0;
-    }
-  }
-  const ab2 = a - b;
-  if (ab2 * ab2 < EPSILON_SQ * a * b) {
-    return 0;
-  }
-  return a < b ? -1 : 1;
-};
-class PtRounder {
-  constructor() {
-    this.reset();
-  }
-  reset() {
-    this.xRounder = new CoordRounder();
-    this.yRounder = new CoordRounder();
-  }
-  round(x, y) {
-    return {
-      x: this.xRounder.round(x),
-      y: this.yRounder.round(y)
-    };
-  }
-}
-class CoordRounder {
-  constructor() {
-    this.tree = new Tree();
-    this.round(0);
-  }
-  // Note: this can rounds input values backwards or forwards.
-  //       You might ask, why not restrict this to just rounding
-  //       forwards? Wouldn't that allow left endpoints to always
-  //       remain left endpoints during splitting (never change to
-  //       right). No - it wouldn't, because we snap intersections
-  //       to endpoints (to establish independence from the segment
-  //       angle for t-intersections).
-  round(coord) {
-    const node = this.tree.add(coord);
-    const prevNode = this.tree.prev(node);
-    if (prevNode !== null && cmp(node.key, prevNode.key) === 0) {
-      this.tree.remove(coord);
-      return prevNode.key;
-    }
-    const nextNode = this.tree.next(node);
-    if (nextNode !== null && cmp(node.key, nextNode.key) === 0) {
-      this.tree.remove(coord);
-      return nextNode.key;
-    }
-    return coord;
-  }
-}
-const rounder = new PtRounder();
-const crossProduct = (a, b) => a.x * b.y - a.y * b.x;
-const dotProduct = (a, b) => a.x * b.x + a.y * b.y;
-const compareVectorAngles = (basePt, endPt1, endPt2) => {
-  const res = orient2d(basePt.x, basePt.y, endPt1.x, endPt1.y, endPt2.x, endPt2.y);
-  if (res > 0) return -1;
-  if (res < 0) return 1;
-  return 0;
-};
-const length = (v2) => Math.sqrt(dotProduct(v2, v2));
-const sineOfAngle = (pShared, pBase, pAngle) => {
-  const vBase = {
-    x: pBase.x - pShared.x,
-    y: pBase.y - pShared.y
-  };
-  const vAngle = {
-    x: pAngle.x - pShared.x,
-    y: pAngle.y - pShared.y
-  };
-  return crossProduct(vAngle, vBase) / length(vAngle) / length(vBase);
-};
-const cosineOfAngle = (pShared, pBase, pAngle) => {
-  const vBase = {
-    x: pBase.x - pShared.x,
-    y: pBase.y - pShared.y
-  };
-  const vAngle = {
-    x: pAngle.x - pShared.x,
-    y: pAngle.y - pShared.y
-  };
-  return dotProduct(vAngle, vBase) / length(vAngle) / length(vBase);
-};
-const horizontalIntersection = (pt, v2, y) => {
-  if (v2.y === 0) return null;
-  return {
-    x: pt.x + v2.x / v2.y * (y - pt.y),
-    y
-  };
-};
-const verticalIntersection = (pt, v2, x) => {
-  if (v2.x === 0) return null;
-  return {
-    x,
-    y: pt.y + v2.y / v2.x * (x - pt.x)
-  };
-};
-const intersection$1 = (pt1, v1, pt2, v2) => {
-  if (v1.x === 0) return verticalIntersection(pt2, v2, pt1.x);
-  if (v2.x === 0) return verticalIntersection(pt1, v1, pt2.x);
-  if (v1.y === 0) return horizontalIntersection(pt2, v2, pt1.y);
-  if (v2.y === 0) return horizontalIntersection(pt1, v1, pt2.y);
-  const kross = crossProduct(v1, v2);
-  if (kross == 0) return null;
-  const ve = {
-    x: pt2.x - pt1.x,
-    y: pt2.y - pt1.y
-  };
-  const d1 = crossProduct(ve, v1) / kross;
-  const d2 = crossProduct(ve, v2) / kross;
-  const x1 = pt1.x + d2 * v1.x, x2 = pt2.x + d1 * v2.x;
-  const y1 = pt1.y + d2 * v1.y, y2 = pt2.y + d1 * v2.y;
-  const x = (x1 + x2) / 2;
-  const y = (y1 + y2) / 2;
-  return {
-    x,
-    y
-  };
-};
-class SweepEvent {
-  // for ordering sweep events in the sweep event queue
-  static compare(a, b) {
-    const ptCmp = SweepEvent.comparePoints(a.point, b.point);
-    if (ptCmp !== 0) return ptCmp;
-    if (a.point !== b.point) a.link(b);
-    if (a.isLeft !== b.isLeft) return a.isLeft ? 1 : -1;
-    return Segment.compare(a.segment, b.segment);
-  }
-  // for ordering points in sweep line order
-  static comparePoints(aPt, bPt) {
-    if (aPt.x < bPt.x) return -1;
-    if (aPt.x > bPt.x) return 1;
-    if (aPt.y < bPt.y) return -1;
-    if (aPt.y > bPt.y) return 1;
-    return 0;
-  }
-  // Warning: 'point' input will be modified and re-used (for performance)
-  constructor(point2, isLeft) {
-    if (point2.events === void 0) point2.events = [this];
-    else point2.events.push(this);
-    this.point = point2;
-    this.isLeft = isLeft;
-  }
-  link(other) {
-    if (other.point === this.point) {
-      throw new Error("Tried to link already linked events");
-    }
-    const otherEvents = other.point.events;
-    for (let i = 0, iMax = otherEvents.length; i < iMax; i++) {
-      const evt = otherEvents[i];
-      this.point.events.push(evt);
-      evt.point = this.point;
-    }
-    this.checkForConsuming();
-  }
-  /* Do a pass over our linked events and check to see if any pair
-   * of segments match, and should be consumed. */
-  checkForConsuming() {
-    const numEvents = this.point.events.length;
-    for (let i = 0; i < numEvents; i++) {
-      const evt1 = this.point.events[i];
-      if (evt1.segment.consumedBy !== void 0) continue;
-      for (let j = i + 1; j < numEvents; j++) {
-        const evt2 = this.point.events[j];
-        if (evt2.consumedBy !== void 0) continue;
-        if (evt1.otherSE.point.events !== evt2.otherSE.point.events) continue;
-        evt1.segment.consume(evt2.segment);
-      }
-    }
-  }
-  getAvailableLinkedEvents() {
-    const events = [];
-    for (let i = 0, iMax = this.point.events.length; i < iMax; i++) {
-      const evt = this.point.events[i];
-      if (evt !== this && !evt.segment.ringOut && evt.segment.isInResult()) {
-        events.push(evt);
-      }
-    }
-    return events;
-  }
-  /**
-   * Returns a comparator function for sorting linked events that will
-   * favor the event that will give us the smallest left-side angle.
-   * All ring construction starts as low as possible heading to the right,
-   * so by always turning left as sharp as possible we'll get polygons
-   * without uncessary loops & holes.
-   *
-   * The comparator function has a compute cache such that it avoids
-   * re-computing already-computed values.
-   */
-  getLeftmostComparator(baseEvent) {
-    const cache2 = /* @__PURE__ */ new Map();
-    const fillCache = (linkedEvent) => {
-      const nextEvent = linkedEvent.otherSE;
-      cache2.set(linkedEvent, {
-        sine: sineOfAngle(this.point, baseEvent.point, nextEvent.point),
-        cosine: cosineOfAngle(this.point, baseEvent.point, nextEvent.point)
-      });
-    };
-    return (a, b) => {
-      if (!cache2.has(a)) fillCache(a);
-      if (!cache2.has(b)) fillCache(b);
-      const {
-        sine: asine,
-        cosine: acosine
-      } = cache2.get(a);
-      const {
-        sine: bsine,
-        cosine: bcosine
-      } = cache2.get(b);
-      if (asine >= 0 && bsine >= 0) {
-        if (acosine < bcosine) return 1;
-        if (acosine > bcosine) return -1;
-        return 0;
-      }
-      if (asine < 0 && bsine < 0) {
-        if (acosine < bcosine) return -1;
-        if (acosine > bcosine) return 1;
-        return 0;
-      }
-      if (bsine < asine) return -1;
-      if (bsine > asine) return 1;
-      return 0;
-    };
-  }
-}
-let segmentId = 0;
-class Segment {
-  /* This compare() function is for ordering segments in the sweep
-   * line tree, and does so according to the following criteria:
-   *
-   * Consider the vertical line that lies an infinestimal step to the
-   * right of the right-more of the two left endpoints of the input
-   * segments. Imagine slowly moving a point up from negative infinity
-   * in the increasing y direction. Which of the two segments will that
-   * point intersect first? That segment comes 'before' the other one.
-   *
-   * If neither segment would be intersected by such a line, (if one
-   * or more of the segments are vertical) then the line to be considered
-   * is directly on the right-more of the two left inputs.
-   */
-  static compare(a, b) {
-    const alx = a.leftSE.point.x;
-    const blx = b.leftSE.point.x;
-    const arx = a.rightSE.point.x;
-    const brx = b.rightSE.point.x;
-    if (brx < alx) return 1;
-    if (arx < blx) return -1;
-    const aly = a.leftSE.point.y;
-    const bly = b.leftSE.point.y;
-    const ary = a.rightSE.point.y;
-    const bry = b.rightSE.point.y;
-    if (alx < blx) {
-      if (bly < aly && bly < ary) return 1;
-      if (bly > aly && bly > ary) return -1;
-      const aCmpBLeft = a.comparePoint(b.leftSE.point);
-      if (aCmpBLeft < 0) return 1;
-      if (aCmpBLeft > 0) return -1;
-      const bCmpARight = b.comparePoint(a.rightSE.point);
-      if (bCmpARight !== 0) return bCmpARight;
-      return -1;
-    }
-    if (alx > blx) {
-      if (aly < bly && aly < bry) return -1;
-      if (aly > bly && aly > bry) return 1;
-      const bCmpALeft = b.comparePoint(a.leftSE.point);
-      if (bCmpALeft !== 0) return bCmpALeft;
-      const aCmpBRight = a.comparePoint(b.rightSE.point);
-      if (aCmpBRight < 0) return 1;
-      if (aCmpBRight > 0) return -1;
-      return 1;
-    }
-    if (aly < bly) return -1;
-    if (aly > bly) return 1;
-    if (arx < brx) {
-      const bCmpARight = b.comparePoint(a.rightSE.point);
-      if (bCmpARight !== 0) return bCmpARight;
-    }
-    if (arx > brx) {
-      const aCmpBRight = a.comparePoint(b.rightSE.point);
-      if (aCmpBRight < 0) return 1;
-      if (aCmpBRight > 0) return -1;
-    }
-    if (arx !== brx) {
-      const ay = ary - aly;
-      const ax = arx - alx;
-      const by = bry - bly;
-      const bx = brx - blx;
-      if (ay > ax && by < bx) return 1;
-      if (ay < ax && by > bx) return -1;
-    }
-    if (arx > brx) return 1;
-    if (arx < brx) return -1;
-    if (ary < bry) return -1;
-    if (ary > bry) return 1;
-    if (a.id < b.id) return -1;
-    if (a.id > b.id) return 1;
-    return 0;
-  }
-  /* Warning: a reference to ringWindings input will be stored,
-   *  and possibly will be later modified */
-  constructor(leftSE, rightSE, rings, windings) {
-    this.id = ++segmentId;
-    this.leftSE = leftSE;
-    leftSE.segment = this;
-    leftSE.otherSE = rightSE;
-    this.rightSE = rightSE;
-    rightSE.segment = this;
-    rightSE.otherSE = leftSE;
-    this.rings = rings;
-    this.windings = windings;
-  }
-  static fromRing(pt1, pt2, ring) {
-    let leftPt, rightPt, winding;
-    const cmpPts = SweepEvent.comparePoints(pt1, pt2);
-    if (cmpPts < 0) {
-      leftPt = pt1;
-      rightPt = pt2;
-      winding = 1;
-    } else if (cmpPts > 0) {
-      leftPt = pt2;
-      rightPt = pt1;
-      winding = -1;
-    } else throw new Error(`Tried to create degenerate segment at [${pt1.x}, ${pt1.y}]`);
-    const leftSE = new SweepEvent(leftPt, true);
-    const rightSE = new SweepEvent(rightPt, false);
-    return new Segment(leftSE, rightSE, [ring], [winding]);
-  }
-  /* When a segment is split, the rightSE is replaced with a new sweep event */
-  replaceRightSE(newRightSE) {
-    this.rightSE = newRightSE;
-    this.rightSE.segment = this;
-    this.rightSE.otherSE = this.leftSE;
-    this.leftSE.otherSE = this.rightSE;
-  }
-  bbox() {
-    const y1 = this.leftSE.point.y;
-    const y2 = this.rightSE.point.y;
-    return {
-      ll: {
-        x: this.leftSE.point.x,
-        y: y1 < y2 ? y1 : y2
-      },
-      ur: {
-        x: this.rightSE.point.x,
-        y: y1 > y2 ? y1 : y2
-      }
-    };
-  }
-  /* A vector from the left point to the right */
-  vector() {
-    return {
-      x: this.rightSE.point.x - this.leftSE.point.x,
-      y: this.rightSE.point.y - this.leftSE.point.y
-    };
-  }
-  isAnEndpoint(pt) {
-    return pt.x === this.leftSE.point.x && pt.y === this.leftSE.point.y || pt.x === this.rightSE.point.x && pt.y === this.rightSE.point.y;
-  }
-  /* Compare this segment with a point.
-   *
-   * A point P is considered to be colinear to a segment if there
-   * exists a distance D such that if we travel along the segment
-   * from one * endpoint towards the other a distance D, we find
-   * ourselves at point P.
-   *
-   * Return value indicates:
-   *
-   *   1: point lies above the segment (to the left of vertical)
-   *   0: point is colinear to segment
-   *  -1: point lies below the segment (to the right of vertical)
-   */
-  comparePoint(point2) {
-    if (this.isAnEndpoint(point2)) return 0;
-    const lPt = this.leftSE.point;
-    const rPt = this.rightSE.point;
-    const v2 = this.vector();
-    if (lPt.x === rPt.x) {
-      if (point2.x === lPt.x) return 0;
-      return point2.x < lPt.x ? 1 : -1;
-    }
-    const yDist = (point2.y - lPt.y) / v2.y;
-    const xFromYDist = lPt.x + yDist * v2.x;
-    if (point2.x === xFromYDist) return 0;
-    const xDist = (point2.x - lPt.x) / v2.x;
-    const yFromXDist = lPt.y + xDist * v2.y;
-    if (point2.y === yFromXDist) return 0;
-    return point2.y < yFromXDist ? -1 : 1;
-  }
-  /**
-   * Given another segment, returns the first non-trivial intersection
-   * between the two segments (in terms of sweep line ordering), if it exists.
-   *
-   * A 'non-trivial' intersection is one that will cause one or both of the
-   * segments to be split(). As such, 'trivial' vs. 'non-trivial' intersection:
-   *
-   *   * endpoint of segA with endpoint of segB --> trivial
-   *   * endpoint of segA with point along segB --> non-trivial
-   *   * endpoint of segB with point along segA --> non-trivial
-   *   * point along segA with point along segB --> non-trivial
-   *
-   * If no non-trivial intersection exists, return null
-   * Else, return null.
-   */
-  getIntersection(other) {
-    const tBbox = this.bbox();
-    const oBbox = other.bbox();
-    const bboxOverlap = getBboxOverlap(tBbox, oBbox);
-    if (bboxOverlap === null) return null;
-    const tlp = this.leftSE.point;
-    const trp = this.rightSE.point;
-    const olp = other.leftSE.point;
-    const orp = other.rightSE.point;
-    const touchesOtherLSE = isInBbox(tBbox, olp) && this.comparePoint(olp) === 0;
-    const touchesThisLSE = isInBbox(oBbox, tlp) && other.comparePoint(tlp) === 0;
-    const touchesOtherRSE = isInBbox(tBbox, orp) && this.comparePoint(orp) === 0;
-    const touchesThisRSE = isInBbox(oBbox, trp) && other.comparePoint(trp) === 0;
-    if (touchesThisLSE && touchesOtherLSE) {
-      if (touchesThisRSE && !touchesOtherRSE) return trp;
-      if (!touchesThisRSE && touchesOtherRSE) return orp;
-      return null;
-    }
-    if (touchesThisLSE) {
-      if (touchesOtherRSE) {
-        if (tlp.x === orp.x && tlp.y === orp.y) return null;
-      }
-      return tlp;
-    }
-    if (touchesOtherLSE) {
-      if (touchesThisRSE) {
-        if (trp.x === olp.x && trp.y === olp.y) return null;
-      }
-      return olp;
-    }
-    if (touchesThisRSE && touchesOtherRSE) return null;
-    if (touchesThisRSE) return trp;
-    if (touchesOtherRSE) return orp;
-    const pt = intersection$1(tlp, this.vector(), olp, other.vector());
-    if (pt === null) return null;
-    if (!isInBbox(bboxOverlap, pt)) return null;
-    return rounder.round(pt.x, pt.y);
-  }
-  /**
-   * Split the given segment into multiple segments on the given points.
-   *  * Each existing segment will retain its leftSE and a new rightSE will be
-   *    generated for it.
-   *  * A new segment will be generated which will adopt the original segment's
-   *    rightSE, and a new leftSE will be generated for it.
-   *  * If there are more than two points given to split on, new segments
-   *    in the middle will be generated with new leftSE and rightSE's.
-   *  * An array of the newly generated SweepEvents will be returned.
-   *
-   * Warning: input array of points is modified
-   */
-  split(point2) {
-    const newEvents = [];
-    const alreadyLinked = point2.events !== void 0;
-    const newLeftSE = new SweepEvent(point2, true);
-    const newRightSE = new SweepEvent(point2, false);
-    const oldRightSE = this.rightSE;
-    this.replaceRightSE(newRightSE);
-    newEvents.push(newRightSE);
-    newEvents.push(newLeftSE);
-    const newSeg = new Segment(newLeftSE, oldRightSE, this.rings.slice(), this.windings.slice());
-    if (SweepEvent.comparePoints(newSeg.leftSE.point, newSeg.rightSE.point) > 0) {
-      newSeg.swapEvents();
-    }
-    if (SweepEvent.comparePoints(this.leftSE.point, this.rightSE.point) > 0) {
-      this.swapEvents();
-    }
-    if (alreadyLinked) {
-      newLeftSE.checkForConsuming();
-      newRightSE.checkForConsuming();
-    }
-    return newEvents;
-  }
-  /* Swap which event is left and right */
-  swapEvents() {
-    const tmpEvt = this.rightSE;
-    this.rightSE = this.leftSE;
-    this.leftSE = tmpEvt;
-    this.leftSE.isLeft = true;
-    this.rightSE.isLeft = false;
-    for (let i = 0, iMax = this.windings.length; i < iMax; i++) {
-      this.windings[i] *= -1;
-    }
-  }
-  /* Consume another segment. We take their rings under our wing
-   * and mark them as consumed. Use for perfectly overlapping segments */
-  consume(other) {
-    let consumer = this;
-    let consumee = other;
-    while (consumer.consumedBy) consumer = consumer.consumedBy;
-    while (consumee.consumedBy) consumee = consumee.consumedBy;
-    const cmp2 = Segment.compare(consumer, consumee);
-    if (cmp2 === 0) return;
-    if (cmp2 > 0) {
-      const tmp = consumer;
-      consumer = consumee;
-      consumee = tmp;
-    }
-    if (consumer.prev === consumee) {
-      const tmp = consumer;
-      consumer = consumee;
-      consumee = tmp;
-    }
-    for (let i = 0, iMax = consumee.rings.length; i < iMax; i++) {
-      const ring = consumee.rings[i];
-      const winding = consumee.windings[i];
-      const index2 = consumer.rings.indexOf(ring);
-      if (index2 === -1) {
-        consumer.rings.push(ring);
-        consumer.windings.push(winding);
-      } else consumer.windings[index2] += winding;
-    }
-    consumee.rings = null;
-    consumee.windings = null;
-    consumee.consumedBy = consumer;
-    consumee.leftSE.consumedBy = consumer.leftSE;
-    consumee.rightSE.consumedBy = consumer.rightSE;
-  }
-  /* The first segment previous segment chain that is in the result */
-  prevInResult() {
-    if (this._prevInResult !== void 0) return this._prevInResult;
-    if (!this.prev) this._prevInResult = null;
-    else if (this.prev.isInResult()) this._prevInResult = this.prev;
-    else this._prevInResult = this.prev.prevInResult();
-    return this._prevInResult;
-  }
-  beforeState() {
-    if (this._beforeState !== void 0) return this._beforeState;
-    if (!this.prev) this._beforeState = {
-      rings: [],
-      windings: [],
-      multiPolys: []
-    };
-    else {
-      const seg = this.prev.consumedBy || this.prev;
-      this._beforeState = seg.afterState();
-    }
-    return this._beforeState;
-  }
-  afterState() {
-    if (this._afterState !== void 0) return this._afterState;
-    const beforeState = this.beforeState();
-    this._afterState = {
-      rings: beforeState.rings.slice(0),
-      windings: beforeState.windings.slice(0),
-      multiPolys: []
-    };
-    const ringsAfter = this._afterState.rings;
-    const windingsAfter = this._afterState.windings;
-    const mpsAfter = this._afterState.multiPolys;
-    for (let i = 0, iMax = this.rings.length; i < iMax; i++) {
-      const ring = this.rings[i];
-      const winding = this.windings[i];
-      const index2 = ringsAfter.indexOf(ring);
-      if (index2 === -1) {
-        ringsAfter.push(ring);
-        windingsAfter.push(winding);
-      } else windingsAfter[index2] += winding;
-    }
-    const polysAfter = [];
-    const polysExclude = [];
-    for (let i = 0, iMax = ringsAfter.length; i < iMax; i++) {
-      if (windingsAfter[i] === 0) continue;
-      const ring = ringsAfter[i];
-      const poly = ring.poly;
-      if (polysExclude.indexOf(poly) !== -1) continue;
-      if (ring.isExterior) polysAfter.push(poly);
-      else {
-        if (polysExclude.indexOf(poly) === -1) polysExclude.push(poly);
-        const index2 = polysAfter.indexOf(ring.poly);
-        if (index2 !== -1) polysAfter.splice(index2, 1);
-      }
-    }
-    for (let i = 0, iMax = polysAfter.length; i < iMax; i++) {
-      const mp = polysAfter[i].multiPoly;
-      if (mpsAfter.indexOf(mp) === -1) mpsAfter.push(mp);
-    }
-    return this._afterState;
-  }
-  /* Is this segment part of the final result? */
-  isInResult() {
-    if (this.consumedBy) return false;
-    if (this._isInResult !== void 0) return this._isInResult;
-    const mpsBefore = this.beforeState().multiPolys;
-    const mpsAfter = this.afterState().multiPolys;
-    switch (operation.type) {
-      case "union": {
-        const noBefores = mpsBefore.length === 0;
-        const noAfters = mpsAfter.length === 0;
-        this._isInResult = noBefores !== noAfters;
-        break;
-      }
-      case "intersection": {
-        let least;
-        let most;
-        if (mpsBefore.length < mpsAfter.length) {
-          least = mpsBefore.length;
-          most = mpsAfter.length;
-        } else {
-          least = mpsAfter.length;
-          most = mpsBefore.length;
-        }
-        this._isInResult = most === operation.numMultiPolys && least < most;
-        break;
-      }
-      case "xor": {
-        const diff = Math.abs(mpsBefore.length - mpsAfter.length);
-        this._isInResult = diff % 2 === 1;
-        break;
-      }
-      case "difference": {
-        const isJustSubject = (mps) => mps.length === 1 && mps[0].isSubject;
-        this._isInResult = isJustSubject(mpsBefore) !== isJustSubject(mpsAfter);
-        break;
-      }
-      default:
-        throw new Error(`Unrecognized operation type found ${operation.type}`);
-    }
-    return this._isInResult;
-  }
-}
-class RingIn {
-  constructor(geomRing, poly, isExterior) {
-    if (!Array.isArray(geomRing) || geomRing.length === 0) {
-      throw new Error("Input geometry is not a valid Polygon or MultiPolygon");
-    }
-    this.poly = poly;
-    this.isExterior = isExterior;
-    this.segments = [];
-    if (typeof geomRing[0][0] !== "number" || typeof geomRing[0][1] !== "number") {
-      throw new Error("Input geometry is not a valid Polygon or MultiPolygon");
-    }
-    const firstPoint = rounder.round(geomRing[0][0], geomRing[0][1]);
-    this.bbox = {
-      ll: {
-        x: firstPoint.x,
-        y: firstPoint.y
-      },
-      ur: {
-        x: firstPoint.x,
-        y: firstPoint.y
-      }
-    };
-    let prevPoint = firstPoint;
-    for (let i = 1, iMax = geomRing.length; i < iMax; i++) {
-      if (typeof geomRing[i][0] !== "number" || typeof geomRing[i][1] !== "number") {
-        throw new Error("Input geometry is not a valid Polygon or MultiPolygon");
-      }
-      let point2 = rounder.round(geomRing[i][0], geomRing[i][1]);
-      if (point2.x === prevPoint.x && point2.y === prevPoint.y) continue;
-      this.segments.push(Segment.fromRing(prevPoint, point2, this));
-      if (point2.x < this.bbox.ll.x) this.bbox.ll.x = point2.x;
-      if (point2.y < this.bbox.ll.y) this.bbox.ll.y = point2.y;
-      if (point2.x > this.bbox.ur.x) this.bbox.ur.x = point2.x;
-      if (point2.y > this.bbox.ur.y) this.bbox.ur.y = point2.y;
-      prevPoint = point2;
-    }
-    if (firstPoint.x !== prevPoint.x || firstPoint.y !== prevPoint.y) {
-      this.segments.push(Segment.fromRing(prevPoint, firstPoint, this));
-    }
-  }
-  getSweepEvents() {
-    const sweepEvents = [];
-    for (let i = 0, iMax = this.segments.length; i < iMax; i++) {
-      const segment = this.segments[i];
-      sweepEvents.push(segment.leftSE);
-      sweepEvents.push(segment.rightSE);
-    }
-    return sweepEvents;
-  }
-}
-class PolyIn {
-  constructor(geomPoly, multiPoly) {
-    if (!Array.isArray(geomPoly)) {
-      throw new Error("Input geometry is not a valid Polygon or MultiPolygon");
-    }
-    this.exteriorRing = new RingIn(geomPoly[0], this, true);
-    this.bbox = {
-      ll: {
-        x: this.exteriorRing.bbox.ll.x,
-        y: this.exteriorRing.bbox.ll.y
-      },
-      ur: {
-        x: this.exteriorRing.bbox.ur.x,
-        y: this.exteriorRing.bbox.ur.y
-      }
-    };
-    this.interiorRings = [];
-    for (let i = 1, iMax = geomPoly.length; i < iMax; i++) {
-      const ring = new RingIn(geomPoly[i], this, false);
-      if (ring.bbox.ll.x < this.bbox.ll.x) this.bbox.ll.x = ring.bbox.ll.x;
-      if (ring.bbox.ll.y < this.bbox.ll.y) this.bbox.ll.y = ring.bbox.ll.y;
-      if (ring.bbox.ur.x > this.bbox.ur.x) this.bbox.ur.x = ring.bbox.ur.x;
-      if (ring.bbox.ur.y > this.bbox.ur.y) this.bbox.ur.y = ring.bbox.ur.y;
-      this.interiorRings.push(ring);
-    }
-    this.multiPoly = multiPoly;
-  }
-  getSweepEvents() {
-    const sweepEvents = this.exteriorRing.getSweepEvents();
-    for (let i = 0, iMax = this.interiorRings.length; i < iMax; i++) {
-      const ringSweepEvents = this.interiorRings[i].getSweepEvents();
-      for (let j = 0, jMax = ringSweepEvents.length; j < jMax; j++) {
-        sweepEvents.push(ringSweepEvents[j]);
-      }
-    }
-    return sweepEvents;
-  }
-}
-class MultiPolyIn {
-  constructor(geom, isSubject) {
-    if (!Array.isArray(geom)) {
-      throw new Error("Input geometry is not a valid Polygon or MultiPolygon");
-    }
-    try {
-      if (typeof geom[0][0][0] === "number") geom = [geom];
-    } catch (ex) {
-    }
-    this.polys = [];
-    this.bbox = {
-      ll: {
-        x: Number.POSITIVE_INFINITY,
-        y: Number.POSITIVE_INFINITY
-      },
-      ur: {
-        x: Number.NEGATIVE_INFINITY,
-        y: Number.NEGATIVE_INFINITY
-      }
-    };
-    for (let i = 0, iMax = geom.length; i < iMax; i++) {
-      const poly = new PolyIn(geom[i], this);
-      if (poly.bbox.ll.x < this.bbox.ll.x) this.bbox.ll.x = poly.bbox.ll.x;
-      if (poly.bbox.ll.y < this.bbox.ll.y) this.bbox.ll.y = poly.bbox.ll.y;
-      if (poly.bbox.ur.x > this.bbox.ur.x) this.bbox.ur.x = poly.bbox.ur.x;
-      if (poly.bbox.ur.y > this.bbox.ur.y) this.bbox.ur.y = poly.bbox.ur.y;
-      this.polys.push(poly);
-    }
-    this.isSubject = isSubject;
-  }
-  getSweepEvents() {
-    const sweepEvents = [];
-    for (let i = 0, iMax = this.polys.length; i < iMax; i++) {
-      const polySweepEvents = this.polys[i].getSweepEvents();
-      for (let j = 0, jMax = polySweepEvents.length; j < jMax; j++) {
-        sweepEvents.push(polySweepEvents[j]);
-      }
-    }
-    return sweepEvents;
-  }
-}
-class RingOut {
-  /* Given the segments from the sweep line pass, compute & return a series
-   * of closed rings from all the segments marked to be part of the result */
-  static factory(allSegments) {
-    const ringsOut = [];
-    for (let i = 0, iMax = allSegments.length; i < iMax; i++) {
-      const segment = allSegments[i];
-      if (!segment.isInResult() || segment.ringOut) continue;
-      let prevEvent = null;
-      let event = segment.leftSE;
-      let nextEvent = segment.rightSE;
-      const events = [event];
-      const startingPoint = event.point;
-      const intersectionLEs = [];
-      while (true) {
-        prevEvent = event;
-        event = nextEvent;
-        events.push(event);
-        if (event.point === startingPoint) break;
-        while (true) {
-          const availableLEs = event.getAvailableLinkedEvents();
-          if (availableLEs.length === 0) {
-            const firstPt = events[0].point;
-            const lastPt = events[events.length - 1].point;
-            throw new Error(`Unable to complete output ring starting at [${firstPt.x}, ${firstPt.y}]. Last matching segment found ends at [${lastPt.x}, ${lastPt.y}].`);
-          }
-          if (availableLEs.length === 1) {
-            nextEvent = availableLEs[0].otherSE;
-            break;
-          }
-          let indexLE = null;
-          for (let j = 0, jMax = intersectionLEs.length; j < jMax; j++) {
-            if (intersectionLEs[j].point === event.point) {
-              indexLE = j;
-              break;
-            }
-          }
-          if (indexLE !== null) {
-            const intersectionLE = intersectionLEs.splice(indexLE)[0];
-            const ringEvents = events.splice(intersectionLE.index);
-            ringEvents.unshift(ringEvents[0].otherSE);
-            ringsOut.push(new RingOut(ringEvents.reverse()));
-            continue;
-          }
-          intersectionLEs.push({
-            index: events.length,
-            point: event.point
-          });
-          const comparator = event.getLeftmostComparator(prevEvent);
-          nextEvent = availableLEs.sort(comparator)[0].otherSE;
-          break;
-        }
-      }
-      ringsOut.push(new RingOut(events));
-    }
-    return ringsOut;
-  }
-  constructor(events) {
-    this.events = events;
-    for (let i = 0, iMax = events.length; i < iMax; i++) {
-      events[i].segment.ringOut = this;
-    }
-    this.poly = null;
-  }
-  getGeom() {
-    let prevPt = this.events[0].point;
-    const points2 = [prevPt];
-    for (let i = 1, iMax = this.events.length - 1; i < iMax; i++) {
-      const pt2 = this.events[i].point;
-      const nextPt2 = this.events[i + 1].point;
-      if (compareVectorAngles(pt2, prevPt, nextPt2) === 0) continue;
-      points2.push(pt2);
-      prevPt = pt2;
-    }
-    if (points2.length === 1) return null;
-    const pt = points2[0];
-    const nextPt = points2[1];
-    if (compareVectorAngles(pt, prevPt, nextPt) === 0) points2.shift();
-    points2.push(points2[0]);
-    const step = this.isExteriorRing() ? 1 : -1;
-    const iStart = this.isExteriorRing() ? 0 : points2.length - 1;
-    const iEnd = this.isExteriorRing() ? points2.length : -1;
-    const orderedPoints = [];
-    for (let i = iStart; i != iEnd; i += step) orderedPoints.push([points2[i].x, points2[i].y]);
-    return orderedPoints;
-  }
-  isExteriorRing() {
-    if (this._isExteriorRing === void 0) {
-      const enclosing = this.enclosingRing();
-      this._isExteriorRing = enclosing ? !enclosing.isExteriorRing() : true;
-    }
-    return this._isExteriorRing;
-  }
-  enclosingRing() {
-    if (this._enclosingRing === void 0) {
-      this._enclosingRing = this._calcEnclosingRing();
-    }
-    return this._enclosingRing;
-  }
-  /* Returns the ring that encloses this one, if any */
-  _calcEnclosingRing() {
-    let leftMostEvt = this.events[0];
-    for (let i = 1, iMax = this.events.length; i < iMax; i++) {
-      const evt = this.events[i];
-      if (SweepEvent.compare(leftMostEvt, evt) > 0) leftMostEvt = evt;
-    }
-    let prevSeg = leftMostEvt.segment.prevInResult();
-    let prevPrevSeg = prevSeg ? prevSeg.prevInResult() : null;
-    while (true) {
-      if (!prevSeg) return null;
-      if (!prevPrevSeg) return prevSeg.ringOut;
-      if (prevPrevSeg.ringOut !== prevSeg.ringOut) {
-        if (prevPrevSeg.ringOut.enclosingRing() !== prevSeg.ringOut) {
-          return prevSeg.ringOut;
-        } else return prevSeg.ringOut.enclosingRing();
-      }
-      prevSeg = prevPrevSeg.prevInResult();
-      prevPrevSeg = prevSeg ? prevSeg.prevInResult() : null;
-    }
-  }
-}
-class PolyOut {
-  constructor(exteriorRing) {
-    this.exteriorRing = exteriorRing;
-    exteriorRing.poly = this;
-    this.interiorRings = [];
-  }
-  addInterior(ring) {
-    this.interiorRings.push(ring);
-    ring.poly = this;
-  }
-  getGeom() {
-    const geom = [this.exteriorRing.getGeom()];
-    if (geom[0] === null) return null;
-    for (let i = 0, iMax = this.interiorRings.length; i < iMax; i++) {
-      const ringGeom = this.interiorRings[i].getGeom();
-      if (ringGeom === null) continue;
-      geom.push(ringGeom);
-    }
-    return geom;
-  }
-}
-class MultiPolyOut {
-  constructor(rings) {
-    this.rings = rings;
-    this.polys = this._composePolys(rings);
-  }
-  getGeom() {
-    const geom = [];
-    for (let i = 0, iMax = this.polys.length; i < iMax; i++) {
-      const polyGeom = this.polys[i].getGeom();
-      if (polyGeom === null) continue;
-      geom.push(polyGeom);
-    }
-    return geom;
-  }
-  _composePolys(rings) {
-    const polys = [];
-    for (let i = 0, iMax = rings.length; i < iMax; i++) {
-      const ring = rings[i];
-      if (ring.poly) continue;
-      if (ring.isExteriorRing()) polys.push(new PolyOut(ring));
-      else {
-        const enclosingRing = ring.enclosingRing();
-        if (!enclosingRing.poly) polys.push(new PolyOut(enclosingRing));
-        enclosingRing.poly.addInterior(ring);
-      }
-    }
-    return polys;
-  }
-}
-class SweepLine {
-  constructor(queue) {
-    let comparator = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : Segment.compare;
-    this.queue = queue;
-    this.tree = new Tree(comparator);
-    this.segments = [];
-  }
-  process(event) {
-    const segment = event.segment;
-    const newEvents = [];
-    if (event.consumedBy) {
-      if (event.isLeft) this.queue.remove(event.otherSE);
-      else this.tree.remove(segment);
-      return newEvents;
-    }
-    const node = event.isLeft ? this.tree.add(segment) : this.tree.find(segment);
-    if (!node) throw new Error(`Unable to find segment #${segment.id} [${segment.leftSE.point.x}, ${segment.leftSE.point.y}] -> [${segment.rightSE.point.x}, ${segment.rightSE.point.y}] in SweepLine tree.`);
-    let prevNode = node;
-    let nextNode = node;
-    let prevSeg = void 0;
-    let nextSeg = void 0;
-    while (prevSeg === void 0) {
-      prevNode = this.tree.prev(prevNode);
-      if (prevNode === null) prevSeg = null;
-      else if (prevNode.key.consumedBy === void 0) prevSeg = prevNode.key;
-    }
-    while (nextSeg === void 0) {
-      nextNode = this.tree.next(nextNode);
-      if (nextNode === null) nextSeg = null;
-      else if (nextNode.key.consumedBy === void 0) nextSeg = nextNode.key;
-    }
-    if (event.isLeft) {
-      let prevMySplitter = null;
-      if (prevSeg) {
-        const prevInter = prevSeg.getIntersection(segment);
-        if (prevInter !== null) {
-          if (!segment.isAnEndpoint(prevInter)) prevMySplitter = prevInter;
-          if (!prevSeg.isAnEndpoint(prevInter)) {
-            const newEventsFromSplit = this._splitSafely(prevSeg, prevInter);
-            for (let i = 0, iMax = newEventsFromSplit.length; i < iMax; i++) {
-              newEvents.push(newEventsFromSplit[i]);
-            }
-          }
-        }
-      }
-      let nextMySplitter = null;
-      if (nextSeg) {
-        const nextInter = nextSeg.getIntersection(segment);
-        if (nextInter !== null) {
-          if (!segment.isAnEndpoint(nextInter)) nextMySplitter = nextInter;
-          if (!nextSeg.isAnEndpoint(nextInter)) {
-            const newEventsFromSplit = this._splitSafely(nextSeg, nextInter);
-            for (let i = 0, iMax = newEventsFromSplit.length; i < iMax; i++) {
-              newEvents.push(newEventsFromSplit[i]);
-            }
-          }
-        }
-      }
-      if (prevMySplitter !== null || nextMySplitter !== null) {
-        let mySplitter = null;
-        if (prevMySplitter === null) mySplitter = nextMySplitter;
-        else if (nextMySplitter === null) mySplitter = prevMySplitter;
-        else {
-          const cmpSplitters = SweepEvent.comparePoints(prevMySplitter, nextMySplitter);
-          mySplitter = cmpSplitters <= 0 ? prevMySplitter : nextMySplitter;
-        }
-        this.queue.remove(segment.rightSE);
-        newEvents.push(segment.rightSE);
-        const newEventsFromSplit = segment.split(mySplitter);
-        for (let i = 0, iMax = newEventsFromSplit.length; i < iMax; i++) {
-          newEvents.push(newEventsFromSplit[i]);
-        }
-      }
-      if (newEvents.length > 0) {
-        this.tree.remove(segment);
-        newEvents.push(event);
-      } else {
-        this.segments.push(segment);
-        segment.prev = prevSeg;
-      }
-    } else {
-      if (prevSeg && nextSeg) {
-        const inter = prevSeg.getIntersection(nextSeg);
-        if (inter !== null) {
-          if (!prevSeg.isAnEndpoint(inter)) {
-            const newEventsFromSplit = this._splitSafely(prevSeg, inter);
-            for (let i = 0, iMax = newEventsFromSplit.length; i < iMax; i++) {
-              newEvents.push(newEventsFromSplit[i]);
-            }
-          }
-          if (!nextSeg.isAnEndpoint(inter)) {
-            const newEventsFromSplit = this._splitSafely(nextSeg, inter);
-            for (let i = 0, iMax = newEventsFromSplit.length; i < iMax; i++) {
-              newEvents.push(newEventsFromSplit[i]);
-            }
-          }
-        }
-      }
-      this.tree.remove(segment);
-    }
-    return newEvents;
-  }
-  /* Safely split a segment that is currently in the datastructures
-   * IE - a segment other than the one that is currently being processed. */
-  _splitSafely(seg, pt) {
-    this.tree.remove(seg);
-    const rightSE = seg.rightSE;
-    this.queue.remove(rightSE);
-    const newEvents = seg.split(pt);
-    newEvents.push(rightSE);
-    if (seg.consumedBy === void 0) this.tree.add(seg);
-    return newEvents;
-  }
-}
-const POLYGON_CLIPPING_MAX_QUEUE_SIZE = typeof process !== "undefined" && process.env.POLYGON_CLIPPING_MAX_QUEUE_SIZE || 1e6;
-const POLYGON_CLIPPING_MAX_SWEEPLINE_SEGMENTS = typeof process !== "undefined" && process.env.POLYGON_CLIPPING_MAX_SWEEPLINE_SEGMENTS || 1e6;
-class Operation {
-  run(type, geom, moreGeoms) {
-    operation.type = type;
-    rounder.reset();
-    const multipolys = [new MultiPolyIn(geom, true)];
-    for (let i = 0, iMax = moreGeoms.length; i < iMax; i++) {
-      multipolys.push(new MultiPolyIn(moreGeoms[i], false));
-    }
-    operation.numMultiPolys = multipolys.length;
-    if (operation.type === "difference") {
-      const subject = multipolys[0];
-      let i = 1;
-      while (i < multipolys.length) {
-        if (getBboxOverlap(multipolys[i].bbox, subject.bbox) !== null) i++;
-        else multipolys.splice(i, 1);
-      }
-    }
-    if (operation.type === "intersection") {
-      for (let i = 0, iMax = multipolys.length; i < iMax; i++) {
-        const mpA = multipolys[i];
-        for (let j = i + 1, jMax = multipolys.length; j < jMax; j++) {
-          if (getBboxOverlap(mpA.bbox, multipolys[j].bbox) === null) return [];
-        }
-      }
-    }
-    const queue = new Tree(SweepEvent.compare);
-    for (let i = 0, iMax = multipolys.length; i < iMax; i++) {
-      const sweepEvents = multipolys[i].getSweepEvents();
-      for (let j = 0, jMax = sweepEvents.length; j < jMax; j++) {
-        queue.insert(sweepEvents[j]);
-        if (queue.size > POLYGON_CLIPPING_MAX_QUEUE_SIZE) {
-          throw new Error("Infinite loop when putting segment endpoints in a priority queue (queue size too big).");
-        }
-      }
-    }
-    const sweepLine = new SweepLine(queue);
-    let prevQueueSize = queue.size;
-    let node = queue.pop();
-    while (node) {
-      const evt = node.key;
-      if (queue.size === prevQueueSize) {
-        const seg = evt.segment;
-        throw new Error(`Unable to pop() ${evt.isLeft ? "left" : "right"} SweepEvent [${evt.point.x}, ${evt.point.y}] from segment #${seg.id} [${seg.leftSE.point.x}, ${seg.leftSE.point.y}] -> [${seg.rightSE.point.x}, ${seg.rightSE.point.y}] from queue.`);
-      }
-      if (queue.size > POLYGON_CLIPPING_MAX_QUEUE_SIZE) {
-        throw new Error("Infinite loop when passing sweep line over endpoints (queue size too big).");
-      }
-      if (sweepLine.segments.length > POLYGON_CLIPPING_MAX_SWEEPLINE_SEGMENTS) {
-        throw new Error("Infinite loop when passing sweep line over endpoints (too many sweep line segments).");
-      }
-      const newEvents = sweepLine.process(evt);
-      for (let i = 0, iMax = newEvents.length; i < iMax; i++) {
-        const evt2 = newEvents[i];
-        if (evt2.consumedBy === void 0) queue.insert(evt2);
-      }
-      prevQueueSize = queue.size;
-      node = queue.pop();
-    }
-    rounder.reset();
-    const ringsOut = RingOut.factory(sweepLine.segments);
-    const result = new MultiPolyOut(ringsOut);
-    return result.getGeom();
-  }
-}
-const operation = new Operation();
-const union$1 = function(geom) {
-  for (var _len = arguments.length, moreGeoms = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-    moreGeoms[_key - 1] = arguments[_key];
-  }
-  return operation.run("union", geom, moreGeoms);
-};
-const intersection = function(geom) {
-  for (var _len2 = arguments.length, moreGeoms = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
-    moreGeoms[_key2 - 1] = arguments[_key2];
-  }
-  return operation.run("intersection", geom, moreGeoms);
-};
-const xor = function(geom) {
-  for (var _len3 = arguments.length, moreGeoms = new Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
-    moreGeoms[_key3 - 1] = arguments[_key3];
-  }
-  return operation.run("xor", geom, moreGeoms);
-};
-const difference$1 = function(subjectGeom) {
-  for (var _len4 = arguments.length, clippingGeoms = new Array(_len4 > 1 ? _len4 - 1 : 0), _key4 = 1; _key4 < _len4; _key4++) {
-    clippingGeoms[_key4 - 1] = arguments[_key4];
-  }
-  return operation.run("difference", subjectGeom, clippingGeoms);
-};
-var index = {
-  union: union$1,
-  intersection,
-  xor,
-  difference: difference$1
-};
-function difference(polygon1, polygon2) {
-  var geom1 = getGeom(polygon1);
-  var geom2 = getGeom(polygon2);
-  var properties = polygon1.properties || {};
-  var differenced = index.difference(
-    geom1.coordinates,
-    geom2.coordinates
-  );
-  if (differenced.length === 0) return null;
-  if (differenced.length === 1) return polygon(differenced[0], properties);
-  return multiPolygon(differenced, properties);
-}
-function union(poly1, poly2, options) {
-  if (options === void 0) {
-    options = {};
-  }
-  var geom1 = getGeom(poly1);
-  var geom2 = getGeom(poly2);
-  var unioned = index.union(geom1.coordinates, geom2.coordinates);
-  if (unioned.length === 0)
-    return null;
-  if (unioned.length === 1)
-    return polygon(unioned[0], options.properties);
-  else
-    return multiPolygon(unioned, options.properties);
-}
-function intersect(poly1, poly2, options) {
-  if (options === void 0) {
-    options = {};
-  }
-  var geom1 = getGeom(poly1);
-  var geom2 = getGeom(poly2);
-  var intersection2 = index.intersection(geom1.coordinates, geom2.coordinates);
-  if (intersection2.length === 0)
-    return null;
-  if (intersection2.length === 1)
-    return polygon(intersection2[0], options.properties);
-  return multiPolygon(intersection2, options.properties);
 }
 function setCustomFunction(Base) {
   class Mixin extends Base {
@@ -8401,7 +5315,7 @@ function setCustomFunction(Base) {
         );
         mercs.push(mercs[0]);
         this.envelope = polygon([mercs]);
-        this.centroid = (_a = centroid$1(this.envelope).geometry) == null ? void 0 : _a.coordinates;
+        this.centroid = (_a = turf_centroid_default(this.envelope).geometry) == null ? void 0 : _a.coordinates;
       }
       for (let i = 0; i < META_KEYS.length; i++) {
         const key = META_KEYS[i];
@@ -8438,7 +5352,10 @@ function setCustomFunction(Base) {
       return this.isWmts_;
     }
     static isMapbox() {
-      return false;
+      return !!this.isMapbox_;
+    }
+    static isMapLibre() {
+      return !!this.isMapLibre_;
     }
     isBasemap() {
       return this.constructor.isBasemap();
@@ -8448,6 +5365,9 @@ function setCustomFunction(Base) {
     }
     isMapbox() {
       return this.constructor.isMapbox();
+    }
+    isMapLibre() {
+      return this.constructor.isMapLibre && this.constructor.isMapLibre();
     }
     getCacheEnable() {
       return !!this.weiwudi;
@@ -8608,11 +5528,11 @@ function setCustomFunction(Base) {
         if (!this.insideCheckSysCoord(xys[0][0])) return false;
         const news = xys[0].slice(1);
         pos.rad = news.reduce(
-          (prev, curr, index2) => {
+          (prev, curr, index) => {
             const ret = prev + Math.sqrt(
               Math.pow(curr[0] - pos.xy[0], 2) + Math.pow(curr[1] - pos.xy[1], 2)
             );
-            return index2 === 3 ? ret / 4 : ret;
+            return index === 3 ? ret / 4 : ret;
           },
           0
         );
@@ -8770,11 +5690,11 @@ function setCustomFunction(Base) {
       }
       const radius = this.zoom2Radius(size, zoom);
       const crossDelta = this.rotateMatrix(MERC_CROSSMATRIX, rotate2);
-      const cross2 = crossDelta.map((xy) => [
+      const cross = crossDelta.map((xy) => [
         xy[0] * radius + center[0],
         xy[1] * radius + center[1]
       ]);
-      return [cross2, size];
+      return [cross, size];
     }
     // 地図座標5地点情報から地図サイズ情報（中心座標、サイズ、回転）を得る
     sysCoords2Viewpoint(sysCoords) {
@@ -8857,10 +5777,10 @@ function setCustomFunctionBase(Base) {
     }
     modulateXyInside(xy) {
       if (!this.centroid) return xy;
-      const expandLine = lineString([xy, this.centroid]);
-      const intersect2 = lineIntersect(this.envelope, expandLine);
-      if (intersect2.features.length > 0 && intersect2.features[0].geometry) {
-        return intersect2.features[0].geometry.coordinates;
+      const expandLine = lineString$1([xy, this.centroid]);
+      const intersect = lineIntersect(this.envelope, expandLine);
+      if (intersect.features.length > 0 && intersect.features[0].geometry) {
+        return intersect.features[0].geometry.coordinates;
       } else {
         return xy;
       }
@@ -9247,19 +6167,19 @@ class Disposable {
   }
 }
 function binarySearch(haystack, needle, comparator) {
-  let mid, cmp2;
+  let mid, cmp;
   comparator = comparator || ascending;
   let low = 0;
   let high = haystack.length;
   let found = false;
   while (low < high) {
     mid = low + (high - low >> 1);
-    cmp2 = +comparator(haystack[mid], needle);
-    if (cmp2 < 0) {
+    cmp = +comparator(haystack[mid], needle);
+    if (cmp < 0) {
       low = mid + 1;
     } else {
       high = mid;
-      found = !cmp2;
+      found = !cmp;
     }
   }
   return found ? low : ~low;
@@ -9321,8 +6241,8 @@ function linearFindNearest(arr2, target, direction) {
 }
 function extend(arr2, data) {
   const extension = Array.isArray(data) ? data : [data];
-  const length2 = extension.length;
-  for (let i = 0; i < length2; i++) {
+  const length = extension.length;
+  for (let i = 0; i < length; i++) {
     arr2[arr2.length] = extension[i];
   }
 }
@@ -9408,13 +6328,13 @@ class Target extends Disposable {
    * @api
    */
   dispatchEvent(event) {
-    const isString2 = typeof event === "string";
-    const type = isString2 ? event : event.type;
+    const isString = typeof event === "string";
+    const type = isString ? event : event.type;
     const listeners = this.listeners_ && this.listeners_[type];
     if (!listeners) {
       return;
     }
-    const evt = isString2 ? new BaseEvent(event) : (
+    const evt = isString ? new BaseEvent(event) : (
       /** @type {Event} */
       event
     );
@@ -9492,13 +6412,13 @@ class Target extends Disposable {
     if (!listeners) {
       return;
     }
-    const index2 = listeners.indexOf(listener);
-    if (index2 !== -1) {
+    const index = listeners.indexOf(listener);
+    if (index !== -1) {
       if (this.pendingRemovals_ && type in this.pendingRemovals_) {
-        listeners[index2] = VOID;
+        listeners[index] = VOID;
         ++this.pendingRemovals_[type];
       } else {
-        listeners.splice(index2, 1);
+        listeners.splice(index, 1);
         if (listeners.length === 0) {
           delete this.listeners_[type];
         }
@@ -10322,17 +7242,17 @@ const PROJECTIONS$1 = [
   new EPSG3857Projection("http://www.opengis.net/gml/srs/epsg.xml#3857")
 ];
 function fromEPSG4326(input, output2, dimension, stride) {
-  const length2 = input.length;
+  const length = input.length;
   dimension = dimension > 1 ? dimension : 2;
   stride = stride ?? dimension;
   if (output2 === void 0) {
     if (dimension > 2) {
       output2 = input.slice();
     } else {
-      output2 = new Array(length2);
+      output2 = new Array(length);
     }
   }
-  for (let i = 0; i < length2; i += stride) {
+  for (let i = 0; i < length; i += stride) {
     output2[i] = HALF_SIZE * input[i] / 180;
     let y = RADIUS$1 * Math.log(Math.tan(Math.PI * (+input[i + 1] + 90) / 360));
     if (y > MAX_SAFE_Y) {
@@ -10345,17 +7265,17 @@ function fromEPSG4326(input, output2, dimension, stride) {
   return output2;
 }
 function toEPSG4326(input, output2, dimension, stride) {
-  const length2 = input.length;
+  const length = input.length;
   dimension = dimension > 1 ? dimension : 2;
   stride = stride ?? dimension;
   if (output2 === void 0) {
     if (dimension > 2) {
       output2 = input.slice();
     } else {
-      output2 = new Array(length2);
+      output2 = new Array(length);
     }
   }
-  for (let i = 0; i < length2; i += stride) {
+  for (let i = 0; i < length; i += stride) {
     output2[i] = 180 * input[i] / HALF_SIZE;
     output2[i + 1] = 360 * Math.atan(Math.exp(input[i + 1] / RADIUS$1)) / Math.PI - 90;
   }
@@ -10431,12 +7351,12 @@ const P2 = 3 / 2 * _E - 27 / 32 * _E3 + 269 / 512 * _E5;
 const P3 = 21 / 16 * _E2 - 55 / 32 * _E4;
 const P4 = 151 / 96 * _E3 - 417 / 128 * _E5;
 const P5 = 1097 / 512 * _E4;
-const R = 6378137;
+const R$1 = 6378137;
 function toLonLat(easting, northing, zone) {
   const x = easting - 5e5;
   const y = zone.north ? northing : northing - 1e7;
   const m = y / K0;
-  const mu = m / (R * M1);
+  const mu = m / (R$1 * M1);
   const pRad = mu + P2 * Math.sin(2 * mu) + P3 * Math.sin(4 * mu) + P4 * Math.sin(6 * mu) + P5 * Math.sin(8 * mu);
   const pSin = Math.sin(pRad);
   const pSin2 = pSin * pSin;
@@ -10446,7 +7366,7 @@ function toLonLat(easting, northing, zone) {
   const pTan4 = pTan2 * pTan2;
   const epSin = 1 - E * pSin2;
   const epSinSqrt = Math.sqrt(1 - E * pSin2);
-  const n = R / epSinSqrt;
+  const n = R$1 / epSinSqrt;
   const r = (1 - E) / epSin;
   const c = E_P2 * pCos ** 2;
   const c2 = c * c;
@@ -10485,7 +7405,7 @@ function fromLonLat(longitude, latitude, zone) {
   const lonRad = toRadians(longitude);
   const centralLon = zoneToCentralLongitude(zone.number);
   const centralLonRad = toRadians(centralLon);
-  const n = R / Math.sqrt(1 - E * latSin ** 2);
+  const n = R$1 / Math.sqrt(1 - E * latSin ** 2);
   const c = E_P2 * latCos ** 2;
   const a = latCos * wrap(lonRad - centralLonRad, -Math.PI, Math.PI);
   const a2 = a * a;
@@ -10493,7 +7413,7 @@ function fromLonLat(longitude, latitude, zone) {
   const a4 = a3 * a;
   const a5 = a4 * a;
   const a6 = a5 * a;
-  const m = R * (M1 * latRad - M2 * Math.sin(2 * latRad) + M3 * Math.sin(4 * latRad) - M4 * Math.sin(6 * latRad));
+  const m = R$1 * (M1 * latRad - M2 * Math.sin(2 * latRad) + M3 * Math.sin(4 * latRad) - M4 * Math.sin(6 * latRad));
   const easting = K0 * n * (a + a3 / 6 * (1 - latTan2 + c) + a5 / 120 * (5 - 18 * latTan2 + latTan4 + 72 * c - 58 * E_P2)) + 5e5;
   let northing = K0 * (m + n * latTan * (a2 / 2 + a4 / 24 * (5 - latTan2 + 9 * c + 4 * c ** 2) + a6 / 720 * (61 - 58 * latTan2 + latTan4 + 600 * c - 330 * E_P2)));
   if (!zone.north) {
@@ -10536,17 +7456,17 @@ function zoneFromCode(code) {
 }
 function makeTransformFunction(transformer, zone) {
   return function(input, output2, dimension, stride) {
-    const length2 = input.length;
+    const length = input.length;
     dimension = dimension > 1 ? dimension : 2;
     stride = stride ?? dimension;
     if (!output2) {
       if (dimension > 2) {
         output2 = input.slice();
       } else {
-        output2 = new Array(length2);
+        output2 = new Array(length);
       }
     }
-    for (let i = 0; i < length2; i += stride) {
+    for (let i = 0; i < length; i += stride) {
       const x = input[i];
       const y = input[i + 1];
       const coord = transformer(x, y, zone);
@@ -10765,13 +7685,13 @@ function transform2D(flatCoordinates, offset, end, stride, transform2, dest, des
   dest = dest ? dest : [];
   destinationStride = destinationStride ? destinationStride : 2;
   let i = 0;
-  for (let j = offset; j < end; j += stride) {
-    const x = flatCoordinates[j];
-    const y = flatCoordinates[j + 1];
+  for (let j2 = offset; j2 < end; j2 += stride) {
+    const x = flatCoordinates[j2];
+    const y = flatCoordinates[j2 + 1];
     dest[i++] = transform2[0] * x + transform2[2] * y + transform2[4];
     dest[i++] = transform2[1] * x + transform2[3] * y + transform2[5];
     for (let k = 2; k < destinationStride; k++) {
-      dest[i++] = flatCoordinates[j + k];
+      dest[i++] = flatCoordinates[j2 + k];
     }
   }
   if (dest && dest.length != i) {
@@ -10786,12 +7706,12 @@ function rotate(flatCoordinates, offset, end, stride, angle, anchor, dest) {
   const anchorX = anchor[0];
   const anchorY = anchor[1];
   let i = 0;
-  for (let j = offset; j < end; j += stride) {
-    const deltaX = flatCoordinates[j] - anchorX;
-    const deltaY = flatCoordinates[j + 1] - anchorY;
+  for (let j2 = offset; j2 < end; j2 += stride) {
+    const deltaX = flatCoordinates[j2] - anchorX;
+    const deltaY = flatCoordinates[j2 + 1] - anchorY;
     dest[i++] = anchorX + deltaX * cos - deltaY * sin;
     dest[i++] = anchorY + deltaX * sin + deltaY * cos;
-    for (let k = j + 2; k < j + stride; ++k) {
+    for (let k = j2 + 2; k < j2 + stride; ++k) {
       dest[i++] = flatCoordinates[k];
     }
   }
@@ -10805,12 +7725,12 @@ function scale(flatCoordinates, offset, end, stride, sx, sy, anchor, dest) {
   const anchorX = anchor[0];
   const anchorY = anchor[1];
   let i = 0;
-  for (let j = offset; j < end; j += stride) {
-    const deltaX = flatCoordinates[j] - anchorX;
-    const deltaY = flatCoordinates[j + 1] - anchorY;
+  for (let j2 = offset; j2 < end; j2 += stride) {
+    const deltaX = flatCoordinates[j2] - anchorX;
+    const deltaY = flatCoordinates[j2 + 1] - anchorY;
     dest[i++] = anchorX + sx * deltaX;
     dest[i++] = anchorY + sy * deltaY;
-    for (let k = j + 2; k < j + stride; ++k) {
+    for (let k = j2 + 2; k < j2 + stride; ++k) {
       dest[i++] = flatCoordinates[k];
     }
   }
@@ -10822,10 +7742,10 @@ function scale(flatCoordinates, offset, end, stride, sx, sy, anchor, dest) {
 function translate(flatCoordinates, offset, end, stride, deltaX, deltaY, dest) {
   dest = dest ? dest : [];
   let i = 0;
-  for (let j = offset; j < end; j += stride) {
-    dest[i++] = flatCoordinates[j] + deltaX;
-    dest[i++] = flatCoordinates[j + 1] + deltaY;
-    for (let k = j + 2; k < j + stride; ++k) {
+  for (let j2 = offset; j2 < end; j2 += stride) {
+    dest[i++] = flatCoordinates[j2] + deltaX;
+    dest[i++] = flatCoordinates[j2 + 1] + deltaY;
+    for (let k = j2 + 2; k < j2 + stride; ++k) {
       dest[i++] = flatCoordinates[k];
     }
   }
@@ -11359,8 +8279,8 @@ function deflateCoordinate(flatCoordinates, offset, coordinate, stride) {
 function deflateCoordinates(flatCoordinates, offset, coordinates2, stride) {
   for (let i = 0, ii = coordinates2.length; i < ii; ++i) {
     const coordinate = coordinates2[i];
-    for (let j = 0; j < stride; ++j) {
-      flatCoordinates[offset++] = coordinate[j];
+    for (let j2 = 0; j2 < stride; ++j2) {
+      flatCoordinates[offset++] = coordinate[j2];
     }
   }
   return offset;
@@ -11368,11 +8288,11 @@ function deflateCoordinates(flatCoordinates, offset, coordinates2, stride) {
 function deflateCoordinatesArray(flatCoordinates, offset, coordinatess, stride, ends) {
   ends = ends ? ends : [];
   let i = 0;
-  for (let j = 0, jj = coordinatess.length; j < jj; ++j) {
+  for (let j2 = 0, jj = coordinatess.length; j2 < jj; ++j2) {
     const end = deflateCoordinates(
       flatCoordinates,
       offset,
-      coordinatess[j],
+      coordinatess[j2],
       stride
     );
     ends[i++] = end;
@@ -11703,12 +8623,12 @@ function assignClosestPoint(flatCoordinates, offset, end, stride, maxDelta, isRi
     return minSquaredDistance;
   }
   tmpPoint2 = tmpPoint2 ? tmpPoint2 : [NaN, NaN];
-  let index2 = offset + stride;
-  while (index2 < end) {
+  let index = offset + stride;
+  while (index < end) {
     assignClosest(
       flatCoordinates,
-      index2 - stride,
-      index2,
+      index - stride,
+      index,
       stride,
       x,
       y,
@@ -11721,9 +8641,9 @@ function assignClosestPoint(flatCoordinates, offset, end, stride, maxDelta, isRi
         closestPoint[i] = tmpPoint2[i];
       }
       closestPoint.length = stride;
-      index2 += stride;
+      index += stride;
     } else {
-      index2 += stride * Math.max(
+      index += stride * Math.max(
         (Math.sqrt(squaredDistance$1) - Math.sqrt(minSquaredDistance)) / maxDelta | 0,
         1
       );
@@ -11774,8 +8694,8 @@ function assignClosestArrayPoint(flatCoordinates, offset, ends, stride, maxDelta
 function inflateCoordinates(flatCoordinates, offset, end, stride, coordinates2) {
   coordinates2 = coordinates2 !== void 0 ? coordinates2 : [];
   let i = 0;
-  for (let j = offset; j < end; j += stride) {
-    coordinates2[i++] = flatCoordinates.slice(j, j + stride);
+  for (let j2 = offset; j2 < end; j2 += stride) {
+    coordinates2[i++] = flatCoordinates.slice(j2, j2 + stride);
   }
   coordinates2.length = i;
   return coordinates2;
@@ -11783,8 +8703,8 @@ function inflateCoordinates(flatCoordinates, offset, end, stride, coordinates2) 
 function inflateCoordinatesArray(flatCoordinates, offset, ends, stride, coordinatess) {
   coordinatess = coordinatess !== void 0 ? coordinatess : [];
   let i = 0;
-  for (let j = 0, jj = ends.length; j < jj; ++j) {
-    const end = ends[j];
+  for (let j2 = 0, jj = ends.length; j2 < jj; ++j2) {
+    const end = ends[j2];
     coordinatess[i++] = inflateCoordinates(
       flatCoordinates,
       offset,
@@ -11810,7 +8730,7 @@ function douglasPeucker(flatCoordinates, offset, end, stride, squaredTolerance, 
   markers[0] = 1;
   markers[n - 1] = 1;
   const stack = [offset, end - stride];
-  let index2 = 0;
+  let index = 0;
   while (stack.length > 0) {
     const last = stack.pop();
     const first = stack.pop();
@@ -11824,17 +8744,17 @@ function douglasPeucker(flatCoordinates, offset, end, stride, squaredTolerance, 
       const y = flatCoordinates[i + 1];
       const squaredDistance2 = squaredSegmentDistance(x, y, x1, y1, x2, y2);
       if (squaredDistance2 > maxSquaredDistance) {
-        index2 = i;
+        index = i;
         maxSquaredDistance = squaredDistance2;
       }
     }
     if (maxSquaredDistance > squaredTolerance) {
-      markers[(index2 - offset) / stride] = 1;
-      if (first + stride < index2) {
-        stack.push(first, index2);
+      markers[(index - offset) / stride] = 1;
+      if (first + stride < index) {
+        stack.push(first, index);
       }
-      if (index2 + stride < last) {
-        stack.push(index2, last);
+      if (index + stride < last) {
+        stack.push(index, last);
       }
     }
   }
@@ -12080,23 +9000,23 @@ function interpolatePoint(flatCoordinates, offset, end, stride, fraction, dest, 
   } else if (n !== 0) {
     let x1 = flatCoordinates[offset];
     let y1 = flatCoordinates[offset + 1];
-    let length2 = 0;
+    let length = 0;
     const cumulativeLengths = [0];
     for (let i = offset + stride; i < end; i += stride) {
       const x2 = flatCoordinates[i];
       const y2 = flatCoordinates[i + 1];
-      length2 += Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
-      cumulativeLengths.push(length2);
+      length += Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+      cumulativeLengths.push(length);
       x1 = x2;
       y1 = y2;
     }
-    const target = fraction * length2;
-    const index2 = binarySearch(cumulativeLengths, target);
-    if (index2 < 0) {
-      t = (target - cumulativeLengths[-index2 - 2]) / (cumulativeLengths[-index2 - 1] - cumulativeLengths[-index2 - 2]);
-      o = offset + (-index2 - 2) * stride;
+    const target = fraction * length;
+    const index = binarySearch(cumulativeLengths, target);
+    if (index < 0) {
+      t = (target - cumulativeLengths[-index - 2]) / (cumulativeLengths[-index - 1] - cumulativeLengths[-index - 2]);
+      o = offset + (-index - 2) * stride;
     } else {
-      o = offset + index2 * stride;
+      o = offset + index * stride;
     }
   }
   dimension = dimension > 1 ? dimension : 2;
@@ -12327,15 +9247,15 @@ function intersectsLinearRingArray(flatCoordinates, offset, ends, stride, extent
 function lineStringLength(flatCoordinates, offset, end, stride) {
   let x1 = flatCoordinates[offset];
   let y1 = flatCoordinates[offset + 1];
-  let length2 = 0;
+  let length = 0;
   for (let i = offset + stride; i < end; i += stride) {
     const x2 = flatCoordinates[i];
     const y2 = flatCoordinates[i + 1];
-    length2 += Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+    length += Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
     x1 = x2;
     y1 = y2;
   }
-  return length2;
+  return length;
 }
 class LineString extends SimpleGeometry {
   /**
@@ -13020,14 +9940,14 @@ class Polygon extends SimpleGeometry {
    * @return {LinearRing|null} Linear ring.
    * @api
    */
-  getLinearRing(index2) {
-    if (index2 < 0 || this.ends_.length <= index2) {
+  getLinearRing(index) {
+    if (index < 0 || this.ends_.length <= index) {
       return null;
     }
     return new LinearRing(
       this.flatCoordinates.slice(
-        index2 === 0 ? 0 : this.ends_[index2 - 1],
-        this.ends_[index2]
+        index === 0 ? 0 : this.ends_[index - 1],
+        this.ends_[index]
       ),
       this.layout
     );
@@ -13171,9 +10091,17 @@ function fromExtent(extent) {
 }
 class NowMap extends setCustomFunctionBase(XYZ) {
   constructor(options = {}) {
-    super(addCommonOptions(options));
+    const processedOptions = addCommonOptions(options);
+    super(processedOptions);
     if (options.mapID) {
       this.mapID = options.mapID;
+    }
+    if (options.mapID === "morioka_ndl_affine") {
+      const originalTileUrlFunction = this.getTileUrlFunction();
+      this.setTileUrlFunction((tileCoord, pixelRatio, projection) => {
+        const url = originalTileUrlFunction(tileCoord, pixelRatio, projection);
+        return url;
+      });
     }
     this.initialize(options);
   }
@@ -13186,9 +10114,20 @@ class MapboxMap extends NowMap {
     __publicField(this, "mapboxMap");
     this.style = options.style;
     this.mapboxMap = options.mapboxMap;
+    this.accessToken = options.accessToken;
   }
 }
 __publicField(MapboxMap, "isMapbox_", true);
+class MapLibreMap extends NowMap {
+  constructor(options = {}) {
+    super(options);
+    __publicField(this, "style", "");
+    __publicField(this, "maplibreMap");
+    this.style = options.style || "https://tile.openstreetmap.jp/styles/osm-bright/style.json";
+    this.maplibreMap = options.maplibreMap;
+  }
+}
+__publicField(MapLibreMap, "isMapLibre_", true);
 class GoogleMap extends setCustomFunctionBase(Google) {
   constructor(options = {}) {
     const parentOptions = Object.assign({}, options);
@@ -13318,11 +10257,11 @@ function createSnapToResolutions(resolutions, smooth, maxExtent, showFullExtent)
           );
         }
         const capped = Math.min(cappedMaxRes, resolution);
-        const z = Math.floor(linearFindNearest(resolutions, capped, direction));
-        if (resolutions[z] > cappedMaxRes && z < resolutions.length - 1) {
-          return resolutions[z + 1];
+        const z2 = Math.floor(linearFindNearest(resolutions, capped, direction));
+        if (resolutions[z2] > cappedMaxRes && z2 < resolutions.length - 1) {
+          return resolutions[z2 + 1];
         }
-        return resolutions[z];
+        return resolutions[z2];
       }
       return void 0;
     }
@@ -13737,8 +10676,8 @@ class View extends BaseObject {
         animationCallback(series[0].callback, false);
       }
       if (!anchor) {
-        for (let j = 0, jj = series.length; j < jj; ++j) {
-          const animation = series[j];
+        for (let j2 = 0, jj = series.length; j2 < jj; ++j2) {
+          const animation = series[j2];
           if (!animation.complete) {
             anchor = animation.anchor;
             break;
@@ -13768,8 +10707,8 @@ class View extends BaseObject {
     for (let i = this.animations_.length - 1; i >= 0; --i) {
       const series = this.animations_[i];
       let seriesComplete = true;
-      for (let j = 0, jj = series.length; j < jj; ++j) {
-        const animation = series[j];
+      for (let j2 = 0, jj = series.length; j2 < jj; ++j2) {
+        const animation = series[j2];
         if (animation.complete) {
           continue;
         }
@@ -14303,7 +11242,7 @@ class View extends BaseObject {
    * @api
    */
   fit(geometryOrExtent, options) {
-    let geometry2;
+    let geometry;
     assert(
       Array.isArray(geometryOrExtent) || typeof /** @type {?} */
       geometryOrExtent.getSimplifiedGeometry === "function",
@@ -14315,32 +11254,32 @@ class View extends BaseObject {
         "Cannot fit empty extent provided as `geometry`"
       );
       const extent = fromUserExtent(geometryOrExtent, this.getProjection());
-      geometry2 = fromExtent(extent);
+      geometry = fromExtent(extent);
     } else if (geometryOrExtent.getType() === "Circle") {
       const extent = fromUserExtent(
         geometryOrExtent.getExtent(),
         this.getProjection()
       );
-      geometry2 = fromExtent(extent);
-      geometry2.rotate(this.getRotation(), getCenter(extent));
+      geometry = fromExtent(extent);
+      geometry.rotate(this.getRotation(), getCenter(extent));
     } else {
       {
-        geometry2 = geometryOrExtent;
+        geometry = geometryOrExtent;
       }
     }
-    this.fitInternal(geometry2, options);
+    this.fitInternal(geometry, options);
   }
   /**
    * Calculate rotated extent
    * @param {import("./geom/SimpleGeometry.js").default} geometry The geometry.
    * @return {import("./extent").Extent} The rotated extent for the geometry.
    */
-  rotatedExtentForGeometry(geometry2) {
+  rotatedExtentForGeometry(geometry) {
     const rotation = this.getRotation();
     const cosAngle = Math.cos(rotation);
     const sinAngle = Math.sin(-rotation);
-    const coords = geometry2.getFlatCoordinates();
-    const stride = geometry2.getStride();
+    const coords = geometry.getFlatCoordinates();
+    const stride = geometry.getStride();
     let minRotX = Infinity;
     let minRotY = Infinity;
     let maxRotX = -Infinity;
@@ -14359,7 +11298,7 @@ class View extends BaseObject {
    * @param {import("./geom/SimpleGeometry.js").default} geometry The geometry.
    * @param {FitOptions} [options] Options.
    */
-  fitInternal(geometry2, options) {
+  fitInternal(geometry, options) {
     options = options || {};
     let size = options.size;
     if (!size) {
@@ -14375,7 +11314,7 @@ class View extends BaseObject {
     } else {
       minResolution = 0;
     }
-    const rotatedExtent = this.rotatedExtentForGeometry(geometry2);
+    const rotatedExtent = this.rotatedExtentForGeometry(geometry);
     let resolution = this.getResolutionForExtentInternal(rotatedExtent, [
       size[0] - padding[1] - padding[3],
       size[1] - padding[0] - padding[2]
@@ -15662,6 +12601,10 @@ class MapboxLayer extends Layer {
     const render = function(frameState) {
       const source = this.getSource();
       const mbMap = source.mapboxMap;
+      if (!mbMap) {
+        console.error("MapboxLayer: mapboxMap is undefined!");
+        return null;
+      }
       mbMap.setStyle(source.style);
       const canvas = mbMap.getCanvas();
       const viewState = frameState.viewState;
@@ -15695,6 +12638,68 @@ class MapboxLayer extends Layer {
         mbMap._frame = null;
       }
       mbMap._render();
+      return canvas;
+    };
+    super({
+      render,
+      source: options.source
+    });
+  }
+}
+class MapLibreLayer extends Layer {
+  constructor(options) {
+    const render = function(frameState) {
+      const source = this.getSource();
+      const mlMap = source.maplibreMap;
+      if (!mlMap) {
+        console.error("MapLibreLayer: maplibreMap is undefined!");
+        return null;
+      }
+      mlMap.setStyle(source.style);
+      const canvas = mlMap.getCanvas();
+      const viewState = frameState.viewState;
+      const visible = this.getVisible();
+      canvas.style.display = visible ? "block" : "none";
+      const opacity = this.getOpacity();
+      canvas.style.opacity = opacity;
+      const rotation = viewState.rotation;
+      const newBearing = -rotation * 180 / Math.PI;
+      const currentBearing = mlMap.getBearing();
+      if (Math.abs(newBearing - currentBearing) > 0.01) {
+        mlMap.stop();
+        mlMap.setBearing(newBearing);
+      }
+      const center = toLonLat$1(viewState.center);
+      const zoom = viewState.zoom - 1;
+      mlMap.getZoom();
+      frameState.viewState.resolution;
+      if (
+        // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+        mlMap.getCenter().toArray().toString() !== center.toString() || mlMap.getZoom() !== zoom
+      ) {
+        mlMap.jumpTo({
+          center,
+          zoom,
+          animate: false
+        });
+      }
+      if (mlMap._frame) {
+        mlMap._frame.cancel();
+        mlMap._frame = null;
+      }
+      if (frameState.size) {
+        const [width, height] = frameState.size;
+        if (canvas.width !== width || canvas.height !== height) {
+          mlMap.resize();
+        }
+      }
+      mlMap._render();
+      if (Math.abs(mlMap.getZoom() - zoom) > 0.01) {
+        mlMap.setZoom(zoom);
+      }
+      canvas.style.position = "absolute";
+      canvas.style.left = "0";
+      canvas.style.top = "0";
       return canvas;
     };
     super({
@@ -15748,7 +12753,7 @@ const markerDefaultStyle = new Style({
     src: defaultpin
   })
 });
-class MaplatMap extends Map$1 {
+class MaplatMap extends Map {
   constructor(optOptions) {
     optOptions = normalizeArg(optOptions || {});
     const vectorLayer = new Vector({
@@ -15836,13 +12841,22 @@ class MaplatMap extends Map$1 {
     this.on("moveend", () => {
       view.on("propertychange", movestart);
     });
+    view.on("change:resolution", () => {
+      this.getSource();
+    });
   }
   static spawnLayer(layer, source, container) {
-    if (source instanceof MapboxMap || !(layer instanceof Tile)) {
+    if (source instanceof MapboxMap || source instanceof MapLibreMap || !(layer instanceof Tile)) {
       if (source instanceof MapboxMap) {
         layer = new MapboxLayer({
           style: source.style,
           accessToken: source.accessToken,
+          container,
+          source
+        });
+      } else if (source instanceof MapLibreMap) {
+        layer = new MapLibreLayer({
+          style: source.style,
           container,
           source
         });
@@ -15948,10 +12962,10 @@ class MaplatMap extends Map$1 {
     if (style.stroke != null) option.stroke = new Stroke(style.stroke);
     if (style.fill != null) option.fill = new Fill(style.fill);
     const styleObj = new Style(option);
-    const geometry2 = type === "Line" ? new LineString(coords) : new Polygon(coords);
+    const geometry = type === "Line" ? new LineString(coords) : new Polygon(coords);
     return this.setFeature(
       {
-        geometry: geometry2,
+        geometry,
         name: type
       },
       styleObj,
@@ -16490,14 +13504,14 @@ class PointerInteraction extends Interaction {
   }
 }
 function centroid(pointerEvents) {
-  const length2 = pointerEvents.length;
+  const length = pointerEvents.length;
   let clientX = 0;
   let clientY = 0;
-  for (let i = 0; i < length2; i++) {
+  for (let i = 0; i < length; i++) {
     clientX += pointerEvents[i].clientX;
     clientY += pointerEvents[i].clientY;
   }
-  return { clientX: clientX / length2, clientY: clientY / length2 };
+  return { clientX: clientX / length, clientY: clientY / length };
 }
 const DragBoxEventType = {
   /**
@@ -16980,15 +13994,15 @@ class DragZoom extends DragBox {
       /** @type {!import("../View.js").default} */
       map.getView()
     );
-    let geometry2 = this.getGeometry();
+    let geometry = this.getGeometry();
     if (this.out_) {
-      const rotatedExtent = view.rotatedExtentForGeometry(geometry2);
+      const rotatedExtent = view.rotatedExtentForGeometry(geometry);
       const resolution = view.getResolutionForExtentInternal(rotatedExtent);
       const factor = view.getResolution() / resolution;
-      geometry2 = geometry2.clone();
-      geometry2.scale(factor * factor);
+      geometry = geometry.clone();
+      geometry.scale(factor * factor);
     }
-    view.fitInternal(geometry2, {
+    view.fitInternal(geometry, {
       duration: this.duration_,
       easing: easeOut
     });
@@ -17017,10 +14031,10 @@ class CollectionEvent extends BaseEvent {
    * @param {T} element Element.
    * @param {number} index The index of the added or removed element.
    */
-  constructor(type, element, index2) {
+  constructor(type, element, index) {
     super(type);
     this.element = element;
-    this.index = index2;
+    this.index = index;
   }
 }
 class Collection extends BaseObject {
@@ -17095,8 +14109,8 @@ class Collection extends BaseObject {
    * @return {T} Element.
    * @api
    */
-  item(index2) {
-    return this.array_[index2];
+  item(index) {
+    return this.array_[index];
   }
   /**
    * Get the length of this collection.
@@ -17113,17 +14127,17 @@ class Collection extends BaseObject {
    * @param {T} elem Element.
    * @api
    */
-  insertAt(index2, elem) {
-    if (index2 < 0 || index2 > this.getLength()) {
-      throw new Error("Index out of bounds: " + index2);
+  insertAt(index, elem) {
+    if (index < 0 || index > this.getLength()) {
+      throw new Error("Index out of bounds: " + index);
     }
     if (this.unique_) {
       this.assertUnique_(elem);
     }
-    this.array_.splice(index2, 0, elem);
+    this.array_.splice(index, 0, elem);
     this.updateLength_();
     this.dispatchEvent(
-      new CollectionEvent(CollectionEventType.ADD, elem, index2)
+      new CollectionEvent(CollectionEventType.ADD, elem, index)
     );
   }
   /**
@@ -17171,16 +14185,16 @@ class Collection extends BaseObject {
    * @return {T|undefined} Value.
    * @api
    */
-  removeAt(index2) {
-    if (index2 < 0 || index2 >= this.getLength()) {
+  removeAt(index) {
+    if (index < 0 || index >= this.getLength()) {
       return void 0;
     }
-    const prev = this.array_[index2];
-    this.array_.splice(index2, 1);
+    const prev = this.array_[index];
+    this.array_.splice(index, 1);
     this.updateLength_();
     this.dispatchEvent(
       /** @type {CollectionEvent<T>} */
-      new CollectionEvent(CollectionEventType.REMOVE, prev, index2)
+      new CollectionEvent(CollectionEventType.REMOVE, prev, index)
     );
     return prev;
   }
@@ -17190,27 +14204,27 @@ class Collection extends BaseObject {
    * @param {T} elem Element.
    * @api
    */
-  setAt(index2, elem) {
+  setAt(index, elem) {
     const n = this.getLength();
-    if (index2 >= n) {
-      this.insertAt(index2, elem);
+    if (index >= n) {
+      this.insertAt(index, elem);
       return;
     }
-    if (index2 < 0) {
-      throw new Error("Index out of bounds: " + index2);
+    if (index < 0) {
+      throw new Error("Index out of bounds: " + index);
     }
     if (this.unique_) {
-      this.assertUnique_(elem, index2);
+      this.assertUnique_(elem, index);
     }
-    const prev = this.array_[index2];
-    this.array_[index2] = elem;
+    const prev = this.array_[index];
+    this.array_[index] = elem;
     this.dispatchEvent(
       /** @type {CollectionEvent<T>} */
-      new CollectionEvent(CollectionEventType.REMOVE, prev, index2)
+      new CollectionEvent(CollectionEventType.REMOVE, prev, index)
     );
     this.dispatchEvent(
       /** @type {CollectionEvent<T>} */
-      new CollectionEvent(CollectionEventType.ADD, elem, index2)
+      new CollectionEvent(CollectionEventType.ADD, elem, index)
     );
   }
   /**
@@ -17807,15 +14821,15 @@ function defaults(options) {
 function hash(tileCoord) {
   return hashZXY(tileCoord[0], tileCoord[1], tileCoord[2]);
 }
-function hashZXY(z, x, y) {
-  return (x << z) + y;
+function hashZXY(z2, x, y) {
+  return (x << z2) + y;
 }
 const zRegEx = /\{z\}/g;
 const xRegEx = /\{x\}/g;
 const yRegEx = /\{y\}/g;
 const dashYRegEx = /\{-y\}/g;
-function renderXYZTemplate(template2, z, x, y, maxY) {
-  return template2.replace(zRegEx, z.toString()).replace(xRegEx, x.toString()).replace(yRegEx, y.toString()).replace(dashYRegEx, function() {
+function renderXYZTemplate(template2, z2, x, y, maxY) {
+  return template2.replace(zRegEx, z2.toString()).replace(xRegEx, x.toString()).replace(yRegEx, y.toString()).replace(dashYRegEx, function() {
     {
       throw new Error(
         "If the URL template has a {-y} placeholder, the grid extent must be known"
@@ -17835,8 +14849,8 @@ function createFromTemplate(template2, tileGrid) {
       if (!tileCoord) {
         return void 0;
       }
-      const z = tileCoord[0];
-      return renderXYZTemplate(template2, z, tileCoord[1], tileCoord[2]);
+      const z2 = tileCoord[0];
+      return renderXYZTemplate(template2, z2, tileCoord[1], tileCoord[2]);
     }
   );
 }
@@ -17864,14 +14878,14 @@ function createFromTileUrlFunctions(tileUrlFunctions) {
         return void 0;
       }
       const h = hash(tileCoord);
-      const index2 = modulo(h, tileUrlFunctions.length);
-      return tileUrlFunctions[index2](tileCoord, pixelRatio, projection);
+      const index = modulo(h, tileUrlFunctions.length);
+      return tileUrlFunctions[index](tileCoord, pixelRatio, projection);
     }
   );
 }
-for (let z = 0; z < 9; z++) {
-  const key = `ZOOM:${z}`;
-  const maxxy = 256 * Math.pow(2, z);
+for (let z2 = 0; z2 < 9; z2++) {
+  const key = `ZOOM:${z2}`;
+  const maxxy = 256 * Math.pow(2, z2);
   (function(key2, maxxy2) {
     const projection = new Projection$1({
       code: key2,
@@ -17905,15 +14919,15 @@ class HistMap extends setCustomFunctionMaplat(XYZ) {
     const zH = Math.log2(options.height / tileSize);
     options.maxZoom = Math.ceil(Math.max(zW, zH));
     options.tileUrlFunction = options.tileUrlFunction || function(coord) {
-      const z = coord[0];
+      const z2 = coord[0];
       const x = coord[1];
       const y = coord[2];
       if (
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        x * tileSize * Math.pow(2, this.maxZoom - z) >= this.width || // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        x * tileSize * Math.pow(2, this.maxZoom - z2) >= this.width || // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        y * tileSize * Math.pow(2, this.maxZoom - z) >= this.height || x < 0 || y < 0
+        y * tileSize * Math.pow(2, this.maxZoom - z2) >= this.height || x < 0 || y < 0
       ) {
         return transPng;
       }
@@ -18169,28 +15183,102 @@ class Weiwudi extends EventTarget {
     }
   }
 }
-function transformDirect(src, dist2, xy) {
+function transformDirect(src, dist, xy) {
   const srcCode = typeof src === "string" ? src : src.getCode();
-  const distCode = typeof dist2 === "string" ? dist2 : dist2.getCode();
-  let func = getTransform$1(src, dist2);
+  const distCode = typeof dist === "string" ? dist : dist.getCode();
+  let func = getTransform$1(src, dist);
   if (func == identityTransform && srcCode != distCode) {
     const srcFunc = getTransform$1(src, "EPSG:3857");
-    const distFunc = getTransform$1("EPSG:3857", dist2);
+    const distFunc = getTransform$1("EPSG:3857", dist);
     if (srcFunc == identityTransform && srcCode != "EPSG:3857")
       throw "Transform of Source projection is not defined.";
     if (distFunc == identityTransform && distCode != "EPSG:3857")
       throw "Transform of Distination projection is not defined.";
     func = function(xy2) {
-      return transform(transform(xy2, src, "EPSG:3857"), "EPSG:3857", dist2);
+      return transform(transform(xy2, src, "EPSG:3857"), "EPSG:3857", dist);
     };
     const invFunc = function(xy2) {
-      return transform(transform(xy2, dist2, "EPSG:3857"), "EPSG:3857", src);
+      return transform(transform(xy2, dist, "EPSG:3857"), "EPSG:3857", src);
     };
-    addCoordinateTransforms(src, dist2, func, invFunc);
+    addCoordinateTransforms(src, dist, func, invFunc);
   }
   if (xy) {
     return func(xy);
   }
+}
+function pointInPolygon(p, polygon2) {
+  var i;
+  var ii;
+  var k = 0;
+  var f;
+  var u1;
+  var v1;
+  var u2;
+  var v2;
+  var currentP;
+  var nextP;
+  var x = p[0];
+  var y = p[1];
+  var numContours = polygon2.length;
+  for (i = 0; i < numContours; i++) {
+    ii = 0;
+    var contour = polygon2[i];
+    var contourLen = contour.length - 1;
+    currentP = contour[0];
+    if (currentP[0] !== contour[contourLen][0] && currentP[1] !== contour[contourLen][1]) {
+      throw new Error("First and last coordinates in a ring must be the same");
+    }
+    u1 = currentP[0] - x;
+    v1 = currentP[1] - y;
+    for (ii; ii < contourLen; ii++) {
+      nextP = contour[ii + 1];
+      u2 = nextP[0] - x;
+      v2 = nextP[1] - y;
+      if (v1 === 0 && v2 === 0) {
+        if (u2 <= 0 && u1 >= 0 || u1 <= 0 && u2 >= 0) {
+          return 0;
+        }
+      } else if (v2 >= 0 && v1 <= 0 || v2 <= 0 && v1 >= 0) {
+        f = orient2d(u1, u2, v1, v2, 0, 0);
+        if (f === 0) {
+          return 0;
+        }
+        if (f > 0 && v2 > 0 && v1 <= 0 || f < 0 && v2 <= 0 && v1 > 0) {
+          k++;
+        }
+      }
+      currentP = nextP;
+      v1 = v2;
+      u1 = u2;
+    }
+  }
+  if (k % 2 === 0) {
+    return false;
+  }
+  return true;
+}
+function getCoord(coord) {
+  if (!coord) {
+    throw new Error("coord is required");
+  }
+  if (!Array.isArray(coord)) {
+    if (coord.type === "Feature" && coord.geometry !== null && coord.geometry.type === "Point") {
+      return [...coord.geometry.coordinates];
+    }
+    if (coord.type === "Point") {
+      return [...coord.coordinates];
+    }
+  }
+  if (Array.isArray(coord) && coord.length >= 2 && !Array.isArray(coord[0]) && !Array.isArray(coord[1])) {
+    return [...coord];
+  }
+  throw new Error("coord must be GeoJSON Point or an Array of numbers");
+}
+function getGeom(geojson) {
+  if (geojson.type === "Feature") {
+    return geojson.geometry;
+  }
+  return geojson;
 }
 function booleanPointInPolygon(point2, polygon2, options = {}) {
   if (!point2) {
@@ -18204,2916 +15292,556 @@ function booleanPointInPolygon(point2, polygon2, options = {}) {
   const type = geom.type;
   const bbox2 = polygon2.bbox;
   let polys = geom.coordinates;
-  if (bbox2 && !inBBox(pt, bbox2)) {
+  if (bbox2 && inBBox(pt, bbox2) === false) {
     return false;
   }
   if (type === "Polygon") {
     polys = [polys];
   }
-  let insidePoly = false;
-  for (let i = 0; i < polys.length && !insidePoly; i++) {
-    const res = pointInPolygon2(pt, polys[i]);
-    if (res === 0 && !options.ignoreBoundary || res)
-      insidePoly = true;
+  let result = false;
+  for (var i = 0; i < polys.length; ++i) {
+    const polyResult = pointInPolygon(pt, polys[i]);
+    if (polyResult === 0) return options.ignoreBoundary ? false : true;
+    else if (polyResult) result = true;
   }
-  return insidePoly;
+  return result;
 }
 function inBBox(pt, bbox2) {
   return bbox2[0] <= pt[0] && bbox2[1] <= pt[1] && bbox2[2] >= pt[0] && bbox2[3] >= pt[1];
 }
-function pointInPolygon2(p, polygon2) {
-  let i = 0;
-  let ii = 0;
-  let k = 0;
-  let f = 0;
-  let u1 = 0;
-  let v1 = 0;
-  let u2 = 0;
-  let v2 = 0;
-  let currentP = null;
-  let nextP = null;
-  const x = p[0];
-  const y = p[1];
-  const numContours = polygon2.length;
-  for (i; i < numContours; i++) {
-    ii = 0;
-    const contourLen = polygon2[i].length - 1;
-    const contour = polygon2[i];
-    currentP = contour[0];
-    u1 = currentP[0] - x;
-    v1 = currentP[1] - y;
-    for (ii; ii < contourLen; ii++) {
-      nextP = contour[ii + 1];
-      v2 = nextP[1] - y;
-      if (v1 < 0 && v2 < 0 || v1 > 0 && v2 > 0) {
-        currentP = nextP;
-        v1 = v2;
-        u1 = currentP[0] - x;
-        continue;
+var turf_boolean_point_in_polygon_default = booleanPointInPolygon;
+var ot = Object.defineProperty;
+var at = (e, t, s) => t in e ? ot(e, t, { enumerable: true, configurable: true, writable: true, value: s }) : e[t] = s;
+var _23 = (e, t, s) => at(e, typeof t != "symbol" ? t + "" : t, s);
+const R = 11102230246251565e-32, I = 134217729, ft = (3 + 8 * R) * R;
+function V(e, t, s, r, a) {
+  let n, c, d, g2, l = t[0], y = r[0], o = 0, u2 = 0;
+  y > l == y > -l ? (n = l, l = t[++o]) : (n = y, y = r[++u2]);
+  let b = 0;
+  if (o < e && u2 < s)
+    for (y > l == y > -l ? (c = l + n, d = n - (c - l), l = t[++o]) : (c = y + n, d = n - (c - y), y = r[++u2]), n = c, d !== 0 && (a[b++] = d); o < e && u2 < s; )
+      y > l == y > -l ? (c = n + l, g2 = c - n, d = n - (c - g2) + (l - g2), l = t[++o]) : (c = n + y, g2 = c - n, d = n - (c - g2) + (y - g2), y = r[++u2]), n = c, d !== 0 && (a[b++] = d);
+  for (; o < e; )
+    c = n + l, g2 = c - n, d = n - (c - g2) + (l - g2), l = t[++o], n = c, d !== 0 && (a[b++] = d);
+  for (; u2 < s; )
+    c = n + y, g2 = c - n, d = n - (c - g2) + (y - g2), y = r[++u2], n = c, d !== 0 && (a[b++] = d);
+  return (n !== 0 || b === 0) && (a[b++] = n), b;
+}
+function ct(e, t) {
+  let s = t[0];
+  for (let r = 1; r < e; r++) s += t[r];
+  return s;
+}
+function $(e) {
+  return new Float64Array(e);
+}
+const ut = (3 + 16 * R) * R, ht = (2 + 12 * R) * R, gt = (9 + 64 * R) * R * R, F = $(4), q = $(8), L = $(12), G = $(16), P = $(4);
+function dt(e, t, s, r, a, n, c) {
+  let d, g2, l, y, o, u2, b, x, h, f, i, w, A, v, E4, m, M, T;
+  const S = e - a, p = s - a, k = t - n, N = r - n;
+  v = S * N, u2 = I * S, b = u2 - (u2 - S), x = S - b, u2 = I * N, h = u2 - (u2 - N), f = N - h, E4 = x * f - (v - b * h - x * h - b * f), m = k * p, u2 = I * k, b = u2 - (u2 - k), x = k - b, u2 = I * p, h = u2 - (u2 - p), f = p - h, M = x * f - (m - b * h - x * h - b * f), i = E4 - M, o = E4 - i, F[0] = E4 - (i + o) + (o - M), w = v + i, o = w - v, A = v - (w - o) + (i - o), i = A - m, o = A - i, F[1] = A - (i + o) + (o - m), T = w + i, o = T - w, F[2] = w - (T - o) + (i - o), F[3] = T;
+  let U = ct(4, F), X = ht * c;
+  if (U >= X || -U >= X || (o = e - S, d = e - (S + o) + (o - a), o = s - p, l = s - (p + o) + (o - a), o = t - k, g2 = t - (k + o) + (o - n), o = r - N, y = r - (N + o) + (o - n), d === 0 && g2 === 0 && l === 0 && y === 0) || (X = gt * c + ft * Math.abs(U), U += S * y + N * d - (k * l + p * g2), U >= X || -U >= X)) return U;
+  v = d * N, u2 = I * d, b = u2 - (u2 - d), x = d - b, u2 = I * N, h = u2 - (u2 - N), f = N - h, E4 = x * f - (v - b * h - x * h - b * f), m = g2 * p, u2 = I * g2, b = u2 - (u2 - g2), x = g2 - b, u2 = I * p, h = u2 - (u2 - p), f = p - h, M = x * f - (m - b * h - x * h - b * f), i = E4 - M, o = E4 - i, P[0] = E4 - (i + o) + (o - M), w = v + i, o = w - v, A = v - (w - o) + (i - o), i = A - m, o = A - i, P[1] = A - (i + o) + (o - m), T = w + i, o = T - w, P[2] = w - (T - o) + (i - o), P[3] = T;
+  const st = V(4, F, 4, P, q);
+  v = S * y, u2 = I * S, b = u2 - (u2 - S), x = S - b, u2 = I * y, h = u2 - (u2 - y), f = y - h, E4 = x * f - (v - b * h - x * h - b * f), m = k * l, u2 = I * k, b = u2 - (u2 - k), x = k - b, u2 = I * l, h = u2 - (u2 - l), f = l - h, M = x * f - (m - b * h - x * h - b * f), i = E4 - M, o = E4 - i, P[0] = E4 - (i + o) + (o - M), w = v + i, o = w - v, A = v - (w - o) + (i - o), i = A - m, o = A - i, P[1] = A - (i + o) + (o - m), T = w + i, o = T - w, P[2] = w - (T - o) + (i - o), P[3] = T;
+  const nt = V(st, q, 4, P, L);
+  v = d * y, u2 = I * d, b = u2 - (u2 - d), x = d - b, u2 = I * y, h = u2 - (u2 - y), f = y - h, E4 = x * f - (v - b * h - x * h - b * f), m = g2 * l, u2 = I * g2, b = u2 - (u2 - g2), x = g2 - b, u2 = I * l, h = u2 - (u2 - l), f = l - h, M = x * f - (m - b * h - x * h - b * f), i = E4 - M, o = E4 - i, P[0] = E4 - (i + o) + (o - M), w = v + i, o = w - v, A = v - (w - o) + (i - o), i = A - m, o = A - i, P[1] = A - (i + o) + (o - m), T = w + i, o = T - w, P[2] = w - (T - o) + (i - o), P[3] = T;
+  const it = V(nt, L, 4, P, G);
+  return G[it - 1];
+}
+function lt(e, t, s, r, a, n) {
+  const c = (t - n) * (s - a), d = (e - a) * (r - n), g2 = c - d, l = Math.abs(c + d);
+  return Math.abs(g2) >= ut * l ? g2 : -dt(e, t, s, r, a, n, l);
+}
+function yt(e, t) {
+  var s, r, a = 0, n, c, d, g2, l, y, o, u2 = e[0], b = e[1], x = t.length;
+  for (s = 0; s < x; s++) {
+    r = 0;
+    var h = t[s], f = h.length - 1;
+    if (y = h[0], y[0] !== h[f][0] && y[1] !== h[f][1])
+      throw new Error("First and last coordinates in a ring must be the same");
+    for (c = y[0] - u2, d = y[1] - b, r; r < f; r++) {
+      if (o = h[r + 1], g2 = o[0] - u2, l = o[1] - b, d === 0 && l === 0) {
+        if (g2 <= 0 && c >= 0 || c <= 0 && g2 >= 0)
+          return 0;
+      } else if (l >= 0 && d <= 0 || l <= 0 && d >= 0) {
+        if (n = lt(c, g2, d, l, 0, 0), n === 0)
+          return 0;
+        (n > 0 && l > 0 && d <= 0 || n < 0 && l <= 0 && d > 0) && a++;
       }
-      u2 = nextP[0] - p[0];
-      if (v2 > 0 && v1 <= 0) {
-        f = u1 * v2 - u2 * v1;
-        if (f > 0)
-          k = k + 1;
-        else if (f === 0)
-          return 0;
-      } else if (v1 > 0 && v2 <= 0) {
-        f = u1 * v2 - u2 * v1;
-        if (f < 0)
-          k = k + 1;
-        else if (f === 0)
-          return 0;
-      } else if (v2 === 0 && v1 < 0) {
-        f = u1 * v2 - u2 * v1;
-        if (f === 0)
-          return 0;
-      } else if (v1 === 0 && v2 < 0) {
-        f = u1 * v2 - u2 * v1;
-        if (f === 0)
-          return 0;
-      } else if (v1 === 0 && v2 === 0) {
-        if (u2 <= 0 && u1 >= 0) {
-          return 0;
-        } else if (u1 <= 0 && u2 >= 0) {
-          return 0;
+      y = o, d = l, c = g2;
+    }
+  }
+  return a % 2 !== 0;
+}
+function Z(e, t, s = {}) {
+  const r = { type: "Feature" };
+  return (s.id === 0 || s.id) && (r.id = s.id), s.bbox && (r.bbox = s.bbox), r.properties = t || {}, r.geometry = e, r;
+}
+function Y(e, t, s = {}) {
+  if (!e)
+    throw new Error("coordinates is required");
+  if (!Array.isArray(e))
+    throw new Error("coordinates must be an Array");
+  if (e.length < 2)
+    throw new Error("coordinates must be at least 2 numbers long");
+  if (!j(e[0]) || !j(e[1]))
+    throw new Error("coordinates must contain numbers");
+  return Z({
+    type: "Point",
+    coordinates: e
+  }, t, s);
+}
+function tt(e, t, s = {}) {
+  for (const a of e) {
+    if (a.length < 4)
+      throw new Error(
+        "Each LinearRing of a Polygon must have 4 or more Positions."
+      );
+    if (a[a.length - 1].length !== a[0].length)
+      throw new Error("First and last Position are not equivalent.");
+    for (let n = 0; n < a[a.length - 1].length; n++)
+      if (a[a.length - 1][n] !== a[0][n])
+        throw new Error("First and last Position are not equivalent.");
+  }
+  return Z({
+    type: "Polygon",
+    coordinates: e
+  }, t, s);
+}
+function B(e, t = {}) {
+  const s = { type: "FeatureCollection" };
+  return t.id && (s.id = t.id), t.bbox && (s.bbox = t.bbox), s.features = e, s;
+}
+function j(e) {
+  return !isNaN(e) && e !== null && !Array.isArray(e);
+}
+function bt(e) {
+  if (!e)
+    throw new Error("coord is required");
+  if (!Array.isArray(e)) {
+    if (e.type === "Feature" && e.geometry !== null && e.geometry.type === "Point")
+      return [...e.geometry.coordinates];
+    if (e.type === "Point")
+      return [...e.coordinates];
+  }
+  if (Array.isArray(e) && e.length >= 2 && !Array.isArray(e[0]) && !Array.isArray(e[1]))
+    return [...e];
+  throw new Error("coord must be GeoJSON Point or an Array of numbers");
+}
+function J(e) {
+  if (Array.isArray(e))
+    return e;
+  if (e.type === "Feature") {
+    if (e.geometry !== null)
+      return e.geometry.coordinates;
+  } else if (e.coordinates)
+    return e.coordinates;
+  throw new Error(
+    "coords must be GeoJSON Feature, Geometry Object or an Array"
+  );
+}
+function wt(e) {
+  return e.type === "Feature" ? e.geometry : e;
+}
+function mt(e, t, s = {}) {
+  if (!e)
+    throw new Error("point is required");
+  if (!t)
+    throw new Error("polygon is required");
+  const r = bt(e), a = wt(t), n = a.type, c = t.bbox;
+  let d = a.coordinates;
+  if (c && xt(r, c) === false)
+    return false;
+  n === "Polygon" && (d = [d]);
+  let g2 = false;
+  for (var l = 0; l < d.length; ++l) {
+    const y = yt(r, d[l]);
+    if (y === 0) return !s.ignoreBoundary;
+    y && (g2 = true);
+  }
+  return g2;
+}
+function xt(e, t) {
+  return t[0] <= e[0] && t[1] <= e[1] && t[2] >= e[0] && t[3] >= e[1];
+}
+var D = mt;
+function _t(e) {
+  const t = [0, 1, 2, 0].map((r) => e[r][0][0]), s = {
+    a: { geom: e[0][0][1], index: e[0][1] },
+    b: { geom: e[1][0][1], index: e[1][1] },
+    c: { geom: e[2][0][1], index: e[2][1] }
+  };
+  return tt([t], s);
+}
+function W(e, t, s, r, a, n = false, c) {
+  const d = e.map(
+    (g2) => {
+      (!c || c < 2.00703) && (g2 = et(g2));
+      const l = isFinite(g2) ? t[g2] : g2 === "c" ? r : g2 === "b0" ? a[0] : g2 === "b1" ? a[1] : g2 === "b2" ? a[2] : g2 === "b3" ? a[3] : function() {
+        const y = g2.match(/e(\d+)/);
+        if (y) {
+          const o = parseInt(y[1]);
+          return s[o];
         }
-      }
-      currentP = nextP;
-      v1 = v2;
-      u1 = u2;
+        throw "Bad index value for indexesToTri";
+      }();
+      return n ? [[l[1], l[0]], g2] : [[l[0], l[1]], g2];
     }
-  }
-  if (k % 2 === 0)
-    return false;
-  return true;
+  );
+  return _t(d);
 }
-function findIntersections(coords) {
-  const arcs = new ArcCollection(coords);
-  const xy = arcs.findSegmentIntersections();
-  return dedupIntersections(xy).reduce((prev, apoint, index2, array) => {
-    if (!prev)
-      prev = {};
-    prev[`${apoint.x}:${apoint.y}`] = apoint;
-    if (index2 != array.length - 1)
-      return prev;
-    return Object.keys(prev).map((key) => point([prev[key].x, prev[key].y]));
-  }, []);
+function et(e) {
+  return typeof e == "number" ? e : e.replace(/^(c|e|b)(?:ent|dgeNode|box)(\d+)?$/, "$1$2");
 }
-class ArcCollection {
-  constructor(coords) {
-    this._zlimit = 0;
-    this.initArcs(coords);
+function At(e, t) {
+  return t && t >= 2.00703 || Array.isArray(e[0]) ? e : e.map((s) => [
+    s.illstNodes,
+    s.mercNodes,
+    s.startEnd
+  ]);
+}
+function z(e, t) {
+  for (let s = 0; s < t.features.length; s++)
+    if (D(e, t.features[s]))
+      return t.features[s];
+}
+function rt(e, t, s) {
+  const r = t.geometry.coordinates[0][0], a = t.geometry.coordinates[0][1], n = t.geometry.coordinates[0][2], c = e.geometry.coordinates, d = t.properties.a.geom, g2 = t.properties.b.geom, l = t.properties.c.geom, y = [a[0] - r[0], a[1] - r[1]], o = [n[0] - r[0], n[1] - r[1]], u2 = [c[0] - r[0], c[1] - r[1]], b = [g2[0] - d[0], g2[1] - d[1]], x = [l[0] - d[0], l[1] - d[1]];
+  let h = (o[1] * u2[0] - o[0] * u2[1]) / (y[0] * o[1] - y[1] * o[0]), f = (y[0] * u2[1] - y[1] * u2[0]) / (y[0] * o[1] - y[1] * o[0]);
+  if (s) {
+    const i = s[t.properties.a.index], w = s[t.properties.b.index], A = s[t.properties.c.index];
+    let v;
+    if (h < 0 || f < 0 || 1 - h - f < 0) {
+      const E4 = h / (h + f), m = f / (h + f);
+      v = h / w / (E4 / w + m / A), f = f / A / (E4 / w + m / A);
+    } else
+      v = h / w / (h / w + f / A + (1 - h - f) / i), f = f / A / (h / w + f / A + (1 - h - f) / i);
+    h = v;
   }
-  initArcs(arcs) {
-    const xx = [], yy = [];
-    const nn = arcs.map((points2) => {
-      const n = points2 ? points2.length : 0;
-      for (let i = 0; i < n; i++) {
-        xx.push(points2[i][0]);
-        yy.push(points2[i][1]);
-      }
-      return n;
-    });
-    this.initXYData(nn, xx, yy);
-  }
-  initXYData(nn, xx, yy) {
-    const size = nn.length;
-    this._xx = new Float64Array(xx);
-    this._yy = new Float64Array(yy);
-    this._nn = new Uint32Array(nn);
-    this._zz = null;
-    this._zlimit = 0;
-    this._filteredArcIter = null;
-    this._ii = new Uint32Array(size);
-    let idx = 0;
-    for (let j = 0; j < size; j++) {
-      this._ii[j] = idx;
-      idx += nn[j];
+  return [
+    h * b[0] + f * x[0] + d[0],
+    h * b[1] + f * x[1] + d[1]
+  ];
+}
+function vt(e, t, s, r) {
+  const a = e.geometry.coordinates, n = s.geometry.coordinates, c = Math.atan2(a[0] - n[0], a[1] - n[1]), d = Et(c, t[0]);
+  if (d === void 0)
+    throw new Error("Unable to determine vertex index");
+  const g2 = t[1][d];
+  return rt(e, g2.features[0], r);
+}
+function Mt(e, t, s, r, a, n, c, d) {
+  let g2;
+  if (c && (g2 = z(e, B([c]))), !g2) {
+    if (s) {
+      const l = e.geometry.coordinates, y = s.gridNum, o = s.xOrigin, u2 = s.yOrigin, b = s.xUnit, x = s.yUnit, h = s.gridCache, f = C(l[0], o, b, y), i = C(l[1], u2, x, y), w = h[f] ? h[f][i] ? h[f][i] : [] : [];
+      t = B(w.map((A) => t.features[A]));
     }
-    if (idx != this._xx.length || this._xx.length != this._yy.length) {
-      error2("ArcCollection#initXYData() Counting error");
-    }
-    this.initBounds();
-    this._arcIter = new ArcIter(this._xx, this._yy);
+    g2 = z(e, t);
   }
-  initBounds() {
-    const data = this.calcArcBounds_(this._xx, this._yy, this._nn);
-    this._bb = data.bb;
-    this._allBounds = data.bounds;
-  }
-  calcArcBounds_(xx, yy, nn) {
-    const numArcs = nn.length, bb2 = new Float64Array(numArcs * 4), bounds = new Bounds();
-    let arcOffs = 0, arcLen, j, b;
-    for (let i = 0; i < numArcs; i++) {
-      arcLen = nn[i];
-      if (arcLen > 0) {
-        j = i * 4;
-        b = calcArcBounds(xx, yy, arcOffs, arcLen);
-        bb2[j++] = b[0];
-        bb2[j++] = b[1];
-        bb2[j++] = b[2];
-        bb2[j] = b[3];
-        arcOffs += arcLen;
-        bounds.mergeBounds(b);
-      }
-    }
-    return {
-      bb: bb2,
-      bounds
-    };
-  }
-  getBounds() {
-    return this._allBounds.clone();
-  }
-  forEachSegment(cb) {
-    let count = 0;
-    for (let i = 0, n = this.size(); i < n; i++) {
-      count += this.forEachArcSegment(i, cb);
-    }
-    return count;
-  }
-  size() {
-    return this._ii && this._ii.length || 0;
-  }
-  forEachArcSegment(arcId, cb) {
-    const fw = arcId >= 0, absId = fw ? arcId : ~arcId, zlim = this.getRetainedInterval(), n = this._nn[absId], step = fw ? 1 : -1;
-    let v1 = fw ? this._ii[absId] : this._ii[absId] + n - 1, v2 = v1, count = 0;
-    for (let j = 1; j < n; j++) {
-      v2 += step;
-      if (zlim === 0 || this._zz[v2] >= zlim) {
-        cb(v1, v2, this._xx, this._yy);
-        v1 = v2;
-        count++;
-      }
-    }
-    return count;
-  }
-  getRetainedInterval() {
-    return this._zlimit;
-  }
-  getVertexData() {
-    return {
-      xx: this._xx,
-      yy: this._yy,
-      zz: this._zz,
-      bb: this._bb,
-      nn: this._nn,
-      ii: this._ii
-    };
-  }
-  getUint32Array(count) {
-    const bytes = count * 4;
-    if (!this.buf || this.buf.byteLength < bytes) {
-      this.buf = new ArrayBuffer(bytes);
-    }
-    return new Uint32Array(this.buf, 0, count);
-  }
-  getAvgSegment2() {
-    let dx = 0, dy = 0;
-    const count = this.forEachSegment((i, j, xx, yy) => {
-      dx += Math.abs(xx[i] - xx[j]);
-      dy += Math.abs(yy[i] - yy[j]);
-    });
-    return [dx / count || 0, dy / count || 0];
-  }
-  calcSegmentIntersectionStripeCount() {
-    const yrange = this.getBounds().height(), segLen = this.getAvgSegment2()[1];
-    let count = 1;
-    if (segLen > 0 && yrange > 0) {
-      count = Math.ceil(yrange / segLen / 20);
-    }
-    return count || 1;
-  }
-  findSegmentIntersections() {
-    const bounds = this.getBounds(), ymin = bounds.ymin, yrange = bounds.ymax - ymin, stripeCount = this.calcSegmentIntersectionStripeCount(), stripeSizes = new Uint32Array(stripeCount), stripeId = stripeCount > 1 ? (y) => Math.floor((stripeCount - 1) * (y - ymin) / yrange) : () => 0;
-    let i, j;
-    this.forEachSegment((id1, id2, xx, yy) => {
-      let s1 = stripeId(yy[id1]);
-      const s2 = stripeId(yy[id2]);
-      while (true) {
-        stripeSizes[s1] = stripeSizes[s1] + 2;
-        if (s1 == s2)
-          break;
-        s1 += s2 > s1 ? 1 : -1;
-      }
-    });
-    const stripeData = this.getUint32Array(utilsSum(stripeSizes));
-    let offs = 0;
-    const stripes = [];
-    utilsForEach(stripeSizes, (stripeSize) => {
-      const start = offs;
-      offs += stripeSize;
-      stripes.push(stripeData.subarray(start, offs));
-    });
-    initializeArray(stripeSizes, 0);
-    this.forEachSegment((id1, id2, xx, yy) => {
-      let s1 = stripeId(yy[id1]);
-      const s2 = stripeId(yy[id2]);
-      let count, stripe;
-      while (true) {
-        count = stripeSizes[s1];
-        stripeSizes[s1] = count + 2;
-        stripe = stripes[s1];
-        stripe[count] = id1;
-        stripe[count + 1] = id2;
-        if (s1 == s2)
-          break;
-        s1 += s2 > s1 ? 1 : -1;
-      }
-    });
-    const raw = this.getVertexData(), intersections = [];
-    let arr2;
-    for (i = 0; i < stripeCount; i++) {
-      arr2 = intersectSegments$1(stripes[i], raw.xx, raw.yy);
-      for (j = 0; j < arr2.length; j++) {
-        intersections.push(arr2[j]);
-      }
-    }
-    return dedupIntersections(intersections);
-  }
+  return d && d(g2), g2 ? rt(e, g2, n) : vt(e, r, a, n);
 }
-function error2(...args) {
-  const msg = args.join(" ");
-  throw new Error(msg);
+function C(e, t, s, r) {
+  let a = Math.floor((e - t) / s);
+  return a >= r && (a = r - 1), a;
 }
-function isArrayLike(obj) {
-  if (!obj)
-    return false;
-  if (isArray$1(obj))
-    return true;
-  if (isString(obj))
-    return false;
-  if (obj.length === 0)
-    return true;
-  return obj.length > 0;
-}
-function isString(obj) {
-  return obj != null && obj.toString === String.prototype.toString;
-}
-function isArray$1(obj) {
-  return Array.isArray(obj);
-}
-function utilsSum(arr2, info) {
-  if (!isArrayLike(arr2))
-    error2("utils.sum() expects an array, received:", arr2);
-  let tot = 0, val;
-  for (let i = 0, n = arr2.length; i < n; i++) {
-    val = arr2[i];
-    if (val) {
-      tot += val;
-    }
-  }
-  return tot;
-}
-function utilsForEach(arr2, func, ctx) {
-  if (!isArrayLike(arr2)) {
-    throw new Error(`#forEach() takes an array-like argument. ${arr2}`);
-  }
-  for (let i = 0, n = arr2.length; i < n; i++) {
-    func.call(ctx, arr2[i], i);
-  }
-}
-function initializeArray(arr2, init) {
-  for (let i = 0, len = arr2.length; i < len; i++) {
-    arr2[i] = init;
-  }
-  return arr2;
-}
-function intersectSegments$1(ids, xx, yy) {
-  const lim = ids.length - 2, intersections = [];
-  let s1p1, s1p2, s2p1, s2p2, s1p1x, s1p2x, s2p1x, s2p2x, s1p1y, s1p2y, s2p1y, s2p2y, hit2, seg1, seg2, i, j;
-  sortSegmentIds(xx, ids);
-  i = 0;
-  while (i < lim) {
-    s1p1 = ids[i];
-    s1p2 = ids[i + 1];
-    s1p1x = xx[s1p1];
-    s1p2x = xx[s1p2];
-    s1p1y = yy[s1p1];
-    s1p2y = yy[s1p2];
-    j = i;
-    while (j < lim) {
-      j += 2;
-      s2p1 = ids[j];
-      s2p1x = xx[s2p1];
-      if (s1p2x < s2p1x)
-        break;
-      s2p1y = yy[s2p1];
-      s2p2 = ids[j + 1];
-      s2p2x = xx[s2p2];
-      s2p2y = yy[s2p2];
-      if (s1p1y >= s2p1y) {
-        if (s1p1y > s2p2y && s1p2y > s2p1y && s1p2y > s2p2y)
-          continue;
-      } else {
-        if (s1p1y < s2p2y && s1p2y < s2p1y && s1p2y < s2p2y)
-          continue;
-      }
-      if (s1p1 == s2p1 || s1p1 == s2p2 || s1p2 == s2p1 || s1p2 == s2p2) {
-        continue;
-      }
-      hit2 = segmentIntersection(s1p1x, s1p1y, s1p2x, s1p2y, s2p1x, s2p1y, s2p2x, s2p2y);
-      if (hit2) {
-        seg1 = [s1p1, s1p2];
-        seg2 = [s2p1, s2p2];
-        intersections.push(formatIntersection(hit2, seg1, seg2, xx, yy));
-        if (hit2.length == 4) {
-          intersections.push(formatIntersection(hit2.slice(2), seg1, seg2, xx, yy));
-        }
-      }
-    }
-    i += 2;
-  }
-  return intersections;
-}
-function segmentIntersection(ax, ay, bx, by, cx, cy, dx, dy) {
-  const hit2 = segmentHit(ax, ay, bx, by, cx, cy, dx, dy);
-  let p = null;
-  if (hit2) {
-    p = crossIntersection(ax, ay, bx, by, cx, cy, dx, dy);
-    if (!p) {
-      p = collinearIntersection(ax, ay, bx, by, cx, cy, dx, dy);
-    } else if (endpointHit(ax, ay, bx, by, cx, cy, dx, dy)) {
-      p = null;
-    }
-  }
-  return p;
-}
-function segmentHit(ax, ay, bx, by, cx, cy, dx, dy) {
-  return orient2D(ax, ay, bx, by, cx, cy) * orient2D(ax, ay, bx, by, dx, dy) <= 0 && orient2D(cx, cy, dx, dy, ax, ay) * orient2D(cx, cy, dx, dy, bx, by) <= 0;
-}
-function orient2D(ax, ay, bx, by, cx, cy) {
-  return determinant2D(ax - cx, ay - cy, bx - cx, by - cy);
-}
-function determinant2D(a, b, c, d) {
-  return a * d - b * c;
-}
-function crossIntersection(ax, ay, bx, by, cx, cy, dx, dy) {
-  let p = lineIntersection(ax, ay, bx, by, cx, cy, dx, dy);
-  let nearest;
-  if (p) {
-    nearest = nearestPoint(p[0], p[1], ax, ay, bx, by, cx, cy, dx, dy);
-    if (nearest == 1) {
-      p = lineIntersection(bx, by, ax, ay, cx, cy, dx, dy);
-    } else if (nearest == 2) {
-      p = lineIntersection(cx, cy, dx, dy, ax, ay, bx, by);
-    } else if (nearest == 3) {
-      p = lineIntersection(dx, dy, cx, cy, ax, ay, bx, by);
-    }
-  }
-  if (p) {
-    clampIntersectionPoint(p, ax, ay, bx, by, cx, cy, dx, dy);
-  }
-  return p;
-}
-function lineIntersection(ax, ay, bx, by, cx, cy, dx, dy) {
-  const den = determinant2D(bx - ax, by - ay, dx - cx, dy - cy);
-  const eps = 1e-18;
-  let p;
-  if (den === 0)
-    return null;
-  const m = orient2D(cx, cy, dx, dy, ax, ay) / den;
-  if (den <= eps && den >= -eps) {
-    p = findEndpointInRange(ax, ay, bx, by, cx, cy, dx, dy);
-  } else {
-    p = [ax + m * (bx - ax), ay + m * (by - ay)];
-  }
-  return p;
-}
-function findEndpointInRange(ax, ay, bx, by, cx, cy, dx, dy) {
-  let p = null;
-  if (!outsideRange(ax, cx, dx) && !outsideRange(ay, cy, dy)) {
-    p = [ax, ay];
-  } else if (!outsideRange(bx, cx, dx) && !outsideRange(by, cy, dy)) {
-    p = [bx, by];
-  } else if (!outsideRange(cx, ax, bx) && !outsideRange(cy, ay, by)) {
-    p = [cx, cy];
-  } else if (!outsideRange(dx, ax, bx) && !outsideRange(dy, ay, by)) {
-    p = [dx, dy];
-  }
-  return p;
-}
-function outsideRange(a, b, c) {
-  let out;
-  if (b < c) {
-    out = a < b || a > c;
-  } else if (b > c) {
-    out = a > b || a < c;
-  } else {
-    out = a != b;
-  }
-  return out;
-}
-function nearestPoint(x, y, ...args) {
-  let minIdx = -1, minDist = Infinity, dist2;
-  for (let i = 0, j = 0, n = args.length; j < n; i++, j += 2) {
-    dist2 = distanceSq(x, y, args[j], args[j + 1]);
-    if (dist2 < minDist) {
-      minDist = dist2;
-      minIdx = i;
-    }
-  }
-  return minIdx;
-}
-function distanceSq(ax, ay, bx, by) {
-  const dx = ax - bx, dy = ay - by;
-  return dx * dx + dy * dy;
-}
-function clampIntersectionPoint(p, ax, ay, bx, by, cx, cy, dx, dy) {
-  let x = p[0], y = p[1];
-  x = clampToCloseRange(x, ax, bx);
-  x = clampToCloseRange(x, cx, dx);
-  y = clampToCloseRange(y, ay, by);
-  y = clampToCloseRange(y, cy, dy);
-  p[0] = x;
-  p[1] = y;
-}
-function clampToCloseRange(a, b, c) {
-  let lim;
-  if (outsideRange(a, b, c)) {
-    lim = Math.abs(a - b) < Math.abs(a - c) ? b : c;
-    a = lim;
+function Et(e, t) {
+  let s = K(e - t[0]), r = Math.PI * 2, a;
+  for (let n = 0; n < t.length; n++) {
+    const c = (n + 1) % t.length, d = K(e - t[c]), g2 = Math.min(Math.abs(s), Math.abs(d));
+    s * d <= 0 && g2 < r && (r = g2, a = n), s = d;
   }
   return a;
 }
-function collinearIntersection(ax, ay, bx, by, cx, cy, dx, dy) {
-  const minX = Math.min(ax, bx, cx, dx), maxX = Math.max(ax, bx, cx, dx), minY = Math.min(ay, by, cy, dy), maxY = Math.max(ay, by, cy, dy), useY = maxY - minY > maxX - minX;
-  let coords = [];
-  if (useY ? inside(ay, minY, maxY) : inside(ax, minX, maxX)) {
-    coords.push(ax, ay);
-  }
-  if (useY ? inside(by, minY, maxY) : inside(bx, minX, maxX)) {
-    coords.push(bx, by);
-  }
-  if (useY ? inside(cy, minY, maxY) : inside(cx, minX, maxX)) {
-    coords.push(cx, cy);
-  }
-  if (useY ? inside(dy, minY, maxY) : inside(dx, minX, maxX)) {
-    coords.push(dx, dy);
-  }
-  if (coords.length != 2 && coords.length != 4) {
-    coords = null;
-  } else if (coords.length == 4 && coords[0] == coords[2] && coords[1] == coords[3]) {
-    coords = null;
-  }
-  return coords;
+function K(e, t = false) {
+  const s = t ? function(r) {
+    return !(r >= 0 && r < Math.PI * 2);
+  } : function(r) {
+    return !(r > -1 * Math.PI && r <= Math.PI);
+  };
+  for (; s(e); )
+    e = e + 2 * Math.PI * (e > 0 ? -1 : 1);
+  return e;
 }
-function endpointHit(ax, ay, bx, by, cx, cy, dx, dy) {
-  return ax == cx && ay == cy || ax == dx && ay == dy || bx == cx && by == cy || bx == dx && by == dy;
-}
-function inside(x, minX, maxX) {
-  return x > minX && x < maxX;
-}
-function sortSegmentIds(xx, ids) {
-  orderSegmentIds(xx, ids);
-  quicksortSegmentIds(xx, ids, 0, ids.length - 2);
-}
-function orderSegmentIds(xx, ids) {
-  for (let i = 0, n = ids.length; i < n; i += 2) {
-    if (xx[ids[i]] > xx[ids[i + 1]]) {
-      swap$1(ids, i, i + 1);
-    }
-  }
-}
-function swap$1(ids, i, j) {
-  const tmp = ids[i];
-  ids[i] = ids[j];
-  ids[j] = tmp;
-}
-function quicksortSegmentIds(a, ids, lo, hi) {
-  let i = lo, j = hi, pivot, tmp;
-  while (i < hi) {
-    pivot = a[ids[lo + hi >> 2 << 1]];
-    while (i <= j) {
-      while (a[ids[i]] < pivot)
-        i += 2;
-      while (a[ids[j]] > pivot)
-        j -= 2;
-      if (i <= j) {
-        tmp = ids[i];
-        ids[i] = ids[j];
-        ids[j] = tmp;
-        tmp = ids[i + 1];
-        ids[i + 1] = ids[j + 1];
-        ids[j + 1] = tmp;
-        i += 2;
-        j -= 2;
-      }
-    }
-    if (j - lo < 40)
-      insertionSortSegmentIds(a, ids, lo, j);
-    else
-      quicksortSegmentIds(a, ids, lo, j);
-    if (hi - i < 40) {
-      insertionSortSegmentIds(a, ids, i, hi);
-      return;
-    }
-    lo = i;
-    j = hi;
-  }
-}
-function insertionSortSegmentIds(arr2, ids, start, end) {
-  let id, id2;
-  for (let j = start + 2; j <= end; j += 2) {
-    id = ids[j];
-    id2 = ids[j + 1];
-    let i;
-    for (i = j - 2; i >= start && arr2[id] < arr2[ids[i]]; i -= 2) {
-      ids[i + 2] = ids[i];
-      ids[i + 3] = ids[i + 1];
-    }
-    ids[i + 2] = id;
-    ids[i + 3] = id2;
-  }
-}
-function formatIntersection(xy, s1, s2, xx, yy) {
-  const x = xy[0], y = xy[1];
-  s1 = formatIntersectingSegment(x, y, s1[0], s1[1], xx, yy);
-  s2 = formatIntersectingSegment(x, y, s2[0], s2[1], xx, yy);
-  const a = s1[0] < s2[0] ? s1 : s2;
-  const b = a == s1 ? s2 : s1;
-  return { x, y, a, b };
-}
-function formatIntersectingSegment(x, y, id1, id2, xx, yy) {
-  let i = id1 < id2 ? id1 : id2, j = i === id1 ? id2 : id1;
-  if (xx[i] == x && yy[i] == y) {
-    j = i;
-  } else if (xx[j] == x && yy[j] == y) {
-    i = j;
-  }
-  return [i, j];
-}
-function dedupIntersections(arr2) {
-  const index2 = {};
-  return arr2.filter((o) => {
-    const key = getIntersectionKey(o);
-    if (key in index2) {
-      return false;
-    }
-    index2[key] = true;
-    return true;
-  });
-}
-function getIntersectionKey(o) {
-  return `${o.a.join(",")};${o.b.join(",")}`;
-}
-class ArcIter {
-  constructor(xx, yy) {
-    this._i = 0;
-    this._n = 0;
-    this._inc = 1;
-    this.i = 0;
-    this.x = 0;
-    this.y = 0;
-    this._xx = xx;
-    this._yy = yy;
-  }
-}
-function calcArcBounds(xx, yy, start, len) {
-  let i = start | 0;
-  const n = isNaN(len) ? xx.length - i : len + i;
-  let x, y, xmin, ymin, xmax, ymax;
-  if (n > 0) {
-    xmin = xmax = xx[i];
-    ymin = ymax = yy[i];
-  } else
-    return [void 0, void 0, void 0, void 0];
-  for (i++; i < n; i++) {
-    x = xx[i];
-    y = yy[i];
-    if (x < xmin)
-      xmin = x;
-    if (x > xmax)
-      xmax = x;
-    if (y < ymin)
-      ymin = y;
-    if (y > ymax)
-      ymax = y;
-  }
-  return [xmin, ymin, xmax, ymax];
-}
-class Bounds {
-  constructor(...args) {
-    if (args.length > 0) {
-      this.setBounds(args);
-    }
-  }
-  cloneBounds() {
-    return this.clone();
-  }
-  clone() {
-    return new Bounds(this.xmin, this.ymin, this.xmax, this.ymax);
-  }
-  width() {
-    return this.xmax - this.xmin || 0;
-  }
-  height() {
-    return this.ymax - this.ymin || 0;
-  }
-  setBounds(a, b, c, d) {
-    if (arguments.length == 1) {
-      if (isArrayLike(a)) {
-        b = a[1];
-        c = a[2];
-        d = a[3];
-        a = a[0];
-      } else {
-        b = a.ymin;
-        c = a.xmax;
-        d = a.ymax;
-        a = a.xmin;
-      }
-    }
-    this.xmin = a;
-    this.ymin = b;
-    this.xmax = c;
-    this.ymax = d;
-    if (a > c || b > d)
-      this.update();
-    return this;
-  }
-  update() {
-    let tmp;
-    if (this.xmin > this.xmax) {
-      tmp = this.xmin;
-      this.xmin = this.xmax;
-      this.xmax = tmp;
-    }
-    if (this.ymin > this.ymax) {
-      tmp = this.ymin;
-      this.ymin = this.ymax;
-      this.ymax = tmp;
-    }
-  }
-  mergeBounds(bb2, ...args) {
-    let a, b, c, d;
-    if (bb2 instanceof Bounds) {
-      a = bb2.xmin;
-      b = bb2.ymin;
-      c = bb2.xmax;
-      d = bb2.ymax;
-    } else if (args.length == 3) {
-      a = bb2;
-      b = args[0];
-      c = args[1];
-      d = args[2];
-    } else if (bb2.length == 4) {
-      a = bb2[0];
-      b = bb2[1];
-      c = bb2[2];
-      d = bb2[3];
-    } else {
-      error2("Bounds#mergeBounds() invalid argument:", bb2);
-    }
-    if (this.xmin === void 0) {
-      this.setBounds(a, b, c, d);
-    } else {
-      if (a < this.xmin)
-        this.xmin = a;
-      if (b < this.ymin)
-        this.ymin = b;
-      if (c > this.xmax)
-        this.xmax = c;
-      if (d > this.ymax)
-        this.ymax = d;
-    }
-    return this;
-  }
-}
-const EPSILON = Math.pow(2, -52);
-const EDGE_STACK = new Uint32Array(512);
-class Delaunator {
-  static from(points2, getX = defaultGetX, getY = defaultGetY) {
-    const n = points2.length;
-    const coords = new Float64Array(n * 2);
-    for (let i = 0; i < n; i++) {
-      const p = points2[i];
-      coords[2 * i] = getX(p);
-      coords[2 * i + 1] = getY(p);
-    }
-    return new Delaunator(coords);
-  }
-  constructor(coords) {
-    const n = coords.length >> 1;
-    if (n > 0 && typeof coords[0] !== "number") throw new Error("Expected coords to contain numbers.");
-    this.coords = coords;
-    const maxTriangles = Math.max(2 * n - 5, 0);
-    this._triangles = new Uint32Array(maxTriangles * 3);
-    this._halfedges = new Int32Array(maxTriangles * 3);
-    this._hashSize = Math.ceil(Math.sqrt(n));
-    this._hullPrev = new Uint32Array(n);
-    this._hullNext = new Uint32Array(n);
-    this._hullTri = new Uint32Array(n);
-    this._hullHash = new Int32Array(this._hashSize);
-    this._ids = new Uint32Array(n);
-    this._dists = new Float64Array(n);
-    this.update();
-  }
-  update() {
-    const { coords, _hullPrev: hullPrev, _hullNext: hullNext, _hullTri: hullTri, _hullHash: hullHash } = this;
-    const n = coords.length >> 1;
-    let minX = Infinity;
-    let minY = Infinity;
-    let maxX = -Infinity;
-    let maxY = -Infinity;
-    for (let i = 0; i < n; i++) {
-      const x = coords[2 * i];
-      const y = coords[2 * i + 1];
-      if (x < minX) minX = x;
-      if (y < minY) minY = y;
-      if (x > maxX) maxX = x;
-      if (y > maxY) maxY = y;
-      this._ids[i] = i;
-    }
-    const cx = (minX + maxX) / 2;
-    const cy = (minY + maxY) / 2;
-    let i0, i1, i2;
-    for (let i = 0, minDist = Infinity; i < n; i++) {
-      const d = dist(cx, cy, coords[2 * i], coords[2 * i + 1]);
-      if (d < minDist) {
-        i0 = i;
-        minDist = d;
-      }
-    }
-    const i0x = coords[2 * i0];
-    const i0y = coords[2 * i0 + 1];
-    for (let i = 0, minDist = Infinity; i < n; i++) {
-      if (i === i0) continue;
-      const d = dist(i0x, i0y, coords[2 * i], coords[2 * i + 1]);
-      if (d < minDist && d > 0) {
-        i1 = i;
-        minDist = d;
-      }
-    }
-    let i1x = coords[2 * i1];
-    let i1y = coords[2 * i1 + 1];
-    let minRadius = Infinity;
-    for (let i = 0; i < n; i++) {
-      if (i === i0 || i === i1) continue;
-      const r = circumradius(i0x, i0y, i1x, i1y, coords[2 * i], coords[2 * i + 1]);
-      if (r < minRadius) {
-        i2 = i;
-        minRadius = r;
-      }
-    }
-    let i2x = coords[2 * i2];
-    let i2y = coords[2 * i2 + 1];
-    if (minRadius === Infinity) {
-      for (let i = 0; i < n; i++) {
-        this._dists[i] = coords[2 * i] - coords[0] || coords[2 * i + 1] - coords[1];
-      }
-      quicksort(this._ids, this._dists, 0, n - 1);
-      const hull = new Uint32Array(n);
-      let j = 0;
-      for (let i = 0, d0 = -Infinity; i < n; i++) {
-        const id = this._ids[i];
-        const d = this._dists[id];
-        if (d > d0) {
-          hull[j++] = id;
-          d0 = d;
-        }
-      }
-      this.hull = hull.subarray(0, j);
-      this.triangles = new Uint32Array(0);
-      this.halfedges = new Uint32Array(0);
-      return;
-    }
-    if (orient2d(i0x, i0y, i1x, i1y, i2x, i2y) < 0) {
-      const i = i1;
-      const x = i1x;
-      const y = i1y;
-      i1 = i2;
-      i1x = i2x;
-      i1y = i2y;
-      i2 = i;
-      i2x = x;
-      i2y = y;
-    }
-    const center = circumcenter(i0x, i0y, i1x, i1y, i2x, i2y);
-    this._cx = center.x;
-    this._cy = center.y;
-    for (let i = 0; i < n; i++) {
-      this._dists[i] = dist(coords[2 * i], coords[2 * i + 1], center.x, center.y);
-    }
-    quicksort(this._ids, this._dists, 0, n - 1);
-    this._hullStart = i0;
-    let hullSize = 3;
-    hullNext[i0] = hullPrev[i2] = i1;
-    hullNext[i1] = hullPrev[i0] = i2;
-    hullNext[i2] = hullPrev[i1] = i0;
-    hullTri[i0] = 0;
-    hullTri[i1] = 1;
-    hullTri[i2] = 2;
-    hullHash.fill(-1);
-    hullHash[this._hashKey(i0x, i0y)] = i0;
-    hullHash[this._hashKey(i1x, i1y)] = i1;
-    hullHash[this._hashKey(i2x, i2y)] = i2;
-    this.trianglesLen = 0;
-    this._addTriangle(i0, i1, i2, -1, -1, -1);
-    for (let k = 0, xp, yp; k < this._ids.length; k++) {
-      const i = this._ids[k];
-      const x = coords[2 * i];
-      const y = coords[2 * i + 1];
-      if (k > 0 && Math.abs(x - xp) <= EPSILON && Math.abs(y - yp) <= EPSILON) continue;
-      xp = x;
-      yp = y;
-      if (i === i0 || i === i1 || i === i2) continue;
-      let start = 0;
-      for (let j = 0, key = this._hashKey(x, y); j < this._hashSize; j++) {
-        start = hullHash[(key + j) % this._hashSize];
-        if (start !== -1 && start !== hullNext[start]) break;
-      }
-      start = hullPrev[start];
-      let e = start, q;
-      while (q = hullNext[e], orient2d(x, y, coords[2 * e], coords[2 * e + 1], coords[2 * q], coords[2 * q + 1]) >= 0) {
-        e = q;
-        if (e === start) {
-          e = -1;
-          break;
-        }
-      }
-      if (e === -1) continue;
-      let t = this._addTriangle(e, i, hullNext[e], -1, -1, hullTri[e]);
-      hullTri[i] = this._legalize(t + 2);
-      hullTri[e] = t;
-      hullSize++;
-      let n2 = hullNext[e];
-      while (q = hullNext[n2], orient2d(x, y, coords[2 * n2], coords[2 * n2 + 1], coords[2 * q], coords[2 * q + 1]) < 0) {
-        t = this._addTriangle(n2, i, q, hullTri[i], -1, hullTri[n2]);
-        hullTri[i] = this._legalize(t + 2);
-        hullNext[n2] = n2;
-        hullSize--;
-        n2 = q;
-      }
-      if (e === start) {
-        while (q = hullPrev[e], orient2d(x, y, coords[2 * q], coords[2 * q + 1], coords[2 * e], coords[2 * e + 1]) < 0) {
-          t = this._addTriangle(q, i, e, -1, hullTri[e], hullTri[q]);
-          this._legalize(t + 2);
-          hullTri[q] = t;
-          hullNext[e] = e;
-          hullSize--;
-          e = q;
-        }
-      }
-      this._hullStart = hullPrev[i] = e;
-      hullNext[e] = hullPrev[n2] = i;
-      hullNext[i] = n2;
-      hullHash[this._hashKey(x, y)] = i;
-      hullHash[this._hashKey(coords[2 * e], coords[2 * e + 1])] = e;
-    }
-    this.hull = new Uint32Array(hullSize);
-    for (let i = 0, e = this._hullStart; i < hullSize; i++) {
-      this.hull[i] = e;
-      e = hullNext[e];
-    }
-    this.triangles = this._triangles.subarray(0, this.trianglesLen);
-    this.halfedges = this._halfedges.subarray(0, this.trianglesLen);
-  }
-  _hashKey(x, y) {
-    return Math.floor(pseudoAngle(x - this._cx, y - this._cy) * this._hashSize) % this._hashSize;
-  }
-  _legalize(a) {
-    const { _triangles: triangles, _halfedges: halfedges, coords } = this;
-    let i = 0;
-    let ar = 0;
-    while (true) {
-      const b = halfedges[a];
-      const a0 = a - a % 3;
-      ar = a0 + (a + 2) % 3;
-      if (b === -1) {
-        if (i === 0) break;
-        a = EDGE_STACK[--i];
-        continue;
-      }
-      const b0 = b - b % 3;
-      const al = a0 + (a + 1) % 3;
-      const bl = b0 + (b + 2) % 3;
-      const p0 = triangles[ar];
-      const pr = triangles[a];
-      const pl = triangles[al];
-      const p1 = triangles[bl];
-      const illegal = inCircle(
-        coords[2 * p0],
-        coords[2 * p0 + 1],
-        coords[2 * pr],
-        coords[2 * pr + 1],
-        coords[2 * pl],
-        coords[2 * pl + 1],
-        coords[2 * p1],
-        coords[2 * p1 + 1]
-      );
-      if (illegal) {
-        triangles[a] = p1;
-        triangles[b] = p0;
-        const hbl = halfedges[bl];
-        if (hbl === -1) {
-          let e = this._hullStart;
-          do {
-            if (this._hullTri[e] === bl) {
-              this._hullTri[e] = a;
-              break;
-            }
-            e = this._hullPrev[e];
-          } while (e !== this._hullStart);
-        }
-        this._link(a, hbl);
-        this._link(b, halfedges[ar]);
-        this._link(ar, bl);
-        const br = b0 + (b + 1) % 3;
-        if (i < EDGE_STACK.length) {
-          EDGE_STACK[i++] = br;
-        }
-      } else {
-        if (i === 0) break;
-        a = EDGE_STACK[--i];
-      }
-    }
-    return ar;
-  }
-  _link(a, b) {
-    this._halfedges[a] = b;
-    if (b !== -1) this._halfedges[b] = a;
-  }
-  // add a new triangle given vertex indices and adjacent half-edge ids
-  _addTriangle(i0, i1, i2, a, b, c) {
-    const t = this.trianglesLen;
-    this._triangles[t] = i0;
-    this._triangles[t + 1] = i1;
-    this._triangles[t + 2] = i2;
-    this._link(t, a);
-    this._link(t + 1, b);
-    this._link(t + 2, c);
-    this.trianglesLen += 3;
-    return t;
-  }
-}
-function pseudoAngle(dx, dy) {
-  const p = dx / (Math.abs(dx) + Math.abs(dy));
-  return (dy > 0 ? 3 - p : 1 + p) / 4;
-}
-function dist(ax, ay, bx, by) {
-  const dx = ax - bx;
-  const dy = ay - by;
-  return dx * dx + dy * dy;
-}
-function inCircle(ax, ay, bx, by, cx, cy, px, py) {
-  const dx = ax - px;
-  const dy = ay - py;
-  const ex = bx - px;
-  const ey = by - py;
-  const fx = cx - px;
-  const fy = cy - py;
-  const ap = dx * dx + dy * dy;
-  const bp = ex * ex + ey * ey;
-  const cp = fx * fx + fy * fy;
-  return dx * (ey * cp - bp * fy) - dy * (ex * cp - bp * fx) + ap * (ex * fy - ey * fx) < 0;
-}
-function circumradius(ax, ay, bx, by, cx, cy) {
-  const dx = bx - ax;
-  const dy = by - ay;
-  const ex = cx - ax;
-  const ey = cy - ay;
-  const bl = dx * dx + dy * dy;
-  const cl = ex * ex + ey * ey;
-  const d = 0.5 / (dx * ey - dy * ex);
-  const x = (ey * bl - dy * cl) * d;
-  const y = (dx * cl - ex * bl) * d;
-  return x * x + y * y;
-}
-function circumcenter(ax, ay, bx, by, cx, cy) {
-  const dx = bx - ax;
-  const dy = by - ay;
-  const ex = cx - ax;
-  const ey = cy - ay;
-  const bl = dx * dx + dy * dy;
-  const cl = ex * ex + ey * ey;
-  const d = 0.5 / (dx * ey - dy * ex);
-  const x = ax + (ey * bl - dy * cl) * d;
-  const y = ay + (dx * cl - ex * bl) * d;
-  return { x, y };
-}
-function quicksort(ids, dists, left, right) {
-  if (right - left <= 20) {
-    for (let i = left + 1; i <= right; i++) {
-      const temp = ids[i];
-      const tempDist = dists[temp];
-      let j = i - 1;
-      while (j >= left && dists[ids[j]] > tempDist) ids[j + 1] = ids[j--];
-      ids[j + 1] = temp;
-    }
-  } else {
-    const median = left + right >> 1;
-    let i = left + 1;
-    let j = right;
-    swap(ids, median, i);
-    if (dists[ids[left]] > dists[ids[right]]) swap(ids, left, right);
-    if (dists[ids[i]] > dists[ids[right]]) swap(ids, i, right);
-    if (dists[ids[left]] > dists[ids[i]]) swap(ids, left, i);
-    const temp = ids[i];
-    const tempDist = dists[temp];
-    while (true) {
-      do
-        i++;
-      while (dists[ids[i]] < tempDist);
-      do
-        j--;
-      while (dists[ids[j]] > tempDist);
-      if (j < i) break;
-      swap(ids, i, j);
-    }
-    ids[left + 1] = ids[j];
-    ids[j] = temp;
-    if (right - i + 1 >= j - left) {
-      quicksort(ids, dists, i, right);
-      quicksort(ids, dists, left, j - 1);
-    } else {
-      quicksort(ids, dists, left, j - 1);
-      quicksort(ids, dists, i, right);
-    }
-  }
-}
-function swap(arr2, i, j) {
-  const tmp = arr2[i];
-  arr2[i] = arr2[j];
-  arr2[j] = tmp;
-}
-function defaultGetX(p) {
-  return p[0];
-}
-function defaultGetY(p) {
-  return p[1];
-}
-class BitSet {
-  constructor(W, bs) {
-    this.W = W;
-    this.bs = bs;
+const Q = 2.00703, O = class O2 {
+  constructor() {
+    _23(this, "points", []);
+    _23(this, "pointsWeightBuffer");
+    _23(this, "strict_status");
+    _23(this, "vertices_params");
+    _23(this, "centroid");
+    _23(this, "edgeNodes");
+    _23(this, "edges");
+    _23(this, "tins");
+    _23(this, "kinks");
+    _23(this, "yaxisMode", O2.YAXIS_INVERT);
+    _23(this, "strictMode", O2.MODE_AUTO);
+    _23(this, "vertexMode", O2.VERTEX_PLAIN);
+    _23(this, "bounds");
+    _23(this, "boundsPolygon");
+    _23(this, "wh");
+    _23(this, "xy");
+    _23(this, "indexedTins");
+    _23(this, "stateFull", false);
+    _23(this, "stateTriangle");
+    _23(this, "stateBackward");
   }
   /**
-   * Add a number to the set.
-   *
-   * @param idx The number to add. Must be 0 <= idx < len.
-   * @return this.
+   * コンパイルされた設定を適用します
+   * 
+   * @param compiled - コンパイルされた設定オブジェクト
+   * @returns 変換に必要な主要なオブジェクトのセット
+   * 
+   * 以下の処理を行います：
+   * 1. バージョンに応じた設定の解釈
+   * 2. 各種パラメータの復元
+   * 3. TINネットワークの再構築
+   * 4. インデックスの作成
    */
-  add(idx) {
-    const W = this.W, byte = idx / W | 0, bit = idx % W;
-    this.bs[byte] |= 1 << bit;
-    return this;
-  }
-  /**
-   * Delete a number from the set.
-   *
-   * @param idx The number to delete. Must be 0 <= idx < len.
-   * @return this.
-   */
-  delete(idx) {
-    const W = this.W, byte = idx / W | 0, bit = idx % W;
-    this.bs[byte] &= ~(1 << bit);
-    return this;
-  }
-  /**
-   * Add or delete a number in the set, depending on the second argument.
-   *
-   * @param idx The number to add or delete. Must be 0 <= idx < len.
-   * @param val If true, add the number, otherwise delete.
-   * @return val.
-   */
-  set(idx, val) {
-    const W = this.W, byte = idx / W | 0, bit = idx % W, m = 1 << bit;
-    this.bs[byte] ^= (-val ^ this.bs[byte]) & m;
-    return val;
-  }
-  /**
-   * Whether the number is in the set.
-   *
-   * @param idx The number to test. Must be 0 <= idx < len.
-   * @return True if the number is in the set.
-   */
-  has(idx) {
-    const W = this.W, byte = idx / W | 0, bit = idx % W;
-    return !!(this.bs[byte] & 1 << bit);
-  }
-  /**
-   * Iterate over the numbers that are in the set. The callback is invoked
-   * with each number that is set. It is allowed to change the BitSet during
-   * iteration. If it deletes a number that has not been iterated over, that
-   * number will not show up in a later call. If it adds a number during
-   * iteration, that number may or may not show up in a later call.
-   *
-   * @param fn The function to call for each number.
-   * @return this.
-   */
-  forEach(fn) {
-    const W = this.W, bs = this.bs, len = bs.length;
-    for (let byte = 0; byte < len; byte++) {
-      let bit = 0;
-      while (bs[byte] && bit < W) {
-        if (bs[byte] & 1 << bit) {
-          fn(byte * W + bit);
-        }
-        bit++;
-      }
-    }
-    return this;
-  }
-}
-class BitSet8 extends BitSet {
-  /**
-   * Create a bit set.
-   *
-   * @param len The length of the bit set, limiting the maximum value that
-   *        can be stored in it to len - 1.
-   */
-  constructor(len) {
-    const W = 8, bs = new Uint8Array(Math.ceil(len / W)).fill(0);
-    super(W, bs);
-  }
-}
-function nextEdge(e) {
-  return e % 3 === 2 ? e - 2 : e + 1;
-}
-function prevEdge(e) {
-  return e % 3 === 0 ? e + 2 : e - 1;
-}
-class Constrainautor {
-  /**
-   * Make a Constrainautor.
-   *
-   * @param del The triangulation output from Delaunator.
-   * @param edges If provided, constrain these edges as by constrainAll.
-   */
-  constructor(del, edges) {
-    if (!del || typeof del !== "object" || !del.triangles || !del.halfedges || !del.coords) {
-      throw new Error("Expected an object with Delaunator output");
-    }
-    if (del.triangles.length % 3 || del.halfedges.length !== del.triangles.length || del.coords.length % 2) {
-      throw new Error("Delaunator output appears inconsistent");
-    }
-    if (del.triangles.length < 3) {
-      throw new Error("No edges in triangulation");
-    }
-    this.del = del;
-    const U32NIL = 2 ** 32 - 1, numPoints = del.coords.length >> 1, numEdges = del.triangles.length;
-    this.vertMap = new Uint32Array(numPoints).fill(U32NIL);
-    this.flips = new BitSet8(numEdges);
-    this.consd = new BitSet8(numEdges);
-    for (let e = 0; e < numEdges; e++) {
-      const v2 = del.triangles[e];
-      if (this.vertMap[v2] === U32NIL) {
-        this.updateVert(e);
-      }
-    }
-    if (edges) {
-      this.constrainAll(edges);
-    }
-  }
-  /**
-   * Constrain the triangulation such that there is an edge between p1 and p2.
-   *
-   * @param segP1 The index of one segment end-point in the coords array.
-   * @param segP2 The index of the other segment end-point in the coords array.
-   * @return The id of the edge that points from p1 to p2. If the
-   *         constrained edge lies on the hull and points in the opposite
-   *         direction (p2 to p1), the negative of its id is returned.
-   */
-  constrainOne(segP1, segP2) {
-    const { triangles, halfedges } = this.del, vm = this.vertMap, consd = this.consd, start = vm[segP1];
-    let edg = start;
-    do {
-      const p4 = triangles[edg], nxt = nextEdge(edg);
-      if (p4 === segP2) {
-        return this.protect(edg);
-      }
-      const opp = prevEdge(edg), p3 = triangles[opp];
-      if (p3 === segP2) {
-        this.protect(nxt);
-        return nxt;
-      }
-      if (this.intersectSegments(segP1, segP2, p3, p4)) {
-        edg = opp;
-        break;
-      }
-      const adj = halfedges[nxt];
-      edg = adj;
-    } while (edg !== -1 && edg !== start);
-    let conEdge = edg;
-    let rescan = -1;
-    while (edg !== -1) {
-      const adj = halfedges[edg], bot = prevEdge(edg), top = prevEdge(adj), rgt = nextEdge(adj);
-      if (adj === -1) {
-        throw new Error("Constraining edge exited the hull");
-      }
-      if (consd.has(edg)) {
-        throw new Error("Edge intersects already constrained edge");
-      }
-      if (this.isCollinear(segP1, segP2, triangles[edg]) || this.isCollinear(segP1, segP2, triangles[adj])) {
-        throw new Error("Constraining edge intersects point");
-      }
-      const convex2 = this.intersectSegments(triangles[edg], triangles[adj], triangles[bot], triangles[top]);
-      if (!convex2) {
-        if (rescan === -1) {
-          rescan = edg;
-        }
-        if (triangles[top] === segP2) {
-          if (edg === rescan) {
-            throw new Error("Infinite loop: non-convex quadrilateral");
-          }
-          edg = rescan;
-          rescan = -1;
-          continue;
-        }
-        if (this.intersectSegments(segP1, segP2, triangles[top], triangles[adj])) {
-          edg = top;
-        } else if (this.intersectSegments(segP1, segP2, triangles[rgt], triangles[top])) {
-          edg = rgt;
-        } else if (rescan === edg) {
-          throw new Error("Infinite loop: no further intersect after non-convex");
-        }
-        continue;
-      }
-      this.flipDiagonal(edg);
-      if (this.intersectSegments(segP1, segP2, triangles[bot], triangles[top])) {
-        if (rescan === -1) {
-          rescan = bot;
-        }
-        if (rescan === bot) {
-          throw new Error("Infinite loop: flipped diagonal still intersects");
-        }
-      }
-      if (triangles[top] === segP2) {
-        conEdge = top;
-        edg = rescan;
-        rescan = -1;
-      } else if (this.intersectSegments(segP1, segP2, triangles[rgt], triangles[top])) {
-        edg = rgt;
-      }
-    }
-    const flips = this.flips;
-    this.protect(conEdge);
-    do {
-      var flipped = 0;
-      flips.forEach((edg2) => {
-        flips.delete(edg2);
-        const adj = halfedges[edg2];
-        if (adj === -1) {
-          return;
-        }
-        flips.delete(adj);
-        if (!this.isDelaunay(edg2)) {
-          this.flipDiagonal(edg2);
-          flipped++;
-        }
-      });
-    } while (flipped > 0);
-    return this.findEdge(segP1, segP2);
-  }
-  /**
-   * Fix the Delaunay condition. It is no longer necessary to call this
-   * method after constraining (many) edges, since constrainOne will do it
-   * after each.
-   *
-   * @param deep If true, keep checking & flipping edges until all
-   *        edges are Delaunay, otherwise only check the edges once.
-   * @return The triangulation object.
-   */
-  delaunify(deep = false) {
-    const halfedges = this.del.halfedges, flips = this.flips, consd = this.consd, len = halfedges.length;
-    do {
-      var flipped = 0;
-      for (let edg = 0; edg < len; edg++) {
-        if (consd.has(edg)) {
-          continue;
-        }
-        flips.delete(edg);
-        const adj = halfedges[edg];
-        if (adj === -1) {
-          continue;
-        }
-        flips.delete(adj);
-        if (!this.isDelaunay(edg)) {
-          this.flipDiagonal(edg);
-          flipped++;
-        }
-      }
-    } while (deep && flipped > 0);
-    return this;
-  }
-  /**
-   * Call constrainOne on each edge, and delaunify afterwards.
-   *
-   * @param edges The edges to constrain: each element is an array with
-   *        [p1, p2] which are indices into the points array originally
-   *        supplied to Delaunator.
-   * @return The triangulation object.
-   */
-  constrainAll(edges) {
-    const len = edges.length;
-    for (let i = 0; i < len; i++) {
-      const e = edges[i];
-      this.constrainOne(e[0], e[1]);
-    }
-    return this;
-  }
-  /**
-   * Whether an edge is a constrained edge.
-   *
-   * @param edg The edge id.
-   * @return True if the edge is constrained.
-   */
-  isConstrained(edg) {
-    return this.consd.has(edg);
-  }
-  /**
-   * Find the edge that points from p1 -> p2. If there is only an edge from
-   * p2 -> p1 (i.e. it is on the hull), returns the negative id of it.
-   *
-   * @param p1 The index of the first point into the points array.
-   * @param p2 The index of the second point into the points array.
-   * @return The id of the edge that points from p1 -> p2, or the negative
-   *         id of the edge that goes from p2 -> p1, or Infinity if there is
-   *         no edge between p1 and p2.
-   */
-  findEdge(p1, p2) {
-    const start1 = this.vertMap[p2], { triangles, halfedges } = this.del;
-    let edg = start1, prv = -1;
-    do {
-      if (triangles[edg] === p1) {
-        return edg;
-      }
-      prv = nextEdge(edg);
-      edg = halfedges[prv];
-    } while (edg !== -1 && edg !== start1);
-    if (triangles[nextEdge(prv)] === p1) {
-      return -prv;
-    }
-    return Infinity;
-  }
-  /**
-   * Mark an edge as constrained, i.e. should not be touched by `delaunify`.
-   *
-   * @private
-   * @param edg The edge id.
-   * @return If edg has an adjacent, returns that, otherwise -edg.
-   */
-  protect(edg) {
-    const adj = this.del.halfedges[edg], flips = this.flips, consd = this.consd;
-    flips.delete(edg);
-    consd.add(edg);
-    if (adj !== -1) {
-      flips.delete(adj);
-      consd.add(adj);
-      return adj;
-    }
-    return -edg;
-  }
-  /**
-   * Mark an edge as flipped, unless it is already marked as constrained.
-   *
-   * @private
-   * @param edg The edge id.
-   * @return True if edg was not constrained.
-   */
-  markFlip(edg) {
-    const halfedges = this.del.halfedges, flips = this.flips, consd = this.consd;
-    if (consd.has(edg)) {
-      return false;
-    }
-    const adj = halfedges[edg];
-    if (adj !== -1) {
-      flips.add(edg);
-      flips.add(adj);
-    }
-    return true;
-  }
-  /**
-   * Flip the edge shared by two triangles.
-   *
-   * @private
-   * @param edg The edge shared by the two triangles, must have an
-   *        adjacent half-edge.
-   * @return The new diagonal.
-   */
-  flipDiagonal(edg) {
-    const { triangles, halfedges } = this.del, flips = this.flips, consd = this.consd, adj = halfedges[edg], bot = prevEdge(edg), lft = nextEdge(edg), top = prevEdge(adj), rgt = nextEdge(adj), adjBot = halfedges[bot], adjTop = halfedges[top];
-    if (consd.has(edg)) {
-      throw new Error("Trying to flip a constrained edge");
-    }
-    triangles[edg] = triangles[top];
-    halfedges[edg] = adjTop;
-    if (!flips.set(edg, flips.has(top))) {
-      consd.set(edg, consd.has(top));
-    }
-    if (adjTop !== -1) {
-      halfedges[adjTop] = edg;
-    }
-    halfedges[bot] = top;
-    triangles[adj] = triangles[bot];
-    halfedges[adj] = adjBot;
-    if (!flips.set(adj, flips.has(bot))) {
-      consd.set(adj, consd.has(bot));
-    }
-    if (adjBot !== -1) {
-      halfedges[adjBot] = adj;
-    }
-    halfedges[top] = bot;
-    this.markFlip(edg);
-    this.markFlip(lft);
-    this.markFlip(adj);
-    this.markFlip(rgt);
-    flips.add(bot);
-    consd.delete(bot);
-    flips.add(top);
-    consd.delete(top);
-    this.updateVert(edg);
-    this.updateVert(lft);
-    this.updateVert(adj);
-    this.updateVert(rgt);
-    return bot;
-  }
-  /**
-   * Whether the two triangles sharing edg conform to the Delaunay condition.
-   * As a shortcut, if the given edge has no adjacent (is on the hull), it is
-   * certainly Delaunay.
-   *
-   * @private
-   * @param edg The edge shared by the triangles to test.
-   * @return True if they are Delaunay.
-   */
-  isDelaunay(edg) {
-    const { triangles, halfedges } = this.del, adj = halfedges[edg];
-    if (adj === -1) {
-      return true;
-    }
-    const p1 = triangles[prevEdge(edg)], p2 = triangles[edg], p3 = triangles[nextEdge(edg)], px = triangles[prevEdge(adj)];
-    return !this.inCircle(p1, p2, p3, px);
-  }
-  /**
-   * Update the vertex -> incoming edge map.
-   *
-   * @private
-   * @param start The id of an *outgoing* edge.
-   * @return The id of the right-most incoming edge.
-   */
-  updateVert(start) {
-    const { triangles, halfedges } = this.del, vm = this.vertMap, v2 = triangles[start];
-    let inc = prevEdge(start), adj = halfedges[inc];
-    while (adj !== -1 && adj !== start) {
-      inc = prevEdge(adj);
-      adj = halfedges[inc];
-    }
-    vm[v2] = inc;
-    return inc;
-  }
-  /**
-   * Whether the segment between [p1, p2] intersects with [p3, p4]. When the
-   * segments share an end-point (e.g. p1 == p3 etc.), they are not considered
-   * intersecting.
-   *
-   * @private
-   * @param p1 The index of point 1 into this.del.coords.
-   * @param p2 The index of point 2 into this.del.coords.
-   * @param p3 The index of point 3 into this.del.coords.
-   * @param p4 The index of point 4 into this.del.coords.
-   * @return True if the segments intersect.
-   */
-  intersectSegments(p1, p2, p3, p4) {
-    const pts = this.del.coords;
-    if (p1 === p3 || p1 === p4 || p2 === p3 || p2 === p4) {
-      return false;
-    }
-    return intersectSegments(pts[p1 * 2], pts[p1 * 2 + 1], pts[p2 * 2], pts[p2 * 2 + 1], pts[p3 * 2], pts[p3 * 2 + 1], pts[p4 * 2], pts[p4 * 2 + 1]);
-  }
-  /**
-   * Whether point px is in the circumcircle of the triangle formed by p1, p2,
-   * and p3 (which are in counter-clockwise order).
-   *
-   * @param p1 The index of point 1 into this.del.coords.
-   * @param p2 The index of point 2 into this.del.coords.
-   * @param p3 The index of point 3 into this.del.coords.
-   * @param px The index of point x into this.del.coords.
-   * @return True if (px, py) is in the circumcircle.
-   */
-  inCircle(p1, p2, p3, px) {
-    const pts = this.del.coords;
-    return incircle(pts[p1 * 2], pts[p1 * 2 + 1], pts[p2 * 2], pts[p2 * 2 + 1], pts[p3 * 2], pts[p3 * 2 + 1], pts[px * 2], pts[px * 2 + 1]) < 0;
-  }
-  /**
-   * Whether point p1, p2, and p are collinear.
-   *
-   * @private
-   * @param p1 The index of segment point 1 into this.del.coords.
-   * @param p2 The index of segment point 2 into this.del.coords.
-   * @param p The index of the point p into this.del.coords.
-   * @return True if the points are collinear.
-   */
-  isCollinear(p1, p2, p) {
-    const pts = this.del.coords;
-    return orient2d(pts[p1 * 2], pts[p1 * 2 + 1], pts[p2 * 2], pts[p2 * 2 + 1], pts[p * 2], pts[p * 2 + 1]) === 0;
-  }
-}
-Constrainautor.intersectSegments = intersectSegments;
-function intersectSegments(p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y) {
-  const x0 = orient2d(p1x, p1y, p3x, p3y, p4x, p4y), y0 = orient2d(p2x, p2y, p3x, p3y, p4x, p4y);
-  if (x0 > 0 && y0 > 0 || x0 < 0 && y0 < 0) {
-    return false;
-  }
-  const x1 = orient2d(p3x, p3y, p1x, p1y, p2x, p2y), y1 = orient2d(p4x, p4y, p1x, p1y, p2x, p2y);
-  if (x1 > 0 && y1 > 0 || x1 < 0 && y1 < 0) {
-    return false;
-  }
-  if (x0 === 0 && y0 === 0 && x1 === 0 && y1 === 0) {
-    return !(Math.max(p3x, p4x) < Math.min(p1x, p2x) || Math.max(p1x, p2x) < Math.min(p3x, p4x) || Math.max(p3y, p4y) < Math.min(p1y, p2y) || Math.max(p1y, p2y) < Math.min(p3y, p4y));
-  }
-  return true;
-}
-function constrainedTin(points2, edges, z) {
-  if (!edges)
-    edges = [];
-  if (typeof points2 !== "object" || points2.type !== "FeatureCollection")
-    throw "Argument points must be FeatureCollection";
-  if (!Array.isArray(edges))
-    throw "Argument points must be Array of Array";
-  const del_points = points2.features.map((point2) => point2.geometry.coordinates);
-  const del = Delaunator.from(del_points);
-  let con;
-  const tris = [];
-  if (del.triangles.length !== 0 && edges.length !== 0) {
-    con = new Constrainautor(del);
-    con.constrainAll(edges);
-  }
-  for (let i = 0; i < del.triangles.length; i += 3) {
-    tris.push([del.triangles[i], del.triangles[i + 1], del.triangles[i + 2]]);
-  }
-  const keys2 = ["a", "b", "c"];
-  return featureCollection$1(tris.map((indices) => {
-    const properties = {};
-    const coords = indices.map((index2, i) => {
-      const point2 = points2.features[index2];
-      const xyz = point2.geometry.coordinates;
-      const coord = [xyz[0], xyz[1]];
-      if (xyz.length === 3) {
-        coord[2] = xyz[2];
-      } else {
-        properties[keys2[i]] = point2.properties[z];
-      }
-      return coord;
-    });
-    coords[3] = coords[0];
-    return polygon([coords], properties);
-  }));
-}
-const format_version = 2.00703;
-class Tin {
-  constructor(options = {}) {
-    this.points = [];
-    if (options.bounds) {
-      this.setBounds(options.bounds);
-    } else {
-      this.setWh(options.wh);
-      this.vertexMode = options.vertexMode || Tin.VERTEX_PLAIN;
-    }
-    this.strictMode = options.strictMode || Tin.MODE_AUTO;
-    this.yaxisMode = options.yaxisMode || Tin.YAXIS_INVERT;
-    this.importance = options.importance || 0;
-    this.priority = options.priority || 0;
-    this.stateFull = options.stateFull || false;
-    if (options.points) {
-      this.setPoints(options.points);
-    }
-    if (options.edges) {
-      this.setEdges(options.edges);
-    }
-  }
-  getFormatVersion() {
-    return format_version;
-  }
-  setPoints(points2) {
-    if (this.yaxisMode == Tin.YAXIS_FOLLOW) {
-      points2 = points2.map((point2) => [point2[0], [point2[1][0], -1 * point2[1][1]]]);
-    }
-    this.points = points2;
-    this.tins = void 0;
-    this.indexedTins = void 0;
-  }
-  setEdges(edges = []) {
-    this.edges = normalizeEdges(edges);
-    this.edgeNodes = void 0;
-    this.tins = void 0;
-    this.indexedTins = void 0;
-  }
-  setBounds(bounds) {
-    this.bounds = bounds;
-    let minx = bounds[0][0];
-    let maxx = minx;
-    let miny = bounds[0][1];
-    let maxy = miny;
-    const coords = [bounds[0]];
-    for (let i = 1; i < bounds.length; i++) {
-      const xy = bounds[i];
-      if (xy[0] < minx)
-        minx = xy[0];
-      if (xy[0] > maxx)
-        maxx = xy[0];
-      if (xy[1] < miny)
-        miny = xy[1];
-      if (xy[1] > maxy)
-        maxy = xy[1];
-      coords.push(xy);
-    }
-    coords.push(bounds[0]);
-    this.boundsPolygon = polygon([coords]);
-    this.xy = [minx, miny];
-    this.wh = [maxx - minx, maxy - miny];
-    this.vertexMode = Tin.VERTEX_PLAIN;
-    this.tins = void 0;
-    this.indexedTins = void 0;
-  }
-  setCompiled(compiled) {
-    if (compiled.version || !compiled.tins && compiled.points && compiled.tins_points) {
-      this.points = compiled.points;
-      this.pointsWeightBuffer = !compiled.version || compiled.version < 2.00703 ? ["forw", "bakw"].reduce((bd, forb) => {
-        const base = compiled.weight_buffer[forb];
-        if (base) {
-          bd[forb] = Object.keys(base).reduce((buffer, key) => {
-            const normKey = normalizeNodeKey(key);
-            buffer[normKey] = base[key];
-            return buffer;
-          }, {});
-        }
-        return bd;
-      }, {}) : compiled.weight_buffer;
-      if (compiled.strict_status) {
-        this.strict_status = compiled.strict_status;
-      } else if (compiled.kinks_points) {
-        this.strict_status = Tin.STATUS_ERROR;
-      } else if (compiled.tins_points.length == 2) {
-        this.strict_status = Tin.STATUS_LOOSE;
-      } else {
-        this.strict_status = Tin.STATUS_STRICT;
-      }
-      this.vertices_params = {
-        forw: [compiled.vertices_params[0]],
-        bakw: [compiled.vertices_params[1]]
-      };
-      this.vertices_params.forw[1] = [0, 1, 2, 3].map((idx) => {
-        const idxNxt = (idx + 1) % 4;
-        const tri = indexesToTri(["c", `b${idx}`, `b${idxNxt}`], compiled.points, compiled.edgeNodes || [], compiled.centroid_point, compiled.vertices_points, false, format_version);
-        return featureCollection$1([tri]);
-      });
-      this.vertices_params.bakw[1] = [0, 1, 2, 3].map((idx) => {
-        const idxNxt = (idx + 1) % 4;
-        const tri = indexesToTri(["c", `b${idx}`, `b${idxNxt}`], compiled.points, compiled.edgeNodes || [], compiled.centroid_point, compiled.vertices_points, true, format_version);
-        return featureCollection$1([tri]);
-      });
-      this.centroid = {
-        forw: point(compiled.centroid_point[0], {
+  setCompiled(t) {
+    if (t.version || !t.tins && t.points && t.tins_points) {
+      this.points = t.points, this.pointsWeightBuffer = !t.version || t.version < 2.00703 ? ["forw", "bakw"].reduce((r, a) => {
+        const n = t.weight_buffer[a];
+        return n && (r[a] = Object.keys(n).reduce((c, d) => {
+          const g2 = et(d);
+          return c[g2] = n[d], c;
+        }, {})), r;
+      }, {}) : t.weight_buffer, t.strict_status ? this.strict_status = t.strict_status : t.kinks_points ? this.strict_status = O2.STATUS_ERROR : t.tins_points.length == 2 ? this.strict_status = O2.STATUS_LOOSE : this.strict_status = O2.STATUS_STRICT, this.vertices_params = {
+        forw: [t.vertices_params[0]],
+        bakw: [t.vertices_params[1]]
+      }, this.vertices_params.forw[1] = [0, 1, 2, 3].map((r) => {
+        const a = (r + 1) % 4, n = W(
+          ["c", `b${r}`, `b${a}`],
+          t.points,
+          t.edgeNodes || [],
+          t.centroid_point,
+          t.vertices_points,
+          false,
+          Q
+        );
+        return B([n]);
+      }), this.vertices_params.bakw[1] = [0, 1, 2, 3].map((r) => {
+        const a = (r + 1) % 4, n = W(
+          ["c", `b${r}`, `b${a}`],
+          t.points,
+          t.edgeNodes || [],
+          t.centroid_point,
+          t.vertices_points,
+          true,
+          Q
+        );
+        return B([n]);
+      }), this.centroid = {
+        forw: Y(t.centroid_point[0], {
           target: {
-            geom: compiled.centroid_point[1],
+            geom: t.centroid_point[1],
             index: "c"
           }
         }),
-        bakw: point(compiled.centroid_point[1], {
+        bakw: Y(t.centroid_point[1], {
           target: {
-            geom: compiled.centroid_point[0],
+            geom: t.centroid_point[0],
             index: "c"
           }
         })
-      };
-      this.edges = normalizeEdges(compiled.edges || []);
-      this.edgeNodes = compiled.edgeNodes || [];
-      const bakwI = compiled.tins_points.length == 1 ? 0 : 1;
+      }, this.edges = At(t.edges || []), this.edgeNodes = t.edgeNodes || [];
+      const s = t.tins_points.length == 1 ? 0 : 1;
       this.tins = {
-        forw: featureCollection$1(compiled.tins_points[0].map((idxes) => indexesToTri(idxes, compiled.points, compiled.edgeNodes || [], compiled.centroid_point, compiled.vertices_points, false, compiled.version))),
-        bakw: featureCollection$1(compiled.tins_points[bakwI].map((idxes) => indexesToTri(idxes, compiled.points, compiled.edgeNodes || [], compiled.centroid_point, compiled.vertices_points, true, compiled.version)))
-      };
-      this.addIndexedTin();
-      if (compiled.kinks_points) {
-        this.kinks = {
-          bakw: featureCollection$1(compiled.kinks_points.map((coord) => point(coord)))
-        };
-      }
-      if (compiled.yaxisMode) {
-        this.yaxisMode = compiled.yaxisMode;
-      } else {
-        this.yaxisMode = Tin.YAXIS_INVERT;
-      }
-      if (compiled.vertexMode) {
-        this.vertexMode = compiled.vertexMode;
-      }
-      if (compiled.strictMode) {
-        this.strictMode = compiled.strictMode;
-      }
-      if (compiled.bounds) {
-        this.bounds = compiled.bounds;
-        this.boundsPolygon = compiled.boundsPolygon;
-        this.xy = compiled.xy;
-        this.wh = compiled.wh;
-      } else {
-        this.xy = [0, 0];
-        if (compiled.wh)
-          this.wh = compiled.wh;
-        this.bounds = void 0;
-        this.boundsPolygon = void 0;
-      }
+        forw: B(
+          t.tins_points[0].map(
+            (r) => W(
+              r,
+              t.points,
+              t.edgeNodes || [],
+              t.centroid_point,
+              t.vertices_points,
+              false,
+              t.version
+            )
+          )
+        ),
+        bakw: B(
+          t.tins_points[s].map(
+            (r) => W(
+              r,
+              t.points,
+              t.edgeNodes || [],
+              t.centroid_point,
+              t.vertices_points,
+              true,
+              t.version
+            )
+          )
+        )
+      }, this.addIndexedTin(), t.kinks_points && (this.kinks = {
+        bakw: B(
+          t.kinks_points.map((r) => Y(r))
+        )
+      }), t.yaxisMode ? this.yaxisMode = t.yaxisMode : this.yaxisMode = O2.YAXIS_INVERT, t.vertexMode && (this.vertexMode = t.vertexMode), t.strictMode && (this.strictMode = t.strictMode), t.bounds ? (this.bounds = t.bounds, this.boundsPolygon = t.boundsPolygon, this.xy = t.xy, this.wh = t.wh) : (this.xy = [0, 0], t.wh && (this.wh = t.wh), this.bounds = void 0, this.boundsPolygon = void 0);
     } else {
-      compiled = JSON.parse(JSON.stringify(compiled).replace('"cent"', '"c"').replace(/"bbox(\d+)"/g, '"b$1"'));
-      this.tins = compiled.tins;
-      this.addIndexedTin();
-      this.strict_status = compiled.strict_status;
-      this.pointsWeightBuffer = compiled.weight_buffer;
-      this.vertices_params = compiled.vertices_params;
-      this.centroid = compiled.centroid;
-      this.kinks = compiled.kinks;
-      const points2 = [];
-      for (let i = 0; i < this.tins.forw.features.length; i++) {
-        const tri = this.tins.forw.features[i];
-        ["a", "b", "c"].map((key, idx) => {
-          const forw = tri.geometry.coordinates[0][idx];
-          const bakw = tri.properties[key].geom;
-          const pIdx = tri.properties[key].index;
-          points2[pIdx] = [forw, bakw];
+      t = JSON.parse(
+        JSON.stringify(t).replace('"cent"', '"c"').replace(/"bbox(\d+)"/g, '"b$1"')
+      ), this.tins = t.tins, this.addIndexedTin(), this.strict_status = t.strict_status, this.pointsWeightBuffer = t.weight_buffer, this.vertices_params = t.vertices_params, this.centroid = t.centroid, this.kinks = t.kinks;
+      const s = [];
+      for (let r = 0; r < this.tins.forw.features.length; r++) {
+        const a = this.tins.forw.features[r];
+        ["a", "b", "c"].map((n, c) => {
+          const d = a.geometry.coordinates[0][c], g2 = a.properties[n].geom, l = a.properties[n].index;
+          typeof l == "number" && (s[l] = [d, g2]);
         });
       }
-      this.points = points2;
+      this.points = s;
     }
-    return {
-      tins: this.tins,
-      strict_status: this.strict_status,
-      weight_buffer: this.pointsWeightBuffer,
-      vertices_params: this.vertices_params,
-      centroid: this.centroid,
-      kinks: this.kinks
-    };
   }
-  getCompiled() {
-    const compiled = {};
-    compiled.version = format_version;
-    compiled.points = this.points;
-    compiled.weight_buffer = this.pointsWeightBuffer;
-    compiled.centroid_point = [
-      this.centroid.forw.geometry.coordinates,
-      this.centroid.forw.properties.target.geom
-    ];
-    compiled.vertices_params = [
-      this.vertices_params.forw[0],
-      this.vertices_params.bakw[0]
-    ];
-    compiled.vertices_points = [];
-    const vertices = this.vertices_params.forw[1];
-    [0, 1, 2, 3].map((i) => {
-      const vertex_data = vertices[i].features[0];
-      const forw = vertex_data.geometry.coordinates[0][1];
-      const bakw = vertex_data.properties.b.geom;
-      compiled.vertices_points[i] = [forw, bakw];
-    });
-    compiled.strict_status = this.strict_status;
-    compiled.tins_points = [[]];
-    this.tins.forw.features.map((tin) => {
-      compiled.tins_points[0].push(["a", "b", "c"].map((idx) => tin.properties[idx].index));
-    });
-    if (this.strict_status == Tin.STATUS_LOOSE) {
-      compiled.tins_points[1] = [];
-      this.tins.bakw.features.map((tin) => {
-        compiled.tins_points[1].push(["a", "b", "c"].map((idx) => tin.properties[idx].index));
-      });
-    } else if (this.strict_status == Tin.STATUS_ERROR) {
-      compiled.kinks_points = this.kinks.bakw.features.map((kink) => kink.geometry.coordinates);
-    }
-    compiled.yaxisMode = this.yaxisMode;
-    compiled.vertexMode = this.vertexMode;
-    compiled.strictMode = this.strictMode;
-    if (this.bounds) {
-      compiled.bounds = this.bounds;
-      compiled.boundsPolygon = this.boundsPolygon;
-      compiled.xy = this.xy;
-      compiled.wh = this.wh;
-    } else {
-      compiled.wh = this.wh;
-    }
-    compiled.edges = this.edges;
-    compiled.edgeNodes = this.edgeNodes;
-    return compiled;
-  }
+  /**
+   * TINネットワークのインデックスを作成します
+   * 
+   * インデックスは変換処理を高速化するために使用されます。
+   * グリッド形式のインデックスを作成し、各グリッドに
+   * 含まれる三角形を記録します。
+   */
   addIndexedTin() {
-    const tins = this.tins;
-    const forw = tins.forw;
-    const bakw = tins.bakw;
-    const gridNum = Math.ceil(Math.sqrt(forw.features.length));
-    if (gridNum < 3) {
+    const t = this.tins, s = t.forw, r = t.bakw, a = Math.ceil(Math.sqrt(s.features.length));
+    if (a < 3) {
       this.indexedTins = void 0;
       return;
     }
-    let forwBound = [];
-    let bakwBound = [];
-    const forwEachBound = forw.features.map((tri) => {
-      let eachBound = [];
-      getCoords(tri)[0].map((point2) => {
-        if (forwBound.length === 0)
-          forwBound = [Array.from(point2), Array.from(point2)];
-        else {
-          if (point2[0] < forwBound[0][0])
-            forwBound[0][0] = point2[0];
-          if (point2[0] > forwBound[1][0])
-            forwBound[1][0] = point2[0];
-          if (point2[1] < forwBound[0][1])
-            forwBound[0][1] = point2[1];
-          if (point2[1] > forwBound[1][1])
-            forwBound[1][1] = point2[1];
+    let n = [], c = [];
+    const d = s.features.map((h) => {
+      let f = [];
+      return J(h)[0].map((i) => {
+        n.length === 0 ? n = [Array.from(i), Array.from(i)] : (i[0] < n[0][0] && (n[0][0] = i[0]), i[0] > n[1][0] && (n[1][0] = i[0]), i[1] < n[0][1] && (n[0][1] = i[1]), i[1] > n[1][1] && (n[1][1] = i[1])), f.length === 0 ? f = [Array.from(i), Array.from(i)] : (i[0] < f[0][0] && (f[0][0] = i[0]), i[0] > f[1][0] && (f[1][0] = i[0]), i[1] < f[0][1] && (f[0][1] = i[1]), i[1] > f[1][1] && (f[1][1] = i[1]));
+      }), f;
+    }), g2 = (n[1][0] - n[0][0]) / a, l = (n[1][1] - n[0][1]) / a, y = d.reduce(
+      (h, f, i) => {
+        const w = C(
+          f[0][0],
+          n[0][0],
+          g2,
+          a
+        ), A = C(
+          f[1][0],
+          n[0][0],
+          g2,
+          a
+        ), v = C(
+          f[0][1],
+          n[0][1],
+          l,
+          a
+        ), E4 = C(
+          f[1][1],
+          n[0][1],
+          l,
+          a
+        );
+        for (let m = w; m <= A; m++) {
+          h[m] || (h[m] = []);
+          for (let M = v; M <= E4; M++)
+            h[m][M] || (h[m][M] = []), h[m][M].push(i);
         }
-        if (eachBound.length === 0)
-          eachBound = [Array.from(point2), Array.from(point2)];
-        else {
-          if (point2[0] < eachBound[0][0])
-            eachBound[0][0] = point2[0];
-          if (point2[0] > eachBound[1][0])
-            eachBound[1][0] = point2[0];
-          if (point2[1] < eachBound[0][1])
-            eachBound[0][1] = point2[1];
-          if (point2[1] > eachBound[1][1])
-            eachBound[1][1] = point2[1];
+        return h;
+      },
+      []
+    ), o = r.features.map((h) => {
+      let f = [];
+      return J(h)[0].map((i) => {
+        c.length === 0 ? c = [Array.from(i), Array.from(i)] : (i[0] < c[0][0] && (c[0][0] = i[0]), i[0] > c[1][0] && (c[1][0] = i[0]), i[1] < c[0][1] && (c[0][1] = i[1]), i[1] > c[1][1] && (c[1][1] = i[1])), f.length === 0 ? f = [Array.from(i), Array.from(i)] : (i[0] < f[0][0] && (f[0][0] = i[0]), i[0] > f[1][0] && (f[1][0] = i[0]), i[1] < f[0][1] && (f[0][1] = i[1]), i[1] > f[1][1] && (f[1][1] = i[1]));
+      }), f;
+    }), u2 = (c[1][0] - c[0][0]) / a, b = (c[1][1] - c[0][1]) / a, x = o.reduce(
+      (h, f, i) => {
+        const w = C(
+          f[0][0],
+          c[0][0],
+          u2,
+          a
+        ), A = C(
+          f[1][0],
+          c[0][0],
+          u2,
+          a
+        ), v = C(
+          f[0][1],
+          c[0][1],
+          b,
+          a
+        ), E4 = C(
+          f[1][1],
+          c[0][1],
+          b,
+          a
+        );
+        for (let m = w; m <= A; m++) {
+          h[m] || (h[m] = []);
+          for (let M = v; M <= E4; M++)
+            h[m][M] || (h[m][M] = []), h[m][M].push(i);
         }
-      });
-      return eachBound;
-    });
-    const forwXUnit = (forwBound[1][0] - forwBound[0][0]) / gridNum;
-    const forwYUnit = (forwBound[1][1] - forwBound[0][1]) / gridNum;
-    const forwGridCache = forwEachBound.reduce((prev, bound, index2) => {
-      const normXMin = unitCalc(bound[0][0], forwBound[0][0], forwXUnit, gridNum);
-      const normXMax = unitCalc(bound[1][0], forwBound[0][0], forwXUnit, gridNum);
-      const normYMin = unitCalc(bound[0][1], forwBound[0][1], forwYUnit, gridNum);
-      const normYMax = unitCalc(bound[1][1], forwBound[0][1], forwYUnit, gridNum);
-      for (let cx = normXMin; cx <= normXMax; cx++) {
-        if (!prev[cx])
-          prev[cx] = [];
-        for (let cy = normYMin; cy <= normYMax; cy++) {
-          if (!prev[cx][cy])
-            prev[cx][cy] = [];
-          prev[cx][cy].push(index2);
-        }
-      }
-      return prev;
-    }, []);
-    const bakwEachBound = bakw.features.map((tri) => {
-      let eachBound = [];
-      getCoords(tri)[0].map((point2) => {
-        if (bakwBound.length === 0)
-          bakwBound = [Array.from(point2), Array.from(point2)];
-        else {
-          if (point2[0] < bakwBound[0][0])
-            bakwBound[0][0] = point2[0];
-          if (point2[0] > bakwBound[1][0])
-            bakwBound[1][0] = point2[0];
-          if (point2[1] < bakwBound[0][1])
-            bakwBound[0][1] = point2[1];
-          if (point2[1] > bakwBound[1][1])
-            bakwBound[1][1] = point2[1];
-        }
-        if (eachBound.length === 0)
-          eachBound = [Array.from(point2), Array.from(point2)];
-        else {
-          if (point2[0] < eachBound[0][0])
-            eachBound[0][0] = point2[0];
-          if (point2[0] > eachBound[1][0])
-            eachBound[1][0] = point2[0];
-          if (point2[1] < eachBound[0][1])
-            eachBound[0][1] = point2[1];
-          if (point2[1] > eachBound[1][1])
-            eachBound[1][1] = point2[1];
-        }
-      });
-      return eachBound;
-    });
-    const bakwXUnit = (bakwBound[1][0] - bakwBound[0][0]) / gridNum;
-    const bakwYUnit = (bakwBound[1][1] - bakwBound[0][1]) / gridNum;
-    const bakwGridCache = bakwEachBound.reduce((prev, bound, index2) => {
-      const normXMin = unitCalc(bound[0][0], bakwBound[0][0], bakwXUnit, gridNum);
-      const normXMax = unitCalc(bound[1][0], bakwBound[0][0], bakwXUnit, gridNum);
-      const normYMin = unitCalc(bound[0][1], bakwBound[0][1], bakwYUnit, gridNum);
-      const normYMax = unitCalc(bound[1][1], bakwBound[0][1], bakwYUnit, gridNum);
-      for (let cx = normXMin; cx <= normXMax; cx++) {
-        if (!prev[cx])
-          prev[cx] = [];
-        for (let cy = normYMin; cy <= normYMax; cy++) {
-          if (!prev[cx][cy])
-            prev[cx][cy] = [];
-          prev[cx][cy].push(index2);
-        }
-      }
-      return prev;
-    }, []);
+        return h;
+      },
+      []
+    );
     this.indexedTins = {
       forw: {
-        gridNum,
-        xOrigin: forwBound[0][0],
-        yOrigin: forwBound[0][1],
-        xUnit: forwXUnit,
-        yUnit: forwYUnit,
-        gridCache: forwGridCache
+        gridNum: a,
+        xOrigin: n[0][0],
+        yOrigin: n[0][1],
+        xUnit: g2,
+        yUnit: l,
+        gridCache: y
       },
       bakw: {
-        gridNum,
-        xOrigin: bakwBound[0][0],
-        yOrigin: bakwBound[0][1],
-        xUnit: bakwXUnit,
-        yUnit: bakwYUnit,
-        gridCache: bakwGridCache
+        gridNum: a,
+        xOrigin: c[0][0],
+        yOrigin: c[0][1],
+        xUnit: u2,
+        yUnit: b,
+        gridCache: x
       }
     };
   }
-  setWh(wh) {
-    this.wh = wh;
-    this.xy = [0, 0];
-    this.bounds = void 0;
-    this.boundsPolygon = void 0;
-    this.tins = void 0;
-    this.indexedTins = void 0;
-  }
-  setVertexMode(mode) {
-    this.vertexMode = mode;
-    this.tins = void 0;
-    this.indexedTins = void 0;
-  }
-  setStrictMode(mode) {
-    this.strictMode = mode;
-    this.tins = void 0;
-    this.indexedTins = void 0;
-  }
-  calcurateStrictTinAsync() {
-    const edges = this.pointsSet.edges;
-    return Promise.all(this.tins.forw.features.map((tri) => Promise.resolve(counterTri(tri)))).then((tris) => {
-      this.tins.bakw = featureCollection$1(tris);
-    }).then(() => {
-      const searchIndex = {};
-      return Promise.all(this.tins.forw.features.map((forTri, index2) => {
-        const bakTri = this.tins.bakw.features[index2];
-        return Promise.resolve(insertSearchIndex(searchIndex, { forw: forTri, bakw: bakTri }));
-      })).then(() => Promise.all([
-        overlapCheckAsync(searchIndex),
-        Promise.resolve(searchIndex)
-      ])).catch((err) => {
-        throw err;
-      });
-    }).then((prevResult) => {
-      const overlapped = prevResult[0];
-      const searchIndex = prevResult[1];
-      if (overlapped.bakw)
-        Object.keys(overlapped.bakw).map((key) => {
-          if (overlapped.bakw[key] == "Not include case")
-            return;
-          const trises = searchIndex[key];
-          const forUnion = union(trises[0].forw, trises[1].forw);
-          const forConvex = convex(featureCollection$1([trises[0].forw, trises[1].forw]));
-          const forDiff = difference(forConvex, forUnion);
-          if (forDiff)
-            return;
-          const splittedKey = key.split("-");
-          if (splittedKey[0].match(/^[0-9]+$/) && splittedKey[1].match(/^[0-9]+$/)) {
-            const numberKey = splittedKey.map((key2) => parseInt(key2)).sort((a, b) => a < b ? -1 : 1);
-            for (let i = 0; i < edges.length - 1; i++) {
-              if (numberKey[0] == edges[i][0] && numberKey[1] == edges[i][1])
-                return;
-            }
-          }
-          const sharedVtx = splittedKey.map((val) => ["a", "b", "c"].map((alpha, index2) => {
-            const prop = trises[0].bakw.properties[alpha];
-            const geom = trises[0].bakw.geometry.coordinates[0][index2];
-            return { geom, prop };
-          }).filter((vtx) => vtx.prop.index == val)[0]);
-          const nonSharedVtx = trises.map((tris) => ["a", "b", "c"].map((alpha, index2) => {
-            const prop = tris.bakw.properties[alpha];
-            const geom = tris.bakw.geometry.coordinates[0][index2];
-            return { geom, prop };
-          }).filter((vtx) => vtx.prop.index != sharedVtx[0].prop.index && vtx.prop.index != sharedVtx[1].prop.index)[0]);
-          removeSearchIndex(searchIndex, trises[0], this.tins);
-          removeSearchIndex(searchIndex, trises[1], this.tins);
-          sharedVtx.map((sVtx) => {
-            const newTriCoords = [
-              sVtx.geom,
-              nonSharedVtx[0].geom,
-              nonSharedVtx[1].geom,
-              sVtx.geom
-            ];
-            const newTriProp = {
-              a: sVtx.prop,
-              b: nonSharedVtx[0].prop,
-              c: nonSharedVtx[1].prop
-            };
-            const newBakTri = polygon([newTriCoords], newTriProp);
-            const newForTri = counterTri(newBakTri);
-            insertSearchIndex(searchIndex, { forw: newForTri, bakw: newBakTri }, this.tins);
-          });
-        });
-      return Promise.all(["forw", "bakw"].map((direc) => new Promise((resolve) => {
-        const coords = this.tins[direc].features.map((poly) => poly.geometry.coordinates[0]);
-        resolve(findIntersections(coords));
-      }).catch((err) => {
-        throw err;
-      }))).then((result) => {
-        if (result[0].length == 0 && result[1].length == 0) {
-          this.strict_status = Tin.STATUS_STRICT;
-          delete this.kinks;
-        } else {
-          this.strict_status = Tin.STATUS_ERROR;
-          this.kinks = {};
-          if (result[0].length > 0)
-            this.kinks.forw = featureCollection$1(result[0]);
-          if (result[1].length > 0)
-            this.kinks.bakw = featureCollection$1(result[1]);
-        }
-      }).catch((err) => {
-        throw err;
-      });
-    }).catch((err) => {
-      throw err;
-    });
-  }
-  generatePointsSet() {
-    const pointsArray = { forw: [], bakw: [] };
-    for (let i = 0; i < this.points.length; i++) {
-      const mapxy = this.points[i][0];
-      const mercs = this.points[i][1];
-      const forPoint = createPoint(mapxy, mercs, i);
-      pointsArray.forw.push(forPoint);
-      pointsArray.bakw.push(counterPoint(forPoint));
-    }
-    const edges = [];
-    let edgeNodeIndex = 0;
-    this.edgeNodes = [];
-    if (!this.edges)
-      this.edges = [];
-    for (let i = 0; i < this.edges.length; i++) {
-      const startEnd = this.edges[i][2];
-      const illstNodes = Object.assign([], this.edges[i][0]);
-      const mercNodes = Object.assign([], this.edges[i][1]);
-      if (illstNodes.length === 0 && mercNodes.length === 0) {
-        edges.push(startEnd);
-        continue;
-      }
-      illstNodes.unshift(this.points[startEnd[0]][0]);
-      illstNodes.push(this.points[startEnd[1]][0]);
-      mercNodes.unshift(this.points[startEnd[0]][1]);
-      mercNodes.push(this.points[startEnd[1]][1]);
-      const lengths = [illstNodes, mercNodes].map((nodes) => {
-        const eachLengths = nodes.map((node, index2, arr2) => {
-          if (index2 === 0)
-            return 0;
-          const prev = arr2[index2 - 1];
-          return Math.sqrt(Math.pow(node[0] - prev[0], 2) + Math.pow(node[1] - prev[1], 2));
-        });
-        const sumLengths = eachLengths.reduce((prev, node, index2) => {
-          if (index2 === 0)
-            return [0];
-          prev.push(prev[index2 - 1] + node);
-          return prev;
-        }, []);
-        return sumLengths.map((eachSum, index2, arr2) => {
-          const ratio = eachSum / arr2[arr2.length - 1];
-          return [nodes[index2], eachLengths[index2], sumLengths[index2], ratio];
-        });
-      });
-      lengths.map((thisLengths, i2) => {
-        const anotherLengths = lengths[i2 ? 0 : 1];
-        return thisLengths.filter((val, index2) => !(index2 === 0 || index2 === thisLengths.length - 1 || val[4] === "handled")).map((lengthItem) => {
-          const node = lengthItem[0];
-          const ratio = lengthItem[3];
-          const anotherSets = anotherLengths.reduce((prev, item, index2, arr2) => {
-            if (prev)
-              return prev;
-            const next = arr2[index2 + 1];
-            if (item[3] === ratio) {
-              item[4] = "handled";
-              return [item];
-            }
-            if (item[3] < ratio && next[3] > ratio)
-              return [item, next];
-            return;
-          }, void 0);
-          if (anotherSets.length === 1) {
-            return i2 === 0 ? [node, anotherSets[0][0], ratio] : [anotherSets[0][0], node, ratio];
-          } else {
-            const anotherPrev = anotherSets[0];
-            const anotherNext = anotherSets[1];
-            const ratioDelta = ratio - anotherPrev[3];
-            const ratioAnother = anotherNext[3] - anotherPrev[3];
-            const ratioInEdge = ratioDelta / ratioAnother;
-            const anotherNode = [
-              (anotherNext[0][0] - anotherPrev[0][0]) * ratioInEdge + anotherPrev[0][0],
-              (anotherNext[0][1] - anotherPrev[0][1]) * ratioInEdge + anotherPrev[0][1]
-            ];
-            return i2 === 0 ? [node, anotherNode, ratio] : [anotherNode, node, ratio];
-          }
-        });
-      }).reduce((prev, nodes) => prev.concat(nodes), []).sort((a, b) => a[2] < b[2] ? -1 : 1).map((node, index2, arr2) => {
-        this.edgeNodes[edgeNodeIndex] = [node[0], node[1]];
-        const forPoint = createPoint(node[0], node[1], `e${edgeNodeIndex}`);
-        edgeNodeIndex++;
-        pointsArray.forw.push(forPoint);
-        pointsArray.bakw.push(counterPoint(forPoint));
-        if (index2 === 0) {
-          edges.push([startEnd[0], pointsArray.forw.length - 1]);
-        } else {
-          edges.push([
-            pointsArray.forw.length - 2,
-            pointsArray.forw.length - 1
-          ]);
-        }
-        if (index2 === arr2.length - 1) {
-          edges.push([pointsArray.forw.length - 1, startEnd[1]]);
-        }
-      });
-    }
-    return {
-      forw: featureCollection$1(pointsArray.forw),
-      bakw: featureCollection$1(pointsArray.bakw),
-      edges
-    };
-  }
-  updateTinAsync() {
-    let strict = this.strictMode;
-    const minx = this.xy[0] - 0.05 * this.wh[0];
-    const maxx = this.xy[0] + 1.05 * this.wh[0];
-    const miny = this.xy[1] - 0.05 * this.wh[1];
-    const maxy = this.xy[1] + 1.05 * this.wh[1];
-    const insideCheck = this.bounds ? (xy) => booleanPointInPolygon(xy, this.boundsPolygon) : (xy) => xy[0] >= this.xy[0] && xy[0] <= this.xy[0] + this.wh[0] && xy[1] >= this.xy[1] && xy[1] <= this.xy[1] + this.wh[1];
-    const inside2 = this.points.reduce((prev, curr) => prev && insideCheck(curr[0]), true);
-    if (!inside2) {
-      return new Promise((resolve, reject) => {
-        reject("SOME POINTS OUTSIDE");
-      });
-    }
-    return new Promise((resolve) => {
-      if (strict != Tin.MODE_STRICT && strict != Tin.MODE_LOOSE)
-        strict = Tin.MODE_AUTO;
-      let bbox2 = [];
-      if (this.wh) {
-        bbox2 = [
-          [minx, miny],
-          [maxx, miny],
-          [minx, maxy],
-          [maxx, maxy]
-        ];
-      }
-      const pointsSet = this.generatePointsSet();
-      resolve([pointsSet, bbox2]);
-    }).then((prevResults) => {
-      const pointsSet = prevResults[0];
-      return Promise.all([
-        new Promise((resolve) => {
-          resolve(constrainedTin(pointsSet.forw, pointsSet.edges, "target"));
-        }),
-        new Promise((resolve) => {
-          resolve(constrainedTin(pointsSet.bakw, pointsSet.edges, "target"));
-        }),
-        new Promise((resolve) => {
-          resolve(centroid$1(pointsSet.forw));
-        }),
-        Promise.resolve(prevResults)
-      ]).catch((err) => {
-        throw err;
-      });
-    }).then((prevResults) => {
-      const tinForCentroid = prevResults[0];
-      const tinBakCentroid = prevResults[1];
-      const forCentroidFt = prevResults[2];
-      const pointsSetBbox = prevResults[3];
-      const pointsSet = pointsSetBbox[0];
-      if (tinForCentroid.features.length == 0 || tinBakCentroid.features.length == 0)
-        throw "TOO LINEAR1";
-      const centroid2 = {
-        forw: forCentroidFt.geometry.coordinates,
-        bakw: transformArr(forCentroidFt, tinForCentroid)
-      };
-      const forwBuf = createPoint(centroid2.forw, centroid2.bakw, "c");
-      this.centroid = {
-        forw: forwBuf,
-        bakw: counterPoint(forwBuf)
-      };
-      const convexBuf = {};
-      return Promise.all([
-        new Promise((resolve) => {
-          const forConvex = convex(pointsSet.forw).geometry.coordinates[0];
-          let vconvex;
-          try {
-            vconvex = forConvex.map((forw) => ({
-              forw,
-              bakw: transformArr(point(forw), tinForCentroid)
-            }));
-          } catch (e) {
-            throw "TOO LINEAR2";
-          }
-          vconvex.map((vertex) => {
-            convexBuf[`${vertex.forw[0]}:${vertex.forw[1]}`] = vertex;
-          });
-          resolve(void 0);
-        }),
-        new Promise((resolve) => {
-          const bakConvex = convex(pointsSet.bakw).geometry.coordinates[0];
-          let vconvex;
-          try {
-            vconvex = bakConvex.map((bakw) => ({
-              bakw,
-              forw: transformArr(point(bakw), tinBakCentroid)
-            }));
-          } catch (e) {
-            throw "TOO LINEAR2";
-          }
-          vconvex.map((vertex) => {
-            convexBuf[`${vertex.forw[0]}:${vertex.forw[1]}`] = vertex;
-          });
-          resolve(void 0);
-        })
-      ]).then(() => [centroid2, convexBuf, pointsSetBbox]).catch((err) => {
-        throw err;
-      });
-    }).then((prevResults) => {
-      const centroid2 = prevResults[0];
-      const convexBuf = prevResults[1];
-      const pointsSetBbox = prevResults[2];
-      const expandConvex = Object.keys(convexBuf).reduce((prev, key, _23, _array) => {
-        const forVertex = convexBuf[key].forw;
-        const bakVertex = convexBuf[key].bakw;
-        const vertexDelta = {
-          forw: [
-            forVertex[0] - centroid2.forw[0],
-            forVertex[1] - centroid2.forw[1]
-          ]
-        };
-        vertexDelta.bakw = [
-          bakVertex[0] - centroid2.bakw[0],
-          bakVertex[1] - centroid2.bakw[1]
-        ];
-        const xRate = vertexDelta.forw[0] == 0 ? Infinity : ((vertexDelta.forw[0] < 0 ? minx : maxx) - centroid2.forw[0]) / vertexDelta.forw[0];
-        const yRate = vertexDelta.forw[1] == 0 ? Infinity : ((vertexDelta.forw[1] < 0 ? miny : maxy) - centroid2.forw[1]) / vertexDelta.forw[1];
-        if (Math.abs(xRate) / Math.abs(yRate) < 1.1) {
-          const point2 = {
-            forw: [
-              vertexDelta.forw[0] * xRate + centroid2.forw[0],
-              vertexDelta.forw[1] * xRate + centroid2.forw[1]
-            ],
-            bakw: [
-              vertexDelta.bakw[0] * xRate + centroid2.bakw[0],
-              vertexDelta.bakw[1] * xRate + centroid2.bakw[1]
-            ]
-          };
-          if (vertexDelta.forw[0] < 0)
-            prev[3].push(point2);
-          else
-            prev[1].push(point2);
-        }
-        if (Math.abs(yRate) / Math.abs(xRate) < 1.1) {
-          const point2 = {
-            forw: [
-              vertexDelta.forw[0] * yRate + centroid2.forw[0],
-              vertexDelta.forw[1] * yRate + centroid2.forw[1]
-            ],
-            bakw: [
-              vertexDelta.bakw[0] * yRate + centroid2.bakw[0],
-              vertexDelta.bakw[1] * yRate + centroid2.bakw[1]
-            ]
-          };
-          if (vertexDelta.forw[1] < 0)
-            prev[0].push(point2);
-          else
-            prev[2].push(point2);
-        }
-        return prev;
-      }, [[], [], [], []]);
-      let orthant = Object.keys(convexBuf).reduce((prev, key, idx, array) => {
-        const forVertex = convexBuf[key].forw;
-        const bakVertex = convexBuf[key].bakw;
-        const vertexDelta = {
-          forw: [
-            forVertex[0] - centroid2.forw[0],
-            forVertex[1] - centroid2.forw[1]
-          ]
-        };
-        vertexDelta.bakw = [
-          bakVertex[0] - centroid2.bakw[0],
-          centroid2.bakw[1] - bakVertex[1]
-        ];
-        if (vertexDelta.forw[0] == 0 || vertexDelta.forw[1] == 0)
-          return prev;
-        let index2 = 0;
-        if (vertexDelta.forw[0] > 0)
-          index2 += 1;
-        if (vertexDelta.forw[1] > 0)
-          index2 += 2;
-        prev[index2].push([
-          vertexDelta.forw,
-          vertexDelta.bakw
-        ]);
-        if (idx == array.length - 1) {
-          return prev.length == prev.filter((val) => val.length > 0).length && this.vertexMode == Tin.VERTEX_BIRDEYE ? prev : prev.reduce((pre, cur) => [pre[0].concat(cur)], [[]]);
-        }
-        return prev;
-      }, [[], [], [], []]).map((item) => item.reduce((prev, curr, index2, arr2) => {
-        if (!prev)
-          prev = [Infinity, 0, 0];
-        let distanceSum = Math.sqrt(Math.pow(curr[0][0], 2) + Math.pow(curr[0][1], 2)) / Math.sqrt(Math.pow(curr[1][0], 2) + Math.pow(curr[1][1], 2));
-        distanceSum = distanceSum < prev[0] ? distanceSum : prev[0];
-        const thetaDelta = Math.atan2(curr[0][0], curr[0][1]) - Math.atan2(curr[1][0], curr[1][1]);
-        const sumThetaX = prev[1] + Math.cos(thetaDelta);
-        const sumThetaY = prev[2] + Math.sin(thetaDelta);
-        if (index2 == arr2.length - 1) {
-          return [distanceSum, Math.atan2(sumThetaY, sumThetaX)];
-        }
-        return [distanceSum, sumThetaX, sumThetaY];
-      }, null));
-      if (orthant.length == 1)
-        orthant = [orthant[0], orthant[0], orthant[0], orthant[0]];
-      return [orthant, centroid2, expandConvex, pointsSetBbox];
-    }).then((prevResults) => {
-      const orthant = prevResults[0];
-      const centroid2 = prevResults[1];
-      const expandConvex = prevResults[2];
-      const pointsSet = prevResults[3][0];
-      const bbox2 = prevResults[3][1];
-      let verticesSet = orthant.map((delta, index2) => {
-        const forVertex = bbox2[index2];
-        const forDelta = [
-          forVertex[0] - centroid2.forw[0],
-          forVertex[1] - centroid2.forw[1]
-        ];
-        const forDistance = Math.sqrt(Math.pow(forDelta[0], 2) + Math.pow(forDelta[1], 2));
-        const bakDistance = forDistance / delta[0];
-        const forTheta = Math.atan2(forDelta[0], forDelta[1]);
-        const bakTheta = forTheta - delta[1];
-        const bakVertex = [
-          centroid2.bakw[0] + bakDistance * Math.sin(bakTheta),
-          centroid2.bakw[1] - bakDistance * Math.cos(bakTheta)
-        ];
-        return { forw: forVertex, bakw: bakVertex };
-      });
-      const swap2 = verticesSet[2];
-      verticesSet[2] = verticesSet[3];
-      verticesSet[3] = swap2;
-      const expandRate = [1, 1, 1, 1];
-      for (let i = 0; i < 4; i++) {
-        const j = (i + 1) % 4;
-        const side = lineString([verticesSet[i].bakw, verticesSet[j].bakw]);
-        const expands = expandConvex[i];
-        expands.map((expand) => {
-          const expandLine = lineString([centroid2.bakw, expand.bakw]);
-          const intersect2 = lineIntersect(side, expandLine);
-          if (intersect2.features.length > 0 && intersect2.features[0].geometry) {
-            const intersect_ = intersect2.features[0];
-            const expandDist = Math.sqrt(Math.pow(expand.bakw[0] - centroid2.bakw[0], 2) + Math.pow(expand.bakw[1] - centroid2.bakw[1], 2));
-            const onSideDist = Math.sqrt(Math.pow(intersect_.geometry.coordinates[0] - centroid2.bakw[0], 2) + Math.pow(intersect_.geometry.coordinates[1] - centroid2.bakw[1], 2));
-            const rate = expandDist / onSideDist;
-            if (rate > expandRate[i])
-              expandRate[i] = rate;
-            if (rate > expandRate[j])
-              expandRate[j] = rate;
-          }
-        });
-      }
-      verticesSet = verticesSet.map((vertex, index2) => {
-        const rate = expandRate[index2];
-        const point2 = [
-          (vertex.bakw[0] - centroid2.bakw[0]) * rate + centroid2.bakw[0],
-          (vertex.bakw[1] - centroid2.bakw[1]) * rate + centroid2.bakw[1]
-        ];
-        return { forw: vertex.forw, bakw: point2 };
-      });
-      return [verticesSet, pointsSet];
-    }).then((prevResults) => {
-      const verticesSet = prevResults[0];
-      const pointsSet = prevResults[1];
-      const verticesList = { forw: [], bakw: [] };
-      for (let i = 0; i < verticesSet.length; i++) {
-        const forVertex = verticesSet[i].forw;
-        const bakVertex = verticesSet[i].bakw;
-        const forVertexFt = createPoint(forVertex, bakVertex, `b${i}`);
-        const bakVertexFt = counterPoint(forVertexFt);
-        pointsSet.forw.features.push(forVertexFt);
-        pointsSet.bakw.features.push(bakVertexFt);
-        verticesList.forw.push(forVertexFt);
-        verticesList.bakw.push(bakVertexFt);
-      }
-      this.pointsSet = pointsSet;
-      this.tins = {
-        forw: rotateVerticesTriangle(constrainedTin(pointsSet.forw, pointsSet.edges, "target"))
-      };
-      let prom;
-      if (strict == Tin.MODE_STRICT || strict == Tin.MODE_AUTO) {
-        prom = this.calcurateStrictTinAsync();
-      } else {
-        prom = Promise.resolve();
-      }
-      return prom.then(() => {
-        if (strict == Tin.MODE_LOOSE || strict == Tin.MODE_AUTO && this.strict_status == Tin.STATUS_ERROR) {
-          this.tins.bakw = rotateVerticesTriangle(constrainedTin(pointsSet.bakw, pointsSet.edges, "target"));
-          delete this.kinks;
-          this.strict_status = Tin.STATUS_LOOSE;
-        }
-        this.vertices_params = {
-          forw: vertexCalc(verticesList.forw, this.centroid.forw),
-          bakw: vertexCalc(verticesList.bakw, this.centroid.bakw)
-        };
-        this.addIndexedTin();
-        return this.calculatePointsWeightAsync();
-      }).catch((err) => {
-        throw err;
-      });
-    }).catch((err) => {
-      throw err;
-    });
-  }
-  transform(apoint, backward, ignoreBounds) {
-    if (backward && this.strict_status == Tin.STATUS_ERROR)
+  /**
+   * 座標変換を実行します
+   * 
+   * @param apoint - 変換する座標
+   * @param backward - 逆方向の変換かどうか
+   * @param ignoreBounds - 境界チェックを無視するかどうか
+   * @returns 変換後の座標、または境界外の場合はfalse
+   * 
+   * @throws {Error} 逆方向変換が許可されていない状態での逆変換時
+   */
+  transform(t, s, r) {
+    if (s && this.strict_status == O2.STATUS_ERROR)
       throw 'Backward transform is not allowed if strict_status == "strict_error"';
-    if (this.yaxisMode == Tin.YAXIS_FOLLOW && backward) {
-      apoint = [apoint[0], -1 * apoint[1]];
-    }
-    const tpoint = point(apoint);
-    if (this.bounds && !backward && !ignoreBounds) {
-      if (!booleanPointInPolygon(tpoint, this.boundsPolygon))
-        return false;
-    }
-    const tins = backward ? this.tins.bakw : this.tins.forw;
-    const indexedTins = backward ? this.indexedTins.bakw : this.indexedTins.forw;
-    const verticesParams = backward ? this.vertices_params.bakw : this.vertices_params.forw;
-    const centroid2 = backward ? this.centroid.bakw : this.centroid.forw;
-    const weightBuffer = backward ? this.pointsWeightBuffer.bakw : this.pointsWeightBuffer.forw;
-    let stateTriangle = void 0, stateSetFunc = void 0;
-    if (this.stateFull) {
-      if (this.stateBackward == backward) {
-        stateTriangle = this.stateTriangle;
-      } else {
-        this.stateBackward = backward;
-        this.stateTriangle = void 0;
-      }
-      stateSetFunc = (tri) => {
-        this.stateTriangle = tri;
-      };
-    }
-    let ret = transformArr(tpoint, tins, indexedTins, verticesParams, centroid2, weightBuffer, stateTriangle, stateSetFunc);
-    if (this.bounds && backward && !ignoreBounds) {
-      const rpoint = point(ret);
-      if (!booleanPointInPolygon(rpoint, this.boundsPolygon))
-        return false;
-    } else if (this.yaxisMode == Tin.YAXIS_FOLLOW && !backward) {
-      ret = [ret[0], -1 * ret[1]];
-    }
-    return ret;
-  }
-  calculatePointsWeightAsync() {
-    const calcTargets = ["forw"];
-    if (this.strict_status == Tin.STATUS_LOOSE)
-      calcTargets.push("bakw");
-    const weightBuffer = {};
-    return Promise.all(calcTargets.map((target) => {
-      weightBuffer[target] = {};
-      const alreadyChecked = {};
-      const tin = this.tins[target];
-      return Promise.all(tin.features.map((tri) => {
-        const vtxes = ["a", "b", "c"];
-        return new Promise((resolve) => {
-          for (let i = 0; i < 3; i++) {
-            const j = (i + 1) % 3;
-            const vi = vtxes[i];
-            const vj = vtxes[j];
-            const indexi = tri.properties[vi].index;
-            const indexj = tri.properties[vj].index;
-            const key = [indexi, indexj].sort().join("-");
-            if (!alreadyChecked[key]) {
-              const fromi = tri.geometry.coordinates[0][i];
-              const fromj = tri.geometry.coordinates[0][j];
-              const toi = tri.properties[vi].geom;
-              const toj = tri.properties[vj].geom;
-              alreadyChecked[key] = 1;
-              const weight = Math.sqrt(Math.pow(toi[0] - toj[0], 2) + Math.pow(toi[1] - toj[1], 2)) / Math.sqrt(Math.pow(fromi[0] - fromj[0], 2) + Math.pow(fromi[1] - fromj[1], 2));
-              if (!weightBuffer[target][indexi])
-                weightBuffer[target][indexi] = {};
-              if (!weightBuffer[target][indexj])
-                weightBuffer[target][indexj] = {};
-              weightBuffer[target][indexi][key] = weight;
-              weightBuffer[target][indexj][key] = weight;
-            }
-          }
-          resolve(void 0);
-        });
-      })).catch((err) => {
-        throw err;
-      });
-    })).then(() => {
-      const pointsWeightBuffer = {};
-      calcTargets.map((target) => {
-        pointsWeightBuffer[target] = {};
-        if (this.strict_status == Tin.STATUS_STRICT)
-          pointsWeightBuffer["bakw"] = {};
-        Object.keys(weightBuffer[target]).map((vtx) => {
-          pointsWeightBuffer[target][vtx] = Object.keys(weightBuffer[target][vtx]).reduce((prev, key, idx, arr2) => {
-            prev = prev + weightBuffer[target][vtx][key];
-            return idx == arr2.length - 1 ? prev / arr2.length : prev;
-          }, 0);
-          if (this.strict_status == Tin.STATUS_STRICT)
-            pointsWeightBuffer["bakw"][vtx] = 1 / pointsWeightBuffer[target][vtx];
-        });
-        pointsWeightBuffer[target]["c"] = [0, 1, 2, 3].reduce((prev, curr) => {
-          const key = `b${curr}`;
-          prev = prev + pointsWeightBuffer[target][key];
-          return curr == 3 ? prev / 4 : prev;
-        }, 0);
-        if (this.strict_status == Tin.STATUS_STRICT)
-          pointsWeightBuffer["bakw"]["c"] = 1 / pointsWeightBuffer[target]["c"];
-      });
-      this.pointsWeightBuffer = pointsWeightBuffer;
-    }).catch((err) => {
-      throw err;
+    this.yaxisMode == O2.YAXIS_FOLLOW && s && (t = [t[0], -1 * t[1]]);
+    const a = Y(t);
+    if (this.bounds && !s && !r && !D(a, this.boundsPolygon))
+      return false;
+    const n = s ? this.tins.bakw : this.tins.forw, c = s ? this.indexedTins.bakw : this.indexedTins.forw, d = s ? this.vertices_params.bakw : this.vertices_params.forw, g2 = s ? this.centroid.bakw : this.centroid.forw, l = s ? this.pointsWeightBuffer.bakw : this.pointsWeightBuffer.forw;
+    let y, o;
+    this.stateFull && (this.stateBackward == s ? y = this.stateTriangle : (this.stateBackward = s, this.stateTriangle = void 0), o = (b) => {
+      this.stateTriangle = b;
     });
+    let u2 = Mt(
+      a,
+      n,
+      c,
+      d,
+      g2,
+      l,
+      y,
+      o
+    );
+    if (this.bounds && s && !r) {
+      const b = Y(u2);
+      if (!D(b, this.boundsPolygon)) return false;
+    } else this.yaxisMode == O2.YAXIS_FOLLOW && !s && (u2 = [u2[0], -1 * u2[1]]);
+    return u2;
   }
-}
-Tin.VERTEX_PLAIN = "plain";
-Tin.VERTEX_BIRDEYE = "birdeye";
-Tin.MODE_STRICT = "strict";
-Tin.MODE_AUTO = "auto";
-Tin.MODE_LOOSE = "loose";
-Tin.STATUS_STRICT = "strict";
-Tin.STATUS_ERROR = "strict_error";
-Tin.STATUS_LOOSE = "loose";
-Tin.YAXIS_FOLLOW = "follow";
-Tin.YAXIS_INVERT = "invert";
-function rotateVerticesTriangle(tins) {
-  const features = tins.features;
-  for (let i = 0; i < features.length; i++) {
-    const feature2 = features[i];
-    if (`${feature2.properties.a.index}`.substring(0, 1) === "b" && `${feature2.properties.b.index}`.substring(0, 1) === "b") {
-      features[i] = {
-        geometry: {
-          type: "Polygon",
-          coordinates: [
-            [
-              feature2.geometry.coordinates[0][2],
-              feature2.geometry.coordinates[0][0],
-              feature2.geometry.coordinates[0][1],
-              feature2.geometry.coordinates[0][2]
-            ]
-          ]
-        },
-        properties: {
-          a: {
-            geom: feature2.properties.c.geom,
-            index: feature2.properties.c.index
-          },
-          b: {
-            geom: feature2.properties.a.geom,
-            index: feature2.properties.a.index
-          },
-          c: {
-            geom: feature2.properties.b.geom,
-            index: feature2.properties.b.index
-          }
-        },
-        type: "Feature"
-      };
-    } else if (`${feature2.properties.c.index}`.substring(0, 1) === "b" && `${feature2.properties.a.index}`.substring(0, 1) === "b") {
-      features[i] = {
-        geometry: {
-          type: "Polygon",
-          coordinates: [
-            [
-              feature2.geometry.coordinates[0][1],
-              feature2.geometry.coordinates[0][2],
-              feature2.geometry.coordinates[0][0],
-              feature2.geometry.coordinates[0][1]
-            ]
-          ]
-        },
-        properties: {
-          a: {
-            geom: feature2.properties.b.geom,
-            index: feature2.properties.b.index
-          },
-          b: {
-            geom: feature2.properties.c.geom,
-            index: feature2.properties.c.index
-          },
-          c: {
-            geom: feature2.properties.a.geom,
-            index: feature2.properties.a.index
-          }
-        },
-        type: "Feature"
-      };
-    }
-  }
-  return tins;
-}
-function vertexCalc(list, centroid2) {
-  const centCoord = centroid2.geometry.coordinates;
-  return [0, 1, 2, 3].map((i) => {
-    const j = (i + 1) % 4;
-    const itemi = list[i];
-    const itemj = list[j];
-    const coord = itemi.geometry.coordinates;
-    const radian = Math.atan2(coord[0] - centCoord[0], coord[1] - centCoord[1]);
-    const coordinates2 = [centroid2, itemi, itemj, centroid2].map((point2) => point2.geometry.coordinates);
-    const properties = {
-      a: {
-        geom: centroid2.properties.target.geom,
-        index: centroid2.properties.target.index
-      },
-      b: {
-        geom: itemi.properties.target.geom,
-        index: itemi.properties.target.index
-      },
-      c: {
-        geom: itemj.properties.target.geom,
-        index: itemj.properties.target.index
-      }
-    };
-    const tin = featureCollection$1([polygon([coordinates2], properties)]);
-    return [radian, tin];
-  }).reduce((prev, curr) => {
-    prev[0].push(curr[0]);
-    prev[1].push(curr[1]);
-    return prev;
-  }, [[], []]);
-}
-function normalizeRadian(target, noNegative = false) {
-  const rangeFunc = noNegative ? function(val) {
-    return !(val >= 0 && val < Math.PI * 2);
-  } : function(val) {
-    return !(val > -1 * Math.PI && val <= Math.PI);
-  };
-  while (rangeFunc(target)) {
-    target = target + 2 * Math.PI * (target > 0 ? -1 : 1);
-  }
-  return target;
-}
-function decideUseVertex(radian, radianList) {
-  let idel = normalizeRadian(radian - radianList[0]);
-  let minTheta = Math.PI * 2;
-  let minIndex;
-  for (let i = 0; i < radianList.length; i++) {
-    const j = (i + 1) % radianList.length;
-    const jdel = normalizeRadian(radian - radianList[j]);
-    const minDel = Math.min(Math.abs(idel), Math.abs(jdel));
-    if (idel * jdel <= 0 && minDel < minTheta) {
-      minTheta = minDel;
-      minIndex = i;
-    }
-    idel = jdel;
-  }
-  return minIndex;
-}
-function createPoint(xy, geom, index2) {
-  return point(xy, { target: { geom, index: index2 } });
-}
-function counterPoint(apoint) {
-  return point(apoint.properties.target.geom, {
-    target: {
-      geom: apoint.geometry.coordinates,
-      index: apoint.properties.target.index
-    }
-  });
-}
-function transformTinArr(of, tri, weightBuffer) {
-  const a = tri.geometry.coordinates[0][0];
-  const b = tri.geometry.coordinates[0][1];
-  const c = tri.geometry.coordinates[0][2];
-  const o = of.geometry.coordinates;
-  const ad = tri.properties.a.geom;
-  const bd = tri.properties.b.geom;
-  const cd = tri.properties.c.geom;
-  const ab2 = [b[0] - a[0], b[1] - a[1]];
-  const ac = [c[0] - a[0], c[1] - a[1]];
-  const ao = [o[0] - a[0], o[1] - a[1]];
-  const abd = [bd[0] - ad[0], bd[1] - ad[1]];
-  const acd = [cd[0] - ad[0], cd[1] - ad[1]];
-  let abv = (ac[1] * ao[0] - ac[0] * ao[1]) / (ab2[0] * ac[1] - ab2[1] * ac[0]);
-  let acv = (ab2[0] * ao[1] - ab2[1] * ao[0]) / (ab2[0] * ac[1] - ab2[1] * ac[0]);
-  if (weightBuffer) {
-    const aW = weightBuffer[tri.properties.a.index];
-    const bW = weightBuffer[tri.properties.b.index];
-    const cW = weightBuffer[tri.properties.c.index];
-    let nabv;
-    if (abv < 0 || acv < 0 || 1 - abv - acv < 0) {
-      const normB = abv / (abv + acv);
-      const normC = acv / (abv + acv);
-      nabv = abv / bW / (normB / bW + normC / cW);
-      acv = acv / cW / (normB / bW + normC / cW);
-    } else {
-      nabv = abv / bW / (abv / bW + acv / cW + (1 - abv - acv) / aW);
-      acv = acv / cW / (abv / bW + acv / cW + (1 - abv - acv) / aW);
-    }
-    abv = nabv;
-  }
-  return [
-    abv * abd[0] + acv * acd[0] + ad[0],
-    abv * abd[1] + acv * acd[1] + ad[1]
-  ];
-}
-function useVerticesArr(o, verticesParams, centroid2, weightBuffer) {
-  const coord = o.geometry.coordinates;
-  const centCoord = centroid2.geometry.coordinates;
-  const radian = Math.atan2(coord[0] - centCoord[0], coord[1] - centCoord[1]);
-  const index2 = decideUseVertex(radian, verticesParams[0]);
-  const tin = verticesParams[1][index2];
-  return transformTinArr(o, tin.features[0], weightBuffer);
-}
-function hit(point2, tins) {
-  for (let i = 0; i < tins.features.length; i++) {
-    const inside2 = booleanPointInPolygon(point2, tins.features[i]);
-    if (inside2) {
-      return tins.features[i];
-    }
-  }
-}
-function unitCalc(coord, origin, unit, gridNum) {
-  let normCoord = Math.floor((coord - origin) / unit);
-  if (normCoord >= gridNum)
-    normCoord = gridNum - 1;
-  return normCoord;
-}
-function transformArr(point2, tins, indexedTins, verticesParams, centroid2, weightBuffer, stateTriangle, stateSetFunc) {
-  let tin;
-  if (stateTriangle) {
-    tin = hit(point2, featureCollection$1([stateTriangle]));
-  }
-  if (!tin) {
-    if (indexedTins) {
-      const coords = point2.geometry.coordinates;
-      const gridNum = indexedTins.gridNum;
-      const xOrigin = indexedTins.xOrigin;
-      const yOrigin = indexedTins.yOrigin;
-      const xUnit = indexedTins.xUnit;
-      const yUnit = indexedTins.yUnit;
-      const gridCache = indexedTins.gridCache;
-      const normX = unitCalc(coords[0], xOrigin, xUnit, gridNum);
-      const normY = unitCalc(coords[1], yOrigin, yUnit, gridNum);
-      const tinsKey = gridCache[normX] ? gridCache[normX][normY] ? gridCache[normX][normY] : [] : [];
-      tins = featureCollection$1(tinsKey.map((key) => tins.features[key]));
-    }
-    tin = hit(point2, tins);
-  }
-  if (stateSetFunc)
-    stateSetFunc(tin);
-  return tin ? transformTinArr(point2, tin, weightBuffer) : useVerticesArr(point2, verticesParams, centroid2, weightBuffer);
-}
-function counterTri(tri) {
-  const coordinates2 = ["a", "b", "c", "a"].map((key) => tri.properties[key].geom);
-  const geoms = tri.geometry.coordinates[0];
-  const props = tri.properties;
-  const properties = {
-    a: { geom: geoms[0], index: props["a"].index },
-    b: { geom: geoms[1], index: props["b"].index },
-    c: { geom: geoms[2], index: props["c"].index }
-  };
-  return polygon([coordinates2], properties);
-}
-function buildTri(points2) {
-  const coordinates2 = [0, 1, 2, 0].map((i) => points2[i][0][0]);
-  const properties = {
-    a: { geom: points2[0][0][1], index: points2[0][1] },
-    b: { geom: points2[1][0][1], index: points2[1][1] },
-    c: { geom: points2[2][0][1], index: points2[2][1] }
-  };
-  return polygon([coordinates2], properties);
-}
-function indexesToTri(indexes, points2, edgeNodes, cent, bboxes, bakw = false, version) {
-  const points_ = indexes.map((index2) => {
-    if (!version || version < 2.00703)
-      index2 = normalizeNodeKey(index2);
-    const point_base = isFinite(index2) ? points2[index2] : index2 === "c" ? cent : index2 === "b0" ? bboxes[0] : index2 === "b1" ? bboxes[1] : index2 === "b2" ? bboxes[2] : index2 === "b3" ? bboxes[3] : function() {
-      const match = index2.match(/e(\d+)/);
-      if (match) {
-        const nodeIndex = parseInt(match[1]);
-        return edgeNodes[nodeIndex];
-      }
-      throw "Bad index value for indexesToTri";
-    }();
-    return bakw ? [[point_base[1], point_base[0]], index2] : [[point_base[0], point_base[1]], index2];
-  });
-  return buildTri(points_);
-}
-function normalizeNodeKey(index2) {
-  if (typeof index2 === "number")
-    return index2;
-  return index2.replace(/^(c|e|b)(?:ent|dgeNode|box)(\d+)?$/, "$1$2");
-}
-function normalizeEdges(edges, version) {
-  if (Array.isArray(edges[0]))
-    return edges;
-  return edges.map((edge) => [
-    edge.illstNodes,
-    edge.mercNodes,
-    edge.startEnd
-  ]);
-}
-function overlapCheckAsync(searchIndex) {
-  const retValue = { forw: {}, bakw: {} };
-  return Promise.all(Object.keys(searchIndex).map((key) => new Promise((resolve) => {
-    const searchResult = searchIndex[key];
-    if (searchResult.length < 2)
-      return resolve(void 0);
-    ["forw", "bakw"].map((dir) => {
-      const result = intersect(searchResult[0][dir], searchResult[1][dir]);
-      if (!result || result.geometry.type == "Point" || result.geometry.type == "LineString")
-        return resolve(void 0);
-      resolve(void 0);
-    });
-  }))).then(() => {
-    if (Object.keys(retValue.forw).length == 0)
-      delete retValue.forw;
-    if (Object.keys(retValue.bakw).length == 0)
-      delete retValue.bakw;
-    return retValue;
-  }).catch((err) => {
-    throw err;
-  });
-}
-function insertSearchIndex(searchIndex, tris, tins) {
-  const keys2 = calcSearchKeys(tris.forw);
-  const bakKeys = calcSearchKeys(tris.bakw);
-  if (JSON.stringify(keys2) != JSON.stringify(bakKeys))
-    throw `${JSON.stringify(tris, null, 2)}
-${JSON.stringify(keys2)}
-${JSON.stringify(bakKeys)}`;
-  for (let i = 0; i < keys2.length; i++) {
-    const key = keys2[i];
-    if (!searchIndex[key])
-      searchIndex[key] = [];
-    searchIndex[key].push(tris);
-  }
-  if (tins) {
-    tins.forw.features.push(tris.forw);
-    tins.bakw.features.push(tris.bakw);
-  }
-}
-function removeSearchIndex(searchIndex, tris, tins) {
-  const keys2 = calcSearchKeys(tris.forw);
-  const bakKeys = calcSearchKeys(tris.bakw);
-  if (JSON.stringify(keys2) != JSON.stringify(bakKeys))
-    throw `${JSON.stringify(tris, null, 2)}
-${JSON.stringify(keys2)}
-${JSON.stringify(bakKeys)}`;
-  for (let i = 0; i < keys2.length; i++) {
-    const key = keys2[i];
-    const newArray = searchIndex[key].filter((eachTris) => eachTris.forw != tris.forw);
-    if (newArray.length == 0)
-      delete searchIndex[key];
-    else
-      searchIndex[key] = newArray;
-  }
-  if (tins) {
-    let newArray = tins.forw.features.filter((eachTri) => eachTri != tris.forw);
-    tins.forw.features = newArray;
-    newArray = tins.bakw.features.filter((eachTri) => eachTri != tris.bakw);
-    tins.bakw.features = newArray;
-  }
-}
-function calcSearchKeys(tri) {
-  const vtx = ["a", "b", "c"].map((key) => tri.properties[key].index);
-  return [
-    [0, 1],
-    [0, 2],
-    [1, 2],
-    [0, 1, 2]
-  ].map((set) => set.map((i) => vtx[i]).sort().join("-")).sort();
-}
-globalThis.Tin = Tin;
+};
+_23(O, "VERTEX_PLAIN", "plain"), _23(O, "VERTEX_BIRDEYE", "birdeye"), _23(O, "MODE_STRICT", "strict"), _23(O, "MODE_AUTO", "auto"), _23(O, "MODE_LOOSE", "loose"), _23(O, "STATUS_STRICT", "strict"), _23(O, "STATUS_ERROR", "strict_error"), _23(O, "STATUS_LOOSE", "loose"), _23(O, "YAXIS_FOLLOW", "follow"), _23(O, "YAXIS_INVERT", "invert");
+let H = O;
 const keys = [
   "title",
   "attr",
@@ -21138,6 +15866,7 @@ async function store2HistMap4Core(store) {
   return store2HistMap_internal(store, false, true);
 }
 async function store2HistMap_internal(store, byCompiled, coreLogic) {
+  var _a, _b;
   const ret = coreLogic ? store : {};
   const tins = [];
   keys.forEach((key) => {
@@ -21146,20 +15875,17 @@ async function store2HistMap_internal(store, byCompiled, coreLogic) {
   if (store["imageExtention"] || store["imageExtension"])
     ret["imageExtension"] = store["imageExtension"] || store["imageExtention"];
   if (store.compiled) {
-    const opt = {};
-    if (!store.compiled.wh) opt.wh = [store.width, store.height];
-    if (!store.compiled.strictMode) opt.strictMode = store.strictMode;
-    if (!store.compiled.vertexMode) opt.vertexMode = store.vertexMode;
-    if (!store.compiled.yaxisMode) opt.yaxisMode = store.yaxisMode;
-    let tin = new Tin(opt);
+    let tin = new H();
     tin.setCompiled(store.compiled);
-    ret.strictMode = tin.strictMode;
-    ret.vertexMode = tin.vertexMode;
-    ret.yaxisMode = tin.yaxisMode;
-    ret.width = tin.wh[0];
-    ret.height = tin.wh[1];
-    ret.gcps = tin.points;
-    ret.edges = tin.edges;
+    tin.addIndexedTin();
+    const transform2 = tin;
+    ret.strictMode = transform2.strictMode;
+    ret.vertexMode = transform2.vertexMode;
+    ret.yaxisMode = transform2.yaxisMode;
+    ret.width = (_a = transform2.wh) == null ? void 0 : _a[0];
+    ret.height = (_b = transform2.wh) == null ? void 0 : _b[1];
+    ret.gcps = transform2.points;
+    ret.edges = transform2.edges;
     tins.push(tin);
   } else {
     ret.strictMode = store.strictMode;
@@ -21187,12 +15913,9 @@ async function store2HistMap_internal(store, byCompiled, coreLogic) {
       sub.importance = sub_map.importance;
       sub.priority = sub_map.priority;
       if (sub_map.compiled) {
-        const opt = {};
-        if (!sub_map.compiled.strictMode) opt.strictMode = store.strictMode;
-        if (!sub_map.compiled.vertexMode) opt.vertexMode = store.vertexMode;
-        if (!sub_map.compiled.yaxisMode) opt.yaxisMode = store.yaxisMode;
-        let tin = new Tin(opt);
+        let tin = new H();
         tin.setCompiled(sub_map.compiled);
+        tin.addIndexedTin();
         sub.bounds = tin.bounds;
         sub.gcps = tin.points;
         sub.edges = tin.edges;
@@ -21220,35 +15943,9 @@ async function store2HistMap_internal(store, byCompiled, coreLogic) {
 }
 async function createTinFromGcpsAsync(strict, vertex, yaxis, gcps = [], edges = [], wh, bounds) {
   if (gcps.length < 3) return "tooLessGcps";
-  const tin = new Tin({
-    yaxisMode: yaxis
-  });
-  if (wh) {
-    tin.setWh(wh);
-  } else if (bounds) {
-    tin.setBounds(bounds);
-  } else {
-    throw "Both wh and bounds are missing";
-  }
-  tin.setStrictMode(strict);
-  tin.setVertexMode(vertex);
-  tin.setPoints(gcps);
-  tin.setEdges(edges);
-  try {
-    await tin.updateTinAsync();
-    return tin;
-  } catch (err) {
-    console.log(err);
-    if (err == "SOME POINTS OUTSIDE") {
-      return "pointsOutside";
-    } else if (err.indexOf("TOO LINEAR") == 0) {
-      return "tooLinear";
-    } else if (err.indexOf("Vertex indices of edge") > -1 || err.indexOf("is degenerate!") > -1 || err.indexOf("already exists or intersects with an existing edge!") > -1) {
-      return "edgeError";
-    } else {
-      throw err;
-    }
-  }
+  console.error("@maplat/transform requires pre-compiled data. Cannot create from GCPs.");
+  console.error("Please use @maplat/editor or a separate tool to generate compiled data.");
+  return "compiledRequired";
 }
 class HistMap_tin extends HistMap {
   constructor(options = {}) {
@@ -21276,9 +15973,9 @@ class HistMap_tin extends HistMap {
     transformDirect("EPSG:4326", proj);
     if (options.sub_maps) {
       options.sub_maps.map((sub_map, i) => {
-        const index2 = i + 1;
-        const projKey = `Illst:${obj.mapID}#${index2}`;
-        const tin = obj.tins[index2];
+        const index = i + 1;
+        const projKey = `Illst:${obj.mapID}#${index}`;
+        const tin = obj.tins[index];
         const proj2 = new Projection({
           code: projKey,
           extent: [tin.xy[0], tin.xy[1], tin.wh[0], tin.wh[1]],
@@ -21317,13 +16014,13 @@ class HistMap_tin extends HistMap {
   }
   xy2MercAsync_returnLayer(xy) {
     return new Promise((resolve, reject) => {
-      const tinSorted = this.tins.map((tin, index2) => [index2, tin]).sort((a, b) => a[1].priority < b[1].priority ? 1 : -1);
+      const tinSorted = this.tins.map((tin, index) => [index, tin]).sort((a, b) => a[1].priority < b[1].priority ? 1 : -1);
       for (let i = 0; i < tinSorted.length; i++) {
-        const index2 = tinSorted[i][0];
+        const index = tinSorted[i][0];
         const tin = tinSorted[i][1];
-        if (index2 == 0 || booleanPointInPolygon$1(xy, tin.xyBounds)) {
-          this.xy2MercAsync_specifyLayer(xy, index2).then((merc) => {
-            resolve([index2, merc]);
+        if (index == 0 || turf_boolean_point_in_polygon_default(xy, tin.xyBounds)) {
+          this.xy2MercAsync_specifyLayer(xy, index).then((merc) => {
+            resolve([index, merc]);
           }).catch((err) => {
             reject(err);
           });
@@ -21335,12 +16032,12 @@ class HistMap_tin extends HistMap {
   merc2XyAsync_returnLayer(merc) {
     return Promise.all(
       this.tins.map(
-        (tin, index2) => new Promise((resolve, reject) => {
-          this.merc2XyAsync_specifyLayer(merc, index2).then((xy) => {
-            if (index2 === 0 || booleanPointInPolygon$1(xy, tin.xyBounds)) {
-              resolve([tin, index2, xy]);
+        (tin, index) => new Promise((resolve, reject) => {
+          this.merc2XyAsync_specifyLayer(merc, index).then((xy) => {
+            if (index === 0 || turf_boolean_point_in_polygon_default(xy, tin.xyBounds)) {
+              resolve([tin, index, xy]);
             } else {
-              resolve([tin, index2]);
+              resolve([tin, index]);
             }
           }).catch((err) => {
             reject(err);
@@ -21351,30 +16048,30 @@ class HistMap_tin extends HistMap {
       (results) => results.sort((a, b) => a[0].priority < b[0].priority ? 1 : -1).reduce(
         (ret, result, priIndex, arry) => {
           const tin = result[0];
-          const index2 = result[1];
+          const index = result[1];
           const xy = result[2];
           if (!xy) return ret;
           for (let i = 0; i < priIndex; i++) {
             const targetTin = arry[i][0];
             const targetIndex = arry[i][1];
-            if (targetIndex === 0 || booleanPointInPolygon$1(xy, targetTin.xyBounds)) {
+            if (targetIndex === 0 || turf_boolean_point_in_polygon_default(xy, targetTin.xyBounds)) {
               if (ret.length) {
                 const hide = !ret[0];
                 const storedTin = hide ? ret[1][2] : ret[0][2];
                 if (!hide || tin.importance < storedTin.importance) {
                   return ret;
                 } else {
-                  return [void 0, [index2, xy, tin]];
+                  return [void 0, [index, xy, tin]];
                 }
               } else {
-                return [void 0, [index2, xy, tin]];
+                return [void 0, [index, xy, tin]];
               }
             }
           }
           if (!ret.length || !ret[0]) {
-            return [[index2, xy, tin]];
+            return [[index, xy, tin]];
           } else {
-            ret.push([index2, xy, tin]);
+            ret.push([index, xy, tin]);
             return ret.sort((a, b) => a[2].importance < b[2].importance ? 1 : -1).filter((_row, i) => i < 2);
           }
         },
@@ -21388,7 +16085,7 @@ class HistMap_tin extends HistMap {
   setupMapParameter(callback) {
     const xy = [this.width / 2, this.height / 2];
     this.xy2MercAsync_returnLayer(xy).then((results) => {
-      const index2 = results[0];
+      const index = results[0];
       const mercCenter = results[1];
       const dir4 = [
         [xy[0] - 150, xy[1]],
@@ -21404,7 +16101,7 @@ class HistMap_tin extends HistMap {
       ];
       const proms = [];
       for (let i = 0; i < 9; i++) {
-        const prom = i < 4 ? this.xy2MercAsync_specifyLayer(dir4[i], index2) : i == 4 ? Promise.resolve(mercCenter) : this.xy2MercAsync_specifyLayer(envelope[i - 5], 0);
+        const prom = i < 4 ? this.xy2MercAsync_specifyLayer(dir4[i], index) : i == 4 ? Promise.resolve(mercCenter) : this.xy2MercAsync_specifyLayer(envelope[i - 5], 0);
         proms.push(prom);
       }
       Promise.all(proms).then((mercs) => {
@@ -21439,13 +16136,13 @@ class HistMap_tin extends HistMap {
               hide = true;
               return;
             }
-            const index2 = result[0];
+            const index = result[0];
             const centerXy = result[1];
             if (i !== 0 && !hide) return Promise.resolve([centerXy]);
             return Promise.all(
-              mercs[0].map((merc, j) => {
-                if (j === 0) return Promise.resolve(centerXy);
-                return this.merc2XyAsync_specifyLayer(merc, index2);
+              mercs[0].map((merc, j2) => {
+                if (j2 === 0) return Promise.resolve(centerXy);
+                return this.merc2XyAsync_specifyLayer(merc, index);
               })
             );
           })
@@ -21483,14 +16180,14 @@ class HistMap_tin extends HistMap {
   // 画面サイズと地図ズームから、メルカトル座標上での5座標を取得する。zoom, rotate無指定の場合は自動取得
   viewpoint2MercsAsync(viewpoint, size) {
     const sysCoords = this.viewpoint2SysCoords(viewpoint, size);
-    const cross2 = this.sysCoords2Xys(sysCoords);
-    const promise = this.xy2MercAsync_returnLayer(cross2[0][0]);
+    const cross = this.sysCoords2Xys(sysCoords);
+    const promise = this.xy2MercAsync_returnLayer(cross[0][0]);
     return promise.then((results) => {
-      const index2 = results[0];
+      const index = results[0];
       const centerMerc = results[1];
-      const promises = cross2[0].map((val, i) => {
+      const promises = cross[0].map((val, i) => {
         if (i === 0) return Promise.resolve(centerMerc);
-        return this.xy2MercAsync_specifyLayer(val, index2);
+        return this.xy2MercAsync_specifyLayer(val, index);
       });
       return Promise.all(promises).then((mercs) => [mercs, size]);
     });
@@ -21499,12 +16196,12 @@ class HistMap_tin extends HistMap {
     const promises = this.merc2XyAsync_returnLayer(mercs[0][0]).then(
       (results) => {
         const result = results[0] || results[1];
-        const index2 = result[0];
+        const index = result[0];
         const centerXy = result[1];
         return Promise.all(
           mercs[0].map((merc, i) => {
             if (i === 0) return centerXy;
-            return this.merc2XyAsync_specifyLayer(merc, index2);
+            return this.merc2XyAsync_specifyLayer(merc, index);
           })
         );
       }
@@ -21859,9 +16556,9 @@ function decode(body) {
   var form = new FormData();
   body.trim().split("&").forEach(function(bytes) {
     if (bytes) {
-      var split2 = bytes.split("=");
-      var name = split2.shift().replace(/\+/g, " ");
-      var value = split2.join("=").replace(/\+/g, " ");
+      var split = bytes.split("=");
+      var name = split.shift().replace(/\+/g, " ");
+      var value = split.join("=").replace(/\+/g, " ");
       form.append(decodeURIComponent(name), decodeURIComponent(value));
     }
   });
@@ -21879,8 +16576,8 @@ function parseHeaders(rawHeaders) {
       var value = parts.join(":").trim();
       try {
         headers.append(key, value);
-      } catch (error3) {
-        console.warn("Response " + error3.message);
+      } catch (error2) {
+        console.warn("Response " + error2.message);
       }
     }
   });
@@ -21935,8 +16632,8 @@ try {
   DOMException = function(message, name) {
     this.message = message;
     this.name = name;
-    var error3 = Error(message);
-    this.stack = error3.stack;
+    var error2 = Error(message);
+    this.stack = error2.stack;
   };
   DOMException.prototype = Object.create(Error.prototype);
   DOMException.prototype.constructor = DOMException;
@@ -22098,7 +16795,7 @@ const baseDict = {
     thumbnail: gsi_ortho
   }
 };
-const checkMapTypeIsWMTS = (maptype) => (maptype || "").match(/^(?:base|overlay|google(?:_(?:roadmap|satellite|hybrid|terrain))?|mapbox|osm)$/);
+const checkMapTypeIsWMTS = (maptype) => (maptype || "").match(/^(?:base|overlay|google(?:_(?:roadmap|satellite|hybrid|terrain))?|mapbox|maplibre|osm)$/);
 async function mapSourceFactory(options, commonOptions) {
   if (typeof options === "string") {
     options = baseDict[options];
@@ -22106,7 +16803,7 @@ async function mapSourceFactory(options, commonOptions) {
   options = normalizeArg(Object.assign(options, commonOptions));
   options.label = options.label || options.year;
   if (checkMapTypeIsWMTS(options.maptype)) {
-    const targetSrc = options.maptype === "base" ? NowMap : options.maptype === "overlay" ? TmsMap : options.maptype === "mapbox" ? MapboxMap : GoogleMap;
+    const targetSrc = options.maptype === "base" ? NowMap : options.maptype === "overlay" ? TmsMap : options.maptype === "mapbox" ? MapboxMap : options.maptype === "maplibre" ? MapLibreMap : GoogleMap;
     if (!targetSrc.isBasemap()) {
       if (!options.homePosition) options.homePosition = options.homePos;
       if (!options.mercZoom) options.mercZoom = options.defZoom;
@@ -22157,7 +16854,7 @@ async function mapSourceFactory(options, commonOptions) {
           }
           if (!options.maptype) options.maptype = "maplat";
           if (checkMapTypeIsWMTS(options.maptype)) {
-            const targetSrc = options.maptype === "base" ? NowMap : options.maptype === "overlay" ? TmsMap : options.maptype === "mapbox" ? MapboxMap : GoogleMap;
+            const targetSrc = options.maptype === "base" ? NowMap : options.maptype === "overlay" ? TmsMap : options.maptype === "mapbox" ? MapboxMap : options.maptype === "maplibre" ? MapLibreMap : GoogleMap;
             if (!targetSrc.isBasemap()) {
               if (!options.homePosition) options.homePosition = options.homePos;
               if (!options.mercZoom) options.mercZoom = options.defZoom;
@@ -22230,7 +16927,7 @@ async function mapSourceFactory(options, commonOptions) {
 }
 async function registerMapToSW(options) {
   const setting = {};
-  if (options.maptype === "mapbox" || options.maptype === "google" || !options.enableCache) return;
+  if (options.maptype === "mapbox" || options.maptype === "maplibre" || options.maptype === "google" || !options.enableCache) return;
   else if (options.maptype === "base" || options.maptype === "overlay")
     setting.type = "wmts";
   else setting.type = "xyz";
@@ -22251,8 +16948,8 @@ async function registerMapToSW(options) {
       },
       [Infinity, -Infinity, Infinity, -Infinity]
     );
-    ["minLng", "maxLng", "minLat", "maxLat"].map((key, index2) => {
-      setting[key] = minMax[index2];
+    ["minLng", "maxLng", "minLat", "maxLat"].map((key, index) => {
+      setting[key] = minMax[index];
     });
   }
   let ret;
@@ -22290,9 +16987,9 @@ var freeGlobal = typeof globalThis == "object" && globalThis && globalThis.Objec
 var freeSelf = typeof self == "object" && self && self.Object === Object && self;
 var root = freeGlobal || freeSelf || Function("return this")();
 function arrayMap(array, iteratee) {
-  var index2 = -1, length2 = array == null ? 0 : array.length, result = Array(length2);
-  while (++index2 < length2) {
-    result[index2] = iteratee(array[index2], index2, array);
+  var index = -1, length = array == null ? 0 : array.length, result = Array(length);
+  while (++index < length) {
+    result[index] = iteratee(array[index], index, array);
   }
   return result;
 }
@@ -22463,16 +17160,16 @@ lodash_template.exports;
     return func.apply(thisArg, args);
   }
   function arrayMap2(array, iteratee) {
-    var index2 = -1, length2 = array == null ? 0 : array.length, result = Array(length2);
-    while (++index2 < length2) {
-      result[index2] = iteratee(array[index2], index2, array);
+    var index = -1, length = array == null ? 0 : array.length, result = Array(length);
+    while (++index < length) {
+      result[index] = iteratee(array[index], index, array);
     }
     return result;
   }
   function baseTimes(n, iteratee) {
-    var index2 = -1, result = Array(n);
-    while (++index2 < n) {
-      result[index2] = iteratee(index2);
+    var index = -1, result = Array(n);
+    while (++index < n) {
+      result[index] = iteratee(index);
     }
     return result;
   }
@@ -22522,13 +17219,13 @@ lodash_template.exports;
   var nativeIsBuffer = Buffer2 ? Buffer2.isBuffer : void 0, nativeKeys = overArg(Object.keys, Object), nativeMax = Math.max, nativeNow = Date.now;
   var symbolProto2 = Symbol2 ? Symbol2.prototype : void 0, symbolToString2 = symbolProto2 ? symbolProto2.toString : void 0;
   function arrayLikeKeys(value, inherited) {
-    var isArr = isArray2(value), isArg = !isArr && isArguments(value), isBuff = !isArr && !isArg && isBuffer(value), isType = !isArr && !isArg && !isBuff && isTypedArray(value), skipIndexes = isArr || isArg || isBuff || isType, result = skipIndexes ? baseTimes(value.length, String) : [], length2 = result.length;
+    var isArr = isArray2(value), isArg = !isArr && isArguments(value), isBuff = !isArr && !isArg && isBuffer(value), isType = !isArr && !isArg && !isBuff && isTypedArray(value), skipIndexes = isArr || isArg || isBuff || isType, result = skipIndexes ? baseTimes(value.length, String) : [], length = result.length;
     for (var key in value) {
       if ((inherited || hasOwnProperty2.call(value, key)) && !(skipIndexes && // Safari 9 has enumerable `arguments.length` in strict mode.
       (key == "length" || // Node.js 0.10 has enumerable non-index properties on buffers.
       isBuff && (key == "offset" || key == "parent") || // PhantomJS 2 has enumerable non-index properties on typed arrays.
       isType && (key == "buffer" || key == "byteLength" || key == "byteOffset") || // Skip index properties.
-      isIndex(key, length2)))) {
+      isIndex(key, length)))) {
         result.push(key);
       }
     }
@@ -22622,9 +17319,9 @@ lodash_template.exports;
   function copyObject(source, props, object, customizer) {
     var isNew = !object;
     object || (object = {});
-    var index2 = -1, length2 = props.length;
-    while (++index2 < length2) {
-      var key = props[index2];
+    var index = -1, length = props.length;
+    while (++index < length) {
+      var key = props[index];
       var newValue = customizer ? customizer(object[key], source[key], key, object, source) : void 0;
       if (newValue === void 0) {
         newValue = source[key];
@@ -22639,17 +17336,17 @@ lodash_template.exports;
   }
   function createAssigner(assigner) {
     return baseRest(function(object, sources) {
-      var index2 = -1, length2 = sources.length, customizer = length2 > 1 ? sources[length2 - 1] : void 0, guard = length2 > 2 ? sources[2] : void 0;
-      customizer = assigner.length > 3 && typeof customizer == "function" ? (length2--, customizer) : void 0;
+      var index = -1, length = sources.length, customizer = length > 1 ? sources[length - 1] : void 0, guard = length > 2 ? sources[2] : void 0;
+      customizer = assigner.length > 3 && typeof customizer == "function" ? (length--, customizer) : void 0;
       if (guard && isIterateeCall(sources[0], sources[1], guard)) {
-        customizer = length2 < 3 ? void 0 : customizer;
-        length2 = 1;
+        customizer = length < 3 ? void 0 : customizer;
+        length = 1;
       }
       object = Object(object);
-      while (++index2 < length2) {
-        var source = sources[index2];
+      while (++index < length) {
+        var source = sources[index];
         if (source) {
-          assigner(object, source, index2, customizer);
+          assigner(object, source, index, customizer);
         }
       }
       return object;
@@ -22682,18 +17379,18 @@ lodash_template.exports;
     }
     return result;
   }
-  function isIndex(value, length2) {
+  function isIndex(value, length) {
     var type = typeof value;
-    length2 = length2 == null ? MAX_SAFE_INTEGER : length2;
-    return !!length2 && (type == "number" || type != "symbol" && reIsUint.test(value)) && (value > -1 && value % 1 == 0 && value < length2);
+    length = length == null ? MAX_SAFE_INTEGER : length;
+    return !!length && (type == "number" || type != "symbol" && reIsUint.test(value)) && (value > -1 && value % 1 == 0 && value < length);
   }
-  function isIterateeCall(value, index2, object) {
+  function isIterateeCall(value, index, object) {
     if (!isObject2(object)) {
       return false;
     }
-    var type = typeof index2;
-    if (type == "number" ? isArrayLike2(object) && isIndex(index2, object.length) : type == "string" && index2 in object) {
-      return eq(object[index2], value);
+    var type = typeof index;
+    if (type == "number" ? isArrayLike(object) && isIndex(index, object.length) : type == "string" && index in object) {
+      return eq(object[index], value);
     }
     return false;
   }
@@ -22719,14 +17416,14 @@ lodash_template.exports;
   function overRest(func, start, transform2) {
     start = nativeMax(start === void 0 ? func.length - 1 : start, 0);
     return function() {
-      var args = arguments, index2 = -1, length2 = nativeMax(args.length - start, 0), array = Array(length2);
-      while (++index2 < length2) {
-        array[index2] = args[start + index2];
+      var args = arguments, index = -1, length = nativeMax(args.length - start, 0), array = Array(length);
+      while (++index < length) {
+        array[index] = args[start + index];
       }
-      index2 = -1;
+      index = -1;
       var otherArgs = Array(start + 1);
-      while (++index2 < start) {
-        otherArgs[index2] = args[index2];
+      while (++index < start) {
+        otherArgs[index] = args[index];
       }
       otherArgs[start] = transform2(array);
       return apply(func, this, otherArgs);
@@ -22770,7 +17467,7 @@ lodash_template.exports;
     return isObjectLike2(value) && hasOwnProperty2.call(value, "callee") && !propertyIsEnumerable.call(value, "callee");
   };
   var isArray2 = Array.isArray;
-  function isArrayLike2(value) {
+  function isArrayLike(value) {
     return value != null && isLength(value.length) && !isFunction(value);
   }
   var isBuffer = nativeIsBuffer || stubFalse;
@@ -22820,10 +17517,10 @@ lodash_template.exports;
     copyObject(source, keysIn(source), object, customizer);
   });
   function keys2(object) {
-    return isArrayLike2(object) ? arrayLikeKeys(object) : baseKeys(object);
+    return isArrayLike(object) ? arrayLikeKeys(object) : baseKeys(object);
   }
   function keysIn(object) {
-    return isArrayLike2(object) ? arrayLikeKeys(object, true) : baseKeysIn(object);
+    return isArrayLike(object) ? arrayLikeKeys(object, true) : baseKeysIn(object);
   }
   function template2(string, options, guard) {
     var settings = templateSettings2.imports._.templateSettings || templateSettings2;
@@ -22833,7 +17530,7 @@ lodash_template.exports;
     string = toString2(string);
     options = assignInWith({}, options, settings, customDefaultsAssignIn);
     var imports = assignInWith({}, options.imports, settings.imports, customDefaultsAssignIn), importsKeys = keys2(imports), importsValues = baseValues(imports, importsKeys);
-    var isEscaping, isEvaluating, index2 = 0, interpolate = options.interpolate || reNoMatch, source = "__p += '";
+    var isEscaping, isEvaluating, index = 0, interpolate = options.interpolate || reNoMatch, source = "__p += '";
     var reDelimiters = RegExp(
       (options.escape || reNoMatch).source + "|" + interpolate.source + "|" + (interpolate === reInterpolate2 ? reEsTemplate : reNoMatch).source + "|" + (options.evaluate || reNoMatch).source + "|$",
       "g"
@@ -22841,7 +17538,7 @@ lodash_template.exports;
     var sourceURL = hasOwnProperty2.call(options, "sourceURL") ? "//# sourceURL=" + (options.sourceURL + "").replace(/[\r\n]/g, " ") + "\n" : "";
     string.replace(reDelimiters, function(match, escapeValue, interpolateValue, esTemplateValue, evaluateValue, offset) {
       interpolateValue || (interpolateValue = esTemplateValue);
-      source += string.slice(index2, offset).replace(reUnescapedString, escapeStringChar);
+      source += string.slice(index, offset).replace(reUnescapedString, escapeStringChar);
       if (escapeValue) {
         isEscaping = true;
         source += "' +\n__e(" + escapeValue + ") +\n'";
@@ -22853,7 +17550,7 @@ lodash_template.exports;
       if (interpolateValue) {
         source += "' +\n((__t = (" + interpolateValue + ")) == null ? '' : __t) +\n'";
       }
-      index2 = offset + match.length;
+      index = offset + match.length;
       return match;
     });
     source += "';\n";
@@ -22942,12 +17639,12 @@ const GeolocationErrorType = {
   ERROR: "error"
 };
 class GeolocationError extends BaseEvent {
-  constructor(error3) {
+  constructor(error2) {
     super(GeolocationErrorType.ERROR);
     __publicField(this, "code");
     __publicField(this, "message");
-    this.code = error3.code;
-    this.message = error3.message;
+    this.code = error2.code;
+    this.message = error2.message;
   }
 }
 class Geolocation extends BaseObject {
@@ -23039,14 +17736,14 @@ class Geolocation extends BaseObject {
   }
   timerPositionError_() {
     const code = Math.floor(Math.random() * 3) + 1;
-    const error3 = {
+    const error2 = {
       code,
       message: code === 1 ? "User denied Geolocation" : code === 2 ? "Position unavailable" : "Timeout expired"
     };
-    this.positionError_(error3);
+    this.positionError_(error2);
   }
-  positionError_(error3) {
-    const desc = new GeolocationError(error3);
+  positionError_(error2) {
+    const desc = new GeolocationError(error2);
     this.dispatchEvent(desc);
   }
   getAccuracy() {
@@ -23135,6 +17832,7 @@ class MaplatApp extends Target {
     __publicField(this, "mapDivDocument");
     __publicField(this, "mapObject");
     __publicField(this, "mapboxMap");
+    __publicField(this, "maplibreMap");
     __publicField(this, "googleApiKey");
     __publicField(this, "pois");
     __publicField(this, "poiTemplate");
@@ -23160,11 +17858,11 @@ class MaplatApp extends Target {
     __publicField(this, "lastClickEvent");
     appOption = normalizeArg(appOption);
     this.appid = appOption.appid || "sample";
-    if (appOption.mapboxToken) {
-      if (typeof mapboxgl !== "undefined" && mapboxgl) {
-        mapboxgl.accessToken = appOption.mapboxToken;
-      }
+    const mapboxgl = appOption.mapboxgl || (typeof window !== "undefined" ? window.mapboxgl : void 0);
+    if (mapboxgl && appOption.mapboxToken) {
+      mapboxgl.accessToken = appOption.mapboxToken;
     }
+    appOption.maplibregl || (typeof window !== "undefined" ? window.maplibregl : void 0);
     if (appOption.googleApiKey) {
       this.googleApiKey = appOption.googleApiKey;
     }
@@ -23283,7 +17981,11 @@ class MaplatApp extends Target {
       mercMaxZoom: mapReturnValue.mercMaxZoom,
       enableCache: this.enableCache,
       key: this.googleApiKey,
-      translator: (fragment) => this.translate(fragment)
+      translator: (fragment) => this.translate(fragment),
+      mapboxMap: this.mapboxMap,
+      // Pass mapbox map instance
+      maplibreMap: this.maplibreMap
+      // Pass maplibre map instance
     };
     for (let i = 0; i < dataSource.length; i++) {
       const option = dataSource[i];
@@ -23481,7 +18183,8 @@ class MaplatApp extends Target {
         div: backDiv
       });
     }
-    if (typeof mapboxgl !== "undefined" && mapboxgl) {
+    const mapboxgl = appOption.mapboxgl || (typeof window !== "undefined" ? window.mapboxgl : void 0);
+    if (mapboxgl) {
       const mapboxDiv = `${this.mapDiv}_mapbox`;
       newElem = createElement(
         `<div id="${mapboxDiv}" class="map" style="top:0; left:0; right:0; bottom:0; position:absolute;visibility:hidden;"></div>`
@@ -23502,6 +18205,36 @@ class MaplatApp extends Target {
         pitchWithRotate: false,
         scrollZoom: false,
         touchZoomRotate: false
+      });
+    }
+    const maplibregl = appOption.maplibregl || (typeof window !== "undefined" ? window.maplibregl : void 0);
+    if (maplibregl) {
+      const maplibreDiv = `${this.mapDiv}_maplibre`;
+      newElem = createElement(
+        `<div id="${maplibreDiv}" class="map" style="top:0; left:0; right:0; bottom:0; position:absolute;visibility:hidden;"></div>`
+      )[0];
+      this.mapDivDocument.insertBefore(
+        newElem,
+        this.mapDivDocument.firstChild
+      );
+      this.maplibreMap = new maplibregl.Map({
+        attributionControl: false,
+        boxZoom: false,
+        container: maplibreDiv,
+        doubleClickZoom: false,
+        dragPan: false,
+        dragRotate: false,
+        interactive: false,
+        keyboard: false,
+        pitchWithRotate: false,
+        scrollZoom: false,
+        touchZoomRotate: false,
+        // Set a basic style to prevent render errors
+        style: {
+          version: 8,
+          sources: {},
+          layers: []
+        }
       });
     }
     this.startFrom = this.appData.startFrom;
@@ -23531,9 +18264,14 @@ class MaplatApp extends Target {
       source.setMap(this.mapObject);
       if (source.isMapbox()) {
         if (!this.mapboxMap) {
-          throw "Mapbox GL support is being removed. Please use OpenLayers vector tiles instead.";
+          throw "To use Mapbox based maps, you need to include Mapbox GL JS and provide it via mapboxgl option.";
         }
         source.mapboxMap = this.mapboxMap;
+      } else if (source.isMapLibre && source.isMapLibre()) {
+        if (!this.maplibreMap) {
+          throw "To use MapLibre based maps, you need to include MapLibre GL JS and provide it via maplibregl option.";
+        }
+        source.maplibreMap = this.maplibreMap;
       }
       cache2.push(source);
       this.cacheHash[source.mapID] = source;
@@ -23700,9 +18438,9 @@ class MaplatApp extends Target {
   setMouseCursor() {
     const moveHandler = (evt) => {
       const pixel = evt.target.getEventPixel(evt.originalEvent);
-      const hit2 = evt.target.hasFeatureAtPixel(pixel);
+      const hit = evt.target.hasFeatureAtPixel(pixel);
       const target = evt.target.getTarget();
-      if (hit2) {
+      if (hit) {
         const feature2 = evt.target.forEachFeatureAtPixel(
           evt.pixel,
           (feature22) => {

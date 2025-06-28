@@ -6,9 +6,11 @@ import { Vector as sourceVector } from "ol/source";
 import { Circle, LineString, Point, Polygon } from "ol/geom";
 import { Fill, Icon, Stroke, Style } from "ol/style";
 import { MapboxMap } from "./source/mapboxmap";
+import { MapLibreMap } from "./source/maplibremap";
 import { GoogleMap } from "./source/googlemap";
 import { NowMap } from "./source/nowmap";
 import { MapboxLayer } from "./layer_mapbox";
+import { MapLibreLayer } from "./layer_maplibre";
 import { normalizeArg } from "./functions";
 
 // @ts-ignore
@@ -148,13 +150,31 @@ export class MaplatMap extends Map {
     this.on("moveend", () => {
       view.on("propertychange", movestart);
     });
+    
+    // Debug zoom changes
+    view.on('change:resolution', () => {
+      const source = this.getSource();
+      if (source && (source instanceof MapboxMap || source instanceof MapLibreMap)) {
+        // console.log('View zoom change:', {
+        //   baseMapType: source.constructor.name,
+        //   viewZoom: view.getZoom(),
+        //   resolution: view.getResolution()
+        // });
+      }
+    });
   }
   static spawnLayer(layer: any, source: any, container: any) {
-    if (source instanceof MapboxMap || !(layer instanceof Tile)) {
+    if (source instanceof MapboxMap || source instanceof MapLibreMap || !(layer instanceof Tile)) {
       if (source instanceof MapboxMap) {
         layer = new MapboxLayer({
           style: source.style,
           accessToken: source.accessToken,
+          container,
+          source
+        });
+      } else if (source instanceof MapLibreMap) {
+        layer = new MapLibreLayer({
+          style: source.style,
           container,
           source
         });
@@ -328,6 +348,13 @@ export class MaplatMap extends Map {
     const layers = this.getLayer("overlay").getLayers();
     layers.clear();
     if (source) {
+      // console.log('Creating TMS overlay layer:', {
+      //   sourceType: source.constructor.name,
+      //   mapID: source.mapID,
+      //   maxZoom: source.maxZoom,
+      //   minZoom: source.minZoom,
+      //   tileGrid: source.getTileGrid()
+      // });
       const layer = new Tile({
         source
       });

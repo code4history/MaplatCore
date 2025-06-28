@@ -131,6 +131,7 @@ export class MaplatApp extends EventTarget {
   mapDivDocument: HTMLElement | null;
   mapObject: any;
   mapboxMap: any;
+  maplibreMap: any;
   googleApiKey?: string;
   pois: any;
   poiTemplate?: string;
@@ -160,12 +161,14 @@ export class MaplatApp extends EventTarget {
     super();
     appOption = normalizeArg(appOption);
     this.appid = appOption.appid || "sample";
-    if (appOption.mapboxToken) {
-      const mapboxgl = appOption.mapboxgl || (typeof window !== 'undefined' ? (window as any).mapboxgl : undefined);
-      if (mapboxgl) {
-        mapboxgl.accessToken = appOption.mapboxToken;
-      }
+    // Mapbox GL JS support
+    const mapboxgl = appOption.mapboxgl || (typeof window !== 'undefined' ? (window as any).mapboxgl : undefined);
+    if (mapboxgl && appOption.mapboxToken) {
+      mapboxgl.accessToken = appOption.mapboxToken;
     }
+    
+    // MapLibre GL JS support (separate from Mapbox)
+    const maplibregl = appOption.maplibregl || (typeof window !== 'undefined' ? (window as any).maplibregl : undefined);
     if (appOption.googleApiKey) {
       this.googleApiKey = appOption.googleApiKey;
     }
@@ -303,7 +306,8 @@ export class MaplatApp extends EventTarget {
       enableCache: this.enableCache,
       key: this.googleApiKey,
       translator: (fragment: any) => this.translate(fragment),
-      mapboxMap: this.mapboxMap // Pass mapbox map instance
+      mapboxMap: this.mapboxMap, // Pass mapbox map instance
+      maplibreMap: this.maplibreMap // Pass maplibre map instance
     };
     for (let i = 0; i < dataSource.length; i++) {
       const option = dataSource[i];
@@ -539,7 +543,7 @@ export class MaplatApp extends EventTarget {
         div: backDiv
       });
     }
-    // TODO: Remove mapbox support
+    // Mapbox GL JS support
     const mapboxgl = appOption.mapboxgl || (typeof window !== 'undefined' ? (window as any).mapboxgl : undefined);
     if (mapboxgl) {
       const mapboxDiv = `${this.mapDiv}_mapbox`;
@@ -563,6 +567,39 @@ export class MaplatApp extends EventTarget {
         pitchWithRotate: false,
         scrollZoom: false,
         touchZoomRotate: false
+      });
+    }
+    
+    // MapLibre GL JS support (separate instance)
+    const maplibregl = appOption.maplibregl || (typeof window !== 'undefined' ? (window as any).maplibregl : undefined);
+    if (maplibregl) {
+      const maplibreDiv = `${this.mapDiv}_maplibre`;
+      newElem = createElement(
+        `<div id="${maplibreDiv}" class="map" style="top:0; left:0; right:0; bottom:0; ` +
+          `position:absolute;visibility:hidden;"></div>`
+      )[0];
+      this.mapDivDocument!.insertBefore(
+        newElem,
+        this.mapDivDocument!.firstChild
+      );
+      this.maplibreMap = new (maplibregl as any).Map({
+        attributionControl: false,
+        boxZoom: false,
+        container: maplibreDiv,
+        doubleClickZoom: false,
+        dragPan: false,
+        dragRotate: false,
+        interactive: false,
+        keyboard: false,
+        pitchWithRotate: false,
+        scrollZoom: false,
+        touchZoomRotate: false,
+        // Set a basic style to prevent render errors
+        style: {
+          version: 8,
+          sources: {},
+          layers: []
+        }
       });
     }
     this.startFrom = this.appData!.startFrom;
@@ -592,9 +629,14 @@ export class MaplatApp extends EventTarget {
       source.setMap(this.mapObject);
       if (source.isMapbox()) {
         if (!this.mapboxMap) {
-          throw "Mapbox GL support is being removed. Please use OpenLayers vector tiles instead.";
+          throw "To use Mapbox based maps, you need to include Mapbox GL JS and provide it via mapboxgl option.";
         }
         source.mapboxMap = this.mapboxMap;
+      } else if (source.isMapLibre && source.isMapLibre()) {
+        if (!this.maplibreMap) {
+          throw "To use MapLibre based maps, you need to include MapLibre GL JS and provide it via maplibregl option.";
+        }
+        source.maplibreMap = this.maplibreMap;
       }
       cache.push(source);
       this.cacheHash[source.mapID] = source;

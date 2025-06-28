@@ -138,9 +138,11 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
     }
 
     static isMapbox() {
-      // TODO: Remove when Mapbox support is removed
-      return false; // Temporarily disabled
-      // return this.isMapbox_;
+      return !!this.isMapbox_;
+    }
+    
+    static isMapLibre() {
+      return !!this.isMapLibre_;
     }
 
     isBasemap() { 
@@ -159,6 +161,12 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       return this.constructor.isMapbox();
+    }
+    
+    isMapLibre() {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      return this.constructor.isMapLibre && this.constructor.isMapLibre();
     }
 
     abstract insideCheckSysCoord(sysCoord: Coordinate): boolean;

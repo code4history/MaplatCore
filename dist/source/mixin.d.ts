@@ -51,6 +51,7 @@ export declare function setCustomFunction<TBase extends SourceConstructor>(Base:
     isBasemap(): any;
     isWmts(): any;
     isMapbox(): any;
+    isMapLibre(): any;
     insideCheckSysCoord(sysCoord: Coordinate): boolean;
     getCacheEnable(): boolean;
     getTileCacheStatsAsync(): Promise<{
@@ -112,6 +113,7 @@ export declare function setCustomFunction<TBase extends SourceConstructor>(Base:
     isBasemap(): boolean;
     isWmts(): boolean;
     isMapbox(): boolean;
+    isMapLibre(): any;
     createAsync(options: any): Promise<any>;
 }) & TBase;
 export declare function setCustomFunctionBase<TBase extends SourceConstructor>(Base: TBase): ((abstract new (...args: any[]) => {
@@ -159,6 +161,7 @@ export declare function setCustomFunctionBase<TBase extends SourceConstructor>(B
     isBasemap(): any;
     isWmts(): any;
     isMapbox(): any;
+    isMapLibre(): any;
     getCacheEnable(): boolean;
     getTileCacheStatsAsync(): Promise<{
         size?: number;
@@ -210,6 +213,7 @@ export declare function setCustomFunctionBase<TBase extends SourceConstructor>(B
     isBasemap(): boolean;
     isWmts(): boolean;
     isMapbox(): boolean;
+    isMapLibre(): any;
     createAsync(options: any): Promise<any>;
 }) & TBase;
 export declare function setCustomFunctionOverlay<TBase extends SourceConstructor>(Base: TBase): ((abstract new (...args: any[]) => {
@@ -244,6 +248,7 @@ export declare function setCustomFunctionOverlay<TBase extends SourceConstructor
     isBasemap(): any;
     isWmts(): any;
     isMapbox(): any;
+    isMapLibre(): any;
     insideCheckSysCoord(sysCoord: Coordinate): boolean;
     getCacheEnable(): boolean;
     getTileCacheStatsAsync(): Promise<{
@@ -305,6 +310,7 @@ export declare function setCustomFunctionOverlay<TBase extends SourceConstructor
     isBasemap(): boolean;
     isWmts(): boolean;
     isMapbox(): boolean;
+    isMapLibre(): any;
     createAsync(options: any): Promise<any>;
 }) & TBase;
 export declare function setCustomFunctionMaplat<TBase extends SourceConstructor>(Base: TBase): ((abstract new (...args: any[]) => {
@@ -349,6 +355,7 @@ export declare function setCustomFunctionMaplat<TBase extends SourceConstructor>
     isBasemap(): any;
     isWmts(): any;
     isMapbox(): any;
+    isMapLibre(): any;
     getCacheEnable(): boolean;
     getTileCacheStatsAsync(): Promise<{
         size?: number;
@@ -406,6 +413,7 @@ export declare function setCustomFunctionMaplat<TBase extends SourceConstructor>
     isBasemap(): boolean;
     isWmts(): boolean;
     isMapbox(): boolean;
+    isMapLibre(): any;
     createAsync(options: any): Promise<any>;
 }) & TBase;
 export declare const META_KEYS: string[];

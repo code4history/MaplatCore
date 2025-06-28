@@ -1,7 +1,7 @@
-import { default as Tin, Compiled, PointSet, Edge, StrictMode, VertexMode, YaxisMode } from '@maplat/tin';
+import { Transform, Compiled, PointSet, EdgeSet, StrictMode, VertexMode, YaxisMode } from '@maplat/transform';
 import { Position } from '@turf/turf';
 type LangResource = string | Record<string, string>;
-type TinLike = string | Tin | Compiled;
+type TinLike = string | Transform | Compiled;
 interface HistMapStore {
     title: LangResource;
     attr: LangResource;
@@ -25,7 +25,7 @@ interface HistMapStore {
     width?: number;
     height?: number;
     gcps?: PointSet[];
-    edges?: Edge[];
+    edges?: EdgeSet[];
     compiled?: Compiled;
     sub_maps: SubMap[];
     homePosition: Position;
@@ -33,7 +33,7 @@ interface HistMapStore {
 }
 interface SubMap {
     gcps?: PointSet[];
-    edges?: Edge[];
+    edges?: EdgeSet[];
     compiled?: Compiled;
     priority: number;
     importance: number;

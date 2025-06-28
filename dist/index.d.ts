@@ -88,6 +88,7 @@ export declare class MaplatApp extends EventTarget {
     mapDivDocument: HTMLElement | null;
     mapObject: any;
     mapboxMap: any;
+    maplibreMap: any;
     googleApiKey?: string;
     pois: any;
     poiTemplate?: string;

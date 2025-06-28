@@ -38,6 +38,10 @@
             "label" : "Mapbox"
         },
         {
+            "mapID" : "maplibre",
+            "label" : "MapLibre"
+        },
+        {
             "mapID" : "google",
             "label" : "Google"
         },

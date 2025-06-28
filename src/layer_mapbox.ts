@@ -14,6 +14,19 @@ export class MapboxLayer extends Layer {
       mbMap.setStyle(source.style);
       const canvas = mbMap.getCanvas();
       const viewState = frameState.viewState;
+      
+      // Debug canvas position
+      // console.log('Mapbox canvas position:', {
+      //   canvasWidth: canvas.width,
+      //   canvasHeight: canvas.height,
+      //   canvasOffsetLeft: canvas.offsetLeft,
+      //   canvasOffsetTop: canvas.offsetTop,
+      //   canvasStyle: {
+      //     top: canvas.style.top,
+      //     left: canvas.style.left,
+      //     position: canvas.style.position
+      //   }
+      // });
 
       // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
       const visible = this.getVisible();

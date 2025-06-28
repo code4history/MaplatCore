@@ -1,0 +1,13 @@
+{
+  "style": "https://tile.openstreetmap.jp/styles/osm-bright/style.json",
+  "maptype": "maplibre",
+  "title": {
+    "ja": "MapLibre地図",
+    "en": "MapLibre Map"
+  },
+  "label": {
+    "ja": "MapLibre(現在)",
+    "en": "MapLibre(Now)"
+  },
+  "attr": "© MapLibre © OpenStreetMap contributors"
+}

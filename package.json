@@ -91,5 +91,17 @@
     "glob-parent": "5.1.2",
     "axios": "1.6.0",
     "minimist": "1.2.8"
+  },
+  "peerDependencies": {
+    "mapbox-gl": "^1.0.0 || ^2.0.0 || ^3.0.0",
+    "maplibre-gl": "^3.0.0 || ^4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "mapbox-gl": {
+      "optional": true
+    },
+    "maplibre-gl": {
+      "optional": true
+    }
   }
 }

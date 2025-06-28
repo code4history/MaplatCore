@@ -49,6 +49,7 @@ declare const NowMap_base: ((abstract new (...args: any[]) => {
     isBasemap(): any;
     isWmts(): any;
     isMapbox(): any;
+    isMapLibre(): any;
     getCacheEnable(): boolean;
     getTileCacheStatsAsync(): Promise<{
         size?: number;
@@ -118,6 +119,7 @@ declare const NowMap_base: ((abstract new (...args: any[]) => {
     isBasemap(): boolean;
     isWmts(): boolean;
     isMapbox(): boolean;
+    isMapLibre(): any;
     createAsync(options: any): Promise<any>;
 }) & typeof XYZ;
 export declare class NowMap extends NowMap_base {
