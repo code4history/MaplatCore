@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Maplat E2E Test</title>
+    <meta content="yes" name="apple-mobile-web-app-capable" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"
+    />
+    <style>
+      #map_div {
+        position: absolute;
+        top: 100px;
+        bottom: 50px;
+        left: 50px;
+        right: 50px;
+        border: 1px solid #ccc;
+      }
+      .buttons {
+        position: absolute;
+        top: 10px;
+        left: 50px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="buttons">
+      <button id="maplat">盛岡(Maplat)</button>
+      <button id="osm">OSM</button>
+    </div>
+    <div id="map_div"></div>
+    
+    <script type="module">
+      import { MaplatApp } from './src/index.ts';
+      
+      // Immediately set Maplat on window for testing
+      window.Maplat = MaplatApp;
+      window.MaplatApp = MaplatApp;
+      
+      // Initialize app
+      const option = {};
+      console.log('Creating MaplatApp...');
+      MaplatApp.createObject(option).then(function (app) {
+        window.maplatApp = app;
+        console.log('Maplat app initialized successfully');
+      }).catch(function(error) {
+        console.error('Failed to create Maplat app:', error);
+      });
+    </script>
+  </body>
+</html>

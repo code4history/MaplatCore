@@ -82,3 +82,8 @@ dist-ssr
 # Test coverage
 coverage/
 *.lcov
+
+# Playwright test artifacts
+playwright-report/
+test-results/
+playwright/.cache/
