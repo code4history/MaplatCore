@@ -214,6 +214,13 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
             if (options.mapID && !options.url && !options.urls) {
               options.url = `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtension}`;
             }
+            if (!options.compiled || !options.compiled.wh) {
+              console.error(
+                `[Maplat] Missing compiled.wh for mapID=${options.mapID}. Check map setting file: ${url}`
+              );
+              reject(new Error(`Map ${options.mapID} is missing compiled data.`));
+              return;
+            }
             options.width = options.width || options.compiled.wh[0];
             options.height = options.height || options.compiled.wh[1];
             options.weiwudi = await registerMapToSW(options);

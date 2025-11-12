@@ -12,7 +12,7 @@ export default defineConfig({
     lib: {
       entry: resolve(__dirname, "src/index.ts"),
       formats: ["es", "cjs", "umd"],
-      name: "Maplat",
+      name: "MaplatApp",
       fileName: (format) => {
         switch(format) {
           case "es":

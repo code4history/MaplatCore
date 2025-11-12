@@ -30,6 +30,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
+    "pretest:e2e": "playwright install",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:ci": "playwright test --config=playwright-ci.config.ts",
@@ -61,7 +62,7 @@
   },
   "homepage": "https://github.com/code4history/MaplatCore/wiki",
   "dependencies": {
-    "@maplat/transform": "^0.2.3",
+    "@maplat/transform": "^0.3.0",
     "@turf/area": "^7.2.0",
     "@turf/bbox": "^7.2.0",
     "@turf/bbox-polygon": "^7.2.0",
