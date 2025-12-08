@@ -13,9 +13,9 @@ English version is [here](README.md).
 ES Modules と CDN を使用して、ブラウザで直接 MaplatCore を使用できます。
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@maplat/core@0.10.7/dist/maplat_core.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@maplat/core@0.11.0/dist/maplat_core.css">
 <script type="module">
-  import { MaplatApp } from 'https://cdn.jsdelivr.net/npm/@maplat/core@0.10.7/dist/maplat_core.js';
+  import { MaplatApp } from 'https://cdn.jsdelivr.net/npm/@maplat/core@0.11.0/dist/maplat_core.js';
   // ... 使用法
 </script>
 ```
@@ -84,11 +84,12 @@ npm install ol
   <meta charset="UTF-8" />
   <link href="https://unpkg.com/maplibre-gl@4.5.0/dist/maplibre-gl.css" rel="stylesheet" />
   <script src="https://unpkg.com/maplibre-gl@4.5.0/dist/maplibre-gl.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@maplat/core@0.11.0/dist/maplat_core.css">
 </head>
 <body>
   <div id="map_div" style="width: 100%; height: 100vh;"></div>
   <script type="module">
-    import { MaplatApp } from 'https://cdn.jsdelivr.net/npm/@maplat/core@0.10.7/dist/maplat_core.js';
+    import { MaplatApp } from 'https://cdn.jsdelivr.net/npm/@maplat/core@0.11.0/dist/maplat_core.js';
 
     const option = {
       maplibregl: maplibregl, // グローバルな maplibregl オブジェクトを注入
