@@ -12,7 +12,6 @@ export default defineConfig({
     },
     include: ["spec/**/*.spec.{ts,js}"],
     exclude: [
-      "spec/**/*.deno.test.ts",
       "spec/puppeteer.spec.js" // Skip until Playwright migration
     ],
     coverage: {

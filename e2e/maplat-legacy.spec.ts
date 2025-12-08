@@ -31,7 +31,7 @@ const MAPBOX_TOKEN =
   'pk.eyJ1IjoicmVraXNoaWtva3VkbyIsImEiOiJjazRoMmF3dncwODU2M2ttdzI2aDVqYXVwIn0.8Hb9sekgjfck6Setxk5uVg';
 const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY || 'AIzaSyB0v_F9EVPbE7R2uOm6Mixrtzts21DEICc';
 const TEST_PAGE =
-  `/test.html?mapboxgl=false` +
+  `/e2e/test.html?mapboxgl=false` +
   `&mapboxToken=${encodeURIComponent(MAPBOX_TOKEN)}` +
   `&googleApiKey=${encodeURIComponent(GOOGLE_API_KEY)}`;
 const MESSAGE_REGEX = /^####Message (\w+)(?: (.+))?$/;
