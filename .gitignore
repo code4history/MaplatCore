@@ -88,3 +88,5 @@ playwright-report/
 test-results/
 playwright/.cache/
 *.zip
+*_output.txt
+test_output*.txt
