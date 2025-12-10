@@ -80,15 +80,35 @@
       mapID: "morioka_ndl2"
     }
   };
+  // Parse query parameters
   var hashes = window.location.href
     .slice(window.location.href.indexOf("?") + 1)
     .split("&");
+
   for (var i = 0; i < hashes.length; i++) {
     const hash = hashes[i].split("=");
     if (!hash[0]) continue;
-    if (hash[0] === "startFrom") continue;
-    option[hash[0]] =
-      hash[1] == "true" ? true : hash[1] == "false" ? false : hash[1];
+
+    const key = hash[0];
+    const val = hash[1] == "true" ? true : hash[1] == "false" ? false : hash[1];
+
+    // Handle restore parameters (restore_rotation -> restore.position.rotation)
+    if (key.startsWith("restore_")) {
+      const subKey = key.replace("restore_", "");
+      if (!option.restore) option.restore = {};
+
+      if (["transparency", "hideMarker"].includes(subKey)) {
+        option.restore[subKey] = parseFloat(val);
+      } else if (["mapID", "backgroundID", "hideLayer"].includes(subKey)) {
+        option.restore[subKey] = val;
+      } else {
+        // Assume position attributes (x, y, zoom, mercZoom, rotation, direction, latitude, longitude)
+        if (!option.restore.position) option.restore.position = {};
+        option.restore.position[subKey] = parseFloat(val);
+      }
+    } else {
+      option[key] = val;
+    }
   }
 
   MaplatApp.createObject(option).then(function (app) {
