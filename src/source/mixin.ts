@@ -266,7 +266,11 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
           const mercs = this.mercViewpoint2Mercs([
             merc || mercViewpoint[0],
             mercZoom || mercViewpoint[1] || 17,
-            direction !== null ? direction : mercViewpoint[2]
+            direction != null
+              ? direction
+              : rotation != null
+                ? rotation
+                : mercViewpoint[2]
           ]);
           this.mercs2ViewpointAsync(mercs).then(viewpoint => {
             if (merc != null) {
