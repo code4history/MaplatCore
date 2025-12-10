@@ -4142,13 +4142,14 @@ function setCustomFunction(Base) {
       });
     }
     setViewpoint(cond) {
-      if (cond.rotation) {
-        cond.rotation = cond.rotation * Math.PI / 180;
+      const args = { ...cond };
+      if (args.rotation) {
+        args.rotation = args.rotation * Math.PI / 180;
       }
-      if (cond.direction) {
-        cond.direction = cond.direction * Math.PI / 180;
+      if (args.direction) {
+        args.direction = args.direction * Math.PI / 180;
       }
-      this.setViewpointRadian(cond);
+      this.setViewpointRadian(args);
     }
     goHome() {
       const ratio = 1;
