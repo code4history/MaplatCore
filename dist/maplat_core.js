@@ -464,12 +464,12 @@ function deepFind(obj, path) {
       return void 0;
     }
     if (current[paths[i]] === void 0) {
-      var j2 = 2;
-      var p = paths.slice(i, i + j2).join(keySeparator);
+      var j = 2;
+      var p = paths.slice(i, i + j).join(keySeparator);
       var mix = current[p];
-      while (mix === void 0 && paths.length > i + j2) {
-        j2++;
-        p = paths.slice(i, i + j2).join(keySeparator);
+      while (mix === void 0 && paths.length > i + j) {
+        j++;
+        p = paths.slice(i, i + j).join(keySeparator);
         mix = current[p];
       }
       if (mix === void 0) return void 0;
@@ -478,7 +478,7 @@ function deepFind(obj, path) {
         if (typeof mix === "string") return mix;
         if (p && typeof mix[p] === "string") return mix[p];
       }
-      var joinedPath = paths.slice(i + j2).join(keySeparator);
+      var joinedPath = paths.slice(i + j).join(keySeparator);
       if (joinedPath) return deepFind(mix, joinedPath, keySeparator);
       return void 0;
     }
@@ -1929,10 +1929,10 @@ function _isNativeReflectConstruct$2() {
     return false;
   }
 }
-function removePending(q2, name) {
-  if (q2.pending[name] !== void 0) {
-    delete q2.pending[name];
-    q2.pendingCount--;
+function removePending(q, name) {
+  if (q.pending[name] !== void 0) {
+    delete q.pending[name];
+    q.pendingCount--;
   }
 }
 var Connector = function(_EventEmitter) {
@@ -2019,31 +2019,31 @@ var Connector = function(_EventEmitter) {
       }
       this.state[name] = err ? -1 : 2;
       var loaded2 = {};
-      this.queue.forEach(function(q2) {
-        pushPath(q2.loaded, [lng], ns);
-        removePending(q2, name);
-        if (err) q2.errors.push(err);
-        if (q2.pendingCount === 0 && !q2.done) {
-          Object.keys(q2.loaded).forEach(function(l) {
+      this.queue.forEach(function(q) {
+        pushPath(q.loaded, [lng], ns);
+        removePending(q, name);
+        if (err) q.errors.push(err);
+        if (q.pendingCount === 0 && !q.done) {
+          Object.keys(q.loaded).forEach(function(l) {
             if (!loaded2[l]) loaded2[l] = {};
-            var loadedKeys = q2.loaded[l];
+            var loadedKeys = q.loaded[l];
             if (loadedKeys.length) {
               loadedKeys.forEach(function(ns2) {
                 if (loaded2[l][ns2] === void 0) loaded2[l][ns2] = true;
               });
             }
           });
-          q2.done = true;
-          if (q2.errors.length) {
-            q2.callback(q2.errors);
+          q.done = true;
+          if (q.errors.length) {
+            q.callback(q.errors);
           } else {
-            q2.callback();
+            q.callback();
           }
         }
       });
       this.emit("loaded", loaded2);
-      this.queue = this.queue.filter(function(q2) {
-        return !q2.done;
+      this.queue = this.queue.filter(function(q) {
+        return !q.done;
       });
     }
   }, {
@@ -3202,8 +3202,8 @@ function polygon(coordinates2, properties, options = {}) {
     if (ring[ring.length - 1].length !== ring[0].length) {
       throw new Error("First and last Position are not equivalent.");
     }
-    for (let j2 = 0; j2 < ring[ring.length - 1].length; j2++) {
-      if (ring[ring.length - 1][j2] !== ring[0][j2]) {
+    for (let j = 0; j < ring[ring.length - 1].length; j++) {
+      if (ring[ring.length - 1][j] !== ring[0][j]) {
         throw new Error("First and last Position are not equivalent.");
       }
     }
@@ -3240,7 +3240,7 @@ function isNumber(num) {
 }
 function coordEach(geojson, callback, excludeWrapCoord) {
   if (geojson === null) return;
-  var j2, k, l, geometry, stopG, coords, geometryMaybeCollection, wrapShrink = 0, coordIndex = 0, isGeometryCollection, type = geojson.type, isFeatureCollection = type === "FeatureCollection", isFeature = type === "Feature", stop = isFeatureCollection ? geojson.features.length : 1;
+  var j, k, l, geometry, stopG, coords, geometryMaybeCollection, wrapShrink = 0, coordIndex = 0, isGeometryCollection, type = geojson.type, isFeatureCollection = type === "FeatureCollection", isFeature = type === "Feature", stop = isFeatureCollection ? geojson.features.length : 1;
   for (var featureIndex = 0; featureIndex < stop; featureIndex++) {
     geometryMaybeCollection = isFeatureCollection ? geojson.features[featureIndex].geometry : isFeature ? geojson.geometry : geojson;
     isGeometryCollection = geometryMaybeCollection ? geometryMaybeCollection.type === "GeometryCollection" : false;
@@ -3270,9 +3270,9 @@ function coordEach(geojson, callback, excludeWrapCoord) {
           break;
         case "LineString":
         case "MultiPoint":
-          for (j2 = 0; j2 < coords.length; j2++) {
+          for (j = 0; j < coords.length; j++) {
             if (callback(
-              coords[j2],
+              coords[j],
               coordIndex,
               featureIndex,
               multiFeatureIndex,
@@ -3286,10 +3286,10 @@ function coordEach(geojson, callback, excludeWrapCoord) {
           break;
         case "Polygon":
         case "MultiLineString":
-          for (j2 = 0; j2 < coords.length; j2++) {
-            for (k = 0; k < coords[j2].length - wrapShrink; k++) {
+          for (j = 0; j < coords.length; j++) {
+            for (k = 0; k < coords[j].length - wrapShrink; k++) {
               if (callback(
-                coords[j2][k],
+                coords[j][k],
                 coordIndex,
                 featureIndex,
                 multiFeatureIndex,
@@ -3304,12 +3304,12 @@ function coordEach(geojson, callback, excludeWrapCoord) {
           if (geomType === "Polygon") multiFeatureIndex++;
           break;
         case "MultiPolygon":
-          for (j2 = 0; j2 < coords.length; j2++) {
+          for (j = 0; j < coords.length; j++) {
             geometryIndex = 0;
-            for (k = 0; k < coords[j2].length; k++) {
-              for (l = 0; l < coords[j2][k].length - wrapShrink; l++) {
+            for (k = 0; k < coords[j].length; k++) {
+              for (l = 0; l < coords[j][k].length - wrapShrink; l++) {
                 if (callback(
-                  coords[j2][k][l],
+                  coords[j][k][l],
                   coordIndex,
                   featureIndex,
                   multiFeatureIndex,
@@ -3324,8 +3324,8 @@ function coordEach(geojson, callback, excludeWrapCoord) {
           }
           break;
         case "GeometryCollection":
-          for (j2 = 0; j2 < geometry.geometries.length; j2++)
-            if (coordEach(geometry.geometries[j2], callback) === false)
+          for (j = 0; j < geometry.geometries.length; j++)
+            if (coordEach(geometry.geometries[j], callback) === false)
               return false;
           break;
         default:
@@ -3353,80 +3353,80 @@ const epsilon = 11102230246251565e-32;
 const splitter = 134217729;
 const resulterrbound = (3 + 8 * epsilon) * epsilon;
 function sum(elen, e, flen, f, h) {
-  let Q2, Qnew, hh, bvirt;
+  let Q, Qnew, hh, bvirt;
   let enow = e[0];
   let fnow = f[0];
   let eindex = 0;
   let findex = 0;
   if (fnow > enow === fnow > -enow) {
-    Q2 = enow;
+    Q = enow;
     enow = e[++eindex];
   } else {
-    Q2 = fnow;
+    Q = fnow;
     fnow = f[++findex];
   }
   let hindex = 0;
   if (eindex < elen && findex < flen) {
     if (fnow > enow === fnow > -enow) {
-      Qnew = enow + Q2;
-      hh = Q2 - (Qnew - enow);
+      Qnew = enow + Q;
+      hh = Q - (Qnew - enow);
       enow = e[++eindex];
     } else {
-      Qnew = fnow + Q2;
-      hh = Q2 - (Qnew - fnow);
+      Qnew = fnow + Q;
+      hh = Q - (Qnew - fnow);
       fnow = f[++findex];
     }
-    Q2 = Qnew;
+    Q = Qnew;
     if (hh !== 0) {
       h[hindex++] = hh;
     }
     while (eindex < elen && findex < flen) {
       if (fnow > enow === fnow > -enow) {
-        Qnew = Q2 + enow;
-        bvirt = Qnew - Q2;
-        hh = Q2 - (Qnew - bvirt) + (enow - bvirt);
+        Qnew = Q + enow;
+        bvirt = Qnew - Q;
+        hh = Q - (Qnew - bvirt) + (enow - bvirt);
         enow = e[++eindex];
       } else {
-        Qnew = Q2 + fnow;
-        bvirt = Qnew - Q2;
-        hh = Q2 - (Qnew - bvirt) + (fnow - bvirt);
+        Qnew = Q + fnow;
+        bvirt = Qnew - Q;
+        hh = Q - (Qnew - bvirt) + (fnow - bvirt);
         fnow = f[++findex];
       }
-      Q2 = Qnew;
+      Q = Qnew;
       if (hh !== 0) {
         h[hindex++] = hh;
       }
     }
   }
   while (eindex < elen) {
-    Qnew = Q2 + enow;
-    bvirt = Qnew - Q2;
-    hh = Q2 - (Qnew - bvirt) + (enow - bvirt);
+    Qnew = Q + enow;
+    bvirt = Qnew - Q;
+    hh = Q - (Qnew - bvirt) + (enow - bvirt);
     enow = e[++eindex];
-    Q2 = Qnew;
+    Q = Qnew;
     if (hh !== 0) {
       h[hindex++] = hh;
     }
   }
   while (findex < flen) {
-    Qnew = Q2 + fnow;
-    bvirt = Qnew - Q2;
-    hh = Q2 - (Qnew - bvirt) + (fnow - bvirt);
+    Qnew = Q + fnow;
+    bvirt = Qnew - Q;
+    hh = Q - (Qnew - bvirt) + (fnow - bvirt);
     fnow = f[++findex];
-    Q2 = Qnew;
+    Q = Qnew;
     if (hh !== 0) {
       h[hindex++] = hh;
     }
   }
-  if (Q2 !== 0 || hindex === 0) {
-    h[hindex++] = Q2;
+  if (Q !== 0 || hindex === 0) {
+    h[hindex++] = Q;
   }
   return hindex;
 }
 function estimate(elen, e) {
-  let Q2 = e[0];
-  for (let i = 1; i < elen; i++) Q2 += e[i];
-  return Q2;
+  let Q = e[0];
+  for (let i = 1; i < elen; i++) Q += e[i];
+  return Q;
 }
 function vec(n) {
   return new Float64Array(n);
@@ -3434,10 +3434,10 @@ function vec(n) {
 const ccwerrboundA = (3 + 16 * epsilon) * epsilon;
 const ccwerrboundB = (2 + 12 * epsilon) * epsilon;
 const ccwerrboundC = (9 + 64 * epsilon) * epsilon * epsilon;
-const B$1 = vec(4);
+const B = vec(4);
 const C1 = vec(8);
 const C2 = vec(12);
-const D$1 = vec(16);
+const D = vec(16);
 const u = vec(4);
 function orient2dadapt(ax, ay, bx, by, cx, cy, detsum) {
   let acxtail, acytail, bcxtail, bcytail;
@@ -3464,18 +3464,18 @@ function orient2dadapt(ax, ay, bx, by, cx, cy, detsum) {
   t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
   _i = s0 - t0;
   bvirt = s0 - _i;
-  B$1[0] = s0 - (_i + bvirt) + (bvirt - t0);
+  B[0] = s0 - (_i + bvirt) + (bvirt - t0);
   _j = s1 + _i;
   bvirt = _j - s1;
   _0 = s1 - (_j - bvirt) + (_i - bvirt);
   _i = _0 - t1;
   bvirt = _0 - _i;
-  B$1[1] = _0 - (_i + bvirt) + (bvirt - t1);
+  B[1] = _0 - (_i + bvirt) + (bvirt - t1);
   u3 = _j + _i;
   bvirt = u3 - _j;
-  B$1[2] = _j - (u3 - bvirt) + (_i - bvirt);
-  B$1[3] = u3;
-  let det = estimate(4, B$1);
+  B[2] = _j - (u3 - bvirt) + (_i - bvirt);
+  B[3] = u3;
+  let det = estimate(4, B);
   let errbound = ccwerrboundB * detsum;
   if (det >= errbound || -det >= errbound) {
     return det;
@@ -3523,7 +3523,7 @@ function orient2dadapt(ax, ay, bx, by, cx, cy, detsum) {
   bvirt = u3 - _j;
   u[2] = _j - (u3 - bvirt) + (_i - bvirt);
   u[3] = u3;
-  const C1len = sum(4, B$1, 4, u, C1);
+  const C1len = sum(4, B, 4, u, C1);
   s1 = acx * bcytail;
   c = splitter * acx;
   ahi = c - (c - acx);
@@ -3583,8 +3583,8 @@ function orient2dadapt(ax, ay, bx, by, cx, cy, detsum) {
   bvirt = u3 - _j;
   u[2] = _j - (u3 - bvirt) + (_i - bvirt);
   u[3] = u3;
-  const Dlen = sum(C2len, C2, 4, u, D$1);
-  return D$1[Dlen - 1];
+  const Dlen = sum(C2len, C2, 4, u, D);
+  return D[Dlen - 1];
 }
 function orient2d(ax, ay, bx, by, cx, cy) {
   const detleft = (ay - cy) * (bx - cx);
@@ -6022,12 +6022,12 @@ const P2 = 3 / 2 * _E - 27 / 32 * _E3 + 269 / 512 * _E5;
 const P3 = 21 / 16 * _E2 - 55 / 32 * _E4;
 const P4 = 151 / 96 * _E3 - 417 / 128 * _E5;
 const P5 = 1097 / 512 * _E4;
-const R$1 = 6378137;
+const R = 6378137;
 function toLonLat(easting, northing, zone) {
   const x = easting - 5e5;
   const y = zone.north ? northing : northing - 1e7;
   const m = y / K0;
-  const mu = m / (R$1 * M1);
+  const mu = m / (R * M1);
   const pRad = mu + P2 * Math.sin(2 * mu) + P3 * Math.sin(4 * mu) + P4 * Math.sin(6 * mu) + P5 * Math.sin(8 * mu);
   const pSin = Math.sin(pRad);
   const pSin2 = pSin * pSin;
@@ -6037,7 +6037,7 @@ function toLonLat(easting, northing, zone) {
   const pTan4 = pTan2 * pTan2;
   const epSin = 1 - E * pSin2;
   const epSinSqrt = Math.sqrt(1 - E * pSin2);
-  const n = R$1 / epSinSqrt;
+  const n = R / epSinSqrt;
   const r = (1 - E) / epSin;
   const c = E_P2 * pCos ** 2;
   const c2 = c * c;
@@ -6076,7 +6076,7 @@ function fromLonLat(longitude, latitude, zone) {
   const lonRad = toRadians(longitude);
   const centralLon = zoneToCentralLongitude(zone.number);
   const centralLonRad = toRadians(centralLon);
-  const n = R$1 / Math.sqrt(1 - E * latSin ** 2);
+  const n = R / Math.sqrt(1 - E * latSin ** 2);
   const c = E_P2 * latCos ** 2;
   const a = latCos * wrap(lonRad - centralLonRad, -Math.PI, Math.PI);
   const a2 = a * a;
@@ -6084,7 +6084,7 @@ function fromLonLat(longitude, latitude, zone) {
   const a4 = a3 * a;
   const a5 = a4 * a;
   const a6 = a5 * a;
-  const m = R$1 * (M1 * latRad - M2 * Math.sin(2 * latRad) + M3 * Math.sin(4 * latRad) - M4 * Math.sin(6 * latRad));
+  const m = R * (M1 * latRad - M2 * Math.sin(2 * latRad) + M3 * Math.sin(4 * latRad) - M4 * Math.sin(6 * latRad));
   const easting = K0 * n * (a + a3 / 6 * (1 - latTan2 + c) + a5 / 120 * (5 - 18 * latTan2 + latTan4 + 72 * c - 58 * E_P2)) + 5e5;
   let northing = K0 * (m + n * latTan * (a2 / 2 + a4 / 24 * (5 - latTan2 + 9 * c + 4 * c ** 2) + a6 / 720 * (61 - 58 * latTan2 + latTan4 + 600 * c - 330 * E_P2)));
   if (!zone.north) {
@@ -6356,13 +6356,13 @@ function transform2D(flatCoordinates, offset, end, stride, transform2, dest, des
   dest = dest ? dest : [];
   destinationStride = destinationStride ? destinationStride : 2;
   let i = 0;
-  for (let j2 = offset; j2 < end; j2 += stride) {
-    const x = flatCoordinates[j2];
-    const y = flatCoordinates[j2 + 1];
+  for (let j = offset; j < end; j += stride) {
+    const x = flatCoordinates[j];
+    const y = flatCoordinates[j + 1];
     dest[i++] = transform2[0] * x + transform2[2] * y + transform2[4];
     dest[i++] = transform2[1] * x + transform2[3] * y + transform2[5];
     for (let k = 2; k < destinationStride; k++) {
-      dest[i++] = flatCoordinates[j2 + k];
+      dest[i++] = flatCoordinates[j + k];
     }
   }
   if (dest && dest.length != i) {
@@ -6377,12 +6377,12 @@ function rotate(flatCoordinates, offset, end, stride, angle, anchor, dest) {
   const anchorX = anchor[0];
   const anchorY = anchor[1];
   let i = 0;
-  for (let j2 = offset; j2 < end; j2 += stride) {
-    const deltaX = flatCoordinates[j2] - anchorX;
-    const deltaY = flatCoordinates[j2 + 1] - anchorY;
+  for (let j = offset; j < end; j += stride) {
+    const deltaX = flatCoordinates[j] - anchorX;
+    const deltaY = flatCoordinates[j + 1] - anchorY;
     dest[i++] = anchorX + deltaX * cos - deltaY * sin;
     dest[i++] = anchorY + deltaX * sin + deltaY * cos;
-    for (let k = j2 + 2; k < j2 + stride; ++k) {
+    for (let k = j + 2; k < j + stride; ++k) {
       dest[i++] = flatCoordinates[k];
     }
   }
@@ -6396,12 +6396,12 @@ function scale(flatCoordinates, offset, end, stride, sx, sy, anchor, dest) {
   const anchorX = anchor[0];
   const anchorY = anchor[1];
   let i = 0;
-  for (let j2 = offset; j2 < end; j2 += stride) {
-    const deltaX = flatCoordinates[j2] - anchorX;
-    const deltaY = flatCoordinates[j2 + 1] - anchorY;
+  for (let j = offset; j < end; j += stride) {
+    const deltaX = flatCoordinates[j] - anchorX;
+    const deltaY = flatCoordinates[j + 1] - anchorY;
     dest[i++] = anchorX + sx * deltaX;
     dest[i++] = anchorY + sy * deltaY;
-    for (let k = j2 + 2; k < j2 + stride; ++k) {
+    for (let k = j + 2; k < j + stride; ++k) {
       dest[i++] = flatCoordinates[k];
     }
   }
@@ -6413,10 +6413,10 @@ function scale(flatCoordinates, offset, end, stride, sx, sy, anchor, dest) {
 function translate(flatCoordinates, offset, end, stride, deltaX, deltaY, dest) {
   dest = dest ? dest : [];
   let i = 0;
-  for (let j2 = offset; j2 < end; j2 += stride) {
-    dest[i++] = flatCoordinates[j2] + deltaX;
-    dest[i++] = flatCoordinates[j2 + 1] + deltaY;
-    for (let k = j2 + 2; k < j2 + stride; ++k) {
+  for (let j = offset; j < end; j += stride) {
+    dest[i++] = flatCoordinates[j] + deltaX;
+    dest[i++] = flatCoordinates[j + 1] + deltaY;
+    for (let k = j + 2; k < j + stride; ++k) {
       dest[i++] = flatCoordinates[k];
     }
   }
@@ -6950,8 +6950,8 @@ function deflateCoordinate(flatCoordinates, offset, coordinate, stride) {
 function deflateCoordinates(flatCoordinates, offset, coordinates2, stride) {
   for (let i = 0, ii = coordinates2.length; i < ii; ++i) {
     const coordinate = coordinates2[i];
-    for (let j2 = 0; j2 < stride; ++j2) {
-      flatCoordinates[offset++] = coordinate[j2];
+    for (let j = 0; j < stride; ++j) {
+      flatCoordinates[offset++] = coordinate[j];
     }
   }
   return offset;
@@ -6959,11 +6959,11 @@ function deflateCoordinates(flatCoordinates, offset, coordinates2, stride) {
 function deflateCoordinatesArray(flatCoordinates, offset, coordinatess, stride, ends) {
   ends = ends ? ends : [];
   let i = 0;
-  for (let j2 = 0, jj = coordinatess.length; j2 < jj; ++j2) {
+  for (let j = 0, jj = coordinatess.length; j < jj; ++j) {
     const end = deflateCoordinates(
       flatCoordinates,
       offset,
-      coordinatess[j2],
+      coordinatess[j],
       stride
     );
     ends[i++] = end;
@@ -7365,8 +7365,8 @@ function assignClosestArrayPoint(flatCoordinates, offset, ends, stride, maxDelta
 function inflateCoordinates(flatCoordinates, offset, end, stride, coordinates2) {
   coordinates2 = coordinates2 !== void 0 ? coordinates2 : [];
   let i = 0;
-  for (let j2 = offset; j2 < end; j2 += stride) {
-    coordinates2[i++] = flatCoordinates.slice(j2, j2 + stride);
+  for (let j = offset; j < end; j += stride) {
+    coordinates2[i++] = flatCoordinates.slice(j, j + stride);
   }
   coordinates2.length = i;
   return coordinates2;
@@ -7374,8 +7374,8 @@ function inflateCoordinates(flatCoordinates, offset, end, stride, coordinates2) 
 function inflateCoordinatesArray(flatCoordinates, offset, ends, stride, coordinatess) {
   coordinatess = coordinatess !== void 0 ? coordinatess : [];
   let i = 0;
-  for (let j2 = 0, jj = ends.length; j2 < jj; ++j2) {
-    const end = ends[j2];
+  for (let j = 0, jj = ends.length; j < jj; ++j) {
+    const end = ends[j];
     coordinatess[i++] = inflateCoordinates(
       flatCoordinates,
       offset,
@@ -8928,11 +8928,11 @@ function createSnapToResolutions(resolutions, smooth, maxExtent, showFullExtent)
           );
         }
         const capped = Math.min(cappedMaxRes, resolution);
-        const z2 = Math.floor(linearFindNearest(resolutions, capped, direction));
-        if (resolutions[z2] > cappedMaxRes && z2 < resolutions.length - 1) {
-          return resolutions[z2 + 1];
+        const z = Math.floor(linearFindNearest(resolutions, capped, direction));
+        if (resolutions[z] > cappedMaxRes && z < resolutions.length - 1) {
+          return resolutions[z + 1];
         }
-        return resolutions[z2];
+        return resolutions[z];
       }
       return void 0;
     }
@@ -9347,8 +9347,8 @@ class View extends BaseObject {
         animationCallback(series[0].callback, false);
       }
       if (!anchor) {
-        for (let j2 = 0, jj = series.length; j2 < jj; ++j2) {
-          const animation = series[j2];
+        for (let j = 0, jj = series.length; j < jj; ++j) {
+          const animation = series[j];
           if (!animation.complete) {
             anchor = animation.anchor;
             break;
@@ -9378,8 +9378,8 @@ class View extends BaseObject {
     for (let i = this.animations_.length - 1; i >= 0; --i) {
       const series = this.animations_[i];
       let seriesComplete = true;
-      for (let j2 = 0, jj = series.length; j2 < jj; ++j2) {
-        const animation = series[j2];
+      for (let j = 0, jj = series.length; j < jj; ++j) {
+        const animation = series[j];
         if (animation.complete) {
           continue;
         }
@@ -13485,15 +13485,15 @@ function defaults(options) {
 function hash(tileCoord) {
   return hashZXY(tileCoord[0], tileCoord[1], tileCoord[2]);
 }
-function hashZXY(z2, x, y) {
-  return (x << z2) + y;
+function hashZXY(z, x, y) {
+  return (x << z) + y;
 }
 const zRegEx = /\{z\}/g;
 const xRegEx = /\{x\}/g;
 const yRegEx = /\{y\}/g;
 const dashYRegEx = /\{-y\}/g;
-function renderXYZTemplate(template2, z2, x, y, maxY) {
-  return template2.replace(zRegEx, z2.toString()).replace(xRegEx, x.toString()).replace(yRegEx, y.toString()).replace(dashYRegEx, function() {
+function renderXYZTemplate(template2, z, x, y, maxY) {
+  return template2.replace(zRegEx, z.toString()).replace(xRegEx, x.toString()).replace(yRegEx, y.toString()).replace(dashYRegEx, function() {
     {
       throw new Error(
         "If the URL template has a {-y} placeholder, the grid extent must be known"
@@ -13513,8 +13513,8 @@ function createFromTemplate(template2, tileGrid) {
       if (!tileCoord) {
         return void 0;
       }
-      const z2 = tileCoord[0];
-      return renderXYZTemplate(template2, z2, tileCoord[1], tileCoord[2]);
+      const z = tileCoord[0];
+      return renderXYZTemplate(template2, z, tileCoord[1], tileCoord[2]);
     }
   );
 }
@@ -13547,9 +13547,9 @@ function createFromTileUrlFunctions(tileUrlFunctions) {
     }
   );
 }
-for (let z2 = 0; z2 < 9; z2++) {
-  const key = `ZOOM:${z2}`;
-  const maxxy = 256 * Math.pow(2, z2);
+for (let z = 0; z < 9; z++) {
+  const key = `ZOOM:${z}`;
+  const maxxy = 256 * Math.pow(2, z);
   (function(key2, maxxy2) {
     const projection = new Projection$1({
       code: key2,
@@ -13583,13 +13583,13 @@ class HistMap extends setCustomFunctionMaplat(XYZ) {
     const zH = Math.log2(options.height / tileSize);
     options.maxZoom = Math.ceil(Math.max(zW, zH));
     options.tileUrlFunction = options.tileUrlFunction || function(coord) {
-      const z2 = coord[0];
+      const z = coord[0];
       const x = coord[1];
       const y = coord[2];
       if (
         // @ts-ignore
-        x * tileSize * Math.pow(2, this.maxZoom - z2) >= this.width || // @ts-ignore
-        y * tileSize * Math.pow(2, this.maxZoom - z2) >= this.height || x < 0 || y < 0
+        x * tileSize * Math.pow(2, this.maxZoom - z) >= this.width || // @ts-ignore
+        y * tileSize * Math.pow(2, this.maxZoom - z) >= this.height || x < 0 || y < 0
       ) {
         return transPng;
       }
@@ -13868,538 +13868,393 @@ function transformDirect(src, dist, xy) {
     return func(xy);
   }
 }
-var ot = Object.defineProperty;
-var at = (e, t, s) => t in e ? ot(e, t, { enumerable: true, configurable: true, writable: true, value: s }) : e[t] = s;
-var _23 = (e, t, s) => at(e, typeof t != "symbol" ? t + "" : t, s);
-const R = 11102230246251565e-32, I = 134217729, ft = (3 + 8 * R) * R;
-function V(e, t, s, r, a) {
-  let n, c, d, g2, l = t[0], y = r[0], o = 0, u2 = 0;
-  y > l == y > -l ? (n = l, l = t[++o]) : (n = y, y = r[++u2]);
-  let b = 0;
-  if (o < e && u2 < s)
-    for (y > l == y > -l ? (c = l + n, d = n - (c - l), l = t[++o]) : (c = y + n, d = n - (c - y), y = r[++u2]), n = c, d !== 0 && (a[b++] = d); o < e && u2 < s; )
-      y > l == y > -l ? (c = n + l, g2 = c - n, d = n - (c - g2) + (l - g2), l = t[++o]) : (c = n + y, g2 = c - n, d = n - (c - g2) + (y - g2), y = r[++u2]), n = c, d !== 0 && (a[b++] = d);
-  for (; o < e; )
-    c = n + l, g2 = c - n, d = n - (c - g2) + (l - g2), l = t[++o], n = c, d !== 0 && (a[b++] = d);
-  for (; u2 < s; )
-    c = n + y, g2 = c - n, d = n - (c - g2) + (y - g2), y = r[++u2], n = c, d !== 0 && (a[b++] = d);
-  return (n !== 0 || b === 0) && (a[b++] = n), b;
+function getDefaultExportFromCjs(x) {
+  return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
 }
-function ct(e, t) {
-  let s = t[0];
-  for (let r = 1; r < e; r++) s += t[r];
-  return s;
-}
-function $(e) {
-  return new Float64Array(e);
-}
-const ut = (3 + 16 * R) * R, ht = (2 + 12 * R) * R, gt = (9 + 64 * R) * R * R, F = $(4), q = $(8), L = $(12), G = $(16), P = $(4);
-function dt(e, t, s, r, a, n, c) {
-  let d, g2, l, y, o, u2, b, x, h, f, i, w, A, v, E4, m, M, T;
-  const S = e - a, p = s - a, k = t - n, N = r - n;
-  v = S * N, u2 = I * S, b = u2 - (u2 - S), x = S - b, u2 = I * N, h = u2 - (u2 - N), f = N - h, E4 = x * f - (v - b * h - x * h - b * f), m = k * p, u2 = I * k, b = u2 - (u2 - k), x = k - b, u2 = I * p, h = u2 - (u2 - p), f = p - h, M = x * f - (m - b * h - x * h - b * f), i = E4 - M, o = E4 - i, F[0] = E4 - (i + o) + (o - M), w = v + i, o = w - v, A = v - (w - o) + (i - o), i = A - m, o = A - i, F[1] = A - (i + o) + (o - m), T = w + i, o = T - w, F[2] = w - (T - o) + (i - o), F[3] = T;
-  let U = ct(4, F), X = ht * c;
-  if (U >= X || -U >= X || (o = e - S, d = e - (S + o) + (o - a), o = s - p, l = s - (p + o) + (o - a), o = t - k, g2 = t - (k + o) + (o - n), o = r - N, y = r - (N + o) + (o - n), d === 0 && g2 === 0 && l === 0 && y === 0) || (X = gt * c + ft * Math.abs(U), U += S * y + N * d - (k * l + p * g2), U >= X || -U >= X)) return U;
-  v = d * N, u2 = I * d, b = u2 - (u2 - d), x = d - b, u2 = I * N, h = u2 - (u2 - N), f = N - h, E4 = x * f - (v - b * h - x * h - b * f), m = g2 * p, u2 = I * g2, b = u2 - (u2 - g2), x = g2 - b, u2 = I * p, h = u2 - (u2 - p), f = p - h, M = x * f - (m - b * h - x * h - b * f), i = E4 - M, o = E4 - i, P[0] = E4 - (i + o) + (o - M), w = v + i, o = w - v, A = v - (w - o) + (i - o), i = A - m, o = A - i, P[1] = A - (i + o) + (o - m), T = w + i, o = T - w, P[2] = w - (T - o) + (i - o), P[3] = T;
-  const st = V(4, F, 4, P, q);
-  v = S * y, u2 = I * S, b = u2 - (u2 - S), x = S - b, u2 = I * y, h = u2 - (u2 - y), f = y - h, E4 = x * f - (v - b * h - x * h - b * f), m = k * l, u2 = I * k, b = u2 - (u2 - k), x = k - b, u2 = I * l, h = u2 - (u2 - l), f = l - h, M = x * f - (m - b * h - x * h - b * f), i = E4 - M, o = E4 - i, P[0] = E4 - (i + o) + (o - M), w = v + i, o = w - v, A = v - (w - o) + (i - o), i = A - m, o = A - i, P[1] = A - (i + o) + (o - m), T = w + i, o = T - w, P[2] = w - (T - o) + (i - o), P[3] = T;
-  const nt = V(st, q, 4, P, L);
-  v = d * y, u2 = I * d, b = u2 - (u2 - d), x = d - b, u2 = I * y, h = u2 - (u2 - y), f = y - h, E4 = x * f - (v - b * h - x * h - b * f), m = g2 * l, u2 = I * g2, b = u2 - (u2 - g2), x = g2 - b, u2 = I * l, h = u2 - (u2 - l), f = l - h, M = x * f - (m - b * h - x * h - b * f), i = E4 - M, o = E4 - i, P[0] = E4 - (i + o) + (o - M), w = v + i, o = w - v, A = v - (w - o) + (i - o), i = A - m, o = A - i, P[1] = A - (i + o) + (o - m), T = w + i, o = T - w, P[2] = w - (T - o) + (i - o), P[3] = T;
-  const it = V(nt, L, 4, P, G);
-  return G[it - 1];
-}
-function lt(e, t, s, r, a, n) {
-  const c = (t - n) * (s - a), d = (e - a) * (r - n), g2 = c - d, l = Math.abs(c + d);
-  return Math.abs(g2) >= ut * l ? g2 : -dt(e, t, s, r, a, n, l);
-}
-function yt(e, t) {
-  var s, r, a = 0, n, c, d, g2, l, y, o, u2 = e[0], b = e[1], x = t.length;
-  for (s = 0; s < x; s++) {
-    r = 0;
-    var h = t[s], f = h.length - 1;
-    if (y = h[0], y[0] !== h[f][0] && y[1] !== h[f][1])
-      throw new Error("First and last coordinates in a ring must be the same");
-    for (c = y[0] - u2, d = y[1] - b, r; r < f; r++) {
-      if (o = h[r + 1], g2 = o[0] - u2, l = o[1] - b, d === 0 && l === 0) {
-        if (g2 <= 0 && c >= 0 || c <= 0 && g2 >= 0)
-          return 0;
-      } else if (l >= 0 && d <= 0 || l <= 0 && d >= 0) {
-        if (n = lt(c, g2, d, l, 0, 0), n === 0)
-          return 0;
-        (n > 0 && l > 0 && d <= 0 || n < 0 && l <= 0 && d > 0) && a++;
+var maplat_transform_umd$1 = { exports: {} };
+var maplat_transform_umd = maplat_transform_umd$1.exports;
+var hasRequiredMaplat_transform_umd;
+function requireMaplat_transform_umd() {
+  if (hasRequiredMaplat_transform_umd) return maplat_transform_umd$1.exports;
+  hasRequiredMaplat_transform_umd = 1;
+  (function(module, exports) {
+    (function(S, T) {
+      T(exports);
+    })(maplat_transform_umd, function(S) {
+      const T = 11102230246251565e-32, A = 134217729, st = (3 + 8 * T) * T;
+      function Y(t, e, r, n, c) {
+        let i, f, g2, h, l = e[0], y = n[0], o = 0, u2 = 0;
+        y > l == y > -l ? (i = l, l = e[++o]) : (i = y, y = n[++u2]);
+        let b = 0;
+        if (o < t && u2 < r) for (y > l == y > -l ? (f = l + i, g2 = i - (f - l), l = e[++o]) : (f = y + i, g2 = i - (f - y), y = n[++u2]), i = f, g2 !== 0 && (c[b++] = g2); o < t && u2 < r; ) y > l == y > -l ? (f = i + l, h = f - i, g2 = i - (f - h) + (l - h), l = e[++o]) : (f = i + y, h = f - i, g2 = i - (f - h) + (y - h), y = n[++u2]), i = f, g2 !== 0 && (c[b++] = g2);
+        for (; o < t; ) f = i + l, h = f - i, g2 = i - (f - h) + (l - h), l = e[++o], i = f, g2 !== 0 && (c[b++] = g2);
+        for (; u2 < r; ) f = i + y, h = f - i, g2 = i - (f - h) + (y - h), y = n[++u2], i = f, g2 !== 0 && (c[b++] = g2);
+        return (i !== 0 || b === 0) && (c[b++] = i), b;
       }
-      y = o, d = l, c = g2;
-    }
-  }
-  return a % 2 !== 0;
-}
-function Z(e, t, s = {}) {
-  const r = { type: "Feature" };
-  return (s.id === 0 || s.id) && (r.id = s.id), s.bbox && (r.bbox = s.bbox), r.properties = t || {}, r.geometry = e, r;
-}
-function Y(e, t, s = {}) {
-  if (!e)
-    throw new Error("coordinates is required");
-  if (!Array.isArray(e))
-    throw new Error("coordinates must be an Array");
-  if (e.length < 2)
-    throw new Error("coordinates must be at least 2 numbers long");
-  if (!j(e[0]) || !j(e[1]))
-    throw new Error("coordinates must contain numbers");
-  return Z({
-    type: "Point",
-    coordinates: e
-  }, t, s);
-}
-function tt(e, t, s = {}) {
-  for (const a of e) {
-    if (a.length < 4)
-      throw new Error(
-        "Each LinearRing of a Polygon must have 4 or more Positions."
-      );
-    if (a[a.length - 1].length !== a[0].length)
-      throw new Error("First and last Position are not equivalent.");
-    for (let n = 0; n < a[a.length - 1].length; n++)
-      if (a[a.length - 1][n] !== a[0][n])
-        throw new Error("First and last Position are not equivalent.");
-  }
-  return Z({
-    type: "Polygon",
-    coordinates: e
-  }, t, s);
-}
-function B(e, t = {}) {
-  const s = { type: "FeatureCollection" };
-  return t.id && (s.id = t.id), t.bbox && (s.bbox = t.bbox), s.features = e, s;
-}
-function j(e) {
-  return !isNaN(e) && e !== null && !Array.isArray(e);
-}
-function bt(e) {
-  if (!e)
-    throw new Error("coord is required");
-  if (!Array.isArray(e)) {
-    if (e.type === "Feature" && e.geometry !== null && e.geometry.type === "Point")
-      return [...e.geometry.coordinates];
-    if (e.type === "Point")
-      return [...e.coordinates];
-  }
-  if (Array.isArray(e) && e.length >= 2 && !Array.isArray(e[0]) && !Array.isArray(e[1]))
-    return [...e];
-  throw new Error("coord must be GeoJSON Point or an Array of numbers");
-}
-function J(e) {
-  if (Array.isArray(e))
-    return e;
-  if (e.type === "Feature") {
-    if (e.geometry !== null)
-      return e.geometry.coordinates;
-  } else if (e.coordinates)
-    return e.coordinates;
-  throw new Error(
-    "coords must be GeoJSON Feature, Geometry Object or an Array"
-  );
-}
-function wt(e) {
-  return e.type === "Feature" ? e.geometry : e;
-}
-function mt(e, t, s = {}) {
-  if (!e)
-    throw new Error("point is required");
-  if (!t)
-    throw new Error("polygon is required");
-  const r = bt(e), a = wt(t), n = a.type, c = t.bbox;
-  let d = a.coordinates;
-  if (c && xt(r, c) === false)
-    return false;
-  n === "Polygon" && (d = [d]);
-  let g2 = false;
-  for (var l = 0; l < d.length; ++l) {
-    const y = yt(r, d[l]);
-    if (y === 0) return !s.ignoreBoundary;
-    y && (g2 = true);
-  }
-  return g2;
-}
-function xt(e, t) {
-  return t[0] <= e[0] && t[1] <= e[1] && t[2] >= e[0] && t[3] >= e[1];
-}
-var D = mt;
-function _t(e) {
-  const t = [0, 1, 2, 0].map((r) => e[r][0][0]), s = {
-    a: { geom: e[0][0][1], index: e[0][1] },
-    b: { geom: e[1][0][1], index: e[1][1] },
-    c: { geom: e[2][0][1], index: e[2][1] }
-  };
-  return tt([t], s);
-}
-function W(e, t, s, r, a, n = false, c) {
-  const d = e.map(
-    (g2) => {
-      (!c || c < 2.00703) && (g2 = et(g2));
-      const l = isFinite(g2) ? t[g2] : g2 === "c" ? r : g2 === "b0" ? a[0] : g2 === "b1" ? a[1] : g2 === "b2" ? a[2] : g2 === "b3" ? a[3] : function() {
-        const y = g2.match(/e(\d+)/);
-        if (y) {
-          const o = parseInt(y[1]);
-          return s[o];
+      function ot(t, e) {
+        let r = e[0];
+        for (let n = 1; n < t; n++) r += e[n];
+        return r;
+      }
+      function X(t) {
+        return new Float64Array(t);
+      }
+      const at = (3 + 16 * T) * T, ct = (2 + 12 * T) * T, ut = (9 + 64 * T) * T * T, U = X(4), q = X(8), z = X(12), j = X(16), P = X(4);
+      function ft(t, e, r, n, c, i, f) {
+        let g2, h, l, y, o, u2, b, x, d, a, s, m, _23, p, M, w, v, E4;
+        const k = t - c, I = r - c, N = e - i, B2 = n - i;
+        p = k * B2, u2 = A * k, b = u2 - (u2 - k), x = k - b, u2 = A * B2, d = u2 - (u2 - B2), a = B2 - d, M = x * a - (p - b * d - x * d - b * a), w = N * I, u2 = A * N, b = u2 - (u2 - N), x = N - b, u2 = A * I, d = u2 - (u2 - I), a = I - d, v = x * a - (w - b * d - x * d - b * a), s = M - v, o = M - s, U[0] = M - (s + o) + (o - v), m = p + s, o = m - p, _23 = p - (m - o) + (s - o), s = _23 - w, o = _23 - s, U[1] = _23 - (s + o) + (o - w), E4 = m + s, o = E4 - m, U[2] = m - (E4 - o) + (s - o), U[3] = E4;
+        let R2 = ot(4, U), V = ct * f;
+        if (R2 >= V || -R2 >= V || (o = t - k, g2 = t - (k + o) + (o - c), o = r - I, l = r - (I + o) + (o - c), o = e - N, h = e - (N + o) + (o - i), o = n - B2, y = n - (B2 + o) + (o - i), g2 === 0 && h === 0 && l === 0 && y === 0) || (V = ut * f + st * Math.abs(R2), R2 += k * y + B2 * g2 - (N * l + I * h), R2 >= V || -R2 >= V)) return R2;
+        p = g2 * B2, u2 = A * g2, b = u2 - (u2 - g2), x = g2 - b, u2 = A * B2, d = u2 - (u2 - B2), a = B2 - d, M = x * a - (p - b * d - x * d - b * a), w = h * I, u2 = A * h, b = u2 - (u2 - h), x = h - b, u2 = A * I, d = u2 - (u2 - I), a = I - d, v = x * a - (w - b * d - x * d - b * a), s = M - v, o = M - s, P[0] = M - (s + o) + (o - v), m = p + s, o = m - p, _23 = p - (m - o) + (s - o), s = _23 - w, o = _23 - s, P[1] = _23 - (s + o) + (o - w), E4 = m + s, o = E4 - m, P[2] = m - (E4 - o) + (s - o), P[3] = E4;
+        const Ct = Y(4, U, 4, P, q);
+        p = k * y, u2 = A * k, b = u2 - (u2 - k), x = k - b, u2 = A * y, d = u2 - (u2 - y), a = y - d, M = x * a - (p - b * d - x * d - b * a), w = N * l, u2 = A * N, b = u2 - (u2 - N), x = N - b, u2 = A * l, d = u2 - (u2 - l), a = l - d, v = x * a - (w - b * d - x * d - b * a), s = M - v, o = M - s, P[0] = M - (s + o) + (o - v), m = p + s, o = m - p, _23 = p - (m - o) + (s - o), s = _23 - w, o = _23 - s, P[1] = _23 - (s + o) + (o - w), E4 = m + s, o = E4 - m, P[2] = m - (E4 - o) + (s - o), P[3] = E4;
+        const Rt = Y(Ct, q, 4, P, z);
+        p = g2 * y, u2 = A * g2, b = u2 - (u2 - g2), x = g2 - b, u2 = A * y, d = u2 - (u2 - y), a = y - d, M = x * a - (p - b * d - x * d - b * a), w = h * l, u2 = A * h, b = u2 - (u2 - h), x = h - b, u2 = A * l, d = u2 - (u2 - l), a = l - d, v = x * a - (w - b * d - x * d - b * a), s = M - v, o = M - s, P[0] = M - (s + o) + (o - v), m = p + s, o = m - p, _23 = p - (m - o) + (s - o), s = _23 - w, o = _23 - s, P[1] = _23 - (s + o) + (o - w), E4 = m + s, o = E4 - m, P[2] = m - (E4 - o) + (s - o), P[3] = E4;
+        const Ut = Y(Rt, z, 4, P, j);
+        return j[Ut - 1];
+      }
+      function dt(t, e, r, n, c, i) {
+        const f = (e - i) * (r - c), g2 = (t - c) * (n - i), h = f - g2, l = Math.abs(f + g2);
+        return Math.abs(h) >= at * l ? h : -ft(t, e, r, n, c, i, l);
+      }
+      function ht(t, e) {
+        var r, n, c = 0, i, f, g2, h, l, y, o, u2 = t[0], b = t[1], x = e.length;
+        for (r = 0; r < x; r++) {
+          n = 0;
+          var d = e[r], a = d.length - 1;
+          if (y = d[0], y[0] !== d[a][0] && y[1] !== d[a][1]) throw new Error("First and last coordinates in a ring must be the same");
+          for (f = y[0] - u2, g2 = y[1] - b, n; n < a; n++) {
+            if (o = d[n + 1], h = o[0] - u2, l = o[1] - b, g2 === 0 && l === 0) {
+              if (h <= 0 && f >= 0 || f <= 0 && h >= 0) return 0;
+            } else if (l >= 0 && g2 <= 0 || l <= 0 && g2 >= 0) {
+              if (i = dt(f, h, g2, l, 0, 0), i === 0) return 0;
+              (i > 0 && l > 0 && g2 <= 0 || i < 0 && l <= 0 && g2 > 0) && c++;
+            }
+            y = o, g2 = l, f = h;
+          }
         }
-        throw "Bad index value for indexesToTri";
-      }();
-      return n ? [[l[1], l[0]], g2] : [[l[0], l[1]], g2];
-    }
-  );
-  return _t(d);
-}
-function et(e) {
-  return typeof e == "number" ? e : e.replace(/^(c|e|b)(?:ent|dgeNode|box)(\d+)?$/, "$1$2");
-}
-function At(e, t) {
-  return t && t >= 2.00703 || Array.isArray(e[0]) ? e : e.map((s) => [
-    s.illstNodes,
-    s.mercNodes,
-    s.startEnd
-  ]);
-}
-function z(e, t) {
-  for (let s = 0; s < t.features.length; s++)
-    if (D(e, t.features[s]))
-      return t.features[s];
-}
-function rt(e, t, s) {
-  const r = t.geometry.coordinates[0][0], a = t.geometry.coordinates[0][1], n = t.geometry.coordinates[0][2], c = e.geometry.coordinates, d = t.properties.a.geom, g2 = t.properties.b.geom, l = t.properties.c.geom, y = [a[0] - r[0], a[1] - r[1]], o = [n[0] - r[0], n[1] - r[1]], u2 = [c[0] - r[0], c[1] - r[1]], b = [g2[0] - d[0], g2[1] - d[1]], x = [l[0] - d[0], l[1] - d[1]];
-  let h = (o[1] * u2[0] - o[0] * u2[1]) / (y[0] * o[1] - y[1] * o[0]), f = (y[0] * u2[1] - y[1] * u2[0]) / (y[0] * o[1] - y[1] * o[0]);
-  if (s) {
-    const i = s[t.properties.a.index], w = s[t.properties.b.index], A = s[t.properties.c.index];
-    let v;
-    if (h < 0 || f < 0 || 1 - h - f < 0) {
-      const E4 = h / (h + f), m = f / (h + f);
-      v = h / w / (E4 / w + m / A), f = f / A / (E4 / w + m / A);
-    } else
-      v = h / w / (h / w + f / A + (1 - h - f) / i), f = f / A / (h / w + f / A + (1 - h - f) / i);
-    h = v;
-  }
-  return [
-    h * b[0] + f * x[0] + d[0],
-    h * b[1] + f * x[1] + d[1]
-  ];
-}
-function vt(e, t, s, r) {
-  const a = e.geometry.coordinates, n = s.geometry.coordinates, c = Math.atan2(a[0] - n[0], a[1] - n[1]), d = Et(c, t[0]);
-  if (d === void 0)
-    throw new Error("Unable to determine vertex index");
-  const g2 = t[1][d];
-  return rt(e, g2.features[0], r);
-}
-function Mt(e, t, s, r, a, n, c, d) {
-  let g2;
-  if (c && (g2 = z(e, B([c]))), !g2) {
-    if (s) {
-      const l = e.geometry.coordinates, y = s.gridNum, o = s.xOrigin, u2 = s.yOrigin, b = s.xUnit, x = s.yUnit, h = s.gridCache, f = C(l[0], o, b, y), i = C(l[1], u2, x, y), w = h[f] ? h[f][i] ? h[f][i] : [] : [];
-      t = B(w.map((A) => t.features[A]));
-    }
-    g2 = z(e, t);
-  }
-  return d && d(g2), g2 ? rt(e, g2, n) : vt(e, r, a, n);
-}
-function C(e, t, s, r) {
-  let a = Math.floor((e - t) / s);
-  return a >= r && (a = r - 1), a;
-}
-function Et(e, t) {
-  let s = K(e - t[0]), r = Math.PI * 2, a;
-  for (let n = 0; n < t.length; n++) {
-    const c = (n + 1) % t.length, d = K(e - t[c]), g2 = Math.min(Math.abs(s), Math.abs(d));
-    s * d <= 0 && g2 < r && (r = g2, a = n), s = d;
-  }
-  return a;
-}
-function K(e, t = false) {
-  const s = t ? function(r) {
-    return !(r >= 0 && r < Math.PI * 2);
-  } : function(r) {
-    return !(r > -1 * Math.PI && r <= Math.PI);
-  };
-  for (; s(e); )
-    e = e + 2 * Math.PI * (e > 0 ? -1 : 1);
-  return e;
-}
-const Q = 2.00703, O = class O2 {
-  constructor() {
-    _23(this, "points", []);
-    _23(this, "pointsWeightBuffer");
-    _23(this, "strict_status");
-    _23(this, "vertices_params");
-    _23(this, "centroid");
-    _23(this, "edgeNodes");
-    _23(this, "edges");
-    _23(this, "tins");
-    _23(this, "kinks");
-    _23(this, "yaxisMode", O2.YAXIS_INVERT);
-    _23(this, "strictMode", O2.MODE_AUTO);
-    _23(this, "vertexMode", O2.VERTEX_PLAIN);
-    _23(this, "bounds");
-    _23(this, "boundsPolygon");
-    _23(this, "wh");
-    _23(this, "xy");
-    _23(this, "indexedTins");
-    _23(this, "stateFull", false);
-    _23(this, "stateTriangle");
-    _23(this, "stateBackward");
-  }
-  /**
-   * コンパイルされた設定を適用します
-   * 
-   * @param compiled - コンパイルされた設定オブジェクト
-   * @returns 変換に必要な主要なオブジェクトのセット
-   * 
-   * 以下の処理を行います：
-   * 1. バージョンに応じた設定の解釈
-   * 2. 各種パラメータの復元
-   * 3. TINネットワークの再構築
-   * 4. インデックスの作成
-   */
-  setCompiled(t) {
-    if (t.version || !t.tins && t.points && t.tins_points) {
-      this.points = t.points, this.pointsWeightBuffer = !t.version || t.version < 2.00703 ? ["forw", "bakw"].reduce((r, a) => {
-        const n = t.weight_buffer[a];
-        return n && (r[a] = Object.keys(n).reduce((c, d) => {
-          const g2 = et(d);
-          return c[g2] = n[d], c;
-        }, {})), r;
-      }, {}) : t.weight_buffer, t.strict_status ? this.strict_status = t.strict_status : t.kinks_points ? this.strict_status = O2.STATUS_ERROR : t.tins_points.length == 2 ? this.strict_status = O2.STATUS_LOOSE : this.strict_status = O2.STATUS_STRICT, this.vertices_params = {
-        forw: [t.vertices_params[0]],
-        bakw: [t.vertices_params[1]]
-      }, this.vertices_params.forw[1] = [0, 1, 2, 3].map((r) => {
-        const a = (r + 1) % 4, n = W(
-          ["c", `b${r}`, `b${a}`],
-          t.points,
-          t.edgeNodes || [],
-          t.centroid_point,
-          t.vertices_points,
-          false,
-          Q
-        );
-        return B([n]);
-      }), this.vertices_params.bakw[1] = [0, 1, 2, 3].map((r) => {
-        const a = (r + 1) % 4, n = W(
-          ["c", `b${r}`, `b${a}`],
-          t.points,
-          t.edgeNodes || [],
-          t.centroid_point,
-          t.vertices_points,
-          true,
-          Q
-        );
-        return B([n]);
-      }), this.centroid = {
-        forw: Y(t.centroid_point[0], {
-          target: {
-            geom: t.centroid_point[1],
-            index: "c"
+        return c % 2 !== 0;
+      }
+      function G(t, e, r = {}) {
+        const n = { type: "Feature" };
+        return (r.id === 0 || r.id) && (n.id = r.id), r.bbox && (n.bbox = r.bbox), n.properties = e || {}, n.geometry = t, n;
+      }
+      function W(t, e, r = {}) {
+        if (!t) throw new Error("coordinates is required");
+        if (!Array.isArray(t)) throw new Error("coordinates must be an Array");
+        if (t.length < 2) throw new Error("coordinates must be at least 2 numbers long");
+        if (!K(t[0]) || !K(t[1])) throw new Error("coordinates must contain numbers");
+        return G({ type: "Point", coordinates: t }, e, r);
+      }
+      function J(t, e, r = {}) {
+        for (const c of t) {
+          if (c.length < 4) throw new Error("Each LinearRing of a Polygon must have 4 or more Positions.");
+          if (c[c.length - 1].length !== c[0].length) throw new Error("First and last Position are not equivalent.");
+          for (let i = 0; i < c[c.length - 1].length; i++) if (c[c.length - 1][i] !== c[0][i]) throw new Error("First and last Position are not equivalent.");
+        }
+        return G({ type: "Polygon", coordinates: t }, e, r);
+      }
+      function F(t, e = {}) {
+        const r = { type: "FeatureCollection" };
+        return e.id && (r.id = e.id), e.bbox && (r.bbox = e.bbox), r.features = t, r;
+      }
+      function K(t) {
+        return !isNaN(t) && t !== null && !Array.isArray(t);
+      }
+      function gt(t) {
+        if (!t) throw new Error("coord is required");
+        if (!Array.isArray(t)) {
+          if (t.type === "Feature" && t.geometry !== null && t.geometry.type === "Point") return [...t.geometry.coordinates];
+          if (t.type === "Point") return [...t.coordinates];
+        }
+        if (Array.isArray(t) && t.length >= 2 && !Array.isArray(t[0]) && !Array.isArray(t[1])) return [...t];
+        throw new Error("coord must be GeoJSON Point or an Array of numbers");
+      }
+      function Q(t) {
+        if (Array.isArray(t)) return t;
+        if (t.type === "Feature") {
+          if (t.geometry !== null) return t.geometry.coordinates;
+        } else if (t.coordinates) return t.coordinates;
+        throw new Error("coords must be GeoJSON Feature, Geometry Object or an Array");
+      }
+      function lt(t) {
+        return t.type === "Feature" ? t.geometry : t;
+      }
+      function yt(t, e, r = {}) {
+        if (!t) throw new Error("point is required");
+        if (!e) throw new Error("polygon is required");
+        const n = gt(t), c = lt(e), i = c.type, f = e.bbox;
+        let g2 = c.coordinates;
+        if (f && bt(n, f) === false) return false;
+        i === "Polygon" && (g2 = [g2]);
+        let h = false;
+        for (var l = 0; l < g2.length; ++l) {
+          const y = ht(n, g2[l]);
+          if (y === 0) return !r.ignoreBoundary;
+          y && (h = true);
+        }
+        return h;
+      }
+      function bt(t, e) {
+        return e[0] <= t[0] && e[1] <= t[1] && e[2] >= t[0] && e[3] >= t[1];
+      }
+      var L = yt;
+      function H(t, e) {
+        for (let r = 0; r < e.features.length; r++) if (L(t, e.features[r])) return e.features[r];
+      }
+      function Z(t, e, r) {
+        const n = e.geometry.coordinates[0][0], c = e.geometry.coordinates[0][1], i = e.geometry.coordinates[0][2], f = t.geometry.coordinates, g2 = e.properties.a.geom, h = e.properties.b.geom, l = e.properties.c.geom, y = [c[0] - n[0], c[1] - n[1]], o = [i[0] - n[0], i[1] - n[1]], u2 = [f[0] - n[0], f[1] - n[1]], b = [h[0] - g2[0], h[1] - g2[1]], x = [l[0] - g2[0], l[1] - g2[1]];
+        let d = (o[1] * u2[0] - o[0] * u2[1]) / (y[0] * o[1] - y[1] * o[0]), a = (y[0] * u2[1] - y[1] * u2[0]) / (y[0] * o[1] - y[1] * o[0]);
+        if (r) {
+          const s = r[e.properties.a.index], m = r[e.properties.b.index], _23 = r[e.properties.c.index];
+          let p;
+          if (d < 0 || a < 0 || 1 - d - a < 0) {
+            const M = d / (d + a), w = a / (d + a);
+            p = d / m / (M / m + w / _23), a = a / _23 / (M / m + w / _23);
+          } else p = d / m / (d / m + a / _23 + (1 - d - a) / s), a = a / _23 / (d / m + a / _23 + (1 - d - a) / s);
+          d = p;
+        }
+        return [d * b[0] + a * x[0] + g2[0], d * b[1] + a * x[1] + g2[1]];
+      }
+      function mt(t, e, r, n) {
+        const c = t.geometry.coordinates, i = r.geometry.coordinates, f = Math.atan2(c[0] - i[0], c[1] - i[1]), g2 = wt(f, e[0]);
+        if (g2 === void 0) throw new Error("Unable to determine vertex index");
+        const h = e[1][g2];
+        return Z(t, h.features[0], n);
+      }
+      function tt(t, e, r, n, c, i, f, g2) {
+        let h;
+        if (f && (h = H(t, F([f]))), !h) {
+          if (r) {
+            const l = t.geometry.coordinates, y = r.gridNum, o = r.xOrigin, u2 = r.yOrigin, b = r.xUnit, x = r.yUnit, d = r.gridCache, a = C(l[0], o, b, y), s = C(l[1], u2, x, y), m = d[a] ? d[a][s] ? d[a][s] : [] : [];
+            e = F(m.map((_23) => e.features[_23]));
           }
-        }),
-        bakw: Y(t.centroid_point[1], {
-          target: {
-            geom: t.centroid_point[0],
-            index: "c"
-          }
-        })
-      }, this.edges = At(t.edges || []), this.edgeNodes = t.edgeNodes || [];
-      const s = t.tins_points.length == 1 ? 0 : 1;
-      this.tins = {
-        forw: B(
-          t.tins_points[0].map(
-            (r) => W(
-              r,
-              t.points,
-              t.edgeNodes || [],
-              t.centroid_point,
-              t.vertices_points,
-              false,
-              t.version
-            )
-          )
-        ),
-        bakw: B(
-          t.tins_points[s].map(
-            (r) => W(
-              r,
-              t.points,
-              t.edgeNodes || [],
-              t.centroid_point,
-              t.vertices_points,
-              true,
-              t.version
-            )
-          )
-        )
-      }, this.addIndexedTin(), t.kinks_points && (this.kinks = {
-        bakw: B(
-          t.kinks_points.map((r) => Y(r))
-        )
-      }), t.yaxisMode ? this.yaxisMode = t.yaxisMode : this.yaxisMode = O2.YAXIS_INVERT, t.vertexMode && (this.vertexMode = t.vertexMode), t.strictMode && (this.strictMode = t.strictMode), t.bounds ? (this.bounds = t.bounds, this.boundsPolygon = t.boundsPolygon, this.xy = t.xy, this.wh = t.wh) : (this.xy = [0, 0], t.wh && (this.wh = t.wh), this.bounds = void 0, this.boundsPolygon = void 0);
-    } else {
-      t = JSON.parse(
-        JSON.stringify(t).replace('"cent"', '"c"').replace(/"bbox(\d+)"/g, '"b$1"')
-      ), this.tins = t.tins, this.addIndexedTin(), this.strict_status = t.strict_status, this.pointsWeightBuffer = t.weight_buffer, this.vertices_params = t.vertices_params, this.centroid = t.centroid, this.kinks = t.kinks;
-      const s = [];
-      for (let r = 0; r < this.tins.forw.features.length; r++) {
-        const a = this.tins.forw.features[r];
-        ["a", "b", "c"].map((n, c) => {
-          const d = a.geometry.coordinates[0][c], g2 = a.properties[n].geom, l = a.properties[n].index;
-          typeof l == "number" && (s[l] = [d, g2]);
+          h = H(t, e);
+        }
+        return g2 && g2(h), h ? Z(t, h, i) : mt(t, n, c, i);
+      }
+      function C(t, e, r, n) {
+        let c = Math.floor((t - e) / r);
+        return c >= n && (c = n - 1), c;
+      }
+      function wt(t, e) {
+        let r = et(t - e[0]), n = Math.PI * 2, c;
+        for (let i = 0; i < e.length; i++) {
+          const f = (i + 1) % e.length, g2 = et(t - e[f]), h = Math.min(Math.abs(r), Math.abs(g2));
+          r * g2 <= 0 && h < n && (n = h, c = i), r = g2;
+        }
+        return c;
+      }
+      function et(t, e = false) {
+        const r = e ? function(n) {
+          return !(n >= 0 && n < Math.PI * 2);
+        } : function(n) {
+          return !(n > -1 * Math.PI && n <= Math.PI);
+        };
+        for (; r(t); ) t = t + 2 * Math.PI * (t > 0 ? -1 : 1);
+        return t;
+      }
+      function rt(t, e) {
+        return e && e >= 2.00703 || Array.isArray(t[0]) ? t : t.map((r) => [r.illstNodes, r.mercNodes, r.startEnd]);
+      }
+      function xt(t) {
+        const e = t.features;
+        for (let r = 0; r < e.length; r++) {
+          const n = e[r];
+          `${n.properties.a.index}`.substring(0, 1) === "b" && `${n.properties.b.index}`.substring(0, 1) === "b" ? e[r] = { geometry: { type: "Polygon", coordinates: [[n.geometry.coordinates[0][2], n.geometry.coordinates[0][0], n.geometry.coordinates[0][1], n.geometry.coordinates[0][2]]] }, properties: { a: { geom: n.properties.c.geom, index: n.properties.c.index }, b: { geom: n.properties.a.geom, index: n.properties.a.index }, c: { geom: n.properties.b.geom, index: n.properties.b.index } }, type: "Feature" } : `${n.properties.c.index}`.substring(0, 1) === "b" && `${n.properties.a.index}`.substring(0, 1) === "b" && (e[r] = { geometry: { type: "Polygon", coordinates: [[n.geometry.coordinates[0][1], n.geometry.coordinates[0][2], n.geometry.coordinates[0][0], n.geometry.coordinates[0][1]]] }, properties: { a: { geom: n.properties.b.geom, index: n.properties.b.index }, b: { geom: n.properties.c.geom, index: n.properties.c.index }, c: { geom: n.properties.a.geom, index: n.properties.a.index } }, type: "Feature" });
+        }
+        return t;
+      }
+      function _t(t) {
+        const e = ["a", "b", "c", "a"].map((i) => t.properties[i].geom), r = t.geometry.coordinates[0], n = t.properties, c = { a: { geom: r[0], index: n.a.index }, b: { geom: r[1], index: n.b.index }, c: { geom: r[2], index: n.c.index } };
+        return J([e], c);
+      }
+      function pt(t) {
+        const e = [0, 1, 2, 0].map((n) => t[n][0][0]), r = { a: { geom: t[0][0][1], index: t[0][1] }, b: { geom: t[1][0][1], index: t[1][1] }, c: { geom: t[2][0][1], index: t[2][1] } };
+        return J([e], r);
+      }
+      function $(t, e, r, n, c, i = false, f) {
+        const g2 = t.map((h) => {
+          (!f || f < 2.00703) && (h = nt(h));
+          const l = isFinite(h) ? e[h] : h === "c" ? n : h === "b0" ? c[0] : h === "b1" ? c[1] : h === "b2" ? c[2] : h === "b3" ? c[3] : function() {
+            const y = h.match(/e(\d+)/);
+            if (y) {
+              const o = parseInt(y[1]);
+              return r[o];
+            }
+            throw "Bad index value for indexesToTri";
+          }();
+          return i ? [[l[1], l[0]], h] : [[l[0], l[1]], h];
+        });
+        return pt(g2);
+      }
+      function nt(t) {
+        return typeof t == "number" ? t : t.replace(/^(c|e|b)(?:ent|dgeNode|box)(\d+)?$/, "$1$2");
+      }
+      const D2 = 2.00703;
+      function vt(t) {
+        return !!(t.version || !t.tins && t.points && t.tins_points);
+      }
+      function Mt(t) {
+        return { points: t.points, pointsWeightBuffer: Et(t), strictStatus: Pt(t), verticesParams: Tt(t), centroid: St(t), edges: rt(t.edges || []), edgeNodes: t.edgeNodes || [], tins: Ot(t), kinks: kt(t.kinks_points), yaxisMode: t.yaxisMode ?? "invert", strictMode: t.strictMode ?? "auto", vertexMode: t.vertexMode, bounds: t.bounds, boundsPolygon: t.boundsPolygon, wh: t.wh, xy: t.bounds ? t.xy : [0, 0] };
+      }
+      function At(t) {
+        const e = It(t), r = e.tins;
+        return { compiled: e, tins: r, points: Nt(r), strictStatus: e.strict_status, pointsWeightBuffer: e.weight_buffer, verticesParams: e.vertices_params, centroid: e.centroid, kinks: e.kinks };
+      }
+      function Et(t) {
+        return !t.version || t.version < D2 ? ["forw", "bakw"].reduce((e, r) => {
+          const n = t.weight_buffer[r];
+          return n && (e[r] = Object.keys(n).reduce((c, i) => {
+            const f = nt(i);
+            return c[f] = n[i], c;
+          }, {})), e;
+        }, {}) : t.weight_buffer;
+      }
+      function Pt(t) {
+        return t.strict_status ? t.strict_status : t.kinks_points ? "strict_error" : t.tins_points.length === 2 ? "loose" : "strict";
+      }
+      function Tt(t) {
+        const e = { forw: [t.vertices_params[0]], bakw: [t.vertices_params[1]] };
+        return e.forw[1] = it(t, false), e.bakw[1] = it(t, true), e;
+      }
+      function it(t, e) {
+        return [0, 1, 2, 3].map((r) => {
+          const n = (r + 1) % 4, c = $(["c", `b${r}`, `b${n}`], t.points, t.edgeNodes || [], t.centroid_point, t.vertices_points, e, D2);
+          return F([c]);
         });
       }
-      this.points = s;
-    }
-  }
-  /**
-   * TINネットワークのインデックスを作成します
-   * 
-   * インデックスは変換処理を高速化するために使用されます。
-   * グリッド形式のインデックスを作成し、各グリッドに
-   * 含まれる三角形を記録します。
-   */
-  addIndexedTin() {
-    const t = this.tins, s = t.forw, r = t.bakw, a = Math.ceil(Math.sqrt(s.features.length));
-    if (a < 3) {
-      this.indexedTins = void 0;
-      return;
-    }
-    let n = [], c = [];
-    const d = s.features.map((h) => {
-      let f = [];
-      return J(h)[0].map((i) => {
-        n.length === 0 ? n = [Array.from(i), Array.from(i)] : (i[0] < n[0][0] && (n[0][0] = i[0]), i[0] > n[1][0] && (n[1][0] = i[0]), i[1] < n[0][1] && (n[0][1] = i[1]), i[1] > n[1][1] && (n[1][1] = i[1])), f.length === 0 ? f = [Array.from(i), Array.from(i)] : (i[0] < f[0][0] && (f[0][0] = i[0]), i[0] > f[1][0] && (f[1][0] = i[0]), i[1] < f[0][1] && (f[0][1] = i[1]), i[1] > f[1][1] && (f[1][1] = i[1]));
-      }), f;
-    }), g2 = (n[1][0] - n[0][0]) / a, l = (n[1][1] - n[0][1]) / a, y = d.reduce(
-      (h, f, i) => {
-        const w = C(
-          f[0][0],
-          n[0][0],
-          g2,
-          a
-        ), A = C(
-          f[1][0],
-          n[0][0],
-          g2,
-          a
-        ), v = C(
-          f[0][1],
-          n[0][1],
-          l,
-          a
-        ), E4 = C(
-          f[1][1],
-          n[0][1],
-          l,
-          a
-        );
-        for (let m = w; m <= A; m++) {
-          h[m] || (h[m] = []);
-          for (let M = v; M <= E4; M++)
-            h[m][M] || (h[m][M] = []), h[m][M].push(i);
-        }
-        return h;
-      },
-      []
-    ), o = r.features.map((h) => {
-      let f = [];
-      return J(h)[0].map((i) => {
-        c.length === 0 ? c = [Array.from(i), Array.from(i)] : (i[0] < c[0][0] && (c[0][0] = i[0]), i[0] > c[1][0] && (c[1][0] = i[0]), i[1] < c[0][1] && (c[0][1] = i[1]), i[1] > c[1][1] && (c[1][1] = i[1])), f.length === 0 ? f = [Array.from(i), Array.from(i)] : (i[0] < f[0][0] && (f[0][0] = i[0]), i[0] > f[1][0] && (f[1][0] = i[0]), i[1] < f[0][1] && (f[0][1] = i[1]), i[1] > f[1][1] && (f[1][1] = i[1]));
-      }), f;
-    }), u2 = (c[1][0] - c[0][0]) / a, b = (c[1][1] - c[0][1]) / a, x = o.reduce(
-      (h, f, i) => {
-        const w = C(
-          f[0][0],
-          c[0][0],
-          u2,
-          a
-        ), A = C(
-          f[1][0],
-          c[0][0],
-          u2,
-          a
-        ), v = C(
-          f[0][1],
-          c[0][1],
-          b,
-          a
-        ), E4 = C(
-          f[1][1],
-          c[0][1],
-          b,
-          a
-        );
-        for (let m = w; m <= A; m++) {
-          h[m] || (h[m] = []);
-          for (let M = v; M <= E4; M++)
-            h[m][M] || (h[m][M] = []), h[m][M].push(i);
-        }
-        return h;
-      },
-      []
-    );
-    this.indexedTins = {
-      forw: {
-        gridNum: a,
-        xOrigin: n[0][0],
-        yOrigin: n[0][1],
-        xUnit: g2,
-        yUnit: l,
-        gridCache: y
-      },
-      bakw: {
-        gridNum: a,
-        xOrigin: c[0][0],
-        yOrigin: c[0][1],
-        xUnit: u2,
-        yUnit: b,
-        gridCache: x
+      function St(t) {
+        return { forw: W(t.centroid_point[0], { target: { geom: t.centroid_point[1], index: "c" } }), bakw: W(t.centroid_point[1], { target: { geom: t.centroid_point[0], index: "c" } }) };
       }
-    };
-  }
-  /**
-   * 座標変換を実行します
-   * 
-   * @param apoint - 変換する座標
-   * @param backward - 逆方向の変換かどうか
-   * @param ignoreBounds - 境界チェックを無視するかどうか
-   * @returns 変換後の座標、または境界外の場合はfalse
-   * 
-   * @throws {Error} 逆方向変換が許可されていない状態での逆変換時
-   */
-  transform(t, s, r) {
-    if (s && this.strict_status == O2.STATUS_ERROR)
-      throw 'Backward transform is not allowed if strict_status == "strict_error"';
-    this.yaxisMode == O2.YAXIS_FOLLOW && s && (t = [t[0], -1 * t[1]]);
-    const a = Y(t);
-    if (this.bounds && !s && !r && !D(a, this.boundsPolygon))
-      return false;
-    const n = s ? this.tins.bakw : this.tins.forw, c = s ? this.indexedTins.bakw : this.indexedTins.forw, d = s ? this.vertices_params.bakw : this.vertices_params.forw, g2 = s ? this.centroid.bakw : this.centroid.forw, l = s ? this.pointsWeightBuffer.bakw : this.pointsWeightBuffer.forw;
-    let y, o;
-    this.stateFull && (this.stateBackward == s ? y = this.stateTriangle : (this.stateBackward = s, this.stateTriangle = void 0), o = (b) => {
-      this.stateTriangle = b;
+      function Ot(t) {
+        const e = t.tins_points.length === 1 ? 0 : 1;
+        return { forw: F(t.tins_points[0].map((r) => $(r, t.points, t.edgeNodes || [], t.centroid_point, t.vertices_points, false, t.version))), bakw: F(t.tins_points[e].map((r) => $(r, t.points, t.edgeNodes || [], t.centroid_point, t.vertices_points, true, t.version))) };
+      }
+      function kt(t) {
+        if (t) return { bakw: F(t.map((e) => W(e))) };
+      }
+      function It(t) {
+        return JSON.parse(JSON.stringify(t).replace('"cent"', '"c"').replace(/"bbox(\d+)"/g, '"b$1"'));
+      }
+      function Nt(t) {
+        const e = [], r = t.forw.features;
+        for (let n = 0; n < r.length; n++) {
+          const c = r[n];
+          ["a", "b", "c"].map((i, f) => {
+            const g2 = c.geometry.coordinates[0][f], h = c.properties[i].geom, l = c.properties[i].index;
+            typeof l == "number" && (e[l] = [g2, h]);
+          });
+        }
+        return e;
+      }
+      const Bt = D2;
+      const _O = class _O {
+        constructor() {
+          __publicField(this, "points", []);
+          __publicField(this, "pointsWeightBuffer");
+          __publicField(this, "strict_status");
+          __publicField(this, "vertices_params");
+          __publicField(this, "centroid");
+          __publicField(this, "edgeNodes");
+          __publicField(this, "edges");
+          __publicField(this, "tins");
+          __publicField(this, "kinks");
+          __publicField(this, "yaxisMode", _O.YAXIS_INVERT);
+          __publicField(this, "strictMode", _O.MODE_AUTO);
+          __publicField(this, "vertexMode", _O.VERTEX_PLAIN);
+          __publicField(this, "bounds");
+          __publicField(this, "boundsPolygon");
+          __publicField(this, "wh");
+          __publicField(this, "xy");
+          __publicField(this, "indexedTins");
+          __publicField(this, "stateFull", false);
+          __publicField(this, "stateTriangle");
+          __publicField(this, "stateBackward");
+        }
+        setCompiled(e) {
+          if (vt(e)) {
+            this.applyModernState(Mt(e));
+            return;
+          }
+          this.applyLegacyState(At(e));
+        }
+        applyModernState(e) {
+          this.points = e.points, this.pointsWeightBuffer = e.pointsWeightBuffer, this.strict_status = e.strictStatus, this.vertices_params = e.verticesParams, this.centroid = e.centroid, this.edges = e.edges, this.edgeNodes = e.edgeNodes || [], this.tins = e.tins, this.addIndexedTin(), this.kinks = e.kinks, this.yaxisMode = e.yaxisMode ?? _O.YAXIS_INVERT, this.vertexMode = e.vertexMode ?? _O.VERTEX_PLAIN, this.strictMode = e.strictMode ?? _O.MODE_AUTO, e.bounds ? (this.bounds = e.bounds, this.boundsPolygon = e.boundsPolygon, this.xy = e.xy, this.wh = e.wh) : (this.bounds = void 0, this.boundsPolygon = void 0, this.xy = e.xy ?? [0, 0], e.wh && (this.wh = e.wh));
+        }
+        applyLegacyState(e) {
+          this.tins = e.tins, this.addIndexedTin(), this.strict_status = e.strictStatus, this.pointsWeightBuffer = e.pointsWeightBuffer, this.vertices_params = e.verticesParams, this.centroid = e.centroid, this.kinks = e.kinks, this.points = e.points;
+        }
+        addIndexedTin() {
+          const e = this.tins, r = e.forw, n = e.bakw, c = Math.ceil(Math.sqrt(r.features.length));
+          if (c < 3) {
+            this.indexedTins = void 0;
+            return;
+          }
+          let i = [], f = [];
+          const g2 = r.features.map((d) => {
+            let a = [];
+            return Q(d)[0].map((s) => {
+              i.length === 0 ? i = [Array.from(s), Array.from(s)] : (s[0] < i[0][0] && (i[0][0] = s[0]), s[0] > i[1][0] && (i[1][0] = s[0]), s[1] < i[0][1] && (i[0][1] = s[1]), s[1] > i[1][1] && (i[1][1] = s[1])), a.length === 0 ? a = [Array.from(s), Array.from(s)] : (s[0] < a[0][0] && (a[0][0] = s[0]), s[0] > a[1][0] && (a[1][0] = s[0]), s[1] < a[0][1] && (a[0][1] = s[1]), s[1] > a[1][1] && (a[1][1] = s[1]));
+            }), a;
+          }), h = (i[1][0] - i[0][0]) / c, l = (i[1][1] - i[0][1]) / c, y = g2.reduce((d, a, s) => {
+            const m = C(a[0][0], i[0][0], h, c), _23 = C(a[1][0], i[0][0], h, c), p = C(a[0][1], i[0][1], l, c), M = C(a[1][1], i[0][1], l, c);
+            for (let w = m; w <= _23; w++) {
+              d[w] || (d[w] = []);
+              for (let v = p; v <= M; v++) d[w][v] || (d[w][v] = []), d[w][v].push(s);
+            }
+            return d;
+          }, []), o = n.features.map((d) => {
+            let a = [];
+            return Q(d)[0].map((s) => {
+              f.length === 0 ? f = [Array.from(s), Array.from(s)] : (s[0] < f[0][0] && (f[0][0] = s[0]), s[0] > f[1][0] && (f[1][0] = s[0]), s[1] < f[0][1] && (f[0][1] = s[1]), s[1] > f[1][1] && (f[1][1] = s[1])), a.length === 0 ? a = [Array.from(s), Array.from(s)] : (s[0] < a[0][0] && (a[0][0] = s[0]), s[0] > a[1][0] && (a[1][0] = s[0]), s[1] < a[0][1] && (a[0][1] = s[1]), s[1] > a[1][1] && (a[1][1] = s[1]));
+            }), a;
+          }), u2 = (f[1][0] - f[0][0]) / c, b = (f[1][1] - f[0][1]) / c, x = o.reduce((d, a, s) => {
+            const m = C(a[0][0], f[0][0], u2, c), _23 = C(a[1][0], f[0][0], u2, c), p = C(a[0][1], f[0][1], b, c), M = C(a[1][1], f[0][1], b, c);
+            for (let w = m; w <= _23; w++) {
+              d[w] || (d[w] = []);
+              for (let v = p; v <= M; v++) d[w][v] || (d[w][v] = []), d[w][v].push(s);
+            }
+            return d;
+          }, []);
+          this.indexedTins = { forw: { gridNum: c, xOrigin: i[0][0], yOrigin: i[0][1], xUnit: h, yUnit: l, gridCache: y }, bakw: { gridNum: c, xOrigin: f[0][0], yOrigin: f[0][1], xUnit: u2, yUnit: b, gridCache: x } };
+        }
+        transform(e, r, n) {
+          if (r && this.strict_status == _O.STATUS_ERROR) throw 'Backward transform is not allowed if strict_status == "strict_error"';
+          this.yaxisMode == _O.YAXIS_FOLLOW && r && (e = [e[0], -1 * e[1]]);
+          const c = W(e);
+          if (this.bounds && !r && !n && !L(c, this.boundsPolygon)) return false;
+          const i = r ? this.tins.bakw : this.tins.forw, f = r ? this.indexedTins.bakw : this.indexedTins.forw, g2 = r ? this.vertices_params.bakw : this.vertices_params.forw, h = r ? this.centroid.bakw : this.centroid.forw, l = r ? this.pointsWeightBuffer.bakw : this.pointsWeightBuffer.forw;
+          let y, o;
+          this.stateFull && (this.stateBackward == r ? y = this.stateTriangle : (this.stateBackward = r, this.stateTriangle = void 0), o = (b) => {
+            this.stateTriangle = b;
+          });
+          let u2 = tt(c, i, f, g2, h, l, y, o);
+          if (this.bounds && r && !n) {
+            const b = W(u2);
+            if (!L(b, this.boundsPolygon)) return false;
+          } else this.yaxisMode == _O.YAXIS_FOLLOW && !r && (u2 = [u2[0], -1 * u2[1]]);
+          return u2;
+        }
+      };
+      __publicField(_O, "VERTEX_PLAIN", "plain");
+      __publicField(_O, "VERTEX_BIRDEYE", "birdeye");
+      __publicField(_O, "MODE_STRICT", "strict");
+      __publicField(_O, "MODE_AUTO", "auto");
+      __publicField(_O, "MODE_LOOSE", "loose");
+      __publicField(_O, "STATUS_STRICT", "strict");
+      __publicField(_O, "STATUS_ERROR", "strict_error");
+      __publicField(_O, "STATUS_LOOSE", "loose");
+      __publicField(_O, "YAXIS_FOLLOW", "follow");
+      __publicField(_O, "YAXIS_INVERT", "invert");
+      let O = _O;
+      S.Transform = O, S.counterTri = _t, S.format_version = Bt, S.normalizeEdges = rt, S.rotateVerticesTriangle = xt, S.transformArr = tt, Object.defineProperty(S, Symbol.toStringTag, { value: "Module" });
     });
-    let u2 = Mt(
-      a,
-      n,
-      c,
-      d,
-      g2,
-      l,
-      y,
-      o
-    );
-    if (this.bounds && s && !r) {
-      const b = Y(u2);
-      if (!D(b, this.boundsPolygon)) return false;
-    } else this.yaxisMode == O2.YAXIS_FOLLOW && !s && (u2 = [u2[0], -1 * u2[1]]);
-    return u2;
-  }
-};
-_23(O, "VERTEX_PLAIN", "plain"), _23(O, "VERTEX_BIRDEYE", "birdeye"), _23(O, "MODE_STRICT", "strict"), _23(O, "MODE_AUTO", "auto"), _23(O, "MODE_LOOSE", "loose"), _23(O, "STATUS_STRICT", "strict"), _23(O, "STATUS_ERROR", "strict_error"), _23(O, "STATUS_LOOSE", "loose"), _23(O, "YAXIS_FOLLOW", "follow"), _23(O, "YAXIS_INVERT", "invert");
-let H = O;
+  })(maplat_transform_umd$1, maplat_transform_umd$1.exports);
+  return maplat_transform_umd$1.exports;
+}
+var maplat_transform_umdExports = requireMaplat_transform_umd();
 const keys = [
   "title",
   "attr",
@@ -14433,7 +14288,7 @@ async function store2HistMap_internal(store, byCompiled, coreLogic) {
   if (store["imageExtention"] || store["imageExtension"])
     ret["imageExtension"] = store["imageExtension"] || store["imageExtention"];
   if (store.compiled) {
-    let tin = new H();
+    let tin = new maplat_transform_umdExports.Transform();
     tin.setCompiled(store.compiled);
     tin.addIndexedTin();
     const transform2 = tin;
@@ -14471,7 +14326,7 @@ async function store2HistMap_internal(store, byCompiled, coreLogic) {
       sub.importance = sub_map.importance;
       sub.priority = sub_map.priority;
       if (sub_map.compiled) {
-        let tin = new H();
+        let tin = new maplat_transform_umdExports.Transform();
         tin.setCompiled(sub_map.compiled);
         tin.addIndexedTin();
         sub.bounds = tin.bounds;
@@ -14698,8 +14553,8 @@ class HistMap_tin extends HistMap {
             const centerXy = result[1];
             if (i !== 0 && !hide) return Promise.resolve([centerXy]);
             return Promise.all(
-              mercs[0].map((merc, j2) => {
-                if (j2 === 0) return Promise.resolve(centerXy);
+              mercs[0].map((merc, j) => {
+                if (j === 0) return Promise.resolve(centerXy);
                 return this.merc2XyAsync_specifyLayer(merc, index);
               })
             );
@@ -15456,6 +15311,13 @@ async function mapSourceFactory(options, commonOptions) {
             if (options.mapID && !options.url && !options.urls) {
               options.url = `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtension}`;
             }
+            if (!options.compiled || !options.compiled.wh) {
+              console.error(
+                `[Maplat] Missing compiled.wh for mapID=${options.mapID}. Check map setting file: ${url}`
+              );
+              reject(new Error(`Map ${options.mapID} is missing compiled data.`));
+              return;
+            }
             options.width = options.width || options.compiled.wh[0];
             options.height = options.height || options.compiled.wh[1];
             options.weiwudi = await registerMapToSW(options);
@@ -15527,9 +15389,6 @@ function recursiveRound(val, decimal) {
   return Math.round(val * decVal) / decVal;
 }
 const locales = {};
-function getDefaultExportFromCjs(x) {
-  return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
-}
 var lodash_template = { exports: {} };
 var lodash__reinterpolate;
 var hasRequiredLodash__reinterpolate;
@@ -16829,7 +16688,7 @@ class MaplatApp extends Target {
     return this.sourcesLoader(mapReturnValue).then((x) => this.handleSources(x));
   }
   // Async initializer 9: Handle sources loading result
-  handleSources(sources) {
+  async handleSources(sources) {
     this.mercSrc = sources.reduce((prev, curr) => {
       if (prev) return prev;
       if (curr.isBasemap()) return curr;
@@ -16854,7 +16713,7 @@ class MaplatApp extends Target {
       this.cacheHash[source.mapID] = source;
     }
     this.dispatchEvent(new CustomEvent$1("sourceLoaded", sources));
-    this.setInitialMap(cache2);
+    await this.setInitialMap(cache2);
     this.setMapClick();
     this.setPointerEvents();
     this.setMapOnOff();
@@ -17108,6 +16967,32 @@ class MaplatApp extends Target {
   }
   mapInfo(mapID) {
     return createMapInfo(this.cacheHash[mapID]);
+  }
+  async clientPointToLngLat(clientX, clientY) {
+    if (!this.from || !this.mapObject) return void 0;
+    const viewport = this.mapObject.getViewport();
+    const rect = viewport.getBoundingClientRect();
+    const pixel = [clientX - rect.left, clientY - rect.top];
+    const xy = this.mapObject.getCoordinateFromPixel(pixel);
+    if (!xy) return void 0;
+    const merc = await this.from.sysCoord2MercAsync(xy);
+    const lnglat = transform(merc, "EPSG:3857", "EPSG:4326");
+    return {
+      longitude: lnglat[0],
+      latitude: lnglat[1]
+    };
+  }
+  async lngLatToClientPoint(longitude, latitude) {
+    if (!this.from || !this.mapObject) return void 0;
+    const merc = transform([longitude, latitude], "EPSG:4326", "EPSG:3857");
+    const sysCoord = await this.from.merc2SysCoordAsync(merc);
+    const pixel = this.mapObject.getPixelFromCoordinate(sysCoord);
+    if (!pixel) return void 0;
+    const rect = this.mapObject.getViewport().getBoundingClientRect();
+    return {
+      x: pixel[0] + rect.left,
+      y: pixel[1] + rect.top
+    };
   }
   setMarker(data) {
     this.logger.debug(data);

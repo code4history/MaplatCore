@@ -129,7 +129,7 @@ export declare class MaplatApp extends EventTarget {
         mercMaxZoom: number | undefined;
     };
     handlePois(pois: any, mapReturnValue: any): Promise<void>;
-    handleSources(sources: any): void;
+    handleSources(sources: any): Promise<void>;
     setInitialMap(cache: MaplatSource[]): Promise<void>;
     setMapClick(): void;
     setPointerEvents(): void;
@@ -139,6 +139,14 @@ export declare class MaplatApp extends EventTarget {
     raiseChangeViewpoint(): void;
     currentMapInfo(): any;
     mapInfo(mapID: string): any;
+    clientPointToLngLat(clientX: number, clientY: number): Promise<{
+        longitude: number;
+        latitude: number;
+    } | undefined>;
+    lngLatToClientPoint(longitude: number, latitude: number): Promise<{
+        x: any;
+        y: any;
+    } | undefined>;
     setMarker(data: any): Promise<void>;
     resetMarker(): void;
     setLine(data: any): void;

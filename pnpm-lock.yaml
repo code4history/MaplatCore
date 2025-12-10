@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@maplat/transform':
-        specifier: ^0.2.3
-        version: 0.2.3
+        specifier: ^0.3.0
+        version: 0.3.0
       '@turf/area':
         specifier: ^7.2.0
         version: 7.2.0
@@ -108,8 +108,8 @@ importers:
         specifier: ^1.2.4
         version: 1.2.4
       sweetalert2:
-        specifier: ^11.22.2
-        version: 11.22.2
+        specifier: ^11.22.4
+        version: 11.22.4
       weiwudi:
         specifier: ^0.1.4
         version: 0.1.4(webpack@5.99.9)
@@ -1008,8 +1008,8 @@ packages:
     resolution: {integrity: sha512-Es6WcD0nO5l+2BOQS4uLfNPYQaNDfbot3X1XUoloz+x0mPDS3eeORZJl06HXjwBG1fOGwCRnzK88LMdxKRrd6Q==}
     engines: {node: '>=6.0.0'}
 
-  '@maplat/transform@0.2.3':
-    resolution: {integrity: sha512-Ic3V4rYud0+ksLUkhqdr8gkOwYCq6DC93zC2oA6K/uth7HsihMLqdp+J4O7b8eNmsu48ioW9xUHlKkjErMdT0Q==}
+  '@maplat/transform@0.3.0':
+    resolution: {integrity: sha512-S3jP2/SlLDHeYA6aLMQCPbNXlKAQv0CXO6ytobyPE5bXlZChvuFgWPNaqzZEARHOnXkblFaQ3sS6GP6v3DbT8g==}
 
   '@maplibre/maplibre-gl-style-spec@20.4.0':
     resolution: {integrity: sha512-AzBy3095fTFPjDjmWpR2w6HVRAZJ6hQZUCwk5Plz6EyfnfuQW1odeW5i2Ai47Y6TBA2hQnC+azscjBSALpaWgw==}
@@ -3528,8 +3528,8 @@ packages:
   sweepline-intersections@1.5.0:
     resolution: {integrity: sha512-AoVmx72QHpKtItPu72TzFL+kcYjd67BPLDoR0LarIk+xyaRg+pDTMFXndIEvZf9xEKnJv6JdhgRMnocoG0D3AQ==}
 
-  sweetalert2@11.22.2:
-    resolution: {integrity: sha512-GFQGzw8ZXF23PO79WMAYXLl4zYmLiaKqYJwcp5eBF07wiI5BYPbZtKi2pcvVmfUQK+FqL1risJAMxugcPbGIyg==}
+  sweetalert2@11.22.4:
+    resolution: {integrity: sha512-JwcRODfozxiKmspFp+xctZ2izAmLAKbRPcoLMEW7LdugN/YmNrX1LT7hdBW87qsgupEO1ukBBuB17KzKFKW0tg==}
 
   symbol-tree@3.2.4:
     resolution: {integrity: sha512-9QNk5KwDF+Bvz+PyObkmSYjI5ksVUYtjW7AU22r2NKcfLJcXp96hkDWU3+XndOsUb+AQ9QhfzfCT2O+CNWT5Tw==}
@@ -4920,7 +4920,7 @@ snapshots:
 
   '@mapbox/whoots-js@3.1.0': {}
 
-  '@maplat/transform@0.2.3':
+  '@maplat/transform@0.3.0':
     dependencies:
       '@turf/boolean-point-in-polygon': 7.2.0
       '@turf/helpers': 7.2.0
@@ -8498,7 +8498,7 @@ snapshots:
     dependencies:
       tinyqueue: 2.0.3
 
-  sweetalert2@11.22.2: {}
+  sweetalert2@11.22.4: {}
 
   symbol-tree@3.2.4: {}
 

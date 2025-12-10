@@ -134,20 +134,20 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
     static isBasemap() {
       return this.isBasemap_;
     }
-    
-    static isWmts() { 
+
+    static isWmts() {
       return this.isWmts_;
     }
 
     static isMapbox() {
       return !!this.isMapbox_;
     }
-    
+
     static isMapLibre() {
       return !!this.isMapLibre_;
     }
 
-    isBasemap() { 
+    isBasemap() {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       return this.constructor.isBasemap();
@@ -164,7 +164,7 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
       // @ts-ignore
       return this.constructor.isMapbox();
     }
-    
+
     isMapLibre() {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
@@ -289,13 +289,14 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
     }
 
     setViewpoint(cond: ViewpointObject) {
-      if (cond.rotation) {
-        cond.rotation = (cond.rotation * Math.PI) / 180;
+      const args = { ...cond };
+      if (args.rotation) {
+        args.rotation = (args.rotation * Math.PI) / 180;
       }
-      if (cond.direction) {
-        cond.direction = (cond.direction * Math.PI) / 180;
+      if (args.direction) {
+        args.direction = (args.direction * Math.PI) / 180;
       }
-      this.setViewpointRadian(cond);
+      this.setViewpointRadian(args);
     }
 
     abstract defZoom(screenSize?: Size): number;
@@ -362,7 +363,7 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
                 prev +
                 Math.sqrt(
                   Math.pow(curr[0] - pos.xy[0], 2) +
-                    Math.pow(curr[1] - pos.xy[1], 2)
+                  Math.pow(curr[1] - pos.xy[1], 2)
                 );
               return index === 3 ? ret / 4.0 : ret;
             },
@@ -382,7 +383,7 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
 
     setGPSMarker(position: any, ignoreMove = false) {
       // eslint-disable-next-line @typescript-eslint/no-empty-function
-      this.setGPSMarkerAsync(position, ignoreMove).then(() => {});
+      this.setGPSMarkerAsync(position, ignoreMove).then(() => { });
     }
 
     mercsFromGPSValue(lnglat: Coordinate, acc: number) {
@@ -483,8 +484,8 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
               ? layer.pois.length && layer.hide
               : layer.pois.length
             : hideOnly
-            ? layer.hide
-            : true
+              ? layer.hide
+              : true
         );
     }
 
@@ -760,7 +761,7 @@ export function setCustomFunctionMaplat<TBase extends SourceConstructor>(Base: T
     static isWmts_ = false;
     width = 0;
     height = 0;
-    _maxxy= 0;
+    _maxxy = 0;
 
     insideCheckXy(xy: Coordinate) {
       return !(
@@ -855,7 +856,7 @@ const META_KEYS_OPTION = [
   "description"
 ];
 
-export function addCommonOptions(options: any) { 
+export function addCommonOptions(options: any) {
   options = normalizeArg(options);
   if (!options.imageExtension) options.imageExtension = "jpg";
   if (options.mapID && !options.url && !options.urls) {
@@ -946,7 +947,7 @@ export function setupTileLoadFunction(target: any) {
               // console.log('loading');
             }
             ++numLoadingTiles;
-            const tImage = document.createElement("img");  
+            const tImage = document.createElement("img");
             tImage.crossOrigin = "Anonymous";
             tImage.onload = tImage.onerror = function () {
               if (tImage.width && tImage.height) {

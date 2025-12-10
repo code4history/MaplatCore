@@ -1,64 +1,45 @@
-# Maplat Core library
+# MaplatCore library
 
 Maplat is the cool Historical Map/Illustrated Map Viewer API.  
 It can transform each map coordinates with nonlinear but homeomorphic projection and makes possible that the maps can collaborate with GPS/accurate maps, without distorting original maps.  
 This is part of [Maplat](https://github.com/code4history/Maplat/wiki) project.
 
+日本語版は[こちら](README.ja.md)をご覧ください。
+
 ## Installation
 
-### Browser
+### Browser (ES Modules)
 
-Use [this zip file](https://code4history.github.io/MaplatCore/distribution.zip).  
-This include 
-* dist/maplat_core.js
-* dist/maplat_core.css
-* parts
-
-Put them under your web site root directory and call them like this:
+You can use MaplatCore directly in the browser using ES Modules and a CDN.
 
 ```html
-<link rel="stylesheet" href="dist/maplat_core.css">
-<script type="text/javascript" src="maplat_core.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@maplat/core@0.11.0/dist/maplat_core.css">
+<script type="module">
+  import { MaplatApp } from 'https://cdn.jsdelivr.net/npm/@maplat/core@0.11.0/dist/maplat_core.js';
+  // ... usage
+</script>
 ```
 
-Working example is [here](https://code4history.github.io/MaplatCore/).  
-Example (including sample data) zip file is [here](https://code4history.github.io/MaplatCore/example.zip).
+### Bundler (Vite / Webpack / etc.)
 
-### node.js
-
-NOTICE: Maplat core is not working on server side.  
-Installing this from npm is just for developing use.
-
-The easiest way to install maplat_core is with [`npm`][npm].
-
-[npm]: https://www.npmjs.com/
+Install via npm:
 
 ```sh
 npm install @maplat/core
 ```
 
-### Deno
+## Peer Dependencies
 
-NOTICE: Maplat Core is a browser-only library. Use it with Deno web frameworks like Fresh.
+MaplatCore requires **OpenLayers** to be installed or included. Mapbox GL JS and MapLibre GL JS are optional. You must provide the library instance to Maplat via the options.
 
-#### Using npm specifier in Deno
+### Mapbox GL JS
 
-```typescript
-import { MaplatApp } from "npm:@maplat/core@0.10.7";
-```
-
-### Peer Dependencies
-
-Maplat Core supports both Mapbox GL JS and MapLibre GL JS for vector tile based maps.
-
-#### For Mapbox GL JS maps
-
-##### Option 1: Install via npm
+**npm:**
 ```sh
 npm install mapbox-gl
 ```
 
-##### Option 2: Include from CDN
+**CDN:**
 ```html
 <link href="https://api.tiles.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.css" rel="stylesheet" />
 <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.js"></script>
@@ -66,25 +47,93 @@ npm install mapbox-gl
 
 Note: Mapbox GL JS requires an access token. Provide it via the `mapboxToken` option.
 
-#### For MapLibre GL JS maps
+### MapLibre GL JS
 
-##### Option 1: Install via npm
+**npm:**
 ```sh
 npm install maplibre-gl
 ```
 
-##### Option 2: Include from CDN
+**CDN:**
 ```html
 <link href="https://unpkg.com/maplibre-gl@4.5.0/dist/maplibre-gl.css" rel="stylesheet" />
 <script src="https://unpkg.com/maplibre-gl@4.5.0/dist/maplibre-gl.js"></script>
 ```
 
-Note: MapLibre GL JS is open source and doesn't require an access token.
+### OpenLayers
 
-## How to use (In browser)
+**npm:**
+```sh
+npm install ol
+```
+
+**CDN:**
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@10.6.1/ol.css" />
+<script src="https://cdn.jsdelivr.net/npm/ol@10.6.1/dist/ol.js"></script>
+```
+
+## Usage
+
+### Browser (ES Modules)
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <link href="https://unpkg.com/maplibre-gl@4.5.0/dist/maplibre-gl.css" rel="stylesheet" />
+  <script src="https://unpkg.com/maplibre-gl@4.5.0/dist/maplibre-gl.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@maplat/core@0.11.0/dist/maplat_core.css">
+</head>
+<body>
+  <div id="map_div" style="width: 100%; height: 100vh;"></div>
+  <script type="module">
+    import { MaplatApp } from 'https://cdn.jsdelivr.net/npm/@maplat/core@0.11.0/dist/maplat_core.js';
+
+    const option = {
+      maplibregl: maplibregl, // Inject the global maplibregl object
+      // mapboxgl: mapboxgl, // If using Mapbox
+      // mapboxToken: 'YOUR_ACCESS_TOKEN', // If using Mapbox
+      startFrom: 'gsi', // Initial map ID
+      div: 'map_div' // Target div ID (optional, default is 'map_div')
+    };
+
+    MaplatApp.createObject(option).then(function(app){
+        console.log('Maplat initialized', app);
+    });
+  </script>
+</body>
+</html>
+```
+
+### Bundler (TypeScript / Vite)
+
+```typescript
+import { MaplatApp } from '@maplat/core';
+import maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
+// import mapboxgl from 'mapbox-gl';
+// import 'mapbox-gl/dist/mapbox-gl.css';
+// import { Map, View } from 'ol'; // For OpenLayers
+
+const option = {
+  maplibregl: maplibregl,
+  // mapboxgl: mapboxgl,
+  startFrom: 'gsi',
+};
+
+MaplatApp.createObject(option).then((app) => {
+  console.log('Maplat initialized', app);
+});
+```
+
+### API Usage Example
+
+Once you have the `app` instance, you can use it to control the map.
 
 ```javascript
-    Maplat.createObject(option).then(function(app){
+    MaplatApp.createObject(option).then(function(app){
         // Show current map information in console.
         console.log(app.currentMapInfo());
         // Show information of the map which id is 'gsi' in console.

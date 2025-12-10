@@ -1,0 +1,48 @@
+
+> @maplat/core@0.10.7 pretest:e2e C:\Users\kochi\github\MaplatCore
+> playwright install
+
+
+> @maplat/core@0.10.7 test:e2e C:\Users\kochi\github\MaplatCore
+> playwright test "--" "--project=chromium" "e2e/maplat-legacy.spec.ts"
+
+
+Running 3 tests using 3 workers
+
+[1A[2K[1/3] [webkit] 窶ｺ e2e\maplat-legacy.spec.ts:278:3 窶ｺ Maplat legacy workflow 窶ｺ mirrors historical Puppeteer regression flow
+[1A[2K[2/3] [firefox] 窶ｺ e2e\maplat-legacy.spec.ts:278:3 窶ｺ Maplat legacy workflow 窶ｺ mirrors historical Puppeteer regression flow
+[1A[2K[3/3] [chromium] 窶ｺ e2e\maplat-legacy.spec.ts:278:3 窶ｺ Maplat legacy workflow 窶ｺ mirrors historical Puppeteer regression flow
+[1A[2K[chromium] 窶ｺ e2e\maplat-legacy.spec.ts:278:3 窶ｺ Maplat legacy workflow 窶ｺ mirrors historical Puppeteer regression flow
+[browser:debug] [vite] connecting...
+
+[1A[2K[pageerror] Error [TypeError]: Cannot read properties of null (reading 'max_zoom')
+    at http://localhost:3000/src/functions.ts:89:12
+    at Array.reduce (<anonymous>)
+    at normalizeArg (http://localhost:3000/src/functions.ts:88:29)
+    at MaplatApp.handleSetting (http://localhost:3000/src/index.ts:253:20)
+    at http://localhost:3000/src/index.ts:187:19
+
+[1A[2K[browser:debug] [vite] connected.
+
+[1A[2K  1) [chromium] 窶ｺ e2e\maplat-legacy.spec.ts:278:3 窶ｺ Maplat legacy workflow 窶ｺ mirrors historical Puppeteer regression flow 
+
+    Error: Timed out waiting for appReady
+
+      72 |     await delay(50);
+      73 |   }
+    > 74 |   throw new Error(`Timed out waiting for ${type}`);
+         |         ^
+      75 | };
+      76 |
+      77 | const assertCoordinates = (payload: unknown, longitude: number, latitude: number) => {
+        at waitForMessage (C:\Users\kochi\github\MaplatCore\e2e\maplat-legacy.spec.ts:74:9)
+        at C:\Users\kochi\github\MaplatCore\e2e\maplat-legacy.spec.ts:321:5
+
+    Error Context: test-results\maplat-legacy-Maplat-legac-2cae9-l-Puppeteer-regression-flow-chromium\error-context.md
+
+
+[1A[2K  1 failed
+    [chromium] 窶ｺ e2e\maplat-legacy.spec.ts:278:3 窶ｺ Maplat legacy workflow 窶ｺ mirrors historical Puppeteer regression flow 
+  2 skipped
+
+[36m  Serving HTML report at http://localhost:57781. Press Ctrl+C to quit.[39m

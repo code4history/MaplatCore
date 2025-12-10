@@ -616,7 +616,7 @@ export class MaplatApp extends EventTarget {
     return this.sourcesLoader(mapReturnValue).then(x => this.handleSources(x));
   }
   // Async initializer 9: Handle sources loading result
-  handleSources(sources: any) {
+  async handleSources(sources: any) {
     this.mercSrc = sources.reduce((prev: any, curr: any) => {
       if (prev) return prev;
       if (curr.isBasemap()) return curr;
@@ -641,7 +641,7 @@ export class MaplatApp extends EventTarget {
       this.cacheHash[source.mapID] = source;
     }
     this.dispatchEvent(new CustomEvent("sourceLoaded", sources));
-    this.setInitialMap(cache);
+    await this.setInitialMap(cache);
     this.setMapClick();
     this.setPointerEvents();
     this.setMapOnOff();
@@ -918,6 +918,32 @@ export class MaplatApp extends EventTarget {
   }
   mapInfo(mapID: string) {
     return createMapInfo(this.cacheHash[mapID]);
+  }
+  async clientPointToLngLat(clientX: number, clientY: number) {
+    if (!this.from || !this.mapObject) return undefined;
+    const viewport = this.mapObject.getViewport();
+    const rect = viewport.getBoundingClientRect();
+    const pixel: [number, number] = [clientX - rect.left, clientY - rect.top];
+    const xy = this.mapObject.getCoordinateFromPixel(pixel);
+    if (!xy) return undefined;
+    const merc = await (this.from as MaplatSource).sysCoord2MercAsync(xy);
+    const lnglat = transform(merc, "EPSG:3857", "EPSG:4326");
+    return {
+      longitude: lnglat[0],
+      latitude: lnglat[1]
+    };
+  }
+  async lngLatToClientPoint(longitude: number, latitude: number) {
+    if (!this.from || !this.mapObject) return undefined;
+    const merc = transform([longitude, latitude], "EPSG:4326", "EPSG:3857");
+    const sysCoord = await (this.from as MaplatSource).merc2SysCoordAsync(merc);
+    const pixel = this.mapObject.getPixelFromCoordinate(sysCoord);
+    if (!pixel) return undefined;
+    const rect = this.mapObject.getViewport().getBoundingClientRect();
+    return {
+      x: pixel[0] + rect.left,
+      y: pixel[1] + rect.top
+    };
   }
   setMarker(data: any) {
     this.logger.debug(data);

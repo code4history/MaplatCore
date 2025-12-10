@@ -1,6 +1,6 @@
 {
   "name": "@maplat/core",
-  "version": "0.10.7",
+  "version": "0.11.0",
   "description": "Maplat is the cool Historical Map/Illustrated Map Viewer API.\nIt can transform each map coordinates with nonlinear but homeomorphic projection and makes possible that the maps can collaborate with GPS/accurate maps, without distorting original maps.",
   "type": "module",
   "main": "./dist/maplat_core.cjs",
@@ -14,9 +14,6 @@
     }
   },
   "sideEffects": true,
-  "bin": {
-    "freezer": "bin/freezer.js"
-  },
   "files": [
     "src/",
     "dist/",
@@ -30,6 +27,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
+    "pretest:e2e": "playwright install",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:ci": "playwright test --config=playwright-ci.config.ts",
@@ -41,8 +39,6 @@
     "version:sync": "node scripts/sync-version.js",
     "publish:npm": "node scripts/publish-npm.js",
     "publish:npm:dry": "node scripts/publish-npm.js --dry-run",
-    "publish:deno": "node scripts/publish-deno.js",
-    "publish:deno:dry": "node scripts/publish-deno.js --dry-run",
     "publish:all": "node scripts/publish-all.js",
     "publish:all:dry": "node scripts/publish-all.js --dry-run"
   },
@@ -61,7 +57,7 @@
   },
   "homepage": "https://github.com/code4history/MaplatCore/wiki",
   "dependencies": {
-    "@maplat/transform": "^0.2.3",
+    "@maplat/transform": "^0.3.0",
     "@turf/area": "^7.2.0",
     "@turf/bbox": "^7.2.0",
     "@turf/bbox-polygon": "^7.2.0",
@@ -92,7 +88,7 @@
     "lodash.throttle": "^4.1.1",
     "polygon-offset": "^0.3.2",
     "simplify-js": "^1.2.4",
-    "sweetalert2": "^11.22.2",
+    "sweetalert2": "^11.22.4",
     "weiwudi": "^0.1.4",
     "whatwg-fetch": "^3.6.2"
   },
