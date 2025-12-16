@@ -43,19 +43,7 @@
     </div>
     <div id="map_div"></div>
 
-    <script>
-        console.log('OpenLayers Global (window.ol):', window.ol);
-        if (window.ol) {
-            console.log('ol.source:', window.ol.source);
-            if (window.ol.source) {
-                console.log('ol.source.XYZ:', window.ol.source.XYZ);
-            } else {
-                console.warn('ol.source is undefined!');
-            }
-        } else {
-            console.error('window.ol is undefined!');
-        }
-    </script>
+
 
     <script>
         // With the fix in src/index.ts, MaplatApp is directly attached to window
