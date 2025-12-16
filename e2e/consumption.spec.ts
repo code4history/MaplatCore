@@ -8,8 +8,8 @@ test.describe('Consumption Scenarios', () => {
         // Check status element
         await expect(page.locator('#status')).toHaveText(/SUCCESS/, { timeout: 10000 });
 
-        // Check map canvas exists
-        const canvas = page.locator('canvas');
+        // Check map canvas exists (might be multiple layers)
+        const canvas = page.locator('canvas').first();
         await expect(canvas).toBeVisible();
     });
 
@@ -21,7 +21,7 @@ test.describe('Consumption Scenarios', () => {
         await expect(page.locator('#status')).toHaveText(/SUCCESS/, { timeout: 10000 });
 
         // Check map canvas exists
-        const canvas = page.locator('canvas');
+        const canvas = page.locator('canvas').first();
         await expect(canvas).toBeVisible();
     });
 
@@ -33,7 +33,7 @@ test.describe('Consumption Scenarios', () => {
         await expect(page.locator('#status')).toHaveText(/SUCCESS/, { timeout: 10000 });
 
         // Check map canvas exists
-        const canvas = page.locator('canvas');
+        const canvas = page.locator('canvas').first();
         await expect(canvas).toBeVisible();
     });
 });
