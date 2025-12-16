@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MaplatCore UMD CDN Verification</title>
+    <!-- Load OpenLayers Global -->
+    <script src="https://cdn.jsdelivr.net/npm/ol@10.3.1/dist/ol.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@10.3.1/ol.css">
+    <link rel="stylesheet" href="../../dist/maplat_core.css">
+    <!-- Load MaplatCore UMD -->
+    <script src="../../dist/maplat_core.umd.js"></script>
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        #map_div {
+            width: 100%;
+            height: 100%;
+        }
+
+        #controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="controls">
+        <h3>UMD CDN Test</h3>
+        <div id="status">Initializing...</div>
+    </div>
+    <div id="map_div"></div>
+
+    <script>
+        console.log('OpenLayers Global (window.ol):', window.ol);
+        if (window.ol) {
+            console.log('ol.source:', window.ol.source);
+            if (window.ol.source) {
+                console.log('ol.source.XYZ:', window.ol.source.XYZ);
+            } else {
+                console.warn('ol.source is undefined!');
+            }
+        } else {
+            console.error('window.ol is undefined!');
+        }
+    </script>
+
+    <script>
+        // With the fix in src/index.ts, MaplatApp is directly attached to window
+        const MaplatAppClass = window.MaplatApp;
+
+        console.log('MaplatApp Global:', MaplatAppClass);
+        console.log('Assets Global:', window.assets);
+
+        if (!MaplatAppClass) {
+            document.getElementById('status').innerText = 'FAIL: MaplatApp constructor not found directly on window';
+            document.getElementById('status').style.color = 'red';
+            throw new Error('MaplatApp constructor not found');
+        }
+
+        const appOption = {
+            appid: 'kochizu',
+            mapboxToken: 'pk.eyJ1IjoibWFwbGF0IiwiYSI6ImNqYjVlM3h2aTJobWoyd3F2c29yM2ZkYm0ifQ.OepC-a_4ZgXbdSj2l7vU9g',
+            div: 'map_div',
+            debug: true,
+            setting: {
+                sources: ["osm"],
+                homePosition: [141.35, 43.06],
+                defaultZoom: 12
+            }
+        };
+
+        try {
+            const app = new MaplatAppClass(appOption);
+            app.waitReady.then(() => {
+                document.getElementById('status').innerText = 'SUCCESS: Map Ready';
+                document.getElementById('status').style.color = 'green';
+                console.log('MaplatApp Ready');
+            });
+        } catch (e) {
+            console.error(e);
+            document.getElementById('status').innerText = 'ERROR: ' + e.message;
+            document.getElementById('status').style.color = 'red';
+        }
+    </script>
+</body>
+
+</html>

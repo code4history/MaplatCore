@@ -8,6 +8,7 @@ import { ViewpointArray } from './source/mixin';
 import { Geolocation } from './geolocation';
 import { Coordinate } from 'ol/coordinate';
 import { default as BaseEvent } from 'ol/events/Event';
+import { assets } from './assets';
 interface AppData {
     sources: string[];
     lang?: string;
@@ -202,3 +203,4 @@ export declare class MaplatApp extends EventTarget {
 }
 export { createElement };
 export { CustomEvent };
+export { assets };

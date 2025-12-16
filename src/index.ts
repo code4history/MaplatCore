@@ -95,12 +95,12 @@ export class GPSRequestEvent extends BaseEvent {
   constructor() {
     super("gps_request");
   }
-} 
+}
 
 export class MaplatApp extends EventTarget {
   // Static method declaration
   static createObject: (option: any) => Promise<MaplatApp>;
-  
+
   appid: string;
   translateUI = false;
   noRotate = false;
@@ -166,7 +166,7 @@ export class MaplatApp extends EventTarget {
     if (mapboxgl && appOption.mapboxToken) {
       mapboxgl.accessToken = appOption.mapboxToken;
     }
-    
+
     // MapLibre GL JS support (separate from Mapbox)
     if (appOption.googleApiKey) {
       this.googleApiKey = appOption.googleApiKey;
@@ -331,7 +331,7 @@ export class MaplatApp extends EventTarget {
       timerBase: appOption.fake as boolean,
       homePosition: this.appData!.homePosition!
     });
-    
+
     // alwaysGpsOnモードでは起動時からGPS有効、そうでなければ無効
     if (this.alwaysGpsOn) {
       geolocation.setTracking(true);
@@ -349,7 +349,7 @@ export class MaplatApp extends EventTarget {
       const lnglat = geolocation.getPosition();
       const acc = geolocation.getAccuracy();
       if (!lnglat || !acc) return;
-      
+
       source.setGPSMarkerAsync({ lnglat, acc }, !this.moveTo_ && !this.firstGpsRequest_).then((insideCheck: boolean) => {
         this.moveTo_ = false;
         this.firstGpsRequest_ = false;
@@ -369,18 +369,18 @@ export class MaplatApp extends EventTarget {
     geolocation.on("error", (evt: any) => {
       const code = evt.code;
       if (code === 3) return;
-      
+
       // GPS無効化
       geolocation.setTracking(false);
       this.gpsEnabled_ = false;
-      
+
       // マーカークリア
       const map = this.mapObject;
       const overlayLayer = map.getLayer("overlay").getLayers().item(0);
       const firstLayer = map.getLayers().item(0);
       const source = (overlayLayer ? overlayLayer.getSource() : firstLayer.getSource());
       source.setGPSMarker();
-      
+
       // エラーイベント発火
       this.dispatchEvent(new GPSErrorEvent(code === 1 ? "user_gps_deny" : code === 2 ? "gps_miss" : "gps_timeout"));
       this.dispatchEvent(new GPSResultEvent({ error: "gps_off" }));
@@ -411,11 +411,11 @@ export class MaplatApp extends EventTarget {
     });
 
   }
-  
+
   // GPS handling methods
   handleGPS(enable: boolean, avoidEventForOff = false) {
     if (!this.geolocation) return;
-    
+
     if (enable) {
       // alwaysGpsOnモードでは既に有効、本流モードではリクエスト時に有効化
       if (!this.alwaysGpsOn) {
@@ -445,27 +445,28 @@ export class MaplatApp extends EventTarget {
       if (!this.alwaysGpsOn) {
         this.geolocation.setTracking(false);
         this.gpsEnabled_ = false;
-        
+
         // マーカークリア
         const map = this.mapObject;
         const overlayLayer = map.getLayer("overlay").getLayers().item(0);
         const firstLayer = map.getLayers().item(0);
         const source = (overlayLayer ? overlayLayer.getSource() : firstLayer.getSource());
         source.setGPSMarker();
-        
+
         if (!avoidEventForOff) {
           this.dispatchEvent(new GPSResultEvent({ error: "gps_off" }));
         }
       }
     }
   }
-  
+
   getGPSEnabled(): boolean {
     return this.gpsEnabled_;
   }
-  
+
   // Async initializers 4: Handle i18n setting
   handleI18n(i18nObj: any, appOption: any) {
+    if (!i18nObj) i18nObj = [() => "", {}];
     this.i18n = i18nObj[1];
     this.t = i18nObj[0];
     const mapReturnValue = this.prepareMap(appOption);
@@ -499,7 +500,7 @@ export class MaplatApp extends EventTarget {
     const frontDiv = `${this.mapDiv}_front`;
     let newElem = createElement(
       `<div id="${frontDiv}" class="map" style="top:0; left:0; right:0; bottom:0; ` +
-        `position:absolute;"></div>`
+      `position:absolute;"></div>`
     )[0];
     this.mapDivDocument!.insertBefore(newElem, this.mapDivDocument!.firstChild);
     this.fakeGps = fakeGps as boolean;
@@ -512,10 +513,10 @@ export class MaplatApp extends EventTarget {
       interactions: this.noRotate
         ? defaults({ altShiftDragRotate: false, pinchRotate: false })
         : defaults().extend([
-            new DragRotateAndZoom({
-              condition: altKeyOnly
-            })
-          ]),
+          new DragRotateAndZoom({
+            condition: altKeyOnly
+          })
+        ]),
       fakeGps,
       fakeRadius,
       homePosition: homePos,
@@ -531,7 +532,7 @@ export class MaplatApp extends EventTarget {
       backDiv = `${this.mapDiv}_back`;
       newElem = createElement(
         `<div id="${backDiv}" class="map" style="top:0; left:0; right:0; bottom:0; ` +
-          `position:absolute;"></div>`
+        `position:absolute;"></div>`
       )[0];
       this.mapDivDocument!.insertBefore(
         newElem,
@@ -548,7 +549,7 @@ export class MaplatApp extends EventTarget {
       const mapboxDiv = `${this.mapDiv}_mapbox`;
       newElem = createElement(
         `<div id="${mapboxDiv}" class="map" style="top:0; left:0; right:0; bottom:0; ` +
-          `position:absolute;visibility:hidden;"></div>`
+        `position:absolute;visibility:hidden;"></div>`
       )[0];
       this.mapDivDocument!.insertBefore(
         newElem,
@@ -568,14 +569,14 @@ export class MaplatApp extends EventTarget {
         touchZoomRotate: false
       });
     }
-    
+
     // MapLibre GL JS support (separate instance)
     const maplibregl = appOption.maplibregl || (typeof window !== 'undefined' ? (window as any).maplibregl : undefined);
     if (maplibregl) {
       const maplibreDiv = `${this.mapDiv}_maplibre`;
       newElem = createElement(
         `<div id="${maplibreDiv}" class="map" style="top:0; left:0; right:0; bottom:0; ` +
-          `position:absolute;visibility:hidden;"></div>`
+        `position:absolute;visibility:hidden;"></div>`
       )[0];
       this.mapDivDocument!.insertBefore(
         newElem,
@@ -960,8 +961,8 @@ export class MaplatApp extends EventTarget {
         ? data.selectedIcon
         : data.icon
       : this.__selectedMarker == data.namespaceID
-      ? defaultpin_selected
-      : defaultpin;
+        ? defaultpin_selected
+        : defaultpin;
     const promise = coords
       ? (function () {
         return (src as MaplatSource).merc2SysCoordAsync_ignoreBackground(
@@ -969,10 +970,10 @@ export class MaplatApp extends EventTarget {
         );
       })()
       : x && y
-      ? new Promise(resolve => {
+        ? new Promise(resolve => {
           resolve((src as HistMap).xy2SysCoord([x, y]));
         })
-      : (function () {
+        : (function () {
           const merc = transform(lnglat, "EPSG:4326", "EPSG:3857");
           return (src as MaplatSource).merc2SysCoordAsync_ignoreBackground(
             merc
@@ -1105,13 +1106,13 @@ export class MaplatApp extends EventTarget {
       latitude: data.lnglat
         ? data.lnglat[1]
         : data.lat
-        ? data.lat
-        : data.latitude,
+          ? data.lat
+          : data.latitude,
       longitude: data.lnglat
         ? data.lnglat[0]
         : data.lng
-        ? data.lng
-        : data.longitude
+          ? data.lng
+          : data.longitude
     };
     this.setViewpoint(latlng);
     this.redrawMarkers();
@@ -1267,8 +1268,8 @@ export class MaplatApp extends EventTarget {
             ? layer.pois.length && layer.hide
             : layer.pois.length
           : hideOnly
-          ? layer.hide
-          : true
+            ? layer.hide
+            : true
       );
     const mapPois = (this.from as MaplatSource).listPoiLayers(
       hideOnly,
@@ -1408,7 +1409,7 @@ export class MaplatApp extends EventTarget {
                         this.from instanceof TmsMap
                           ? this.mapObject.getSource()
                           : // If current foreground is TMS overlay, set current basemap as new background
-                            this.from; // If current foreground source is basemap, set current foreground as new background
+                          this.from; // If current foreground source is basemap, set current foreground as new background
                     }
                     this.backMap.exchangeSource(backTo);
                   } else {
@@ -1457,12 +1458,14 @@ export class MaplatApp extends EventTarget {
               view.setMaxZoom(to.maxZoom!);
               view.setMinZoom(to.minZoom || 0);
             }
-            if (to.insideCheckSysCoord(size[0])) {
+            if (size && to.insideCheckSysCoord(size[0])) {
               view.setCenter(size[0]);
               view.setZoom(size[1]);
               view.setRotation(this.noRotate ? 0 : size[2]);
             } else if (!this.__init) {
               this.dispatchEvent(new CustomEvent("outOfMap", {}));
+              this.goHome(to);
+            } else if (!size) {
               this.goHome(to);
             }
             to.setGPSMarker(this.currentPosition, true);
@@ -1646,6 +1649,10 @@ export class MaplatApp extends EventTarget {
   }
   convertParametersFromCurrent(to: any, callback: any) {
     const view = this.mapObject.getView();
+    if (!this.from) {
+      if (callback) callback();
+      return;
+    }
     let fromPromise = (this.from as MaplatSource).viewpoint2MercsAsync();
     const current = recursiveRound(
       [view.getCenter(), view.getZoom(), view.getRotation()],
@@ -1762,7 +1769,7 @@ export { createElement };
 export { CustomEvent };
 
 // Static method for cleaner initialization
-MaplatApp.createObject = function(option: any): Promise<MaplatApp> {
+MaplatApp.createObject = function (option: any): Promise<MaplatApp> {
   return new Promise((resolve) => {
     const app = new MaplatApp(option);
     app.waitReady.then(() => {
@@ -1771,6 +1778,10 @@ MaplatApp.createObject = function(option: any): Promise<MaplatApp> {
   });
 };
 
+
+import { assets } from "./assets";
+export { assets };
+
 // For backward compatibility - Maplat namespace
 if (typeof window !== 'undefined') {
   const Maplat = {
@@ -1778,4 +1789,5 @@ if (typeof window !== 'undefined') {
   };
   (window as any).Maplat = Maplat;
   (window as any).MaplatApp = MaplatApp;
+  (window as any).assets = assets;
 }

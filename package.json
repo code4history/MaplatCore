@@ -9,8 +9,7 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/maplat_core.js",
-      "require": "./dist/maplat_core.cjs"
+      "import": "./dist/maplat_core.js"
     }
   },
   "sideEffects": true,

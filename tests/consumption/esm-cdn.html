@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MaplatCore ESM CDN Verification</title>
+    <!-- Import Map to simulate CDN usage assuming local serve or future CDN structure -->
+    <script type="importmap">
+    {
+        "imports": {
+            "ol/": "https://esm.sh/ol@10.3.1/",
+            "ol": "https://esm.sh/ol@10.3.1"
+        }
+    }
+    </script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@10.3.1/ol.css">
+    <link rel="stylesheet" href="../../dist/maplat_core.css">
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        #map_div {
+            width: 100%;
+            height: 100%;
+        }
+
+        #controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="controls">
+        <h3>ESM CDN Test</h3>
+        <div id="status">Initializing...</div>
+    </div>
+    <div id="map_div"></div>
+
+    <script type="module">
+        import { MaplatApp, assets } from '../../dist/maplat_core.js';
+
+        console.log('Assets exported:', assets);
+        if (!assets.redcircle || !assets.osm) {
+            document.getElementById('status').innerText = 'FAIL: Assets missing';
+            document.getElementById('status').style.color = 'red';
+            throw new Error('Assets missing');
+        }
+
+        const appOption = {
+            appid: 'kochizu',
+            mapboxToken: 'pk.eyJ1IjoibWFwbGF0IiwiYSI6ImNqYjVlM3h2aTJobWoyd3F2c29yM2ZkYm0ifQ.OepC-a_4ZgXbdSj2l7vU9g', // Public token for demo
+            div: 'map_div',
+            debug: true,
+            setting: {
+                sources: ["osm"],
+                homePosition: [141.35, 43.06], // Sapporo
+                defaultZoom: 12
+            }
+        };
+
+        try {
+            const app = new MaplatApp(appOption);
+            await app.waitReady;
+            document.getElementById('status').innerText = 'SUCCESS: Map Ready & Assets Verified';
+            document.getElementById('status').style.color = 'green';
+            console.log('MaplatApp Ready');
+        } catch (e) {
+            console.error(e);
+            document.getElementById('status').innerText = 'ERROR: ' + e.message;
+            document.getElementById('status').style.color = 'red';
+        }
+    </script>
+</body>
+
+</html>

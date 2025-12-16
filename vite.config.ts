@@ -11,10 +11,10 @@ export default defineConfig({
   build: isPackageBuild ? {
     lib: {
       entry: resolve(__dirname, "src/index.ts"),
-      formats: ["es", "cjs", "umd"],
-      name: "MaplatApp",
+      formats: ["es", "umd"],
+      name: "Maplat",
       fileName: (format) => {
-        switch(format) {
+        switch (format) {
           case "es":
             return "maplat_core.js";
           case "cjs":
@@ -30,7 +30,15 @@ export default defineConfig({
       external: ["ol", "ol/proj", "ol/source", "ol/layer", "ol/Map", "ol/View", "ol/Feature", "ol/geom/Point", "ol/style"],
       output: {
         globals: {
-          ol: "ol"
+          ol: "ol",
+          "ol/proj": "ol.proj",
+          "ol/source": "ol.source",
+          "ol/layer": "ol.layer",
+          "ol/Map": "ol.Map",
+          "ol/View": "ol.View",
+          "ol/Feature": "ol.Feature",
+          "ol/geom/Point": "ol.geom.Point",
+          "ol/style": "ol.style"
         },
         assetFileNames: (assetInfo) => {
           if (assetInfo.name === "style.css") {
