@@ -1,0 +1,7 @@
+- [x] Remove CommonJS support in `vite.config.ts` (#60)
+- [x] Update `package.json` to only support `es` and `umd` exports (#60)
+- [x] Fix UMD build to export `MaplatApp`, `Maplat`, and `assets` to `window` (#62)
+- [x] Configure Rollup globals to map external `ol/*` dependencies to `window.ol.*` (#62)
+- [x] Add Smoke Tests for UMD/ESM/Self-hosted consumption (#62)
+- [x] Fix Lint errors in `src/assets.ts` used by build process (#64)
+- [x] Update Playwright E2E tests to handle multiple canvases (Strict Mode violations) (#65)

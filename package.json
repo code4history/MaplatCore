@@ -88,7 +88,7 @@
     "polygon-offset": "^0.3.2",
     "simplify-js": "^1.2.4",
     "sweetalert2": "^11.22.4",
-    "weiwudi": "github:code4history/Weiwudi#6c38df854efbac65467a2a962d82330bc6664934",
+    "weiwudi": "github:code4history/Weiwudi#29c77a56fd43f67f35f82822a171419205542546",
     "whatwg-fetch": "^3.6.2"
   },
   "peerDependencies": {

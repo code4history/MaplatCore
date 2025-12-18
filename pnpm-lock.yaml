@@ -111,8 +111,8 @@ importers:
         specifier: ^11.22.4
         version: 11.22.4
       weiwudi:
-        specifier: github:code4history/Weiwudi#6c38df854efbac65467a2a962d82330bc6664934
-        version: https://codeload.github.com/code4history/Weiwudi/tar.gz/6c38df854efbac65467a2a962d82330bc6664934
+        specifier: github:code4history/Weiwudi#29c77a56fd43f67f35f82822a171419205542546
+        version: https://codeload.github.com/code4history/Weiwudi/tar.gz/29c77a56fd43f67f35f82822a171419205542546
       whatwg-fetch:
         specifier: ^3.6.2
         version: 3.6.20
@@ -2606,8 +2606,8 @@ packages:
     resolution: {integrity: sha512-VwddBukDzu71offAQR975unBIGqfKZpM+8ZX6ySk8nYhVoo5CYaZyzt3YBvYtRtO+aoGlqxPg/B87NGVZ/fu6g==}
     engines: {node: '>=12'}
 
-  weiwudi@https://codeload.github.com/code4history/Weiwudi/tar.gz/6c38df854efbac65467a2a962d82330bc6664934:
-    resolution: {tarball: https://codeload.github.com/code4history/Weiwudi/tar.gz/6c38df854efbac65467a2a962d82330bc6664934}
+  weiwudi@https://codeload.github.com/code4history/Weiwudi/tar.gz/29c77a56fd43f67f35f82822a171419205542546:
+    resolution: {tarball: https://codeload.github.com/code4history/Weiwudi/tar.gz/29c77a56fd43f67f35f82822a171419205542546}
     version: 0.1.4
 
   whatwg-encoding@3.1.1:
@@ -5931,7 +5931,7 @@ snapshots:
 
   webidl-conversions@7.0.0: {}
 
-  weiwudi@https://codeload.github.com/code4history/Weiwudi/tar.gz/6c38df854efbac65467a2a962d82330bc6664934:
+  weiwudi@https://codeload.github.com/code4history/Weiwudi/tar.gz/29c77a56fd43f67f35f82822a171419205542546:
     dependencies:
       workbox-core: 6.6.0
       workbox-expiration: 6.6.0
