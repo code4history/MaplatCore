@@ -150,7 +150,7 @@ var consoleLogger = {
     if (console && console[type]) console[type].apply(console, args);
   }
 };
-var Logger$1 = function() {
+var Logger$1 = (function() {
   function Logger2(concreteLogger) {
     var options = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
     _classCallCheck(this, Logger2);
@@ -225,9 +225,9 @@ var Logger$1 = function() {
     }
   }]);
   return Logger2;
-}();
+})();
 var baseLogger = new Logger$1();
-var EventEmitter = function() {
+var EventEmitter = (function() {
   function EventEmitter2() {
     _classCallCheck(this, EventEmitter2);
     this.observers = {};
@@ -275,7 +275,7 @@ var EventEmitter = function() {
     }
   }]);
   return EventEmitter2;
-}();
+})();
 function defer() {
   var res;
   var rej;
@@ -486,7 +486,7 @@ function deepFind(obj, path) {
   }
   return current;
 }
-var ResourceStore = function(_EventEmitter) {
+var ResourceStore = (function(_EventEmitter) {
   _inherits(ResourceStore2, _EventEmitter);
   var _super = _createSuper(ResourceStore2);
   function ResourceStore2(data) {
@@ -638,7 +638,7 @@ var ResourceStore = function(_EventEmitter) {
     }
   }]);
   return ResourceStore2;
-}(EventEmitter);
+})(EventEmitter);
 var postProcessor = {
   processors: {},
   addPostProcessor: function addPostProcessor(module) {
@@ -708,7 +708,7 @@ function _isNativeReflectConstruct$1() {
   }
 }
 var checkedLoadedFor = {};
-var Translator = function(_EventEmitter) {
+var Translator = (function(_EventEmitter) {
   _inherits(Translator2, _EventEmitter);
   var _super = _createSuper$1(Translator2);
   function Translator2(services) {
@@ -1064,11 +1064,11 @@ var Translator = function(_EventEmitter) {
     }
   }]);
   return Translator2;
-}(EventEmitter);
+})(EventEmitter);
 function capitalize(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
-var LanguageUtil = function() {
+var LanguageUtil = (function() {
   function LanguageUtil2(options) {
     _classCallCheck(this, LanguageUtil2);
     this.options = options;
@@ -1192,7 +1192,7 @@ var LanguageUtil = function() {
     }
   }]);
   return LanguageUtil2;
-}();
+})();
 var sets = [{
   lngs: ["ach", "ak", "am", "arn", "br", "fil", "gun", "ln", "mfe", "mg", "mi", "oc", "pt", "pt-BR", "tg", "tl", "ti", "tr", "uz", "wa"],
   nr: [1, 2],
@@ -1375,7 +1375,7 @@ function createRules() {
   });
   return rules;
 }
-var PluralResolver = function() {
+var PluralResolver = (function() {
   function PluralResolver2(languageUtils) {
     var options = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
     _classCallCheck(this, PluralResolver2);
@@ -1494,7 +1494,7 @@ var PluralResolver = function() {
     }
   }]);
   return PluralResolver2;
-}();
+})();
 function ownKeys$3(object, enumerableOnly) {
   var keys2 = Object.keys(object);
   if (Object.getOwnPropertySymbols) {
@@ -1525,7 +1525,7 @@ function _objectSpread$3(target) {
   }
   return target;
 }
-var Interpolator = function() {
+var Interpolator = (function() {
   function Interpolator2() {
     var options = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : {};
     _classCallCheck(this, Interpolator2);
@@ -1714,7 +1714,7 @@ var Interpolator = function() {
     }
   }]);
   return Interpolator2;
-}();
+})();
 function ownKeys$4(object, enumerableOnly) {
   var keys2 = Object.keys(object);
   if (Object.getOwnPropertySymbols) {
@@ -1786,7 +1786,7 @@ function createCachedFormatter(fn) {
     return formatter(val);
   };
 }
-var Formatter = function() {
+var Formatter = (function() {
   function Formatter2() {
     var options = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : {};
     _classCallCheck(this, Formatter2);
@@ -1873,7 +1873,7 @@ var Formatter = function() {
     }
   }]);
   return Formatter2;
-}();
+})();
 function ownKeys$5(object, enumerableOnly) {
   var keys2 = Object.keys(object);
   if (Object.getOwnPropertySymbols) {
@@ -1935,7 +1935,7 @@ function removePending(q, name) {
     q.pendingCount--;
   }
 }
-var Connector = function(_EventEmitter) {
+var Connector = (function(_EventEmitter) {
   _inherits(Connector2, _EventEmitter);
   var _super = _createSuper$2(Connector2);
   function Connector2(backend, store, services) {
@@ -2147,7 +2147,7 @@ var Connector = function(_EventEmitter) {
     }
   }]);
   return Connector2;
-}(EventEmitter);
+})(EventEmitter);
 function get$3() {
   return {
     debug: false,
@@ -2286,7 +2286,7 @@ function bindMemberFunctions(inst) {
     }
   });
 }
-var I18n = function(_EventEmitter) {
+var I18n = (function(_EventEmitter) {
   _inherits(I18n2, _EventEmitter);
   var _super = _createSuper$3(I18n2);
   function I18n2() {
@@ -2771,7 +2771,7 @@ var I18n = function(_EventEmitter) {
     }
   }]);
   return I18n2;
-}(EventEmitter);
+})(EventEmitter);
 _defineProperty(I18n, "createInstance", function() {
   var options = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : {};
   var callback = arguments.length > 1 ? arguments[1] : void 0;
@@ -2874,7 +2874,7 @@ function getDefaults() {
     ajax
   };
 }
-var Backend = /* @__PURE__ */ function() {
+var Backend = /* @__PURE__ */ (function() {
   function Backend2(services) {
     var options = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
     _classCallCheck(this, Backend2);
@@ -2956,7 +2956,7 @@ var Backend = /* @__PURE__ */ function() {
     }
   }]);
   return Backend2;
-}();
+})();
 Backend.type = "backend";
 class BaseEvent {
   /**
@@ -4602,7 +4602,7 @@ function addCommonOptions(options) {
 function setupTileLoadFunction(target) {
   const self2 = target;
   target.setTileLoadFunction(
-    function() {
+    (function() {
       const tileLoadFn = self2.getTileLoadFunction();
       const tImageLoader = function(_tileCoord, src, tCanv, sx, sy, sw, sh) {
         return new Promise((resolve, _reject) => {
@@ -4723,7 +4723,7 @@ function setupTileLoadFunction(target) {
           tile.handleImageError_();
         });
       };
-    }()
+    })()
   );
 }
 function createElement(domStr) {
@@ -8831,7 +8831,7 @@ function createExtent(extent, onlyCenter, smooth) {
      * @param {Array<number>} [centerShift] Shift between map center and viewport center.
      * @return {import("./coordinate.js").Coordinate|undefined} Center.
      */
-    function(center, resolution, size, isMoving, centerShift) {
+    (function(center, resolution, size, isMoving, centerShift) {
       if (!center) {
         return void 0;
       }
@@ -8862,7 +8862,7 @@ function createExtent(extent, onlyCenter, smooth) {
         y += -ratio * Math.log(1 + Math.max(0, minY - center[1]) / ratio) + ratio * Math.log(1 + Math.max(0, center[1] - maxY) / ratio);
       }
       return [x, y];
-    }
+    })
   );
 }
 function none$1(center) {
@@ -8908,7 +8908,7 @@ function createSnapToResolutions(resolutions, smooth, maxExtent, showFullExtent)
      * @param {boolean} [isMoving] True if an interaction or animation is in progress.
      * @return {number|undefined} Resolution.
      */
-    function(resolution, direction, size, isMoving) {
+    (function(resolution, direction, size, isMoving) {
       if (resolution !== void 0) {
         const maxResolution = resolutions[0];
         const minResolution = resolutions[resolutions.length - 1];
@@ -8936,7 +8936,7 @@ function createSnapToResolutions(resolutions, smooth, maxExtent, showFullExtent)
         return resolutions[z];
       }
       return void 0;
-    }
+    })
   );
 }
 function createSnapToPower(power, maxResolution, minResolution, smooth, maxExtent, showFullExtent) {
@@ -8950,7 +8950,7 @@ function createSnapToPower(power, maxResolution, minResolution, smooth, maxExten
      * @param {boolean} [isMoving] True if an interaction or animation is in progress.
      * @return {number|undefined} Resolution.
      */
-    function(resolution, direction, size, isMoving) {
+    (function(resolution, direction, size, isMoving) {
       if (resolution !== void 0) {
         const cappedMaxRes = maxExtent ? getViewportClampedResolution(
           maxResolution,
@@ -8982,7 +8982,7 @@ function createSnapToPower(power, maxResolution, minResolution, smooth, maxExten
         return clamp(newResolution, minResolution, cappedMaxRes);
       }
       return void 0;
-    }
+    })
   );
 }
 function createMinMaxResolution(maxResolution, minResolution, smooth, maxExtent, showFullExtent) {
@@ -8995,7 +8995,7 @@ function createMinMaxResolution(maxResolution, minResolution, smooth, maxExtent,
      * @param {boolean} [isMoving] True if an interaction or animation is in progress.
      * @return {number|undefined} Resolution.
      */
-    function(resolution, direction, size, isMoving) {
+    (function(resolution, direction, size, isMoving) {
       if (resolution !== void 0) {
         const cappedMaxRes = maxExtent ? getViewportClampedResolution(
           maxResolution,
@@ -9013,7 +9013,7 @@ function createMinMaxResolution(maxResolution, minResolution, smooth, maxExtent,
         );
       }
       return void 0;
-    }
+    })
   );
 }
 function disable(rotation) {
@@ -9036,7 +9036,7 @@ function createSnapToN(n) {
      * @param {boolean} [isMoving] True if an interaction or animation is in progress.
      * @return {number|undefined} Rotation.
      */
-    function(rotation, isMoving) {
+    (function(rotation, isMoving) {
       if (isMoving) {
         return rotation;
       }
@@ -9045,7 +9045,7 @@ function createSnapToN(n) {
         return rotation;
       }
       return void 0;
-    }
+    })
   );
 }
 function createSnapToZero(tolerance) {
@@ -9056,7 +9056,7 @@ function createSnapToZero(tolerance) {
      * @param {boolean} [isMoving] True if an interaction or animation is in progress.
      * @return {number|undefined} Rotation.
      */
-    function(rotation, isMoving) {
+    (function(rotation, isMoving) {
       if (isMoving || rotation === void 0) {
         return rotation;
       }
@@ -9064,7 +9064,7 @@ function createSnapToZero(tolerance) {
         return 0;
       }
       return rotation;
-    }
+    })
   );
 }
 const DEFAULT_TILE_SIZE = 256;
@@ -9743,10 +9743,10 @@ class View extends BaseObject {
        * @param {number} value Value.
        * @return {number} Resolution.
        */
-      function(value) {
+      (function(value) {
         const resolution = maxResolution / Math.pow(power, value * max);
         return resolution;
-      }
+      })
     );
   }
   /**
@@ -9777,10 +9777,10 @@ class View extends BaseObject {
        * @param {number} resolution Resolution.
        * @return {number} Value.
        */
-      function(resolution) {
+      (function(resolution) {
         const value = Math.log(maxResolution / resolution) / logPower / max;
         return value;
-      }
+      })
     );
   }
   /**
@@ -13510,13 +13510,13 @@ function createFromTemplate(template2, tileGrid) {
      * @param {import("./proj/Projection.js").default} projection Projection.
      * @return {string|undefined} Tile URL.
      */
-    function(tileCoord, pixelRatio, projection) {
+    (function(tileCoord, pixelRatio, projection) {
       if (!tileCoord) {
         return void 0;
       }
       const z = tileCoord[0];
       return renderXYZTemplate(template2, z, tileCoord[1], tileCoord[2]);
-    }
+    })
   );
 }
 function createFromTemplates(templates, tileGrid) {
@@ -13538,14 +13538,14 @@ function createFromTileUrlFunctions(tileUrlFunctions) {
      * @param {import("./proj/Projection.js").default} projection Projection.
      * @return {string|undefined} Tile URL.
      */
-    function(tileCoord, pixelRatio, projection) {
+    (function(tileCoord, pixelRatio, projection) {
       if (!tileCoord) {
         return void 0;
       }
       const h = hash(tileCoord);
       const index = modulo(h, tileUrlFunctions.length);
       return tileUrlFunctions[index](tileCoord, pixelRatio, projection);
-    }
+    })
   );
 }
 for (let z = 0; z < 9; z++) {
@@ -14078,14 +14078,14 @@ function requireMaplat_transform_umd() {
       function $(t, e, r, n, c, i = false, f) {
         const g2 = t.map((h) => {
           (!f || f < 2.00703) && (h = nt(h));
-          const l = isFinite(h) ? e[h] : h === "c" ? n : h === "b0" ? c[0] : h === "b1" ? c[1] : h === "b2" ? c[2] : h === "b3" ? c[3] : function() {
+          const l = isFinite(h) ? e[h] : h === "c" ? n : h === "b0" ? c[0] : h === "b1" ? c[1] : h === "b2" ? c[2] : h === "b3" ? c[3] : (function() {
             const y = h.match(/e(\d+)/);
             if (y) {
               const o = parseInt(y[1]);
               return r[o];
             }
             throw "Bad index value for indexesToTri";
-          }();
+          })();
           return i ? [[l[1], l[0]], h] : [[l[0], l[1]], h];
         });
         return pt(g2);
@@ -14631,14 +14631,14 @@ typeof globalThis !== "undefined" && globalThis || {};
 var support = {
   searchParams: "URLSearchParams" in g,
   iterable: "Symbol" in g && "iterator" in Symbol,
-  blob: "FileReader" in g && "Blob" in g && function() {
+  blob: "FileReader" in g && "Blob" in g && (function() {
     try {
       new Blob();
       return true;
     } catch (e) {
       return false;
     }
-  }(),
+  })(),
   formData: "FormData" in g,
   arrayBuffer: "ArrayBuffer" in g
 };
@@ -14940,12 +14940,12 @@ function Request(input, options) {
   }
   this.method = normalizeMethod(options.method || this.method || "GET");
   this.mode = options.mode || this.mode || null;
-  this.signal = options.signal || this.signal || function() {
+  this.signal = options.signal || this.signal || (function() {
     if ("AbortController" in g) {
       var ctrl = new AbortController();
       return ctrl.signal;
     }
-  }();
+  })();
   this.referrer = null;
   if ((this.method === "GET" || this.method === "HEAD") && body) {
     throw new TypeError("Body not allowed for GET or HEAD requests");
@@ -15574,7 +15574,7 @@ function requireLodash_template() {
     var freeModule = freeExports && true && module && !module.nodeType && module;
     var moduleExports = freeModule && freeModule.exports === freeExports;
     var freeProcess = moduleExports && freeGlobal.process;
-    var nodeUtil = function() {
+    var nodeUtil = (function() {
       try {
         var types = freeModule && freeModule.require && freeModule.require("util").types;
         if (types) {
@@ -15583,7 +15583,7 @@ function requireLodash_template() {
         return freeProcess && freeProcess.binding && freeProcess.binding("util");
       } catch (e) {
       }
-    }();
+    })();
     var nodeIsTypedArray = nodeUtil && nodeUtil.isTypedArray;
     function apply(func, thisArg, args) {
       switch (args.length) {
@@ -15637,24 +15637,24 @@ function requireLodash_template() {
     var coreJsData = root["__core-js_shared__"];
     var funcToString = funcProto.toString;
     var hasOwnProperty = objectProto.hasOwnProperty;
-    var maskSrcKey = function() {
+    var maskSrcKey = (function() {
       var uid = /[^.]+$/.exec(coreJsData && coreJsData.keys && coreJsData.keys.IE_PROTO || "");
       return uid ? "Symbol(src)_1." + uid : "";
-    }();
+    })();
     var nativeObjectToString = objectProto.toString;
     var objectCtorString = funcToString.call(Object);
     var reIsNative = RegExp(
       "^" + funcToString.call(hasOwnProperty).replace(reRegExpChar, "\\$&").replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$"
     );
     var Buffer2 = moduleExports ? root.Buffer : void 0, Symbol2 = root.Symbol, getPrototype = overArg(Object.getPrototypeOf, Object), propertyIsEnumerable = objectProto.propertyIsEnumerable, symToStringTag = Symbol2 ? Symbol2.toStringTag : void 0;
-    var defineProperty = function() {
+    var defineProperty = (function() {
       try {
         var func = getNative(Object, "defineProperty");
         func({}, "", {});
         return func;
       } catch (e) {
       }
-    }();
+    })();
     var nativeIsBuffer = Buffer2 ? Buffer2.isBuffer : void 0, nativeKeys = overArg(Object.keys, Object), nativeMax = Math.max, nativeNow = Date.now;
     var symbolProto = Symbol2 ? Symbol2.prototype : void 0, symbolToString = symbolProto ? symbolProto.toString : void 0;
     function arrayLikeKeys(value, inherited) {
@@ -15900,9 +15900,9 @@ function requireLodash_template() {
     function eq(value, other) {
       return value === other || value !== value && other !== other;
     }
-    var isArguments = baseIsArguments(/* @__PURE__ */ function() {
+    var isArguments = baseIsArguments(/* @__PURE__ */ (function() {
       return arguments;
-    }()) ? baseIsArguments : function(value) {
+    })()) ? baseIsArguments : function(value) {
       return isObjectLike(value) && hasOwnProperty.call(value, "callee") && !propertyIsEnumerable.call(value, "callee");
     };
     var isArray = Array.isArray;
@@ -17018,18 +17018,18 @@ class MaplatApp extends Target {
     const coords = data.coordinates;
     const src = this.from;
     const icon = data.icon ? this.__selectedMarker == data.namespaceID && data.selectedIcon ? data.selectedIcon : data.icon : this.__selectedMarker == data.namespaceID ? defaultpin_selected : defaultpin;
-    const promise = coords ? function() {
+    const promise = coords ? (function() {
       return src.merc2SysCoordAsync_ignoreBackground(
         coords
       );
-    }() : x && y ? new Promise((resolve) => {
+    })() : x && y ? new Promise((resolve) => {
       resolve(src.xy2SysCoord([x, y]));
-    }) : function() {
+    }) : (function() {
       const merc = transform(lnglat, "EPSG:4326", "EPSG:3857");
       return src.merc2SysCoordAsync_ignoreBackground(
         merc
       );
-    }();
+    })();
     return promise.then((xy) => {
       if (!xy) return;
       if (src.insideCheckSysCoord(xy)) {
