@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
 import { resolve } from "path";
@@ -48,17 +49,11 @@ export default defineConfig({
           if (assetInfo.name === "core.css") {
             return "maplat_core.css";
           }
-          return assetInfo.name;
+          return assetInfo.name || "asset-[name].[ext]";
         }
       }
     },
     sourcemap: true,
-    minify: "terser",
-    terserOptions: {
-      format: {
-        comments: false
-      }
-    }
   } : {
     outDir: "dist",
     emptyOutDir: true
@@ -68,7 +63,6 @@ export default defineConfig({
       outDir: "dist",
       exclude: ["spec", "node_modules"],
       rollupTypes: false,
-      skipDiagnostics: true,
       tsconfigPath: "./tsconfig.json",
       logLevel: "silent",
       insertTypesEntry: true,
