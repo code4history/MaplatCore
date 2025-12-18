@@ -3,7 +3,7 @@
   "version": "0.11.2",
   "description": "Maplat is the cool Historical Map/Illustrated Map Viewer API.\nIt can transform each map coordinates with nonlinear but homeomorphic projection and makes possible that the maps can collaborate with GPS/accurate maps, without distorting original maps.",
   "type": "module",
-  "main": "./dist/maplat_core.cjs",
+  "main": "./dist/maplat_core.umd.js",
   "module": "./dist/maplat_core.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -56,7 +56,7 @@
   },
   "homepage": "https://github.com/code4history/MaplatCore/wiki",
   "dependencies": {
-    "@maplat/transform": "^0.3.0",
+    "@maplat/transform": "github:code4history/MaplatTransform#01800d232587af0c9934e18d2a9d3fc1fe66edfa",
     "@turf/area": "^7.2.0",
     "@turf/bbox": "^7.2.0",
     "@turf/bbox-polygon": "^7.2.0",

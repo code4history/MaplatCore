@@ -1,12 +1,12 @@
 # Tasks
 
 - [x] Check image assets usage
-    - [ ] Grep `src/` for all `parts/` filenames to find unused assets
-    - [ ] Check if used assets are inlined in `dist/`
-- [ ] Export Assets
-    - [ ] Define `assets` export in `src/index.ts` (or dedicated file re-exported)
-    - [ ] Include all used images from `parts/`
-    - [ ] Verify exports exist in `dist/` types and JS
+    - [x] Grep `src/` for all `parts/` filenames to find unused assets
+    - [x] Check if used assets are inlined in `dist/`
+- [x] Export Assets
+    - [x] Define `assets` export in `src/index.ts` (or dedicated file re-exported)
+    - [x] Include all used images from `parts/`
+    - [x] Verify exports exist in `dist/` types and JS
 - [x] Create Verification Smoke Tests
     - [x] `tests/consumption/esm-cdn.html` (ESM via CDN with Import Map)
     - [x] `tests/consumption/umd-cdn.html` (UMD via CDN/global)

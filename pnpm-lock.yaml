@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@maplat/transform':
-        specifier: ^0.3.0
-        version: 0.3.0
+        specifier: github:code4history/MaplatTransform#01800d232587af0c9934e18d2a9d3fc1fe66edfa
+        version: https://codeload.github.com/code4history/MaplatTransform/tar.gz/01800d232587af0c9934e18d2a9d3fc1fe66edfa
       '@turf/area':
         specifier: ^7.2.0
         version: 7.2.0
@@ -526,8 +526,9 @@ packages:
     resolution: {integrity: sha512-Es6WcD0nO5l+2BOQS4uLfNPYQaNDfbot3X1XUoloz+x0mPDS3eeORZJl06HXjwBG1fOGwCRnzK88LMdxKRrd6Q==}
     engines: {node: '>=6.0.0'}
 
-  '@maplat/transform@0.3.0':
-    resolution: {integrity: sha512-S3jP2/SlLDHeYA6aLMQCPbNXlKAQv0CXO6ytobyPE5bXlZChvuFgWPNaqzZEARHOnXkblFaQ3sS6GP6v3DbT8g==}
+  '@maplat/transform@https://codeload.github.com/code4history/MaplatTransform/tar.gz/01800d232587af0c9934e18d2a9d3fc1fe66edfa':
+    resolution: {tarball: https://codeload.github.com/code4history/MaplatTransform/tar.gz/01800d232587af0c9934e18d2a9d3fc1fe66edfa}
+    version: 0.3.0
 
   '@maplibre/maplibre-gl-style-spec@20.4.0':
     resolution: {integrity: sha512-AzBy3095fTFPjDjmWpR2w6HVRAZJ6hQZUCwk5Plz6EyfnfuQW1odeW5i2Ai47Y6TBA2hQnC+azscjBSALpaWgw==}
@@ -2960,7 +2961,7 @@ snapshots:
 
   '@mapbox/whoots-js@3.1.0': {}
 
-  '@maplat/transform@0.3.0':
+  '@maplat/transform@https://codeload.github.com/code4history/MaplatTransform/tar.gz/01800d232587af0c9934e18d2a9d3fc1fe66edfa':
     dependencies:
       '@turf/boolean-point-in-polygon': 7.2.0
       '@turf/helpers': 7.2.0
