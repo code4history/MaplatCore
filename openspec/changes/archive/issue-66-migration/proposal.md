@@ -3,7 +3,10 @@
 ## Goal
 Resolve Issue #66 ("Unify Vite & ESLint code") and remove deprecated/unmaintained dependencies to modernize the codebase and improve maintainability.
 
-## Requirements
+## Why
+To modernize the build system and remove unmaintained dependencies, aligning with current project standards.
+
+## What Changes
 
 ### 1. Unify Vite & ESLint (Issue #66)
 - **Vite/Vitest**: detailed in Issue #66.
