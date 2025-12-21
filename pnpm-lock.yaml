@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@maplat/transform':
-        specifier: github:code4history/MaplatTransform#01800d232587af0c9934e18d2a9d3fc1fe66edfa
-        version: https://codeload.github.com/code4history/MaplatTransform/tar.gz/01800d232587af0c9934e18d2a9d3fc1fe66edfa
+        specifier: github:code4history/MaplatTransform#8e98b7ea5378302150ebbcf4d22a2c01f8f68e66
+        version: https://codeload.github.com/code4history/MaplatTransform/tar.gz/8e98b7ea5378302150ebbcf4d22a2c01f8f68e66
       '@turf/area':
         specifier: ^7.2.0
         version: 7.2.0
@@ -65,9 +65,6 @@ importers:
       '@turf/union':
         specifier: ^7.2.0
         version: 7.2.0
-      argv:
-        specifier: ^0.0.2
-        version: 0.0.2
       caniuse-lite:
         specifier: ^1.0.30001591
         version: 1.0.30001726
@@ -86,9 +83,9 @@ importers:
       i18next-browser-languagedetector:
         specifier: ^8.2.0
         version: 8.2.0
-      i18next-xhr-backend:
-        specifier: ^3.2.2
-        version: 3.2.2
+      i18next-http-backend:
+        specifier: ^3.0.2
+        version: 3.0.2
       lodash.template:
         specifier: ^4.5.0
         version: 4.5.0
@@ -111,8 +108,8 @@ importers:
         specifier: ^11.22.4
         version: 11.22.4
       weiwudi:
-        specifier: github:code4history/Weiwudi#29c77a56fd43f67f35f82822a171419205542546
-        version: https://codeload.github.com/code4history/Weiwudi/tar.gz/29c77a56fd43f67f35f82822a171419205542546
+        specifier: github:code4history/Weiwudi#1308232fb2f65afd4c5d2eba2277af86ccb80c69
+        version: https://codeload.github.com/code4history/Weiwudi/tar.gz/1308232fb2f65afd4c5d2eba2277af86ccb80c69
       whatwg-fetch:
         specifier: ^3.6.2
         version: 3.6.20
@@ -526,8 +523,8 @@ packages:
     resolution: {integrity: sha512-Es6WcD0nO5l+2BOQS4uLfNPYQaNDfbot3X1XUoloz+x0mPDS3eeORZJl06HXjwBG1fOGwCRnzK88LMdxKRrd6Q==}
     engines: {node: '>=6.0.0'}
 
-  '@maplat/transform@https://codeload.github.com/code4history/MaplatTransform/tar.gz/01800d232587af0c9934e18d2a9d3fc1fe66edfa':
-    resolution: {tarball: https://codeload.github.com/code4history/MaplatTransform/tar.gz/01800d232587af0c9934e18d2a9d3fc1fe66edfa}
+  '@maplat/transform@https://codeload.github.com/code4history/MaplatTransform/tar.gz/8e98b7ea5378302150ebbcf4d22a2c01f8f68e66':
+    resolution: {tarball: https://codeload.github.com/code4history/MaplatTransform/tar.gz/8e98b7ea5378302150ebbcf4d22a2c01f8f68e66}
     version: 0.3.0
 
   '@maplibre/maplibre-gl-style-spec@20.4.0':
@@ -1301,11 +1298,6 @@ packages:
   argparse@2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
 
-  argv@0.0.2:
-    resolution: {integrity: sha512-dEamhpPEwRUBpLNHeuCm/v+g0anFByHahxodVO/BbAarHVBBg2MccCwf9K+o1Pof+2btdnkJelYVUWjW/VrATw==}
-    engines: {node: '>=0.6.10'}
-    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
-
   assertion-error@2.0.1:
     resolution: {integrity: sha512-Izi8RQcffqCeNVgFigKli1ssklIbpHnCYc6AknXGYoB6grJqyeby7jv12JUQgmTAnIDnbck1uxksT4dzN3PWBA==}
     engines: {node: '>=12'}
@@ -1404,6 +1396,9 @@ packages:
     resolution: {integrity: sha512-+/HKd6EgcQCJGh2PSjZuUitQBQynKor4wrFbRg4DtAgS1aWO+gU52xpH7M9ScGgXSYmAVS9bIJ8EzuaGw0oNAw==}
     engines: {node: '>=10.14', npm: '>=6', yarn: '>=1'}
     hasBin: true
+
+  cross-fetch@4.0.0:
+    resolution: {integrity: sha512-e4a5N8lVvuLgAWgnCrLr2PP0YyDOTHa9H/Rj54dirp61qXnNq46m82bRhNqIA5VccJtWBvPTFRV3TtvHUKPB1g==}
 
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
@@ -1755,9 +1750,8 @@ packages:
   i18next-browser-languagedetector@8.2.0:
     resolution: {integrity: sha512-P+3zEKLnOF0qmiesW383vsLdtQVyKtCNA9cjSoKCppTKPQVfKd2W8hbVo5ZhNJKDqeM7BOcvNoKJOjpHh4Js9g==}
 
-  i18next-xhr-backend@3.2.2:
-    resolution: {integrity: sha512-OtRf2Vo3IqAxsttQbpjYnmMML12IMB5e0fc5B7qKJFLScitYaXa1OhMX0n0X/3vrfFlpHL9Ro/H+ps4Ej2j7QQ==}
-    deprecated: replaced by i18next-http-backend
+  i18next-http-backend@3.0.2:
+    resolution: {integrity: sha512-PdlvPnvIp4E1sYi46Ik4tBYh/v/NbYfFFgTjkwFl0is8A18s7/bx9aXqsrOax9WUbeNS6mD2oix7Z0yGGf6m5g==}
 
   i18next@21.10.0:
     resolution: {integrity: sha512-YeuIBmFsGjUfO3qBmMOc0rQaun4mIpGKET5WDwvu8lU7gvwpcariZLNtL0Fzj+zazcHUrlXHiptcFhBMFaxzfg==}
@@ -2052,6 +2046,15 @@ packages:
     resolution: {integrity: sha512-6k0YULvhpw+RoLNiQCRKOl09Rv1dPLr8hHnVjHqdolKwDrdNyk+Hmrthi4lIGPPz3r39dLx0hsF5s40sZ3Us4Q==}
     engines: {node: '>= 4.4.x'}
     hasBin: true
+
+  node-fetch@2.7.0:
+    resolution: {integrity: sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==}
+    engines: {node: 4.x || >=6.0.0}
+    peerDependencies:
+      encoding: ^0.1.0
+    peerDependenciesMeta:
+      encoding:
+        optional: true
 
   nwsapi@2.2.20:
     resolution: {integrity: sha512-/ieB+mDe4MrrKMT8z+mQL8klXydZWGR5Dowt4RAGKbJ3kIGEx3X4ljUo+6V73IXtUPWgfOlU5B9MlGxFO5T+cA==}
@@ -2461,6 +2464,9 @@ packages:
     resolution: {integrity: sha512-FVDYdxtnj0G6Qm/DhNPSb8Ju59ULcup3tuJxkFb5K8Bv2pUXILbf0xZWU8PX8Ov19OXljbUyveOFwRMwkXzO+A==}
     engines: {node: '>=16'}
 
+  tr46@0.0.3:
+    resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
+
   tr46@5.1.1:
     resolution: {integrity: sha512-hdF5ZgjTqgAntKkklYw0R03MG2x/bSzTtkxmIRw/sTNV8YXsCJ1tfLAX23lhxhHJlEf3CRCOCGGWw3vI3GaSPw==}
     engines: {node: '>=18'}
@@ -2603,12 +2609,15 @@ packages:
   web-worker@1.5.0:
     resolution: {integrity: sha512-RiMReJrTAiA+mBjGONMnjVDP2u3p9R1vkcGz6gDIrOMT3oGuYwX2WRMYI9ipkphSuE5XKEhydbhNEJh4NY9mlw==}
 
+  webidl-conversions@3.0.1:
+    resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
+
   webidl-conversions@7.0.0:
     resolution: {integrity: sha512-VwddBukDzu71offAQR975unBIGqfKZpM+8ZX6ySk8nYhVoo5CYaZyzt3YBvYtRtO+aoGlqxPg/B87NGVZ/fu6g==}
     engines: {node: '>=12'}
 
-  weiwudi@https://codeload.github.com/code4history/Weiwudi/tar.gz/29c77a56fd43f67f35f82822a171419205542546:
-    resolution: {tarball: https://codeload.github.com/code4history/Weiwudi/tar.gz/29c77a56fd43f67f35f82822a171419205542546}
+  weiwudi@https://codeload.github.com/code4history/Weiwudi/tar.gz/1308232fb2f65afd4c5d2eba2277af86ccb80c69:
+    resolution: {tarball: https://codeload.github.com/code4history/Weiwudi/tar.gz/1308232fb2f65afd4c5d2eba2277af86ccb80c69}
     version: 0.1.4
 
   whatwg-encoding@3.1.1:
@@ -2625,6 +2634,9 @@ packages:
   whatwg-url@14.2.0:
     resolution: {integrity: sha512-De72GdQZzNTUBBChsXueQUnPKDkg/5A5zp7pFDuQAj5UFoENpiACU0wlCvzpAGnTkj++ihpKwKyYewn/XNUbKw==}
     engines: {node: '>=18'}
+
+  whatwg-url@5.0.0:
+    resolution: {integrity: sha512-saE57nupxk6v3HY35+jzBwYa0rKSy0XR8JSxZPwgLr7ys0IBzhGviA1/TUGJLmSVqs8pb9AnvICXEuOHLprYTw==}
 
   which@2.0.2:
     resolution: {integrity: sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==}
@@ -2961,11 +2973,9 @@ snapshots:
 
   '@mapbox/whoots-js@3.1.0': {}
 
-  '@maplat/transform@https://codeload.github.com/code4history/MaplatTransform/tar.gz/01800d232587af0c9934e18d2a9d3fc1fe66edfa':
+  '@maplat/transform@https://codeload.github.com/code4history/MaplatTransform/tar.gz/8e98b7ea5378302150ebbcf4d22a2c01f8f68e66':
     dependencies:
-      '@turf/boolean-point-in-polygon': 7.2.0
-      '@turf/helpers': 7.2.0
-      '@turf/invariant': 7.2.0
+      '@turf/turf': 7.2.0
 
   '@maplibre/maplibre-gl-style-spec@20.4.0':
     dependencies:
@@ -4560,8 +4570,6 @@ snapshots:
 
   argparse@2.0.1: {}
 
-  argv@0.0.2: {}
-
   assertion-error@2.0.1: {}
 
   ast-v8-to-istanbul@0.3.3:
@@ -4656,6 +4664,12 @@ snapshots:
   cross-env@7.0.3:
     dependencies:
       cross-spawn: 7.0.6
+
+  cross-fetch@4.0.0:
+    dependencies:
+      node-fetch: 2.7.0
+    transitivePeerDependencies:
+      - encoding
 
   cross-spawn@7.0.6:
     dependencies:
@@ -5046,9 +5060,11 @@ snapshots:
     dependencies:
       '@babel/runtime': 7.27.6
 
-  i18next-xhr-backend@3.2.2:
+  i18next-http-backend@3.0.2:
     dependencies:
-      '@babel/runtime': 7.27.6
+      cross-fetch: 4.0.0
+    transitivePeerDependencies:
+      - encoding
 
   i18next@21.10.0:
     dependencies:
@@ -5399,6 +5415,10 @@ snapshots:
       iconv-lite: 0.6.3
       sax: 1.4.1
     optional: true
+
+  node-fetch@2.7.0:
+    dependencies:
+      whatwg-url: 5.0.0
 
   nwsapi@2.2.20: {}
 
@@ -5782,6 +5802,8 @@ snapshots:
     dependencies:
       tldts: 6.1.86
 
+  tr46@0.0.3: {}
+
   tr46@5.1.1:
     dependencies:
       punycode: 2.3.1
@@ -5930,9 +5952,11 @@ snapshots:
 
   web-worker@1.5.0: {}
 
+  webidl-conversions@3.0.1: {}
+
   webidl-conversions@7.0.0: {}
 
-  weiwudi@https://codeload.github.com/code4history/Weiwudi/tar.gz/29c77a56fd43f67f35f82822a171419205542546:
+  weiwudi@https://codeload.github.com/code4history/Weiwudi/tar.gz/1308232fb2f65afd4c5d2eba2277af86ccb80c69:
     dependencies:
       workbox-core: 6.6.0
       workbox-expiration: 6.6.0
@@ -5952,6 +5976,11 @@ snapshots:
     dependencies:
       tr46: 5.1.1
       webidl-conversions: 7.0.0
+
+  whatwg-url@5.0.0:
+    dependencies:
+      tr46: 0.0.3
+      webidl-conversions: 3.0.1
 
   which@2.0.2:
     dependencies:

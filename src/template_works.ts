@@ -6,13 +6,13 @@ export function createIconSet(data: any, ...ancestors: any[]) {
   if (dataCopy.icon) return dataCopy;
   const fromAncestor = ancestors.reduce((prev, curr) => {
     if (prev) return prev;
-    const iconTemplate = curr.iconTemplate || curr.iconTemplate;
+    const iconTemplate = curr.iconTemplate;
     if (iconTemplate) {
       return JSON.parse(template(iconTemplate)(dataCopy));
     } else if (curr.icon) {
       return {
         icon: curr.icon,
-        selectedIcon: curr.selectedIcon || curr.selectedIcon
+        selectedIcon: curr.selectedIcon
       };
     }
   }, undefined);

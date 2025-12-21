@@ -3,7 +3,7 @@
 import '../less/core.less';
 
 import i18n from "i18next";
-import i18nxhr from "i18next-xhr-backend";
+import i18nHttpBackend from "i18next-http-backend";
 import CustomEvent from "./customevent";
 import browserLanguage from "./browserlanguage";
 import { Logger, LOGGER_LEVEL } from "./logger";
@@ -273,7 +273,7 @@ export class MaplatApp extends EventTarget {
     return new Promise((resolve, _reject) => {
       const localesFlag = Object.keys(locales).length != 0;
       const translib =
-        this.translateUI && !localesFlag ? i18n.use(i18nxhr) : i18n;
+        this.translateUI && !localesFlag ? i18n.use(i18nHttpBackend) : i18n;
       translib.init(
         {
           lng: this.lang,
