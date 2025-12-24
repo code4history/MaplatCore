@@ -3,8 +3,7 @@ import { Transform } from "@maplat/transform";
 import { addCoordinateTransforms, addProjection, toLonLat } from "ol/proj";
 import Projection from "ol/proj/Projection";
 import { transformDirect } from "../proj_ex";
-import { polygon } from "@turf/helpers";
-import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
+import { polygon, booleanPointInPolygon } from "@turf/turf";
 import { MERC_MAX } from "../const_ex";
 import { Coordinate } from "ol/coordinate";
 import type { Feature, Polygon } from "geojson";
@@ -210,25 +209,25 @@ export class HistMap_tin extends HistMap {
           [this.width, this.height],
           [0, this.height]
         ];
-        const proms:Promise<any>[] = [];
+        const proms: Promise<any>[] = [];
         for (let i = 0; i < 9; i++) {
           const prom =
             i < 4
               ? this.xy2MercAsync_specifyLayer(dir4[i], index)
               : i == 4
-              ? Promise.resolve(mercCenter)
-              : this.xy2MercAsync_specifyLayer(envelope[i - 5], 0);
+                ? Promise.resolve(mercCenter)
+                : this.xy2MercAsync_specifyLayer(envelope[i - 5], 0);
           proms.push(prom);
         }
         Promise.all(proms)
           .then((mercs: any) => {
             const delta1 = Math.sqrt(
               Math.pow(mercs[0][0] - mercs[1][0], 2) +
-                Math.pow(mercs[0][1] - mercs[1][1], 2)
+              Math.pow(mercs[0][1] - mercs[1][1], 2)
             );
             const delta2 = Math.sqrt(
               Math.pow(mercs[2][0] - mercs[3][0], 2) +
-                Math.pow(mercs[2][1] - mercs[3][1], 2)
+              Math.pow(mercs[2][1] - mercs[3][1], 2)
             );
             const delta = (delta1 + delta2) / 2;
             if (!this.mercZoom)

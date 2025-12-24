@@ -1,4 +1,4 @@
-declare module "weiwudi" {
+/*declare module "weiwudi" {
   export default class Weiwudi {
     public stats(): Promise<{
       size?: number;
@@ -13,4 +13,4 @@ declare module "weiwudi" {
     public removeEventListener(type: string, handler: any): void;
     static registerMap(mapID: any, setting: any): Promise<any>;
   }
-}
+}*/

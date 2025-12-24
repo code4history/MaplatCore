@@ -1,5 +1,5 @@
 import { normalizeArg } from "./functions";
-import Weiwudi from "weiwudi";
+import Weiwudi from "@c4h/weiwudi";
 import { NowMap } from "./source/nowmap";
 import { TmsMap } from "./source/tmsmap";
 import { MapboxMap } from "./source/mapboxmap";

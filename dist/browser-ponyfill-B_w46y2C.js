@@ -1,4 +1,4 @@
-import { g as z } from "./index-C_8RHimG.js";
+import { g as z } from "./index-DoQsazu1.js";
 function G(w, d) {
   for (var b = 0; b < d.length; b++) {
     const y = d[b];
@@ -16,7 +16,7 @@ function G(w, d) {
   return Object.freeze(Object.defineProperty(w, Symbol.toStringTag, { value: "Module" }));
 }
 var A = { exports: {} }, R;
-function $() {
+function X() {
   return R || (R = 1, (function(w, d) {
     var b = typeof globalThis < "u" && globalThis || typeof self < "u" && self || typeof globalThis < "u" && globalThis, y = (function() {
       function p() {
@@ -331,12 +331,12 @@ function $() {
     d = h.fetch, d.default = h.fetch, d.fetch = h.fetch, d.Headers = h.Headers, d.Request = h.Request, d.Response = h.Response, w.exports = d;
   })(A, A.exports)), A.exports;
 }
-var U = $();
-const X = /* @__PURE__ */ z(U), K = /* @__PURE__ */ G({
+var U = X();
+const J = /* @__PURE__ */ z(U), Q = /* @__PURE__ */ G({
   __proto__: null,
-  default: X
+  default: J
 }, [U]);
 export {
-  K as b
+  Q as b
 };
-//# sourceMappingURL=browser-ponyfill-CaMnhrNS.js.map
+//# sourceMappingURL=browser-ponyfill-B_w46y2C.js.map

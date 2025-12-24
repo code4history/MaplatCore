@@ -1,4 +1,4 @@
-import { default as Weiwudi } from 'weiwudi';
+import { default as Weiwudi } from '@c4h/weiwudi';
 import { MaplatMap } from '../map_ex';
 import { Coordinate } from 'ol/coordinate';
 import { Size } from 'ol/size';
@@ -54,13 +54,8 @@ export declare function setCustomFunction<TBase extends SourceConstructor>(Base:
     isMapLibre(): any;
     insideCheckSysCoord(sysCoord: Coordinate): boolean;
     getCacheEnable(): boolean;
-    getTileCacheStatsAsync(): Promise<{
-        size?: number;
-        count?: number;
-        total?: number;
-        percent?: number;
-    }>;
-    getTileCacheSizeAsync(): Promise<number>;
+    getTileCacheStatsAsync(): Promise<any>;
+    getTileCacheSizeAsync(): Promise<any>;
     fetchAllTileCacheAsync(callback: any): Promise<void>;
     cancelTileCacheAsync(): Promise<void>;
     clearTileCacheAsync(): Promise<void>;
@@ -164,13 +159,8 @@ export declare function setCustomFunctionBase<TBase extends SourceConstructor>(B
     isMapbox(): any;
     isMapLibre(): any;
     getCacheEnable(): boolean;
-    getTileCacheStatsAsync(): Promise<{
-        size?: number;
-        count?: number;
-        total?: number;
-        percent?: number;
-    }>;
-    getTileCacheSizeAsync(): Promise<number>;
+    getTileCacheStatsAsync(): Promise<any>;
+    getTileCacheSizeAsync(): Promise<any>;
     fetchAllTileCacheAsync(callback: any): Promise<void>;
     cancelTileCacheAsync(): Promise<void>;
     clearTileCacheAsync(): Promise<void>;
@@ -253,13 +243,8 @@ export declare function setCustomFunctionOverlay<TBase extends SourceConstructor
     isMapLibre(): any;
     insideCheckSysCoord(sysCoord: Coordinate): boolean;
     getCacheEnable(): boolean;
-    getTileCacheStatsAsync(): Promise<{
-        size?: number;
-        count?: number;
-        total?: number;
-        percent?: number;
-    }>;
-    getTileCacheSizeAsync(): Promise<number>;
+    getTileCacheStatsAsync(): Promise<any>;
+    getTileCacheSizeAsync(): Promise<any>;
     fetchAllTileCacheAsync(callback: any): Promise<void>;
     cancelTileCacheAsync(): Promise<void>;
     clearTileCacheAsync(): Promise<void>;
@@ -360,13 +345,8 @@ export declare function setCustomFunctionMaplat<TBase extends SourceConstructor>
     isMapbox(): any;
     isMapLibre(): any;
     getCacheEnable(): boolean;
-    getTileCacheStatsAsync(): Promise<{
-        size?: number;
-        count?: number;
-        total?: number;
-        percent?: number;
-    }>;
-    getTileCacheSizeAsync(): Promise<number>;
+    getTileCacheStatsAsync(): Promise<any>;
+    getTileCacheSizeAsync(): Promise<any>;
     fetchAllTileCacheAsync(callback: any): Promise<void>;
     cancelTileCacheAsync(): Promise<void>;
     clearTileCacheAsync(): Promise<void>;

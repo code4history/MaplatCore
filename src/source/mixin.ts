@@ -1,4 +1,4 @@
-import Weiwudi from "weiwudi";
+import Weiwudi from "@c4h/weiwudi";
 import { MaplatMap } from "../map_ex";
 import { Coordinate } from "ol/coordinate";
 import { Size } from "ol/size";
@@ -11,11 +11,14 @@ import {
   normalizePoi
 } from "../normalize_pois";
 import { normalizeArg } from "../functions";
-import { polygon, lineString } from "@turf/helpers";
-import centroid from "@turf/centroid";
+import {
+  polygon,
+  lineString,
+  centroid,
+  booleanPointInPolygon,
+  lineIntersect
+} from "@turf/turf";
 import type { Feature, Polygon, GeoJsonProperties } from "geojson";
-import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
-import lineIntersect from "@turf/line-intersect";
 import { View as mlView } from "../view_ex";
 
 //type SourceConstructor<T> = new (...args: any[]) => T;

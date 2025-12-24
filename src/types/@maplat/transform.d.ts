@@ -1,4 +1,4 @@
-import { Feature, Polygon } from "@turf/turf";
+import { Feature, Polygon } from "geojson";
 export * from "@maplat/transform";
 
 declare module "@maplat/transform" {

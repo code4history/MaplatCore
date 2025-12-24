@@ -187,12 +187,7 @@ export declare class MaplatApp extends EventTarget {
     resetCirculation(): void;
     getMapMeta(mapID: any): any;
     getMapCacheEnable(mapID: string): boolean;
-    getMapTileCacheStatsAsync(mapID: string): Promise<{
-        size?: number;
-        count?: number;
-        total?: number;
-        percent?: number;
-    }>;
+    getMapTileCacheStatsAsync(mapID: string): Promise<any>;
     getMapTileCacheSizeAsync(mapID: string): Promise<any>;
     clearMapTileCacheAsync(mapID: string): Promise<void>;
     fetchAllMapTileCacheAsync(mapID: string, callback: any): Promise<void>;
