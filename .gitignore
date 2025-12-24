@@ -90,3 +90,4 @@ playwright/.cache/
 *.zip
 *_output.txt
 test_output*.txt
+*.png

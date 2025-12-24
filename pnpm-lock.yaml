@@ -9,11 +9,11 @@ importers:
   .:
     dependencies:
       '@c4h/weiwudi':
-        specifier: github:code4history/Weiwudi#18aaf91
-        version: https://codeload.github.com/code4history/Weiwudi/tar.gz/18aaf91
+        specifier: github:code4history/Weiwudi#00b9fd9
+        version: https://codeload.github.com/code4history/Weiwudi/tar.gz/00b9fd9
       '@maplat/transform':
-        specifier: github:code4history/MaplatTransform#80fc607
-        version: https://codeload.github.com/code4history/MaplatTransform/tar.gz/80fc607
+        specifier: github:code4history/MaplatTransform#cec4ef4
+        version: https://codeload.github.com/code4history/MaplatTransform/tar.gz/cec4ef4
       '@turf/turf':
         specifier: ^7.3.1
         version: 7.3.1
@@ -161,9 +161,9 @@ packages:
     resolution: {integrity: sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==}
     engines: {node: '>=18'}
 
-  '@c4h/weiwudi@https://codeload.github.com/code4history/Weiwudi/tar.gz/18aaf91':
-    resolution: {tarball: https://codeload.github.com/code4history/Weiwudi/tar.gz/18aaf91}
-    version: 0.1.4
+  '@c4h/weiwudi@https://codeload.github.com/code4history/Weiwudi/tar.gz/00b9fd9':
+    resolution: {tarball: https://codeload.github.com/code4history/Weiwudi/tar.gz/00b9fd9}
+    version: 0.1.5
     engines: {node: '>=20.0.0', pnpm: '>=9.0.0'}
 
   '@csstools/color-helpers@5.1.0':
@@ -469,8 +469,8 @@ packages:
     resolution: {integrity: sha512-Es6WcD0nO5l+2BOQS4uLfNPYQaNDfbot3X1XUoloz+x0mPDS3eeORZJl06HXjwBG1fOGwCRnzK88LMdxKRrd6Q==}
     engines: {node: '>=6.0.0'}
 
-  '@maplat/transform@https://codeload.github.com/code4history/MaplatTransform/tar.gz/80fc607':
-    resolution: {tarball: https://codeload.github.com/code4history/MaplatTransform/tar.gz/80fc607}
+  '@maplat/transform@https://codeload.github.com/code4history/MaplatTransform/tar.gz/cec4ef4':
+    resolution: {tarball: https://codeload.github.com/code4history/MaplatTransform/tar.gz/cec4ef4}
     version: 0.3.0
     engines: {node: '>=20', pnpm: '>=9'}
 
@@ -2621,7 +2621,7 @@ snapshots:
 
   '@bcoe/v8-coverage@1.0.2': {}
 
-  '@c4h/weiwudi@https://codeload.github.com/code4history/Weiwudi/tar.gz/18aaf91':
+  '@c4h/weiwudi@https://codeload.github.com/code4history/Weiwudi/tar.gz/00b9fd9':
     dependencies:
       workbox-expiration: 7.4.0
       workbox-precaching: 7.4.0
@@ -2849,7 +2849,7 @@ snapshots:
 
   '@mapbox/whoots-js@3.1.0': {}
 
-  '@maplat/transform@https://codeload.github.com/code4history/MaplatTransform/tar.gz/80fc607':
+  '@maplat/transform@https://codeload.github.com/code4history/MaplatTransform/tar.gz/cec4ef4':
     dependencies:
       '@turf/turf': 7.3.1
 

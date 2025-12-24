@@ -2,7 +2,11 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "ES2022",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "useDefineForClassFields": true,
     "skipLibCheck": true,
     "moduleResolution": "bundler",
@@ -20,16 +24,27 @@
     "outDir": "./dist",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ]
     },
     "typeRoots": [
-      "./node_modules/@types"
+      "./node_modules/@types",
+      "./src/types"
     ],
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "allowJs": true,
     "downlevelIteration": true,
     "removeComments": true
   },
-  "include": ["src/**/*", "spec/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "src/**/*",
+    "spec/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

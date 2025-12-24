@@ -91,12 +91,12 @@ export class HistMap_tin extends HistMap {
     return new Promise((resolve, reject) => {
       const tinSorted = this.tins
         .map((tin, index) => [index, tin] as [number, Transform])
-        .sort((a, b) => (a[1].priority < b[1].priority ? 1 : -1));
+        .sort((a, b) => (a[1].priority! < b[1].priority! ? 1 : -1));
 
       for (let i = 0; i < tinSorted.length; i++) {
         const index = tinSorted[i][0];
         const tin = tinSorted[i][1];
-        if (index == 0 || booleanPointInPolygon(xy, tin.xyBounds)) {
+        if (index == 0 || booleanPointInPolygon(xy, tin.xyBounds!)) {
           this.xy2MercAsync_specifyLayer(xy, index)
             .then(merc => {
               resolve([index, merc] as [number, Coordinate]);
@@ -119,7 +119,7 @@ export class HistMap_tin extends HistMap {
           new Promise((resolve, reject) => {
             this.merc2XyAsync_specifyLayer(merc, index)
               .then(xy => {
-                if (index === 0 || booleanPointInPolygon(xy, tin.xyBounds)) {
+                if (index === 0 || booleanPointInPolygon(xy, tin.xyBounds!)) {
                   resolve([tin, index, xy] as [Transform, number, Coordinate?]);
                 } else {
                   resolve([tin, index] as [Transform, number, Coordinate?]);
@@ -132,7 +132,7 @@ export class HistMap_tin extends HistMap {
       )
     ).then(results =>
       results
-        .sort((a, b) => (a[0].priority < b[0].priority ? 1 : -1))
+        .sort((a, b) => (a[0].priority! < b[0].priority! ? 1 : -1))
         .reduce(
           (
             ret: (undefined | [number, Coordinate, Transform])[],
@@ -149,12 +149,12 @@ export class HistMap_tin extends HistMap {
               const targetIndex = arry[i][1];
               if (
                 targetIndex === 0 ||
-                booleanPointInPolygon(xy, targetTin.xyBounds)
+                booleanPointInPolygon(xy, targetTin.xyBounds!)
               ) {
                 if (ret.length) {
                   const hide = !ret[0];
                   const storedTin = hide ? ret[1]![2] : ret[0]![2];
-                  if (!hide || tin.importance < storedTin.importance) {
+                  if (!hide || tin.importance! < storedTin.importance!) {
                     return ret;
                   } else {
                     return [undefined, [index, xy, tin]] as (
@@ -178,7 +178,7 @@ export class HistMap_tin extends HistMap {
             } else {
               ret.push([index, xy, tin]);
               return ret
-                .sort((a, b) => (a![2].importance < b![2].importance ? 1 : -1))
+                .sort((a, b) => (a![2].importance! < b![2].importance! ? 1 : -1))
                 .filter((_row, i) => i < 2);
             }
           },

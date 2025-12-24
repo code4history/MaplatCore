@@ -50,10 +50,12 @@ export default defineConfig({
             return "maplat_core.css";
           }
           return assetInfo.name || "asset-[name].[ext]";
-        }
+        },
+        inlineDynamicImports: true
       }
     },
     sourcemap: true,
+    copyPublicDir: false
   } : {
     outDir: "dist-demo",
     emptyOutDir: true
@@ -92,7 +94,7 @@ export default defineConfig({
   },
   server: {
     host: "0.0.0.0",
-    port: 5173,
+    port: 5175,
     open: false
   }
 });

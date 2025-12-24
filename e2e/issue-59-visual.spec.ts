@@ -2,6 +2,10 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Issue #59: Visual and Property Verification', () => {
     test('should apply all restore attributes on initialization', async ({ page }) => {
+        // Enable console logging
+        page.on('console', msg => console.log('Browser console:', msg.text()));
+        page.on('pageerror', error => console.log('Page error:', error));
+
         test.setTimeout(60000);
 
         // Define expected values
