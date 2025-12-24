@@ -1,0 +1,8 @@
+{
+  "maptype": "google_satellite",
+  "layers": ["roadmap"],
+  "title": {
+    "ja": "Google 衛星",
+    "en": "Google Sat"
+  }
+}
