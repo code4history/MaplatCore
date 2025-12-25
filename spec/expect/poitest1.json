@@ -1,23 +1,36 @@
 {
   "main": {
-    "pois": [
+    "type": "FeatureCollection",
+    "features": [
       {
-        "id": "id1",
-        "title": "Title",
-        "lnglat": [
-          135,
-          35
-        ],
-        "namespaceID": "id1"
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            135,
+            35
+          ]
+        },
+        "properties": {
+          "title": "Title",
+          "namespaceID": "id1"
+        },
+        "id": "id1"
       },
       {
-        "title": "Title2",
-        "lnglat": [
-          136,
-          36
-        ],
-        "id": "main_0",
-        "namespaceID": "main_0"
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            136,
+            36
+          ]
+        },
+        "properties": {
+          "title": "Title2",
+          "namespaceID": "main_0"
+        },
+        "id": "main_0"
       }
     ],
     "id": "main",

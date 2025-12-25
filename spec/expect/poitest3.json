@@ -1,40 +1,62 @@
 {
   "main2": {
+    "type": "FeatureCollection",
     "namespaceID": "main2",
     "id": "main2",
     "name": "main2_name",
-    "pois": [
+    "features": [
       {
-        "id": "main_111",
-        "lnglat": [
-          139.54590291859614,
-          36.225601902310075
-        ],
-        "namespaceID": "main_111"
+        "type": "Feature",
+        "properties": {
+          "id": "main_111",
+          "namespaceID": "main_111"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            139.54590291859614,
+            36.225601902310075
+          ]
+        },
+        "id": "main_111"
       },
       {
-        "id": "main_112",
-        "lnglat": [
-          139.54590291859614,
-          36.225601902310075
-        ],
-        "namespaceID": "main_112"
+        "type": "Feature",
+        "properties": {
+          "id": "main_112",
+          "namespaceID": "main_112"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            139.54590291859614,
+            36.225601902310075
+          ]
+        },
+        "id": "main_112"
       }
     ],
     "__nextId": 0
   },
   "main": {
+    "type": "FeatureCollection",
     "namespaceID": "main",
     "id": "main",
     "name": "Test3",
-    "pois": [
+    "features": [
       {
-        "lnglat": [
-          139.54590291859614,
-          36.225601902310075
-        ],
-        "id": "main_0",
-        "namespaceID": "main_0"
+        "type": "Feature",
+        "properties": {
+          "namespaceID": "main_0"
+        },
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            139.54590291859614,
+            36.225601902310075
+          ]
+        },
+        "id": "main_0"
       }
     ],
     "__nextId": 1

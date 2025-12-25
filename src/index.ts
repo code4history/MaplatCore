@@ -26,7 +26,7 @@ import { recursiveRound } from "./math_ex";
 import locales from "./freeze_locales";
 import {
   normalizeLayers,
-  addIdToPoi,
+  addIdToFeature,
   normalizeLayer,
   normalizePoi
 } from "./normalize_pois";
@@ -470,7 +470,9 @@ export class MaplatApp extends EventTarget {
     this.i18n = i18nObj[1];
     this.t = i18nObj[0];
     const mapReturnValue = this.prepareMap(appOption);
-    return normalizeLayers(this.appData!.pois || [], this).then(x =>
+    return normalizeLayers(this.appData!.pois || [], {
+      name: this.appName
+    }).then(x =>
       this.handlePois(x, mapReturnValue)
     );
   }
@@ -1053,7 +1055,7 @@ export class MaplatApp extends EventTarget {
         Object.keys(this.pois).map(key => {
           const cluster = this.pois[key];
           if (!cluster.hide) {
-            cluster.pois.map((data: any) => {
+            cluster.features.map((data: any) => {
               const dataCopy = createIconSet(data, cluster, this);
               createHtmlFromTemplate(dataCopy, cluster, this);
               if (this.__selectedMarker == dataCopy.namespaceID) {
@@ -1068,7 +1070,7 @@ export class MaplatApp extends EventTarget {
           Object.keys(source.pois).map(key => {
             const cluster = source.pois[key];
             if (!cluster.hide) {
-              cluster.pois.map((data: any) => {
+              cluster.features.map((data: any) => {
                 const dataCopy = createIconSet(data, cluster, source, this);
                 createHtmlFromTemplate(dataCopy, cluster, source, this);
                 if (this.__selectedMarker == dataCopy.namespaceID) {
@@ -1125,9 +1127,9 @@ export class MaplatApp extends EventTarget {
     if (id.indexOf("#") < 0) {
       let ret: any = undefined;
       Object.keys(this.pois).map(key => {
-        this.pois[key].pois.map((poi: any, i: any) => {
-          if (poi.id == id) {
-            ret = this.pois[key].pois[i];
+        this.pois[key].features.map((feature: any, i: any) => {
+          if (feature.id == id) {
+            ret = this.pois[key].features[i];
           }
         });
       });
@@ -1169,8 +1171,8 @@ export class MaplatApp extends EventTarget {
     }
     if (clusterId.indexOf("#") < 0) {
       if (this.pois[clusterId]) {
-        this.pois[clusterId]["pois"].push(normalizePoi(data));
-        addIdToPoi(this.pois, clusterId, {
+        this.pois[clusterId]["features"].push(normalizePoi(data));
+        addIdToFeature(this.pois, clusterId, {
           name: this.appName
         });
         this.dispatchPoiNumber();
@@ -1191,9 +1193,9 @@ export class MaplatApp extends EventTarget {
   removeMarker(id: any) {
     if (id.indexOf("#") < 0) {
       Object.keys(this.pois).map(key => {
-        this.pois[key].pois.map((poi: any, i: any) => {
-          if (poi.id == id) {
-            delete this.pois[key].pois[i];
+        this.pois[key].features.map((feature: any, i: any) => {
+          if (feature.id == id) {
+            delete this.pois[key].features[i];
             this.dispatchPoiNumber();
             this.redrawMarkers();
           }
@@ -1216,10 +1218,10 @@ export class MaplatApp extends EventTarget {
     if (clusterId.indexOf("#") < 0) {
       if (clusterId == "all") {
         Object.keys(this.pois).map(key => {
-          this.pois[key]["pois"] = [];
+          this.pois[key]["features"] = [];
         });
       } else if (this.pois[clusterId]) {
-        this.pois[clusterId]["pois"] = [];
+        this.pois[clusterId]["features"] = [];
       } else return;
       this.dispatchPoiNumber();
       this.redrawMarkers();
@@ -1246,7 +1248,7 @@ export class MaplatApp extends EventTarget {
       new CustomEvent(
         "poi_number",
         this.listPoiLayers(false, true).reduce(
-          (prev, curr) => prev + curr.pois.length,
+          (prev, curr) => prev + curr.features.length,
           0
         )
       )
@@ -1265,8 +1267,8 @@ export class MaplatApp extends EventTarget {
       .filter(layer =>
         nonzero
           ? hideOnly
-            ? layer.pois.length && layer.hide
-            : layer.pois.length
+            ? layer.features.length && layer.hide
+            : layer.features.length
           : hideOnly
             ? layer.hide
             : true

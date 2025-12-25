@@ -1,3 +1,51 @@
+import type { Feature, FeatureCollection, Point } from "geojson";
+
+/**
+ * JSON POI object with various coordinate formats
+ */
+export interface JSONPoi {
+  id?: string | number;
+  // Coordinate formats
+  lnglat?: [number, number];
+  lng?: number;
+  lat?: number;
+  longitude?: number;
+  latitude?: number;
+  // Other properties
+  name?: string;
+  description?: string;
+  [key: string]: any; // Allow additional custom properties
+}
+
+/**
+ * JSON Layer - can be an array of POIs or a FeatureCollection
+ */
+export type JSONLayer = JSONPoi[] | FeatureCollection<Point>;
+
+/**
+ * Internal POI Layer structure (always GeoJSON FeatureCollection)
+ */
+export interface POILayer extends FeatureCollection<Point> {
+  id: string;
+  name?: string;
+  namespaceID?: string;
+  __nextId?: number;
+  [key: string]: any; // Allow additional layer metadata
+}
+
+/**
+ * Options for POI normalization
+ */
+export interface NormalizeOptions {
+  name?: string;
+  namespace?: string;
+}
+
+/**
+ * Layers collection - maps layer ID to POI layer
+ */
+export type LayersCollection = Record<string, POILayer>;
+
 // Async initializer 6: Load pois setting
 export async function nodesLoader(
   nodes: string | Record<string, unknown>
@@ -31,15 +79,35 @@ export async function nodesLoader(
   }
 }
 
+/**
+ * Normalizes coordinates from various JSON formats to GeoJSON coordinate array
+ * Supports: lnglat, lng/lat, longitude/latitude
+ */
+function normalizeCoordinates(poi: JSONPoi): [number, number] {
+  if (poi.lnglat && Array.isArray(poi.lnglat)) {
+    return poi.lnglat as [number, number];
+  }
+  if (poi.lng !== undefined && poi.lat !== undefined) {
+    return [poi.lng, poi.lat];
+  }
+  if (poi.longitude !== undefined && poi.latitude !== undefined) {
+    return [poi.longitude, poi.latitude];
+  }
+  throw new Error("POI missing coordinates");
+}
+
 //pois: Process layers
-export async function normalizeLayers(layers: any, options: any) {
+export async function normalizeLayers(
+  layers: any,
+  options: NormalizeOptions
+): Promise<LayersCollection> {
   // Resolve url cases
   layers = await nodesLoader(layers);
 
   //In case "layers" is array
   if (Array.isArray(layers)) {
     layers = await Promise.all(layers.map(async x => await nodesLoader(x)));
-    //In case of array of FeatureCollection
+    //In case of array of FeatureCollection (GeoJSON input - preserve)
     if (layers.length > 0 && layers[0].type === "FeatureCollection") {
       layers = layers.reduce((prev: any, layer: any, index: any) => {
         let key = layer.id || (layer.properties && layer.properties.id);
@@ -50,18 +118,18 @@ export async function normalizeLayers(layers: any, options: any) {
         prev[key] = normalizeLayer(layer, key, options);
         return prev;
       }, {});
-      //In case old type single layer spec
+      //In case old type single layer spec (JSON array input - convert to GeoJSON)
     } else {
       layers = {
         main: normalizeLayer(layers, "main", options)
       };
     }
-    // In case of single FeatureCollection
+    // In case of single FeatureCollection (GeoJSON input - preserve)
   } else if (layers.type === "FeatureCollection") {
     const key =
       layers.id || (layers.properties && layers.properties.id) || "main";
     layers = { [key]: normalizeLayer(layers, key, options) };
-    // In case current non-geojson layers spec
+    // In case current non-geojson layers spec (Object with layer keys)
   } else {
     Object.keys(layers).map(key => {
       layers[key] = normalizeLayer(layers[key], key, options);
@@ -73,78 +141,137 @@ export async function normalizeLayers(layers: any, options: any) {
     layers["main"] = normalizeLayer([], "main", options);
   }
   Object.keys(layers).map(key => {
-    addIdToPoi(layers, key, options);
+    addIdToFeature(layers, key, options);
   });
 
   return layers;
 }
 
 //pois: Process layers
-export function normalizeLayer(layer: any, key: any, options: any) {
-  //In case "layer" is array (Old spec)
+export function normalizeLayer(
+  layer: JSONLayer,
+  key: string,
+  options: NormalizeOptions
+): POILayer {
+  let result: POILayer;
+
+  //In case "layer" is array (Old JSON array spec - convert to GeoJSON)
   if (Array.isArray(layer)) {
-    layer = {
-      pois: layer.map(x => normalizePoi(x))
-    };
-    //In case "layer" is FeatureCollection
+    const features = layer.map(x => normalizePoi(x));
+    result = {
+      type: "FeatureCollection",
+      features: features,
+      id: key
+    } as POILayer;
+    //In case "layer" is FeatureCollection (GeoJSON input - preserve with metadata)
   } else if (layer.type === "FeatureCollection") {
-    const buffer = Object.assign({}, layer.properties || {});
-    if (layer.name) buffer.name = layer.name;
-    buffer.pois = layer.features.map((x: any) => normalizePoi(x));
-    layer = buffer;
-  }
-
-  if (typeof layer.id === "undefined") {
-    layer.id = key;
+    // Preserve FeatureCollection, ensure all features are normalized
+    const layerWithMeta = layer as any; // Temporarily cast to access custom properties
+    const buffer: any = Object.assign({}, layerWithMeta.properties || {});
+    if (layerWithMeta.name) buffer.name = layerWithMeta.name;
+    buffer.type = "FeatureCollection";
+    buffer.features = layer.features.map((x: any) => normalizePoi(x));
+    buffer.id = key;
+    result = buffer as POILayer;
   } else {
-    if (layer.id !== key) throw "POI layers include bad key setting";
+    // Fallback: create empty FeatureCollection
+    result = {
+      type: "FeatureCollection",
+      features: [],
+      id: key
+    } as POILayer;
   }
-  if (!layer.namespaceID)
-    layer.namespaceID = `${
-      options.namespace ? `${options.namespace}#` : ""
-    }${key}`;
-  if (!layer.name) layer.name = key === "main" ? options.name : key;
-  if (!layer.pois) layer.pois = [];
 
-  return layer;
+  // Add layer metadata
+  if (!result.namespaceID) {
+    result.namespaceID = `${options.namespace ? `${options.namespace}#` : ""
+      }${key}`;
+  }
+  if (!result.name) result.name = key === "main" ? options.name : key;
+  if (!result.features) result.features = [];
+
+  return result;
 }
 
-//pois: Process poi
-export function normalizePoi(poi: any) {
-  //In case "poi" is GeoJson(Point)
+//pois: Process poi - converts JSON POI to GeoJSON Feature
+export function normalizePoi(poi: JSONPoi | Feature<Point>): Feature<Point> {
+  //In case "poi" is already a GeoJSON Feature (preserve)
   if (poi.type === "Feature") {
-    const buffer = Object.assign({}, poi.properties || {});
-    buffer.lnglat = poi.geometry.coordinates;
-    if (!buffer.id) buffer.id = poi.id;
-    if (!buffer.name) buffer.name = poi.name;
-    poi = buffer;
+    // Validate it has required fields
+    if (!poi.geometry || !poi.geometry.coordinates) {
+      throw new Error("Invalid GeoJSON Feature: missing geometry.coordinates");
+    }
+    // Ensure properties exist
+    if (!poi.properties) {
+      poi.properties = {};
+    }
+    // If Feature doesn't have id but properties.id exists, use it
+    if (!poi.id && poi.properties.id) {
+      poi.id = poi.properties.id;
+    }
+    return poi as Feature<Point>;
   }
-  if (!poi.lnglat)
-    poi.lnglat = [poi.lng || poi.longitude, poi.lat || poi.latitude];
-  delete poi.lng;
-  delete poi.lat;
-  delete poi.longitude;
-  delete poi.latitude;
-  return poi;
+
+  // Convert JSON POI object to GeoJSON Feature
+  // Type narrow to JSONPoi since we've already handled Feature case above
+  const jsonPoi = poi as JSONPoi;
+  const coordinates = normalizeCoordinates(jsonPoi);
+  const properties: any = {};
+
+  // Copy all properties except coordinate fields and id
+  Object.keys(jsonPoi).forEach(key => {
+    if (
+      key !== "lnglat" &&
+      key !== "lng" &&
+      key !== "lat" &&
+      key !== "longitude" &&
+      key !== "latitude" &&
+      key !== "id"
+    ) {
+      properties[key] = jsonPoi[key];
+    }
+  });
+
+  const feature: Feature<Point> = {
+    type: "Feature",
+    geometry: {
+      type: "Point",
+      coordinates: coordinates
+    },
+    properties: properties
+  };
+
+  // Preserve id if provided
+  if (poi.id) {
+    feature.id = poi.id;
+  }
+
+  return feature;
 }
 
-// Add id to every pois
-export function addIdToPoi(layers: any, key: any, options: any) {
+// Add id to every feature in a FeatureCollection
+export function addIdToFeature(
+  layers: LayersCollection,
+  key: string,
+  options: NormalizeOptions
+) {
   if (!layers[key]) return;
-  const cluster = layers[key];
-  const pois = cluster.pois;
-  if (!cluster.__nextId) {
-    cluster.__nextId = 0;
+  const collection = layers[key];
+  const features = collection.features;
+  if (!collection.__nextId) {
+    collection.__nextId = 0;
   }
-  pois.map((poi: any) => {
-    if (!poi.id) {
-      poi.id = `${key}_${cluster.__nextId}`;
-      cluster.__nextId++;
+  features.forEach((feature: Feature) => {
+    if (!feature.id) {
+      feature.id = `${key}_${collection.__nextId ?? 0}`;
+      collection.__nextId = (collection.__nextId ?? 0) + 1;
     }
-    if (!poi.namespaceID) {
-      poi.namespaceID = `${options.namespace ? `${options.namespace}#` : ""}${
-        poi.id
-      }`;
+    if (!feature.properties) {
+      feature.properties = {};
+    }
+    if (!feature.properties.namespaceID) {
+      feature.properties.namespaceID = `${options.namespace ? `${options.namespace}#` : ""
+        }${feature.id}`;
     }
   });
 }

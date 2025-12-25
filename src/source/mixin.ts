@@ -5,7 +5,7 @@ import { Size } from "ol/size";
 import { transform } from "ol/proj";
 import { canvBase, MERC_CROSSMATRIX, MERC_MAX } from "../const_ex";
 import {
-  addIdToPoi,
+  addIdToFeature,
   normalizeLayer,
   normalizeLayers,
   normalizePoi
@@ -428,9 +428,9 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
     getPoi(id: string) {
       let ret = undefined;
       Object.keys(this.pois).map(key => {
-        this.pois[key].pois.map((poi: any, i: number) => {
-          if (poi.id === id) {
-            ret = this.pois[key].pois[i];
+        this.pois[key].features.map((feature: any, i: number) => {
+          if (feature.id === id) {
+            ret = this.pois[key].features[i];
           }
         });
       });
@@ -443,20 +443,20 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
       }
       if (this.pois[clusterId]) {
         data = normalizePoi(data);
-        this.pois[clusterId]["pois"].push(data);
-        addIdToPoi(this.pois, clusterId, {
+        this.pois[clusterId]["features"].push(data);
+        addIdToFeature(this.pois, clusterId, {
           name: this.officialTitle || this.title,
           namespace: this.mapID
         });
-        return data.namespaceID;
+        return data.properties?.namespaceID;
       }
     }
 
     removePoi(id: string) {
       Object.keys(this.pois).map(key => {
-        this.pois[key].pois.map((poi: any, i: number) => {
-          if (poi.id === id) {
-            delete this.pois[key].pois[i];
+        this.pois[key].features.map((feature: any, i: number) => {
+          if (feature.id === id) {
+            delete this.pois[key].features[i];
           }
         });
       });
@@ -468,10 +468,10 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
       }
       if (clusterId === "all") {
         Object.keys(this.pois).map(key => {
-          this.pois[key]["pois"] = [];
+          this.pois[key]["features"] = [];
         });
       } else if (this.pois[clusterId]) {
-        this.pois[clusterId]["pois"] = [];
+        this.pois[clusterId]["features"] = [];
       }
     }
 
@@ -488,8 +488,8 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
         .filter(layer =>
           nonzero
             ? hideOnly
-              ? layer.pois.length && layer.hide
-              : layer.pois.length
+              ? layer.features.length && layer.hide
+              : layer.features.length
             : hideOnly
               ? layer.hide
               : true

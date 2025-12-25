@@ -217,8 +217,10 @@ const clickMarkerById = async (page: Page, markerId: string) => {
     window.scrollTo(0, 0);
     document.querySelector('#map_div')?.scrollIntoView({ block: 'center', inline: 'center' });
 
+    // Handle both GeoJSON Feature format and legacy POI format
     const lnglat =
-      marker.lnglat ??
+      marker.geometry?.coordinates ??  // GeoJSON Feature
+      marker.lnglat ??                 // Legacy format
       (marker.longitude !== undefined && marker.latitude !== undefined
         ? [marker.longitude, marker.latitude]
         : marker.lng !== undefined && marker.lat !== undefined
@@ -346,8 +348,10 @@ test.describe('Maplat legacy workflow', () => {
       if (!marker) {
         return { exists: false };
       }
+      // Handle both GeoJSON Feature format and legacy POI format
       const lnglat =
-        marker.lnglat ??
+        marker.geometry?.coordinates ??  // GeoJSON Feature
+        marker.lnglat ??                 // Legacy format
         (marker.longitude !== undefined && marker.latitude !== undefined
           ? [marker.longitude, marker.latitude]
           : marker.lng !== undefined && marker.lat !== undefined
@@ -372,13 +376,20 @@ test.describe('Maplat legacy workflow', () => {
     const markerEvent = await waitForMessage(messageQueue, 'clickMarker');
     const marker = markerEvent.payload as ClickMarkerPayload | undefined;
 
+    // Marker should be in GeoJSON Feature format now
     expect(marker?.id).toBe('main_1');
     expect(marker?.namespaceID).toBe('main_1');
-    expect(marker?.image).toBe('moriokaginko.jpg');
-    expect(marker?.start).toBe(1896);
-    expect(marker?.lnglat?.[0]).not.toBeUndefined();
-    expect(marker?.lnglat?.[1]).not.toBeUndefined();
-    expect(marker?.lnglat?.[0] as number).toBeCloseTo(141.15296, 5);
-    expect(marker?.lnglat?.[1] as number).toBeCloseTo(39.7006, 5);
+
+    // Properties are in marker.properties for GeoJSON, or top-level for legacy
+    const image = (marker as any)?.properties?.image ?? (marker as any)?.image;
+    const start = (marker as any)?.properties?.start ?? (marker as any)?.start;
+    const lnglat = (marker as any)?.geometry?.coordinates ?? marker?.lnglat;
+
+    expect(image).toBe('moriokaginko.jpg');
+    expect(start).toBe(1896);
+    expect(lnglat?.[0]).not.toBeUndefined();
+    expect(lnglat?.[1]).not.toBeUndefined();
+    expect(lnglat?.[0] as number).toBeCloseTo(141.15296, 5);
+    expect(lnglat?.[1] as number).toBeCloseTo(39.7006, 5);
   });
 });
