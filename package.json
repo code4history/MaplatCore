@@ -60,7 +60,7 @@
   },
   "homepage": "https://github.com/code4history/MaplatCore/wiki",
   "dependencies": {
-    "@c4h/weiwudi": "github:code4history/Weiwudi#d534a7d",
+    "@c4h/weiwudi": "github:code4history/Weiwudi#aea2b72",
     "@maplat/transform": "github:code4history/MaplatTransform#cec4ef4",
     "@turf/turf": "^7.3.1",
     "caniuse-lite": "^1.0.30001761",

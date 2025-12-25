@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@c4h/weiwudi':
-        specifier: github:code4history/Weiwudi#d534a7d
-        version: https://codeload.github.com/code4history/Weiwudi/tar.gz/d534a7d(workbox-routing@7.4.0)
+        specifier: github:code4history/Weiwudi#aea2b72
+        version: https://codeload.github.com/code4history/Weiwudi/tar.gz/aea2b72(workbox-routing@7.4.0)
       '@maplat/transform':
         specifier: github:code4history/MaplatTransform#cec4ef4
         version: https://codeload.github.com/code4history/MaplatTransform/tar.gz/cec4ef4
@@ -161,8 +161,8 @@ packages:
     resolution: {integrity: sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==}
     engines: {node: '>=18'}
 
-  '@c4h/weiwudi@https://codeload.github.com/code4history/Weiwudi/tar.gz/d534a7d':
-    resolution: {tarball: https://codeload.github.com/code4history/Weiwudi/tar.gz/d534a7d}
+  '@c4h/weiwudi@https://codeload.github.com/code4history/Weiwudi/tar.gz/aea2b72':
+    resolution: {tarball: https://codeload.github.com/code4history/Weiwudi/tar.gz/aea2b72}
     version: 0.1.5
     engines: {node: '>=20.0.0', pnpm: '>=9.0.0'}
     peerDependencies:
@@ -2611,7 +2611,7 @@ snapshots:
 
   '@bcoe/v8-coverage@1.0.2': {}
 
-  '@c4h/weiwudi@https://codeload.github.com/code4history/Weiwudi/tar.gz/d534a7d(workbox-routing@7.4.0)':
+  '@c4h/weiwudi@https://codeload.github.com/code4history/Weiwudi/tar.gz/aea2b72(workbox-routing@7.4.0)':
     dependencies:
       workbox-routing: 7.4.0
 
