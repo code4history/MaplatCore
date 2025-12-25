@@ -7,7 +7,7 @@ describe("Coordinate format conversion", () => {
         const input = {
             id: "test1",
             name: "Test POI",
-            lnglat: [139.5, 35.6]
+            lnglat: [139.5, 35.6] as [number, number]
         };
         const result = normalizePoi(input);
         expect(result.type).toBe("Feature");
@@ -48,7 +48,7 @@ describe("Coordinate format conversion", () => {
             description: "A test description",
             image: "test.jpg",
             category: "restaurant",
-            lnglat: [142.0, 38.0]
+            lnglat: [142.0, 38.0] as [number, number]
         };
         const result = normalizePoi(input);
         expect(result.properties?.name).toBe("Test POI 4");

@@ -160,7 +160,7 @@ export function normalizeLayer(
     const features = layer.map(x => normalizePoi(x));
     result = {
       type: "FeatureCollection",
-      features: features,
+      features,
       id: key
     } as POILayer;
     //In case "layer" is FeatureCollection (GeoJSON input - preserve with metadata)
@@ -236,9 +236,9 @@ export function normalizePoi(poi: JSONPoi | Feature<Point>): Feature<Point> {
     type: "Feature",
     geometry: {
       type: "Point",
-      coordinates: coordinates
+      coordinates
     },
-    properties: properties
+    properties
   };
 
   // Preserve id if provided
