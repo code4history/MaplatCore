@@ -1,5 +1,30 @@
+import { Feature, FeatureCollection, Point } from 'geojson';
+export interface JSONPoi {
+    id?: string | number;
+    lnglat?: [number, number];
+    lng?: number;
+    lat?: number;
+    longitude?: number;
+    latitude?: number;
+    name?: string;
+    description?: string;
+    [key: string]: any;
+}
+export type JSONLayer = JSONPoi[] | FeatureCollection<Point>;
+export interface POILayer extends FeatureCollection<Point> {
+    id: string;
+    name?: string;
+    namespaceID?: string;
+    __nextId?: number;
+    [key: string]: any;
+}
+export interface NormalizeOptions {
+    name?: string;
+    namespace?: string;
+}
+export type LayersCollection = Record<string, POILayer>;
 export declare function nodesLoader(nodes: string | Record<string, unknown>): Promise<Record<string, unknown>>;
-export declare function normalizeLayers(layers: any, options: any): Promise<any>;
-export declare function normalizeLayer(layer: any, key: any, options: any): any;
-export declare function normalizePoi(poi: any): any;
-export declare function addIdToPoi(layers: any, key: any, options: any): void;
+export declare function normalizeLayers(layers: any, options: NormalizeOptions): Promise<LayersCollection>;
+export declare function normalizeLayer(layer: JSONLayer, key: string, options: NormalizeOptions): POILayer;
+export declare function normalizePoi(poi: JSONPoi | Feature<Point>): Feature<Point>;
+export declare function addIdToFeature(layers: LayersCollection, key: string, options: NormalizeOptions): void;
