@@ -20,7 +20,8 @@ describe("normalizePois test", () => {
     it(testCase.input.title, async () => {
       const testout = await normalizeLayers(testCase.input.data, testCase.input.options);
       // Deep clone to avoid reference issues
-      expect(JSON.parse(JSON.stringify(testout))).toEqual(testCase.expect);
+      const actual = JSON.parse(JSON.stringify(testout));
+      expect(actual).toEqual(testCase.expect);
     });
   });
 });

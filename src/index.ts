@@ -54,9 +54,10 @@ interface AppData {
   fakeGps?: Coordinate;
   fakeRadius?: number;
   noRotate?: boolean;
-  poiTemplate?: string;
-  poiStyle?: string;
-  iconTemplate?: string;
+  html?: string;
+  htmlStyle?: string;
+  icon?: string;
+  selectedIcon?: string;
   startFrom?: string;
   controls?: any[];
   northUp?: boolean;
@@ -134,12 +135,11 @@ export class MaplatApp extends EventTarget {
   maplibreMap: any;
   googleApiKey?: string;
   pois: any;
-  poiTemplate?: string;
-  poiStyle?: string;
-  iconTemplate?: string;
-  logger: Logger;
+  html?: string;
+  htmlStyle?: string;
   icon?: string;
   selectedIcon?: string;
+  logger: Logger;
   fakeGps = false;
   fakeRadius?: number;
   homePosition?: [number, number];
@@ -472,9 +472,12 @@ export class MaplatApp extends EventTarget {
     const mapReturnValue = this.prepareMap(appOption);
     return normalizeLayers(this.appData!.pois || [], {
       name: this.appName
-    }).then(x =>
-      this.handlePois(x, mapReturnValue)
-    );
+    }).then(x => {
+      console.log("Layer");
+      console.log(mapReturnValue);
+      console.log(x);
+      this.handlePois(x, mapReturnValue);
+    });
   }
   // Async initializers 5: Prepare map base elements and objects
   prepareMap(appOption: any) {
@@ -490,11 +493,10 @@ export class MaplatApp extends EventTarget {
     const fakeRadius = appOption.fake ? this.appData!.fakeRadius : false;
     this.appLang = this.appData!.lang || "ja";
     this.noRotate = appOption.noRotate || this.appData!.noRotate || false;
-    this.poiTemplate =
-      appOption.poiTemplate || this.appData!.poiTemplate || false;
-    this.poiStyle = appOption.poiStyle || this.appData!.poiStyle || false;
-    this.iconTemplate =
-      appOption.iconTemplate || this.appData!.iconTemplate || false;
+    this.html = appOption.html || this.appData!.html || false;
+    this.htmlStyle = appOption.htmlStyle || this.appData!.htmlStyle || false;
+    this.icon = appOption.icon || this.appData!.icon || false;
+    this.selectedIcon = appOption.selectedIcon || this.appData!.selectedIcon || false;
     this.currentPosition = null;
     this.__init = true;
     // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
@@ -682,6 +684,7 @@ export class MaplatApp extends EventTarget {
         this.logger.debug(evt.pixel);
         if (feature.get("datum")) features.push(feature.get("datum"));
       });
+      console.log(features);
       if (features.length > 0) {
         this.dispatchEvent(new CustomEvent("clickMarker", features[0]));
         this.dispatchEvent(new CustomEvent("clickMarkers", features));
@@ -1054,7 +1057,7 @@ export class MaplatApp extends EventTarget {
       if (!this.stateBuffer.hideMarker) {
         Object.keys(this.pois).map(key => {
           const cluster = this.pois[key];
-          if (!cluster.hide) {
+          if (!cluster.properties?.hide) {
             cluster.features.map((data: any) => {
               const dataCopy = createIconSet(data, cluster, this);
               createHtmlFromTemplate(dataCopy, cluster, this);
@@ -1069,7 +1072,7 @@ export class MaplatApp extends EventTarget {
         if (source.pois) {
           Object.keys(source.pois).map(key => {
             const cluster = source.pois[key];
-            if (!cluster.hide) {
+            if (!cluster.properties?.hide) {
               cluster.features.map((data: any) => {
                 const dataCopy = createIconSet(data, cluster, source, this);
                 createHtmlFromTemplate(dataCopy, cluster, source, this);
@@ -1105,16 +1108,8 @@ export class MaplatApp extends EventTarget {
     if (!data) return;
     this.__selectedMarker = id;
     const latlng = {
-      latitude: data.lnglat
-        ? data.lnglat[1]
-        : data.lat
-          ? data.lat
-          : data.latitude,
-      longitude: data.lnglat
-        ? data.lnglat[0]
-        : data.lng
-          ? data.lng
-          : data.longitude
+      latitude: data.geometry.coordinates[1],
+      longitude: data.geometry.coordinates[0]
     };
     this.setViewpoint(latlng);
     this.redrawMarkers();
@@ -1145,23 +1140,27 @@ export class MaplatApp extends EventTarget {
   updateMarker(id: any, data: any, overwrite: any) {
     const poi = this.getMarker(id);
     if (!poi) return;
-    data = normalizePoi(data || {});
-    if (overwrite) {
-      Object.keys(poi).map(key => {
-        if (key != "id" && key != "namespaceID") {
-          delete poi[key];
-        }
-      });
-      Object.assign(poi, data);
-    } else {
-      Object.keys(data).map(key => {
-        if (key == "id" || key == "namespaceID") return;
-        if (data[key] == "____delete____") {
-          delete poi[key];
-        } else {
-          poi[key] = data[key];
-        }
-      });
+    if (data.geometry) {
+      poi.geometry = data.geometry;
+    }
+    if (data.properties) {
+      if (overwrite) {
+        Object.keys(poi.properties).map(key => {
+          if (key != "id" && key != "namespaceID") {
+            delete poi.properties[key];
+          }
+        });
+        Object.assign(poi.properties, data.properties);
+      } else {
+        Object.keys(data.properties).map(key => {
+          if (key == "id" || key == "namespaceID") return;
+          if (data.properties[key] == "____delete____") {
+            delete poi.properties[key];
+          } else {
+            poi.properties[key] = data.properties[key];
+          }
+        });
+      }
     }
     this.redrawMarkers();
   }
@@ -1267,10 +1266,10 @@ export class MaplatApp extends EventTarget {
       .filter(layer =>
         nonzero
           ? hideOnly
-            ? layer.features.length && layer.hide
+            ? layer.features.length && layer.properties?.hide
             : layer.features.length
           : hideOnly
-            ? layer.hide
+            ? layer.properties?.hide
             : true
       );
     const mapPois = (this.from as MaplatSource).listPoiLayers(
@@ -1282,10 +1281,10 @@ export class MaplatApp extends EventTarget {
   showPoiLayer(id: any) {
     const layer = this.getPoiLayer(id);
     if (layer) {
-      delete layer.hide;
+      if (layer.properties) delete layer.properties.hide;
       this.requestUpdateState({
         hideLayer: this.listPoiLayers(true)
-          .map(layer => layer.namespaceID)
+          .map(layer => layer.properties?.namespaceID)
           .join(",")
       });
       this.redrawMarkers();
@@ -1294,10 +1293,11 @@ export class MaplatApp extends EventTarget {
   hidePoiLayer(id: any) {
     const layer = this.getPoiLayer(id);
     if (layer) {
-      layer.hide = true;
+      if (!layer.properties) layer.properties = {};
+      layer.properties.hide = true;
       this.requestUpdateState({
         hideLayer: this.listPoiLayers(true)
-          .map(layer => layer.namespaceID)
+          .map(layer => layer.properties?.namespaceID)
           .join(",")
       });
       this.redrawMarkers();
@@ -1338,7 +1338,7 @@ export class MaplatApp extends EventTarget {
       delete this.pois[id];
       this.requestUpdateState({
         hideLayer: this.listPoiLayers(true)
-          .map(layer => layer.namespaceID)
+          .map(layer => layer.properties?.namespaceID)
           .join(",")
       });
       this.dispatchPoiNumber();
@@ -1350,7 +1350,7 @@ export class MaplatApp extends EventTarget {
         source.removePoiLayer(splits[1]);
         this.requestUpdateState({
           hideLayer: this.listPoiLayers(true)
-            .map(layer => layer.namespaceID)
+            .map(layer => layer.properties?.namespaceID)
             .join(",")
         });
         this.dispatchPoiNumber();
@@ -1476,7 +1476,8 @@ export class MaplatApp extends EventTarget {
               layers.map((key: any) => {
                 const layer = this.getPoiLayer(key);
                 if (layer) {
-                  layer.hide = true;
+                  if (!layer.properties) layer.properties = {};
+                  layer.properties.hide = true;
                 }
               });
               this.requestUpdateState({ hideLayer: restore!.hideLayer });

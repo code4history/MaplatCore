@@ -2,8 +2,10 @@
   "main2": {
     "type": "FeatureCollection",
     "id": "main2",
-    "namespaceID": "main2",
-    "name": "main2_name",
+    "properties": {
+      "namespaceID": "main2",
+      "name": "main2_name"
+    },
     "features": [
       {
         "type": "Feature",
@@ -91,8 +93,10 @@
   "main": {
     "type": "FeatureCollection",
     "id": "main",
-    "namespaceID": "main",
-    "name": "Test2",
+    "properties": {
+      "namespaceID": "main",
+      "name": "Test2"
+    },
     "features": [],
     "__nextId": 0
   }

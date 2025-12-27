@@ -57,17 +57,16 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
     centroid?: number[];
     homeMarginPixels = 0;
     thumbnail?: string;
-    poiTemplate?: string;
-    poiStyle?: string;
-    iconTemplate?: string;
+    html?: string;
+    htmlStyle?: string;
+    icon?: string;
+    selectedIcon?: string;
     startFrom?: string;
     controls?: any[];
     northUp?: boolean;
     tapDuration?: number;
     mercatorXShift = 0;
     mercatorYShift = 0;
-    icon?: string;
-    selectedIcon?: string;
     static isBasemap_ = false;
     static isWmts_ = true;
     static isMapbox_ = false;
@@ -81,9 +80,8 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
       this.label = options.label;
       this.maxZoom = options.maxZoom;
       this.minZoom = options.minZoom;
-      this.poiTemplate = options.poiTemplate;
-      this.poiStyle = options.poiStyle;
-      this.iconTemplate = options.iconTemplate;
+      this.html = options.html;
+      this.htmlStyle = options.htmlStyle;
       this.icon = options.icon;
       this.selectedIcon = options.selectedIcon;
       this.mercatorXShift = options.mercatorXShift;
@@ -488,10 +486,10 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
         .filter(layer =>
           nonzero
             ? hideOnly
-              ? layer.features.length && layer.hide
+              ? layer.features.length && layer.properties?.hide
               : layer.features.length
             : hideOnly
-              ? layer.hide
+              ? layer.properties?.hide
               : true
         );
     }
@@ -873,65 +871,6 @@ export function addCommonOptions(options: any) {
   }
   return options;
 }
-
-/*export function setCustomInitialize(this: any, options: any) {
-  options = normalizeArg(options);
-  this.mapID = options.mapID;
-  this.homePosition = options.homePosition;
-  this.mercZoom = options.mercZoom;
-  this.label = options.label;
-  this.maxZoom = options.maxZoom;
-  this.minZoom = options.minZoom;
-  this.poiTemplate = options.poiTemplate;
-  this.poiStyle = options.poiStyle;
-  this.iconTemplate = options.iconTemplate;
-  this.icon = options.icon;
-  this.selectedIcon = options.selectedIcon;
-  this.mercatorXShift = options.mercatorXShift;
-  this.mercatorYShift = options.mercatorYShift;
-  this.weiwudi = options.weiwudi;
-  if (options.envelopeLngLats) {
-    const lngLats = options.envelopeLngLats;
-    const mercs = lngLats.map((lnglat: Coordinate) =>
-      transform(lnglat, "EPSG:4326", "EPSG:3857")
-    );
-    mercs.push(mercs[0]);
-    this.envelope = polygon([mercs]);
-    this.centroid = centroid(this.envelope).geometry?.coordinates;
-  }
-
-  for (let i = 0; i < META_KEYS.length; i++) {
-    const key = META_KEYS[i];
-    const option_key = META_KEYS_OPTION[i];
-    this[key] = options[option_key] || options[key];
-  }
-
-  const thumbWait = options.thumbnail
-    ? new Promise(resolve => {
-        this.thumbnail = options.thumbnail;
-        resolve(undefined);
-      })
-    : new Promise(resolve => {
-        this.thumbnail = `./tmbs/${options.mapID}.jpg`;
-        fetch(this.thumbnail)
-          .then(response => {
-            if (response.ok) {
-              resolve(undefined);
-            } else {
-              this.thumbnail = `./tmbs/${options.mapID}_menu.jpg`;
-              resolve(undefined);
-            }
-          })
-          .catch(_error => {
-            this.thumbnail = `./tmbs/${options.mapID}_menu.jpg`;
-            resolve(undefined);
-          });
-      }).catch(_error => {
-        this.thumbnail = `./tmbs/${options.mapID || options.sourceID}_menu.jpg`;
-      });
-  const poisWait = this.resolvePois(options.pois);
-  this.initialWait = Promise.all([poisWait, thumbWait]);
-}*/
 
 export function setupTileLoadFunction(target: any) {
   const self = target;

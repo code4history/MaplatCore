@@ -23,14 +23,23 @@ export interface JSONPoi {
 export type JSONLayer = JSONPoi[] | FeatureCollection<Point>;
 
 /**
- * Internal POI Layer structure (always GeoJSON FeatureCollection)
+ * Internal POI Layer structure (GeoJSON FeatureCollection with metadata in properties)
  */
 export interface POILayer extends FeatureCollection<Point> {
+  type: "FeatureCollection";
+  features: Feature<Point>[];
   id: string;
-  name?: string;
-  namespaceID?: string;
   __nextId?: number;
-  [key: string]: any; // Allow additional layer metadata
+  properties?: {
+    name?: string;
+    namespaceID?: string;
+    hide?: boolean;
+    html?: string;
+    htmlStyle?: string;
+    icon?: string;
+    selectedIcon?: string;
+    [key: string]: any;
+  };
 }
 
 /**
@@ -167,12 +176,23 @@ export function normalizeLayer(
   } else if (layer.type === "FeatureCollection") {
     // Preserve FeatureCollection, ensure all features are normalized
     const layerWithMeta = layer as any; // Temporarily cast to access custom properties
-    const buffer: any = Object.assign({}, layerWithMeta.properties || {});
-    if (layerWithMeta.name) buffer.name = layerWithMeta.name;
-    buffer.type = "FeatureCollection";
-    buffer.features = layer.features.map((x: any) => normalizePoi(x));
-    buffer.id = key;
-    result = buffer as POILayer;
+    result = {
+      type: "FeatureCollection",
+      features: layer.features.map((x: any) => normalizePoi(x)),
+      id: key
+    } as POILayer;
+    // Preserve existing properties object
+    if (layerWithMeta.properties) {
+      result.properties = { ...layerWithMeta.properties };
+    }
+    // If layer has top-level name, move it to properties
+    if (layerWithMeta.name) {
+      if (!result.properties) {
+        result.properties = { name: layerWithMeta.name };
+      } else if (!result.properties.name) {
+        result.properties.name = layerWithMeta.name;
+      }
+    }
   } else {
     // Fallback: create empty FeatureCollection
     result = {
@@ -182,12 +202,13 @@ export function normalizeLayer(
     } as POILayer;
   }
 
-  // Add layer metadata
-  if (!result.namespaceID) {
-    result.namespaceID = `${options.namespace ? `${options.namespace}#` : ""
+  // Add layer metadata to properties
+  if (!result.properties) result.properties = {};
+  if (!result.properties.namespaceID) {
+    result.properties.namespaceID = `${options.namespace ? `${options.namespace}#` : ""
       }${key}`;
   }
-  if (!result.name) result.name = key === "main" ? options.name : key;
+  if (!result.properties.name) result.properties.name = key === "main" ? options.name : key;
   if (!result.features) result.features = [];
 
   return result;

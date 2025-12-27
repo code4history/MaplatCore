@@ -135,9 +135,9 @@
         document.getElementById("move").addEventListener("click", function (e) {
           var data;
           if (moveFlag) {
-            data = { lnglat: [141.145358, 39.69862] };
+            data = { geometry: { type: "Point", coordinates: [141.145358, 39.69862] } };
           } else {
-            data = { lnglat: [141.146534, 39.694758] };
+            data = { geometry: { type: "Point", coordinates: [141.146534, 39.694758] } };
           }
           moveFlag = !moveFlag;
           app.updateMarker("main_1", data);

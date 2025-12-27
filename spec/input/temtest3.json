@@ -6,15 +6,14 @@
   "ancestors": [
     {
       "html": "<hr>",
-      "poiStyle": "abc"
+      "htmlStyle": "abc"
     },
     {
       "icon": "d",
       "selectedIcon": "e"
     },
     {
-      "iconTemplate": "{\n  \"icon\": \"<% if (boolean) { %>true<% } else { %>false<% } %>\",\n  \"selectedIcon\": \"<% [0,1,2].map((x)=>{ %><%= x %><% }) %>\"\n}",
-      "icon": "f",
+      "icon": "{\n  \"icon\": \"<% if (boolean) { %>true<% } else { %>false<% } %>\",\n  \"selectedIcon\": \"<% [0,1,2].map((x)=>{ %><%= x %><% }) %>\"\n}",
       "selectedIcon": "g"
     }
   ]

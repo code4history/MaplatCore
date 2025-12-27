@@ -34,8 +34,10 @@
       }
     ],
     "id": "main",
-    "namespaceID": "main",
-    "name": "Test1",
+    "properties": {
+      "namespaceID": "main",
+      "name": "Test1"
+    },
     "__nextId": 1
   }
 }

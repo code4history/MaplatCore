@@ -23,20 +23,32 @@ export function flattenFeature(data: any): any {
   return flattened;
 }
 
+export function prepareTemplates(...entities: any[]) {
+  const template = entities.reduce((prev, curr) => {
+    prev.html ||= curr.html;
+    prev.htmlStyle ||= curr.htmlStyle;
+    prev.icon ||= curr.icon;
+    prev.selectedIcon ||= curr.selectedIcon;
+    return prev;
+  }, {});
+  return template;
+}
+
 export function createIconSet(data: any, ...ancestors: any[]) {
   const flatData = flattenFeature(data);
   const dataCopy = normalizeArg(Object.assign({}, flatData));
   if (dataCopy.icon) return dataCopy;
   const fromAncestor = ancestors.reduce((prev, curr) => {
     if (prev) return prev;
-    const iconTemplate = curr.iconTemplate;
-    if (iconTemplate) {
-      return JSON.parse(template(iconTemplate)(dataCopy));
-    } else if (curr.icon) {
-      return {
-        icon: curr.icon,
-        selectedIcon: curr.selectedIcon
-      };
+    if (curr.icon) {
+      if (curr.selectedIcon) {
+        return {
+          icon: curr.icon,
+          selectedIcon: curr.selectedIcon
+        };
+      } else {
+        return JSON.parse(template(curr.icon)(dataCopy));
+      }
     }
   }, undefined);
   if (fromAncestor) {
@@ -53,10 +65,9 @@ export function createHtmlFromTemplate(data: any, ...ancestors: any[]) {
   return (
     ancestors.reduce((prev, curr) => {
       if (prev) return prev;
-      const poiTemplate = curr.poiTemplate;
-      if (poiTemplate) {
-        normalizedData.html = template(poiTemplate)(normalizedData);
-        normalizedData.poiStyle = normalizedData.poiStyle || curr.poiStyle;
+      if (curr.html) {
+        normalizedData.html = template(curr.html)(normalizedData);
+        normalizedData.htmlStyle = normalizedData.htmlStyle || curr.htmlStyle;
         return normalizedData;
       }
     }, undefined) || normalizedData

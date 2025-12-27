@@ -6,17 +6,17 @@
   },
   "ancestors": [
     {
-      "poiTemplate": "<div class=\"<%= b %>\"><%= a %></div>",
-      "poiStyle": "abc"
+      "html": "<div class=\"<%= b %>\"><%= a %></div>",
+      "htmlStyle": "abc"
     },
     {
-      "iconTemplate": "{\n  \"icon\": \"<%= a %>\",\n  \"selectedIcon\": \"<%= b %>\"\n}"
+      "icon": "{\n  \"icon\": \"<%= a %>\",\n  \"selectedIcon\": \"<%= b %>\"\n}"
     },
     {
       "icon": "d",
       "selectedIcon": "e",
-      "poiTemplate": "<p></p>",
-      "poiStyle": "def"
+      "html": "<p></p>",
+      "htmlStyle": "def"
     }
   ]
 }

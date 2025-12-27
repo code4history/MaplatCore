@@ -2,5 +2,5 @@
   "a": "b",
   "b": "c",
   "html": "<div class=\"c\">b</div>",
-  "poiStyle": "abc"
+  "htmlStyle": "abc"
 }
