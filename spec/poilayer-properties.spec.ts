@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { normalizeLayers, normalizeLayer } from "../src/normalize_pois";
-import type { LayersCollection } from "../src/normalize_pois";
+import { normalizeLayers, normalizeLayer, type LayersCollection } from "../src/normalize_pois";
 
 describe("POILayer properties migration tests", () => {
     describe("normalizeLayer - properties object", () => {
