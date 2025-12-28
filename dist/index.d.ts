@@ -22,9 +22,10 @@ interface AppData {
     fakeGps?: Coordinate;
     fakeRadius?: number;
     noRotate?: boolean;
-    poiTemplate?: string;
-    poiStyle?: string;
-    iconTemplate?: string;
+    html?: string;
+    htmlStyle?: string;
+    icon?: string;
+    selectedIcon?: string;
     startFrom?: string;
     controls?: any[];
     northUp?: boolean;
@@ -92,12 +93,11 @@ export declare class MaplatApp extends EventTarget {
     maplibreMap: any;
     googleApiKey?: string;
     pois: any;
-    poiTemplate?: string;
-    poiStyle?: string;
-    iconTemplate?: string;
-    logger: Logger;
+    html?: string;
+    htmlStyle?: string;
     icon?: string;
     selectedIcon?: string;
+    logger: Logger;
     fakeGps: boolean;
     fakeRadius?: number;
     homePosition?: [number, number];
@@ -122,13 +122,13 @@ export declare class MaplatApp extends EventTarget {
     handleGPS(enable: boolean, avoidEventForOff?: boolean): void;
     getGPSEnabled(): boolean;
     handleI18n(i18nObj: any, appOption: any): Promise<void>;
-    prepareMap(appOption: any): {
+    prepareMap(appOption: any): Promise<{
         homePos: Coordinate | undefined;
         defZoom: number | undefined;
         zoomRestriction: boolean | undefined;
         mercMinZoom: number | undefined;
         mercMaxZoom: number | undefined;
-    };
+    }>;
     handlePois(pois: any, mapReturnValue: any): Promise<void>;
     handleSources(sources: any): Promise<void>;
     setInitialMap(cache: MaplatSource[]): Promise<void>;

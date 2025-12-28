@@ -47,11 +47,5 @@ export function createFromTemplate(data: any, ...ancestors: any[]) {
   dataCopy.properties.htmlStyle ||= dataCopy.result.htmlStyle;
   dataCopy.properties.icon ||= dataCopy.result.icon;
   dataCopy.properties.selectedIcon ||= dataCopy.result.selectedIcon;
-
-  // Legacy compatibility: flatten properties and add lnglat
-  if (dataCopy.properties) Object.assign(dataCopy, dataCopy.properties);
-  if (data.id) dataCopy.id = data.id;
-  if (dataCopy.geometry?.coordinates) dataCopy.lnglat = dataCopy.geometry.coordinates;
-
   return dataCopy;
 }

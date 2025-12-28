@@ -953,7 +953,7 @@ export class MaplatApp extends EventTarget {
   }
   setMarker(data: any) {
     this.logger.debug(data);
-    const lnglat = data.lnglat || [
+    const lnglat = data.geometry?.coordinates || data.lnglat || [
       data.lng || data.longitude,
       data.lat || data.latitude
     ];
@@ -961,11 +961,22 @@ export class MaplatApp extends EventTarget {
     const y = data.y;
     const coords = data.coordinates;
     const src = this.from;
-    const icon = data.icon
-      ? this.__selectedMarker == data.namespaceID && data.selectedIcon
-        ? data.selectedIcon
-        : data.icon
-      : this.__selectedMarker == data.namespaceID
+
+    const prop = data.properties || {};
+    const dIcon = prop.icon || data.icon;
+    const dSelectedIcon = prop.selectedIcon || data.selectedIcon;
+    const namespaceID = prop.namespaceID || data.namespaceID;
+
+    // Ensure namespaceID is available at top-level for legacy compatibility (events, map logic)
+    if (data.namespaceID === undefined && namespaceID !== undefined) {
+      data.namespaceID = namespaceID;
+    }
+
+    const icon = dIcon
+      ? this.__selectedMarker == namespaceID && dSelectedIcon
+        ? dSelectedIcon
+        : dIcon
+      : this.__selectedMarker == namespaceID
         ? defaultpin_selected
         : defaultpin;
     const promise = coords
@@ -1060,7 +1071,8 @@ export class MaplatApp extends EventTarget {
           if (!cluster.properties?.hide) {
             cluster.features.map((data: any) => {
               const dataCopy = createFromTemplate(data, cluster, this);
-              if (this.__selectedMarker == dataCopy.namespaceID) {
+              const nsID = dataCopy.properties?.namespaceID || dataCopy.namespaceID;
+              if (this.__selectedMarker && this.__selectedMarker == nsID) {
                 selected = dataCopy;
               } else {
                 promises.push(this.setMarker(dataCopy));
@@ -1074,7 +1086,8 @@ export class MaplatApp extends EventTarget {
             if (!cluster.properties?.hide) {
               cluster.features.map((data: any) => {
                 const dataCopy = createFromTemplate(data, cluster, source, this);
-                if (this.__selectedMarker == dataCopy.namespaceID) {
+                const nsID = dataCopy.properties?.namespaceID || dataCopy.namespaceID;
+                if (this.__selectedMarker && this.__selectedMarker == nsID) {
                   selected = dataCopy;
                 } else {
                   promises.push(this.setMarker(dataCopy));

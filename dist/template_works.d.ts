@@ -1,3 +1,3 @@
 export declare function flattenFeature(data: any): any;
-export declare function createIconSet(data: any, ...ancestors: any[]): Record<string, any>;
-export declare function createHtmlFromTemplate(data: any, ...ancestors: any[]): any;
+export declare function prepareTemplates(...entities: any[]): any;
+export declare function createFromTemplate(data: any, ...ancestors: any[]): any;

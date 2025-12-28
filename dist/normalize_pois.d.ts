@@ -12,11 +12,20 @@ export interface JSONPoi {
 }
 export type JSONLayer = JSONPoi[] | FeatureCollection<Point>;
 export interface POILayer extends FeatureCollection<Point> {
+    type: "FeatureCollection";
+    features: Feature<Point>[];
     id: string;
-    name?: string;
-    namespaceID?: string;
     __nextId?: number;
-    [key: string]: any;
+    properties?: {
+        name?: string;
+        namespaceID?: string;
+        hide?: boolean;
+        html?: string;
+        htmlStyle?: string;
+        icon?: string;
+        selectedIcon?: string;
+        [key: string]: any;
+    };
 }
 export interface NormalizeOptions {
     name?: string;
