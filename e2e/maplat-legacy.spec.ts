@@ -132,10 +132,14 @@ const clickMapAtOffset = async (
 ): Promise<ClickResult> => {
   const clientPoint = await resolveClientPoint(page, offset);
 
+  console.log(`[test] About to click at offset (${offset.x}, ${offset.y}), resolved to (${clientPoint.x}, ${clientPoint.y})`);
+
   // Try standard Playwright click first
   try {
     await page.mouse.click(clientPoint.x, clientPoint.y);
+    console.log(`[test] Click completed via page.mouse.click`);
   } catch (e) {
+    console.log(`[test] page.mouse.click failed, trying DOM event dispatch`);
     // Fallback: dispatch DOM event directly if Playwright thinks it's obstructed/offscreen
     await page.evaluate(({ x, y }) => {
       const el = document.elementFromPoint(x, y);
@@ -149,12 +153,20 @@ const clickMapAtOffset = async (
         }));
       }
     }, clientPoint);
+    console.log(`[test] DOM event dispatched`);
   }
 
   const expected = await clientPointToLngLat(page, clientPoint);
+  console.log(`[test] Expected coordinates: ${JSON.stringify(expected)}`);
+  console.log(`[test] Now waiting for clickMap message...`);
+
   const event = await waitForMessage(messageQueue, 'clickMap');
+  console.log(`[test] Received clickMap message: ${JSON.stringify(event.payload)}`);
+
   const payload = event.payload as (ClickMapPayload & { mapID?: string }) | undefined;
+  console.log(`[test] About to assertCoordinates with expected: ${JSON.stringify(expected)}, payload: ${JSON.stringify(payload)}`);
   assertCoordinates(payload, expected.longitude, expected.latitude);
+  console.log(`[test] assertCoordinates passed, returning from clickMapAtOffset`);
   return { expected, payload };
 };
 
@@ -283,8 +295,13 @@ test.describe('Maplat legacy workflow', () => {
     await page.setViewportSize({ width: 1440, height: 900 });
 
     const messageQueue: LegacyMessage[] = [];
+    const allConsoleLogs: string[] = [];
+
     page.on('console', msg => {
-      console.log(`[browser:${msg.type()}] ${msg.text()}`);
+      const logText = `[browser:${msg.type()}] ${msg.text()}`;
+      console.log(logText);
+      allConsoleLogs.push(logText);
+
       const text = msg.text();
       const matched = text.match(MESSAGE_REGEX);
       if (!matched) return;
@@ -304,92 +321,156 @@ test.describe('Maplat legacy workflow', () => {
       messageQueue.push({ type: type as LegacyMessageType, payload });
     });
     page.on('pageerror', error => {
-      console.log('[pageerror]', error);
+      const errorText = `[pageerror] ${error}`;
+      console.log(errorText);
+      allConsoleLogs.push(errorText);
     });
     page.on('requestfailed', request => {
-      console.log(
-        `[requestfailed] ${request.failure()?.errorText ?? 'unknown'} -> ${request.url()}`
-      );
+      const failText = `[requestfailed] ${request.failure()?.errorText ?? 'unknown'} -> ${request.url()}`;
+      console.log(failText);
+      allConsoleLogs.push(failText);
     });
     page.on('response', async response => {
       if (!response.ok()) {
-        console.log(
-          `[response:${response.status()}] ${response.request().method()} ${response.url()}`
-        );
+        const respText = `[response:${response.status()}] ${response.request().method()} ${response.url()}`;
+        console.log(respText);
+        allConsoleLogs.push(respText);
       }
     });
 
-    await page.goto(TEST_PAGE, { waitUntil: 'domcontentloaded' });
-    await waitForMessage(messageQueue, 'appReady');
-    await delay(2000);
+    try {
 
-    const initialPoint = { x: 132, y: 103 };
-    const firstClick = await clickMapAtOffset(page, messageQueue, initialPoint);
+      await page.goto(TEST_PAGE, { waitUntil: 'domcontentloaded' });
 
-    await dragSequence(page, initialPoint);
-    await delay(2000);
-    const secondClick = await clickMapAtOffset(page, messageQueue, initialPoint);
-    expect(Math.abs((secondClick.payload?.longitude ?? 0) - (firstClick.payload?.longitude ?? 0))).toBeGreaterThan(
-      0.007
-    );
-    expect(Math.abs((secondClick.payload?.latitude ?? 0) - (firstClick.payload?.latitude ?? 0))).toBeGreaterThan(
-      0.003
-    );
+      // Screenshot 0: Immediately after page load
+      await page.screenshot({ path: 'test-results/00-after-page-load.png', fullPage: true });
 
-    await page.locator('#morioka').click();
-    await page.waitForFunction(() => {
-      const app = (window as any).__MAPLAT_APP__;
-      return app?.currentMapInfo?.().mapID === 'morioka';
-    }, null, { timeout: MESSAGE_TIMEOUT });
-    const markerDiagnostics = await page.evaluate(async () => {
-      const app = (window as any).__MAPLAT_APP__;
-      if (!app) return null;
-      const marker = app.getMarker('main_1');
-      if (!marker) {
-        return { exists: false };
-      }
-      // Handle both GeoJSON Feature format and legacy POI format
-      const lnglat =
-        marker.geometry?.coordinates ??  // GeoJSON Feature
-        marker.lnglat ??                 // Legacy format
-        (marker.longitude !== undefined && marker.latitude !== undefined
-          ? [marker.longitude, marker.latitude]
-          : marker.lng !== undefined && marker.lat !== undefined
-            ? [marker.lng, marker.lat]
-            : null);
-      if (!lnglat) {
-        return { exists: true, lnglat: null, clientPoint: null };
-      }
-      const clientPoint = await app.lngLatToClientPoint(lnglat[0], lnglat[1]);
-      return { exists: true, lnglat, clientPoint };
-    });
-    test.info().annotations.push({
-      type: 'debug',
-      description: `marker main_1 diagnostics: ${JSON.stringify(markerDiagnostics)}`
-    });
-    expect(markerDiagnostics?.exists).toBeTruthy();
+      await waitForMessage(messageQueue, 'appReady');
+      await delay(2000);
 
-    // Wait for map rendering/animation to settle
-    await delay(3000);
+      // Screenshot 1: Right after app initialization
+      await page.screenshot({ path: 'test-results/01-after-appReady.png', fullPage: true });
 
-    await clickMarkerById(page, 'main_1');
-    const markerEvent = await waitForMessage(messageQueue, 'clickMarker');
-    const marker = markerEvent.payload as ClickMarkerPayload | undefined;
+      const initialPoint = { x: 132, y: 103 };
 
-    // Marker should be in GeoJSON Feature format now
-    expect(marker?.id).toBe('main_1');
-    expect(marker?.namespaceID).toBe('main_1');
+      // Screenshot 1.5: Before first click
+      await page.screenshot({ path: 'test-results/01.5-before-first-click.png', fullPage: true });
 
-    // Properties are in marker.properties for GeoJSON, or top-level for legacy
-    const image = (marker as any)?.properties?.image ?? (marker as any)?.image;
-    const start = (marker as any)?.properties?.start ?? (marker as any)?.start;
-    const lnglat = (marker as any)?.geometry?.coordinates ?? marker?.lnglat;
+      const firstClick = await clickMapAtOffset(page, messageQueue, initialPoint);
+// console.log('[test] firstClick completed, about to take screenshot');
 
-    expect(image).toBe('moriokaginko.jpg');
-    expect(start).toBe(1896);
-    expect(lnglat?.[0]).not.toBeUndefined();
-    expect(lnglat?.[1]).not.toBeUndefined();
-    expect(lnglat?.[0] as number).toBeCloseTo(141.15296, 5);
-    expect(lnglat?.[1] as number).toBeCloseTo(39.7006, 5);
+      // Screenshot 1.6: After first click
+      // await page.screenshot({ path: 'test-results/01.6-after-first-click.png', fullPage: true });
+// console.log('[test] Screenshot skipped (commented out)');
+
+// console.log('[test] Starting dragSequence...');
+      await dragSequence(page, initialPoint);
+// console.log('[test] dragSequence completed');
+
+      await delay(2000);
+// console.log('[test] About to perform second click...');
+      const secondClick = await clickMapAtOffset(page, messageQueue, initialPoint);
+// console.log('[test] Second click completed');
+
+// console.log('[test] Checking longitude difference...');
+      expect(Math.abs((secondClick.payload?.longitude ?? 0) - (firstClick.payload?.longitude ?? 0))).toBeGreaterThan(
+        0.007
+      );
+// console.log('[test] Longitude check passed');
+
+// console.log('[test] Checking latitude difference...');
+      expect(Math.abs((secondClick.payload?.latitude ?? 0) - (firstClick.payload?.latitude ?? 0))).toBeGreaterThan(
+        0.003
+      );
+// console.log('[test] Latitude check passed');
+
+// console.log('[test] About to click #morioka button...');
+      await page.locator('#morioka').click();
+// console.log('[test] Clicked #morioka button');
+// console.log('[test] Waiting for map to change to morioka...');
+      await page.waitForFunction(() => {
+        const app = (window as any).__MAPLAT_APP__;
+        const currentMap = app?.currentMapInfo?.();
+        if (currentMap) {
+          console.log(`[browser] Current mapID: ${currentMap.mapID}`);
+        }
+        return currentMap?.mapID === 'morioka';
+      }, null, { timeout: MESSAGE_TIMEOUT });
+// console.log('[test] Map successfully changed to morioka');
+
+      // Screenshot 2: After map change to morioka
+      // await page.screenshot({ path: 'test-results/02-after-map-change.png', fullPage: true });
+// console.log('[test] Screenshot 2 skipped');
+
+// console.log('[test] Starting marker diagnostics...');
+      const markerDiagnostics = await page.evaluate(async () => {
+        const app = (window as any).__MAPLAT_APP__;
+        if (!app) return null;
+        const marker = app.getMarker('main_1');
+        if (!marker) {
+          return { exists: false };
+        }
+        // Handle both GeoJSON Feature format and legacy POI format
+        const lnglat =
+          marker.geometry?.coordinates ??  // GeoJSON Feature
+          marker.lnglat ??                 // Legacy format
+          (marker.longitude !== undefined && marker.latitude !== undefined
+            ? [marker.longitude, marker.latitude]
+            : marker.lng !== undefined && marker.lat !== undefined
+              ? [marker.lng, marker.lat]
+              : null);
+        if (!lnglat) {
+          return { exists: true, lnglat: null, clientPoint: null };
+        }
+        const clientPoint = await app.lngLatToClientPoint(lnglat[0], lnglat[1]);
+        return { exists: true, lnglat, clientPoint };
+      });
+      console.log(`[test] Marker diagnostics completed: ${JSON.stringify(markerDiagnostics)}`);
+
+      test.info().annotations.push({
+        type: 'debug',
+        description: `marker main_1 diagnostics: ${JSON.stringify(markerDiagnostics)}`
+      });
+// console.log('[test] Checking marker exists...');
+      expect(markerDiagnostics?.exists).toBeTruthy();
+// console.log('[test] Marker exists check passed');
+
+      // Wait for map rendering/animation to settle
+// console.log('[test] Waiting 3 seconds for rendering...');
+      await delay(3000);
+// console.log('[test] Wait complete');
+
+      // Screenshot 3: Before clicking marker
+      // await page.screenshot({ path: 'test-results/03-before-marker-click.png', fullPage: true });
+// console.log('[test] Screenshot 3 skipped');
+
+// console.log('[test] About to click marker main_1...');
+      await clickMarkerById(page, 'main_1');
+// console.log('[test] Marker click completed');
+      const markerEvent = await waitForMessage(messageQueue, 'clickMarker');
+      const marker = markerEvent.payload as ClickMarkerPayload | undefined;
+
+      // Marker should be in GeoJSON Feature format now
+      expect(marker?.id).toBe('main_1');
+      expect(marker?.namespaceID).toBe('main_1');
+
+      // Properties are in marker.properties for GeoJSON, or top-level for legacy
+      const image = (marker as any)?.properties?.image ?? (marker as any)?.image;
+      const start = (marker as any)?.properties?.start ?? (marker as any)?.start;
+      const lnglat = (marker as any)?.geometry?.coordinates ?? marker?.lnglat;
+
+      expect(image).toBe('moriokaginko.jpg');
+      expect(start).toBe(1896);
+      expect(lnglat?.[0]).not.toBeUndefined();
+      expect(lnglat?.[1]).not.toBeUndefined();
+      expect(lnglat?.[0] as number).toBeCloseTo(141.15296, 5);
+      expect(lnglat?.[1] as number).toBeCloseTo(39.7006, 5);
+    } finally {
+      // Save all console logs to file
+      const fs = await import('fs');
+      const path = await import('path');
+      const logPath = path.join('test-results', 'console-logs.txt');
+      fs.writeFileSync(logPath, allConsoleLogs.join('\n'));
+    }
   });
 });
