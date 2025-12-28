@@ -1,6 +1,6 @@
-import template from "lodash.template";
 import { normalizeArg } from "./functions";
 import type { Feature, Point } from "geojson";
+import { Quyuan } from "@c4h/quyuan";
 
 /**
  * Flatten GeoJSON Feature to legacy POI format for template processing and API compatibility
@@ -31,45 +31,27 @@ export function prepareTemplates(...entities: any[]) {
     prev.selectedIcon ||= curr.selectedIcon;
     return prev;
   }, {});
+  if (!template.html) delete template.html;
+  if (!template.htmlStyle) delete template.htmlStyle;
+  if (!template.icon) delete template.icon;
+  if (!template.selectedIcon) delete template.selectedIcon;
   return template;
 }
 
-export function createIconSet(data: any, ...ancestors: any[]) {
-  const flatData = flattenFeature(data);
-  const dataCopy = normalizeArg(Object.assign({}, flatData));
-  if (dataCopy.icon) return dataCopy;
-  const fromAncestor = ancestors.reduce((prev, curr) => {
-    if (prev) return prev;
-    if (curr.icon) {
-      if (curr.selectedIcon) {
-        return {
-          icon: curr.icon,
-          selectedIcon: curr.selectedIcon
-        };
-      } else {
-        return JSON.parse(template(curr.icon)(dataCopy));
-      }
-    }
-  }, undefined);
-  if (fromAncestor) {
-    dataCopy.icon = fromAncestor.icon;
-    dataCopy.selectedIcon = fromAncestor.selectedIcon;
-  }
-  return dataCopy;
-}
+export function createFromTemplate(data: any, ...ancestors: any[]) {
+  const dataCopy = structuredClone(data);
+  dataCopy.properties = normalizeArg(dataCopy.properties);
+  const template = prepareTemplates(...ancestors);
+  Quyuan.templateExtractor({ geojson: dataCopy, templates: template });
+  dataCopy.properties.html ||= dataCopy.result.html;
+  dataCopy.properties.htmlStyle ||= dataCopy.result.htmlStyle;
+  dataCopy.properties.icon ||= dataCopy.result.icon;
+  dataCopy.properties.selectedIcon ||= dataCopy.result.selectedIcon;
 
-export function createHtmlFromTemplate(data: any, ...ancestors: any[]) {
-  const flatData = flattenFeature(data);
-  const normalizedData = normalizeArg(flatData);
-  if (normalizedData.html) return normalizedData;
-  return (
-    ancestors.reduce((prev, curr) => {
-      if (prev) return prev;
-      if (curr.html) {
-        normalizedData.html = template(curr.html)(normalizedData);
-        normalizedData.htmlStyle = normalizedData.htmlStyle || curr.htmlStyle;
-        return normalizedData;
-      }
-    }, undefined) || normalizedData
-  );
+  // Legacy compatibility: flatten properties and add lnglat
+  if (dataCopy.properties) Object.assign(dataCopy, dataCopy.properties);
+  if (data.id) dataCopy.id = data.id;
+  if (dataCopy.geometry?.coordinates) dataCopy.lnglat = dataCopy.geometry.coordinates;
+
+  return dataCopy;
 }

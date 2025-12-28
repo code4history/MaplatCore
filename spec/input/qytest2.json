@@ -1,0 +1,22 @@
+{
+  "title": "Quyuan Logic test",
+  "data": {
+    "boolean": true
+  },
+  "ancestors": [
+    {
+      "icon": "{\n  \"icon\": \"{% if boolean %}true{% else %}false{% endif %}\",\n  \"selectedIcon\": \"{% for x in [0,1,2] %}{{ x }}{% endfor %}\"\n}",
+      "htmlStyle": "abc"
+    },
+    {
+      "icon": "d",
+      "selectedIcon": "e",
+      "html": "{{ not boolean }}",
+      "htmlStyle": "def"
+    },
+    {
+      "html": "{{ boolean }}",
+      "htmlStyle": "ghi"
+    }
+  ]
+}

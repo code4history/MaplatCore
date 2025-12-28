@@ -93,11 +93,7 @@
       }
 
       MaplatApp.createObject(option).then(function (app) {
-        console.log(app);
-        console.log(app.from);
         window.__MAPLAT_APP__ = app;
-        //console.log(app.currentMapInfo());
-        //console.log(app.mapInfo("gsi"));
         var moveFlag = false;
         app.addEventListener("clickMarker", function (evt) {
           app.selectMarker(evt.detail.namespaceID);
@@ -106,7 +102,6 @@
         app.addEventListener("clickMap", function (evt) {
           console.log(evt);
         });
-        console.log("#### html");
         app.addLine({
           lnglats: [
             [141.151995, 39.701599],

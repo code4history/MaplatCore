@@ -1,0 +1,6 @@
+{
+  "html": "false",
+  "htmlStyle": "abc",
+  "icon": "{\n  \"icon\": \"true\",\n  \"selectedIcon\": \"012\"\n}",
+  "selectedIcon": "e"
+}

@@ -30,7 +30,7 @@ import {
   normalizeLayer,
   normalizePoi
 } from "./normalize_pois";
-import { createIconSet, createHtmlFromTemplate } from "./template_works";
+import { createFromTemplate } from "./template_works";
 // import mapboxgl from "mapbox-gl"; // TODO: Remove mapbox dependency
 import { Geolocation } from './geolocation';
 
@@ -691,19 +691,15 @@ export class MaplatApp extends EventTarget {
         this.dispatchEvent(new CustomEvent("clickMapXy", xy));
         (async () => {
           try {
-            console.log("DEBUG: clickMap async start, xy:", xy);
             const merc = await (this.from as MaplatSource).sysCoord2MercAsync(xy);
-            console.log("DEBUG: clickMap merc:", merc);
             this.dispatchEvent(new CustomEvent("clickMapMerc", merc));
             const lnglat = transform(merc, "EPSG:3857", "EPSG:4326");
-            console.log("DEBUG: clickMap lnglat:", lnglat);
             this.dispatchEvent(
               new CustomEvent("clickMap", {
                 longitude: lnglat[0],
                 latitude: lnglat[1]
               })
             );
-            console.log("DEBUG: clickMap event dispatched");
           } catch (error) {
             console.error("ERROR in clickMap handler:", error);
           }
@@ -1063,8 +1059,7 @@ export class MaplatApp extends EventTarget {
           const cluster = this.pois[key];
           if (!cluster.properties?.hide) {
             cluster.features.map((data: any) => {
-              const dataCopy = createIconSet(data, cluster, this);
-              createHtmlFromTemplate(dataCopy, cluster, this);
+              const dataCopy = createFromTemplate(data, cluster, this);
               if (this.__selectedMarker == dataCopy.namespaceID) {
                 selected = dataCopy;
               } else {
@@ -1078,8 +1073,7 @@ export class MaplatApp extends EventTarget {
             const cluster = source.pois[key];
             if (!cluster.properties?.hide) {
               cluster.features.map((data: any) => {
-                const dataCopy = createIconSet(data, cluster, source, this);
-                createHtmlFromTemplate(dataCopy, cluster, source, this);
+                const dataCopy = createFromTemplate(data, cluster, source, this);
                 if (this.__selectedMarker == dataCopy.namespaceID) {
                   selected = dataCopy;
                 } else {

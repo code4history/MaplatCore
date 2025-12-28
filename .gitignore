@@ -91,3 +91,5 @@ playwright/.cache/
 *_output.txt
 test_output*.txt
 *.png
+
+dist-demo

@@ -1,0 +1,6 @@
+{
+  "html": "<div class=\"c\">b</div>",
+  "htmlStyle": "abc",
+  "icon": "{\n  \"icon\": \"b\",\n  \"selectedIcon\": \"c\"\n}",
+  "selectedIcon": "e"
+}
