@@ -112,7 +112,7 @@ export class MaplatApp extends EventTarget {
   stateBuffer: Restore = {};
   mobileMapMoveBuffer?: ViewpointArray;
   overlay = true;
-  waitReady: () => Promise<void>;
+  waitReady: Promise<void>;
   changeMapSeq?: Promise<void>;
   i18n?: any;
   t?: any;
@@ -247,10 +247,10 @@ export class MaplatApp extends EventTarget {
     if (this.overlay) {
       this.mapDivDocument!.classList.add("with-opacity");
     }
-    this.waitReady = async () => {
+    this.waitReady = (async () => {
       const x = await this.settingLoader(setting);
       await this.handleSetting(x, appOption);
-    };
+    })();
   }
   // Async initializers 1: Load application setting
   async settingLoader(setting: any) {
@@ -1778,7 +1778,7 @@ export { CustomEvent };
 // Static method for cleaner initialization
 MaplatApp.createObject = async function (option: any): Promise<MaplatApp> {
   const app = new MaplatApp(option);
-  await app.waitReady();
+  await app.waitReady;
   return app;
 };
 
