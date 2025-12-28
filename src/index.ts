@@ -112,7 +112,7 @@ export class MaplatApp extends EventTarget {
   stateBuffer: Restore = {};
   mobileMapMoveBuffer?: ViewpointArray;
   overlay = true;
-  waitReady: () =>Promise<void>;
+  waitReady: () => Promise<void>;
   changeMapSeq?: Promise<void>;
   i18n?: any;
   t?: any;
@@ -406,7 +406,7 @@ export class MaplatApp extends EventTarget {
             source.setGPSMarker();
           }
           // 地図変更時のGPS結果をUI側に通知
-          this.dispatchEvent(new GPSResultEvent(insideCheck ? { lnglat, acc } : { error: "gps_out" }));         
+          this.dispatchEvent(new GPSResultEvent(insideCheck ? { lnglat, acc } : { error: "gps_out" }));
         })();
       }
     });
@@ -472,7 +472,7 @@ export class MaplatApp extends EventTarget {
     this.i18n = i18nObj[1];
     this.t = i18nObj[0];
     const mapReturnValue = await this.prepareMap(appOption);
-    const x= await normalizeLayers(this.appData!.pois || [], {
+    const x = await normalizeLayers(this.appData!.pois || [], {
       name: this.appName
     });
     await this.handlePois(x, mapReturnValue);
@@ -689,16 +689,24 @@ export class MaplatApp extends EventTarget {
       } else {
         const xy = evt.coordinate;
         this.dispatchEvent(new CustomEvent("clickMapXy", xy));
-        (async () =>{
-          const merc = await (this.from as MaplatSource).sysCoord2MercAsync(xy);
-          this.dispatchEvent(new CustomEvent("clickMapMerc", merc));
-          const lnglat = transform(merc, "EPSG:3857", "EPSG:4326");
-          this.dispatchEvent(
-            new CustomEvent("clickMap", {
-              longitude: lnglat[0],
-              latitude: lnglat[1]
-            })
-          );
+        (async () => {
+          try {
+            console.log("DEBUG: clickMap async start, xy:", xy);
+            const merc = await (this.from as MaplatSource).sysCoord2MercAsync(xy);
+            console.log("DEBUG: clickMap merc:", merc);
+            this.dispatchEvent(new CustomEvent("clickMapMerc", merc));
+            const lnglat = transform(merc, "EPSG:3857", "EPSG:4326");
+            console.log("DEBUG: clickMap lnglat:", lnglat);
+            this.dispatchEvent(
+              new CustomEvent("clickMap", {
+                longitude: lnglat[0],
+                latitude: lnglat[1]
+              })
+            );
+            console.log("DEBUG: clickMap event dispatched");
+          } catch (error) {
+            console.error("ERROR in clickMap handler:", error);
+          }
         })();
       }
     });
@@ -711,7 +719,7 @@ export class MaplatApp extends EventTarget {
     const pointerCounter: any = {};
     const pointermoveHandler = (xy: any) => {
       this.dispatchEvent(new CustomEvent("pointerMoveOnMapXy", xy));
-      (async () =>{
+      (async () => {
         const merc = await (this.from as MaplatSource).sysCoord2MercAsync(xy);
         this.dispatchEvent(new CustomEvent("pointerMoveOnMapMerc", merc));
         if (xyBuffer) {
