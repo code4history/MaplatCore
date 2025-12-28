@@ -112,7 +112,7 @@ export class MaplatApp extends EventTarget {
   stateBuffer: Restore = {};
   mobileMapMoveBuffer?: ViewpointArray;
   overlay = true;
-  waitReady: Promise<void>;
+  waitReady: () =>Promise<void>;
   changeMapSeq?: Promise<void>;
   i18n?: any;
   t?: any;
@@ -247,9 +247,10 @@ export class MaplatApp extends EventTarget {
     if (this.overlay) {
       this.mapDivDocument!.classList.add("with-opacity");
     }
-    this.waitReady = this.settingLoader(setting).then(x =>
-      this.handleSetting(x, appOption)
-    );
+    this.waitReady = async () => {
+      const x = await this.settingLoader(setting);
+      await this.handleSetting(x, appOption);
+    };
   }
   // Async initializers 1: Load application setting
   async settingLoader(setting: any) {
@@ -315,14 +316,13 @@ export class MaplatApp extends EventTarget {
     return Promise.all(sourcePromise);
   }
   // Async initializers 2: Handle application setting
-  handleSetting(setting: any, appOption: any) {
+  async handleSetting(setting: any, appOption: any) {
     this.appData = normalizeArg(setting as Record<string, any>) as AppData;
     if (!this.lang && this.appData.lang) {
       this.lang = this.appData.lang;
     }
-    return this.i18nLoader()
-      .then(x => this.handleI18n(x, appOption))
-      .then(() => this.initGeolocation(appOption));
+    await this.handleI18n(await this.i18nLoader(), appOption);
+    await this.initGeolocation(appOption);
   }
   // Async Initializers 2.5: For geolocation settings
   initGeolocation(appOption: any) {
@@ -395,7 +395,8 @@ export class MaplatApp extends EventTarget {
         const lnglat = geolocation.getPosition();
         const acc = geolocation.getAccuracy();
         if (!lnglat || !acc) return;
-        source.setGPSMarkerAsync({ lnglat, acc }, true).then((insideCheck: boolean) => {
+        (async () => {
+          const insideCheck = await source.setGPSMarkerAsync({ lnglat, acc }, true);
           if (!insideCheck) {
             // 本流モードでは範囲外エラー時にGPSオフ、傍流モードでは継続
             if (!this.alwaysGpsOn) {
@@ -405,8 +406,8 @@ export class MaplatApp extends EventTarget {
             source.setGPSMarker();
           }
           // 地図変更時のGPS結果をUI側に通知
-          this.dispatchEvent(new GPSResultEvent(insideCheck ? { lnglat, acc } : { error: "gps_out" }));
-        });
+          this.dispatchEvent(new GPSResultEvent(insideCheck ? { lnglat, acc } : { error: "gps_out" }));         
+        })();
       }
     });
 
@@ -433,11 +434,12 @@ export class MaplatApp extends EventTarget {
           const overlayLayer = map.getLayer("overlay").getLayers().item(0);
           const firstLayer = map.getLayers().item(0);
           const source = (overlayLayer ? overlayLayer.getSource() : firstLayer.getSource());
-          source.setGPSMarkerAsync({ lnglat, acc }, false).then((insideCheck: boolean) => {
+          (async () => {
+            const insideCheck = await source.setGPSMarkerAsync({ lnglat, acc }, false);
             if (!insideCheck) {
               source.setGPSMarker();
             }
-          });
+          })();
         }
       }
     } else {
@@ -465,22 +467,18 @@ export class MaplatApp extends EventTarget {
   }
 
   // Async initializers 4: Handle i18n setting
-  handleI18n(i18nObj: any, appOption: any) {
+  async handleI18n(i18nObj: any, appOption: any) {
     if (!i18nObj) i18nObj = [() => "", {}];
     this.i18n = i18nObj[1];
     this.t = i18nObj[0];
-    const mapReturnValue = this.prepareMap(appOption);
-    return normalizeLayers(this.appData!.pois || [], {
+    const mapReturnValue = await this.prepareMap(appOption);
+    const x= await normalizeLayers(this.appData!.pois || [], {
       name: this.appName
-    }).then(x => {
-      console.log("Layer");
-      console.log(mapReturnValue);
-      console.log(x);
-      this.handlePois(x, mapReturnValue);
     });
+    await this.handlePois(x, mapReturnValue);
   }
   // Async initializers 5: Prepare map base elements and objects
-  prepareMap(appOption: any) {
+  async prepareMap(appOption: any) {
     appOption = normalizeArg(appOption);
     this.mercBuffer = null;
     const homePos = this.appData!.homePosition;
@@ -616,9 +614,10 @@ export class MaplatApp extends EventTarget {
     };
   }
   // Async initializer 7: Handle pois loading result
-  handlePois(pois: any, mapReturnValue: any) {
+  async handlePois(pois: any, mapReturnValue: any) {
     this.pois = pois;
-    return this.sourcesLoader(mapReturnValue).then(x => this.handleSources(x));
+    const x = await this.sourcesLoader(mapReturnValue);
+    await this.handleSources(x);
   }
   // Async initializer 9: Handle sources loading result
   async handleSources(sources: any) {
@@ -684,25 +683,23 @@ export class MaplatApp extends EventTarget {
         this.logger.debug(evt.pixel);
         if (feature.get("datum")) features.push(feature.get("datum"));
       });
-      console.log(features);
       if (features.length > 0) {
         this.dispatchEvent(new CustomEvent("clickMarker", features[0]));
         this.dispatchEvent(new CustomEvent("clickMarkers", features));
       } else {
         const xy = evt.coordinate;
         this.dispatchEvent(new CustomEvent("clickMapXy", xy));
-        (this.from as MaplatSource)
-          .sysCoord2MercAsync(xy)
-          .then((merc: any) => {
-            this.dispatchEvent(new CustomEvent("clickMapMerc", merc));
-            const lnglat = transform(merc, "EPSG:3857", "EPSG:4326");
-            this.dispatchEvent(
-              new CustomEvent("clickMap", {
-                longitude: lnglat[0],
-                latitude: lnglat[1]
-              })
-            );
-          });
+        (async () =>{
+          const merc = await (this.from as MaplatSource).sysCoord2MercAsync(xy);
+          this.dispatchEvent(new CustomEvent("clickMapMerc", merc));
+          const lnglat = transform(merc, "EPSG:3857", "EPSG:4326");
+          this.dispatchEvent(
+            new CustomEvent("clickMap", {
+              longitude: lnglat[0],
+              latitude: lnglat[1]
+            })
+          );
+        })();
       }
     });
   }
@@ -714,18 +711,17 @@ export class MaplatApp extends EventTarget {
     const pointerCounter: any = {};
     const pointermoveHandler = (xy: any) => {
       this.dispatchEvent(new CustomEvent("pointerMoveOnMapXy", xy));
-      (this.from as MaplatSource)
-        .sysCoord2MercAsync(xy)
-        .then((merc: any) => {
-          this.dispatchEvent(new CustomEvent("pointerMoveOnMapMerc", merc));
-          if (xyBuffer) {
-            const next = xyBuffer;
-            xyBuffer = false;
-            pointermoveHandler(next);
-          } else {
-            waiting = false;
-          }
-        });
+      (async () =>{
+        const merc = await (this.from as MaplatSource).sysCoord2MercAsync(xy);
+        this.dispatchEvent(new CustomEvent("pointerMoveOnMapMerc", merc));
+        if (xyBuffer) {
+          const next = xyBuffer;
+          xyBuffer = false;
+          pointermoveHandler(next);
+        } else {
+          waiting = false;
+        }
+      })();
     };
     this.mapObject.on("pointermove", (evt: any) => {
       if (dragging) return;
@@ -1772,15 +1768,11 @@ export { createElement };
 export { CustomEvent };
 
 // Static method for cleaner initialization
-MaplatApp.createObject = function (option: any): Promise<MaplatApp> {
-  return new Promise((resolve) => {
-    const app = new MaplatApp(option);
-    app.waitReady.then(() => {
-      resolve(app);
-    });
-  });
+MaplatApp.createObject = async function (option: any): Promise<MaplatApp> {
+  const app = new MaplatApp(option);
+  await app.waitReady();
+  return app;
 };
-
 
 import { assets } from "./assets";
 export { assets };

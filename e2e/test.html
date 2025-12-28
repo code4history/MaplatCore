@@ -112,11 +112,11 @@
   }
 
   MaplatApp.createObject(option).then(function (app) {
-    console.log("####Message appReady");
-    console.log(app);
+    //console.log("####Message appReady");
+    //console.log(app);
     window.__MAPLAT_APP__ = app;
-    console.log(app.currentMapInfo());
-    console.log(app.mapInfo("gsi"));
+    //console.log(app.currentMapInfo());
+    //console.log(app.mapInfo("gsi") || "Map 'gsi' not loaded yet");
     var moveFlag = false;
     app.addEventListener("clickMarker", function (evt) {
       app.selectMarker(evt.detail.namespaceID);
