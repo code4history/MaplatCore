@@ -35,6 +35,7 @@ export function prepareTemplates(...entities: any[]) {
   if (!template.htmlStyle) delete template.htmlStyle;
   if (!template.icon) delete template.icon;
   if (!template.selectedIcon) delete template.selectedIcon;
+  //console.log(template);
   return template;
 }
 
@@ -47,5 +48,7 @@ export function createFromTemplate(data: any, ...ancestors: any[]) {
   dataCopy.properties.htmlStyle ||= dataCopy.result.htmlStyle;
   dataCopy.properties.icon ||= dataCopy.result.icon;
   dataCopy.properties.selectedIcon ||= dataCopy.result.selectedIcon;
+  console.log(`Template: ${JSON.stringify(template, null, 1)}\nResult: ${JSON.stringify(dataCopy.result, null, 1)}`);
+  //console.log(dataCopy);
   return dataCopy;
 }
