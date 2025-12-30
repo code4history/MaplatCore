@@ -65,11 +65,11 @@ export declare class MaplatApp extends EventTarget {
     initialRestore: Restore;
     mapDiv: string;
     restoreSession: boolean;
-    enableCache: false;
+    enableCache: boolean;
     stateBuffer: Restore;
     mobileMapMoveBuffer?: ViewpointArray;
     overlay: boolean;
-    waitReady: Promise<void>;
+    waitReady: Promise<any>;
     changeMapSeq?: Promise<void>;
     i18n?: any;
     t?: any;
@@ -106,6 +106,7 @@ export declare class MaplatApp extends EventTarget {
     gpsEnabled_: boolean;
     alwaysGpsOn: boolean;
     firstGpsRequest_: boolean;
+    initialGpsMove_: boolean;
     private __backMapMoving;
     private __selectedMarker;
     private __init;

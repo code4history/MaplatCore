@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 // Import styles
 import '../less/core.less';
 
@@ -34,9 +33,8 @@ import { createIconSet, createHtmlFromTemplate } from "./template_works";
 // import mapboxgl from "mapbox-gl"; // TODO: Remove mapbox dependency
 import { Geolocation } from './geolocation';
 
-// @ts-ignore
-import redcircle from "../parts/redcircle.png";                     // @ts-ignore  
-import defaultpin_selected from "../parts/defaultpin_selected.png"; // @ts-ignore
+import redcircle from "../parts/redcircle.png";
+import defaultpin_selected from "../parts/defaultpin_selected.png";
 import defaultpin from "../parts/defaultpin.png";
 import { Coordinate } from "ol/coordinate";
 import BaseEvent from "ol/events/Event";
@@ -107,11 +105,11 @@ export class MaplatApp extends EventTarget {
   initialRestore: Restore = {};
   mapDiv = "map_div";
   restoreSession = false;
-  enableCache: false;
+  enableCache: boolean; // Changed to boolean
   stateBuffer: Restore = {};
   mobileMapMoveBuffer?: ViewpointArray;
   overlay = true;
-  waitReady: Promise<void>;
+  waitReady: Promise<any>; // Changed to Promise<any> to match settingLoader
   changeMapSeq?: Promise<void>;
   i18n?: any;
   t?: any;
@@ -148,6 +146,7 @@ export class MaplatApp extends EventTarget {
   gpsEnabled_ = false;
   alwaysGpsOn = false;
   firstGpsRequest_ = false;
+  initialGpsMove_ = false;
   private __backMapMoving = false;
   private __selectedMarker: any;
   private __init = true;
@@ -336,32 +335,44 @@ export class MaplatApp extends EventTarget {
     if (this.alwaysGpsOn) {
       geolocation.setTracking(true);
       this.gpsEnabled_ = true;
+      this.initialGpsMove_ = true;
     } else {
       geolocation.setTracking(false);
       this.gpsEnabled_ = false;
     }
 
-    geolocation.on("change", async () => {
-      const map = this.mapObject;
-      const overlayLayer = map.getLayer("overlay").getLayers().item(0);
-      const firstLayer = map.getLayers().item(0);
-      const source = (overlayLayer ? overlayLayer.getSource() : firstLayer.getSource());
-      const lnglat = geolocation.getPosition();
-      const acc = geolocation.getAccuracy();
-      if (!lnglat || !acc) return;
+    geolocation.on("change", () => {
+      (async () => {
+        const map = this.mapObject;
+        const overlayLayer = map.getLayer("overlay").getLayers().item(0);
+        const firstLayer = map.getLayers().item(0);
+        const source = (overlayLayer ? overlayLayer.getSource() : firstLayer.getSource());
+        const lnglat = geolocation.getPosition();
+        const acc = geolocation.getAccuracy();
+        if (!lnglat || !acc) return;
 
-      const insideCheck = await source.setGPSMarkerAsync({ lnglat, acc }, !this.moveTo_ && !this.firstGpsRequest_);
-      this.moveTo_ = false;
-      this.firstGpsRequest_ = false;
-      if (!insideCheck) {
-        // 本流モードでは範囲外エラー時にGPSオフ、傍流モードでは継続
-        if (!this.alwaysGpsOn) {
-          this.handleGPS(false, true);
+        let ignoreMove = !this.moveTo_ && !this.firstGpsRequest_;
+        if (this.alwaysGpsOn) {
+          ignoreMove = !this.initialGpsMove_;
         }
-        source.setGPSMarker();
-      }
-      // GPS結果をUI側に通知
-      this.dispatchEvent(new GPSResultEvent(insideCheck ? { lnglat, acc } : { error: "gps_out" }));
+
+        const insideCheck = await source.setGPSMarkerAsync({ lnglat, acc }, ignoreMove);
+        this.moveTo_ = false;
+        this.firstGpsRequest_ = false;
+        this.initialGpsMove_ = false;
+
+        if (!insideCheck) {
+          // 本流モードでは範囲外エラー時にGPSオフ、傍流モードでは継続
+          if (!this.alwaysGpsOn) {
+            this.handleGPS(false, true);
+          }
+          source.setGPSMarker();
+        }
+        // GPS結果をUI側に通知
+        // alwaysGpsOn時はgps_out_hide (モーダル非表示)、通常時はgps_out (モーダル表示)
+        const outError = this.alwaysGpsOn ? "gps_out_hide" : "gps_out";
+        this.dispatchEvent(new GPSResultEvent(insideCheck ? { lnglat, acc } : { error: outError }));
+      })();
     });
 
     geolocation.on("error", (evt: any) => {
@@ -403,7 +414,8 @@ export class MaplatApp extends EventTarget {
             source.setGPSMarker();
           }
           // 地図変更時のGPS結果をUI側に通知
-          this.dispatchEvent(new GPSResultEvent(insideCheck ? { lnglat, acc } : { error: "gps_out" }));
+          const outError = this.alwaysGpsOn ? "gps_out_hide" : "gps_out";
+          this.dispatchEvent(new GPSResultEvent(insideCheck ? { lnglat, acc } : { error: outError }));
         }
       })();
     });
@@ -423,7 +435,6 @@ export class MaplatApp extends EventTarget {
         this.dispatchEvent(new GPSRequestEvent());
       } else {
         // alwaysGpsOnモードでは位置移動のみ
-        this.moveTo_ = true;
         const lnglat = this.geolocation.getPosition();
         const acc = this.geolocation.getAccuracy();
         if (lnglat && acc) {
@@ -431,11 +442,15 @@ export class MaplatApp extends EventTarget {
           const overlayLayer = map.getLayer("overlay").getLayers().item(0);
           const firstLayer = map.getLayers().item(0);
           const source = (overlayLayer ? overlayLayer.getSource() : firstLayer.getSource());
-          source.setGPSMarkerAsync({ lnglat, acc }, false).then((insideCheck: boolean) => {
+
+          (async () => {
+            const insideCheck = await source.setGPSMarkerAsync({ lnglat, acc }, false); // ignoreMove=false (移動する)
             if (!insideCheck) {
               source.setGPSMarker();
+              // 手動操作時は範囲外でもモーダルを表示したいので gps_out を返す
+              this.dispatchEvent(new GPSResultEvent({ error: "gps_out" }));
             }
-          });
+          })();
         }
       }
     } else {
