@@ -341,7 +341,7 @@ export class MaplatApp extends EventTarget {
       this.gpsEnabled_ = false;
     }
 
-    geolocation.on("change", () => {
+    geolocation.on("change", async () => {
       const map = this.mapObject;
       const overlayLayer = map.getLayer("overlay").getLayers().item(0);
       const firstLayer = map.getLayers().item(0);
@@ -350,20 +350,18 @@ export class MaplatApp extends EventTarget {
       const acc = geolocation.getAccuracy();
       if (!lnglat || !acc) return;
 
-      source.setGPSMarkerAsync({ lnglat, acc }, !this.moveTo_ && !this.firstGpsRequest_).then((insideCheck: boolean) => {
-        this.moveTo_ = false;
-        this.firstGpsRequest_ = false;
-        if (!insideCheck) {
-          // 本流モードでは範囲外エラー時にGPSオフ、傍流モードでは継続
-          if (!this.alwaysGpsOn) {
-            this.handleGPS(false, false); // UIに状態変更を通知するためavoidEventForOffをfalseに
-            return;
-          }
-          source.setGPSMarker();
+      const insideCheck = await source.setGPSMarkerAsync({ lnglat, acc }, !this.moveTo_ && !this.firstGpsRequest_);
+      this.moveTo_ = false;
+      this.firstGpsRequest_ = false;
+      if (!insideCheck) {
+        // 本流モードでは範囲外エラー時にGPSオフ、傍流モードでは継続
+        if (!this.alwaysGpsOn) {
+          this.handleGPS(false, true);
         }
-        // GPS結果をUI側に通知
-        this.dispatchEvent(new GPSResultEvent(insideCheck ? { lnglat, acc } : { error: "gps_out" }));
-      });
+        source.setGPSMarker();
+      }
+      // GPS結果をUI側に通知
+      this.dispatchEvent(new GPSResultEvent(insideCheck ? { lnglat, acc } : { error: "gps_out" }));
     });
 
     geolocation.on("error", (evt: any) => {
@@ -387,27 +385,27 @@ export class MaplatApp extends EventTarget {
     });
 
     this.addEventListener("mapChanged", () => {
-      if (geolocation.getTracking()) {
-        const map = this.mapObject;
-        const overlayLayer = map.getLayer("overlay").getLayers().item(0);
-        const firstLayer = map.getLayers().item(0);
-        const source = (overlayLayer ? overlayLayer.getSource() : firstLayer.getSource());
-        const lnglat = geolocation.getPosition();
-        const acc = geolocation.getAccuracy();
-        if (!lnglat || !acc) return;
-        source.setGPSMarkerAsync({ lnglat, acc }, true).then((insideCheck: boolean) => {
+      (async () => {
+        if (geolocation.getTracking()) {
+          const map = this.mapObject;
+          const overlayLayer = map.getLayer("overlay").getLayers().item(0);
+          const firstLayer = map.getLayers().item(0);
+          const source = (overlayLayer ? overlayLayer.getSource() : firstLayer.getSource());
+          const lnglat = geolocation.getPosition();
+          const acc = geolocation.getAccuracy();
+          if (!lnglat || !acc) return;
+          const insideCheck = await source.setGPSMarkerAsync({ lnglat, acc }, true);
           if (!insideCheck) {
             // 本流モードでは範囲外エラー時にGPSオフ、傍流モードでは継続
             if (!this.alwaysGpsOn) {
-              this.handleGPS(false, false); // UIに状態変更を通知するためavoidEventForOffをfalseに
-              return;
+              this.handleGPS(false, true);
             }
             source.setGPSMarker();
           }
           // 地図変更時のGPS結果をUI側に通知
           this.dispatchEvent(new GPSResultEvent(insideCheck ? { lnglat, acc } : { error: "gps_out" }));
-        });
-      }
+        }
+      })();
     });
 
   }

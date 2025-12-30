@@ -12108,18 +12108,11 @@ class Bn extends Hs {
       timerBase: e.fake,
       homePosition: this.appData.homePosition
     });
-    this.alwaysGpsOn ? (n.setTracking(!0), this.gpsEnabled_ = !0) : (n.setTracking(!1), this.gpsEnabled_ = !1), n.on("change", () => {
+    this.alwaysGpsOn ? (n.setTracking(!0), this.gpsEnabled_ = !0) : (n.setTracking(!1), this.gpsEnabled_ = !1), n.on("change", async () => {
       const r = this.mapObject, A = r.getLayer("overlay").getLayers().item(0), s = r.getLayers().item(0), o = A ? A.getSource() : s.getSource(), g = n.getPosition(), a = n.getAccuracy();
-      !g || !a || o.setGPSMarkerAsync({ lnglat: g, acc: a }, !this.moveTo_ && !this.firstGpsRequest_).then((I) => {
-        if (this.moveTo_ = !1, this.firstGpsRequest_ = !1, !I) {
-          if (!this.alwaysGpsOn) {
-            this.handleGPS(!1, !1);
-            return;
-          }
-          o.setGPSMarker();
-        }
-        this.dispatchEvent(new sr(I ? { lnglat: g, acc: a } : { error: "gps_out" }));
-      });
+      if (!g || !a) return;
+      const I = await o.setGPSMarkerAsync({ lnglat: g, acc: a }, !this.moveTo_ && !this.firstGpsRequest_);
+      this.moveTo_ = !1, this.firstGpsRequest_ = !1, I || (this.alwaysGpsOn || this.handleGPS(!1, !0), o.setGPSMarker()), this.dispatchEvent(new sr(I ? { lnglat: g, acc: a } : { error: "gps_out" }));
     }), n.on("error", (r) => {
       const A = r.code;
       if (A === 3) return;
@@ -12127,20 +12120,14 @@ class Bn extends Hs {
       const s = this.mapObject, o = s.getLayer("overlay").getLayers().item(0), g = s.getLayers().item(0);
       (o ? o.getSource() : g.getSource()).setGPSMarker(), this.dispatchEvent(new Gc(A === 1 ? "user_gps_deny" : A === 2 ? "gps_miss" : "gps_timeout")), this.dispatchEvent(new sr({ error: "gps_off" }));
     }), this.addEventListener("mapChanged", () => {
-      if (n.getTracking()) {
-        const r = this.mapObject, A = r.getLayer("overlay").getLayers().item(0), s = r.getLayers().item(0), o = A ? A.getSource() : s.getSource(), g = n.getPosition(), a = n.getAccuracy();
-        if (!g || !a) return;
-        o.setGPSMarkerAsync({ lnglat: g, acc: a }, !0).then((I) => {
-          if (!I) {
-            if (!this.alwaysGpsOn) {
-              this.handleGPS(!1, !1);
-              return;
-            }
-            o.setGPSMarker();
-          }
-          this.dispatchEvent(new sr(I ? { lnglat: g, acc: a } : { error: "gps_out" }));
-        });
-      }
+      (async () => {
+        if (n.getTracking()) {
+          const r = this.mapObject, A = r.getLayer("overlay").getLayers().item(0), s = r.getLayers().item(0), o = A ? A.getSource() : s.getSource(), g = n.getPosition(), a = n.getAccuracy();
+          if (!g || !a) return;
+          const I = await o.setGPSMarkerAsync({ lnglat: g, acc: a }, !0);
+          I || (this.alwaysGpsOn || this.handleGPS(!1, !0), o.setGPSMarker()), this.dispatchEvent(new sr(I ? { lnglat: g, acc: a } : { error: "gps_out" }));
+        }
+      })();
     });
   }
   // GPS handling methods
