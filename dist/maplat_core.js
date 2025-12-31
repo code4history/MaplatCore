@@ -12029,20 +12029,18 @@ class Tn extends Hs {
         localStorage.getItem("hideMarker") || "0"
       ), this.initialRestore.hideLayer = localStorage.getItem("hideLayer") || void 0);
     }
-    const A = Cn(`<img id="center_circle" class="prevent-default" alt=""
+    [...Cn(`<img id="center_circle" class="prevent-default" alt=""
             style="position:absolute;top:50%;left:50%;margin-top:-10px;
-            margin-left:-10px;" src="${Oo}">`);
-    for (let o = A.length - 1; o >= 0; o--)
+            margin-left:-10px;" src="${Oo}">`)].reverse().forEach((o) => {
       this.mapDivDocument.insertBefore(
-        A[o],
+        o,
         this.mapDivDocument.firstChild
       );
-    const s = this.mapDivDocument.querySelectorAll(".prevent-default");
-    for (let o = 0; o < s.length; o++)
-      s[o].addEventListener("touchstart", (a) => {
-        a.preventDefault();
+    }), this.mapDivDocument.querySelectorAll(".prevent-default").forEach((o) => {
+      o.addEventListener("touchstart", (g) => {
+        g.preventDefault();
       });
-    this.overlay = "overlay" in e ? e.overlay : !0, this.overlay && this.mapDivDocument.classList.add("with-opacity"), this.waitReady = (async () => {
+    }), this.overlay = "overlay" in e ? e.overlay : !0, this.overlay && this.mapDivDocument.classList.add("with-opacity"), this.waitReady = (async () => {
       const o = await this.settingLoader(r);
       return this.handleSetting(o, e);
     })();
@@ -12089,11 +12087,9 @@ class Tn extends Hs {
       maplibreMap: this.maplibreMap
       // Pass maplibre map instance
     };
-    for (let s = 0; s < n.length; s++) {
-      const o = n[s];
-      r.push(Oc(o, A));
-    }
-    return Promise.all(r);
+    return n.forEach((s) => {
+      r.push(Oc(s, A));
+    }), Promise.all(r);
   }
   // Async initializers 2: Handle application setting
   async handleSetting(e, n) {
@@ -12276,21 +12272,18 @@ class Tn extends Hs {
       if (A.isBasemap()) return A;
     }, null);
     const n = [];
-    this.cacheHash = {};
-    for (let r = 0; r < e.length; r++) {
-      const A = e[r];
-      if (A.setMap(this.mapObject), A.isMapbox()) {
+    this.cacheHash = {}, e.forEach((r) => {
+      if (r.setMap(this.mapObject), r.isMapbox()) {
         if (!this.mapboxMap)
           throw "To use Mapbox based maps, you need to include Mapbox GL JS and provide it via mapboxgl option.";
-        A.mapboxMap = this.mapboxMap;
-      } else if (A.isMapLibre && A.isMapLibre()) {
+        r.mapboxMap = this.mapboxMap;
+      } else if (r.isMapLibre && r.isMapLibre()) {
         if (!this.maplibreMap)
           throw "To use MapLibre based maps, you need to include MapLibre GL JS and provide it via maplibregl option.";
-        A.maplibreMap = this.maplibreMap;
+        r.maplibreMap = this.maplibreMap;
       }
-      n.push(A), this.cacheHash[A.mapID] = A;
-    }
-    this.dispatchEvent(new kt("sourceLoaded", e)), await this.setInitialMap(n), this.setMapClick(), this.setPointerEvents(), this.setMapOnOff(), this.setMouseCursor(), this.setBackMapBehavior(), this.raiseChangeViewpoint();
+      n.push(r), this.cacheHash[r.mapID] = r;
+    }), this.dispatchEvent(new kt("sourceLoaded", e)), await this.setInitialMap(n), this.setMapClick(), this.setPointerEvents(), this.setMapOnOff(), this.setMouseCursor(), this.setBackMapBehavior(), this.raiseChangeViewpoint();
   }
   // Async initializer 10: Handle initial map
   async setInitialMap(e) {
@@ -12744,12 +12737,9 @@ class Tn extends Hs {
           this.appData.zoomRestriction && (l.setMaxZoom(A.maxZoom), l.setMinZoom(A.minZoom || 0)), g && A.insideCheckSysCoord(g[0]) ? (l.setCenter(g[0]), l.setZoom(g[1]), l.setRotation(this.noRotate ? 0 : g[2])) : this.__init ? g || this.goHome(A) : (this.dispatchEvent(new kt("outOfMap", {})), this.goHome(A)), A.setGPSMarker(this.currentPosition, !0), n.hideLayer && (n.hideLayer.split(",").map((u) => {
             const m = this.getPoiLayer(u);
             m && (m.hide = !0);
-          }), this.requestUpdateState({ hideLayer: n.hideLayer })), n.hideMarker ? this.hideAllMarkers() : this.redrawMarkers(), this.resetVector();
-          for (let h = 0; h < this.vectors.length; h++)
-            ((u) => {
-              this.setVector(u);
-            })(this.vectors[h]);
-          this.dispatchEvent(
+          }), this.requestUpdateState({ hideLayer: n.hideLayer })), n.hideMarker ? this.hideAllMarkers() : this.redrawMarkers(), this.resetVector(), this.vectors.forEach((h) => {
+            this.setVector(h);
+          }), this.dispatchEvent(
             new kt("mapChanged", this.getMapMeta(A.mapID))
           ), this.mapObject.updateSize(), this.mapObject.render(), n.position && (this.__init = !1, A.setViewpoint(n.position)), n.transparency && this.setTransparency(n.transparency), this.__init ? (this.__init = !1, this.goHome(A)) : this.backMap && I && this.convertParametersFromCurrent(I, (h) => {
             const u = this.backMap.getView();

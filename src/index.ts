@@ -229,19 +229,18 @@ export class MaplatApp extends EventTarget {
       createElement(`<img id="center_circle" class="prevent-default" alt=""
             style="position:absolute;top:50%;left:50%;margin-top:-10px;
             margin-left:-10px;" src="${redcircle}">`);
-    for (let i = newElems.length - 1; i >= 0; i--) {
+    [...newElems].reverse().forEach(elem => {
       this.mapDivDocument!.insertBefore(
-        newElems[i],
+        elem,
         this.mapDivDocument!.firstChild
       );
-    }
+    });
     const prevDefs = this.mapDivDocument!.querySelectorAll(".prevent-default");
-    for (let i = 0; i < prevDefs.length; i++) {
-      const target = prevDefs[i];
+    prevDefs.forEach(target => {
       target.addEventListener("touchstart", (evt: any) => {
         evt.preventDefault();
       });
-    }
+    });
     this.overlay = "overlay" in appOption ? appOption.overlay : true;
     if (this.overlay) {
       this.mapDivDocument!.classList.add("with-opacity");
@@ -299,10 +298,9 @@ export class MaplatApp extends EventTarget {
       mapboxMap: this.mapboxMap, // Pass mapbox map instance
       maplibreMap: this.maplibreMap // Pass maplibre map instance
     };
-    for (let i = 0; i < dataSource.length; i++) {
-      const option = dataSource[i];
+    dataSource.forEach(option => {
       sourcePromise.push(mapSourceFactory(option, commonOption));
-    }
+    });
     return Promise.all(sourcePromise);
   }
   // Async initializers 2: Handle application setting
@@ -632,8 +630,7 @@ export class MaplatApp extends EventTarget {
     }, null);
     const cache: any[] = [];
     this.cacheHash = {};
-    for (let i = 0; i < sources.length; i++) {
-      const source = sources[i];
+    sources.forEach((source: any) => {
       source.setMap(this.mapObject);
       if (source.isMapbox()) {
         if (!this.mapboxMap) {
@@ -648,7 +645,7 @@ export class MaplatApp extends EventTarget {
       }
       cache.push(source);
       this.cacheHash[source.mapID] = source;
-    }
+    });
     this.dispatchEvent(new CustomEvent("sourceLoaded", sources));
     await this.setInitialMap(cache);
     this.setMapClick();
@@ -1497,11 +1494,9 @@ export class MaplatApp extends EventTarget {
               this.redrawMarkers();
             }
             this.resetVector();
-            for (let i = 0; i < this.vectors.length; i++) {
-              (data => {
-                this.setVector(data);
-              })(this.vectors[i]);
-            }
+            this.vectors.forEach((data: any) => {
+              this.setVector(data);
+            });
             this.dispatchEvent(
               new CustomEvent("mapChanged", this.getMapMeta(to.mapID))
             );
