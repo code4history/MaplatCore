@@ -12566,15 +12566,14 @@ class Tn extends Hs {
   }
   getMarker(e) {
     if (e.indexOf("#") < 0) {
-      let n;
-      for (const r of Object.keys(this.pois))
-        for (const A of this.pois[r].pois)
-          A.id == e && (n = A);
-      return n;
+      for (const n of Object.keys(this.pois))
+        for (const r of this.pois[n].pois)
+          if (r.id == e)
+            return r;
+      return;
     } else {
       const n = e.split("#"), r = this.cacheHash[n[0]];
-      if (r)
-        return r.getPoi(n[1]);
+      return r == null ? void 0 : r.getPoi(n[1]);
     }
   }
   updateMarker(e, n, r) {

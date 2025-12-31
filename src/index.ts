@@ -1137,21 +1137,18 @@ export class MaplatApp extends EventTarget {
   }
   getMarker(id: any) {
     if (id.indexOf("#") < 0) {
-      let ret: any = undefined;
       for (const key of Object.keys(this.pois)) {
         for (const poi of this.pois[key].pois) {
           if (poi.id == id) {
-            ret = poi;
+            return poi; // 早期リターン
           }
         }
       }
-      return ret;
+      return undefined;
     } else {
       const splits = id.split("#");
       const source = this.cacheHash[splits[0]];
-      if (source) {
-        return source.getPoi(splits[1]);
-      }
+      return source?.getPoi(splits[1]);
     }
   }
   updateMarker(id: any, data: any, overwrite: any) {
