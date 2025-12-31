@@ -1133,7 +1133,7 @@ export class MaplatApp extends EventTarget {
     this.redrawMarkers();
   }
   getMarker(id: any) {
-    if (id.indexOf("#") < 0) {
+    if (!id.includes("#")) {
       for (const key of Object.keys(this.pois)) {
         for (const poi of this.pois[key].pois) {
           if (poi.id == id) {
@@ -1175,7 +1175,7 @@ export class MaplatApp extends EventTarget {
     if (!clusterId) {
       clusterId = "main";
     }
-    if (clusterId.indexOf("#") < 0) {
+    if (!clusterId.includes("#")) {
       if (this.pois[clusterId]) {
         this.pois[clusterId]["pois"].push(normalizePoi(data));
         addIdToPoi(this.pois, clusterId, {
@@ -1197,7 +1197,7 @@ export class MaplatApp extends EventTarget {
     }
   }
   removeMarker(id: any) {
-    if (id.indexOf("#") < 0) {
+    if (!id.includes("#")) {
       for (const key of Object.keys(this.pois)) {
         for (let i = 0; i < this.pois[key].pois.length; i++) {
           const poi = this.pois[key].pois[i];
@@ -1222,7 +1222,7 @@ export class MaplatApp extends EventTarget {
     if (!clusterId) {
       clusterId = "main";
     }
-    if (clusterId.indexOf("#") < 0) {
+    if (!clusterId.includes("#")) {
       if (clusterId == "all") {
         for (const key of Object.keys(this.pois)) {
           this.pois[key]["pois"] = [];
@@ -1311,7 +1311,7 @@ export class MaplatApp extends EventTarget {
     }
   }
   getPoiLayer(id: any) {
-    if (id.indexOf("#") < 0) {
+    if (!id.includes("#")) {
       return this.pois[id];
     } else {
       const splits = id.split("#");
@@ -1324,7 +1324,7 @@ export class MaplatApp extends EventTarget {
   addPoiLayer(id: any, data: any) {
     if (id == "main") return;
     if (this.pois[id]) return;
-    if (id.indexOf("#") < 0) {
+    if (!id.includes("#")) {
       this.pois[id] = normalizeLayer(data || [], id, {
         name: this.appName
       });
@@ -1341,7 +1341,7 @@ export class MaplatApp extends EventTarget {
   removePoiLayer(id: any) {
     if (id == "main") return;
     if (!this.pois[id]) return;
-    if (id.indexOf("#") < 0) {
+    if (!id.includes("#")) {
       delete this.pois[id];
       this.requestUpdateState({
         hideLayer: this.listPoiLayers(true)

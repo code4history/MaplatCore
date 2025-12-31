@@ -12558,15 +12558,15 @@ class Tn extends Hs {
     delete this.__selectedMarker, this.redrawMarkers();
   }
   getMarker(e) {
-    if (e.indexOf("#") < 0) {
+    if (e.includes("#")) {
+      const n = e.split("#"), r = this.cacheHash[n[0]];
+      return r == null ? void 0 : r.getPoi(n[1]);
+    } else {
       for (const n of Object.keys(this.pois))
         for (const r of this.pois[n].pois)
           if (r.id == e)
             return r;
       return;
-    } else {
-      const n = e.split("#"), r = this.cacheHash[n[0]];
-      return r == null ? void 0 : r.getPoi(n[1]);
     }
   }
   updateMarker(e, n, r) {
@@ -12583,31 +12583,31 @@ class Tn extends Hs {
     }
   }
   addMarker(e, n) {
-    if (n || (n = "main"), n.indexOf("#") < 0) {
-      if (this.pois[n])
-        return this.pois[n].pois.push(yn(e)), ui(this.pois, n, {
-          name: this.appName
-        }), this.dispatchPoiNumber(), this.redrawMarkers(), e.namespaceID;
-    } else {
+    if (n || (n = "main"), n.includes("#")) {
       const r = n.split("#"), A = this.cacheHash[r[0]];
       if (A) {
         const s = A.addPoi(e, r[1]);
         return this.dispatchPoiNumber(), this.redrawMarkers(), s;
       }
-    }
+    } else if (this.pois[n])
+      return this.pois[n].pois.push(yn(e)), ui(this.pois, n, {
+        name: this.appName
+      }), this.dispatchPoiNumber(), this.redrawMarkers(), e.namespaceID;
   }
   removeMarker(e) {
-    if (e.indexOf("#") < 0)
+    if (e.includes("#")) {
+      const n = e.split("#"), r = this.cacheHash[n[0]];
+      r && (r.removePoi(n[1]), this.dispatchPoiNumber(), this.redrawMarkers());
+    } else
       for (const n of Object.keys(this.pois))
         for (let r = 0; r < this.pois[n].pois.length; r++)
           this.pois[n].pois[r].id == e && (delete this.pois[n].pois[r], this.dispatchPoiNumber(), this.redrawMarkers());
-    else {
-      const n = e.split("#"), r = this.cacheHash[n[0]];
-      r && (r.removePoi(n[1]), this.dispatchPoiNumber(), this.redrawMarkers());
-    }
   }
   clearMarker(e) {
-    if (e || (e = "main"), e.indexOf("#") < 0) {
+    if (e || (e = "main"), e.includes("#")) {
+      const n = e.split("#"), r = this.cacheHash[n[0]];
+      r && (r.clearPoi(n[1]), this.dispatchPoiNumber(), this.redrawMarkers());
+    } else {
       if (e == "all")
         for (const n of Object.keys(this.pois))
           this.pois[n].pois = [];
@@ -12615,9 +12615,6 @@ class Tn extends Hs {
         this.pois[e].pois = [];
       else return;
       this.dispatchPoiNumber(), this.redrawMarkers();
-    } else {
-      const n = e.split("#"), r = this.cacheHash[n[0]];
-      r && (r.clearPoi(n[1]), this.dispatchPoiNumber(), this.redrawMarkers());
     }
   }
   showAllMarkers() {
@@ -12659,17 +12656,16 @@ class Tn extends Hs {
     }), this.redrawMarkers());
   }
   getPoiLayer(e) {
-    if (e.indexOf("#") < 0)
-      return this.pois[e];
-    {
+    if (e.includes("#")) {
       const n = e.split("#"), r = this.cacheHash[n[0]];
       if (r)
         return r.getPoiLayer(n[1]);
-    }
+    } else
+      return this.pois[e];
   }
   addPoiLayer(e, n) {
     if (e != "main" && !this.pois[e])
-      if (e.indexOf("#") < 0)
+      if (!e.includes("#"))
         this.pois[e] = Oe(n || [], e, {
           name: this.appName
         }), this.redrawMarkers();
@@ -12680,7 +12676,7 @@ class Tn extends Hs {
   }
   removePoiLayer(e) {
     if (e != "main" && this.pois[e])
-      if (e.indexOf("#") < 0)
+      if (!e.includes("#"))
         delete this.pois[e], this.requestUpdateState({
           hideLayer: this.listPoiLayers(!0).map((n) => n.namespaceID).join(",")
         }), this.dispatchPoiNumber(), this.redrawMarkers();
