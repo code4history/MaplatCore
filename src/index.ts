@@ -246,27 +246,19 @@ export class MaplatApp extends EventTarget {
     if (this.overlay) {
       this.mapDivDocument!.classList.add("with-opacity");
     }
-    this.waitReady = this.settingLoader(setting).then(x =>
-      this.handleSetting(x, appOption)
-    );
+    this.waitReady = (async () => {
+      const x = await this.settingLoader(setting);
+      return this.handleSetting(x, appOption);
+    })();
   }
+
   // Async initializers 1: Load application setting
   async settingLoader(setting: any) {
-    return (
-      setting ||
-      new Promise((resolve, _reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open("GET", `apps/${this.appid}.json`, true);
-        xhr.responseType = "json";
-        xhr.onload = function (_e) {
-          let value = this.response;
-          if (typeof value != "object") value = JSON.parse(value);
-          resolve(value);
-        };
-        xhr.send();
-      })
-    );
+    if (setting) return setting;
+    const response = await fetch(`apps/${this.appid}.json`);
+    return response.json();
   }
+
   // Async initializers 3: Load i18n setting
   async i18nLoader() {
     return new Promise((resolve, _reject) => {
@@ -314,14 +306,14 @@ export class MaplatApp extends EventTarget {
     return Promise.all(sourcePromise);
   }
   // Async initializers 2: Handle application setting
-  handleSetting(setting: any, appOption: any) {
+  async handleSetting(setting: any, appOption: any) {
     this.appData = normalizeArg(setting as Record<string, any>) as AppData;
     if (!this.lang && this.appData.lang) {
       this.lang = this.appData.lang;
     }
-    return this.i18nLoader()
-      .then(x => this.handleI18n(x, appOption))
-      .then(() => this.initGeolocation(appOption));
+    const x = await this.i18nLoader();
+    await this.handleI18n(x, appOption);
+    this.initGeolocation(appOption);
   }
   // Async Initializers 2.5: For geolocation settings
   initGeolocation(appOption: any) {
@@ -478,15 +470,15 @@ export class MaplatApp extends EventTarget {
   }
 
   // Async initializers 4: Handle i18n setting
-  handleI18n(i18nObj: any, appOption: any) {
+  async handleI18n(i18nObj: any, appOption: any) {
     if (!i18nObj) i18nObj = [() => "", {}];
     this.i18n = i18nObj[1];
     this.t = i18nObj[0];
     const mapReturnValue = this.prepareMap(appOption);
-    return normalizeLayers(this.appData!.pois || [], this).then(x =>
-      this.handlePois(x, mapReturnValue)
-    );
+    const x = await normalizeLayers(this.appData!.pois || [], this);
+    return this.handlePois(x, mapReturnValue);
   }
+
   // Async initializers 5: Prepare map base elements and objects
   prepareMap(appOption: any) {
     appOption = normalizeArg(appOption);
@@ -624,11 +616,14 @@ export class MaplatApp extends EventTarget {
       mercMaxZoom
     };
   }
+
   // Async initializer 7: Handle pois loading result
-  handlePois(pois: any, mapReturnValue: any) {
+  async handlePois(pois: any, mapReturnValue: any) {
     this.pois = pois;
-    return this.sourcesLoader(mapReturnValue).then(x => this.handleSources(x));
+    const x = await this.sourcesLoader(mapReturnValue);
+    return this.handleSources(x);
   }
+
   // Async initializer 9: Handle sources loading result
   async handleSources(sources: any) {
     this.mercSrc = sources.reduce((prev: any, curr: any) => {
@@ -663,6 +658,7 @@ export class MaplatApp extends EventTarget {
     this.setBackMapBehavior();
     this.raiseChangeViewpoint();
   }
+
   // Async initializer 10: Handle initial map
   async setInitialMap(cache: MaplatSource[]) {
     const initial: string =
@@ -777,39 +773,47 @@ export class MaplatApp extends EventTarget {
   setMapOnOff() {
     // MapUI on off
     let timer: any;
+
+    // Helper function to get controls - reduces redundant DOM queries
+    const getControls = () => this.mapDivDocument!.querySelectorAll(".ol-control");
+
+    // Helper function to add class to all controls
+    const addFadeToControls = (ctls: NodeListOf<Element>) => {
+      ctls.forEach(ctl => ctl.classList.add("fade"));
+    };
+
+    // Helper function to remove class from all controls
+    const removeFadeFromControls = (ctls: NodeListOf<Element>) => {
+      ctls.forEach(ctl => ctl.classList.remove("fade"));
+    };
+
     this.mapObject.on("click", () => {
       if (timer) {
         clearTimeout(timer);
         timer = undefined;
       }
-      const ctls = this.mapDivDocument!.querySelectorAll(".ol-control");
-      if (!this.mapObject.tapUIVanish || (ctls.length && ctls[0].classList.contains("fade"))) {
-        for (let i = 0; i < ctls.length; i++) {
-          ctls[i].classList.remove("fade");
-        }
+      const ctls = getControls();
+      const hasFade = ctls.length && ctls[0].classList.contains("fade");
+
+      if (!this.mapObject.tapUIVanish || hasFade) {
+        removeFadeFromControls(ctls);
       } else {
-        for (let i = 0; i < ctls.length; i++) {
-          ctls[i].classList.add("fade");
-        }
+        addFadeToControls(ctls);
         timer = setTimeout(() => {
           timer = undefined;
-          const ctls = this.mapDivDocument!.querySelectorAll(".ol-control");
-          for (let i = 0; i < ctls.length; i++) {
-            ctls[i].classList.remove("fade");
-          }
+          removeFadeFromControls(getControls());
         }, this.mapObject.tapDuration);
       }
     });
+
     this.mapObject.on("pointerdrag", () => {
       if (timer) {
         clearTimeout(timer);
         timer = undefined;
       }
-      const ctls = this.mapDivDocument!.querySelectorAll(".ol-control");
-      for (let i = 0; i < ctls.length; i++) {
-        ctls[i].classList.add("fade");
-      }
+      addFadeToControls(getControls());
     });
+
     this.mapObject.on("moveend", () => {
       if (timer) {
         clearTimeout(timer);
@@ -817,10 +821,7 @@ export class MaplatApp extends EventTarget {
       }
       timer = setTimeout(() => {
         timer = undefined;
-        const ctls = this.mapDivDocument!.querySelectorAll(".ol-control");
-        for (let i = 0; i < ctls.length; i++) {
-          ctls[i].classList.remove("fade");
-        }
+        removeFadeFromControls(getControls());
       }, this.mapObject.tapDuration);
     });
   }
@@ -1533,6 +1534,7 @@ export class MaplatApp extends EventTarget {
         })
     ));
   }
+
   requestUpdateState(data: Restore) {
     this.stateBuffer = Object.assign(this.stateBuffer, data);
     if (this.stateBuffer.backgroundID == "____delete____") {
