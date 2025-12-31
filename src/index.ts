@@ -1136,7 +1136,7 @@ export class MaplatApp extends EventTarget {
     if (!id.includes("#")) {
       for (const key of Object.keys(this.pois)) {
         for (const poi of this.pois[key].pois) {
-          if (poi.id == id) {
+          if (poi.id === id) {
             return poi; // 早期リターン
           }
         }
@@ -1154,15 +1154,15 @@ export class MaplatApp extends EventTarget {
     data = normalizePoi(data || {});
     if (overwrite) {
       for (const key of Object.keys(poi)) {
-        if (key != "id" && key != "namespaceID") {
+        if (key !== "id" && key !== "namespaceID") {
           delete poi[key];
         }
       }
       Object.assign(poi, data);
     } else {
       for (const key of Object.keys(data)) {
-        if (key == "id" || key == "namespaceID") continue;
-        if (data[key] == "____delete____") {
+        if (key === "id" || key === "namespaceID") continue;
+        if (data[key] === "____delete____") {
           delete poi[key];
         } else {
           poi[key] = data[key];
@@ -1201,7 +1201,7 @@ export class MaplatApp extends EventTarget {
       for (const key of Object.keys(this.pois)) {
         for (let i = 0; i < this.pois[key].pois.length; i++) {
           const poi = this.pois[key].pois[i];
-          if (poi.id == id) {
+          if (poi.id === id) {
             delete this.pois[key].pois[i];
             this.dispatchPoiNumber();
             this.redrawMarkers();
@@ -1223,7 +1223,7 @@ export class MaplatApp extends EventTarget {
       clusterId = "main";
     }
     if (!clusterId.includes("#")) {
-      if (clusterId == "all") {
+      if (clusterId === "all") {
         for (const key of Object.keys(this.pois)) {
           this.pois[key]["pois"] = [];
         }
@@ -1264,8 +1264,8 @@ export class MaplatApp extends EventTarget {
   listPoiLayers(hideOnly = false, nonzero = false) {
     const appPois = Object.keys(this.pois)
       .sort((a, b) => {
-        if (a == "main") return -1;
-        else if (b == "main") return 1;
+        if (a === "main") return -1;
+        else if (b === "main") return 1;
         else if (a < b) return -1;
         else if (a > b) return 1;
         else return 0;
@@ -1322,7 +1322,7 @@ export class MaplatApp extends EventTarget {
     }
   }
   addPoiLayer(id: any, data: any) {
-    if (id == "main") return;
+    if (id === "main") return;
     if (this.pois[id]) return;
     if (!id.includes("#")) {
       this.pois[id] = normalizeLayer(data || [], id, {
@@ -1339,7 +1339,7 @@ export class MaplatApp extends EventTarget {
     }
   }
   removePoiLayer(id: any) {
-    if (id == "main") return;
+    if (id === "main") return;
     if (!this.pois[id]) return;
     if (!id.includes("#")) {
       delete this.pois[id];

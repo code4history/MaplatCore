@@ -12564,7 +12564,7 @@ class Tn extends Hs {
     } else {
       for (const n of Object.keys(this.pois))
         for (const r of this.pois[n].pois)
-          if (r.id == e)
+          if (r.id === e)
             return r;
       return;
     }
@@ -12574,11 +12574,11 @@ class Tn extends Hs {
     if (A) {
       if (n = yn(n || {}), r) {
         for (const s of Object.keys(A))
-          s != "id" && s != "namespaceID" && delete A[s];
+          s !== "id" && s !== "namespaceID" && delete A[s];
         Object.assign(A, n);
       } else
         for (const s of Object.keys(n))
-          s == "id" || s == "namespaceID" || (n[s] == "____delete____" ? delete A[s] : A[s] = n[s]);
+          s === "id" || s === "namespaceID" || (n[s] === "____delete____" ? delete A[s] : A[s] = n[s]);
       this.redrawMarkers();
     }
   }
@@ -12601,14 +12601,14 @@ class Tn extends Hs {
     } else
       for (const n of Object.keys(this.pois))
         for (let r = 0; r < this.pois[n].pois.length; r++)
-          this.pois[n].pois[r].id == e && (delete this.pois[n].pois[r], this.dispatchPoiNumber(), this.redrawMarkers());
+          this.pois[n].pois[r].id === e && (delete this.pois[n].pois[r], this.dispatchPoiNumber(), this.redrawMarkers());
   }
   clearMarker(e) {
     if (e || (e = "main"), e.includes("#")) {
       const n = e.split("#"), r = this.cacheHash[n[0]];
       r && (r.clearPoi(n[1]), this.dispatchPoiNumber(), this.redrawMarkers());
     } else {
-      if (e == "all")
+      if (e === "all")
         for (const n of Object.keys(this.pois))
           this.pois[n].pois = [];
       else if (this.pois[e])
@@ -12635,7 +12635,7 @@ class Tn extends Hs {
     );
   }
   listPoiLayers(e = !1, n = !1) {
-    const r = Object.keys(this.pois).sort((s, o) => s == "main" ? -1 : o == "main" ? 1 : s < o ? -1 : s > o ? 1 : 0).map((s) => this.pois[s]).filter(
+    const r = Object.keys(this.pois).sort((s, o) => s === "main" ? -1 : o === "main" ? 1 : s < o ? -1 : s > o ? 1 : 0).map((s) => this.pois[s]).filter(
       (s) => n ? e ? s.pois.length && s.hide : s.pois.length : e ? s.hide : !0
     ), A = this.from.listPoiLayers(
       e,
@@ -12664,7 +12664,7 @@ class Tn extends Hs {
       return this.pois[e];
   }
   addPoiLayer(e, n) {
-    if (e != "main" && !this.pois[e])
+    if (e !== "main" && !this.pois[e])
       if (!e.includes("#"))
         this.pois[e] = Oe(n || [], e, {
           name: this.appName
@@ -12675,7 +12675,7 @@ class Tn extends Hs {
       }
   }
   removePoiLayer(e) {
-    if (e != "main" && this.pois[e])
+    if (e !== "main" && this.pois[e])
       if (!e.includes("#"))
         delete this.pois[e], this.requestUpdateState({
           hideLayer: this.listPoiLayers(!0).map((n) => n.namespaceID).join(",")
