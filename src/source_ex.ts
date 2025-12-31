@@ -90,12 +90,12 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
       options.maptype === "base"
         ? NowMap
         : options.maptype === "overlay"
-        ? TmsMap
-        : options.maptype === "mapbox"
-        ? MapboxMap
-        : options.maptype === "maplibre"
-        ? MapLibreMap
-        : GoogleMap;
+          ? TmsMap
+          : options.maptype === "mapbox"
+            ? MapboxMap
+            : options.maptype === "maplibre"
+              ? MapLibreMap
+              : GoogleMap;
     if (!targetSrc.isBasemap()) {
       if (!options.homePosition) options.homePosition = options.homePos;
       if (!options.mercZoom) options.mercZoom = options.defZoom;
@@ -112,7 +112,7 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
     options.zoomRestriction =
       options.mercMaxZoom =
       options.mercMinZoom =
-        undefined;
+      undefined;
     if (options.translator) {
       options.url = options.translator(options.url);
     }
@@ -135,119 +135,96 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
     return new HistMap_tin(options);
   }
 
-  return new Promise((resolve, reject) => {
-    const url = options.settingFile || `maps/${options.mapID}.json`;
-    const xhr = new XMLHttpRequest();  
-    xhr.open("GET", url, true);
-    xhr.responseType = "json";
 
-    xhr.onload = async function (_e) {
-      if (this.status === 200 || this.status === 0) {
-        // 0 for UIWebView
-        try {
-          let resp = this.response;
-          if (typeof resp != "object") resp = JSON.parse(resp);
-          options = normalizeArg(Object.assign(resp, options));
-          options.label = options.label || resp.year;
-          if (options.translator) {
-            options.url = options.translator(options.url);
-          }
-          if (!options.maptype) options.maptype = "maplat";
+  const url = options.settingFile || `maps/${options.mapID}.json`;
 
-          if (checkMapTypeIsWMTS(options.maptype)) {
-            const targetSrc =
-              options.maptype === "base"
-                ? NowMap
-                : options.maptype === "overlay"
-                ? TmsMap
-                : options.maptype === "mapbox"
-                ? MapboxMap
-                : options.maptype === "maplibre"
-                ? MapLibreMap
-                : GoogleMap;
-            if (!targetSrc.isBasemap()) {
-              if (!options.homePosition) options.homePosition = options.homePos;
-              if (!options.mercZoom) options.mercZoom = options.defZoom;
-            } else {
-              options.homePosition = options.homePos;
-              options.mercZoom = options.defZoom;
-            }
-            delete options.homePos;
-            delete options.defZoom;
-            if (options.zoomRestriction) {
-              options.maxZoom = options.maxZoom || options.mercMaxZoom;
-              options.minZoom = options.minZoom || options.mercMinZoom;
-            }
-            options.zoomRestriction =
-              options.mercMaxZoom =
-              options.mercMinZoom =
-                undefined;
-            try {
-              if (!options.imageExtension) options.imageExtension = "jpg";
-              if (options.mapID && !options.url && !options.urls) {
-                options.url = options.tms
-                  ? `tiles/${options.mapID}/{z}/{x}/{-y}.${options.imageExtension}`
-                  : `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtension}`;
-              }
-              options.weiwudi = await registerMapToSW(options);
-              if (options.weiwudi) {
-                options.url = options.weiwudi.url;
-                delete options.urls;
-              }
-              const obj = await targetSrc.createAsync(options);
-              try {
-                await obj.initialWait;
-                resolve(obj);
-              } catch (_e) {
-                resolve(obj);
-              }
-            } catch (e) {
-              reject(e);
-            }
-            return;
-          }
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error("Fail to load map json");
+  }
 
-          try {
-            delete options.homePos;
-            delete options.defZoom;
-            if (!options.imageExtension) options.imageExtension = "jpg";
-            if (options.mapID && !options.url && !options.urls) {
-              options.url = `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtension}`;
-            }
-            if (!options.compiled || !options.compiled.wh) {
-              console.error(
-                `[Maplat] Missing compiled.wh for mapID=${options.mapID}. Check map setting file: ${url}`
-              );
-              reject(new Error(`Map ${options.mapID} is missing compiled data.`));
-              return;
-            }
-            options.width = options.width || options.compiled.wh[0];
-            options.height = options.height || options.compiled.wh[1];
-            options.weiwudi = await registerMapToSW(options);
-            if (options.weiwudi) {
-              options.url = options.weiwudi.url;
-              delete options.urls;
-            }
-            const obj = await HistMap_tin.createAsync(options);
-            try {
-              await obj.initialWait;
-              obj.setupMapParameter(resolve);
-            } catch (_e) {
-              obj.setupMapParameter(resolve);
-            }
-          } catch (e) {
-            reject(e);
-          }
-        } catch (err) {
-          reject(err);
-        }
-      } else {
-        reject("Fail to load map json");
-        // self.postMessage({'event':'cannotLoad'});
-      }
-    };
-    xhr.send();
+  const resp = await response.json();
+  options = normalizeArg(Object.assign(resp, options));
+  options.label = options.label || resp.year;
+  if (options.translator) {
+    options.url = options.translator(options.url);
+  }
+  if (!options.maptype) options.maptype = "maplat";
+
+  if (checkMapTypeIsWMTS(options.maptype)) {
+    const targetSrc =
+      options.maptype === "base"
+        ? NowMap
+        : options.maptype === "overlay"
+          ? TmsMap
+          : options.maptype === "mapbox"
+            ? MapboxMap
+            : options.maptype === "maplibre"
+              ? MapLibreMap
+              : GoogleMap;
+    if (!targetSrc.isBasemap()) {
+      if (!options.homePosition) options.homePosition = options.homePos;
+      if (!options.mercZoom) options.mercZoom = options.defZoom;
+    } else {
+      options.homePosition = options.homePos;
+      options.mercZoom = options.defZoom;
+    }
+    delete options.homePos;
+    delete options.defZoom;
+    if (options.zoomRestriction) {
+      options.maxZoom = options.maxZoom || options.mercMaxZoom;
+      options.minZoom = options.minZoom || options.mercMinZoom;
+    }
+    options.zoomRestriction =
+      options.mercMaxZoom =
+      options.mercMinZoom =
+      undefined;
+    if (!options.imageExtension) options.imageExtension = "jpg";
+    if (options.mapID && !options.url && !options.urls) {
+      options.url = options.tms
+        ? `tiles/${options.mapID}/{z}/{x}/{-y}.${options.imageExtension}`
+        : `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtension}`;
+    }
+    options.weiwudi = await registerMapToSW(options);
+    if (options.weiwudi) {
+      options.url = options.weiwudi.url;
+      delete options.urls;
+    }
+    const obj = await targetSrc.createAsync(options);
+    try {
+      await obj.initialWait;
+      return obj;
+    } catch (_e) {
+      return obj;
+    }
+  }
+
+  delete options.homePos;
+  delete options.defZoom;
+  if (!options.imageExtension) options.imageExtension = "jpg";
+  if (options.mapID && !options.url && !options.urls) {
+    options.url = `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtension}`;
+  }
+  if (!options.compiled || !options.compiled.wh) {
+    console.error(
+      `[Maplat] Missing compiled.wh for mapID=${options.mapID}. Check map setting file: ${url}`
+    );
+    throw new Error(`Map ${options.mapID} is missing compiled data.`);
+  }
+  options.width = options.width || options.compiled.wh[0];
+  options.height = options.height || options.compiled.wh[1];
+  options.weiwudi = await registerMapToSW(options);
+  if (options.weiwudi) {
+    options.url = options.weiwudi.url;
+    delete options.urls;
+  }
+  const obj = await HistMap_tin.createAsync(options);
+  await obj.initialWait;
+  // setupMapParameter uses callback pattern, wrap it in Promise
+  await new Promise<void>((resolve) => {
+    obj.setupMapParameter(() => resolve());
   });
+  return obj;
 }
 
 export async function registerMapToSW(options: any) {

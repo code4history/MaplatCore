@@ -3,29 +3,14 @@ export async function nodesLoader(
   nodes: string | Record<string, unknown>
 ): Promise<Record<string, unknown>> {
   if (typeof nodes === "string") {
-    return new Promise((resolve, reject) => {
-      const url = nodes.match(/\//) ? nodes : `pois/${nodes}`;
+    const url = nodes.match(/\//) ? nodes : `pois/${nodes}`;
 
-      const xhr = new XMLHttpRequest();
-      xhr.open("GET", url, true);
-      xhr.responseType = "json";
-
-      xhr.onload = function (_e) {
-        if (this.status == 200 || this.status == 0) {
-          // 0 for UIWebView
-          try {
-            let resp: string | Record<string, unknown> = this.response;
-            if (typeof resp === "string") resp = JSON.parse(resp);
-            resolve(resp as Record<string, unknown>);
-          } catch (err) {
-            reject(err);
-          }
-        } else {
-          reject("Fail to load poi json");
-        }
-      };
-      xhr.send();
-    });
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error("Fail to load poi json");
+    }
+    const resp = await response.json();
+    return resp as Record<string, unknown>;
   } else {
     return nodes;
   }
@@ -100,9 +85,8 @@ export function normalizeLayer(layer: any, key: any, options: any) {
     if (layer.id !== key) throw "POI layers include bad key setting";
   }
   if (!layer.namespaceID)
-    layer.namespaceID = `${
-      options.namespace ? `${options.namespace}#` : ""
-    }${key}`;
+    layer.namespaceID = `${options.namespace ? `${options.namespace}#` : ""
+      }${key}`;
   if (!layer.name) layer.name = key === "main" ? options.name : key;
   if (!layer.pois) layer.pois = [];
 
@@ -142,9 +126,7 @@ export function addIdToPoi(layers: any, key: any, options: any) {
       cluster.__nextId++;
     }
     if (!poi.namespaceID) {
-      poi.namespaceID = `${options.namespace ? `${options.namespace}#` : ""}${
-        poi.id
-      }`;
+      poi.namespaceID = `${options.namespace ? `${options.namespace}#` : ""}${poi.id}`;
     }
   });
 }
