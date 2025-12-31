@@ -1064,10 +1064,10 @@ export class MaplatApp extends EventTarget {
       this.resetMarker();
       let selected: any;
       if (!this.stateBuffer.hideMarker) {
-        Object.keys(this.pois).map(key => {
+        for (const key of Object.keys(this.pois)) {
           const cluster = this.pois[key];
           if (!cluster.hide) {
-            cluster.pois.map((data: any) => {
+            for (const data of cluster.pois) {
               const dataCopy = createIconSet(data, cluster, this);
               createHtmlFromTemplate(dataCopy, cluster, this);
               if (this.__selectedMarker == dataCopy.namespaceID) {
@@ -1075,14 +1075,14 @@ export class MaplatApp extends EventTarget {
               } else {
                 promises.push(this.setMarker(dataCopy));
               }
-            });
+            }
           }
-        });
+        }
         if (source.pois) {
-          Object.keys(source.pois).map(key => {
+          for (const key of Object.keys(source.pois)) {
             const cluster = source.pois[key];
             if (!cluster.hide) {
-              cluster.pois.map((data: any) => {
+              for (const data of cluster.pois) {
                 const dataCopy = createIconSet(data, cluster, source, this);
                 createHtmlFromTemplate(dataCopy, cluster, source, this);
                 if (this.__selectedMarker == dataCopy.namespaceID) {
@@ -1090,9 +1090,9 @@ export class MaplatApp extends EventTarget {
                 } else {
                   promises.push(this.setMarker(dataCopy));
                 }
-              });
+              }
             }
-          });
+          }
         }
       }
       let promise_var = Promise.all(promises);
@@ -1138,13 +1138,13 @@ export class MaplatApp extends EventTarget {
   getMarker(id: any) {
     if (id.indexOf("#") < 0) {
       let ret: any = undefined;
-      Object.keys(this.pois).map(key => {
-        this.pois[key].pois.map((poi: any, i: any) => {
+      for (const key of Object.keys(this.pois)) {
+        for (const poi of this.pois[key].pois) {
           if (poi.id == id) {
-            ret = this.pois[key].pois[i];
+            ret = poi;
           }
-        });
-      });
+        }
+      }
       return ret;
     } else {
       const splits = id.split("#");
@@ -1159,21 +1159,21 @@ export class MaplatApp extends EventTarget {
     if (!poi) return;
     data = normalizePoi(data || {});
     if (overwrite) {
-      Object.keys(poi).map(key => {
+      for (const key of Object.keys(poi)) {
         if (key != "id" && key != "namespaceID") {
           delete poi[key];
         }
-      });
+      }
       Object.assign(poi, data);
     } else {
-      Object.keys(data).map(key => {
-        if (key == "id" || key == "namespaceID") return;
+      for (const key of Object.keys(data)) {
+        if (key == "id" || key == "namespaceID") continue;
         if (data[key] == "____delete____") {
           delete poi[key];
         } else {
           poi[key] = data[key];
         }
-      });
+      }
     }
     this.redrawMarkers();
   }
@@ -1204,15 +1204,16 @@ export class MaplatApp extends EventTarget {
   }
   removeMarker(id: any) {
     if (id.indexOf("#") < 0) {
-      Object.keys(this.pois).map(key => {
-        this.pois[key].pois.map((poi: any, i: any) => {
+      for (const key of Object.keys(this.pois)) {
+        for (let i = 0; i < this.pois[key].pois.length; i++) {
+          const poi = this.pois[key].pois[i];
           if (poi.id == id) {
             delete this.pois[key].pois[i];
             this.dispatchPoiNumber();
             this.redrawMarkers();
           }
-        });
-      });
+        }
+      }
     } else {
       const splits = id.split("#");
       const source = this.cacheHash[splits[0]];
@@ -1229,9 +1230,9 @@ export class MaplatApp extends EventTarget {
     }
     if (clusterId.indexOf("#") < 0) {
       if (clusterId == "all") {
-        Object.keys(this.pois).map(key => {
+        for (const key of Object.keys(this.pois)) {
           this.pois[key]["pois"] = [];
-        });
+        }
       } else if (this.pois[clusterId]) {
         this.pois[clusterId]["pois"] = [];
       } else return;
