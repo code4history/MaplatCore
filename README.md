@@ -1,3 +1,5 @@
+[![CI](https://github.com/code4history/MaplatCore/actions/workflows/test.yml/badge.svg)](https://github.com/code4history/MaplatCore/actions/workflows/test.yml)
+
 # MaplatCore library
 
 Maplat is the cool Historical Map/Illustrated Map Viewer API.  
@@ -6,23 +8,41 @@ This is part of [Maplat](https://github.com/code4history/Maplat/wiki) project.
 
 日本語版は[こちら](README.ja.md)をご覧ください。
 
+## Requirements
+
+- **Node.js**: Version 20 or 22 (tested in CI)
+- **pnpm**: Version 9 or higher
+- **Required Library**: OpenLayers (Architecture requirement)
+- **Optional Libraries**: MapLibre GL JS or Mapbox GL JS (For vector tile support etc.)
+
 ## Installation
 
 ### Browser (ES Modules)
 
 You can use MaplatCore directly in the browser using ES Modules and a CDN.
+Note that you **must** include OpenLayers CSS and JS.
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@maplat/core@0.11.0/dist/maplat_core.css">
+<!-- OpenLayers CSS (Required) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@latest/ol.css" />
+<!-- OpenLayers JS (Required) -->
+<script src="https://cdn.jsdelivr.net/npm/ol@latest/dist/ol.js"></script>
+
 <script type="module">
-  import { MaplatApp } from 'https://cdn.jsdelivr.net/npm/@maplat/core@0.11.0/dist/maplat_core.js';
+  import { MaplatApp } from 'https://cdn.jsdelivr.net/npm/@maplat/core@latest/dist/maplat_core.js';
   // ... usage
 </script>
 ```
 
 ### Bundler (Vite / Webpack / etc.)
 
-Install via npm:
+Install via pnpm (recommended):
+
+```sh
+pnpm add @maplat/core
+```
+
+Or via npm:
 
 ```sh
 npm install @maplat/core
@@ -30,13 +50,30 @@ npm install @maplat/core
 
 ## Peer Dependencies
 
-MaplatCore requires **OpenLayers** to be installed or included. Mapbox GL JS and MapLibre GL JS are optional. You must provide the library instance to Maplat via the options.
+MaplatCore strictly requires **OpenLayers** to function. Mapbox GL JS and MapLibre GL JS are optional extensions for vector tile support.
 
-### Mapbox GL JS
+### Required: OpenLayers
 
-**npm:**
+OpenLayers is architecturally required for MaplatCore. You must install it and import its CSS.
+
+**pnpm:**
 ```sh
-npm install mapbox-gl
+pnpm add ol
+```
+
+**CDN:**
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@latest/ol.css" />
+<script src="https://cdn.jsdelivr.net/npm/ol@latest/dist/ol.js"></script>
+```
+
+### Optional: Mapbox GL JS
+
+Only required if you use Mapbox vector tiles.
+
+**pnpm:**
+```sh
+pnpm add mapbox-gl
 ```
 
 **CDN:**
@@ -47,30 +84,19 @@ npm install mapbox-gl
 
 Note: Mapbox GL JS requires an access token. Provide it via the `mapboxToken` option.
 
-### MapLibre GL JS
+### Optional: MapLibre GL JS
 
-**npm:**
+Only required if you use MapLibre vector tiles.
+
+**pnpm:**
 ```sh
-npm install maplibre-gl
+pnpm add maplibre-gl
 ```
 
 **CDN:**
 ```html
-<link href="https://unpkg.com/maplibre-gl@4.5.0/dist/maplibre-gl.css" rel="stylesheet" />
-<script src="https://unpkg.com/maplibre-gl@4.5.0/dist/maplibre-gl.js"></script>
-```
-
-### OpenLayers
-
-**npm:**
-```sh
-npm install ol
-```
-
-**CDN:**
-```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@10.6.1/ol.css" />
-<script src="https://cdn.jsdelivr.net/npm/ol@10.6.1/dist/ol.js"></script>
+<link href="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css" rel="stylesheet" />
+<script src="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.js"></script>
 ```
 
 ## Usage
@@ -82,19 +108,26 @@ npm install ol
 <html>
 <head>
   <meta charset="UTF-8" />
-  <link href="https://unpkg.com/maplibre-gl@4.5.0/dist/maplibre-gl.css" rel="stylesheet" />
-  <script src="https://unpkg.com/maplibre-gl@4.5.0/dist/maplibre-gl.js"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@maplat/core@0.11.0/dist/maplat_core.css">
+  <!-- OpenLayers CSS is REQUIRED -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@latest/ol.css" />
+  
+  <!-- Optional: MapLibre GL JS -->
+  <link href="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css" rel="stylesheet" />
+  <script src="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.js"></script>
 </head>
 <body>
   <div id="map_div" style="width: 100%; height: 100vh;"></div>
+  
+  <!-- OpenLayers JS is REQUIRED -->
+  <script src="https://cdn.jsdelivr.net/npm/ol@latest/dist/ol.js"></script>
+
   <script type="module">
-    import { MaplatApp } from 'https://cdn.jsdelivr.net/npm/@maplat/core@0.11.0/dist/maplat_core.js';
+    import { MaplatApp } from 'https://cdn.jsdelivr.net/npm/@maplat/core@latest/dist/maplat_core.js';
 
     const option = {
-      maplibregl: maplibregl, // Inject the global maplibregl object
-      // mapboxgl: mapboxgl, // If using Mapbox
-      // mapboxToken: 'YOUR_ACCESS_TOKEN', // If using Mapbox
+      maplibregl: maplibregl, // Inject only if you use it
+      // mapboxgl: mapboxgl, 
+      // mapboxToken: 'YOUR_ACCESS_TOKEN',
       startFrom: 'gsi', // Initial map ID
       div: 'map_div' // Target div ID (optional, default is 'map_div')
     };
@@ -111,15 +144,14 @@ npm install ol
 
 ```typescript
 import { MaplatApp } from '@maplat/core';
+import 'ol/ol.css'; // REQUIRED: OpenLayers CSS
+
+// Optional: Import MapLibre if needed
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-// import mapboxgl from 'mapbox-gl';
-// import 'mapbox-gl/dist/mapbox-gl.css';
-// import { Map, View } from 'ol'; // For OpenLayers
 
 const option = {
-  maplibregl: maplibregl,
-  // mapboxgl: mapboxgl,
+  maplibregl: maplibregl, // Optional
   startFrom: 'gsi',
 };
 
@@ -128,114 +160,152 @@ MaplatApp.createObject(option).then((app) => {
 });
 ```
 
-### API Usage Example
+### API Reference
 
-Once you have the `app` instance, you can use it to control the map.
+#### Map State & Control
+
+- `currentMapInfo(): object`
+  - Get information about the currently active map.
+- `mapInfo(mapID: string): object`
+  - Get information about a specific map by its ID.
+- `changeMap(mapID: string, restore?: object): Promise<void>`
+  - Switch to a different map. `restore` object can optionally set initial position (x, y, zoom, rotation).
+- `requestUpdateState(data: object): Promise<void>`
+  - Request an update to the map state (position, transparency, etc.).
+
+#### Coordinate System
+
+- `clientPointToLngLat(clientX: number, clientY: number): [number, number]`
+  - Convert screen coordinates (pixels relative to viewport) to Longitude/Latitude.
+- `lngLatToClientPoint(lng: number, lat: number): [number, number]`
+  - Convert Longitude/Latitude to screen coordinates.
+
+#### Markers (Point Data)
+
+- `addMarker(data: object, clusterId?: string): void`
+  - Add a marker. `data` should contain `lng`, `lat`, `name`, `desc` (description), `icon`, etc.
+  - `clusterId` specifies which layer to add the marker to (e.g., 'main', or specific map layer).
+- `removeMarker(id: string): void`
+  - Remove a specific marker by its ID (e.g. 'main_1').
+- `updateMarker(id: string, data: object, overwrite?: boolean): void`
+  - Update an existing marker's data (e.g. move position).
+- `clearMarker(clusterId?: string): void`
+  - Remove all markers from a specific cluster/layer.
+- `selectMarker(id: string): void`
+  - Programmatically select (highlight) a marker.
+- `unselectMarker(): void`
+  - Deselect the currently selected marker.
+- `getMarker(id: string): object`
+  - Get data for a specific marker.
+- `setMarker(data: object): void`
+  - Batch add/set markers. Useful for initialization or mass updates.
+- `showAllMarkers(): void`
+  - Make all markers visible.
+- `hideAllMarkers(): void`
+  - Hide all markers.
+
+#### Lines & Vectors
+
+- `addLine(data: object): void`
+  - Add a line feature. data: `{ lnglats: [[lng, lat], ...], stroke: { color: '#...', width: 2 } }`
+- `addVector(data: object): void`
+  - Add a polygon/vector feature (GeoJSON compatible).
+- `setLine(data: object): void` / `setVector(data: object): void`
+  - Batch set lines/vectors.
+- `resetLine()` / `resetVector()` / `resetMarker()`
+  - Clear and reset basic lines/vectors/markers (often used for default layers).
+- `clearLine()` / `clearVector()`
+  - Clear all lines/vectors.
+
+#### POI Layers
+
+Maplat manages markers in "layers".
+
+- `addPoiLayer(id: string, data: object): void`
+  - Create a new POI layer. `data` can define default icons.
+- `showPoiLayer(id: string): void`
+  - Show a specific layer.
+- `hidePoiLayer(id: string): void`
+  - Hide a specific layer.
+- `listPoiLayers(hideOnly?: boolean, nonzero?: boolean): string[]`
+  - Get a list of available layer IDs.
+
+#### GPS & User Position
+
+- `handleGPS(enable: boolean): void`
+  - Turn GPS tracking on or off.
+- `getGPSEnabled(): boolean`
+  - Check if GPS tracking is currently active.
+- `setGPSMarker(position: object): void`
+  - Manually update the GPS marker position (usually handled automatically if GPS is on).
+
+#### Event Handling
+
+Use `app.addEventListener(type, callback)` to handle events.
+
+- `clickMarker`: Fired when a marker is clicked. `evt.detail` contains marker data.
+- `clickMap`: Fired when the map background is clicked.
+- `gps_result`: Fired when a GPS position update happens.
+- `gps_error`: Fired when GPS fails.
+
+### Example
 
 ```javascript
-    MaplatApp.createObject(option).then(function(app){
-        // Show current map information in console.
-        console.log(app.currentMapInfo());
-        // Show information of the map which id is 'gsi' in console.
-        console.log(app.mapInfo('gsi'));
-        // Make clicked pin as selected and show click event detail in console.
-        var moveFlag = false;
-        app.addEventListener('clickMarker', function(evt) {
-            app.selectMarker(evt.detail.namespaceID);
-            console.log(evt);
-        });
-        // show detail of map click event in console.
-        app.addEventListener('clickMap', function (evt) {
-            console.log(evt);
-        });
-        // Add line object to the map
-        app.addLine({
-            lnglats: [[141.151995, 39.701599], [141.151137, 39.703736], [141.1521671, 39.7090232]],
-            stroke: {
-                color: '#ffcc33',
-                width: 2
-            }
-        });
-        // Add map layer called 'main2' and add on-demand marker to the layer.
-        app.addPoiLayer('main2');
-        app.addPoiLayer('morioka_ndl2#main2', {
-            icon: 'parts/blue_marker.png',
-            selectedIcon: 'parts/red_marker.png'
-        });
-        // Button function: Show all markers in the layer named 'main'.
-        document.getElementById('show').addEventListener('click', function(e) {
-            app.showPoiLayer('main');
-        });
-        // Button function: Hide all markers in the layer named 'main'.
-        document.getElementById('hide').addEventListener('click', function(e) {
-            app.hidePoiLayer('main');
-        });
-        // Button function: Remove all markers in the layer named 'main'.
-        document.getElementById('clear').addEventListener('click', function(e) {
-            app.clearMarker('main');
-        });
-        // Button function: Switch the location of single marker.
-        document.getElementById('move').addEventListener('click', function(e) {
-            var data;
-            if (moveFlag) {
-                data = {lat: 39.698620, lng: 141.145358};
-            } else {
-                data = {lat: 39.694758, lng: 141.146534};
-            }
-            moveFlag = !moveFlag;
-            app.updateMarker('main_1', data);
-        });
-        // Button function: Remove the single marker.
-        document.getElementById('remove').addEventListener('click', function(e) {
-            app.removeMarker('main_2');
-        });
-        // Button function: Add the single marker to the layer named 'main2'.
-        document.getElementById('add2').addEventListener('click', function(e) {
-            app.addMarker({
-                address: "岩手県盛岡市内丸1-42",
-                desc: "寛延２年創建で当時の藩主南部利視が初代藩主南部信直の功績を称え社殿を建立し御霊を勧請したのが始まりとされている。",
-                icon: undefined,
-                image: "sakurayama_jinja.jpg",
-                lat: 39.701599,
-                lng: 141.151995,
-                name: "桜山神社",
-                selectedIcon: undefined,
-                start: 1749
-            }, 'main2');
-        });
-        // Button function: Remove all markers in the layer named 'main2'.
-        document.getElementById('clear2').addEventListener('click', function(e) {
-            app.clearMarker('main2');
-        });
-        // Button function: Add the single marker to the layer named 'morioka_ndl2#main2' (POI layer of the each map).
-        document.getElementById('addMap').addEventListener('click', function(e) {
-            app.addMarker({
-                address: "岩手県盛岡市内丸1-37",
-                desc: "南部（盛岡）藩南部氏の居城である。西部を流れる北上川と南東部を流れる中津川の合流地、現在の盛岡市中心部にあった花崗岩丘陵に築城された連郭式平山城。",
-                icon: undefined,
-                image: "moriokajo.jpg",
-                lat: 39.69994722,
-                lng: 141.1501111,
-                name: {ja: "盛岡城", en: "Morioka Castle"},
-                selectedIcon: undefined,
-                start: 1598
-            }, 'morioka_ndl2#main2');
-        });
-        // Button function: Remove all markers in the layer named 'morioka_ndl2#main2' (POI layer of the each map).
-        document.getElementById('clearMap').addEventListener('click', function(e) {
-            app.clearMarker('morioka_ndl2#all');
-        });
-        // Button function: Make all markers' status to unselect.
-        document.getElementById('unSelect').addEventListener('click', function(e) {
-            app.unselectMarker();
-        });
-        // Button function: Show all markers on all layers.
-        document.getElementById('showAll').addEventListener('click', function(e) {
-            app.showAllMarkers();
-        });
-        // Button function: Hide all markers on all layers.
-        document.getElementById('hideAll').addEventListener('click', function(e) {
-            app.hideAllMarkers();
-        });
+MaplatApp.createObject(option).then(function(app){
+    // Show current map info
+    console.log(app.currentMapInfo());
+
+    // Event Listener
+    app.addEventListener('clickMarker', function(evt) {
+        console.log('Marker clicked:', evt.detail);
+        app.selectMarker(evt.detail.namespaceID);
     });
+
+    // Add a custom marker
+    app.addMarker({
+        lng: 141.1501111,
+        lat: 39.69994722,
+        name: "Morioka Castle",
+        desc: "Historical site in Morioka",
+        icon: "parts/blue_marker.png"
+    }, 'main'); // 'main' is the default layer
+});
 ```
+
+## Development
+
+### Running Tests
+
+```sh
+# Run linting
+pnpm run lint
+
+# Run type checking
+pnpm run typecheck
+
+# Run unit tests
+pnpm test
+
+# Run E2E tests
+pnpm run test:e2e
+```
+
+### Building
+
+```sh
+# Build the library
+pnpm run build
+
+# Build development demo
+pnpm run build:demo
+
+# Run development server
+pnpm run dev
+```
+
+## License
+
+Copyright (c) 2019-2026 Kohei Otsuka, Code for History
+
+MaplatCore is under [Maplat Limited License](LICENSE) (based on Apache 2.0 with some restrictions).
+Please see [LICENSE](LICENSE) file for details.

@@ -9,11 +9,11 @@ importers:
   .:
     dependencies:
       '@c4h/weiwudi':
-        specifier: ^0.2.0
-        version: 0.2.0(workbox-routing@7.4.0)
+        specifier: ^0.2.1
+        version: 0.2.1(workbox-routing@7.4.0)
       '@maplat/transform':
-        specifier: ^0.4.0
-        version: 0.4.0
+        specifier: ^0.4.1
+        version: 0.4.1
       '@turf/turf':
         specifier: ^7.3.1
         version: 7.3.1
@@ -75,9 +75,6 @@ importers:
       jsdom:
         specifier: ^25.0.1
         version: 25.0.1
-      less:
-        specifier: ^4.5.1
-        version: 4.5.1
       ol:
         specifier: ^10.7.0
         version: 10.7.0
@@ -134,8 +131,8 @@ packages:
     resolution: {integrity: sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==}
     engines: {node: '>=18'}
 
-  '@c4h/weiwudi@0.2.0':
-    resolution: {integrity: sha512-kXkdsT5xPTYOfIKOX7iaOfq8ug4f/6vJGSgepKOMF7q+N29dK4qa5LL6VC8w6Ep/f7hbBQFH1N6x7Ld2DvaWyg==}
+  '@c4h/weiwudi@0.2.1':
+    resolution: {integrity: sha512-WldhZymFn0i1m+M+2upxY/qt8v+T8Pe6kmpD6CaA4ao+HfXxaln9pDWG1dpfj9y6XDcR+qV+x7ge8u9AqFORgg==}
     engines: {node: '>=20.0.0', pnpm: '>=9.0.0'}
     peerDependencies:
       workbox-routing: ^7.4.0
@@ -443,8 +440,8 @@ packages:
     resolution: {integrity: sha512-Es6WcD0nO5l+2BOQS4uLfNPYQaNDfbot3X1XUoloz+x0mPDS3eeORZJl06HXjwBG1fOGwCRnzK88LMdxKRrd6Q==}
     engines: {node: '>=6.0.0'}
 
-  '@maplat/transform@0.4.0':
-    resolution: {integrity: sha512-8uVpUvgAyHLzWpHlnKgXMQeq4K/0uxXJJx8ZwtZCamxpWQSqgNP97u5ElC1seyB/E6SA1wyBHUK6s2vAqK/yAw==}
+  '@maplat/transform@0.4.1':
+    resolution: {integrity: sha512-w4tji9RS6Ngvo8QIUt1/HDHLaYBjcMJWtdJb0ER19Eebv2cxPGpwTovQkapmy9psiLeJ+xTbYrZCUqfrCF651A==}
     engines: {node: '>=20', pnpm: '>=9'}
 
   '@maplibre/maplibre-gl-style-spec@20.4.0':
@@ -2546,7 +2543,7 @@ snapshots:
 
   '@bcoe/v8-coverage@1.0.2': {}
 
-  '@c4h/weiwudi@0.2.0(workbox-routing@7.4.0)':
+  '@c4h/weiwudi@0.2.1(workbox-routing@7.4.0)':
     dependencies:
       workbox-routing: 7.4.0
 
@@ -2771,7 +2768,7 @@ snapshots:
 
   '@mapbox/whoots-js@3.1.0': {}
 
-  '@maplat/transform@0.4.0':
+  '@maplat/transform@0.4.1':
     dependencies:
       '@turf/turf': 7.3.1
 
@@ -4440,6 +4437,7 @@ snapshots:
   copy-anything@2.0.6:
     dependencies:
       is-what: 3.14.1
+    optional: true
 
   cross-env@7.0.3:
     dependencies:
@@ -4853,7 +4851,8 @@ snapshots:
 
   is-potential-custom-element-name@1.0.1: {}
 
-  is-what@3.14.1: {}
+  is-what@3.14.1:
+    optional: true
 
   isexe@2.0.0: {}
 
@@ -4965,6 +4964,7 @@ snapshots:
       mime: 1.6.0
       needle: 3.3.1
       source-map: 0.6.1
+    optional: true
 
   levn@0.4.1:
     dependencies:
@@ -5179,7 +5179,8 @@ snapshots:
 
   parse-headers@2.0.6: {}
 
-  parse-node-version@1.0.1: {}
+  parse-node-version@1.0.1:
+    optional: true
 
   parse5@7.3.0:
     dependencies:

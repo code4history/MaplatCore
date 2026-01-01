@@ -1,6 +1,3 @@
-// Import styles
-import '../less/core.less';
-
 import i18n from "i18next";
 import i18nHttpBackend from "i18next-http-backend";
 import CustomEvent from "./customevent";
@@ -235,6 +232,20 @@ export class MaplatApp extends EventTarget {
         this.mapDivDocument!.firstChild
       );
     });
+
+    // Inject styles for .maplat (replacing core.less)
+    const styleId = 'maplat-core-style';
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement('style');
+      style.id = styleId;
+      style.innerHTML = `
+        .maplat * {
+          -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
     const prevDefs = this.mapDivDocument!.querySelectorAll(".prevent-default");
     prevDefs.forEach(target => {
       target.addEventListener("touchstart", (evt: any) => {

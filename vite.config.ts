@@ -85,13 +85,7 @@ export default defineConfig({
     "import.meta.env.APP_VERSION": JSON.stringify(packageJson.version),
     global: "globalThis"
   },
-  css: {
-    preprocessorOptions: {
-      less: {
-        javascriptEnabled: true
-      }
-    }
-  },
+
   server: {
     host: "0.0.0.0",
     port: 5175,
