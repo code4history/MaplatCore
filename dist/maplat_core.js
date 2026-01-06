@@ -12073,9 +12073,7 @@ class Tn extends Hs {
   }
   // Async initializers 2: Handle application setting
   async handleSetting(e, n) {
-    this.appData = te(e), !this.lang && this.appData.lang && (this.lang = this.appData.lang);
-    const r = await this.i18nLoader();
-    await this.handleI18n(r, n), this.initGeolocation(n);
+    this.appData = te(e), !this.lang && this.appData.lang && (this.lang = this.appData.lang), await this.i18nLoader(), console.log("###### MaplatCore no i18n"), await this.handleI18n(n), this.initGeolocation(n);
   }
   // Async Initializers 2.5: For geolocation settings
   initGeolocation(e) {
@@ -12138,10 +12136,9 @@ class Tn extends Hs {
     return this.gpsEnabled_;
   }
   // Async initializers 4: Handle i18n setting
-  async handleI18n(e, n) {
-    e || (e = [() => "", {}]), this.i18n = e[1], this.t = e[0];
-    const r = this.prepareMap(n), A = await Os(this.appData.pois || [], this);
-    return this.handlePois(A, r);
+  async handleI18n(e) {
+    const n = this.prepareMap(e), r = await Os(this.appData.pois || [], this);
+    return this.handlePois(r, n);
   }
   // Async initializers 5: Prepare map base elements and objects
   prepareMap(e) {

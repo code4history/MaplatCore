@@ -321,7 +321,8 @@ export class MaplatApp extends EventTarget {
       this.lang = this.appData.lang;
     }
     const x = await this.i18nLoader();
-    await this.handleI18n(x, appOption);
+    console.log("###### MaplatCore no i18n");
+    await this.handleI18n(appOption);
     this.initGeolocation(appOption);
   }
   // Async Initializers 2.5: For geolocation settings
@@ -479,10 +480,7 @@ export class MaplatApp extends EventTarget {
   }
 
   // Async initializers 4: Handle i18n setting
-  async handleI18n(i18nObj: any, appOption: any) {
-    if (!i18nObj) i18nObj = [() => "", {}];
-    this.i18n = i18nObj[1];
-    this.t = i18nObj[0];
+  async handleI18n(appOption: any) {
     const mapReturnValue = this.prepareMap(appOption);
     const x = await normalizeLayers(this.appData!.pois || [], this);
     return this.handlePois(x, mapReturnValue);

@@ -122,7 +122,7 @@ export declare class MaplatApp extends EventTarget {
     initGeolocation(appOption: any): void;
     handleGPS(enable: boolean, avoidEventForOff?: boolean): void;
     getGPSEnabled(): boolean;
-    handleI18n(i18nObj: any, appOption: any): Promise<void>;
+    handleI18n(appOption: any): Promise<void>;
     prepareMap(appOption: any): {
         homePos: Coordinate | undefined;
         defZoom: number | undefined;
