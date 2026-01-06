@@ -71,8 +71,6 @@ export declare class MaplatApp extends EventTarget {
     overlay: boolean;
     waitReady: Promise<any>;
     changeMapSeq?: Promise<void>;
-    i18n?: any;
-    t?: any;
     lang: string;
     appData?: AppData;
     appLang: string;
@@ -116,13 +114,11 @@ export declare class MaplatApp extends EventTarget {
     lastClickEvent: any;
     constructor(appOption: any);
     settingLoader(setting: any): Promise<any>;
-    i18nLoader(): Promise<unknown>;
     sourcesLoader(mapReturnValue: any): Promise<any[]>;
     handleSetting(setting: any, appOption: any): Promise<void>;
     initGeolocation(appOption: any): void;
     handleGPS(enable: boolean, avoidEventForOff?: boolean): void;
     getGPSEnabled(): boolean;
-    handleI18n(i18nObj: any, appOption: any): Promise<void>;
     prepareMap(appOption: any): {
         homePos: Coordinate | undefined;
         defZoom: number | undefined;
@@ -194,7 +190,6 @@ export declare class MaplatApp extends EventTarget {
     fetchAllMapTileCacheAsync(mapID: string, callback: any): Promise<void>;
     cancelMapTileCacheAsync(mapID: string): Promise<void>;
     convertParametersFromCurrent(to: any, callback: any): void;
-    translate(dataFragment?: Record<string, string> | string): string | undefined;
     remove(): void;
 }
 export { createElement };

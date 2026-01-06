@@ -1,5 +1,3 @@
-import i18n from "i18next";
-import i18nHttpBackend from "i18next-http-backend";
 import CustomEvent from "./customevent";
 import browserLanguage from "./browserlanguage";
 import { Logger, LOGGER_LEVEL } from "./logger";
@@ -19,7 +17,7 @@ import { TmsMap } from "./source/tmsmap";
 import { BackmapSource, MaplatSource, mapSourceFactory } from "./source_ex";
 import { META_KEYS, ViewpointArray } from "./source/mixin";
 import { recursiveRound } from "./math_ex";
-import locales from "./freeze_locales";
+
 import {
   normalizeLayers,
   addIdToPoi,
@@ -27,7 +25,7 @@ import {
   normalizePoi
 } from "./normalize_pois";
 import { createIconSet, createHtmlFromTemplate } from "./template_works";
-// import mapboxgl from "mapbox-gl"; // TODO: Remove mapbox dependency
+
 import { Geolocation } from './geolocation';
 
 import redcircle from "../parts/redcircle.png";
@@ -108,8 +106,6 @@ export class MaplatApp extends EventTarget {
   overlay = true;
   waitReady: Promise<any>; // Changed to Promise<any> to match settingLoader
   changeMapSeq?: Promise<void>;
-  i18n?: any;
-  t?: any;
   lang: string;
   appData?: AppData;
   appLang = "ja";
@@ -269,27 +265,6 @@ export class MaplatApp extends EventTarget {
     return response.json();
   }
 
-  // Async initializers 3: Load i18n setting
-  async i18nLoader() {
-    return new Promise((resolve, _reject) => {
-      const localesFlag = Object.keys(locales).length != 0;
-      const translib =
-        this.translateUI && !localesFlag ? i18n.use(i18nHttpBackend) : i18n;
-      translib.init(
-        {
-          lng: this.lang,
-          fallbackLng: ["en"],
-          backend: {
-            loadPath: "assets/locales/{{lng}}/{{ns}}.json"
-          },
-          resources: localesFlag ? locales : undefined
-        },
-        (_err, t) => {
-          resolve([t, i18n]);
-        }
-      );
-    });
-  }
   // Async initializer 6: Load pois setting => move to normalize_pois.js
   // Async initializer 8: Load sources setting asynchronous
   async sourcesLoader(mapReturnValue: any) {
@@ -305,7 +280,7 @@ export class MaplatApp extends EventTarget {
       mercMaxZoom: mapReturnValue.mercMaxZoom,
       enableCache: this.enableCache,
       key: this.googleApiKey,
-      translator: (fragment: any) => this.translate(fragment),
+      //---- translator: (fragment: any) => this.translate(fragment),
       mapboxMap: this.mapboxMap, // Pass mapbox map instance
       maplibreMap: this.maplibreMap // Pass maplibre map instance
     };
@@ -320,8 +295,9 @@ export class MaplatApp extends EventTarget {
     if (!this.lang && this.appData.lang) {
       this.lang = this.appData.lang;
     }
-    const x = await this.i18nLoader();
-    await this.handleI18n(x, appOption);
+    const mapReturnValue = this.prepareMap(appOption);
+    const x = await normalizeLayers(this.appData!.pois || [], this);
+    await this.handlePois(x, mapReturnValue);
     this.initGeolocation(appOption);
   }
   // Async Initializers 2.5: For geolocation settings
@@ -476,16 +452,6 @@ export class MaplatApp extends EventTarget {
 
   getGPSEnabled(): boolean {
     return this.gpsEnabled_;
-  }
-
-  // Async initializers 4: Handle i18n setting
-  async handleI18n(i18nObj: any, appOption: any) {
-    if (!i18nObj) i18nObj = [() => "", {}];
-    this.i18n = i18nObj[1];
-    this.t = i18nObj[0];
-    const mapReturnValue = this.prepareMap(appOption);
-    const x = await normalizeLayers(this.appData!.pois || [], this);
-    return this.handlePois(x, mapReturnValue);
   }
 
   // Async initializers 5: Prepare map base elements and objects
@@ -1741,41 +1707,7 @@ export class MaplatApp extends EventTarget {
         throw err;
       });
   }
-  translate(
-    dataFragment?: Record<string, string> | string
-  ): string | undefined {
-    if (!dataFragment || typeof dataFragment === "string")
-      return dataFragment as any;
-    const langs = Object.keys(dataFragment);
-    let key = langs.reduce((prev: any, curr, idx, arr) => {
-      if (curr == this.appLang) {
-        prev = [dataFragment[curr], true];
-      } else if (!prev || (curr == "en" && !prev[1])) {
-        prev = [dataFragment[curr], false];
-      }
-      if (idx == arr.length - 1) return prev[0];
-      return prev;
-    }, undefined);
-    key = typeof key === "string" ? key : `${key}`;
-    if (
-      this.i18n!.exists(key, {
-        ns: "translation",
-        nsSeparator: "__X__yX__X__"
-      })
-    )
-      return this.t!(key, {
-        ns: "translation",
-        nsSeparator: "__X__yX__X__"
-      });
-    for (let i = 0; i < langs.length; i++) {
-      const lang = langs[i];
-      this.i18n!.addResource(lang, "translation", key, dataFragment[lang]);
-    }
-    return this.t!(key, {
-      ns: "translation",
-      nsSeparator: "__X__yX__X__"
-    });
-  }
+
   remove() {
     if (this.mapboxMap) {
       this.mapboxMap.remove();
