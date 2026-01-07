@@ -116,7 +116,6 @@ export declare class MaplatApp extends EventTarget {
     lastClickEvent: any;
     constructor(appOption: any);
     settingLoader(setting: any): Promise<any>;
-    i18nLoader(): Promise<unknown>;
     sourcesLoader(mapReturnValue: any): Promise<any[]>;
     handleSetting(setting: any, appOption: any): Promise<void>;
     initGeolocation(appOption: any): void;

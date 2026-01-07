@@ -1,5 +1,3 @@
-import i18n from "i18next";
-import i18nHttpBackend from "i18next-http-backend";
 import CustomEvent from "./customevent";
 import browserLanguage from "./browserlanguage";
 import { Logger, LOGGER_LEVEL } from "./logger";
@@ -19,7 +17,6 @@ import { TmsMap } from "./source/tmsmap";
 import { BackmapSource, MaplatSource, mapSourceFactory } from "./source_ex";
 import { META_KEYS, ViewpointArray } from "./source/mixin";
 import { recursiveRound } from "./math_ex";
-import locales from "./freeze_locales";
 import {
   normalizeLayers,
   addIdToPoi,
@@ -27,7 +24,6 @@ import {
   normalizePoi
 } from "./normalize_pois";
 import { createIconSet, createHtmlFromTemplate } from "./template_works";
-// import mapboxgl from "mapbox-gl"; // TODO: Remove mapbox dependency
 import { Geolocation } from './geolocation';
 
 import redcircle from "../parts/redcircle.png";
@@ -269,35 +265,12 @@ export class MaplatApp extends EventTarget {
     return response.json();
   }
 
-  // Async initializers 3: Load i18n setting
-  async i18nLoader() {
-    return new Promise((resolve, _reject) => {
-      const localesFlag = Object.keys(locales).length != 0;
-      const translib =
-        this.translateUI && !localesFlag ? i18n.use(i18nHttpBackend) : i18n;
-      translib.init(
-        {
-          lng: this.lang,
-          fallbackLng: ["en"],
-          backend: {
-            loadPath: "assets/locales/{{lng}}/{{ns}}.json"
-          },
-          resources: localesFlag ? locales : undefined
-        },
-        (_err, t) => {
-          resolve([t, i18n]);
-        }
-      );
-    });
-  }
   // Async initializer 6: Load pois setting => move to normalize_pois.js
   // Async initializer 8: Load sources setting asynchronous
   async sourcesLoader(mapReturnValue: any) {
     const dataSource = this.appData!.sources;
     const sourcePromise: Promise<any>[] = [];
     const commonOption = {
-      //homePosition: mapReturnValue.homePos,
-      //mercZoom: mapReturnValue.defZoom,
       homePos: mapReturnValue.homePos,
       defZoom: mapReturnValue.defZoom,
       zoomRestriction: mapReturnValue.zoomRestriction,
@@ -320,8 +293,6 @@ export class MaplatApp extends EventTarget {
     if (!this.lang && this.appData.lang) {
       this.lang = this.appData.lang;
     }
-    const x = await this.i18nLoader();
-    console.log("###### MaplatCore no i18n");
     await this.handleI18n(appOption);
     this.initGeolocation(appOption);
   }
