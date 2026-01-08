@@ -9730,8 +9730,6 @@ class nA extends Sg {
   // Async initializer 8: Load sources setting asynchronous
   async sourcesLoader(e) {
     const n = this.appData.sources, i = [], g = {
-      //homePosition: mapReturnValue.homePos,
-      //mercZoom: mapReturnValue.defZoom,
       homePos: e.homePos,
       defZoom: e.defZoom,
       zoomRestriction: e.zoomRestriction,
@@ -9739,7 +9737,6 @@ class nA extends Sg {
       mercMaxZoom: e.mercMaxZoom,
       enableCache: this.enableCache,
       key: this.googleApiKey,
-      //---- translator: (fragment: any) => this.translate(fragment),
       mapboxMap: this.mapboxMap,
       // Pass mapbox map instance
       maplibreMap: this.maplibreMap

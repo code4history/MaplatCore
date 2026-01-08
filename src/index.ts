@@ -17,7 +17,6 @@ import { TmsMap } from "./source/tmsmap";
 import { BackmapSource, MaplatSource, mapSourceFactory } from "./source_ex";
 import { META_KEYS, ViewpointArray } from "./source/mixin";
 import { recursiveRound } from "./math_ex";
-
 import {
   normalizeLayers,
   addIdToPoi,
@@ -25,7 +24,6 @@ import {
   normalizePoi
 } from "./normalize_pois";
 import { createIconSet, createHtmlFromTemplate } from "./template_works";
-
 import { Geolocation } from './geolocation';
 
 import redcircle from "../parts/redcircle.png";
@@ -271,8 +269,6 @@ export class MaplatApp extends EventTarget {
     const dataSource = this.appData!.sources;
     const sourcePromise: Promise<any>[] = [];
     const commonOption = {
-      //homePosition: mapReturnValue.homePos,
-      //mercZoom: mapReturnValue.defZoom,
       homePos: mapReturnValue.homePos,
       defZoom: mapReturnValue.defZoom,
       zoomRestriction: mapReturnValue.zoomRestriction,
@@ -280,7 +276,6 @@ export class MaplatApp extends EventTarget {
       mercMaxZoom: mapReturnValue.mercMaxZoom,
       enableCache: this.enableCache,
       key: this.googleApiKey,
-      //---- translator: (fragment: any) => this.translate(fragment),
       mapboxMap: this.mapboxMap, // Pass mapbox map instance
       maplibreMap: this.maplibreMap // Pass maplibre map instance
     };
@@ -1632,6 +1627,7 @@ export class MaplatApp extends EventTarget {
     if (!source) return;
     await source.cancelTileCacheAsync();
   }
+
   convertParametersFromCurrent(to: any, callback: any) {
     const view = this.mapObject.getView();
     if (!this.from) {
