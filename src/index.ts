@@ -104,9 +104,7 @@ export class MaplatApp extends EventTarget {
   overlay = true;
   waitReady: Promise<any>; // Changed to Promise<any> to match settingLoader
   changeMapSeq?: Promise<void>;
-  lang: string;
   appData?: AppData;
-  appLang = "ja";
   backMap?: MaplatMap;
   mercSrc?: BackmapSource;
   mercBuffer: any;
@@ -174,15 +172,6 @@ export class MaplatApp extends EventTarget {
 
     this.translateUI = appOption.translateUI;
     const setting = appOption.setting;
-    this.lang = appOption.lang;
-    if (!this.lang) {
-      this.lang = browserLanguage();
-    }
-    if (
-      this.lang.toLowerCase() == "zh-hk" ||
-      this.lang.toLowerCase() == "zh-hant"
-    )
-      this.lang = "zh-TW";
     if (appOption.restore) {
       if (appOption.restoreSession) this.restoreSession = true;
       this.initialRestore = appOption.restore;
@@ -287,9 +276,10 @@ export class MaplatApp extends EventTarget {
   // Async initializers 2: Handle application setting
   async handleSetting(setting: any, appOption: any) {
     this.appData = normalizeArg(setting as Record<string, any>) as AppData;
-    if (!this.lang && this.appData.lang) {
-      this.lang = this.appData.lang;
-    }
+    this.addEventListener("appdata", (e: any) => {
+      console.log("Self check");
+    });
+    this.dispatchEvent(new CustomEvent("appdata", { detail: this.appData }));
     const mapReturnValue = this.prepareMap(appOption);
     const x = await normalizeLayers(this.appData!.pois || [], this);
     await this.handlePois(x, mapReturnValue);

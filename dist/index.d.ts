@@ -71,9 +71,7 @@ export declare class MaplatApp extends EventTarget {
     overlay: boolean;
     waitReady: Promise<any>;
     changeMapSeq?: Promise<void>;
-    lang: string;
     appData?: AppData;
-    appLang: string;
     backMap?: MaplatMap;
     mercSrc?: BackmapSource;
     mercBuffer: any;
