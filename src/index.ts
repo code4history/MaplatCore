@@ -1,5 +1,4 @@
 import CustomEvent from "./customevent";
-import browserLanguage from "./browserlanguage";
 import { Logger, LOGGER_LEVEL } from "./logger";
 import {
   createElement,
@@ -531,7 +530,6 @@ export class MaplatApp extends EventTarget {
     this.appName = this.appData!.appName;
     const fakeGps = appOption.fake ? this.appData!.fakeGps : false;
     const fakeRadius = appOption.fake ? this.appData!.fakeRadius : false;
-    this.appLang = this.appData!.lang || "ja";
     this.noRotate = appOption.noRotate || this.appData!.noRotate || false;
     this.poiTemplate =
       appOption.poiTemplate || this.appData!.poiTemplate || false;
