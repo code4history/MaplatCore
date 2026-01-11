@@ -358,10 +358,6 @@ export class MaplatApp extends EventTarget {
     await this.runLifecyclePhase("setting-loaded", setting);
     this.appData = normalizeArg(setting as Record<string, any>) as AppData;
     await this.runLifecyclePhase("appdata-ready");
-    this.addEventListener("appdata", (e: any) => {
-      console.log("Self check");
-    });
-    this.dispatchEvent(new CustomEvent("appdata", { detail: this.appData }));
     await this.runLifecyclePhase("ui-configure");
     const mapReturnValue = await this.prepareMap(appOption);
     await this.runLifecyclePhase("ui-dom-ready");
@@ -544,8 +540,6 @@ export class MaplatApp extends EventTarget {
       appOption.iconTemplate || this.appData!.iconTemplate || false;
     this.currentPosition = null;
     this.__init = true;
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
-    this.dispatchEvent(new CustomEvent("uiPrepare"));
     const frontDiv = `${this.mapDiv}_front`;
     let newElem = createElement(
       `<div id="${frontDiv}" class="map" style="top:0; left:0; right:0; bottom:0; ` +
