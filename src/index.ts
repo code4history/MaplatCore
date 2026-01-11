@@ -66,6 +66,44 @@ interface Restore {
   hideLayer?: string;
 }
 
+type LifecyclePhaseId =
+  | "setting-loaded"
+  | "appdata-ready"
+  | "ui-configure"
+  | "core-dom-ready"
+  | "ui-dom-ready"
+  | "core-ready"
+  | "ui-ready";
+
+interface LifecycleContext {
+  phaseId: LifecyclePhaseId;
+  appData?: any;
+  mapDivDocument?: HTMLElement | null;
+  core: MaplatApp;
+  uiHookResults?: Partial<Record<LifecyclePhaseId, any>>;
+  uiHookResult?: any;
+}
+
+interface UiHooks {
+  onSettingLoaded?: (context: LifecycleContext) => Promise<any> | any;
+  onAppdataReady?: (context: LifecycleContext) => Promise<any> | any;
+  onUiConfigure?: (context: LifecycleContext) => Promise<any> | any;
+  onCoreDomReady?: (context: LifecycleContext) => Promise<any> | any;
+  onUiDomReady?: (context: LifecycleContext) => Promise<any> | any;
+  onCoreReady?: (context: LifecycleContext) => Promise<any> | any;
+  onUiReady?: (context: LifecycleContext) => Promise<any> | any;
+}
+
+const lifecycleHookMap: Record<LifecyclePhaseId, keyof UiHooks> = {
+  "setting-loaded": "onSettingLoaded",
+  "appdata-ready": "onAppdataReady",
+  "ui-configure": "onUiConfigure",
+  "core-dom-ready": "onCoreDomReady",
+  "ui-dom-ready": "onUiDomReady",
+  "core-ready": "onCoreReady",
+  "ui-ready": "onUiReady"
+};
+
 export class GPSErrorEvent extends BaseEvent {
   detail: string;
   constructor(detail: string) {
@@ -138,6 +176,8 @@ export class MaplatApp extends EventTarget {
   initialGpsMove_ = false;
   private __backMapMoving = false;
   private __selectedMarker: any;
+  private uiHooks?: UiHooks;
+  private lifecycleHookResults: Partial<Record<LifecyclePhaseId, any>> = {};
   private __init = true;
   private __redrawMarkerBlock = false;
   private __redrawMarkerThrottle: MaplatSource[] = [];
@@ -171,6 +211,7 @@ export class MaplatApp extends EventTarget {
     this.selectedIcon = appOption.selectedIcon;
 
     this.translateUI = appOption.translateUI;
+    this.uiHooks = appOption.uiHooks;
     const setting = appOption.setting;
     if (appOption.restore) {
       if (appOption.restoreSession) this.restoreSession = true;
@@ -245,6 +286,45 @@ export class MaplatApp extends EventTarget {
     })();
   }
 
+  private buildLifecycleContext(
+    phaseId: LifecyclePhaseId,
+    appDataOverride?: any
+  ): LifecycleContext {
+    return {
+      phaseId,
+      appData: appDataOverride ?? this.appData,
+      mapDivDocument: this.mapDivDocument,
+      core: this,
+      uiHookResults: { ...this.lifecycleHookResults }
+    };
+  }
+
+  private async runLifecyclePhase(
+    phaseId: LifecyclePhaseId,
+    appDataOverride?: any
+  ): Promise<LifecycleContext> {
+    const context = this.buildLifecycleContext(phaseId, appDataOverride);
+    const hookName = lifecycleHookMap[phaseId];
+    const hook = this.uiHooks?.[hookName];
+    if (hook) {
+      try {
+        const result = await hook(context);
+        this.lifecycleHookResults[phaseId] = result;
+        context.uiHookResult = result;
+        context.uiHookResults = { ...this.lifecycleHookResults };
+      } catch (error) {
+        this.dispatchEvent(
+          new CustomEvent("lifecycle:error", { detail: { phaseId, error } })
+        );
+        throw error;
+      }
+    }
+    this.dispatchEvent(
+      new CustomEvent(`lifecycle:${phaseId}`, { detail: context })
+    );
+    return context;
+  }
+
   // Async initializers 1: Load application setting
   async settingLoader(setting: any) {
     if (setting) return setting;
@@ -275,12 +355,16 @@ export class MaplatApp extends EventTarget {
   }
   // Async initializers 2: Handle application setting
   async handleSetting(setting: any, appOption: any) {
+    await this.runLifecyclePhase("setting-loaded", setting);
     this.appData = normalizeArg(setting as Record<string, any>) as AppData;
+    await this.runLifecyclePhase("appdata-ready");
     this.addEventListener("appdata", (e: any) => {
       console.log("Self check");
     });
     this.dispatchEvent(new CustomEvent("appdata", { detail: this.appData }));
-    const mapReturnValue = this.prepareMap(appOption);
+    await this.runLifecyclePhase("ui-configure");
+    const mapReturnValue = await this.prepareMap(appOption);
+    await this.runLifecyclePhase("ui-dom-ready");
     const x = await normalizeLayers(this.appData!.pois || [], this);
     await this.handlePois(x, mapReturnValue);
     this.initGeolocation(appOption);
@@ -440,7 +524,7 @@ export class MaplatApp extends EventTarget {
   }
 
   // Async initializers 5: Prepare map base elements and objects
-  prepareMap(appOption: any) {
+  async prepareMap(appOption: any) {
     appOption = normalizeArg(appOption);
     this.mercBuffer = null;
     const homePos = this.appData!.homePosition;
@@ -567,6 +651,7 @@ export class MaplatApp extends EventTarget {
         }
       });
     }
+    await this.runLifecyclePhase("core-dom-ready");
     this.startFrom = this.appData!.startFrom;
     return {
       homePos,
@@ -616,6 +701,8 @@ export class MaplatApp extends EventTarget {
     this.setMouseCursor();
     this.setBackMapBehavior();
     this.raiseChangeViewpoint();
+    await this.runLifecyclePhase("core-ready");
+    await this.runLifecyclePhase("ui-ready");
   }
 
   // Async initializer 10: Handle initial map

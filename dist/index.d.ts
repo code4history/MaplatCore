@@ -105,25 +105,29 @@ export declare class MaplatApp extends EventTarget {
     initialGpsMove_: boolean;
     private __backMapMoving;
     private __selectedMarker;
+    private uiHooks?;
+    private lifecycleHookResults;
     private __init;
     private __redrawMarkerBlock;
     private __redrawMarkerThrottle;
     private __transparency;
     lastClickEvent: any;
     constructor(appOption: any);
+    private buildLifecycleContext;
+    private runLifecyclePhase;
     settingLoader(setting: any): Promise<any>;
     sourcesLoader(mapReturnValue: any): Promise<any[]>;
     handleSetting(setting: any, appOption: any): Promise<void>;
     initGeolocation(appOption: any): void;
     handleGPS(enable: boolean, avoidEventForOff?: boolean): void;
     getGPSEnabled(): boolean;
-    prepareMap(appOption: any): {
+    prepareMap(appOption: any): Promise<{
         homePos: Coordinate | undefined;
         defZoom: number | undefined;
         zoomRestriction: boolean | undefined;
         mercMinZoom: number | undefined;
         mercMaxZoom: number | undefined;
-    };
+    }>;
     handlePois(pois: any, mapReturnValue: any): Promise<void>;
     handleSources(sources: any): Promise<void>;
     setInitialMap(cache: MaplatSource[]): Promise<void>;
