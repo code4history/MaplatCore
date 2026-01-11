@@ -101,6 +101,9 @@ pnpm add maplibre-gl
 
 ## 使い方
 
+## ライフサイクル
+- フェーズや uiHooks については `docs/ui-core-lifecycle.ja.md` を参照してください。
+
 ### ブラウザ (ES Modules)
 
 ```html

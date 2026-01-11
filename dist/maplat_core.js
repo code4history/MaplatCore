@@ -9732,19 +9732,18 @@ class nA extends Sg {
     };
   }
   async runLifecyclePhase(e, n) {
-    var s;
-    const i = this.buildLifecycleContext(e, n), g = RC[e], r = (s = this.uiHooks) == null ? void 0 : s[g];
+    var s, o, I, C, a;
+    (o = (s = this.logger) == null ? void 0 : s.debug) == null || o.call(s, `lifecycle:${e}`);
+    const i = this.buildLifecycleContext(e, n), g = RC[e], r = (I = this.uiHooks) == null ? void 0 : I[g];
     if (r)
       try {
-        const o = await r(i);
-        this.lifecycleHookResults[e] = o, i.uiHookResult = o, i.uiHookResults = { ...this.lifecycleHookResults };
-      } catch (o) {
-        throw this.dispatchEvent(
-          new yt("lifecycle:error", { detail: { phaseId: e, error: o } })
-        ), o;
+        const c = await r(i);
+        this.lifecycleHookResults[e] = c, i.uiHookResult = c, i.uiHookResults = { ...this.lifecycleHookResults };
+      } catch (c) {
+        throw (a = (C = this.logger) == null ? void 0 : C.debug) == null || a.call(C, `lifecycle:error:${e}`), this.dispatchEvent(new yt("lifecycle:error", { phaseId: e, error: c })), c;
       }
     return this.dispatchEvent(
-      new yt(`lifecycle:${e}`, { detail: i })
+      new yt(`lifecycle:${e}`, i)
     ), i;
   }
   // Async initializers 1: Load application setting

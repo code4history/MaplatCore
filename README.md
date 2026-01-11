@@ -101,6 +101,9 @@ pnpm add maplibre-gl
 
 ## Usage
 
+## Lifecycle
+- See `docs/ui-core-lifecycle.md` for lifecycle phases and uiHooks.
+
 ### Browser (ES Modules)
 
 ```html

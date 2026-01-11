@@ -302,6 +302,7 @@ export class MaplatApp extends EventTarget {
     phaseId: LifecyclePhaseId,
     appDataOverride?: any
   ): Promise<LifecycleContext> {
+    this.logger?.debug?.(`lifecycle:${phaseId}`);
     const context = this.buildLifecycleContext(phaseId, appDataOverride);
     const hookName = lifecycleHookMap[phaseId];
     const hook = this.uiHooks?.[hookName];
@@ -312,14 +313,13 @@ export class MaplatApp extends EventTarget {
         context.uiHookResult = result;
         context.uiHookResults = { ...this.lifecycleHookResults };
       } catch (error) {
-        this.dispatchEvent(
-          new CustomEvent("lifecycle:error", { detail: { phaseId, error } })
-        );
+        this.logger?.debug?.(`lifecycle:error:${phaseId}`);
+        this.dispatchEvent(new CustomEvent("lifecycle:error", { phaseId, error }));
         throw error;
       }
     }
     this.dispatchEvent(
-      new CustomEvent(`lifecycle:${phaseId}`, { detail: context })
+      new CustomEvent(`lifecycle:${phaseId}`, context)
     );
     return context;
   }
