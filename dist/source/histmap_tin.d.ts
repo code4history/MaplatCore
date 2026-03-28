@@ -1,10 +1,10 @@
 import { HistMap } from './histmap';
-import { Transform } from '@maplat/transform';
+import { MapTransform } from '@maplat/transform';
 import { Coordinate } from 'ol/coordinate';
 import { Size } from 'ol/size';
 import { CrossCoordinatesArray, ViewpointArray } from './mixin';
 export declare class HistMap_tin extends HistMap {
-    tins: Transform[];
+    mapTransform: MapTransform;
     constructor(options?: any);
     static createAsync(options: any): Promise<HistMap_tin>;
     xy2MercAsync_specifyLayer(xy: Coordinate, layerId: number): Promise<Coordinate>;

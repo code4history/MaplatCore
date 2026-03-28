@@ -1,4 +1,4 @@
-import { Transform, Compiled, PointSet, EdgeSet, StrictMode, VertexMode, YaxisMode } from '@maplat/transform';
+import { Transform, MapTransform, Compiled, PointSet, EdgeSet, StrictMode, VertexMode, YaxisMode } from '@maplat/transform';
 import { Position } from 'geojson';
 type LangResource = string | Record<string, string>;
 type TinLike = string | Transform | Compiled;
@@ -40,6 +40,6 @@ interface SubMap {
     bounds?: number[][];
 }
 export declare function store2HistMap(store: HistMapStore, byCompiled?: boolean): Promise<[HistMapStore, TinLike[]]>;
-export declare function store2HistMap4Core(store: HistMapStore): Promise<[HistMapStore, TinLike[]]>;
+export declare function store2HistMap4Core(store: HistMapStore): Promise<[HistMapStore, MapTransform]>;
 export declare function histMap2Store(histmap: HistMapStore, tins: TinLike[]): Promise<HistMapStore>;
 export {};
