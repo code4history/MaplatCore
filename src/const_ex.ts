@@ -1,11 +1,4 @@
-export const MERC_MAX = 20037508.342789244;
-export const MERC_CROSSMATRIX: number[][] = [
-  [0.0, 0.0],
-  [0.0, 1.0],
-  [1.0, 0.0],
-  [0.0, -1.0],
-  [-1.0, 0.0]
-];
+export { MERC_MAX, MERC_CROSSMATRIX } from "@maplat/transform";
 
 // 透明PNG定義
 export const transPng =

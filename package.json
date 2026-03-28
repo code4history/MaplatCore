@@ -61,7 +61,7 @@
   "homepage": "https://github.com/code4history/MaplatCore/wiki",
   "dependencies": {
     "@c4h/weiwudi": "^0.2.1",
-    "@maplat/transform": "^0.4.1",
+    "@maplat/transform": "^0.5.1",
     "@turf/turf": "^7.3.1",
     "lodash.template": "^4.5.0",
     "whatwg-fetch": "^3.6.20"

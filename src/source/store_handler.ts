@@ -2,6 +2,8 @@
 
 import {
   Transform,
+  MapTransform,
+  MapData,
   Compiled,
   PointSet,
   EdgeSet,
@@ -77,21 +79,14 @@ export async function store2HistMap(
   store: HistMapStore,
   byCompiled = false
 ): Promise<[HistMapStore, TinLike[]]> {
-  return store2HistMap_internal(store, byCompiled, false);
-}
-
-export async function store2HistMap4Core(
-  store: HistMapStore
-): Promise<[HistMapStore, TinLike[]]> {
-  return store2HistMap_internal(store, false, true);
+  return store2HistMap_internal(store, byCompiled);
 }
 
 async function store2HistMap_internal(
   store: HistMapStore,
-  byCompiled: boolean,
-  coreLogic: boolean
+  byCompiled: boolean
 ): Promise<[HistMapStore, TinLike[]]> {
-  const ret: any = coreLogic ? store : {};
+  const ret: any = {};
   const tins: TinLike[] = [];
   keys.forEach(key => {
     ret[key] = store[key];
@@ -101,12 +96,10 @@ async function store2HistMap_internal(
   if (store.compiled) {
     let tin: TinLike = new Transform();
     (tin as Transform).setCompiled(store.compiled);
-    // Add indexed tin for performance
     (tin as Transform).addIndexedTin();
     if (byCompiled) {
       tin = store.compiled;
     }
-    // Transform instance properties might need to be accessed directly
     const transform = tin as Transform;
     ret.strictMode = transform.strictMode;
     ret.vertexMode = transform.vertexMode;
@@ -124,16 +117,7 @@ async function store2HistMap_internal(
     ret.height = store.height;
     ret.gcps = store.gcps;
     ret.edges = store.edges;
-    let tin = await createTinFromGcpsAsync(
-      store.strictMode!,
-      store.vertexMode!,
-      store.yaxisMode,
-      store.gcps,
-      store.edges,
-      [store.width!, store.height!]
-    );
-    if (byCompiled && typeof tin !== "string") tin = store.compiled!;
-    tins.push(tin);
+    tins.push("compiledRequired");
   }
 
   if (store.sub_maps) {
@@ -146,37 +130,92 @@ async function store2HistMap_internal(
       if (sub_map.compiled) {
         let tin: TinLike = new Transform();
         (tin as Transform).setCompiled(sub_map.compiled);
-        // Add indexed tin for performance
         (tin as Transform).addIndexedTin();
         if (byCompiled) {
           tin = sub_map.compiled;
         }
-        sub.bounds = tin.bounds;
-        sub.gcps = tin.points;
-        sub.edges = tin.edges;
+        sub.bounds = (tin as Transform).bounds;
+        sub.gcps = (tin as Transform).points;
+        sub.edges = (tin as Transform).edges;
         tins.push(tin);
       } else {
         sub.bounds = sub_map.bounds;
         sub.gcps = sub_map.gcps;
         sub.edges = sub_map.edges;
-        let tin = await createTinFromGcpsAsync(
-          store.strictMode!,
-          store.vertexMode!,
-          store.yaxisMode,
-          sub_map.gcps,
-          sub_map.edges,
-          undefined,
-          sub_map.bounds
-        );
-        if (byCompiled && typeof tin !== "string")
-          tin = sub_map.compiled!;
-        tins.push(tin);
+        tins.push("compiledRequired");
       }
       sub_maps.push(sub as SubMap);
     }
     ret.sub_maps = sub_maps;
   }
   return [ret as HistMapStore, tins];
+}
+
+// MaplatCore 専用: MapTransform を組み立てて返す
+export async function store2HistMap4Core(
+  store: HistMapStore
+): Promise<[HistMapStore, MapTransform]> {
+  const ret: any = store;
+  keys.forEach(key => {
+    ret[key] = store[key];
+  });
+  if ((store as any)["imageExtention"] || (store as any)["imageExtension"])
+    ret["imageExtension"] = (store as any)["imageExtension"] || (store as any)["imageExtention"];
+
+  if (!store.compiled) {
+    throw new Error(
+      "@maplat/transform requires pre-compiled data. Cannot create MapTransform from GCPs."
+    );
+  }
+
+  // MapData を組み立てる
+  const mapData: MapData = { compiled: store.compiled };
+  if (store.sub_maps?.length) {
+    mapData.sub_maps = store.sub_maps
+      .filter(s => s.compiled)
+      .map(s => ({
+        compiled: s.compiled!,
+        priority: s.priority,
+        importance: s.importance,
+        bounds: s.bounds
+      }));
+  }
+
+  const mapTransform = new MapTransform();
+  mapTransform.setMapData(mapData);
+
+  // メイン TIN からメタ情報を補完
+  const mainTin = mapTransform.getLayerTransform(0)!;
+  ret.strictMode = mainTin.strictMode;
+  ret.vertexMode = mainTin.vertexMode;
+  ret.yaxisMode = mainTin.yaxisMode;
+  ret.width = mainTin.wh?.[0];
+  ret.height = mainTin.wh?.[1];
+  ret.gcps = mainTin.points;
+  ret.edges = mainTin.edges;
+
+  if (store.sub_maps) {
+    const sub_maps = store.sub_maps.map((sub_map, i) => {
+      const sub: any = {
+        importance: sub_map.importance,
+        priority: sub_map.priority
+      };
+      if (sub_map.compiled) {
+        const subTin = mapTransform.getLayerTransform(i + 1);
+        sub.bounds = subTin?.bounds ?? sub_map.bounds;
+        sub.gcps = subTin?.points;
+        sub.edges = subTin?.edges;
+      } else {
+        sub.bounds = sub_map.bounds;
+        sub.gcps = sub_map.gcps;
+        sub.edges = sub_map.edges;
+      }
+      return sub as SubMap;
+    });
+    ret.sub_maps = sub_maps;
+  }
+
+  return [ret as HistMapStore, mapTransform];
 }
 
 export async function histMap2Store(
@@ -222,22 +261,4 @@ export async function histMap2Store(
       : [];
 
   return ret as HistMapStore;
-}
-
-async function createTinFromGcpsAsync(
-  _strict: StrictMode,
-  _vertex: VertexMode,
-  _yaxis?: YaxisMode,
-  gcps: PointSet[] = [],
-  _edges: EdgeSet[] = [],
-  _wh?: number[],
-  _bounds?: number[][]
-): Promise<TinLike> {
-  if (gcps.length < 3) return "tooLessGcps";
-  
-  // @maplat/transform does not support creating compiled data from GCPs
-  // Pre-compiled data is required
-  console.error('@maplat/transform requires pre-compiled data. Cannot create from GCPs.');
-  console.error('Please use @maplat/editor or a separate tool to generate compiled data.');
-  return "compiledRequired";
 }

@@ -5,6 +5,12 @@ import { Size } from "ol/size";
 import { transform } from "ol/proj";
 import { canvBase, MERC_CROSSMATRIX, MERC_MAX } from "../const_ex";
 import {
+  zoom2Radius as transformZoom2Radius,
+  mercViewpoint2Mercs as transformMercViewpoint2Mercs,
+  mercs2MercViewpoint as transformMercs2MercViewpoint,
+  rotateMatrix as transformRotateMatrix
+} from "@maplat/transform";
+import {
   addIdToPoi,
   normalizeLayer,
   normalizeLayers,
@@ -408,14 +414,7 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
       if (theta === undefined) {
         theta = this.getMap().getView().getRotation();
       }
-      const result: number[][] = [];
-      for (let i = 0; i < xys.length; i++) {
-        const xy = xys[i];
-        const x = xy[0] * Math.cos(theta) - xy[1] * Math.sin(theta);
-        const y = xy[0] * Math.sin(theta) + xy[1] * Math.cos(theta);
-        result.push([x, y]);
-      }
-      return result;
+      return transformRotateMatrix(xys, theta!) as Coordinate[];
     }
 
     async resolvePois(pois?: any) {
@@ -557,11 +556,10 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
 
     // size(画面サイズ)とズームから、地図面座標上での半径を得る。zoom無指定の場合は自動取得
     zoom2Radius(size: Size, zoom?: number) {
-      const radius = Math.floor(Math.min(size[0], size[1]) / 4);
       if (zoom === undefined) {
         zoom = (this.getMap().getView() as mlView).getDecimalZoom();
       }
-      return (radius * MERC_MAX) / 128 / Math.pow(2, zoom!);
+      return transformZoom2Radius(size as [number, number], zoom!);
     }
 
     // 画面サイズと地図ズームから、地図面座標上での5座標を取得する。zoom, rotate無指定の場合は自動取得
@@ -585,12 +583,16 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
       if (size === undefined) {
         size = this.getMap().getSize()!;
       }
-      const radius = this.zoom2Radius(size, zoom);
-      const crossDelta = this.rotateMatrix(MERC_CROSSMATRIX, rotate);
-      const cross = crossDelta.map(xy => [
-        xy[0] * radius + center![0],
-        xy[1] * radius + center![1]
-      ]);
+      const resolvedZoom =
+        zoom ?? (this.getMap().getView() as mlView).getDecimalZoom();
+      const resolvedRotation =
+        rotate ?? this.getMap().getView().getRotation();
+      const cross = transformMercViewpoint2Mercs(
+        center as number[],
+        resolvedZoom,
+        resolvedRotation,
+        size as [number, number]
+      );
       return [cross, size];
     }
 
@@ -601,43 +603,13 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
 
     // メルカトル5地点情報からメルカトル地図でのサイズ情報（中心座標、サイズ、回転）を得る
     mercs2MercViewpoint(mercs: CrossCoordinatesArray): ViewpointArray {
-      const center = mercs[0][0];
       let size = mercs[1];
-      const nesw = mercs[0].slice(1, 5);
-      const neswDelta = nesw.map(val => [
-        val[0] - center[0],
-        val[1] - center[1]
-      ]);
-      const normal = [
-        [0.0, 1.0],
-        [1.0, 0.0],
-        [0.0, -1.0],
-        [-1.0, 0.0]
-      ];
-      let abss = 0;
-      let cosx = 0;
-      let sinx = 0;
-      for (let i = 0; i < 4; i++) {
-        const delta = neswDelta[i];
-        const norm = normal[i];
-        const abs = Math.sqrt(Math.pow(delta[0], 2) + Math.pow(delta[1], 2));
-        abss += abs;
-        const outer = delta[0] * norm[1] - delta[1] * norm[0];
-        const inner = Math.acos(
-          (delta[0] * norm[0] + delta[1] * norm[1]) / abs
-        );
-        const theta = outer > 0.0 ? -1.0 * inner : inner;
-        cosx += Math.cos(theta);
-        sinx += Math.sin(theta);
-      }
-      const scale = abss / 4.0;
-      const omega = Math.atan2(sinx, cosx);
-
       if (!size) size = this.getMap().getSize()!;
-      const radius = Math.floor(Math.min(size[0], size[1]) / 4);
-      const zoom = Math.log((radius * MERC_MAX) / 128 / scale) / Math.log(2);
-
-      return [center, zoom, omega];
+      const result = transformMercs2MercViewpoint(
+        mercs[0] as number[][],
+        size as [number, number]
+      );
+      return [result.center as Coordinate, result.zoom, result.rotation];
     }
 
     sysCoords2Xys(sysCoords: CrossCoordinatesArray): CrossCoordinatesArray {

@@ -1430,6 +1430,10 @@ export class MaplatApp extends EventTarget {
     if (restore === undefined) restore = {};
     const now = this.mercSrc;
     const to: MaplatSource = this.cacheHash[mapID];
+    if (!to) {
+      this.logger.warn(`changeMap: mapID "${mapID}" not found in cacheHash`);
+      return Promise.resolve();
+    }
     if (!this.changeMapSeq) {
       this.changeMapSeq = Promise.resolve();
     }

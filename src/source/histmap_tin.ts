@@ -1,29 +1,32 @@
 import { HistMap } from "./histmap";
-import { Transform } from "@maplat/transform";
+import { MapTransform } from "@maplat/transform";
 import { addCoordinateTransforms, addProjection, toLonLat } from "ol/proj";
 import Projection from "ol/proj/Projection";
 import { transformDirect } from "../proj_ex";
-import { polygon, booleanPointInPolygon } from "@turf/turf";
+import { polygon } from "@turf/turf";
+import type { Feature, Polygon } from "geojson";
 import { MERC_MAX } from "../const_ex";
 import { Coordinate } from "ol/coordinate";
-import type { Feature, Polygon } from "geojson";
 import { store2HistMap4Core } from "./store_handler";
 import { Size } from "ol/size";
 import { CrossCoordinatesArray, ViewpointArray } from "./mixin";
 
 export class HistMap_tin extends HistMap {
-  tins: Transform[];
+  mapTransform: MapTransform;
 
   constructor(options: any = {}) {
     super(options);
-    this.tins = [];
+    this.mapTransform = new MapTransform();
   }
 
   static async createAsync(options: any) {
-    const histmaps = await store2HistMap4Core(options);
-    options = histmaps[0];
+    const [storeOptions, mapTransform] = await store2HistMap4Core(options);
+    options = storeOptions;
     const obj = new HistMap_tin(options);
-    obj.tins = histmaps[1] as Transform[];
+    obj.mapTransform = mapTransform;
+
+    // メインレイヤーの OL Projection 登録
+    const mainTin = mapTransform.getLayerTransform(0)!;
     const proj = new Projection({
       code: `Illst:${obj.mapID}`,
       extent: [0.0, 0.0, obj.width, obj.height],
@@ -33,41 +36,31 @@ export class HistMap_tin extends HistMap {
     addCoordinateTransforms(
       proj,
       "EPSG:3857",
-      xy => obj.tins[0].transform(xy, false) as Coordinate,
-      merc => obj.tins[0].transform(merc, true) as Coordinate
+      xy => mainTin.transform(xy, false) as Coordinate,
+      merc => mainTin.transform(merc, true) as Coordinate
     );
     transformDirect("EPSG:4326", proj);
 
+    // サブマップの OL Projection 登録
     if (options.sub_maps) {
-      options.sub_maps.map((sub_map: any, i: any) => {
+      options.sub_maps.forEach((_sub_map: any, i: number) => {
         const index = i + 1;
         const projKey = `Illst:${obj.mapID}#${index}`;
-        const tin = obj.tins[index];
-        const proj = new Projection({
+        const tin = mapTransform.getLayerTransform(index);
+        if (!tin) return;
+        const subProj = new Projection({
           code: projKey,
           extent: [tin.xy![0], tin.xy![1], tin.wh![0], tin.wh![1]],
           units: "m"
         });
-        addProjection(proj);
+        addProjection(subProj);
         addCoordinateTransforms(
-          proj,
+          subProj,
           "EPSG:3857",
           xy => tin.transform(xy, false, true) as Coordinate,
           merc => tin.transform(merc, true, true) as Coordinate
         );
-        transformDirect("EPSG:4326", proj);
-
-        const xyBounds = Object.assign([], sub_map.bounds);
-        xyBounds.push(sub_map.bounds[0]);
-        const mercBounds = xyBounds.map((xy: any) => tin.transform(xy, false));
-        const xyBoundsPolygon = polygon([xyBounds]);
-        const mercBoundsPolygon = polygon([mercBounds]);
-        /* eslint-disable @typescript-eslint/ban-ts-comment */
-        // @ts-ignore
-        tin.xyBounds = xyBoundsPolygon;
-        /* eslint-disable @typescript-eslint/ban-ts-comment */
-        // @ts-ignore
-        tin.mercBounds = mercBoundsPolygon;
+        transformDirect("EPSG:4326", subProj);
       });
     }
     return obj;
@@ -87,215 +80,97 @@ export class HistMap_tin extends HistMap {
     }) as Promise<Coordinate>;
   }
 
-  xy2MercAsync_returnLayer(xy: Coordinate) {
-    return new Promise((resolve, reject) => {
-      const tinSorted = this.tins
-        .map((tin, index) => [index, tin] as [number, Transform])
-        .sort((a, b) => (a[1].priority! < b[1].priority! ? 1 : -1));
-
-      for (let i = 0; i < tinSorted.length; i++) {
-        const index = tinSorted[i][0];
-        const tin = tinSorted[i][1];
-        if (index == 0 || booleanPointInPolygon(xy, tin.xyBounds!)) {
-          this.xy2MercAsync_specifyLayer(xy, index)
-            .then(merc => {
-              resolve([index, merc] as [number, Coordinate]);
-            })
-            .catch(err => {
-              reject(err);
-            });
-          break;
-        }
-      }
-    }) as Promise<[number, Coordinate]>;
+  xy2MercAsync_returnLayer(xy: Coordinate): Promise<[number, Coordinate]> {
+    const result = this.mapTransform.xy2MercWithLayer(xy);
+    if (!result) return Promise.reject(new Error("xy2MercWithLayer: out of bounds"));
+    return Promise.resolve(result as [number, Coordinate]);
   }
 
   merc2XyAsync_returnLayer(
     merc: Coordinate
   ): Promise<([number, Coordinate] | undefined)[]> {
-    return Promise.all(
-      this.tins.map(
-        (tin, index) =>
-          new Promise((resolve, reject) => {
-            this.merc2XyAsync_specifyLayer(merc, index)
-              .then(xy => {
-                if (index === 0 || booleanPointInPolygon(xy, tin.xyBounds!)) {
-                  resolve([tin, index, xy] as [Transform, number, Coordinate?]);
-                } else {
-                  resolve([tin, index] as [Transform, number, Coordinate?]);
-                }
-              })
-              .catch(err => {
-                reject(err);
-              });
-          }) as Promise<[Transform, number, Coordinate?]>
+    const results = this.mapTransform.merc2XyWithLayer(merc);
+    return Promise.resolve(
+      results.map(r =>
+        r ? ([r[0], r[1] as Coordinate] as [number, Coordinate]) : undefined
       )
-    ).then(results =>
-      results
-        .sort((a, b) => (a[0].priority! < b[0].priority! ? 1 : -1))
-        .reduce(
-          (
-            ret: (undefined | [number, Coordinate, Transform])[],
-            result,
-            priIndex: number,
-            arry
-          ) => {
-            const tin = result[0];
-            const index = result[1];
-            const xy = result[2];
-            if (!xy) return ret;
-            for (let i = 0; i < priIndex; i++) {
-              const targetTin = arry[i][0];
-              const targetIndex = arry[i][1];
-              if (
-                targetIndex === 0 ||
-                booleanPointInPolygon(xy, targetTin.xyBounds!)
-              ) {
-                if (ret.length) {
-                  const hide = !ret[0];
-                  const storedTin = hide ? ret[1]![2] : ret[0]![2];
-                  if (!hide || tin.importance! < storedTin.importance!) {
-                    return ret;
-                  } else {
-                    return [undefined, [index, xy, tin]] as (
-                      | undefined
-                      | [number, Coordinate, Transform]
-                    )[];
-                  }
-                } else {
-                  return [undefined, [index, xy, tin]] as (
-                    | undefined
-                    | [number, Coordinate, Transform]
-                  )[];
-                }
-              }
-            }
-            if (!ret.length || !ret[0]) {
-              return [[index, xy, tin]] as (
-                | undefined
-                | [number, Coordinate, Transform]
-              )[];
-            } else {
-              ret.push([index, xy, tin]);
-              return ret
-                .sort((a, b) => (a![2].importance! < b![2].importance! ? 1 : -1))
-                .filter((_row, i) => i < 2);
-            }
-          },
-          []
-        )
-        .map(row => {
-          if (!row) return;
-          return [row[0], row[1]] as [number, Coordinate];
-        })
     );
   }
 
   setupMapParameter(callback: any) {
     const xy = [this.width / 2, this.height / 2];
-    this.xy2MercAsync_returnLayer(xy)
-      .then((results: any) => {
-        const index = results[0];
-        const mercCenter = results[1];
-        const dir4 = [
-          [xy[0] - 150, xy[1]],
-          [xy[0] + 150, xy[1]],
-          [xy[0], xy[1] - 150],
-          [xy[0], xy[1] + 150]
-        ];
-        const envelope = [
-          [0, 0],
-          [this.width, 0],
-          [this.width, this.height],
-          [0, this.height]
-        ];
-        const proms: Promise<any>[] = [];
-        for (let i = 0; i < 9; i++) {
-          const prom =
-            i < 4
-              ? this.xy2MercAsync_specifyLayer(dir4[i], index)
-              : i == 4
-                ? Promise.resolve(mercCenter)
-                : this.xy2MercAsync_specifyLayer(envelope[i - 5], 0);
-          proms.push(prom);
-        }
-        Promise.all(proms)
-          .then((mercs: any) => {
-            const delta1 = Math.sqrt(
-              Math.pow(mercs[0][0] - mercs[1][0], 2) +
-              Math.pow(mercs[0][1] - mercs[1][1], 2)
-            );
-            const delta2 = Math.sqrt(
-              Math.pow(mercs[2][0] - mercs[3][0], 2) +
-              Math.pow(mercs[2][1] - mercs[3][1], 2)
-            );
-            const delta = (delta1 + delta2) / 2;
-            if (!this.mercZoom)
-              this.mercZoom =
-                Math.log((300 * (2 * MERC_MAX)) / 256 / delta) / Math.log(2) -
-                3;
-            if (!this.homePosition) this.homePosition = toLonLat(mercs[4]);
-            this.envelope = polygon([
-              [mercs[5], mercs[6], mercs[7], mercs[8], mercs[5]]
-            ]) as Feature<Polygon>;
-            callback(this);
-          })
-          .catch(err => {
-            throw err;
-          });
-      })
-      .catch(err => {
-        throw err;
-      });
+    const centerResult = this.mapTransform.xy2MercWithLayer(xy);
+    if (!centerResult) return;
+    const [index, mercCenter] = centerResult;
+
+    const layerTin = this.mapTransform.getLayerTransform(index);
+    const mainTin = this.mapTransform.getLayerTransform(0)!;
+    if (!layerTin) return;
+
+    const dir4 = [
+      [xy[0] - 150, xy[1]],
+      [xy[0] + 150, xy[1]],
+      [xy[0], xy[1] - 150],
+      [xy[0], xy[1] + 150]
+    ];
+    const envelope = [
+      [0, 0],
+      [this.width, 0],
+      [this.width, this.height],
+      [0, this.height]
+    ];
+
+    const dir4Mercs = dir4.map(p => layerTin.transform(p, false) as Coordinate);
+    const envelopeMercs = envelope.map(
+      p => mainTin.transform(p, false) as Coordinate
+    );
+
+    const delta1 = Math.sqrt(
+      Math.pow(dir4Mercs[0][0] - dir4Mercs[1][0], 2) +
+        Math.pow(dir4Mercs[0][1] - dir4Mercs[1][1], 2)
+    );
+    const delta2 = Math.sqrt(
+      Math.pow(dir4Mercs[2][0] - dir4Mercs[3][0], 2) +
+        Math.pow(dir4Mercs[2][1] - dir4Mercs[3][1], 2)
+    );
+    const delta = (delta1 + delta2) / 2;
+
+    if (!this.mercZoom)
+      this.mercZoom =
+        Math.log((300 * (2 * MERC_MAX)) / 256 / delta) / Math.log(2) - 3;
+    if (!this.homePosition) this.homePosition = toLonLat(mercCenter);
+    this.envelope = polygon([
+      [
+        envelopeMercs[0],
+        envelopeMercs[1],
+        envelopeMercs[2],
+        envelopeMercs[3],
+        envelopeMercs[0]
+      ]
+    ]) as Feature<Polygon>;
+    callback(this);
   }
 
   mercs2SysCoordsAsync_multiLayer(
     mercs: CrossCoordinatesArray
   ): Promise<(CrossCoordinatesArray | undefined)[]> {
-    const promises = this.merc2XyAsync_returnLayer(mercs[0][0]).then(
-      results => {
-        let hide = false;
-        return Promise.all(
-          results.map((result, i) => {
-            if (!result) {
-              hide = true;
-              return;
-            }
-            const index = result[0];
-            const centerXy = result[1];
-            if (i !== 0 && !hide) return Promise.resolve([centerXy]);
-            return Promise.all(
-              mercs[0].map((merc, j) => {
-                if (j === 0) return Promise.resolve(centerXy);
-                return this.merc2XyAsync_specifyLayer(merc, index);
-              })
-            );
-          })
-        );
-      }
-    );
-    return promises.then(results =>
+    const results = this.mapTransform.mercs2SysCoords(mercs[0]);
+    return Promise.resolve(
       results.map(result => {
-        if (!result) {
-          return;
-        }
-        return [result.map(xy => this.xy2SysCoord(xy)), mercs[1]];
+        if (!result) return undefined;
+        return [result.map(xy => xy as Coordinate), mercs[1]] as CrossCoordinatesArray;
       })
     );
   }
 
-  // unifyTerm対応
-  // https://github.com/code4history/MaplatCore/issues/19
-
-  // 複数レイヤがある場合、ignoreBackside === trueであれば、先頭レイヤ以外は無視する(先頭レイヤ内でなければ変換しない)
-  // ignoreBackside === falseであれば、先頭レイヤで変換できなければ他レイヤでの結果を返す
   merc2XyAsync_base(
     merc: Coordinate,
     ignoreBackground: boolean
   ): Promise<Coordinate | void> {
     return this.merc2XyAsync_returnLayer(merc).then(ret => {
       if (ignoreBackground && !ret[0]) return;
-      return !ret[0] ? ret[1]![1] : ret[0][1];
+      const pick = !ret[0] ? ret[1] : ret[0];
+      return (pick as [number, Coordinate])[1];
     });
   }
 
@@ -311,43 +186,36 @@ export class HistMap_tin extends HistMap {
     return this.xy2MercAsync_returnLayer(xy).then(ret => ret[1]);
   }
 
-  // 画面サイズと地図ズームから、メルカトル座標上での5座標を取得する。zoom, rotate無指定の場合は自動取得
   viewpoint2MercsAsync(
     viewpoint?: ViewpointArray,
     size?: Size
   ): Promise<CrossCoordinatesArray> {
-    const sysCoords = this.viewpoint2SysCoords(viewpoint, size);
-    const cross = this.sysCoords2Xys(sysCoords);
+    const center = (viewpoint?.[0] ??
+      this.getMap().getView().getCenter()!) as number[];
+    const zoom =
+      viewpoint?.[1] ??
+      (this.getMap().getView() as any).getDecimalZoom();
+    const rotation =
+      viewpoint?.[2] ?? this.getMap().getView().getRotation();
+    if (!size) size = this.getMap().getSize()!;
 
-    const promise = this.xy2MercAsync_returnLayer(cross[0][0]);
-    return promise.then(results => {
-      const index = results[0];
-      const centerMerc = results[1];
-      const promises = cross[0].map((val, i) => {
-        if (i === 0) return Promise.resolve(centerMerc);
-        return this.xy2MercAsync_specifyLayer(val, index);
-      });
-      return Promise.all(promises).then(mercs => [mercs, size]);
-    });
+    const mercs = this.mapTransform.viewpoint2Mercs(
+      { center, zoom, rotation },
+      size as [number, number]
+    );
+    return Promise.resolve([mercs, size] as CrossCoordinatesArray);
   }
 
   mercs2ViewpointAsync(mercs: CrossCoordinatesArray): Promise<ViewpointArray> {
-    const promises = this.merc2XyAsync_returnLayer(mercs[0][0]).then(
-      results => {
-        const result = results[0] || results[1];
-        const index = result![0];
-        const centerXy = result![1];
-        return Promise.all(
-          mercs[0].map((merc, i) => {
-            if (i === 0) return centerXy;
-            return this.merc2XyAsync_specifyLayer(merc, index);
-          })
-        );
-      }
+    const size = (mercs[1] ?? this.getMap().getSize()!) as [number, number];
+    const viewpoint = this.mapTransform.mercs2Viewpoint(
+      mercs[0] as number[][],
+      size
     );
-    return promises.then(xys => {
-      const sysCoords = this.xys2SysCoords([xys, mercs[1]]);
-      return this.sysCoords2Viewpoint(sysCoords);
-    });
+    return Promise.resolve([
+      viewpoint.center as Coordinate,
+      viewpoint.zoom,
+      viewpoint.rotation
+    ] as ViewpointArray);
   }
 }
