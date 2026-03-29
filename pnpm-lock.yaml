@@ -12,8 +12,8 @@ importers:
         specifier: ^0.2.1
         version: 0.2.1(workbox-routing@7.4.0)
       '@maplat/transform':
-        specifier: ^0.5.1
-        version: 0.5.1
+        specifier: github:code4history/MaplatTransform#6a24dd6172c075ec73d23e4c44f4a7b36acc120e
+        version: https://codeload.github.com/code4history/MaplatTransform/tar.gz/6a24dd6172c075ec73d23e4c44f4a7b36acc120e
       '@turf/turf':
         specifier: ^7.3.1
         version: 7.3.1
@@ -430,8 +430,9 @@ packages:
     resolution: {integrity: sha512-Es6WcD0nO5l+2BOQS4uLfNPYQaNDfbot3X1XUoloz+x0mPDS3eeORZJl06HXjwBG1fOGwCRnzK88LMdxKRrd6Q==}
     engines: {node: '>=6.0.0'}
 
-  '@maplat/transform@0.5.1':
-    resolution: {integrity: sha512-rNxb+KXcEl1brlSXy/bgGKNoEHfSGwmt/DDVIEfz+kvyppWj50Lr47KxGaXR4ZUJU0urROtsiH3BZCegMByajQ==}
+  '@maplat/transform@https://codeload.github.com/code4history/MaplatTransform/tar.gz/6a24dd6172c075ec73d23e4c44f4a7b36acc120e':
+    resolution: {tarball: https://codeload.github.com/code4history/MaplatTransform/tar.gz/6a24dd6172c075ec73d23e4c44f4a7b36acc120e}
+    version: 0.5.1
     engines: {node: '>=20', pnpm: '>=9'}
 
   '@maplibre/maplibre-gl-style-spec@20.4.0':
@@ -2740,7 +2741,7 @@ snapshots:
 
   '@mapbox/whoots-js@3.1.0': {}
 
-  '@maplat/transform@0.5.1':
+  '@maplat/transform@https://codeload.github.com/code4history/MaplatTransform/tar.gz/6a24dd6172c075ec73d23e4c44f4a7b36acc120e':
     dependencies:
       '@turf/turf': 7.3.1
 
