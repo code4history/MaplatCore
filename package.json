@@ -21,6 +21,11 @@
     "dist/",
     "parts/"
   ],
+  "pnpm": {
+    "overrides": {
+      "@microsoft/api-extractor": "7.58.0"
+    }
+  },
   "scripts": {
     "dev": "vite --host",
     "build": "cross-env BUILD_MODE=package vite build",
@@ -60,8 +65,8 @@
   },
   "homepage": "https://github.com/code4history/MaplatCore/wiki",
   "dependencies": {
-    "@c4h/weiwudi": "^0.2.1",
-    "@maplat/transform": "github:code4history/MaplatTransform#6a24dd6172c075ec73d23e4c44f4a7b36acc120e",
+    "@c4h/weiwudi": "^0.3.0",
+    "@maplat/transform": "0.5.2",
     "@turf/turf": "^7.3.1",
     "lodash.template": "^4.5.0",
     "whatwg-fetch": "^3.6.20"
@@ -84,20 +89,20 @@
     "@playwright/test": "^1.57.0",
     "@types/geojson": "^7946.0.16",
     "@types/lodash.template": "^4.5.3",
-    "@types/node": "^22.19.3",
-    "@typescript-eslint/eslint-plugin": "^8.50.1",
-    "@typescript-eslint/parser": "^8.50.1",
+    "@types/node": "^25.5.1",
+    "@typescript-eslint/eslint-plugin": "^8.58.0",
+    "@typescript-eslint/parser": "^8.58.0",
     "@vitest/coverage-v8": "^3.2.4",
     "ajv": "^8.17.1",
-    "cross-env": "^7.0.3",
+    "cross-env": "^10.1.0",
     "eslint": "^9.39.2",
-    "eslint-config-prettier": "^9.1.2",
-    "jsdom": "^25.0.1",
-    "ol": "^10.7.0",
+    "eslint-config-prettier": "^10.1.8",
+    "jsdom": "^27.4.0",
+    "ol": "^10.8.0",
     "prettier": "^3.7.4",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.50.1",
-    "vite": "^6.4.1",
+    "typescript-eslint": "^8.58.0",
+    "vite": "^7.3.0",
     "vite-plugin-dts": "^4.5.4",
     "vitest": "^3.2.4"
   }
