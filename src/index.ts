@@ -966,6 +966,20 @@ export class MaplatApp extends EventTarget {
       });
     });
   }
+  // 現在の地図回転角を度数で返す (入力側restore.position.rotationと同じ単位系, #61)
+  getRotation(): number {
+    const view = this.mapObject?.getView();
+    if (!view) return 0;
+    return normalizeDegree((view.getRotation() * 180) / Math.PI);
+  }
+  // 現在の実世界方位角を度数で返す。TIN地図では歪み補正込みの非同期計算になるためPromiseを返す (#61)
+  async getDirection(): Promise<number> {
+    // ソース未準備時やベース地図のみの状態では、方位角は画面回転角に一致する
+    if (!this.from || !this.mercSrc) return this.getRotation();
+    const mercs = await this.from.viewpoint2MercsAsync();
+    const viewpoint = await this.mercSrc.mercs2ViewpointAsync(mercs);
+    return normalizeDegree((viewpoint[2]! * 180) / Math.PI);
+  }
   currentMapInfo() {
     return createMapInfo(this.from);
   }
@@ -1787,6 +1801,10 @@ export class MaplatApp extends EventTarget {
 }
 export { createElement };
 export { CustomEvent };
+// 外部(MaplatEditor等)がdeep importせずに地図・ソースを直接生成できるようにする (#71)
+export { MaplatMap };
+export { mapSourceFactory };
+export type { MaplatSource, BackmapSource };
 
 // Static method for cleaner initialization
 MaplatApp.createObject = function (option: any): Promise<MaplatApp> {

@@ -3,7 +3,7 @@ import { Logger } from './logger';
 import { createElement } from './functions';
 import { default as EventTarget } from 'ol/events/Target';
 import { MaplatMap } from './map_ex';
-import { BackmapSource, MaplatSource } from './source_ex';
+import { BackmapSource, MaplatSource, mapSourceFactory } from './source_ex';
 import { ViewpointArray } from './source/mixin';
 import { Geolocation } from './geolocation';
 import { Coordinate } from 'ol/coordinate';
@@ -137,6 +137,8 @@ export declare class MaplatApp extends EventTarget {
     setMouseCursor(): void;
     setBackMapBehavior(): void;
     raiseChangeViewpoint(): void;
+    getRotation(): number;
+    getDirection(): Promise<number>;
     currentMapInfo(): any;
     mapInfo(mapID: string): any;
     clientPointToLngLat(clientX: number, clientY: number): Promise<{
@@ -196,4 +198,7 @@ export declare class MaplatApp extends EventTarget {
 }
 export { createElement };
 export { CustomEvent };
+export { MaplatMap };
+export { mapSourceFactory };
+export type { MaplatSource, BackmapSource };
 export { assets };
