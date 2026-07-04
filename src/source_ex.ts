@@ -241,6 +241,8 @@ export async function registerMapToSW(options: any) {
   setting.height = options.height;
   setting.maxZoom = options.maxZoom;
   setting.minZoom = options.minZoom;
+  // タイルキャッシュ有効期間(ms)。Weiwudi側の既定は24時間 (code4history/Weiwudi#2)
+  if (options.cacheTtl !== undefined) setting.cacheTtl = options.cacheTtl;
   const lngLats = options.envelopeLngLats;
   if (lngLats) {
     const minMax = lngLats.reduce(

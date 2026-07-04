@@ -8340,7 +8340,7 @@ class Qt extends KI {
   static async registerMap(t, e) {
     if (!await Qt.swCheck()) throw "Weiwudi service worker is not implemented.";
     let A;
-    const i = ["type", "url", "width", "height", "tileSize", "minZoom", "maxZoom", "maxLng", "maxLat", "minLng", "minLat"].reduce((r, s) => (typeof e[s] < "u" && (e[s] instanceof Array ? e[s].map((o) => {
+    const i = ["type", "url", "width", "height", "tileSize", "minZoom", "maxZoom", "maxLng", "maxLat", "minLng", "minLat", "cacheTtl"].reduce((r, s) => (typeof e[s] < "u" && (e[s] instanceof Array ? e[s].map((o) => {
       r.append(s, o);
     }) : r.append(s, String(e[s]))), r), new URLSearchParams());
     i.append("mapID", t);
@@ -9040,7 +9040,7 @@ async function CC(n, t) {
 async function mn(n) {
   const t = {};
   if (n.maptype === "mapbox" || n.maptype === "maplibre" || n.maptype === "google" || !n.enableCache) return;
-  n.maptype === "base" || n.maptype === "overlay" ? t.type = "wmts" : t.type = "xyz", t.url = n.urls ? n.urls : n.url, t.width = n.width, t.height = n.height, t.maxZoom = n.maxZoom, t.minZoom = n.minZoom;
+  n.maptype === "base" || n.maptype === "overlay" ? t.type = "wmts" : t.type = "xyz", t.url = n.urls ? n.urls : n.url, t.width = n.width, t.height = n.height, t.maxZoom = n.maxZoom, t.minZoom = n.minZoom, n.cacheTtl !== void 0 && (t.cacheTtl = n.cacheTtl);
   const e = n.envelopeLngLats;
   if (e) {
     const i = e.reduce(

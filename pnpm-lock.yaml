@@ -12,8 +12,8 @@ importers:
   .:
     dependencies:
       '@c4h/weiwudi':
-        specifier: ^0.3.0
-        version: 0.3.0(workbox-routing@7.4.0)
+        specifier: github:code4history/Weiwudi#foss4g-hiroshima
+        version: https://codeload.github.com/code4history/Weiwudi/tar.gz/04f4b4011487db0526b9478f28271fd7b2e3c8b4(workbox-routing@7.4.0)
       '@maplat/transform':
         specifier: 0.5.2
         version: 0.5.2
@@ -133,8 +133,9 @@ packages:
     resolution: {integrity: sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==}
     engines: {node: '>=18'}
 
-  '@c4h/weiwudi@0.3.0':
-    resolution: {integrity: sha512-fYSvWa9XCzj/o/MY/dKbEUZFCs841yusz/VCL0eIhRe/iZvs4NB70bXq/cLp8uVL3lmzqHOaUKWYegpHI4ipwg==}
+  '@c4h/weiwudi@https://codeload.github.com/code4history/Weiwudi/tar.gz/04f4b4011487db0526b9478f28271fd7b2e3c8b4':
+    resolution: {gitHosted: true, integrity: sha512-pPmg6lBoSTP5MqAGY12bCCC/+tMCepjfOgkBn/ymV+KWQc/1ZF4qvJOh0/ap3nSRcBO+Z4Oj1VGz6H9QzOJiUA==, tarball: https://codeload.github.com/code4history/Weiwudi/tar.gz/04f4b4011487db0526b9478f28271fd7b2e3c8b4}
+    version: 0.3.0
     engines: {node: '>=20.0.0', pnpm: '>=9.0.0'}
     peerDependencies:
       workbox-routing: ^7.4.0
@@ -1572,6 +1573,7 @@ packages:
 
   glob@10.5.0:
     resolution: {integrity: sha512-DfXN8DfhJ7NH3Oe7cFmu3NCu1wKbkReJ8TorzSAFbSKrlNaQSKfIzqYqVY8zlbs2NLBbWpRiU52GX2PbaBVNkg==}
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
     hasBin: true
 
   global-prefix@4.0.0:
@@ -2521,7 +2523,7 @@ snapshots:
 
   '@bcoe/v8-coverage@1.0.2': {}
 
-  '@c4h/weiwudi@0.3.0(workbox-routing@7.4.0)':
+  '@c4h/weiwudi@https://codeload.github.com/code4history/Weiwudi/tar.gz/04f4b4011487db0526b9478f28271fd7b2e3c8b4(workbox-routing@7.4.0)':
     dependencies:
       workbox-routing: 7.4.0
 

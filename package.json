@@ -65,7 +65,7 @@
   },
   "homepage": "https://github.com/code4history/MaplatCore/wiki",
   "dependencies": {
-    "@c4h/weiwudi": "^0.3.0",
+    "@c4h/weiwudi": "github:code4history/Weiwudi#foss4g-hiroshima",
     "@maplat/transform": "0.5.2",
     "@turf/turf": "^7.3.1",
     "lodash.template": "^4.5.0",
