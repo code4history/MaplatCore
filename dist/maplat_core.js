@@ -8956,6 +8956,9 @@ const rr = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU0AK
     },
     attr: "©︎ OpenStreetMap contributors",
     maptype: "base",
+    // maxZoom必須: 未指定だとWeiwudi(SWタイルキャッシュ)登録時にズーム上限0と
+    // 解釈される環境があり、キャッシュ経由の全タイルが404になる (#78)
+    maxZoom: 19,
     thumbnail: rr,
     urls: [
       "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png",
