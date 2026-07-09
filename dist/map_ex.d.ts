@@ -11,6 +11,7 @@ export declare class MaplatMap extends Map {
     alwaysGpsOn: boolean;
     private __ignore_first_move;
     constructor(optOptions: any);
+    static applyWmtsZoomGate(layer: any, source: any): void;
     static spawnLayer(layer: any, source: any, container: any): any;
     getLayer(name?: string): any;
     getSource(name?: string): any;

@@ -161,6 +161,25 @@ export class MaplatMap extends Map {
       }
     });
   }
+  // WMTS-like tile sources start their tile grid at source.minZoom. Rendering
+  // them at view zooms far below that makes OpenLayers enumerate the whole
+  // viewport in z=minZoom tiles (4^minZoom times the viewport), freezing the
+  // renderer — and no tiles exist below minZoom anyway. Gate the layer at
+  // minZoom - 4: within 4 levels the minZoom tiles are upscaled to fill the
+  // view (enumeration stays within 256x the viewport), below that the layer is
+  // simply hidden. The gate must be reset when the same layer is reused for a
+  // source without such a grid (e.g. Maplat maps), hence the else branch.
+  static applyWmtsZoomGate(layer: any, source: any) {
+    const minZoom =
+      source && typeof source.isWmts === "function" && source.isWmts()
+        ? source.minZoom
+        : undefined;
+    if (typeof minZoom === "number" && Number.isFinite(minZoom) && minZoom > 4) {
+      layer.setMinZoom(minZoom - 4);
+    } else {
+      layer.setMinZoom(-Infinity);
+    }
+  }
   static spawnLayer(layer: any, source: any, container: any) {
     if (source instanceof MapboxMap || source instanceof MapLibreMap || !(layer instanceof Tile)) {
       if (source instanceof MapboxMap) {
@@ -180,10 +199,12 @@ export class MaplatMap extends Map {
         layer = new Tile({
           source
         });
+        MaplatMap.applyWmtsZoomGate(layer, source);
       }
       layer.set("name", "base");
     } else {
       layer.setSource(source);
+      MaplatMap.applyWmtsZoomGate(layer, source);
     }
     return layer;
   }
@@ -356,6 +377,7 @@ export class MaplatMap extends Map {
       const layer = new Tile({
         source
       });
+      MaplatMap.applyWmtsZoomGate(layer, source);
       layers.push(layer);
     }
   }
