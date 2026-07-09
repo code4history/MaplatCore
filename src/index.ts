@@ -1475,17 +1475,22 @@ export class MaplatApp extends EventTarget {
                     if (this.from!.isWmts()) {
                       backTo =
                         this.from instanceof TmsMap
-                          ? this.mapObject.getSource()
-                          : // If current foreground is TMS overlay, set current basemap as new background
-                          this.from; // If current foreground source is basemap, set current foreground as new background
+                          ? // If current foreground is a TMS overlay, use the current
+                            // basemap as new background. On initial load no foreground
+                            // source is set yet, so fall back to the default basemap
+                            // (mercSrc) to avoid a null background source.
+                            this.mapObject.getSource() || now
+                          : this.from; // If current foreground source is basemap, set current foreground as new background
                     }
-                    this.backMap.exchangeSource(backTo);
+                    if (backTo) this.backMap.exchangeSource(backTo);
                   } else {
                     // If current background source is set, use it again
                     backTo = backSrc;
                   }
                 }
-                this.requestUpdateState({ backgroundID: backTo.mapID });
+                if (backTo) {
+                  this.requestUpdateState({ backgroundID: backTo.mapID });
+                }
               } else {
                 // If new foreground source is basemap or TMS overlay, remove source from background map
                 this.backMap.exchangeSource();
@@ -1502,9 +1507,12 @@ export class MaplatApp extends EventTarget {
                 const backToLocal = backSrc || now;
                 this.mapObject.exchangeSource(backToLocal);
               }
-              this.requestUpdateState({
-                backgroundID: this.mapObject.getSource().mapID
-              });
+              // On initial load a TMS-overlay foreground may not have an underlying
+              // basemap source yet; guard against a null source to avoid a crash.
+              const foreground = this.mapObject.getSource();
+              if (foreground) {
+                this.requestUpdateState({ backgroundID: foreground.mapID });
+              }
             } else {
               // Remove overlay from foreground and set current source to foreground
               this.mapObject.setLayer();
