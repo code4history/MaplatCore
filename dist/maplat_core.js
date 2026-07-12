@@ -1324,7 +1324,7 @@ function mg(n) {
       }) : this.pois[A] && (this.pois[A].pois = []);
     }
     listPoiLayers(A = !1, i = !1) {
-      return Object.keys(this.pois).sort((g, r) => g === "main" ? -1 : r === "main" ? 1 : g < r ? -1 : g > r ? 1 : 0).map((g) => this.pois[g]).filter(
+      return Object.keys(this.pois).sort((g, r) => g === "main" ? -1 : r === "main" ? 1 : 0).map((g) => this.pois[g]).filter(
         (g) => i ? A ? g.pois.length && g.hide : g.pois.length : A ? g.hide : !0
       );
     }
@@ -10435,7 +10435,7 @@ class QA extends Rg {
     );
   }
   listPoiLayers(t = !1, e = !1) {
-    const A = Object.keys(this.pois).sort((g, r) => g === "main" ? -1 : r === "main" ? 1 : g < r ? -1 : g > r ? 1 : 0).map((g) => this.pois[g]).filter(
+    const A = Object.keys(this.pois).sort((g, r) => g === "main" ? -1 : r === "main" ? 1 : 0).map((g) => this.pois[g]).filter(
       (g) => e ? t ? g.pois.length && g.hide : g.pois.length : t ? g.hide : !0
     ), i = this.from.listPoiLayers(
       t,

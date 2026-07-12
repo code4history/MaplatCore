@@ -475,14 +475,11 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
     }
 
     listPoiLayers(hideOnly = false, nonzero = false) {
+      // アルファベット順ソートを廃止し pois 定義順（アプリ設定の並び順）を保持する。
+      // main レイヤのみ先頭固定。Array.prototype.sort は ES2019+ で stable なので
+      // 0 を返すペアは Object.keys の挿入順（= normalize_pois の pois 配列順）が保たれる。
       return Object.keys(this.pois)
-        .sort((a, b) => {
-          if (a === "main") return -1;
-          else if (b === "main") return 1;
-          else if (a < b) return -1;
-          else if (a > b) return 1;
-          else return 0;
-        })
+        .sort((a, b) => (a === "main" ? -1 : b === "main" ? 1 : 0))
         .map(key => this.pois[key])
         .filter(layer =>
           nonzero
