@@ -18,6 +18,13 @@ All methods below are on the `MaplatApp` instance returned by
     position (x, y, zoom, rotation).
 - `requestUpdateState(data: object): Promise<void>`
   - Request an update to the map state (position, transparency, etc.).
+- `getRotation(): number`
+  - Get the current on-screen map rotation in degrees (same unit as
+    `restore.position.rotation`).
+- `getDirection(): Promise<number>`
+  - Get the current real-world heading in degrees. On TIN-based historical
+    maps this accounts for the local coordinate distortion, so the value can
+    differ from `getRotation()`; it resolves asynchronously.
 
 ## Coordinate system
 
@@ -79,7 +86,9 @@ Maplat manages markers in "layers".
 - `hidePoiLayer(id: string): void`
   - Hide a specific layer.
 - `listPoiLayers(hideOnly?: boolean, nonzero?: boolean): string[]`
-  - Get a list of available layer IDs.
+  - Get a list of available layer IDs, ordered as defined in the app config
+    (`main` is always first; the rest keep their declared order rather than
+    being alphabetically sorted).
 
 ## GPS & user position
 
@@ -100,6 +109,21 @@ Use `app.addEventListener(type, callback)` to handle events.
 - `clickMap`: Fired when the map background is clicked.
 - `gps_result`: Fired when a GPS position update happens.
 - `gps_error`: Fired when GPS fails.
+
+## Advanced: direct map and source construction
+
+For embedding apps that need to build a map or a tile source without going
+through `MaplatApp` (for example, MaplatEditor's preview panes), the package
+also exports the lower-level building blocks directly:
+
+- `MaplatMap` — the OpenLayers `Map` subclass used internally by `MaplatApp`.
+- `mapSourceFactory` — the factory function that builds a `MaplatSource` for
+  a given map definition.
+- `MaplatSource` / `BackmapSource` (types only) — the source interfaces
+  returned by `mapSourceFactory`.
+
+These exist so that host applications can construct maps and sources
+directly instead of deep-importing internal modules.
 
 ## Example
 

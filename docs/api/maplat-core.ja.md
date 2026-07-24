@@ -17,6 +17,13 @@
     (x, y, zoom, rotation) を指定できます。
 - `requestUpdateState(data: object): Promise<void>`
   - 地図の状態（位置、透過度など）の更新をリクエストします。
+- `getRotation(): number`
+  - 現在の画面上の地図回転角を度数で取得します（`restore.position.rotation`
+    と同じ単位系）。
+- `getDirection(): Promise<number>`
+  - 現在の実世界方位角を度数で取得します。TIN 地図では現地座標の歪み
+    補正を含むため `getRotation()` と値が異なる場合があり、非同期で解決
+    します。
 
 ## 座標系
 
@@ -78,7 +85,8 @@ Maplat はマーカーを「レイヤー」で管理します。
 - `hidePoiLayer(id: string): void`
   - 特定レイヤーを非表示にします。
 - `listPoiLayers(hideOnly?: boolean, nonzero?: boolean): string[]`
-  - 利用可能なレイヤー ID のリストを取得します。
+  - 利用可能なレイヤー ID のリストを、アプリ設定で定義された順序（`main`
+    は常に先頭、それ以外はアルファベット順ではなく定義順）で取得します。
 
 ## GPS とユーザー位置
 
@@ -99,6 +107,20 @@ Maplat はマーカーを「レイヤー」で管理します。
 - `clickMap`: 地図の背景がクリックされたときに発火します。
 - `gps_result`: GPS 位置更新があったときに発火します。
 - `gps_error`: GPS が失敗したときに発火します。
+
+## 上級者向け: 地図・ソースの直接構築
+
+`MaplatApp` を経由せずに地図やタイルソースを構築したい組み込みアプリ向け
+（例: MaplatEditor のプレビューペイン）に、より低レイヤーの構成要素も直接
+export しています。
+
+- `MaplatMap` — `MaplatApp` が内部で使用する OpenLayers `Map` のサブクラス。
+- `mapSourceFactory` — 地図定義から `MaplatSource` を構築するファクトリ関数。
+- `MaplatSource` / `BackmapSource`（型のみ） — `mapSourceFactory` が返す
+  ソースのインターフェース。
+
+これらは、ホストアプリケーションが内部モジュールを deep import せずに
+地図・ソースを直接構築できるようにするために export されています。
 
 ## 使用例
 
