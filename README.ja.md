@@ -2,9 +2,9 @@
 <h1 align="center">MaplatCore</h1>
 
 <p align="center">
-  [![CI](https://github.com/code4history/MaplatCore/actions/workflows/test.yml/badge.svg)](https://github.com/code4history/MaplatCore/actions/workflows/test.yml)
-  [![npm version](https://img.shields.io/npm/v/@maplat/core)](https://www.npmjs.com/package/@maplat/core)
-  [![License](https://img.shields.io/npm/l/@maplat/core)](LICENSE)
+  <a href="https://github.com/code4history/MaplatCore/actions/workflows/test.yml"><img src="https://github.com/code4history/MaplatCore/actions/workflows/test.yml/badge.svg" alt="CI" /></a>
+  <a href="https://www.npmjs.com/package/@maplat/core"><img src="https://img.shields.io/npm/v/@maplat/core" alt="npm version" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/npm/l/@maplat/core" alt="License" /></a>
 </p>
 
 <!-- SECTION 2: Elevator Pitch -->
