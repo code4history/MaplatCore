@@ -19,10 +19,10 @@
 | remove-commonjs-and-verify-consumption | archive済み | 2025-12-14（23e1b27） | ESM/UMD/Node/CDN/セルフホスト等、様々な消費方法でMaplatCoreが正しく動作することを検証するスモークテストを整備し、回帰を防止する。 | 完了 | 完了・削除対象 | [原文](openspec-legacy/remove-commonjs-and-verify-consumption/) |
 | update-readme | archive済み | 2025-12-09（8fab32c） | Deno関連の陳腐化した記述を除去し、インストール手順・OpenLayers peer dependency記載を最新化、日本語版README（README.ja.md）を新設する。 | 完了 | 完了・削除対象 | [原文](openspec-legacy/update-readme/) |
 | add-viewpoint-getters | 未archive | 2026-07-04（90bfec9） | `app.mapObject.getView().getRotation()` のような内部実装への直接アクセスと度数⇔ラジアン変換をconsumer側に強いていた非一貫なインターフェースを解消し、`getRotation()`/`getDirection()` を公式APIとして提供する。 | 完了（実装確認済み・4/4） | 完了・削除対象 | [原文](openspec-legacy/add-viewpoint-getters/) |
-| cicd-etc | 未archive | 2025-12-24（8716272） | パッケージマネージャーバージョン強制の欠如・散らかったビルド出力構造・Turf.js依存の重複・一貫しないデプロイワークフローを標準化する提案。 | 未実装（0/0、記述レベルの提案） | queued_future登録済み（m12-t25。§2.5の人間確認手順を実施） | [原文](openspec-legacy/cicd-etc/) |
+| cicd-etc | 未archive | 2025-12-24（8716272） | パッケージマネージャーバージョン強制の欠如・散らかったビルド出力構造・Turf.js依存の重複・一貫しないデプロイワークフローを標準化する提案。 | 未実装（0/0、記述レベルの提案） | queued_future登録済み（m12-t26。Maplats側開発記録の人間確認手順を実施） | [原文](openspec-legacy/cicd-etc/) |
 | export-map-primitives | 未archive | 2026-07-04（90bfec9） | MaplatEditorがカスタム地図投影・ソース管理のために `src/map_ex.ts`/`src/source_ex.ts` への深い内部importを強いられていた問題を解消し、`MaplatMap`/`mapSourceFactory` を公式exportとして提供する。 | 完了（実装確認済み・3/3） | 完了・削除対象 | [原文](openspec-legacy/export-map-primitives/) |
 | remove-i18n-dependency | 未archive | 2025-12-14（23e1b27） | i18n状態（現在の言語設定等）はUIレイヤーの責務でありCoreロジックに属さないという方針のもと、`i18next` 依存とローカライズロジックをCoreから除去しステートレス化する。 | 完了（実装確認済み。`i18next` はsrc/package.jsonに不残存） | 完了・削除対象 | [原文](openspec-legacy/remove-i18n-dependency/) |
-| use-quyuan | 未archive | 2025-12-21（a5bac88） | Code for Historyの標準テンプレート処理ライブラリQuyuan（`@c4h/quyuan`）へ、現行の `lodash.template` ベースの独自継承ロジックから移行する提案。 | 未実装（0/3。`template_works.ts` は現在も `lodash.template` を import、`@c4h/quyuan` は package.json に不在） | queued_future登録済み（m12-t26。§2.5の人間確認手順を実施） | [原文](openspec-legacy/use-quyuan/) |
+| use-quyuan | 未archive | 2025-12-21（a5bac88） | Code for Historyの標準テンプレート処理ライブラリQuyuan（`@c4h/quyuan`）へ、現行の `lodash.template` ベースの独自継承ロジックから移行する提案。 | 未実装（0/3。`template_works.ts` は現在も `lodash.template` を import、`@c4h/quyuan` は package.json に不在） | queued_future登録済み（m12-t25。Maplats側開発記録の人間確認手順を実施） | [原文](openspec-legacy/use-quyuan/) |
 
 ## 当時のプロジェクト概要（参考・陳腐化済み）
 
