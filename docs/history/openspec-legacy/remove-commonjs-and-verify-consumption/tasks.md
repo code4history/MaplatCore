@@ -1,0 +1,22 @@
+# Tasks
+
+- [x] Check image assets usage
+    - [x] Grep `src/` for all `parts/` filenames to find unused assets
+    - [x] Check if used assets are inlined in `dist/`
+- [x] Export Assets
+    - [x] Define `assets` export in `src/index.ts` (or dedicated file re-exported)
+    - [x] Include all used images from `parts/`
+    - [x] Verify exports exist in `dist/` types and JS
+- [x] Create Verification Smoke Tests
+    - [x] `tests/consumption/esm-cdn.html` (ESM via CDN with Import Map)
+    - [x] `tests/consumption/umd-cdn.html` (UMD via CDN/global)
+    - [x] `tests/consumption/self-hosted.html` (Self-hosted ESM)
+    - [x] Serve and verify manually (map loads, assets visible)
+- [x] Automate Verification
+    - [x] Create Playwright test to visit these HTMLs and assert no errors/map visibility
+- [x] Remove CommonJS Support
+    - [x] Remove `cjs` from `vite.config.ts`
+    - [x] Remove `require` from `package.json`
+- [x] Final Verification
+    - [x] Run `npm run build`
+    - [x] Run automated verification tests
