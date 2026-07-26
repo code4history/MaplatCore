@@ -5,7 +5,7 @@ import prettier from "eslint-config-prettier";
 
 export default tseslint.config(
   {
-    ignores: ["dist/**", "lib/**", "es5/**", "node_modules/**", "tiles/**", "parts/**", "parts_test/**", "*.js", "*.mjs", "webpack_config/**", "ts_config/**", "jest_config/**", "bin/**"]
+    ignores: ["dist/**", "dist-demo/**", "lib/**", "es5/**", "node_modules/**", "tiles/**", "parts/**", "parts_test/**", "*.js", "*.mjs", "webpack_config/**", "ts_config/**", "jest_config/**", "bin/**"]
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
