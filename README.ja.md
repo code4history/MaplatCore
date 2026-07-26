@@ -142,9 +142,9 @@ pnpm run test:e2e # E2E テスト (Playwright) を実行
 <!-- SECTION 6: Prerequisites -->
 ## 動作環境
 
-> `package.json` の `engines` フィールドから自動抽出（ADR-0012: リリース依存）。
+> Node.js は GitHub Actions の `test.yml` matrix、pnpm は `package.json` の `engines` フィールドに基づく（ADR-0012: リリース依存）。
 
-- Node.js: v20 または v22（GitHub Actions で検証済みの LTS）
+- Node.js: v22 または v24（GitHub Actions で検証済み）
 - pnpm: `>=9.0.0`（必須・`package.json` で pnpm を強制）
 
 <!-- SECTION 7: Peer Dependencies -->

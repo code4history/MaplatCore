@@ -140,9 +140,9 @@ pnpm run test:e2e # Run E2E tests (Playwright)
 <!-- SECTION 6: Prerequisites -->
 ## Prerequisites
 
-> Derived from the `engines` field in `package.json` (ADR-0012: release-dependent).
+> Node.js follows the GitHub Actions `test.yml` matrix; pnpm follows the `engines` field in `package.json` (ADR-0012: release-dependent).
 
-- Node.js: v20 or v22 (LTS tested via GitHub Actions)
+- Node.js: v22 or v24 (tested via GitHub Actions)
 - pnpm: `>=9.0.0` (required; `package.json` enforces pnpm)
 
 <!-- SECTION 7: Peer Dependencies -->
