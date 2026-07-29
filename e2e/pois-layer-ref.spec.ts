@@ -43,8 +43,12 @@ test.describe('pois layer ref (wrapper) — viewer 到達', () => {
     await waitForReady(page);
 
     await page.evaluate(() => (window as any).__maplatApp.showPoiLayer('hidden'));
-    // redrawMarkers が非同期で走るため少し待つ
-    await page.waitForTimeout(500);
+    // redrawMarkers が非同期で走るため marker 数 === 4 になるまでポーリング（CI flake 回避）
+    await page.waitForFunction(
+      () => (window as any).__maplatApp?.mapObject?.getSource('marker')?.getFeatures()?.length === 4,
+      undefined,
+      { timeout: 10000 }
+    );
     const markerCount = await page.evaluate(() => {
       const app = (window as any).__maplatApp;
       return app.mapObject.getSource('marker').getFeatures().length;
