@@ -91,6 +91,42 @@ before loading MaplatCore.
 
 *Note: Make sure to use the latest compatible versions.*
 
+### POI specification (`setting.pois`)
+
+The `pois` field of a map/app setting accepts several historical forms. All
+existing forms continue to work unchanged (backward compatible). A new **layer
+ref (wrapper)** form is added to let the app override per-layer presentation
+(`hide` / `title` / `icon` / `selectedIcon`) without editing the layer's
+FeatureCollection.
+
+| Form | Shape | Behaviour |
+|---|---|---|
+| URL string | `"pois/x.geojson"` | fetched and normalised (legacy) |
+| Inline FC | `{ type: "FeatureCollection", ... }` | normalised in place (legacy) |
+| FC array | `[FC, FC, ...]` | each FC becomes a layer keyed by `id` (legacy) |
+| POI object array | `[{lng, lat, name}, ...]` | single `main` layer (legacy) |
+| Old layer dict | `{ "<key>": <cluster>, ... }` | each value normalised (legacy) |
+| **Layer ref (wrapper) — array element** | `{ layer: <URL\|FC>, hide?, title?, icon?, selectedIcon? }` | `layer` is resolved/fetched, the FC is normalised, then the overrides are merged onto the resulting cluster |
+| **Layer ref — whole `pois`** | `{ layer: <URL\|FC>, hide?, title?, icon?, selectedIcon? }` with **at least one override key** | same merge, keyed by the FC `id`. Without an override key the object is treated as the old layer dict form (key `"layer"`) for backward compatibility |
+
+Override semantics:
+
+- Only the four override keys are honoured. Unknown keys are **dropped with a
+  `console.warn`** (no throw, forward-compatible).
+- `hide: true` (boolean true only) sets `cluster.hide = true`. `hide:false` /
+  non-boolean values are ignored (the data-side value is kept).
+- `title` (non-empty string, or a non-empty localized object) maps to
+  `cluster.name`.
+- `icon` / `selectedIcon` (non-empty string only) map to `cluster.icon` /
+  `cluster.selectedIcon`.
+- Override **wins over** `FeatureCollection.properties` of the same name.
+- Internal cluster keys (`pois` / `id` / `namespaceID` / `__nextId`) cannot be
+  overwritten from a wrapper (they are not override keys).
+- The input object is **not mutated**.
+
+See `src/normalize_pois.ts` (`isPoiLayerRef`, `PoiLayerRef`) for the
+programmatic surface.
+
 ### Lifecycle
 
 - See [docs/ui-core-lifecycle.md](docs/ui-core-lifecycle.md) for lifecycle

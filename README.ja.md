@@ -91,6 +91,37 @@ OpenLayers を読み込む必要があります。
 
 ※最新の互換バージョンを使用してください。
 
+### POI 仕様（`setting.pois`）
+
+地図/アプリ設定の `pois` フィールドは複数の歴史的形式を受け付けます。
+既存形式はすべて後方互換でそのまま動作します。新たに **レイヤ参照
+（ラッパー）** 形式を追加し、レイヤ本体の FeatureCollection を編集せずに
+レイヤ単位の表示上書き（`hide` / `title` / `icon` / `selectedIcon`）を
+アプリ側から与えられるようにしました。
+
+| 形式 | 形 | 挙動 |
+|---|---|---|
+| URL 文字列 | `"pois/x.geojson"` | fetch して正規化（既存） |
+| インライン FC | `{ type: "FeatureCollection", ... }` | そのまま正規化（既存） |
+| FC 配列 | `[FC, FC, ...]` | 各 FC が `id` を key にレイヤ化（既存） |
+| POI オブジェクト配列 | `[{lng, lat, name}, ...]` | 単一 `main` レイヤ（既存） |
+| 旧レイヤ辞書 | `{ "<key>": <cluster>, ... }` | 各値を正規化（既存） |
+| **レイヤ参照（ラッパー）— 配列要素** | `{ layer: <URL\|FC>, hide?, title?, icon?, selectedIcon? }` | `layer` を fetch/解決し FC を正規化した上で、上書きを結果 cluster へ合成 |
+| **レイヤ参照 — `pois` 全体** | `{ layer: <URL\|FC>, hide?, title?, icon?, selectedIcon? }`（**上書きキー1つ以上必須**） | 同じ合成を FC `id` を key に行う。上書きキーがない場合は旧レイヤ辞書（key=`"layer"`）として扱い後方互換を保つ |
+
+上書きのセマンティクス:
+
+- 上書きキー4つのみ受理。未知キーは **`console.warn` で破棄**（throw しない・forward 互換）。
+- `hide: true`（真偽値 true のみ）が `cluster.hide = true` を設定。`hide:false` / 非真偽値は無視（データ側の値が残る）。
+- `title`（非空文字列、または空でない多言語オブジェクト）は `cluster.name` へ。
+- `icon` / `selectedIcon`（非空文字列のみ）は `cluster.icon` / `cluster.selectedIcon` へ。
+- 上書きは同名の `FeatureCollection.properties` より **優先** される。
+- cluster 内部キー（`pois` / `id` / `namespaceID` / `__nextId`）はラッパーから上書き不能（上書きキーに含まれない）。
+- 入力オブジェクトは **破壊しない**。
+
+プログラマティックな表面は `src/normalize_pois.ts`（`isPoiLayerRef` /
+`PoiLayerRef`）を参照してください。
+
 ### ライフサイクル
 
 - ライフサイクルフェーズと uiHooks については
