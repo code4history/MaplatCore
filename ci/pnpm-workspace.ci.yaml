@@ -19,3 +19,18 @@
 allowBuilds:
   esbuild: true
   less: true
+
+overrides:
+
+# ---- 恒久 override（m1-t3）----
+# 第三者依存の脆弱性。上流の更新を待つしかないため恒久。
+# audit の下限（>=X）ではなく系列を留める spec を書くこと（>=X だと未検証の上位メジャーを引く）。
+#   例: path-to-regexp は page@1.11.6 が 1.x API 前提のため ~1.9.0 に留める（>=1.9.0 だと 8.4.2 へ解決して壊れる）。
+#
+# 既知除外: brace-expansion <=5.0.7（high / DoS via unbounded expansion length）は override しない。
+#   (a) 我々の経路では到達しない — pwa-asset-generator > pretty > js-beautify は library API を呼び、
+#       editorconfig / glob を require する cli.js を通らないため実行時にロードされない。
+#   (b) 修正版 ^5.0.8 は module.exports が function から object へ変わっており、
+#       const expand = require("brace-expansion") として expand(pattern) する minimatch 3.x を壊す。
+#   詳細は設計書 §2.4。m9 で再評価する。
+  protocol-buffers-schema: "^3.6.1"
