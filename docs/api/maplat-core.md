@@ -77,18 +77,32 @@ All methods below are on the `MaplatApp` instance returned by
 
 ## POI layers
 
-Maplat manages markers in "layers".
+Maplat manages markers in "layers". Each layer has both a local `id` and a
+`namespaceID` of the form `"<mapID>#<layerId>"` for map-derived layers (app-level
+layers use the same value for both). Pass `namespaceID` to `showPoiLayer`,
+`hidePoiLayer`, `addPoiLayer`, and `removePoiLayer` when targeting map-derived
+layers.
 
 - `addPoiLayer(id: string, data: object): void`
   - Create a new POI layer. `data` can define default icons.
 - `showPoiLayer(id: string): void`
-  - Show a specific layer.
+  - Show a specific layer. If the layer is not found, a `console.warn` is emitted
+    and the call is a no-op.
 - `hidePoiLayer(id: string): void`
-  - Hide a specific layer.
-- `listPoiLayers(hideOnly?: boolean, nonzero?: boolean): string[]`
-  - Get a list of available layer IDs, ordered as defined in the app config
+  - Hide a specific layer. If the layer is not found, a `console.warn` is emitted
+    and the call is a no-op.
+- `removePoiLayer(id: string): void`
+  - Remove a layer. If the layer is not found, a `console.warn` is emitted and the
+    call is a no-op.
+- `getPoiLayer(id: string): PoiLayer | undefined`
+  - Retrieve a layer by `namespaceID` (or bare app-level `id`). Returns `undefined`
+    if not found. No warning is emitted (used internally for state restoration).
+- `listPoiLayers(hideOnly?: boolean, nonzero?: boolean): PoiLayer[]`
+  - Get a list of available layers, ordered as defined in the app config
     (`main` is always first; the rest keep their declared order rather than
-    being alphabetically sorted).
+    being alphabetically sorted). Each entry is a `PoiLayer` object with `id`,
+    `namespaceID`, `name`, `pois`, and optional `hide` / `icon` /
+    `selectedIcon` fields.
 
 ## GPS & user position
 

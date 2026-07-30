@@ -125,6 +125,27 @@ export class GPSRequestEvent extends BaseEvent {
   }
 }
 
+// POI レイヤ未解決時の開発用 warning ヘルパ（m18-t6 §5.4）
+// getPoiLayer には置かない（state 復元経路 :1546-1553 が直接呼ぶ query 契約）。
+// "main" 先頭ガードは仕様上の拒否であり warning 対象外。
+function warnPoiLayerNotFound(id: string, api: string) {
+  console.warn(
+    `MaplatCore: POI layer "${id}" not found (${api}). Pass namespaceID (e.g. "<mapID>#<layerId>" for map-derived layers), not the layer-local id.`
+  );
+}
+
+// 公開型: listPoiLayers の戻り値要素（m18-t6 §5.2 / §8）
+export interface PoiLayer {
+  id: string;
+  namespaceID: string;
+  name: string | Record<string, string>;
+  pois: any[];
+  hide?: boolean;
+  icon?: string;
+  selectedIcon?: string;
+  [key: string]: any;
+}
+
 export class MaplatApp extends EventTarget {
   // Static method declaration
   static createObject: (option: any) => Promise<MaplatApp>;
@@ -1340,27 +1361,31 @@ export class MaplatApp extends EventTarget {
   }
   showPoiLayer(id: any) {
     const layer = this.getPoiLayer(id);
-    if (layer) {
-      delete layer.hide;
-      this.requestUpdateState({
-        hideLayer: this.listPoiLayers(true)
-          .map(layer => layer.namespaceID)
-          .join(",")
-      });
-      this.redrawMarkers();
+    if (!layer) {
+      warnPoiLayerNotFound(id, "showPoiLayer");
+      return;
     }
+    delete layer.hide;
+    this.requestUpdateState({
+      hideLayer: this.listPoiLayers(true)
+        .map(layer => layer.namespaceID)
+        .join(",")
+    });
+    this.redrawMarkers();
   }
   hidePoiLayer(id: any) {
     const layer = this.getPoiLayer(id);
-    if (layer) {
-      layer.hide = true;
-      this.requestUpdateState({
-        hideLayer: this.listPoiLayers(true)
-          .map(layer => layer.namespaceID)
-          .join(",")
-      });
-      this.redrawMarkers();
+    if (!layer) {
+      warnPoiLayerNotFound(id, "hidePoiLayer");
+      return;
     }
+    layer.hide = true;
+    this.requestUpdateState({
+      hideLayer: this.listPoiLayers(true)
+        .map(layer => layer.namespaceID)
+        .join(",")
+    });
+    this.redrawMarkers();
   }
   getPoiLayer(id: any) {
     if (!id.includes("#")) {
@@ -1387,13 +1412,18 @@ export class MaplatApp extends EventTarget {
       if (source) {
         source.addPoiLayer(splits[1], data);
         this.redrawMarkers();
+      } else {
+        warnPoiLayerNotFound(id, "addPoiLayer");
       }
     }
   }
   removePoiLayer(id: any) {
     if (id === "main") return;
-    if (!this.pois[id]) return;
     if (!id.includes("#")) {
+      if (!this.pois[id]) {
+        warnPoiLayerNotFound(id, "removePoiLayer");
+        return;
+      }
       delete this.pois[id];
       this.requestUpdateState({
         hideLayer: this.listPoiLayers(true)
@@ -1405,16 +1435,22 @@ export class MaplatApp extends EventTarget {
     } else {
       const splits = id.split("#");
       const source = this.cacheHash[splits[0]];
-      if (source) {
-        source.removePoiLayer(splits[1]);
-        this.requestUpdateState({
-          hideLayer: this.listPoiLayers(true)
-            .map(layer => layer.namespaceID)
-            .join(",")
-        });
-        this.dispatchPoiNumber();
-        this.redrawMarkers();
+      if (!source) {
+        warnPoiLayerNotFound(id, "removePoiLayer");
+        return;
       }
+      if (!source.getPoiLayer(splits[1])) {
+        warnPoiLayerNotFound(id, "removePoiLayer");
+        return;
+      }
+      source.removePoiLayer(splits[1]);
+      this.requestUpdateState({
+        hideLayer: this.listPoiLayers(true)
+          .map(layer => layer.namespaceID)
+          .join(",")
+      });
+      this.dispatchPoiNumber();
+      this.redrawMarkers();
     }
   }
   addLine(data: any) {

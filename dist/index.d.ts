@@ -57,6 +57,16 @@ export declare class GPSResultEvent extends BaseEvent {
 export declare class GPSRequestEvent extends BaseEvent {
     constructor();
 }
+export interface PoiLayer {
+    id: string;
+    namespaceID: string;
+    name: string | Record<string, string>;
+    pois: any[];
+    hide?: boolean;
+    icon?: string;
+    selectedIcon?: string;
+    [key: string]: any;
+}
 export declare class MaplatApp extends EventTarget {
     static createObject: (option: any) => Promise<MaplatApp>;
     appid: string;

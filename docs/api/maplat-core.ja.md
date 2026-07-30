@@ -75,18 +75,32 @@
 
 ## POI レイヤー
 
-Maplat はマーカーを「レイヤー」で管理します。
+Maplat はマーカーを「レイヤー」で管理します。各レイヤーはローカル `id` と
+`namespaceID`（`"<mapID>#<layerId>"` 形式）を持ちます。マップ由来レイヤーを
+対象とする場合は `showPoiLayer` / `hidePoiLayer` / `addPoiLayer` /
+`removePoiLayer` に `namespaceID` を渡してください。
 
 - `addPoiLayer(id: string, data: object): void`
   - 新しい POI レイヤーを作成します。`data` でデフォルトアイコンなどを
     定義できます。
 - `showPoiLayer(id: string): void`
-  - 特定レイヤーを表示します。
+  - 特定レイヤーを表示します。レイヤーが見つからない場合は `console.warn`
+    を出力し、何も変更しません。
 - `hidePoiLayer(id: string): void`
-  - 特定レイヤーを非表示にします。
-- `listPoiLayers(hideOnly?: boolean, nonzero?: boolean): string[]`
-  - 利用可能なレイヤー ID のリストを、アプリ設定で定義された順序（`main`
+  - 特定レイヤーを非表示にします。レイヤーが見つからない場合は
+    `console.warn` を出力し、何も変更しません。
+- `removePoiLayer(id: string): void`
+  - レイヤーを削除します。レイヤーが見つからない場合は `console.warn`
+    を出力し、何も変更しません。
+- `getPoiLayer(id: string): PoiLayer | undefined`
+  - `namespaceID`（またはアプリ直下の `id`）でレイヤーを取得します。
+    見つからない場合は `undefined` を返します。warning は出力しません
+    （内部の state 復元で使用）。
+- `listPoiLayers(hideOnly?: boolean, nonzero?: boolean): PoiLayer[]`
+  - 利用可能なレイヤーのリストを、アプリ設定で定義された順序（`main`
     は常に先頭、それ以外はアルファベット順ではなく定義順）で取得します。
+    各要素は `PoiLayer` オブジェクトで、`id`、`namespaceID`、`name`、
+    `pois`、およびオプションで `hide` / `icon` / `selectedIcon` を持ちます。
 
 ## GPS とユーザー位置
 
