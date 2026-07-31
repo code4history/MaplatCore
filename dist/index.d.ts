@@ -9,6 +9,7 @@ import { Geolocation } from './geolocation';
 import { Coordinate } from 'ol/coordinate';
 import { default as BaseEvent } from 'ol/events/Event';
 import { assets } from './assets';
+export { sanitizeHtml, escapeAttr, toPlainText, buildSlideAttrs } from './sanitize';
 interface AppData {
     sources: string[];
     lang?: string;
