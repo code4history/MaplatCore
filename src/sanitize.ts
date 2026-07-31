@@ -126,6 +126,30 @@ export function escapeAttr(value: string): string {
 }
 
 /**
+ * HTML を落としてテキストだけを残す。**属性の往復**に備えるためのもの。
+ *
+ * なぜ必要か（設計書 §3.4）:
+ *   escapeAttr は「属性コンテキスト」でのエスケープにすぎない。
+ *   属性へ &lt;img…&gt; と書いても、ブラウザの getAttribute はエンティティを復号して
+ *   `<img …>` を返す。受け手（Chuci の cc-swiper）はその値を自分の HTML へ補間するため、
+ *   往復した時点で生の HTML に戻ってしまう。
+ *   caption の契約はテキストであり（実データ13件すべてが HTML を含まない）、
+ *   HTML が渡ること自体が誤りなので、渡す側でテキスト化する。
+ */
+export function toPlainText(value: string): string {
+  if (value === undefined || value === null) return "";
+  const stripped = getPurifier().sanitize(String(value), {
+    ALLOWED_TAGS: [],
+    ALLOWED_ATTR: [],
+    KEEP_CONTENT: true
+  }) as unknown as string;
+  // stripped はタグを含まないため、ここでの innerHTML はエンティティ復号のためだけに使う
+  const el = (globalThis as unknown as { window: Window }).window.document.createElement("div");
+  el.innerHTML = stripped;
+  return el.textContent || "";
+}
+
+/**
  * cc-swiper-slide に渡してよい**値属性**（設計書 §3.4）。
  * Chuci/src/components/swiper/cc-swiper.ts の getAttribute を全数走査して確定した。
  */
@@ -136,6 +160,12 @@ const SLIDE_VALUE_ATTRS = new Set([
 
 /** cc-swiper-slide に渡してよい**真偽値属性**（同上 hasAttribute より）。 */
 const SLIDE_BOOLEAN_ATTRS = new Set(["fit-to-container", "debug-mode"]);
+
+/**
+ * テキストとして扱う属性。受け手が自分の HTML へ補間するため、
+ * 属性エスケープだけでなく**テキスト化**する（往復対策。設計書 §3.4）。
+ */
+const SLIDE_TEXT_ATTRS = new Set(["caption"]);
 
 /** URL として扱う属性。http(s) 以外は落とす。 */
 const SLIDE_URL_ATTRS = new Set(["image-url", "thumbnail-url", "material-url"]);
@@ -163,8 +193,12 @@ export function buildSlideAttrs(media: Record<string, unknown>): string {
     if (!SLIDE_VALUE_ATTRS.has(name)) continue; // allowlist 外はすべて破棄
     if (val === undefined || val === null) continue;
 
-    const str = String(val);
-    if (SLIDE_URL_ATTRS.has(name) && !isSafeUrl(str)) continue; // javascript: 等を落とす
+    let str = String(val);
+    if (SLIDE_URL_ATTRS.has(name)) {
+      if (!isSafeUrl(str)) continue; // javascript: 等を落とす
+      if (/[<>]/.test(str)) continue; // URL に山括弧は入らない（往復で HTML 化する余地を断つ）
+    }
+    if (SLIDE_TEXT_ATTRS.has(name)) str = toPlainText(str); // 往復対策
     parts.push(`${name}="${escapeAttr(str)}"`);
   }
   return parts.join(" ");

@@ -63,3 +63,18 @@ export const MEDIA_ATTR_PRESERVED = {
   mustContain: ["caption=", "六百遠忌報恩塔", "material-url=", "camera-position=", "fit-to-container"],
   mustNotContain: ["debug-mode"] // false の真偽値属性は出力しない
 };
+
+/**
+ * **属性の往復**（設計書 §3.4）。
+ * escapeAttr は属性コンテキストのエスケープにすぎず、getAttribute はエンティティを
+ * 復号して返す。受け手（Chuci の cc-swiper）はその値を自分の HTML へ補間するため、
+ * 往復した時点で生の HTML に戻る。実データの caption 13件はすべてテキストであり、
+ * HTML が渡ること自体が誤りなので、渡す側でテキスト化する。
+ */
+export const ATTR_ROUNDTRIP_ATTACKS: { name: string; media: Record<string, unknown> }[] = [
+  { name: "caption に img+onerror", media: { caption: `<img src=x onerror="alert(1)">` } },
+  { name: "caption に script", media: { caption: `<script>alert(1)</script>` } },
+  { name: "caption に svg+onload", media: { caption: `<svg onload=alert(1)></svg>` } },
+  { name: "thumbnail-url に山括弧", media: { "thumbnail-url": `x"><img src=y onerror=alert(1)>` } },
+  { name: "image-url に山括弧", media: { "image-url": `<img src=y onerror=alert(1)>` } }
+];

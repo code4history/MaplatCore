@@ -32,7 +32,7 @@ import { Coordinate } from "ol/coordinate";
 import BaseEvent from "ol/events/Event";
 
 // m1-t4: サニタイズ層の公開窓口（許可リストの正本は src/sanitize.ts の1箇所のみ）
-export { sanitizeHtml, escapeAttr, buildSlideAttrs } from "./sanitize";
+export { sanitizeHtml, escapeAttr, toPlainText, buildSlideAttrs } from "./sanitize";
 
 interface AppData {
   sources: string[];

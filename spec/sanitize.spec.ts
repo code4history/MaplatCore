@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import { sanitizeHtml, escapeAttr, buildSlideAttrs } from "../src/sanitize";
 import {
   MUST_BE_NEUTRALIZED, MUST_BE_PRESERVED, TARGET_BLANK,
-  MEDIA_ATTR_ATTACKS, MEDIA_ATTR_PRESERVED
+  MEDIA_ATTR_ATTACKS, MEDIA_ATTR_PRESERVED, ATTR_ROUNDTRIP_ATTACKS
 } from "./fixtures/xss-payloads";
 
 describe("sanitizeHtml — 攻撃ペイロードの無害化（AC5a / AC5c 異常系）", () => {
@@ -74,5 +74,32 @@ describe("buildSlideAttrs — 属性名 allowlist（AC2 / 設計書 §3.4）", (
   it("URL 属性は http(s) 以外を落とす", () => {
     const out = buildSlideAttrs({ src: "javascript:alert(1)", type: "image" });
     expect(out).not.toContain("javascript:");
+  });
+});
+
+describe("属性の往復（設計書 §3.4・受け手が innerHTML へ補間する前提）", () => {
+  it.each(ATTR_ROUNDTRIP_ATTACKS)("$name が往復しても HTML にならない", ({ media }) => {
+    // 1. 属性文字列を組み立てて DOM へ流す
+    const host = document.createElement("div");
+    host.innerHTML = `<cc-swiper-slide ${buildSlideAttrs(media)}></cc-swiper-slide>`;
+    const slide = host.firstElementChild!;
+
+    // 2. 受け手（cc-swiper.ts:229-241）と同じ経路で読み戻して補間する
+    for (const name of ["caption", "thumbnail-url", "image-url"]) {
+      const back = slide.getAttribute(name);
+      if (back === null) continue;
+      const out = document.createElement("div");
+      out.innerHTML = `<p class="slider-caption">${back}</p>`;
+      // 3. 能動要素が生えないこと（これが往復対策の本体）
+      expect(out.querySelectorAll("img, script, svg, iframe")).toHaveLength(0);
+      expect(out.innerHTML.toLowerCase()).not.toContain("onerror");
+      expect(out.innerHTML.toLowerCase()).not.toContain("onload");
+    }
+  });
+
+  it("正常な caption はテキストとして保持される", () => {
+    const host = document.createElement("div");
+    host.innerHTML = `<cc-swiper-slide ${buildSlideAttrs({ caption: "六百遠忌報恩塔" })}></cc-swiper-slide>`;
+    expect(host.firstElementChild!.getAttribute("caption")).toBe("六百遠忌報恩塔");
   });
 });
