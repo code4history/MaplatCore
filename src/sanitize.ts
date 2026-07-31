@@ -10,18 +10,14 @@
 // 許可リストの定義はこのファイルが唯一の正本である（設計書 §3.2 / §3.4）。
 // 他所に複製を作らないこと。
 import createDOMPurify from "dompurify";
+// 許可リストの**データ正本**。コード側に複製しないこと（AC7）。
+import ALLOWLIST from "./sanitize-allowlist.json";
 
-/** 許可するタグ（設計書 §3.2）。慣用的な安全インラインまで広げる。 */
-const ALLOWED_TAGS = [
-  "b", "strong", "i", "em", "u", "s", "br", "p", "span", "div",
-  "ul", "ol", "li", "a", "img", "small", "sub", "sup", "code", "pre",
-  "table", "thead", "tbody", "tr", "th", "td"
-];
+/** 許可するタグ（データ正本 sanitize-allowlist.json より）。 */
+const ALLOWED_TAGS = ALLOWLIST.tags;
 
-/** 許可する属性（設計書 §3.2）。on* はここに無いことで落ちる。 */
-const ALLOWED_ATTR = [
-  "href", "src", "alt", "title", "class", "target", "rel", "width", "height"
-];
+/** 許可する属性（データ正本より）。on* はここに無いことで落ちる。 */
+const ALLOWED_ATTR = ALLOWLIST.attributes;
 
 /**
  * data: をここで一旦通すのが要点である（設計書 §3.5(b)）。
@@ -37,13 +33,10 @@ const ALLOWED_URI_REGEXP = /^(?:https?|mailto|tel|data):/i;
  * URL を取らない属性はここで「URI 検査の対象外」と宣言する。
  * （alt / class / title は DOMPurify の既定 URI_SAFE_ATTRIBUTES に含まれるため不要）
  */
-const ADD_URI_SAFE_ATTR = ["target", "rel", "width", "height"];
+const ADD_URI_SAFE_ATTR = ALLOWLIST.uriSafeAttributes.values;
 
-const FORBID_TAGS = [
-  "script", "style", "iframe", "object", "embed", "form", "input",
-  "textarea", "link", "meta", "base"
-];
-const FORBID_ATTR = ["srcdoc", "style", "formaction", "xlink:href"];
+const FORBID_TAGS = ALLOWLIST.forbidTags;
+const FORBID_ATTR = ALLOWLIST.forbidAttributes;
 
 /**
  * img[src] で許可する data: の MIME。
@@ -153,22 +146,19 @@ export function toPlainText(value: string): string {
  * cc-swiper-slide に渡してよい**値属性**（設計書 §3.4）。
  * Chuci/src/components/swiper/cc-swiper.ts の getAttribute を全数走査して確定した。
  */
-const SLIDE_VALUE_ATTRS = new Set([
-  "image-url", "image-type", "thumbnail-url", "caption",
-  "material-url", "camera-position", "camera-target", "show-texture"
-]);
+const SLIDE_VALUE_ATTRS = new Set(ALLOWLIST.slide.valueAttributes);
 
 /** cc-swiper-slide に渡してよい**真偽値属性**（同上 hasAttribute より）。 */
-const SLIDE_BOOLEAN_ATTRS = new Set(["fit-to-container", "debug-mode"]);
+const SLIDE_BOOLEAN_ATTRS = new Set(ALLOWLIST.slide.booleanAttributes);
 
 /**
  * テキストとして扱う属性。受け手が自分の HTML へ補間するため、
  * 属性エスケープだけでなく**テキスト化**する（往復対策。設計書 §3.4）。
  */
-const SLIDE_TEXT_ATTRS = new Set(["caption"]);
+const SLIDE_TEXT_ATTRS = new Set(ALLOWLIST.slide.textAttributes.values);
 
 /** URL として扱う属性。http(s) 以外は落とす。 */
-const SLIDE_URL_ATTRS = new Set(["image-url", "thumbnail-url", "material-url"]);
+const SLIDE_URL_ATTRS = new Set(ALLOWLIST.slide.urlAttributes);
 
 const isSafeUrl = (v: string): boolean => /^(?:https?:)?\/\/|^\/|^[^:]*$/i.test(v.trim());
 
