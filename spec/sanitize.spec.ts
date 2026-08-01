@@ -103,3 +103,73 @@ describe("属性の往復（設計書 §3.4・受け手が innerHTML へ補間�
     expect(host.firstElementChild!.getAttribute("caption")).toBe("六百遠忌報恩塔");
   });
 });
+
+// ─────────────────────────────────────────────────────────────
+// m1-t9 D2: URL 属性の検査強化（AC5）
+//
+// 起票元: m1 包括セキュリティレビュー SRH-1（Major）
+// 設計書: docs/superpowers/specs/2026-08-01-m1-t9-chuci-template-interpolation-design.md v1.2
+//
+// なぜ必要か:
+//   既存の URL 属性検査は isSafeUrl と /[<>]/ の2つだけで、**クォートを通す**。
+//   escapeAttr が " を &quot; にするため属性としては正しく書かれるが、
+//   受け手が getAttribute で読み戻すとエンティティが復号されて生の " に戻り、
+//   受け手が文字列補間していれば属性ブレイクアウトが成立する。
+//
+// なぜ受け手側（Chuci の D1）だけで足りないか:
+//   @c4h/chuci は独立した公開パッケージであり、利用者が別版を引く期間がある。
+//   渡す側でも塞ぐことで版ずれ期間を防御する（多層防御）。
+//
+// 実データへの影響（AC6・2026-08-01 実測）:
+//   github/Maplat の maps 165件・pois 16件と SQLite 実データ（maps 264行 /
+//   poi_sources 5行）を全数走査した結果、image-url / thumbnail-url /
+//   material-url を持つレコードは **0件**。空白の拒否を含めても実データは壊れない。
+describe("buildSlideAttrs — URL 属性の危険文字を拒否する（m1-t9 D2 / AC5）", () => {
+  const URL_ATTRS = ["image-url", "thumbnail-url", "material-url"] as const;
+
+  it.each(URL_ATTRS)("%s のダブルクォートを拒否する（属性ブレイクアウトの本体）", attr => {
+    const out = buildSlideAttrs({ [attr]: 'x" onmouseover="alert(1)' });
+    expect(out).not.toContain(attr);
+  });
+
+  // payload にコロンを入れない。コロンがあると既存の isSafeUrl だけで落ちてしまい、
+  // 新しい拒否規則を検査したことにならない（是正前でも緑になる空洞化したテストになる）。
+  it.each(URL_ATTRS)("%s のシングルクォートを拒否する（CSS の url('…') 用）", attr => {
+    const out = buildSlideAttrs({ [attr]: "x') url('y" });
+    expect(out).not.toContain(attr);
+  });
+
+  it.each(URL_ATTRS)("%s のバッククォートを拒否する", attr => {
+    const out = buildSlideAttrs({ [attr]: "x`+alert(1)+`" });
+    expect(out).not.toContain(attr);
+  });
+
+  it.each(URL_ATTRS)("%s の空白を拒否する", attr => {
+    const out = buildSlideAttrs({ [attr]: "x onmouseover=alert(1)" });
+    expect(out).not.toContain(attr);
+  });
+
+  it("正常な URL は通す（AC4 正系・実データを壊さない）", () => {
+    const benign = "https://example.com/path/a%20b.jpg?q=1&r=2";
+    const out = buildSlideAttrs({
+      "image-url": benign,
+      "thumbnail-url": "/relative/path.png",
+      "material-url": "sub/dir/model.mtl"
+    });
+    // 属性が落ちていないこと
+    for (const attr of URL_ATTRS) expect(out).toContain(`${attr}=`);
+    // 値が欠けていないことは **DOM へ流して読み戻して**確認する。
+    // out は escapeAttr 済みなので（& → &amp;）文字列比較では一致しない。
+    const host = document.createElement("div");
+    host.innerHTML = `<cc-swiper-slide ${out}></cc-swiper-slide>`;
+    const slide = host.firstElementChild!;
+    expect(slide.getAttribute("image-url")).toBe(benign);
+    expect(slide.getAttribute("thumbnail-url")).toBe("/relative/path.png");
+    expect(slide.getAttribute("material-url")).toBe("sub/dir/model.mtl");
+  });
+
+  it("URL 属性以外（caption）は空白を含んでも従来どおり通る", () => {
+    const out = buildSlideAttrs({ caption: "六百遠忌 報恩塔" });
+    expect(out).toContain("caption=");
+  });
+});

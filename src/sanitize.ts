@@ -163,6 +163,34 @@ const SLIDE_URL_ATTRS = new Set(ALLOWLIST.slide.urlAttributes);
 const isSafeUrl = (v: string): boolean => /^(?:https?:)?\/\/|^\/|^[^:]*$/i.test(v.trim());
 
 /**
+ * URL 属性で拒否する文字（m1-t9 D2 / 設計書 AC5）。
+ *
+ * なぜ `[<>]` だけでは足りないか:
+ *   escapeAttr は「属性コンテキスト」のエスケープにすぎず、受け手が
+ *   getAttribute で読み戻すとエンティティが復号されて生の文字に戻る。
+ *   受け手（Chuci）が文字列補間していれば、`"` ひとつで属性を閉じて
+ *   ` onmouseover="…"` を注入できる（m1 包括セキュリティレビュー SRH-1）。
+ *   山括弧だけを見ていたのは「HTML タグの注入」しか想定していなかったためで、
+ *   **属性ブレイクアウトは山括弧を必要としない**。
+ *
+ * 何を拒否するか:
+ *   - `"` `'` … HTML 属性 / CSS の url('…') を閉じる
+ *   - `` ` `` … テンプレートリテラルを閉じる
+ *   - `<` `>` … HTML タグの注入（従来からの拒否）
+ *   - 空白類 … 属性区切りとして使われる（`x onmouseover=alert(1)`）
+ *
+ * なぜ許容できるか:
+ *   URL にこれらの生文字は現れない。必要ならパーセントエンコードされる。
+ *   実データで確認済み（m1-t9 AC6・2026-08-01）: github/Maplat の maps 165件・
+ *   pois 16件と MaplatEditor の SQLite 実データ（maps 264行 / poi_sources 5行）を
+ *   全数走査し、URL 属性を持つレコードは **0件**。この強化で壊れる実データは無い。
+ *
+ * これは多層防御の「渡す側」である。受け手側（Chuci）の生補間廃止が恒久対策だが、
+ * 利用者が別版の @c4h/chuci を引く期間があるため渡す側でも塞ぐ。
+ */
+const URL_ATTR_FORBIDDEN = /["'`<>\s]/;
+
+/**
  * mediaObj から cc-swiper-slide の属性文字列を組み立てる（S2）。
  *
  * **属性名も POI 由来である**ため、値のエスケープだけでは防げない（設計書 §2.3）。
@@ -186,7 +214,7 @@ export function buildSlideAttrs(media: Record<string, unknown>): string {
     let str = String(val);
     if (SLIDE_URL_ATTRS.has(name)) {
       if (!isSafeUrl(str)) continue; // javascript: 等を落とす
-      if (/[<>]/.test(str)) continue; // URL に山括弧は入らない（往復で HTML 化する余地を断つ）
+      if (URL_ATTR_FORBIDDEN.test(str)) continue; // 往復で構文を破る文字を断つ（下記）
     }
     if (SLIDE_TEXT_ATTRS.has(name)) str = toPlainText(str); // 往復対策
     parts.push(`${name}="${escapeAttr(str)}"`);
