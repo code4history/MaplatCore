@@ -19,7 +19,7 @@ interface HistMapStore {
     mapper: LangResource;
     reference: string;
     description: LangResource;
-    url: LangResource;
+    url: string;
     lang: string;
     imageExtension: string;
     width?: number;

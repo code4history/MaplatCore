@@ -116,9 +116,6 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
       options.mercMaxZoom =
       options.mercMinZoom =
       undefined;
-    if (options.translator) {
-      options.url = options.translator(options.url);
-    }
     if (!options.imageExtension) options.imageExtension = "jpg";
     if (options.mapID && !options.url && !options.urls) {
       options.url = options.tms
@@ -149,9 +146,6 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
   const resp = await response.json();
   options = normalizeArg(Object.assign(resp, options));
   options.label = options.label || resp.year;
-  if (options.translator) {
-    options.url = options.translator(options.url);
-  }
   if (!options.maptype) options.maptype = "maplat";
 
   if (checkMapTypeIsWMTS(options.maptype)) {
