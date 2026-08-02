@@ -1,0 +1,270 @@
+{
+  "editorOutput": {
+    "aid": {
+      "pois": [
+        {
+          "id": "aid_p",
+          "name": "aid",
+          "lnglat": [
+            1,
+            2
+          ],
+          "namespaceID": "ns#aid_p"
+        }
+      ],
+      "id": "aid",
+      "namespaceID": "ns#aid",
+      "name": "T",
+      "hide": true,
+      "icon": "i.png",
+      "__nextId": 0
+    },
+    "bid": {
+      "pois": [
+        {
+          "id": "bid_p",
+          "name": "bid",
+          "lnglat": [
+            1,
+            2
+          ],
+          "namespaceID": "ns#bid_p"
+        }
+      ],
+      "id": "bid",
+      "namespaceID": "ns#bid",
+      "name": "bid",
+      "__nextId": 0
+    },
+    "main": {
+      "pois": [],
+      "id": "main",
+      "namespaceID": "ns#main",
+      "name": "AppName",
+      "__nextId": 0
+    }
+  },
+  "publishedFcUrls": {
+    "tid": {
+      "pois": [
+        {
+          "id": "tid_p",
+          "name": "tid",
+          "lnglat": [
+            1,
+            2
+          ],
+          "namespaceID": "ns#tid_p"
+        }
+      ],
+      "id": "tid",
+      "namespaceID": "ns#tid",
+      "name": "tid",
+      "__nextId": 0
+    },
+    "sid": {
+      "pois": [
+        {
+          "id": "sid_p",
+          "name": "sid",
+          "lnglat": [
+            1,
+            2
+          ],
+          "namespaceID": "ns#sid_p"
+        }
+      ],
+      "id": "sid",
+      "namespaceID": "ns#sid",
+      "name": "sid",
+      "__nextId": 0
+    },
+    "mid": {
+      "pois": [
+        {
+          "id": "mid_p",
+          "name": "mid",
+          "lnglat": [
+            1,
+            2
+          ],
+          "namespaceID": "ns#mid_p"
+        }
+      ],
+      "id": "mid",
+      "namespaceID": "ns#mid",
+      "name": "mid",
+      "__nextId": 0
+    },
+    "main": {
+      "pois": [],
+      "id": "main",
+      "namespaceID": "ns#main",
+      "name": "AppName",
+      "__nextId": 0
+    }
+  },
+  "publishedSingleUrl": {
+    "main": {
+      "pois": [
+        {
+          "name": "A",
+          "lnglat": [
+            2,
+            1
+          ],
+          "id": "main_0",
+          "namespaceID": "ns#main_0"
+        },
+        {
+          "name": "B",
+          "lnglat": [
+            4,
+            3
+          ],
+          "id": "main_1",
+          "namespaceID": "ns#main_1"
+        }
+      ],
+      "id": "main",
+      "namespaceID": "ns#main",
+      "name": "AppName",
+      "__nextId": 2
+    }
+  },
+  "publishedLegacyArray": {
+    "main": {
+      "pois": [
+        {
+          "name": "X",
+          "lnglat": [
+            8,
+            7
+          ],
+          "id": "main_0",
+          "namespaceID": "ns#main_0"
+        }
+      ],
+      "id": "main",
+      "namespaceID": "ns#main",
+      "name": "AppName",
+      "__nextId": 1
+    }
+  },
+  "singleFc": {
+    "solo": {
+      "pois": [
+        {
+          "id": "solo_p",
+          "name": "solo",
+          "lnglat": [
+            1,
+            2
+          ],
+          "namespaceID": "ns#solo_p"
+        }
+      ],
+      "id": "solo",
+      "namespaceID": "ns#solo",
+      "name": "solo",
+      "__nextId": 0
+    },
+    "main": {
+      "pois": [],
+      "id": "main",
+      "namespaceID": "ns#main",
+      "name": "AppName",
+      "__nextId": 0
+    }
+  },
+  "singleWrapper": {
+    "aid": {
+      "pois": [
+        {
+          "id": "aid_p",
+          "name": "aid",
+          "lnglat": [
+            1,
+            2
+          ],
+          "namespaceID": "ns#aid_p"
+        }
+      ],
+      "id": "aid",
+      "namespaceID": "ns#aid",
+      "name": "aid",
+      "hide": true,
+      "__nextId": 0
+    },
+    "main": {
+      "pois": [],
+      "id": "main",
+      "namespaceID": "ns#main",
+      "name": "AppName",
+      "__nextId": 0
+    }
+  },
+  "bareUrlFcArray": {
+    "tid": {
+      "pois": [
+        {
+          "id": "tid_p",
+          "name": "tid",
+          "lnglat": [
+            1,
+            2
+          ],
+          "namespaceID": "ns#tid_p"
+        }
+      ],
+      "id": "tid",
+      "namespaceID": "ns#tid",
+      "name": "tid",
+      "__nextId": 0
+    },
+    "main": {
+      "pois": [],
+      "id": "main",
+      "namespaceID": "ns#main",
+      "name": "AppName",
+      "__nextId": 0
+    }
+  },
+  "legacyArrayWithUrlElement": {
+    "main": {
+      "pois": [
+        {
+          "name": "D",
+          "lnglat": [
+            10,
+            9
+          ],
+          "id": "main_0",
+          "namespaceID": "ns#main_0"
+        },
+        {
+          "name": "C",
+          "lnglat": [
+            6,
+            5
+          ],
+          "id": "main_1",
+          "namespaceID": "ns#main_1"
+        }
+      ],
+      "id": "main",
+      "namespaceID": "ns#main",
+      "name": "AppName",
+      "__nextId": 2
+    }
+  },
+  "emptyArray": {
+    "main": {
+      "pois": [],
+      "id": "main",
+      "namespaceID": "ns#main",
+      "name": "AppName",
+      "__nextId": 0
+    }
+  }
+}
