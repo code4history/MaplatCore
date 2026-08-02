@@ -95,30 +95,45 @@ export async function normalizeLayers(layers: any, options: any) {
 
   //In case "layers" is array
   if (Array.isArray(layers)) {
-    // step1: 現行どおり全要素に nodesLoader を適用して解決する。
-    // ラッパー（plain object）は nodesLoader が素通しするため、この段階では
-    // wrapper.layer の fetch は行われない（§3.4(a) 処理順・normative）。
-    layers = await Promise.all(
-      layers.map(async x => await nodesLoader(x))
-    );
-    // step2: 解決後の先頭要素でモード判定。
-    // FC 配列モード または ラッパーを含むレイヤ配列モード。
-    if (
+    // step1: モード判定（m4-t5 で fetch の前へ移した）。
+    //
+    // 【是正の理由】以前はここで全要素に nodesLoader を適用してから、解決後の先頭要素で
+    // モードを判定していた。そのため **配列要素位置の裸 URL 文字列が判定より前に中身へ化け**、
+    // 中身がレガシー POI 配列だと「配列の配列」になって POI オブジェクト配列モードへ落ち、
+    // POI が壊れていた（["url"] / ["url", FC] が壊れる）。中身が FeatureCollection のときだけ
+    // 偶然レイヤ配列モードへ入って正常に見えていた。
+    // ラッパー（plain object）は nodesLoader が素通しするため元から fetch 前に判別できており、
+    // **正しい判定順は本ファイル内に既に存在していた**。裸 URL だけがその恩恵を受けていない
+    // という非対称を解消する（m4 マイルストーン再設計 G5 / MC7）。
+    //
+    // 【判定表】生の先頭要素だけで決める（m4-t5 設計 §5.1 が唯一の定義箇所）:
+    //   文字列                  → レイヤ配列（レガシー POI 配列の要素は POI オブジェクトであり
+    //                              文字列にはなり得ない ∴ 配列位置の文字列は「レイヤの URL」以外
+    //                              に解釈の余地がない。**中身を見ないからこそ健全**である）
+    //   FeatureCollection       → レイヤ配列（現行どおり）
+    //   isPoiLayerRef が真      → レイヤ配列（現行どおり・m18-t4）
+    //   それ以外 / 空配列        → POI オブジェクト配列（配列全体で1レイヤ・現行どおり）
+    const head = layers[0];
+    const isLayerArray =
       layers.length > 0 &&
-      (layers[0].type === "FeatureCollection" || isPoiLayerRef(layers[0]))
-    ) {
-      // step3: レイヤ配列モード。各要素を分解し wrapper.layer を解決 → normalizeLayer → applyLayerOverrides
+      (typeof head === "string" ||
+        (isPlainObject(head) && head.type === "FeatureCollection") ||
+        isPoiLayerRef(head));
+
+    if (isLayerArray) {
+      // step2: レイヤ配列モード。各要素を分解し layer を解決 → normalizeLayer → applyLayerOverrides
       const entries = await Promise.all(
         layers.map(async (x: any, index: any) => {
           let data: any;
           let overrides: Record<string, any> | null;
           if (isPoiLayerRef(x)) {
-            // wrapper.layer を初めて nodesLoader で解決（URL ならここで fetch）
+            // wrapper.layer を nodesLoader で解決（URL ならここで fetch）
             data = await nodesLoader(x.layer);
             overrides = extractOverrides(x);
           } else {
-            // 現行どおり（素の FC など）
-            data = x;
+            // 裸 URL 文字列はここで初めて fetch される（判定を通過した後）。
+            // 非文字列（素の FC など）に対しては nodesLoader が素通しするため挙動は変わらない
+            data = await nodesLoader(x);
             overrides = null;
           }
           // key は解決後データ由来（ラッパー自身の id は許可キー外＝破棄+warn）
@@ -134,7 +149,12 @@ export async function normalizeLayers(layers: any, options: any) {
       layers = Object.fromEntries(entries);
       //In case old type single layer spec
     } else {
-      // step4: POI オブジェクト配列モード。分解も wrapper.layer の解決も一切行わない（現行どおり）
+      // step3: POI オブジェクト配列モード。配列全体で1レイヤ。
+      // **要素ごとの nodesLoader 解決は維持する**（m4-t5 設計 §5.3）。以前もこのモードで
+      // 全要素を解決しており、要素が「単一 POI オブジェクトを返す URL」のときに正しく動く。
+      // 実データには無い形だが、動いている挙動を根拠なく落とさない（AGENTS.md 原則2）。
+      // ∴ m4-t5 の変更はモード判定の位置だけに閉じている。
+      layers = await Promise.all(layers.map(async (x: any) => await nodesLoader(x)));
       layers = {
         main: normalizeLayer(layers, "main", options)
       };
