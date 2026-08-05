@@ -811,12 +811,15 @@ export const META_KEYS = [
   "mapper",
   "license",
   "dataLicense",
+  // m6-t2: ライセンスの自由記述欄。META_KEYS_OPTION と lockstep (同じ index) で足す。
+  "licenseNote",
+  "dataLicenseNote",
   "attr",
   "dataAttr",
   "reference",
   "description"
 ];
-const META_KEYS_OPTION = [
+export const META_KEYS_OPTION = [
   "title",
   "official_title",
   "author",
@@ -826,6 +829,8 @@ const META_KEYS_OPTION = [
   "mapper",
   "license",
   "data_license",
+  "license_note",
+  "data_license_note",
   "attr",
   "data_attr",
   "reference",

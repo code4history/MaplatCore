@@ -28,6 +28,9 @@ interface HistMapStore {
   era: LangResource;
   license: string;
   dataLicense: string;
+  // m6-t2: ライセンスの自由記述欄 (LangResource)。keys へも必ず足す (Editor 側の写しと揃える)
+  licenseNote: LangResource;
+  dataLicenseNote: LangResource;
   contributor: LangResource;
   mapper: LangResource;
   reference: string;
@@ -68,6 +71,8 @@ const keys: (keyof HistMapStore)[] = [
   "era",
   "license",
   "dataLicense",
+  "licenseNote",
+  "dataLicenseNote",
   "contributor",
   "mapper",
   "reference",
