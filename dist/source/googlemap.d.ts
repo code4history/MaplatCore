@@ -5,6 +5,10 @@ import { Size } from 'ol/size';
 import { default as __DTS_DEFAULT_0__ } from '@c4h/weiwudi';
 import { MaplatMap } from '..';
 import { Feature, Polygon } from 'geojson';
+export declare function deriveGoogleTileOptions(maptype: string | undefined, layers: string[] | undefined): {
+    mapType: string;
+    layerTypes: string[];
+};
 declare const GoogleMap_base: ((abstract new (...args: any[]) => {
     insideCheckXy(xy: Coordinate): boolean;
     insideCheckSysCoord(histCoords: Coordinate): boolean;
