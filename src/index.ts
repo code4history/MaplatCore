@@ -1,5 +1,6 @@
 import CustomEvent from "./customevent";
 import { Logger, LOGGER_LEVEL } from "./logger";
+import { bindProviderGlToSource } from "./provider_gl_bind";
 import {
   createElement,
   normalizeDegree,
@@ -695,17 +696,17 @@ export class MaplatApp extends EventTarget {
     this.cacheHash = {};
     sources.forEach((source: any) => {
       source.setMap(this.mapObject);
-      if (source.isMapbox()) {
-        if (!this.mapboxMap) {
-          throw "To use Mapbox based maps, you need to include Mapbox GL JS and provide it via mapboxgl option.";
+      // m6-t5: GL 未ロード時は throw せず当該ソースを落とす（ADR-0014）
+      const keep = bindProviderGlToSource(source, {
+        mapboxMap: this.mapboxMap,
+        maplibreMap: this.maplibreMap,
+        warn: (msg, ...args) => {
+          // Logger.warn は level に応じて no-op になり得る
+          if (this.logger?.warn) this.logger.warn(msg, ...args);
+          else console.warn(msg, ...args);
         }
-        source.mapboxMap = this.mapboxMap;
-      } else if (source.isMapLibre && source.isMapLibre()) {
-        if (!this.maplibreMap) {
-          throw "To use MapLibre based maps, you need to include MapLibre GL JS and provide it via maplibregl option.";
-        }
-        source.maplibreMap = this.maplibreMap;
-      }
+      });
+      if (!keep) return;
       cache.push(source);
       this.cacheHash[source.mapID] = source;
     });
