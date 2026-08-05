@@ -1,5 +1,6 @@
 import CustomEvent from "./customevent";
 import { Logger, LOGGER_LEVEL } from "./logger";
+import { bindProviderGlToSource } from "./provider_gl_bind";
 import {
   createElement,
   normalizeDegree,
@@ -687,29 +688,46 @@ export class MaplatApp extends EventTarget {
 
   // Async initializer 9: Handle sources loading result
   async handleSources(sources: any) {
-    this.mercSrc = sources.reduce((prev: any, curr: any) => {
-      if (prev) return prev;
-      if (curr.isBasemap()) return curr;
-    }, null);
     const cache: any[] = [];
     this.cacheHash = {};
     sources.forEach((source: any) => {
       source.setMap(this.mapObject);
-      if (source.isMapbox()) {
-        if (!this.mapboxMap) {
-          throw "To use Mapbox based maps, you need to include Mapbox GL JS and provide it via mapboxgl option.";
+      // m6-t5: GL 未ロード時は throw せず当該ソースを落とす（ADR-0014）
+      const keep = bindProviderGlToSource(source, {
+        mapboxMap: this.mapboxMap,
+        maplibreMap: this.maplibreMap,
+        warn: (msg, ...args) => {
+          // Logger.warn は level に応じて no-op になり得る
+          if (this.logger?.warn) this.logger.warn(msg, ...args);
+          else console.warn(msg, ...args);
         }
-        source.mapboxMap = this.mapboxMap;
-      } else if (source.isMapLibre && source.isMapLibre()) {
-        if (!this.maplibreMap) {
-          throw "To use MapLibre based maps, you need to include MapLibre GL JS and provide it via maplibregl option.";
-        }
-        source.maplibreMap = this.maplibreMap;
-      }
+      });
+      if (!keep) return;
       cache.push(source);
       this.cacheHash[source.mapID] = source;
     });
+    // m6-t5 v1.3.1: mercSrc は cache（GL 未ロードで落とされたソースを含まない）から選ぶ。
+    // 未フィルタの sources から選ぶと、混在 app + GL 未ロード時に死んだ provider ソースを
+    // 指し、backMap 経由で毎フレーム error を吐く（H-4 主要シナリオ）
+    this.mercSrc = cache.reduce((prev: any, curr: any) => {
+      if (prev) return prev;
+      if (curr.isBasemap()) return curr;
+    }, null);
     this.dispatchEvent(new CustomEvent("sourceLoaded", sources));
+    if (cache.length === 0) {
+      // m6-t5 AC22: 使えるソースが0件（provider-only + GL 未ロード等）。
+      // 初期地図選択と操作/自動ハンドラ登録を行わない（this.from 未設定のまま
+      // postrender/pointermove/click が走り TypeError で停止するのを防ぐ。ADR-0014）。
+      // lifecycle 2相は実行する（UI 側が ready を待つ経路をハングさせない）
+      if (this.logger?.warn) {
+        this.logger.warn("No usable sources; skipping map initialization handlers");
+      } else {
+        console.warn("No usable sources; skipping map initialization handlers");
+      }
+      await this.runLifecyclePhase("core-ready");
+      await this.runLifecyclePhase("ui-ready");
+      return;
+    }
     await this.setInitialMap(cache);
     this.setMapClick();
     this.setPointerEvents();
