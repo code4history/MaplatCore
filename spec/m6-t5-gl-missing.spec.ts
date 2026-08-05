@@ -2,6 +2,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { bindProviderGlToSource } from "../src/provider_gl_bind";
 import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { resolve } from "node:path";
 
 describe("m6-t5: provider GL bind (AC10)", () => {
@@ -103,8 +104,6 @@ describe("m6-t5: maplibre-gl devDep resolution (AC11)", () => {
   });
 
   it("maplibre-gl がモジュール解決できる（実行はブラウザ API 依存のため resolve まで）", () => {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { createRequire } = require("node:module") as typeof import("node:module");
     const req = createRequire(resolve(__dirname, "../package.json"));
     expect(() => req.resolve("maplibre-gl")).not.toThrow();
   });
