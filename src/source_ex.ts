@@ -106,6 +106,12 @@ const baseDict = {
 };
 
 const checkMapTypeIsWMTS = (maptype?: string) => (maptype || '').match(/^(?:base|overlay|google(?:_(?:roadmap|satellite|hybrid|terrain))?|mapbox|maplibre|osm)$/);
+// m6-t6 hotfix (実装レビュー H-A): provider（google/mapbox/maplibre）は Maplat 同梱タイルの
+// テンプレート url を持たない。自動補完すると ol/source/Google.js の
+// baseUrl(= options.url || 'https://tile.googleapis.com/') を汚染し、Google Maps Platform への
+// createSession リクエストがプレビューサーバ宛てに誤送信される（404）。provider は
+// options.url の自動補完対象から除外する
+const isProviderMapType = (maptype?: string) => (maptype || '').match(/^(?:google(?:_(?:roadmap|satellite|hybrid|terrain))?|mapbox|maplibre)$/);
 
 export async function mapSourceFactory(options: any, commonOptions: any) {
   if (typeof options === "string") {
@@ -144,7 +150,7 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
       options.mercMinZoom =
       undefined;
     if (!options.imageExtension) options.imageExtension = "jpg";
-    if (options.mapID && !options.url && !options.urls) {
+    if (options.mapID && !options.url && !options.urls && !isProviderMapType(options.maptype)) {
       options.url = options.tms
         ? `tiles/${options.mapID}/{z}/{x}/{-y}.${options.imageExtension}`
         : `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtension}`;
@@ -204,7 +210,7 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
       options.mercMinZoom =
       undefined;
     if (!options.imageExtension) options.imageExtension = "jpg";
-    if (options.mapID && !options.url && !options.urls) {
+    if (options.mapID && !options.url && !options.urls && !isProviderMapType(options.maptype)) {
       options.url = options.tms
         ? `tiles/${options.mapID}/{z}/{x}/{-y}.${options.imageExtension}`
         : `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtension}`;
