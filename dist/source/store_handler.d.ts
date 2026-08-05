@@ -15,6 +15,8 @@ interface HistMapStore {
     era: LangResource;
     license: string;
     dataLicense: string;
+    licenseNote: LangResource;
+    dataLicenseNote: LangResource;
     contributor: LangResource;
     mapper: LangResource;
     reference: string;

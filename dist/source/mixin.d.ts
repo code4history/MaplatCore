@@ -401,6 +401,7 @@ export declare function setCustomFunctionMaplat<TBase extends SourceConstructor>
     createAsync(options: any): Promise<any>;
 }) & TBase;
 export declare const META_KEYS: string[];
+export declare const META_KEYS_OPTION: string[];
 export declare function addCommonOptions(options: any): any;
 export declare function setupTileLoadFunction(target: any): void;
 export {};
