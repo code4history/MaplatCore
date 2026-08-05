@@ -109,3 +109,83 @@ describe("m6-t5: maplibre-gl devDep resolution (AC11)", () => {
     expect(() => req.resolve("maplibre-gl")).not.toThrow();
   });
 });
+
+// M6-T5 AC22: provider-only app + GL 未ロードでも handleSources が停止しない（v1.3 M2）
+// 実経路を通すため handleSources を直接駆動する（startFrom 設定による setInitialMap 回避は禁止）
+import { MaplatApp } from "../src/index";
+
+function makeAppStub() {
+  const app: any = Object.create(MaplatApp.prototype);
+  app.mapObject = { on: vi.fn() };
+  app.cacheHash = undefined;
+  app.mercSrc = undefined;
+  app.from = undefined;
+  app.mapboxMap = undefined;
+  app.maplibreMap = undefined;
+  app.logger = undefined;
+  app.initialRestore = {};
+  app.startFrom = undefined;
+  app.dispatchEvent = vi.fn();
+  app.setInitialMap = vi.fn().mockResolvedValue(undefined);
+  app.setMapClick = vi.fn();
+  app.setPointerEvents = vi.fn();
+  app.setMapOnOff = vi.fn();
+  app.setMouseCursor = vi.fn();
+  app.setBackMapBehavior = vi.fn();
+  app.raiseChangeViewpoint = vi.fn();
+  app.runLifecyclePhase = vi.fn().mockResolvedValue(undefined);
+  return app;
+}
+
+const mapboxSource = {
+  mapID: "mb1",
+  isBasemap: () => true,
+  isMapbox: () => true,
+  isMapLibre: () => false,
+  setMap: vi.fn()
+};
+
+describe("m6-t5: handleSources provider-only + GL missing (AC22)", () => {
+  it("cache 空: throw せず handler 未登録・sourceLoaded dispatch・lifecycle 2相は実行", async () => {
+    const app = makeAppStub();
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    await expect(app.handleSources([mapboxSource])).resolves.not.toThrow?.();
+    // sourceLoaded は維持
+    expect(app.dispatchEvent).toHaveBeenCalledTimes(1);
+    expect(String(app.dispatchEvent.mock.calls[0][0].type)).toBe("sourceLoaded");
+    // cache 空
+    expect(app.cacheHash).toEqual({});
+    // init tail（setInitialMap 以降）が呼ばれない
+    for (const m of ["setInitialMap","setMapClick","setPointerEvents","setMapOnOff","setMouseCursor","setBackMapBehavior","raiseChangeViewpoint"]) {
+      expect(app[m], m).not.toHaveBeenCalled();
+    }
+    // mapObject.on にもハンドラ登録されない（postrender/pointermove 等）
+    expect(app.mapObject.on).not.toHaveBeenCalled();
+    // lifecycle 2相は実行
+    expect(app.runLifecyclePhase).toHaveBeenCalledWith("core-ready");
+    expect(app.runLifecyclePhase).toHaveBeenCalledWith("ui-ready");
+    // warn が出ている
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it("混在 app（histmap + provider basemap、GL 無し）: mercSrc は cache から選ばれ死んだ provider を指さない（v1.3.1 m4）", async () => {
+    const app = makeAppStub();
+    const hist = {
+      mapID: "h1",
+      isBasemap: () => false,
+      isMapbox: () => false,
+      isMapLibre: () => false,
+      setMap: vi.fn()
+    };
+    await app.handleSources([hist, mapboxSource]);
+    // mapbox は cache に入らない
+    expect(Object.keys(app.cacheHash)).toEqual(["h1"]);
+    // mercSrc は cache（hist のみ）から選ばれる → basemap 不在で null/undefined。
+    // 未フィルタ sources から選ぶ旧実装だと mapboxSource を指してしまう
+    expect(app.mercSrc ?? null).toBe(null);
+    // cache 非空なので init tail は通常どおり走る
+    expect(app.setInitialMap).toHaveBeenCalledWith([hist]);
+    expect(app.raiseChangeViewpoint).toHaveBeenCalled();
+  });
+});
