@@ -147,7 +147,7 @@ const mapboxSource = {
 describe("m6-t5: handleSources provider-only + GL missing (AC22)", () => {
   it("cache 空: throw せず handler 未登録・sourceLoaded dispatch・lifecycle 2相は実行", async () => {
     const app = makeAppStub();
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     await expect(app.handleSources([mapboxSource])).resolves.not.toThrow?.();
     // sourceLoaded は維持
     expect(app.dispatchEvent).toHaveBeenCalledTimes(1);

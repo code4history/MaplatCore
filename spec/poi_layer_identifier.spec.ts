@@ -120,7 +120,7 @@ describe("POI layer identifier contract (m18-t6)", () => {
 
   // ---- U-3: unresolved returns undefined, no warning --------------------
   it("U-3: getPoiLayer returns undefined for unresolved id and emits no warning", () => {
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const self = makeSelf({});
     const result = getPoiLayer.call(self, "nope");
     expect(result).toBeUndefined();
@@ -188,7 +188,7 @@ describe("POI layer identifier contract (m18-t6)", () => {
 
   // ---- U-8: removePoiLayer unresolved no-op + warning --------------------
   it("U-8: removePoiLayer('<mapID>#<missing>') does not remove, warns once, no redrawMarkers", () => {
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const source = makeMapSource("omt", {});
     const self = makeSelf({
       appPois: {},
@@ -216,7 +216,7 @@ describe("POI layer identifier contract (m18-t6)", () => {
 
   // ---- U-10: unresolved id on show/hide/add/remove → 1 warning each -----
   it("U-10: unresolved id warns once on show/hide/add/remove without throwing or state change", () => {
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const self = makeSelf({
       appPois: {},
       cacheHash: {}
