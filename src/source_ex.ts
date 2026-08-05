@@ -28,6 +28,12 @@ const baseDict = {
       en: "OSM(Now)"
     },
     attr: "©︎ OpenStreetMap contributors",
+    license: "Custom",
+    dataLicense: "ODbL",
+    licenseNote: {
+      ja: "©︎ OpenStreetMap contributors（OpenStreetMap Copyright: https://www.openstreetmap.org/copyright）",
+      en: "©︎ OpenStreetMap contributors (OpenStreetMap Copyright: https://www.openstreetmap.org/copyright)"
+    },
     maptype: "base",
     // maxZoom必須: 未指定だとWeiwudi(SWタイルキャッシュ)登録時にズーム上限0と
     // 解釈される環境があり、キャッシュ経由の全タイルが404になる (#78)
@@ -53,6 +59,16 @@ const baseDict = {
       ja: "国土地理院",
       en: "The Geospatial Information Authority of Japan"
     },
+    license: "Custom",
+    dataLicense: "Custom",
+    licenseNote: {
+      ja: "公共データ利用規約 第1.0版（PDL1.0）／出典：国土地理院ウェブサイト",
+      en: "Public Data License 1.0 / Source: GSI website"
+    },
+    dataLicenseNote: {
+      ja: "公共データ利用規約 第1.0版（PDL1.0）",
+      en: "Public Data License 1.0"
+    },
     maptype: "base",
     url: "https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png",
     maxZoom: 18,
@@ -72,6 +88,16 @@ const baseDict = {
       ja: "国土地理院",
       en: "The Geospatial Information Authority of Japan"
     },
+    license: "Custom",
+    dataLicense: "Custom",
+    licenseNote: {
+      ja: "公共データ利用規約 第1.0版（PDL1.0）／出典：国土地理院ウェブサイト",
+      en: "Public Data License 1.0 / Source: GSI website"
+    },
+    dataLicenseNote: {
+      ja: "公共データ利用規約 第1.0版（PDL1.0）",
+      en: "Public Data License 1.0"
+    },
     maptype: "base",
     url: "https://cyberjapandata.gsi.go.jp/xyz/ort/{z}/{x}/{y}.jpg",
     maxZoom: 18,
@@ -83,7 +109,8 @@ const checkMapTypeIsWMTS = (maptype?: string) => (maptype || '').match(/^(?:base
 
 export async function mapSourceFactory(options: any, commonOptions: any) {
   if (typeof options === "string") {
-    options = (baseDict as any)[options];
+    // m6-t3: baseDict エントリを破壊的に書き換えない（レビュー Minor m3）
+    options = { ...(baseDict as any)[options] };
   }
 
   options = normalizeArg(Object.assign(options, commonOptions));
