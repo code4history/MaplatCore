@@ -6724,56 +6724,58 @@ function hI(A, t) {
 }
 class uI extends Cg {
   constructor(t) {
-    const e = function(n) {
-      const i = this.getSource(), r = i.mapboxMap;
-      if (!r)
+    let e;
+    const n = function(i) {
+      const r = this.getSource(), s = r.mapboxMap;
+      if (!s)
         return console.error("MapboxLayer: mapboxMap is undefined!"), null;
-      r.setStyle(i.style);
-      const s = r.getCanvas(), g = n.viewState, o = this.getVisible();
-      s.style.display = o ? "block" : "none";
-      const a = this.getOpacity();
-      s.style.opacity = a;
-      const I = g.rotation * -180 / Math.PI, c = Yi(g.center), h = g.zoom - 1, m = r.getBearing(), b = r.getCenter().toArray(), v = r.getZoom();
-      return I == m && c[0] == b[0] && c[1] == b[1] && h == v || (I != m && r.rotateTo(I, {
+      r.style !== e && (s.setStyle(r.style), e = r.style);
+      const g = s.getCanvas(), o = i.viewState, a = this.getVisible();
+      g.style.display = a ? "block" : "none";
+      const I = this.getOpacity();
+      g.style.opacity = I;
+      const c = o.rotation * -180 / Math.PI, h = Yi(o.center), m = o.zoom - 1, b = s.getBearing(), v = s.getCenter().toArray(), T = s.getZoom();
+      return c == b && h[0] == v[0] && h[1] == v[1] && m == T || (c != b && s.rotateTo(c, {
         animate: !1
-      }), (c[0] != b[0] || c[1] != b[1] || h != v) && r.jumpTo({
-        center: c,
-        zoom: h,
+      }), (h[0] != v[0] || h[1] != v[1] || m != T) && s.jumpTo({
+        center: h,
+        zoom: m,
         animate: !1
-      }), r._frame && (r._frame.cancel(), r._frame = null), r._render()), s;
+      }), s._frame && (s._frame.cancel(), s._frame = null), s._render()), g;
     };
     super({
-      render: e,
+      render: n,
       source: t.source
     });
   }
 }
 class fI extends Cg {
   constructor(t) {
-    const e = function(n) {
-      const i = this.getSource(), r = i.maplibreMap;
-      if (!r)
+    let e;
+    const n = function(i) {
+      const r = this.getSource(), s = r.maplibreMap;
+      if (!s)
         return console.error("MapLibreLayer: maplibreMap is undefined!"), null;
-      r.setStyle(i.style);
-      const s = r.getCanvas(), g = n.viewState, o = this.getVisible();
-      s.style.display = o ? "block" : "none";
-      const a = this.getOpacity();
-      s.style.opacity = a;
-      const c = -g.rotation * 180 / Math.PI, h = r.getBearing();
-      Math.abs(c - h) > 0.01 && (r.stop(), r.setBearing(c));
-      const m = Yi(g.center), b = g.zoom - 1;
-      if ((r.getCenter().toArray().toString() !== m.toString() || r.getZoom() !== b) && r.jumpTo({
-        center: m,
-        zoom: b,
+      r.style !== e && (s.setStyle(r.style), e = r.style);
+      const g = s.getCanvas(), o = i.viewState, a = this.getVisible();
+      g.style.display = a ? "block" : "none";
+      const I = this.getOpacity();
+      g.style.opacity = I;
+      const h = -o.rotation * 180 / Math.PI, m = s.getBearing();
+      Math.abs(h - m) > 0.01 && (s.stop(), s.setBearing(h));
+      const b = Yi(o.center), v = o.zoom - 1;
+      if ((s.getCenter().toArray().toString() !== b.toString() || s.getZoom() !== v) && s.jumpTo({
+        center: b,
+        zoom: v,
         animate: !1
-      }), r._frame && (r._frame.cancel(), r._frame = null), n.size) {
-        const [v, T] = n.size;
-        (s.width !== v || s.height !== T) && r.resize();
+      }), s._frame && (s._frame.cancel(), s._frame = null), i.size) {
+        const [T, O] = i.size;
+        (g.width !== T || g.height !== O) && s.resize();
       }
-      return r._render(), Math.abs(r.getZoom() - b) > 0.01 && r.setZoom(b), s.style.position = "absolute", s.style.left = "0", s.style.top = "0", s;
+      return s._render(), Math.abs(s.getZoom() - v) > 0.01 && s.setZoom(v), g.style.position = "absolute", g.style.left = "0", g.style.top = "0", g;
     };
     super({
-      render: e,
+      render: n,
       source: t.source
     });
   }
