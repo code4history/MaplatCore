@@ -3,6 +3,11 @@ import { toLonLat } from "ol/proj";
 
 export class MapLibreLayer extends Layer {
   constructor(options: any) {
+    // m6-t9 §3.4 (実装レビュー round2 H-AC5-2): render() は OpenLayers のレンダーフレーム
+    // ごとに呼ばれる。setStyle は差分が無くても呼ぶたびスタイル再構築（スプライト再取得含む）を
+    // 検討するコストを持つため、直前に適用した style と同一なら呼ばない（実運用スタイル
+    // ＝MapTiler v3-openmaptiles でのちらつきの根本原因と特定済み）
+    let lastAppliedStyle: unknown;
     const render = function (frameState: any) {
       // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
       const source = this.getSource();
@@ -11,7 +16,10 @@ export class MapLibreLayer extends Layer {
         console.error('MapLibreLayer: maplibreMap is undefined!');
         return null;
       }
-      mlMap.setStyle(source.style);
+      if (source.style !== lastAppliedStyle) {
+        mlMap.setStyle(source.style);
+        lastAppliedStyle = source.style;
+      }
       const canvas = mlMap.getCanvas();
       const viewState = frameState.viewState;
       

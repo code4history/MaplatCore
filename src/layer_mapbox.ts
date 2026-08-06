@@ -3,6 +3,10 @@ import { toLonLat } from "ol/proj";
 
 export class MapboxLayer extends Layer {
   constructor(options: any) {
+    // m6-t9 §3.4 (実装レビュー round2 H-AC5-2): layer_maplibre.ts と同型のガードを
+    // 予防的に適用する（実運用での顕在化は未確認。差分適用が効いているため潜在化している
+    // と推測されるのみで、根本原因の確証は maplibre 側のみ）
+    let lastAppliedStyle: unknown;
     const render = function (frameState: any) {
       // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
       const source = this.getSource();
@@ -11,7 +15,10 @@ export class MapboxLayer extends Layer {
         console.error('MapboxLayer: mapboxMap is undefined!');
         return null;
       }
-      mbMap.setStyle(source.style);
+      if (source.style !== lastAppliedStyle) {
+        mbMap.setStyle(source.style);
+        lastAppliedStyle = source.style;
+      }
       const canvas = mbMap.getCanvas();
       const viewState = frameState.viewState;
       
