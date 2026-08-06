@@ -57,18 +57,20 @@ describe("m6-t6 hotfix: provider の url 自動補完除外", () => {
   it("回帰: base（既存の maplat 同梱タイル）は従来どおり url が自動補完される", async () => {
     // baseDict 経由（文字列 ID）は既存の m6-t3-basedict-licenses.spec.ts で検証済みのため、
     // ここでは maptype 明示の base で自動補完対象のままであることのみ確認する。
-    // NowMap は url を .get() 経由で公開しないため、weiwudi 登録（url を使う）が
-    // 例外なく完了することで url が非空だったことを間接確認する。
-    const source = await mapSourceFactory(
-      {
-        mapID: "hotfix-base-1",
-        maptype: "base",
-        enableCache: false,
-        homePos: [0, 0],
-        defZoom: 10,
-      },
-      {},
-    );
+    // 実装レビュー round2 N-2: expect(source).toBeTruthy() のみでは url の値そのものを
+    // 検証していなかった。m5-t2-translator-removal.spec.ts:38-49 と同じ手法（mapSourceFactory
+    // は Object.assign(options, commonOptions) で引数オブジェクトを直接書き換え、normalizeArg も
+    // 同一参照を返すため、呼び出し後の options 自身が factory 内部の最終状態を表す）で
+    // options.url を直接 assert する
+    const options: any = {
+      mapID: "hotfix-base-1",
+      maptype: "base",
+      enableCache: false,
+      homePos: [0, 0],
+      defZoom: 10,
+    };
+    const source = await mapSourceFactory(options, {});
+    expect(options.url).toBe("tiles/hotfix-base-1/{z}/{x}/{y}.jpg");
     expect(source).toBeTruthy();
   });
 });
