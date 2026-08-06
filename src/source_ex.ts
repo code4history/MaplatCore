@@ -7,6 +7,7 @@ import { MapLibreMap } from "./source/maplibremap";
 import { GoogleMap } from "./source/googlemap";
 import { HistMap } from "./source/histmap";
 import { HistMap_tin } from "./source/histmap_tin";
+import { isProviderMapType } from "./source/mixin";
 import "whatwg-fetch";
 
 export type MaplatSource = HistMap | NowMap | GoogleMap;
@@ -106,12 +107,13 @@ const baseDict = {
 };
 
 const checkMapTypeIsWMTS = (maptype?: string) => (maptype || '').match(/^(?:base|overlay|google(?:_(?:roadmap|satellite|hybrid|terrain))?|mapbox|maplibre|osm)$/);
-// m6-t6 hotfix (実装レビュー H-A): provider（google/mapbox/maplibre）は Maplat 同梱タイルの
-// テンプレート url を持たない。自動補完すると ol/source/Google.js の
+// m6-t6 hotfix (実装レビュー H-A) → m6-t9 (§3.1 AC2): provider（google/mapbox/maplibre）は
+// Maplat 同梱タイルのテンプレート url を持たない。自動補完すると ol/source/Google.js の
 // baseUrl(= options.url || 'https://tile.googleapis.com/') を汚染し、Google Maps Platform への
-// createSession リクエストがプレビューサーバ宛てに誤送信される（404）。provider は
-// options.url の自動補完対象から除外する
-const isProviderMapType = (maptype?: string) => (maptype || '').match(/^(?:google(?:_(?:roadmap|satellite|hybrid|terrain))?|mapbox|maplibre)$/);
+// createSession リクエストがプレビューサーバ宛てに誤送信される（404）。data.url に手動値が
+// 残っていた場合も同様に汚染し得るため、provider は url/urls を自動補完・手動値の両方とも
+// 対象から除外する（isProviderMapType の定義は source/mixin.ts が正本。addCommonOptions 経由で
+// mapbox/maplibre にも同じ判定を効かせる必要があるため）
 
 export async function mapSourceFactory(options: any, commonOptions: any) {
   if (typeof options === "string") {
@@ -150,7 +152,13 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
       options.mercMinZoom =
       undefined;
     if (!options.imageExtension) options.imageExtension = "jpg";
-    if (options.mapID && !options.url && !options.urls && !isProviderMapType(options.maptype)) {
+    if (isProviderMapType(options.maptype)) {
+      // m6-t9 (§3.1 AC2): H-A は自動補完由来の汚染を防いだが、data.url に手動値が
+      // 残っている場合はそのまま ol/source/Google 等の baseUrl を汚染し得た（同型バグ）。
+      // provider は自動補完・手動値のいずれの url/urls も使わないため、ここで確実に除去する
+      delete options.url;
+      delete options.urls;
+    } else if (options.mapID && !options.url && !options.urls) {
       options.url = options.tms
         ? `tiles/${options.mapID}/{z}/{x}/{-y}.${options.imageExtension}`
         : `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtension}`;
@@ -210,7 +218,11 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
       options.mercMinZoom =
       undefined;
     if (!options.imageExtension) options.imageExtension = "jpg";
-    if (options.mapID && !options.url && !options.urls && !isProviderMapType(options.maptype)) {
+    if (isProviderMapType(options.maptype)) {
+      // m6-t9 (§3.1 AC2): 手動値からの汚染防止（上の分岐と同型。設定 json 経由の読み込み経路）
+      delete options.url;
+      delete options.urls;
+    } else if (options.mapID && !options.url && !options.urls) {
       options.url = options.tms
         ? `tiles/${options.mapID}/{z}/{x}/{-y}.${options.imageExtension}`
         : `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtension}`;

@@ -632,7 +632,10 @@ export class MaplatApp extends EventTarget {
         keyboard: false,
         pitchWithRotate: false,
         scrollZoom: false,
-        touchZoomRotate: false
+        touchZoomRotate: false,
+        // m6-t9 §3.3: mapbox-gl-js v3 系は既定・状況により Globe 投影になり得るため、
+        // Maplat は常に平面（Mercator）表示を前提とする本ライブラリの用途上、明示的に固定する
+        projection: 'mercator'
       });
     }
 

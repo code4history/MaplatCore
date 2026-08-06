@@ -837,10 +837,21 @@ export const META_KEYS_OPTION = [
   "description"
 ];
 
+// m6-t6 hotfix → m6-t9 (§3.1 AC2): provider（google/mapbox/maplibre）は Maplat 同梱タイルの
+// テンプレート url を持たない。自動補完はもちろん、data.url に手動値が残っていた場合でも
+// ol/source/Google 等の baseUrl を汚染しないよう、provider は url/urls の対象から除外する。
+// mapSourceFactory（source_ex.ts）と本関数（NowMap/HistMap 経由で mapbox/maplibre にも
+// 効く）の両方が同じ判定を用いる必要があるため、ここを正本として export する
+export const isProviderMapType = (maptype?: string) =>
+  (maptype || '').match(/^(?:google(?:_(?:roadmap|satellite|hybrid|terrain))?|mapbox|maplibre)$/);
+
 export function addCommonOptions(options: any) {
   options = normalizeArg(options);
   if (!options.imageExtension) options.imageExtension = "jpg";
-  if (options.mapID && !options.url && !options.urls) {
+  if (isProviderMapType(options.maptype)) {
+    delete options.url;
+    delete options.urls;
+  } else if (options.mapID && !options.url && !options.urls) {
     options.url = options.tms
       ? `tiles/${options.mapID}/{z}/{x}/{-y}.${options.imageExtension}`
       : `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtension}`;
