@@ -12,11 +12,11 @@ importers:
   .:
     dependencies:
       '@c4h/weiwudi':
-        specifier: ^0.3.1
-        version: 0.3.1(workbox-routing@7.4.0)
+        specifier: ^1.0.0-rc1
+        version: 1.0.0-rc1(workbox-routing@7.4.0)
       '@maplat/transform':
-        specifier: ^0.5.2
-        version: 0.5.2
+        specifier: ^1.0.0-rc1
+        version: 1.0.0-rc1
       '@turf/turf':
         specifier: ^7.3.1
         version: 7.3.1
@@ -153,8 +153,8 @@ packages:
     resolution: {integrity: sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==}
     engines: {node: '>=18'}
 
-  '@c4h/weiwudi@0.3.1':
-    resolution: {integrity: sha512-B3m/rmx2ckTpiUcaAHjLByVAe+T4e1wznWCWlsqhvgykukru8D3UzWNLdXbZ5dHbTCUNNgtZsQn2ESmg3DFI/Q==}
+  '@c4h/weiwudi@1.0.0-rc1':
+    resolution: {integrity: sha512-/9WKXuXNjWh9FPK+ZimybB2IwO6Rp3q8KGw6KZwypLTPyqsY2L0GoL5/JJtngBgy74yNi0xM7lAmmhJhlMmvyQ==}
     engines: {node: '>=20.0.0', pnpm: '>=9.0.0'}
     peerDependencies:
       workbox-routing: ^7.4.0
@@ -474,8 +474,8 @@ packages:
     resolution: {integrity: sha512-Es6WcD0nO5l+2BOQS4uLfNPYQaNDfbot3X1XUoloz+x0mPDS3eeORZJl06HXjwBG1fOGwCRnzK88LMdxKRrd6Q==}
     engines: {node: '>=6.0.0'}
 
-  '@maplat/transform@0.5.2':
-    resolution: {integrity: sha512-iDn0t3wRxXsgkSwBdbPUFcN/A/syRZgk4O5TcKf/kqyTgHuPnKNWL5PUbo4u9dXOoB/W8RvIdCJAIwk2MUZO8Q==}
+  '@maplat/transform@1.0.0-rc1':
+    resolution: {integrity: sha512-+FDUFP4HEeNMomKbmYbdX6pEfmCfKU23a9tTWK+VbEyOdH7J/RPnFrnlAjpBXEjptNuwIobaZniWPQ6LvIpTfg==}
     engines: {node: '>=20', pnpm: '>=9'}
 
   '@maplibre/maplibre-gl-style-spec@23.3.0':
@@ -2573,7 +2573,7 @@ snapshots:
 
   '@bcoe/v8-coverage@1.0.2': {}
 
-  '@c4h/weiwudi@0.3.1(workbox-routing@7.4.0)':
+  '@c4h/weiwudi@1.0.0-rc1(workbox-routing@7.4.0)':
     dependencies:
       workbox-routing: 7.4.0
 
@@ -2799,7 +2799,7 @@ snapshots:
 
   '@mapbox/whoots-js@3.1.0': {}
 
-  '@maplat/transform@0.5.2':
+  '@maplat/transform@1.0.0-rc1':
     dependencies:
       '@turf/turf': 7.3.1
 
