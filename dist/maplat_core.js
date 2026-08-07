@@ -9178,36 +9178,38 @@ const Mg = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU0AK
   }
 }, rs = (A) => (A || "").match(/^(?:base|overlay|google(?:_(?:roadmap|satellite|hybrid|terrain))?|mapbox|maplibre|osm)$/);
 async function mC(A, t) {
-  if (typeof A == "string" && (A = { ...dC[A] }), A = fe(Object.assign(A, t)), A.label = A.label || A.year, rs(A.maptype)) {
-    const s = A.maptype === "base" ? BA : A.maptype === "overlay" ? Kn : A.maptype === "mapbox" ? Vn : A.maptype === "maplibre" ? _n : Ui;
-    s.isBasemap() ? (A.homePosition = A.homePos, A.mercZoom = A.defZoom) : (A.homePosition || (A.homePosition = A.homePos), A.mercZoom || (A.mercZoom = A.defZoom)), delete A.homePos, delete A.defZoom, A.zoomRestriction && (A.maxZoom = A.maxZoom || A.mercMaxZoom, A.minZoom = A.minZoom || A.mercMinZoom), A.zoomRestriction = A.mercMaxZoom = A.mercMinZoom = void 0, A.imageExtension || (A.imageExtension = "jpg"), ki(A.maptype) ? (delete A.url, delete A.urls) : A.mapID && !A.url && !A.urls && (A.url = A.tms ? `tiles/${A.mapID}/{z}/{x}/{-y}.${A.imageExtension}` : `tiles/${A.mapID}/{z}/{x}/{y}.${A.imageExtension}`), A.weiwudi = await bi(A), A.weiwudi && (A.url = A.weiwudi.url, delete A.urls);
-    const g = await s.createAsync(A);
-    return await g.initialWait, g;
+  typeof A == "string" && (A = { ...dC[A] }), A = fe(Object.assign(A, t));
+  const e = A.label || A.year;
+  if (e !== void 0 && (A.label = e), rs(A.maptype)) {
+    const g = A.maptype === "base" ? BA : A.maptype === "overlay" ? Kn : A.maptype === "mapbox" ? Vn : A.maptype === "maplibre" ? _n : Ui;
+    g.isBasemap() ? (A.homePosition = A.homePos, A.mercZoom = A.defZoom) : (A.homePosition || (A.homePosition = A.homePos), A.mercZoom || (A.mercZoom = A.defZoom)), delete A.homePos, delete A.defZoom, A.zoomRestriction && (A.maxZoom = A.maxZoom || A.mercMaxZoom, A.minZoom = A.minZoom || A.mercMinZoom), A.zoomRestriction = A.mercMaxZoom = A.mercMinZoom = void 0, A.imageExtension || (A.imageExtension = "jpg"), ki(A.maptype) ? (delete A.url, delete A.urls) : A.mapID && !A.url && !A.urls && (A.url = A.tms ? `tiles/${A.mapID}/{z}/{x}/{-y}.${A.imageExtension}` : `tiles/${A.mapID}/{z}/{x}/{y}.${A.imageExtension}`), A.weiwudi = await bi(A), A.weiwudi && (A.url = A.weiwudi.url, delete A.urls);
+    const o = await g.createAsync(A);
+    return await o.initialWait, o;
   } else if (A.noload)
     return A.mercMaxZoom = A.mercMinZoom = void 0, new Jn(A);
-  const e = A.settingFile || `maps/${A.mapID}.json`, n = await fetch(e);
-  if (!n.ok)
+  const n = A.settingFile || `maps/${A.mapID}.json`, i = await fetch(n);
+  if (!i.ok)
     throw new Error("Fail to load map json");
-  const i = await n.json();
-  if (A = fe(Object.assign(i, A)), A.label = A.label || i.year, A.maptype || (A.maptype = "maplat"), rs(A.maptype)) {
-    const s = A.maptype === "base" ? BA : A.maptype === "overlay" ? Kn : A.maptype === "mapbox" ? Vn : A.maptype === "maplibre" ? _n : Ui;
-    s.isBasemap() ? (A.homePosition = A.homePos, A.mercZoom = A.defZoom) : (A.homePosition || (A.homePosition = A.homePos), A.mercZoom || (A.mercZoom = A.defZoom)), delete A.homePos, delete A.defZoom, A.zoomRestriction && (A.maxZoom = A.maxZoom || A.mercMaxZoom, A.minZoom = A.minZoom || A.mercMinZoom), A.zoomRestriction = A.mercMaxZoom = A.mercMinZoom = void 0, A.imageExtension || (A.imageExtension = "jpg"), ki(A.maptype) ? (delete A.url, delete A.urls) : A.mapID && !A.url && !A.urls && (A.url = A.tms ? `tiles/${A.mapID}/{z}/{x}/{-y}.${A.imageExtension}` : `tiles/${A.mapID}/{z}/{x}/{y}.${A.imageExtension}`), A.weiwudi = await bi(A), A.weiwudi && (A.url = A.weiwudi.url, delete A.urls);
-    const g = await s.createAsync(A);
+  const r = await i.json();
+  if (A = fe(Object.assign(r, A)), A.label = A.label || r.year, A.maptype || (A.maptype = "maplat"), rs(A.maptype)) {
+    const g = A.maptype === "base" ? BA : A.maptype === "overlay" ? Kn : A.maptype === "mapbox" ? Vn : A.maptype === "maplibre" ? _n : Ui;
+    g.isBasemap() ? (A.homePosition = A.homePos, A.mercZoom = A.defZoom) : (A.homePosition || (A.homePosition = A.homePos), A.mercZoom || (A.mercZoom = A.defZoom)), delete A.homePos, delete A.defZoom, A.zoomRestriction && (A.maxZoom = A.maxZoom || A.mercMaxZoom, A.minZoom = A.minZoom || A.mercMinZoom), A.zoomRestriction = A.mercMaxZoom = A.mercMinZoom = void 0, A.imageExtension || (A.imageExtension = "jpg"), ki(A.maptype) ? (delete A.url, delete A.urls) : A.mapID && !A.url && !A.urls && (A.url = A.tms ? `tiles/${A.mapID}/{z}/{x}/{-y}.${A.imageExtension}` : `tiles/${A.mapID}/{z}/{x}/{y}.${A.imageExtension}`), A.weiwudi = await bi(A), A.weiwudi && (A.url = A.weiwudi.url, delete A.urls);
+    const o = await g.createAsync(A);
     try {
-      return await g.initialWait, g;
+      return await o.initialWait, o;
     } catch {
-      return g;
+      return o;
     }
   }
   if (delete A.homePos, delete A.defZoom, A.imageExtension || (A.imageExtension = "jpg"), A.mapID && !A.url && !A.urls && (A.url = `tiles/${A.mapID}/{z}/{x}/{y}.${A.imageExtension}`), !A.compiled || !A.compiled.wh)
     throw console.error(
-      `[Maplat] Missing compiled.wh for mapID=${A.mapID}. Check map setting file: ${e}`
+      `[Maplat] Missing compiled.wh for mapID=${A.mapID}. Check map setting file: ${n}`
     ), new Error(`Map ${A.mapID} is missing compiled data.`);
   A.width = A.width || A.compiled.wh[0], A.height = A.height || A.compiled.wh[1], A.weiwudi = await bi(A), A.weiwudi && (A.url = A.weiwudi.url, delete A.urls);
-  const r = await Jn.createAsync(A);
-  return await r.initialWait, await new Promise((s) => {
-    r.setupMapParameter(() => s());
-  }), r;
+  const s = await Jn.createAsync(A);
+  return await s.initialWait, await new Promise((g) => {
+    s.setupMapParameter(() => g());
+  }), s;
 }
 async function bi(A) {
   const t = {};
