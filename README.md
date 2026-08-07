@@ -36,7 +36,7 @@ MaplatCore is open-source under the Apache License 2.0 (from version 0.13.2).
 <!-- SECTION 5: Quick Start -->
 ## Quick Start
 
-> Release-dependent information (ADR-0012). The version `0.13.2` below is the
+> Release-dependent information (ADR-0012). The version `1.0.0-rc1` below is the
 > current release; update it on each new release.
 
 ### Install
@@ -75,7 +75,7 @@ before loading MaplatCore.
 <script src="https://cdn.jsdelivr.net/npm/ol@10/dist/ol.js"></script>
 
 <!-- MaplatCore -->
-<script src="https://cdn.jsdelivr.net/npm/@maplat/core@0.13.2/dist/maplat_core.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@maplat/core@1.0.0-rc1/dist/maplat_core.umd.js"></script>
 
 <div id="map_div"></div>
 <script>
@@ -259,5 +259,5 @@ limitations under the License.
 
 > **Past versions**: Versions before 0.13.2 were distributed under the
 > Maplat Limited License 1.1. The license restoration to Apache 2.0 takes
-> effect from version 0.13.2 onward. Earlier versions available on npmjs.com
+> effect from version 1.0.0-rc1 onward. Earlier versions available on npmjs.com
 > remain under their original limited-license terms.

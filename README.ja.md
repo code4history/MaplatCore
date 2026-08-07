@@ -36,7 +36,7 @@ MaplatCore は Apache License 2.0（バージョン 0.13.2 以降）のオープ
 <!-- SECTION 5: Quick Start -->
 ## クイックスタート
 
-> リリース依存情報（ADR-0012）。下記バージョン `0.13.2` は現在の
+> リリース依存情報（ADR-0012）。下記バージョン `1.0.0-rc1` は現在の
 > リリースです。リリースごとに更新してください。
 
 ### インストール
@@ -75,7 +75,7 @@ OpenLayers を読み込む必要があります。
 <script src="https://cdn.jsdelivr.net/npm/ol@10/dist/ol.js"></script>
 
 <!-- MaplatCore -->
-<script src="https://cdn.jsdelivr.net/npm/@maplat/core@0.13.2/dist/maplat_core.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@maplat/core@1.0.0-rc1/dist/maplat_core.umd.js"></script>
 
 <div id="map_div"></div>
 <script>
