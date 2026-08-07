@@ -92,3 +92,5 @@ playwright/.cache/
 *_output.txt
 test_output*.txt
 *.png
+# Serena MCP の索引ディレクトリ（MaplatEditor と同様）
+.serena/
