@@ -122,7 +122,14 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
   }
 
   options = normalizeArg(Object.assign(options, commonOptions));
-  options.label = options.label || options.year;
+  // m6-t10 §3.5.2: 解決結果が undefined のときは label キーを実体化しない。
+  // 実体化すると、settingFile 経路（:188 の Object.assign(resp, options)）で
+  // 設定ファイル側の label が undefined で潰れる（Object.assign は値が undefined でも
+  // own enumerable property をコピーするため）。:189 のフォールバックは resp.year であり、
+  // ベースマップは year を持たないため復旧もしない。
+  // label / year のどちらかが存在する場合の結果は従来と同一。
+  const resolvedLabel = options.label || options.year;
+  if (resolvedLabel !== undefined) options.label = resolvedLabel;
   if (checkMapTypeIsWMTS(options.maptype)) {
     const targetSrc =
       options.maptype === "base"
