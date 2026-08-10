@@ -1,6 +1,8 @@
 # MaplatApp API signatures
 
-> Release-dependent signatures for `@maplat/core` (`0.13.2`).
+> Release-dependent signatures for `@maplat/core`.
+> The release these signatures track is listed in the release block of the
+> [README](../../README.md#quick-start).
 > For the conceptual guide see the
 > [Wiki API-Reference](https://github.com/code4history/MaplatCore/wiki/API-Reference).
 

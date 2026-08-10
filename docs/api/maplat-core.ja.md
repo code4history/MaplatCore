@@ -1,6 +1,8 @@
 # MaplatApp API シグネチャ
 
-> `@maplat/core`（`0.13.2`）のリリース依存シグネチャ。
+> `@maplat/core` のリリース依存シグネチャ。
+> 対象リリースは [README](../../README.ja.md#クイックスタート) のリリースブロックに
+> 記載しています。
 > 概念解説は [Wiki API-Reference](https://github.com/code4history/MaplatCore/wiki/API-Reference) を参照してください。
 
 以下のメソッドはすべて `MaplatApp.createObject(option)` が返す

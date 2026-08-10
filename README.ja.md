@@ -3,7 +3,6 @@
 
 <p align="center">
   <a href="https://github.com/code4history/MaplatCore/actions/workflows/test.yml"><img src="https://github.com/code4history/MaplatCore/actions/workflows/test.yml/badge.svg" alt="CI" /></a>
-  <a href="https://www.npmjs.com/package/@maplat/core"><img src="https://img.shields.io/npm/v/@maplat/core" alt="npm version" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/npm/l/@maplat/core" alt="License" /></a>
 </p>
 
@@ -36,17 +35,21 @@ MaplatCore は Apache License 2.0（バージョン 0.13.2 以降）のオープ
 <!-- SECTION 5: Quick Start -->
 ## クイックスタート
 
-> リリース依存情報（ADR-0012）。下記バージョン `1.0.0-rc1` は現在の
-> リリースです。リリースごとに更新してください。
+<!-- release-pinned:start -->
+> **現在のリリース: `1.0.0-rc1`**（リリース候補）。このブロックは本リポジトリで唯一
+> リリース版数を持つ場所です（ADR-0012）。ブロックの外はすべて 1.0 正式版を前提に
+> 書かれています。
+> npm: [`@maplat/core`](https://www.npmjs.com/package/@maplat/core)
+> [![npm rc](https://img.shields.io/npm/v/@maplat/core/rc)](https://www.npmjs.com/package/@maplat/core)
 
 ### インストール
 
 ```bash
 # pnpm（推奨）
-pnpm add @maplat/core
+pnpm add @maplat/core@rc
 
 # npm
-npm install @maplat/core
+npm install @maplat/core@rc
 ```
 
 ### 最小利用例
@@ -203,6 +206,7 @@ pnpm typecheck    # 型チェック (TypeScript) を実行
 pnpm lint         # リンター/フォーマッター (ESLint/Prettier) を実行
 pnpm run test:e2e # E2E テスト (Playwright) を実行
 ```
+<!-- release-pinned:end -->
 
 <!-- SECTION 6: Prerequisites -->
 ## 動作環境
