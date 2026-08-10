@@ -20,5 +20,5 @@ here for the canonical list.
 ## Relationship to README
 
 The README's Quick Start section points here for signatures and to the Wiki
-for the conceptual guide. See [../README.md](../README.md) for installation
+for the conceptual guide. See [../../README.md](../../README.md) for installation
 and minimal usage.

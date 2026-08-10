@@ -127,6 +127,40 @@ Override semantics:
 See `src/normalize_pois.ts` (`isPoiLayerRef`, `PoiLayerRef`) for the
 programmatic surface.
 
+### Attribution and licensing (`attr` / `dataAttr`)
+
+Map metadata carries attribution and licensing as two independent pairs: one
+for the **map image** itself, and one for the **data** (control points, POIs,
+and other derived data). Keeping them apart matters because a scanned map sheet
+and the georeferencing data built on top of it usually come from different
+rights holders.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `attr` | `string` or `{ <lang>: string }` | **Map image attribution** — who the map image is credited to |
+| `dataAttr` | `string` or `{ <lang>: string }` | **Data attribution** — who the data is credited to |
+| `license` | `string` | **Map image license** |
+| `dataLicense` | `string` | **Data license** |
+| `licenseNote` | `string` or `{ <lang>: string }` | Free-form supplement to `license` |
+| `dataLicenseNote` | `string` or `{ <lang>: string }` | Free-form supplement to `dataLicense` |
+
+`attr` / `dataAttr` accept a localized object so that a credit line can differ
+per viewer language; `license` / `dataLicense` are plain strings. They are not
+enumerations — the library stores and renders whatever string it is given. In
+practice two conventional values are used:
+
+- `"ODbL"` — ODbL (Open Database License)
+- `"Custom"` — Custom license, with the actual terms written into
+  `licenseNote` / `dataLicenseNote`
+
+The bundled base maps in `src/source_ex.ts` show both conventions: OpenStreetMap
+is declared as `attr: "©︎ OpenStreetMap contributors"` with `license: "Custom"`
+and `dataLicense: "ODbL"`, while the GSI base map uses `"Custom"` for both and
+spells the terms out in `licenseNote`.
+
+Choosing these values in a UI is the authoring tool's concern (MaplatEditor);
+MaplatCore only defines what the fields mean and renders the resulting credit.
+
 ### Lifecycle
 
 - See [docs/ui-core-lifecycle.md](docs/ui-core-lifecycle.md) for lifecycle
@@ -196,8 +230,8 @@ pnpm add ol
 
 If you use Vector Tiles, you may also need Mapbox GL JS or MapLibre GL JS:
 
-- `mapbox-gl`: `^1.0.0 || ^2.0.0 || ^3.0.0` (optional)
-- `maplibre-gl`: `^3.0.0 || ^4.0.0` (optional)
+- `mapbox-gl`: `^2.0.0 || ^3.0.0` (optional)
+- `maplibre-gl`: `^5.0.0 || ^6.0.0` (optional)
 
 <!-- SECTION 8: Ecosystem / Related Repositories -->
 ## Ecosystem
@@ -217,6 +251,9 @@ repository; the Sister repositories table below is the public substitute)*
 | [MaplatTin](https://github.com/code4history/MaplatTin) | Apache 2.0 | `@maplat/tin` | TIN conversion |
 | [MaplatTransform](https://github.com/code4history/MaplatTransform) | Apache 2.0 | `@maplat/transform` | Coordinate transform |
 | [MaplatEditor](https://github.com/code4history/MaplatEditor) | Apache 2.0 | — | Data authoring tool (desktop) |
+| [Chuci](https://github.com/code4history/Chuci) | MIT | `@c4h/chuci` | Multimedia swiper & viewer Web Components |
+| [Quyuan](https://github.com/code4history/Quyuan) | MIT | `@c4h/quyuan` | GeoJSON template engine + multimedia viewer Web Components |
+| [Weiwudi](https://github.com/code4history/Weiwudi) | MIT | `@c4h/weiwudi` | Service Worker for tile cache |
 
 > MaplatEditor is the data authoring tool used to create the maps and POIs
 > that the viewers above render. The Maplat ecosystem is end-to-end:
