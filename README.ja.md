@@ -96,7 +96,7 @@ OpenLayers を読み込む必要があります。
 地図/アプリ設定の `pois` フィールドは複数の歴史的形式を受け付けます。
 既存形式はすべて後方互換でそのまま動作します。新たに **レイヤ参照
 （ラッパー）** 形式を追加し、レイヤ本体の FeatureCollection を編集せずに
-レイヤ単位の表示上書き（`hide` / `title` / `icon` / `selectedIcon`）を
+レイヤ単位の表示上書き（`hide` / `title` / `icon` / `selectedIcon`（選択時アイコン））を
 アプリ側から与えられるようにしました。
 
 | 形式 | 形 | 挙動 |
@@ -121,6 +121,40 @@ OpenLayers を読み込む必要があります。
 
 プログラマティックな表面は `src/normalize_pois.ts`（`isPoiLayerRef` /
 `PoiLayerRef`）を参照してください。
+
+### 帰属とライセンス（`attr` / `dataAttr`）
+
+地図メタデータは、帰属とライセンスを独立した 2 系統で保持します。ひとつは
+**地図画像**そのもの、もうひとつは**データ**（対応点・POI などの派生データ）に
+対するものです。スキャンした地図原図と、その上に構築した位置合わせデータとで
+権利者が異なるのが通常であるため、両者を分けて持ちます。
+
+| フィールド | 型 | 意味 |
+|---|---|---|
+| `attr` | `string` または `{ <lang>: string }` | **地図画像帰属** — 地図画像のクレジット先 |
+| `dataAttr` | `string` または `{ <lang>: string }` | **データ帰属** — データのクレジット先 |
+| `license` | `string` | **地図画像ライセンス** |
+| `dataLicense` | `string` | **データライセンス** |
+| `licenseNote` | `string` または `{ <lang>: string }` | `license` の自由記述の補足 |
+| `dataLicenseNote` | `string` または `{ <lang>: string }` | `dataLicense` の自由記述の補足 |
+
+`attr` / `dataAttr` は多言語オブジェクトを受け付けるため、ビューアの言語ごとに
+クレジット文言を変えられます。`license` / `dataLicense` は単なる文字列であり、
+列挙型ではありません（ライブラリは与えられた文字列をそのまま保持・表示します）。
+実運用では次の 2 つが慣例値として使われます。
+
+- `"ODbL"` — ODbL (Open Database License)
+- `"Custom"` — カスタムライセンス。実際の条件は `licenseNote` /
+  `dataLicenseNote` に書きます
+
+同梱ベースマップの定義（`src/source_ex.ts`）に両方の実例があります。
+OpenStreetMap は `attr: "©︎ OpenStreetMap contributors"` に対して
+`license: "Custom"` / `dataLicense: "ODbL"`、地理院地図は両方とも `"Custom"` と
+した上で `licenseNote` に条件を明記しています。
+
+これらの値を UI から選ばせるのはデータ作成ツール（MaplatEditor）の責務です。
+MaplatCore はフィールドの意味の定義と、結果として得られるクレジットの描画のみを
+受け持ちます。
 
 ### ライフサイクル
 
@@ -194,8 +228,8 @@ pnpm add ol
 ベクタータイルを使用する場合は Mapbox GL JS または MapLibre GL JS も
 必要になることがあります:
 
-- `mapbox-gl`: `^1.0.0 || ^2.0.0 || ^3.0.0`（オプション）
-- `maplibre-gl`: `^3.0.0 || ^4.0.0`（オプション）
+- `mapbox-gl`: `^2.0.0 || ^3.0.0`（オプション）
+- `maplibre-gl`: `^5.0.0 || ^6.0.0`（オプション）
 
 <!-- SECTION 8: Ecosystem / Related Repositories -->
 ## エコシステム
@@ -215,6 +249,9 @@ Maplat エコシステムの一部です。全容は下記エコシステム図�
 | [MaplatTin](https://github.com/code4history/MaplatTin) | Apache 2.0 | `@maplat/tin` | TIN 変換 |
 | [MaplatTransform](https://github.com/code4history/MaplatTransform) | Apache 2.0 | `@maplat/transform` | 座標変換 |
 | [MaplatEditor](https://github.com/code4history/MaplatEditor) | Apache 2.0 | — | データ作成ツール（デスクトップ） |
+| [Chuci](https://github.com/code4history/Chuci) | MIT | `@c4h/chuci` | マルチメディアスワイパー/ビューア Web Components |
+| [Quyuan](https://github.com/code4history/Quyuan) | MIT | `@c4h/quyuan` | GeoJSON テンプレートエンジン＋マルチメディアビューア Web Components |
+| [Weiwudi](https://github.com/code4history/Weiwudi) | MIT | `@c4h/weiwudi` | タイルキャッシュ用 Service Worker |
 
 > MaplatEditor は上記ビューアライブラリが描画する地図・POI を作成する
 > データ作成ツールです。Maplat エコシステムはエンドツーエンド:
