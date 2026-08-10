@@ -103,6 +103,30 @@ layers.
     being alphabetically sorted). Each entry is a `PoiLayer` object with `id`,
     `namespaceID`, `name`, `pois`, and optional `hide` / `icon` /
     `selectedIcon` fields.
+  - The optional fields are the **resolved** values. They may come from either
+    of two levels: the POI source's own `FeatureCollection.properties`, or a
+    per-reference override supplied by the layer ref (wrapper) in
+    `setting.pois`. `listPoiLayers` does not report which level a value came
+    from — see [Override resolution](#override-resolution) for the rule.
+
+### Override resolution
+
+A layer ref (wrapper) element of `setting.pois` has the form
+`{ layer: <URL | FeatureCollection>, hide?, title?, icon?, selectedIcon? }`.
+The referenced FeatureCollection is fetched and normalised first, then the
+override keys are merged onto the resulting layer.
+
+- **Override wins over `FeatureCollection.properties` of the same name.**
+- Only the four keys above are override keys. **Unknown keys are dropped with
+  a `console.warn`** — no exception is thrown, so a wrapper written for a newer
+  release stays loadable on an older one.
+- `title` maps to `PoiLayer.name`; `icon` / `selectedIcon` map to the
+  same-named fields. `hide: true` (boolean `true` only) sets `hide`; other
+  values leave the source-side value untouched.
+- Internal layer keys (`pois` / `id` / `namespaceID`) are not override keys and
+  cannot be set from a wrapper.
+- The wrapper object passed in is **not mutated**, so the same source file can
+  be referenced by several maps/apps and presented differently in each.
 
 ## GPS & user position
 
