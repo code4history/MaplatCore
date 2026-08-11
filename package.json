@@ -63,7 +63,7 @@
     "@c4h/weiwudi": "^1.0.0-rc1",
     "@maplat/transform": "^1.0.0-rc1",
     "@turf/turf": "^7.3.1",
-    "dompurify": "^3.4.12",
+    "dompurify": "^3.4.13",
     "lodash.template": "^4.18.1",
     "whatwg-fetch": "^3.6.20"
   },
