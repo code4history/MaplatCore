@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MaplatCore pois layer ref (wrapper) Verification</title>
+    <script type="importmap">
+    {
+        "imports": {
+            "ol/": "https://esm.sh/ol@10.3.1/",
+            "ol": "https://esm.sh/ol@10.3.1"
+        }
+    }
+    </script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@10.3.1/ol.css">
+    <link rel="stylesheet" href="../../dist/maplat_core.css">
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        #map_div {
+            width: 100%;
+            height: 100%;
+        }
+
+        #controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="controls">
+        <h3>pois layer ref (wrapper) Test</h3>
+        <div id="status">Initializing...</div>
+    </div>
+    <div id="map_div"></div>
+
+    <script type="module">
+        import { MaplatApp, assets } from '../../dist/maplat_core.js';
+
+        // icon 上書き検証用のテスト icon。bundle 済み assets.redcircle（base64）を使う。
+        // 設計 §6.2「相対URL」は Vite に publicDir がなく dev/dist 両方で /assets/ が
+        // serve されない（SPA fallback で text/html）ため、確実ロードのため base64 bundle へ調整。
+        // 外部ネットワーク依存を作らないという設計の本旨は満たす。
+        const testIcon = assets.redcircle;
+        window.__testIcon = testIcon;
+
+        // 3 レイヤ構成（設計 §6.2 v1.1 分離）:
+        //  A: インライン FC（id:"hidden", 2 POI）に hide:true を上書き → 非表示検証
+        //  B: インライン FC（id:"plain", 1 POI）= ラッパーなし基準
+        //  C: インライン FC（id:"iconized", 1 POI）に icon 上書き → マーカー画像反映検証（表示される）
+        const fcHidden = {
+            id: "hidden",
+            type: "FeatureCollection",
+            features: [
+                { type: "Feature", id: "hidden_0", properties: { name: "hidden0" }, geometry: { type: "Point", coordinates: [141.35, 43.06] } },
+                { type: "Feature", id: "hidden_1", properties: { name: "hidden1" }, geometry: { type: "Point", coordinates: [141.36, 43.06] } }
+            ]
+        };
+        const fcPlain = {
+            id: "plain",
+            type: "FeatureCollection",
+            features: [
+                { type: "Feature", id: "plain_0", properties: { name: "plain0" }, geometry: { type: "Point", coordinates: [141.35, 43.07] } }
+            ]
+        };
+        const fcIconized = {
+            id: "iconized",
+            type: "FeatureCollection",
+            features: [
+                { type: "Feature", id: "iconized_0", properties: { name: "iconized0" }, geometry: { type: "Point", coordinates: [141.36, 43.07] } }
+            ]
+        };
+
+        const appOption = {
+            appid: 'kochizu',
+            mapboxToken: '',
+            div: 'map_div',
+            debug: true,
+            setting: {
+                sources: ["osm"],
+                homePosition: [141.35, 43.06],
+                defaultZoom: 14,
+                pois: [
+                    { layer: fcHidden, hide: true },
+                    fcPlain,
+                    { layer: fcIconized, icon: testIcon }
+                ]
+            }
+        };
+
+        try {
+            const app = new MaplatApp(appOption);
+            window.__maplatApp = app;
+            await app.waitReady;
+            document.getElementById('status').innerText = 'SUCCESS: Map Ready';
+            document.getElementById('status').style.color = 'green';
+            console.log('MaplatApp Ready (pois layer ref)');
+        } catch (e) {
+            console.error(e);
+            document.getElementById('status').innerText = 'ERROR: ' + e.message;
+            document.getElementById('status').style.color = 'red';
+        }
+    </script>
+</body>
+
+</html>

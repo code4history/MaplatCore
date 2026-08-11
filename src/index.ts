@@ -1,5 +1,6 @@
 import CustomEvent from "./customevent";
 import { Logger, LOGGER_LEVEL } from "./logger";
+import { bindProviderGlToSource } from "./provider_gl_bind";
 import {
   createElement,
   normalizeDegree,
@@ -30,6 +31,9 @@ import defaultpin_selected from "../parts/defaultpin_selected.png";
 import defaultpin from "../parts/defaultpin.png";
 import { Coordinate } from "ol/coordinate";
 import BaseEvent from "ol/events/Event";
+
+// m1-t4: サニタイズ層の公開窓口（許可リストの正本は src/sanitize.ts の1箇所のみ）
+export { sanitizeHtml, escapeAttr, toPlainText, buildSlideAttrs } from "./sanitize";
 
 interface AppData {
   sources: string[];
@@ -123,6 +127,27 @@ export class GPSRequestEvent extends BaseEvent {
   constructor() {
     super("gps_request");
   }
+}
+
+// POI レイヤ未解決時の開発用 warning ヘルパ（m18-t6 §5.4）
+// getPoiLayer には置かない（state 復元経路 :1546-1553 が直接呼ぶ query 契約）。
+// "main" 先頭ガードは仕様上の拒否であり warning 対象外。
+function warnPoiLayerNotFound(id: string, api: string) {
+  console.warn(
+    `MaplatCore: POI layer "${id}" not found (${api}). Pass namespaceID (e.g. "<mapID>#<layerId>" for map-derived layers), not the layer-local id.`
+  );
+}
+
+// 公開型: listPoiLayers の戻り値要素（m18-t6 §5.2 / §8）
+export interface PoiLayer {
+  id: string;
+  namespaceID: string;
+  name: string | Record<string, string>;
+  pois: any[];
+  hide?: boolean;
+  icon?: string;
+  selectedIcon?: string;
+  [key: string]: any;
 }
 
 export class MaplatApp extends EventTarget {
@@ -607,7 +632,10 @@ export class MaplatApp extends EventTarget {
         keyboard: false,
         pitchWithRotate: false,
         scrollZoom: false,
-        touchZoomRotate: false
+        touchZoomRotate: false,
+        // m6-t9 §3.3: mapbox-gl-js v3 系は既定・状況により Globe 投影になり得るため、
+        // Maplat は常に平面（Mercator）表示を前提とする本ライブラリの用途上、明示的に固定する
+        projection: 'mercator'
       });
     }
 
@@ -663,29 +691,46 @@ export class MaplatApp extends EventTarget {
 
   // Async initializer 9: Handle sources loading result
   async handleSources(sources: any) {
-    this.mercSrc = sources.reduce((prev: any, curr: any) => {
-      if (prev) return prev;
-      if (curr.isBasemap()) return curr;
-    }, null);
     const cache: any[] = [];
     this.cacheHash = {};
     sources.forEach((source: any) => {
       source.setMap(this.mapObject);
-      if (source.isMapbox()) {
-        if (!this.mapboxMap) {
-          throw "To use Mapbox based maps, you need to include Mapbox GL JS and provide it via mapboxgl option.";
+      // m6-t5: GL 未ロード時は throw せず当該ソースを落とす（ADR-0014）
+      const keep = bindProviderGlToSource(source, {
+        mapboxMap: this.mapboxMap,
+        maplibreMap: this.maplibreMap,
+        warn: (msg, ...args) => {
+          // Logger.warn は level に応じて no-op になり得る
+          if (this.logger?.warn) this.logger.warn(msg, ...args);
+          else console.warn(msg, ...args);
         }
-        source.mapboxMap = this.mapboxMap;
-      } else if (source.isMapLibre && source.isMapLibre()) {
-        if (!this.maplibreMap) {
-          throw "To use MapLibre based maps, you need to include MapLibre GL JS and provide it via maplibregl option.";
-        }
-        source.maplibreMap = this.maplibreMap;
-      }
+      });
+      if (!keep) return;
       cache.push(source);
       this.cacheHash[source.mapID] = source;
     });
+    // m6-t5 v1.3.1: mercSrc は cache（GL 未ロードで落とされたソースを含まない）から選ぶ。
+    // 未フィルタの sources から選ぶと、混在 app + GL 未ロード時に死んだ provider ソースを
+    // 指し、backMap 経由で毎フレーム error を吐く（H-4 主要シナリオ）
+    this.mercSrc = cache.reduce((prev: any, curr: any) => {
+      if (prev) return prev;
+      if (curr.isBasemap()) return curr;
+    }, null);
     this.dispatchEvent(new CustomEvent("sourceLoaded", sources));
+    if (cache.length === 0) {
+      // m6-t5 AC22: 使えるソースが0件（provider-only + GL 未ロード等）。
+      // 初期地図選択と操作/自動ハンドラ登録を行わない（this.from 未設定のまま
+      // postrender/pointermove/click が走り TypeError で停止するのを防ぐ。ADR-0014）。
+      // lifecycle 2相は実行する（UI 側が ready を待つ経路をハングさせない）
+      if (this.logger?.warn) {
+        this.logger.warn("No usable sources; skipping map initialization handlers");
+      } else {
+        console.warn("No usable sources; skipping map initialization handlers");
+      }
+      await this.runLifecyclePhase("core-ready");
+      await this.runLifecyclePhase("ui-ready");
+      return;
+    }
     await this.setInitialMap(cache);
     this.setMapClick();
     this.setPointerEvents();
@@ -965,6 +1010,20 @@ export class MaplatApp extends EventTarget {
         }
       });
     });
+  }
+  // 現在の地図回転角を度数で返す (入力側restore.position.rotationと同じ単位系, #61)
+  getRotation(): number {
+    const view = this.mapObject?.getView();
+    if (!view) return 0;
+    return normalizeDegree((view.getRotation() * 180) / Math.PI);
+  }
+  // 現在の実世界方位角を度数で返す。TIN地図では歪み補正込みの非同期計算になるためPromiseを返す (#61)
+  async getDirection(): Promise<number> {
+    // ソース未準備時やベース地図のみの状態では、方位角は画面回転角に一致する
+    if (!this.from || !this.mercSrc) return this.getRotation();
+    const mercs = await this.from.viewpoint2MercsAsync();
+    const viewpoint = await this.mercSrc.mercs2ViewpointAsync(mercs);
+    return normalizeDegree((viewpoint[2]! * 180) / Math.PI);
   }
   currentMapInfo() {
     return createMapInfo(this.from);
@@ -1303,14 +1362,11 @@ export class MaplatApp extends EventTarget {
     );
   }
   listPoiLayers(hideOnly = false, nonzero = false) {
+    // アルファベット順ソートを廃止し pois 定義順（アプリ設定の並び順）を保持する。
+    // main レイヤのみ先頭固定。Array.prototype.sort は ES2019+ で stable なので
+    // 0 を返すペアは Object.keys の挿入順（= normalize_pois の pois 配列順）が保たれる。
     const appPois = Object.keys(this.pois)
-      .sort((a, b) => {
-        if (a === "main") return -1;
-        else if (b === "main") return 1;
-        else if (a < b) return -1;
-        else if (a > b) return 1;
-        else return 0;
-      })
+      .sort((a, b) => (a === "main" ? -1 : b === "main" ? 1 : 0))
       .map(key => this.pois[key])
       .filter(layer =>
         nonzero
@@ -1329,27 +1385,31 @@ export class MaplatApp extends EventTarget {
   }
   showPoiLayer(id: any) {
     const layer = this.getPoiLayer(id);
-    if (layer) {
-      delete layer.hide;
-      this.requestUpdateState({
-        hideLayer: this.listPoiLayers(true)
-          .map(layer => layer.namespaceID)
-          .join(",")
-      });
-      this.redrawMarkers();
+    if (!layer) {
+      warnPoiLayerNotFound(id, "showPoiLayer");
+      return;
     }
+    delete layer.hide;
+    this.requestUpdateState({
+      hideLayer: this.listPoiLayers(true)
+        .map(layer => layer.namespaceID)
+        .join(",")
+    });
+    this.redrawMarkers();
   }
   hidePoiLayer(id: any) {
     const layer = this.getPoiLayer(id);
-    if (layer) {
-      layer.hide = true;
-      this.requestUpdateState({
-        hideLayer: this.listPoiLayers(true)
-          .map(layer => layer.namespaceID)
-          .join(",")
-      });
-      this.redrawMarkers();
+    if (!layer) {
+      warnPoiLayerNotFound(id, "hidePoiLayer");
+      return;
     }
+    layer.hide = true;
+    this.requestUpdateState({
+      hideLayer: this.listPoiLayers(true)
+        .map(layer => layer.namespaceID)
+        .join(",")
+    });
+    this.redrawMarkers();
   }
   getPoiLayer(id: any) {
     if (!id.includes("#")) {
@@ -1376,13 +1436,18 @@ export class MaplatApp extends EventTarget {
       if (source) {
         source.addPoiLayer(splits[1], data);
         this.redrawMarkers();
+      } else {
+        warnPoiLayerNotFound(id, "addPoiLayer");
       }
     }
   }
   removePoiLayer(id: any) {
     if (id === "main") return;
-    if (!this.pois[id]) return;
     if (!id.includes("#")) {
+      if (!this.pois[id]) {
+        warnPoiLayerNotFound(id, "removePoiLayer");
+        return;
+      }
       delete this.pois[id];
       this.requestUpdateState({
         hideLayer: this.listPoiLayers(true)
@@ -1394,16 +1459,22 @@ export class MaplatApp extends EventTarget {
     } else {
       const splits = id.split("#");
       const source = this.cacheHash[splits[0]];
-      if (source) {
-        source.removePoiLayer(splits[1]);
-        this.requestUpdateState({
-          hideLayer: this.listPoiLayers(true)
-            .map(layer => layer.namespaceID)
-            .join(",")
-        });
-        this.dispatchPoiNumber();
-        this.redrawMarkers();
+      if (!source) {
+        warnPoiLayerNotFound(id, "removePoiLayer");
+        return;
       }
+      if (!source.getPoiLayer(splits[1])) {
+        warnPoiLayerNotFound(id, "removePoiLayer");
+        return;
+      }
+      source.removePoiLayer(splits[1]);
+      this.requestUpdateState({
+        hideLayer: this.listPoiLayers(true)
+          .map(layer => layer.namespaceID)
+          .join(",")
+      });
+      this.dispatchPoiNumber();
+      this.redrawMarkers();
     }
   }
   addLine(data: any) {
@@ -1461,17 +1532,22 @@ export class MaplatApp extends EventTarget {
                     if (this.from!.isWmts()) {
                       backTo =
                         this.from instanceof TmsMap
-                          ? this.mapObject.getSource()
-                          : // If current foreground is TMS overlay, set current basemap as new background
-                          this.from; // If current foreground source is basemap, set current foreground as new background
+                          ? // If current foreground is a TMS overlay, use the current
+                            // basemap as new background. On initial load no foreground
+                            // source is set yet, so fall back to the default basemap
+                            // (mercSrc) to avoid a null background source.
+                            this.mapObject.getSource() || now
+                          : this.from; // If current foreground source is basemap, set current foreground as new background
                     }
-                    this.backMap.exchangeSource(backTo);
+                    if (backTo) this.backMap.exchangeSource(backTo);
                   } else {
                     // If current background source is set, use it again
                     backTo = backSrc;
                   }
                 }
-                this.requestUpdateState({ backgroundID: backTo.mapID });
+                if (backTo) {
+                  this.requestUpdateState({ backgroundID: backTo.mapID });
+                }
               } else {
                 // If new foreground source is basemap or TMS overlay, remove source from background map
                 this.backMap.exchangeSource();
@@ -1488,9 +1564,12 @@ export class MaplatApp extends EventTarget {
                 const backToLocal = backSrc || now;
                 this.mapObject.exchangeSource(backToLocal);
               }
-              this.requestUpdateState({
-                backgroundID: this.mapObject.getSource().mapID
-              });
+              // On initial load a TMS-overlay foreground may not have an underlying
+              // basemap source yet; guard against a null source to avoid a crash.
+              const foreground = this.mapObject.getSource();
+              if (foreground) {
+                this.requestUpdateState({ backgroundID: foreground.mapID });
+              }
             } else {
               // Remove overlay from foreground and set current source to foreground
               this.mapObject.setLayer();
@@ -1787,6 +1866,10 @@ export class MaplatApp extends EventTarget {
 }
 export { createElement };
 export { CustomEvent };
+// 外部(MaplatEditor等)がdeep importせずに地図・ソースを直接生成できるようにする (#71)
+export { MaplatMap };
+export { mapSourceFactory };
+export type { MaplatSource, BackmapSource };
 
 // Static method for cleaner initialization
 MaplatApp.createObject = function (option: any): Promise<MaplatApp> {

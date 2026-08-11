@@ -3,7 +3,6 @@
 
 <p align="center">
   <a href="https://github.com/code4history/MaplatCore/actions/workflows/test.yml"><img src="https://github.com/code4history/MaplatCore/actions/workflows/test.yml/badge.svg" alt="CI" /></a>
-  <a href="https://www.npmjs.com/package/@maplat/core"><img src="https://img.shields.io/npm/v/@maplat/core" alt="npm version" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/npm/l/@maplat/core" alt="License" /></a>
 </p>
 
@@ -36,17 +35,21 @@ MaplatCore は Apache License 2.0（バージョン 0.13.2 以降）のオープ
 <!-- SECTION 5: Quick Start -->
 ## クイックスタート
 
-> リリース依存情報（ADR-0012）。下記バージョン `0.13.2` は現在の
-> リリースです。リリースごとに更新してください。
+<!-- release-pinned:start -->
+> **現在のリリース: `1.0.0-rc1`**（リリース候補）。このブロックは本リポジトリで唯一
+> リリース版数を持つ場所です（ADR-0012）。ブロックの外はすべて 1.0 正式版を前提に
+> 書かれています。
+> npm: [`@maplat/core`](https://www.npmjs.com/package/@maplat/core)
+> [![npm rc](https://img.shields.io/npm/v/@maplat/core/rc)](https://www.npmjs.com/package/@maplat/core)
 
 ### インストール
 
 ```bash
 # pnpm（推奨）
-pnpm add @maplat/core
+pnpm add @maplat/core@rc
 
 # npm
-npm install @maplat/core
+npm install @maplat/core@rc
 ```
 
 ### 最小利用例
@@ -75,7 +78,7 @@ OpenLayers を読み込む必要があります。
 <script src="https://cdn.jsdelivr.net/npm/ol@10/dist/ol.js"></script>
 
 <!-- MaplatCore -->
-<script src="https://cdn.jsdelivr.net/npm/@maplat/core@0.13.2/dist/maplat_core.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@maplat/core@1.0.0-rc1/dist/maplat_core.umd.js"></script>
 
 <div id="map_div"></div>
 <script>
@@ -90,6 +93,71 @@ OpenLayers を読み込む必要があります。
 ```
 
 ※最新の互換バージョンを使用してください。
+
+### POI 仕様（`setting.pois`）
+
+地図/アプリ設定の `pois` フィールドは複数の歴史的形式を受け付けます。
+既存形式はすべて後方互換でそのまま動作します。新たに **レイヤ参照
+（ラッパー）** 形式を追加し、レイヤ本体の FeatureCollection を編集せずに
+レイヤ単位の表示上書き（`hide` / `title` / `icon` / `selectedIcon`（選択時アイコン））を
+アプリ側から与えられるようにしました。
+
+| 形式 | 形 | 挙動 |
+|---|---|---|
+| URL 文字列 | `"pois/x.geojson"` | fetch して正規化（既存） |
+| インライン FC | `{ type: "FeatureCollection", ... }` | そのまま正規化（既存） |
+| FC 配列 | `[FC, FC, ...]` | 各 FC が `id` を key にレイヤ化（既存） |
+| POI オブジェクト配列 | `[{lng, lat, name}, ...]` | 単一 `main` レイヤ（既存） |
+| 旧レイヤ辞書 | `{ "<key>": <cluster>, ... }` | 各値を正規化（既存） |
+| **レイヤ参照（ラッパー）— 配列要素** | `{ layer: <URL\|FC>, hide?, title?, icon?, selectedIcon? }` | `layer` を fetch/解決し FC を正規化した上で、上書きを結果 cluster へ合成 |
+| **レイヤ参照 — `pois` 全体** | `{ layer: <URL\|FC>, hide?, title?, icon?, selectedIcon? }`（**上書きキー1つ以上必須**） | 同じ合成を FC `id` を key に行う。上書きキーがない場合は旧レイヤ辞書（key=`"layer"`）として扱い後方互換を保つ |
+
+上書きのセマンティクス:
+
+- 上書きキー4つのみ受理。未知キーは **`console.warn` で破棄**（throw しない・forward 互換）。
+- `hide: true`（真偽値 true のみ）が `cluster.hide = true` を設定。`hide:false` / 非真偽値は無視（データ側の値が残る）。
+- `title`（非空文字列、または空でない多言語オブジェクト）は `cluster.name` へ。
+- `icon` / `selectedIcon`（非空文字列のみ）は `cluster.icon` / `cluster.selectedIcon` へ。
+- 上書きは同名の `FeatureCollection.properties` より **優先** される。
+- cluster 内部キー（`pois` / `id` / `namespaceID` / `__nextId`）はラッパーから上書き不能（上書きキーに含まれない）。
+- 入力オブジェクトは **破壊しない**。
+
+プログラマティックな表面は `src/normalize_pois.ts`（`isPoiLayerRef` /
+`PoiLayerRef`）を参照してください。
+
+### 帰属とライセンス（`attr` / `dataAttr`）
+
+地図メタデータは、帰属とライセンスを独立した 2 系統で保持します。ひとつは
+**地図画像**そのもの、もうひとつは**データ**（対応点・POI などの派生データ）に
+対するものです。スキャンした地図原図と、その上に構築した位置合わせデータとで
+権利者が異なるのが通常であるため、両者を分けて持ちます。
+
+| フィールド | 型 | 意味 |
+|---|---|---|
+| `attr` | `string` または `{ <lang>: string }` | **地図画像帰属** — 地図画像のクレジット先 |
+| `dataAttr` | `string` または `{ <lang>: string }` | **データ帰属** — データのクレジット先 |
+| `license` | `string` | **地図画像ライセンス** |
+| `dataLicense` | `string` | **データライセンス** |
+| `licenseNote` | `string` または `{ <lang>: string }` | `license` の自由記述の補足 |
+| `dataLicenseNote` | `string` または `{ <lang>: string }` | `dataLicense` の自由記述の補足 |
+
+`attr` / `dataAttr` は多言語オブジェクトを受け付けるため、ビューアの言語ごとに
+クレジット文言を変えられます。`license` / `dataLicense` は単なる文字列であり、
+列挙型ではありません（ライブラリは与えられた文字列をそのまま保持・表示します）。
+実運用では次の 2 つが慣例値として使われます。
+
+- `"ODbL"` — ODbL (Open Database License)
+- `"Custom"` — カスタムライセンス。実際の条件は `licenseNote` /
+  `dataLicenseNote` に書きます
+
+同梱ベースマップの定義（`src/source_ex.ts`）に両方の実例があります。
+OpenStreetMap は `attr: "©︎ OpenStreetMap contributors"` に対して
+`license: "Custom"` / `dataLicense: "ODbL"`、地理院地図は両方とも `"Custom"` と
+した上で `licenseNote` に条件を明記しています。
+
+これらの値を UI から選ばせるのはデータ作成ツール（MaplatEditor）の責務です。
+MaplatCore はフィールドの意味の定義と、結果として得られるクレジットの描画のみを
+受け持ちます。
 
 ### ライフサイクル
 
@@ -138,13 +206,14 @@ pnpm typecheck    # 型チェック (TypeScript) を実行
 pnpm lint         # リンター/フォーマッター (ESLint/Prettier) を実行
 pnpm run test:e2e # E2E テスト (Playwright) を実行
 ```
+<!-- release-pinned:end -->
 
 <!-- SECTION 6: Prerequisites -->
 ## 動作環境
 
-> `package.json` の `engines` フィールドから自動抽出（ADR-0012: リリース依存）。
+> Node.js は GitHub Actions の `test.yml` matrix、pnpm は `package.json` の `engines` フィールドに基づく（ADR-0012: リリース依存）。
 
-- Node.js: v20 または v22（GitHub Actions で検証済みの LTS）
+- Node.js: v22 または v24（GitHub Actions で検証済み）
 - pnpm: `>=9.0.0`（必須・`package.json` で pnpm を強制）
 
 <!-- SECTION 7: Peer Dependencies -->
@@ -163,8 +232,8 @@ pnpm add ol
 ベクタータイルを使用する場合は Mapbox GL JS または MapLibre GL JS も
 必要になることがあります:
 
-- `mapbox-gl`: `^1.0.0 || ^2.0.0 || ^3.0.0`（オプション）
-- `maplibre-gl`: `^3.0.0 || ^4.0.0`（オプション）
+- `mapbox-gl`: `^2.0.0 || ^3.0.0`（オプション）
+- `maplibre-gl`: `^5.0.0 || ^6.0.0`（オプション）
 
 <!-- SECTION 8: Ecosystem / Related Repositories -->
 ## エコシステム
@@ -184,6 +253,9 @@ Maplat エコシステムの一部です。全容は下記エコシステム図�
 | [MaplatTin](https://github.com/code4history/MaplatTin) | Apache 2.0 | `@maplat/tin` | TIN 変換 |
 | [MaplatTransform](https://github.com/code4history/MaplatTransform) | Apache 2.0 | `@maplat/transform` | 座標変換 |
 | [MaplatEditor](https://github.com/code4history/MaplatEditor) | Apache 2.0 | — | データ作成ツール（デスクトップ） |
+| [Chuci](https://github.com/code4history/Chuci) | MIT | `@c4h/chuci` | マルチメディアスワイパー/ビューア Web Components |
+| [Quyuan](https://github.com/code4history/Quyuan) | MIT | `@c4h/quyuan` | GeoJSON テンプレートエンジン＋マルチメディアビューア Web Components |
+| [Weiwudi](https://github.com/code4history/Weiwudi) | MIT | `@c4h/weiwudi` | タイルキャッシュ用 Service Worker |
 
 > MaplatEditor は上記ビューアライブラリが描画する地図・POI を作成する
 > データ作成ツールです。Maplat エコシステムはエンドツーエンド:

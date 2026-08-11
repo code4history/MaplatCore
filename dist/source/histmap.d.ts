@@ -2,7 +2,7 @@ import { XYZ } from 'ol/source';
 import { Coordinate } from 'ol/coordinate';
 import { Size } from 'ol/size';
 import { default as __DTS_DEFAULT_0__ } from '@c4h/weiwudi';
-import { MaplatMap } from '../map_ex';
+import { MaplatMap } from '..';
 import { Feature, Polygon } from 'geojson';
 import { ViewpointArray, CrossCoordinatesArray } from './mixin';
 declare const HistMap_base: ((abstract new (...args: any[]) => {

@@ -1,6 +1,8 @@
 # MaplatApp API signatures
 
-> Release-dependent signatures for `@maplat/core` (`0.13.2`).
+> Release-dependent signatures for `@maplat/core`.
+> The release these signatures track is listed in the release block of the
+> [README](../../README.md#quick-start).
 > For the conceptual guide see the
 > [Wiki API-Reference](https://github.com/code4history/MaplatCore/wiki/API-Reference).
 
@@ -18,6 +20,13 @@ All methods below are on the `MaplatApp` instance returned by
     position (x, y, zoom, rotation).
 - `requestUpdateState(data: object): Promise<void>`
   - Request an update to the map state (position, transparency, etc.).
+- `getRotation(): number`
+  - Get the current on-screen map rotation in degrees (same unit as
+    `restore.position.rotation`).
+- `getDirection(): Promise<number>`
+  - Get the current real-world heading in degrees. On TIN-based historical
+    maps this accounts for the local coordinate distortion, so the value can
+    differ from `getRotation()`; it resolves asynchronously.
 
 ## Coordinate system
 
@@ -70,16 +79,56 @@ All methods below are on the `MaplatApp` instance returned by
 
 ## POI layers
 
-Maplat manages markers in "layers".
+Maplat manages markers in "layers". Each layer has both a local `id` and a
+`namespaceID` of the form `"<mapID>#<layerId>"` for map-derived layers (app-level
+layers use the same value for both). Pass `namespaceID` to `showPoiLayer`,
+`hidePoiLayer`, `addPoiLayer`, and `removePoiLayer` when targeting map-derived
+layers.
 
 - `addPoiLayer(id: string, data: object): void`
   - Create a new POI layer. `data` can define default icons.
 - `showPoiLayer(id: string): void`
-  - Show a specific layer.
+  - Show a specific layer. If the layer is not found, a `console.warn` is emitted
+    and the call is a no-op.
 - `hidePoiLayer(id: string): void`
-  - Hide a specific layer.
-- `listPoiLayers(hideOnly?: boolean, nonzero?: boolean): string[]`
-  - Get a list of available layer IDs.
+  - Hide a specific layer. If the layer is not found, a `console.warn` is emitted
+    and the call is a no-op.
+- `removePoiLayer(id: string): void`
+  - Remove a layer. If the layer is not found, a `console.warn` is emitted and the
+    call is a no-op.
+- `getPoiLayer(id: string): PoiLayer | undefined`
+  - Retrieve a layer by `namespaceID` (or bare app-level `id`). Returns `undefined`
+    if not found. No warning is emitted (used internally for state restoration).
+- `listPoiLayers(hideOnly?: boolean, nonzero?: boolean): PoiLayer[]`
+  - Get a list of available layers, ordered as defined in the app config
+    (`main` is always first; the rest keep their declared order rather than
+    being alphabetically sorted). Each entry is a `PoiLayer` object with `id`,
+    `namespaceID`, `name`, `pois`, and optional `hide` / `icon` /
+    `selectedIcon` fields.
+  - The optional fields are the **resolved** values. They may come from either
+    of two levels: the POI source's own `FeatureCollection.properties`, or a
+    per-reference override supplied by the layer ref (wrapper) in
+    `setting.pois`. `listPoiLayers` does not report which level a value came
+    from — see [Override resolution](#override-resolution) for the rule.
+
+### Override resolution
+
+A layer ref (wrapper) element of `setting.pois` has the form
+`{ layer: <URL | FeatureCollection>, hide?, title?, icon?, selectedIcon? }`.
+The referenced FeatureCollection is fetched and normalised first, then the
+override keys are merged onto the resulting layer.
+
+- **Override wins over `FeatureCollection.properties` of the same name.**
+- Only the four keys above are override keys. **Unknown keys are dropped with
+  a `console.warn`** — no exception is thrown, so a wrapper written for a newer
+  release stays loadable on an older one.
+- `title` maps to `PoiLayer.name`; `icon` / `selectedIcon` map to the
+  same-named fields. `hide: true` (boolean `true` only) sets `hide`; other
+  values leave the source-side value untouched.
+- Internal layer keys (`pois` / `id` / `namespaceID`) are not override keys and
+  cannot be set from a wrapper.
+- The wrapper object passed in is **not mutated**, so the same source file can
+  be referenced by several maps/apps and presented differently in each.
 
 ## GPS & user position
 
@@ -100,6 +149,21 @@ Use `app.addEventListener(type, callback)` to handle events.
 - `clickMap`: Fired when the map background is clicked.
 - `gps_result`: Fired when a GPS position update happens.
 - `gps_error`: Fired when GPS fails.
+
+## Advanced: direct map and source construction
+
+For embedding apps that need to build a map or a tile source without going
+through `MaplatApp` (for example, MaplatEditor's preview panes), the package
+also exports the lower-level building blocks directly:
+
+- `MaplatMap` — the OpenLayers `Map` subclass used internally by `MaplatApp`.
+- `mapSourceFactory` — the factory function that builds a `MaplatSource` for
+  a given map definition.
+- `MaplatSource` / `BackmapSource` (types only) — the source interfaces
+  returned by `mapSourceFactory`.
+
+These exist so that host applications can construct maps and sources
+directly instead of deep-importing internal modules.
 
 ## Example
 

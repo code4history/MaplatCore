@@ -7,6 +7,7 @@ import { MapLibreMap } from "./source/maplibremap";
 import { GoogleMap } from "./source/googlemap";
 import { HistMap } from "./source/histmap";
 import { HistMap_tin } from "./source/histmap_tin";
+import { isProviderMapType } from "./source/mixin";
 import "whatwg-fetch";
 
 export type MaplatSource = HistMap | NowMap | GoogleMap;
@@ -28,7 +29,16 @@ const baseDict = {
       en: "OSM(Now)"
     },
     attr: "©︎ OpenStreetMap contributors",
+    license: "Custom",
+    dataLicense: "ODbL",
+    licenseNote: {
+      ja: "©︎ OpenStreetMap contributors（OpenStreetMap Copyright: https://www.openstreetmap.org/copyright）",
+      en: "©︎ OpenStreetMap contributors (OpenStreetMap Copyright: https://www.openstreetmap.org/copyright)"
+    },
     maptype: "base",
+    // maxZoom必須: 未指定だとWeiwudi(SWタイルキャッシュ)登録時にズーム上限0と
+    // 解釈される環境があり、キャッシュ経由の全タイルが404になる (#78)
+    maxZoom: 19,
     thumbnail: osm,
     urls: [
       "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -50,6 +60,16 @@ const baseDict = {
       ja: "国土地理院",
       en: "The Geospatial Information Authority of Japan"
     },
+    license: "Custom",
+    dataLicense: "Custom",
+    licenseNote: {
+      ja: "公共データ利用規約 第1.0版（PDL1.0）／出典：国土地理院ウェブサイト",
+      en: "Public Data License 1.0 / Source: GSI website"
+    },
+    dataLicenseNote: {
+      ja: "公共データ利用規約 第1.0版（PDL1.0）",
+      en: "Public Data License 1.0"
+    },
     maptype: "base",
     url: "https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png",
     maxZoom: 18,
@@ -69,6 +89,16 @@ const baseDict = {
       ja: "国土地理院",
       en: "The Geospatial Information Authority of Japan"
     },
+    license: "Custom",
+    dataLicense: "Custom",
+    licenseNote: {
+      ja: "公共データ利用規約 第1.0版（PDL1.0）／出典：国土地理院ウェブサイト",
+      en: "Public Data License 1.0 / Source: GSI website"
+    },
+    dataLicenseNote: {
+      ja: "公共データ利用規約 第1.0版（PDL1.0）",
+      en: "Public Data License 1.0"
+    },
     maptype: "base",
     url: "https://cyberjapandata.gsi.go.jp/xyz/ort/{z}/{x}/{y}.jpg",
     maxZoom: 18,
@@ -77,14 +107,29 @@ const baseDict = {
 };
 
 const checkMapTypeIsWMTS = (maptype?: string) => (maptype || '').match(/^(?:base|overlay|google(?:_(?:roadmap|satellite|hybrid|terrain))?|mapbox|maplibre|osm)$/);
+// m6-t6 hotfix (実装レビュー H-A) → m6-t9 (§3.1 AC2): provider（google/mapbox/maplibre）は
+// Maplat 同梱タイルのテンプレート url を持たない。自動補完すると ol/source/Google.js の
+// baseUrl(= options.url || 'https://tile.googleapis.com/') を汚染し、Google Maps Platform への
+// createSession リクエストがプレビューサーバ宛てに誤送信される（404）。data.url に手動値が
+// 残っていた場合も同様に汚染し得るため、provider は url/urls を自動補完・手動値の両方とも
+// 対象から除外する（isProviderMapType の定義は source/mixin.ts が正本。addCommonOptions 経由で
+// mapbox/maplibre にも同じ判定を効かせる必要があるため）
 
 export async function mapSourceFactory(options: any, commonOptions: any) {
   if (typeof options === "string") {
-    options = (baseDict as any)[options];
+    // m6-t3: baseDict エントリを破壊的に書き換えない（レビュー Minor m3）
+    options = { ...(baseDict as any)[options] };
   }
 
   options = normalizeArg(Object.assign(options, commonOptions));
-  options.label = options.label || options.year;
+  // m6-t10 §3.5.2: 解決結果が undefined のときは label キーを実体化しない。
+  // 実体化すると、settingFile 経路（:188 の Object.assign(resp, options)）で
+  // 設定ファイル側の label が undefined で潰れる（Object.assign は値が undefined でも
+  // own enumerable property をコピーするため）。:189 のフォールバックは resp.year であり、
+  // ベースマップは year を持たないため復旧もしない。
+  // label / year のどちらかが存在する場合の結果は従来と同一。
+  const resolvedLabel = options.label || options.year;
+  if (resolvedLabel !== undefined) options.label = resolvedLabel;
   if (checkMapTypeIsWMTS(options.maptype)) {
     const targetSrc =
       options.maptype === "base"
@@ -113,11 +158,14 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
       options.mercMaxZoom =
       options.mercMinZoom =
       undefined;
-    if (options.translator) {
-      options.url = options.translator(options.url);
-    }
     if (!options.imageExtension) options.imageExtension = "jpg";
-    if (options.mapID && !options.url && !options.urls) {
+    if (isProviderMapType(options.maptype)) {
+      // m6-t9 (§3.1 AC2): H-A は自動補完由来の汚染を防いだが、data.url に手動値が
+      // 残っている場合はそのまま ol/source/Google 等の baseUrl を汚染し得た（同型バグ）。
+      // provider は自動補完・手動値のいずれの url/urls も使わないため、ここで確実に除去する
+      delete options.url;
+      delete options.urls;
+    } else if (options.mapID && !options.url && !options.urls) {
       options.url = options.tms
         ? `tiles/${options.mapID}/{z}/{x}/{-y}.${options.imageExtension}`
         : `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtension}`;
@@ -146,9 +194,6 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
   const resp = await response.json();
   options = normalizeArg(Object.assign(resp, options));
   options.label = options.label || resp.year;
-  if (options.translator) {
-    options.url = options.translator(options.url);
-  }
   if (!options.maptype) options.maptype = "maplat";
 
   if (checkMapTypeIsWMTS(options.maptype)) {
@@ -180,7 +225,11 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
       options.mercMinZoom =
       undefined;
     if (!options.imageExtension) options.imageExtension = "jpg";
-    if (options.mapID && !options.url && !options.urls) {
+    if (isProviderMapType(options.maptype)) {
+      // m6-t9 (§3.1 AC2): 手動値からの汚染防止（上の分岐と同型。設定 json 経由の読み込み経路）
+      delete options.url;
+      delete options.urls;
+    } else if (options.mapID && !options.url && !options.urls) {
       options.url = options.tms
         ? `tiles/${options.mapID}/{z}/{x}/{-y}.${options.imageExtension}`
         : `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtension}`;
@@ -238,6 +287,8 @@ export async function registerMapToSW(options: any) {
   setting.height = options.height;
   setting.maxZoom = options.maxZoom;
   setting.minZoom = options.minZoom;
+  // タイルキャッシュ有効期間(ms)。Weiwudi側の既定は24時間 (code4history/Weiwudi#2)
+  if (options.cacheTtl !== undefined) setting.cacheTtl = options.cacheTtl;
   const lngLats = options.envelopeLngLats;
   if (lngLats) {
     const minMax = lngLats.reduce(

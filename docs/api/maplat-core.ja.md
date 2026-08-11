@@ -1,6 +1,8 @@
 # MaplatApp API シグネチャ
 
-> `@maplat/core`（`0.13.2`）のリリース依存シグネチャ。
+> `@maplat/core` のリリース依存シグネチャ。
+> 対象リリースは [README](../../README.ja.md#クイックスタート) のリリースブロックに
+> 記載しています。
 > 概念解説は [Wiki API-Reference](https://github.com/code4history/MaplatCore/wiki/API-Reference) を参照してください。
 
 以下のメソッドはすべて `MaplatApp.createObject(option)` が返す
@@ -17,6 +19,13 @@
     (x, y, zoom, rotation) を指定できます。
 - `requestUpdateState(data: object): Promise<void>`
   - 地図の状態（位置、透過度など）の更新をリクエストします。
+- `getRotation(): number`
+  - 現在の画面上の地図回転角を度数で取得します（`restore.position.rotation`
+    と同じ単位系）。
+- `getDirection(): Promise<number>`
+  - 現在の実世界方位角を度数で取得します。TIN 地図では現地座標の歪み
+    補正を含むため `getRotation()` と値が異なる場合があり、非同期で解決
+    します。
 
 ## 座標系
 
@@ -30,14 +39,14 @@
 - `addMarker(data: object, clusterId?: string): void`
   - マーカーを追加します。`data` には `lng`, `lat`, `name`, `desc`
     (説明), `icon` などを含める必要があります。
-  - `clusterId` はマーカーを追加するレイヤーを指定します
-    （例: `'main'` または特定の地図レイヤー）。
+  - `clusterId` はマーカーを追加するレイヤを指定します
+    （例: `'main'` または特定の地図レイヤ）。
 - `removeMarker(id: string): void`
   - ID を指定して特定のマーカーを削除します (例: `'main_1'`)。
 - `updateMarker(id: string, data: object, overwrite?: boolean): void`
   - 既存マーカーのデータを更新します（位置の移動など）。
 - `clearMarker(clusterId?: string): void`
-  - 特定クラスター/レイヤーからすべてのマーカーを削除します。
+  - 特定クラスター/レイヤからすべてのマーカーを削除します。
 - `selectMarker(id: string): void`
   - プログラムでマーカーを選択（ハイライト）します。
 - `unselectMarker(): void`
@@ -62,23 +71,62 @@
   - ライン/ベクターを一括設定します。
 - `resetLine()` / `resetVector()` / `resetMarker()`
   - 基本的なライン/ベクター/マーカーをクリアしてリセットします
-    （デフォルトレイヤーなどで使用）。
+    （デフォルトレイヤなどで使用）。
 - `clearLine()` / `clearVector()`
   - すべてのライン/ベクターをクリアします。
 
-## POI レイヤー
+## POI レイヤ
 
-Maplat はマーカーを「レイヤー」で管理します。
+Maplat はマーカーを「レイヤ」で管理します。各レイヤはローカル `id` と
+`namespaceID`（`"<mapID>#<layerId>"` 形式）を持ちます。マップ由来レイヤを
+対象とする場合は `showPoiLayer` / `hidePoiLayer` / `addPoiLayer` /
+`removePoiLayer` に `namespaceID` を渡してください。
 
 - `addPoiLayer(id: string, data: object): void`
-  - 新しい POI レイヤーを作成します。`data` でデフォルトアイコンなどを
+  - 新しい POI レイヤを作成します。`data` でデフォルトアイコンなどを
     定義できます。
 - `showPoiLayer(id: string): void`
-  - 特定レイヤーを表示します。
+  - 特定レイヤを表示します。レイヤが見つからない場合は `console.warn`
+    を出力し、何も変更しません。
 - `hidePoiLayer(id: string): void`
-  - 特定レイヤーを非表示にします。
-- `listPoiLayers(hideOnly?: boolean, nonzero?: boolean): string[]`
-  - 利用可能なレイヤー ID のリストを取得します。
+  - 特定レイヤを非表示にします。レイヤが見つからない場合は
+    `console.warn` を出力し、何も変更しません。
+- `removePoiLayer(id: string): void`
+  - レイヤを削除します。レイヤが見つからない場合は `console.warn`
+    を出力し、何も変更しません。
+- `getPoiLayer(id: string): PoiLayer | undefined`
+  - `namespaceID`（またはアプリ直下の `id`）でレイヤを取得します。
+    見つからない場合は `undefined` を返します。warning は出力しません
+    （内部の state 復元で使用）。
+- `listPoiLayers(hideOnly?: boolean, nonzero?: boolean): PoiLayer[]`
+  - 利用可能なレイヤのリストを、アプリ設定で定義された順序（`main`
+    は常に先頭、それ以外はアルファベット順ではなく定義順）で取得します。
+    各要素は `PoiLayer` オブジェクトで、`id`、`namespaceID`、`name`、
+    `pois`、およびオプションで `hide` / `icon` / `selectedIcon` を持ちます。
+  - オプションのフィールドは**解決後**の値です。値の出どころは 2 階層あり、
+    POI ソース自身の `FeatureCollection.properties` か、`setting.pois` の
+    レイヤ参照（ラッパー）が与える参照ごとの上書きのいずれかです。
+    `listPoiLayers` はどちらの階層から来た値かを返しません。規則は
+    [上書きの解決](#上書きの解決) を参照してください。
+
+### 上書きの解決
+
+`setting.pois` のレイヤ参照（ラッパー）要素は
+`{ layer: <URL | FeatureCollection>, hide?, title?, icon?, selectedIcon? }`
+の形を取ります。参照先の FeatureCollection を fetch・正規化した上で、
+上書きキーを結果のレイヤへ合成します。
+
+- **上書きは同名の `FeatureCollection.properties` より優先されます。**
+- 上書きキーは上記 4 つのみです。**未知キーは `console.warn` を出して破棄**
+  されます。例外は投げないため、新しいリリース向けに書かれたラッパーも
+  古いリリースで読み込めます。
+- `title` は `PoiLayer.name` へ、`icon` / `selectedIcon` は同名フィールドへ
+  対応します。`hide: true`（真偽値 `true` のみ）が `hide` を設定し、
+  それ以外の値ではソース側の値がそのまま残ります。
+- レイヤの内部キー（`pois` / `id` / `namespaceID`）は上書きキーではなく、
+  ラッパーから設定できません。
+- 渡したラッパーオブジェクトは**破壊されません**。同じソースファイルを複数の
+  地図/アプリから参照し、それぞれ別の見せ方にできます。
 
 ## GPS とユーザー位置
 
@@ -99,6 +147,20 @@ Maplat はマーカーを「レイヤー」で管理します。
 - `clickMap`: 地図の背景がクリックされたときに発火します。
 - `gps_result`: GPS 位置更新があったときに発火します。
 - `gps_error`: GPS が失敗したときに発火します。
+
+## 上級者向け: 地図・ソースの直接構築
+
+`MaplatApp` を経由せずに地図やタイルソースを構築したい組み込みアプリ向け
+（例: MaplatEditor のプレビューペイン）に、より低レイヤーの構成要素も直接
+export しています。
+
+- `MaplatMap` — `MaplatApp` が内部で使用する OpenLayers `Map` のサブクラス。
+- `mapSourceFactory` — 地図定義から `MaplatSource` を構築するファクトリ関数。
+- `MaplatSource` / `BackmapSource`（型のみ） — `mapSourceFactory` が返す
+  ソースのインターフェース。
+
+これらは、ホストアプリケーションが内部モジュールを deep import せずに
+地図・ソースを直接構築できるようにするために export されています。
 
 ## 使用例
 
@@ -123,6 +185,6 @@ MaplatApp.createObject(option).then(function (app) {
       icon: 'parts/blue_marker.png',
     },
     'main',
-  ); // 'main' はデフォルトレイヤー
+  ); // 'main' はデフォルトレイヤ
 });
 ```

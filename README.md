@@ -3,7 +3,6 @@
 
 <p align="center">
   <a href="https://github.com/code4history/MaplatCore/actions/workflows/test.yml"><img src="https://github.com/code4history/MaplatCore/actions/workflows/test.yml/badge.svg" alt="CI" /></a>
-  <a href="https://www.npmjs.com/package/@maplat/core"><img src="https://img.shields.io/npm/v/@maplat/core" alt="npm version" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/npm/l/@maplat/core" alt="License" /></a>
 </p>
 
@@ -36,17 +35,21 @@ MaplatCore is open-source under the Apache License 2.0 (from version 0.13.2).
 <!-- SECTION 5: Quick Start -->
 ## Quick Start
 
-> Release-dependent information (ADR-0012). The version `0.13.2` below is the
-> current release; update it on each new release.
+<!-- release-pinned:start -->
+> **Current release: `1.0.0-rc1`** — a release candidate. This block is the only place in
+> this repository that carries a release version (ADR-0012); everything outside it is
+> written against the 1.0 release.
+> npm: [`@maplat/core`](https://www.npmjs.com/package/@maplat/core)
+> [![npm rc](https://img.shields.io/npm/v/@maplat/core/rc)](https://www.npmjs.com/package/@maplat/core)
 
 ### Install
 
 ```bash
 # pnpm (recommended)
-pnpm add @maplat/core
+pnpm add @maplat/core@rc
 
 # npm
-npm install @maplat/core
+npm install @maplat/core@rc
 ```
 
 ### Minimal usage
@@ -75,7 +78,7 @@ before loading MaplatCore.
 <script src="https://cdn.jsdelivr.net/npm/ol@10/dist/ol.js"></script>
 
 <!-- MaplatCore -->
-<script src="https://cdn.jsdelivr.net/npm/@maplat/core@0.13.2/dist/maplat_core.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@maplat/core@1.0.0-rc1/dist/maplat_core.umd.js"></script>
 
 <div id="map_div"></div>
 <script>
@@ -90,6 +93,76 @@ before loading MaplatCore.
 ```
 
 *Note: Make sure to use the latest compatible versions.*
+
+### POI specification (`setting.pois`)
+
+The `pois` field of a map/app setting accepts several historical forms. All
+existing forms continue to work unchanged (backward compatible). A new **layer
+ref (wrapper)** form is added to let the app override per-layer presentation
+(`hide` / `title` / `icon` / `selectedIcon`) without editing the layer's
+FeatureCollection.
+
+| Form | Shape | Behaviour |
+|---|---|---|
+| URL string | `"pois/x.geojson"` | fetched and normalised (legacy) |
+| Inline FC | `{ type: "FeatureCollection", ... }` | normalised in place (legacy) |
+| FC array | `[FC, FC, ...]` | each FC becomes a layer keyed by `id` (legacy) |
+| POI object array | `[{lng, lat, name}, ...]` | single `main` layer (legacy) |
+| Old layer dict | `{ "<key>": <cluster>, ... }` | each value normalised (legacy) |
+| **Layer ref (wrapper) — array element** | `{ layer: <URL\|FC>, hide?, title?, icon?, selectedIcon? }` | `layer` is resolved/fetched, the FC is normalised, then the overrides are merged onto the resulting cluster |
+| **Layer ref — whole `pois`** | `{ layer: <URL\|FC>, hide?, title?, icon?, selectedIcon? }` with **at least one override key** | same merge, keyed by the FC `id`. Without an override key the object is treated as the old layer dict form (key `"layer"`) for backward compatibility |
+
+Override semantics:
+
+- Only the four override keys are honoured. Unknown keys are **dropped with a
+  `console.warn`** (no throw, forward-compatible).
+- `hide: true` (boolean true only) sets `cluster.hide = true`. `hide:false` /
+  non-boolean values are ignored (the data-side value is kept).
+- `title` (non-empty string, or a non-empty localized object) maps to
+  `cluster.name`.
+- `icon` / `selectedIcon` (non-empty string only) map to `cluster.icon` /
+  `cluster.selectedIcon`.
+- Override **wins over** `FeatureCollection.properties` of the same name.
+- Internal cluster keys (`pois` / `id` / `namespaceID` / `__nextId`) cannot be
+  overwritten from a wrapper (they are not override keys).
+- The input object is **not mutated**.
+
+See `src/normalize_pois.ts` (`isPoiLayerRef`, `PoiLayerRef`) for the
+programmatic surface.
+
+### Attribution and licensing (`attr` / `dataAttr`)
+
+Map metadata carries attribution and licensing as two independent pairs: one
+for the **map image** itself, and one for the **data** (control points, POIs,
+and other derived data). Keeping them apart matters because a scanned map sheet
+and the georeferencing data built on top of it usually come from different
+rights holders.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `attr` | `string` or `{ <lang>: string }` | **Map image attribution** — who the map image is credited to |
+| `dataAttr` | `string` or `{ <lang>: string }` | **Data attribution** — who the data is credited to |
+| `license` | `string` | **Map image license** |
+| `dataLicense` | `string` | **Data license** |
+| `licenseNote` | `string` or `{ <lang>: string }` | Free-form supplement to `license` |
+| `dataLicenseNote` | `string` or `{ <lang>: string }` | Free-form supplement to `dataLicense` |
+
+`attr` / `dataAttr` accept a localized object so that a credit line can differ
+per viewer language; `license` / `dataLicense` are plain strings. They are not
+enumerations — the library stores and renders whatever string it is given. In
+practice two conventional values are used:
+
+- `"ODbL"` — ODbL (Open Database License)
+- `"Custom"` — Custom license, with the actual terms written into
+  `licenseNote` / `dataLicenseNote`
+
+The bundled base maps in `src/source_ex.ts` show both conventions: OpenStreetMap
+is declared as `attr: "©︎ OpenStreetMap contributors"` with `license: "Custom"`
+and `dataLicense: "ODbL"`, while the GSI base map uses `"Custom"` for both and
+spells the terms out in `licenseNote`.
+
+Choosing these values in a UI is the authoring tool's concern (MaplatEditor);
+MaplatCore only defines what the fields mean and renders the resulting credit.
 
 ### Lifecycle
 
@@ -136,13 +209,14 @@ pnpm typecheck    # Run type checks (TypeScript)
 pnpm lint         # Run linter and formatter (ESLint/Prettier)
 pnpm run test:e2e # Run E2E tests (Playwright)
 ```
+<!-- release-pinned:end -->
 
 <!-- SECTION 6: Prerequisites -->
 ## Prerequisites
 
-> Derived from the `engines` field in `package.json` (ADR-0012: release-dependent).
+> Node.js follows the GitHub Actions `test.yml` matrix; pnpm follows the `engines` field in `package.json` (ADR-0012: release-dependent).
 
-- Node.js: v20 or v22 (LTS tested via GitHub Actions)
+- Node.js: v22 or v24 (tested via GitHub Actions)
 - pnpm: `>=9.0.0` (required; `package.json` enforces pnpm)
 
 <!-- SECTION 7: Peer Dependencies -->
@@ -160,8 +234,8 @@ pnpm add ol
 
 If you use Vector Tiles, you may also need Mapbox GL JS or MapLibre GL JS:
 
-- `mapbox-gl`: `^1.0.0 || ^2.0.0 || ^3.0.0` (optional)
-- `maplibre-gl`: `^3.0.0 || ^4.0.0` (optional)
+- `mapbox-gl`: `^2.0.0 || ^3.0.0` (optional)
+- `maplibre-gl`: `^5.0.0 || ^6.0.0` (optional)
 
 <!-- SECTION 8: Ecosystem / Related Repositories -->
 ## Ecosystem
@@ -181,6 +255,9 @@ repository; the Sister repositories table below is the public substitute)*
 | [MaplatTin](https://github.com/code4history/MaplatTin) | Apache 2.0 | `@maplat/tin` | TIN conversion |
 | [MaplatTransform](https://github.com/code4history/MaplatTransform) | Apache 2.0 | `@maplat/transform` | Coordinate transform |
 | [MaplatEditor](https://github.com/code4history/MaplatEditor) | Apache 2.0 | — | Data authoring tool (desktop) |
+| [Chuci](https://github.com/code4history/Chuci) | MIT | `@c4h/chuci` | Multimedia swiper & viewer Web Components |
+| [Quyuan](https://github.com/code4history/Quyuan) | MIT | `@c4h/quyuan` | GeoJSON template engine + multimedia viewer Web Components |
+| [Weiwudi](https://github.com/code4history/Weiwudi) | MIT | `@c4h/weiwudi` | Service Worker for tile cache |
 
 > MaplatEditor is the data authoring tool used to create the maps and POIs
 > that the viewers above render. The Maplat ecosystem is end-to-end:
@@ -223,5 +300,5 @@ limitations under the License.
 
 > **Past versions**: Versions before 0.13.2 were distributed under the
 > Maplat Limited License 1.1. The license restoration to Apache 2.0 takes
-> effect from version 0.13.2 onward. Earlier versions available on npmjs.com
+> effect from version 1.0.0-rc1 onward. Earlier versions available on npmjs.com
 > remain under their original limited-license terms.

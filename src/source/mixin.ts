@@ -475,14 +475,11 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
     }
 
     listPoiLayers(hideOnly = false, nonzero = false) {
+      // アルファベット順ソートを廃止し pois 定義順（アプリ設定の並び順）を保持する。
+      // main レイヤのみ先頭固定。Array.prototype.sort は ES2019+ で stable なので
+      // 0 を返すペアは Object.keys の挿入順（= normalize_pois の pois 配列順）が保たれる。
       return Object.keys(this.pois)
-        .sort((a, b) => {
-          if (a === "main") return -1;
-          else if (b === "main") return 1;
-          else if (a < b) return -1;
-          else if (a > b) return 1;
-          else return 0;
-        })
+        .sort((a, b) => (a === "main" ? -1 : b === "main" ? 1 : 0))
         .map(key => this.pois[key])
         .filter(layer =>
           nonzero
@@ -814,12 +811,15 @@ export const META_KEYS = [
   "mapper",
   "license",
   "dataLicense",
+  // m6-t2: ライセンスの自由記述欄。META_KEYS_OPTION と lockstep (同じ index) で足す。
+  "licenseNote",
+  "dataLicenseNote",
   "attr",
   "dataAttr",
   "reference",
   "description"
 ];
-const META_KEYS_OPTION = [
+export const META_KEYS_OPTION = [
   "title",
   "official_title",
   "author",
@@ -829,16 +829,29 @@ const META_KEYS_OPTION = [
   "mapper",
   "license",
   "data_license",
+  "license_note",
+  "data_license_note",
   "attr",
   "data_attr",
   "reference",
   "description"
 ];
 
+// m6-t6 hotfix → m6-t9 (§3.1 AC2): provider（google/mapbox/maplibre）は Maplat 同梱タイルの
+// テンプレート url を持たない。自動補完はもちろん、data.url に手動値が残っていた場合でも
+// ol/source/Google 等の baseUrl を汚染しないよう、provider は url/urls の対象から除外する。
+// mapSourceFactory（source_ex.ts）と本関数（NowMap/HistMap 経由で mapbox/maplibre にも
+// 効く）の両方が同じ判定を用いる必要があるため、ここを正本として export する
+export const isProviderMapType = (maptype?: string) =>
+  (maptype || '').match(/^(?:google(?:_(?:roadmap|satellite|hybrid|terrain))?|mapbox|maplibre)$/);
+
 export function addCommonOptions(options: any) {
   options = normalizeArg(options);
   if (!options.imageExtension) options.imageExtension = "jpg";
-  if (options.mapID && !options.url && !options.urls) {
+  if (isProviderMapType(options.maptype)) {
+    delete options.url;
+    delete options.urls;
+  } else if (options.mapID && !options.url && !options.urls) {
     options.url = options.tms
       ? `tiles/${options.mapID}/{z}/{x}/{-y}.${options.imageExtension}`
       : `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtension}`;

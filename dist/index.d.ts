@@ -3,12 +3,13 @@ import { Logger } from './logger';
 import { createElement } from './functions';
 import { default as EventTarget } from 'ol/events/Target';
 import { MaplatMap } from './map_ex';
-import { BackmapSource, MaplatSource } from './source_ex';
+import { BackmapSource, MaplatSource, mapSourceFactory } from './source_ex';
 import { ViewpointArray } from './source/mixin';
 import { Geolocation } from './geolocation';
 import { Coordinate } from 'ol/coordinate';
 import { default as BaseEvent } from 'ol/events/Event';
 import { assets } from './assets';
+export { sanitizeHtml, escapeAttr, toPlainText, buildSlideAttrs } from './sanitize';
 interface AppData {
     sources: string[];
     lang?: string;
@@ -56,6 +57,16 @@ export declare class GPSResultEvent extends BaseEvent {
 }
 export declare class GPSRequestEvent extends BaseEvent {
     constructor();
+}
+export interface PoiLayer {
+    id: string;
+    namespaceID: string;
+    name: string | Record<string, string>;
+    pois: any[];
+    hide?: boolean;
+    icon?: string;
+    selectedIcon?: string;
+    [key: string]: any;
 }
 export declare class MaplatApp extends EventTarget {
     static createObject: (option: any) => Promise<MaplatApp>;
@@ -137,6 +148,8 @@ export declare class MaplatApp extends EventTarget {
     setMouseCursor(): void;
     setBackMapBehavior(): void;
     raiseChangeViewpoint(): void;
+    getRotation(): number;
+    getDirection(): Promise<number>;
     currentMapInfo(): any;
     mapInfo(mapID: string): any;
     clientPointToLngLat(clientX: number, clientY: number): Promise<{
@@ -196,4 +209,7 @@ export declare class MaplatApp extends EventTarget {
 }
 export { createElement };
 export { CustomEvent };
+export { MaplatMap };
+export { mapSourceFactory };
+export type { MaplatSource, BackmapSource };
 export { assets };
