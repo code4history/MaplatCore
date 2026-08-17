@@ -22,7 +22,7 @@ importers:
         specifier: ^1.0.0-rc1
         version: 1.0.0-rc1
       '@turf/turf':
-        specifier: ^7.3.1
+        specifier: ^7.4.0
         version: 7.4.0
       dompurify:
         specifier: ^3.4.13
@@ -83,7 +83,7 @@ importers:
         specifier: ^10.10.0
         version: 10.10.0
       prettier:
-        specifier: ^3.7.4
+        specifier: ^3.9.6
         version: 3.9.6
       typescript:
         specifier: ^5.9.3
