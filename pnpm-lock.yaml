@@ -16,11 +16,11 @@ importers:
   .:
     dependencies:
       '@c4h/weiwudi':
-        specifier: ^1.0.0-rc1
-        version: 1.0.0-rc1(workbox-routing@7.4.1)
+        specifier: ^1.0.0
+        version: 1.0.0(workbox-routing@7.4.1)
       '@maplat/transform':
-        specifier: ^1.0.0-rc1
-        version: 1.0.0-rc1
+        specifier: ^1.0.0
+        version: 1.0.0
       '@turf/turf':
         specifier: ^7.4.0
         version: 7.4.0
@@ -140,8 +140,8 @@ packages:
     resolution: {integrity: sha512-ctxtJ/eA+t+6q2++vj5j7FYX3nRu311q1wfYH3xjlLOsczhlhxAg2FWNUXhpGvAw3BWo1xBcvOV6/YLc2r5FJw==}
     hasBin: true
 
-  '@c4h/weiwudi@1.0.0-rc1':
-    resolution: {integrity: sha512-/9WKXuXNjWh9FPK+ZimybB2IwO6Rp3q8KGw6KZwypLTPyqsY2L0GoL5/JJtngBgy74yNi0xM7lAmmhJhlMmvyQ==}
+  '@c4h/weiwudi@1.0.0':
+    resolution: {integrity: sha512-n0Drv63mEL7S5D/3wA3NhL65WaqiKvw/MT2Mo9xTpx9wcSRxnumXpPGd42ZD7Qu0HEILGm8rmvaPhurp1LmFwA==}
     engines: {node: '>=20.0.0', pnpm: '>=9.0.0'}
     peerDependencies:
       workbox-routing: ^7.4.0
@@ -453,8 +453,8 @@ packages:
     resolution: {integrity: sha512-Es6WcD0nO5l+2BOQS4uLfNPYQaNDfbot3X1XUoloz+x0mPDS3eeORZJl06HXjwBG1fOGwCRnzK88LMdxKRrd6Q==}
     engines: {node: '>=6.0.0'}
 
-  '@maplat/transform@1.0.0-rc1':
-    resolution: {integrity: sha512-+FDUFP4HEeNMomKbmYbdX6pEfmCfKU23a9tTWK+VbEyOdH7J/RPnFrnlAjpBXEjptNuwIobaZniWPQ6LvIpTfg==}
+  '@maplat/transform@1.0.0':
+    resolution: {integrity: sha512-BBYXqMlaiiF782M7JvmGAdfDXomcUGDoDUnEBmAyRCm8y9EWqIsJxHhVh9TrWwegHxjA+0q2sELd3jhVKmStdw==}
     engines: {node: '>=20', pnpm: '>=9'}
 
   '@maplibre/maplibre-gl-style-spec@23.3.0':
@@ -1456,6 +1456,7 @@ packages:
   eslint@9.39.5:
     resolution: {integrity: sha512-DgZS62aPLXKlnxILS/AYCoRvHaZeXceIzlXPkkGGzJWSow1aEk0lbTlxUSlyjC8jcaKxAdOnTDz+o1JFSBsyjw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
     peerDependencies:
       jiti: '*'
@@ -2406,7 +2407,7 @@ snapshots:
     dependencies:
       css-tree: 3.2.1
 
-  '@c4h/weiwudi@1.0.0-rc1(workbox-routing@7.4.1)':
+  '@c4h/weiwudi@1.0.0(workbox-routing@7.4.1)':
     dependencies:
       workbox-routing: 7.4.1
 
@@ -2624,7 +2625,7 @@ snapshots:
 
   '@mapbox/whoots-js@3.1.0': {}
 
-  '@maplat/transform@1.0.0-rc1':
+  '@maplat/transform@1.0.0':
     dependencies:
       '@turf/turf': 7.4.0
 
