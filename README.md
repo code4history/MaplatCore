@@ -36,20 +36,20 @@ MaplatCore is open-source under the Apache License 2.0 (from version 0.13.2).
 ## Quick Start
 
 <!-- release-pinned:start -->
-> **Current release: `1.0.0-rc1`** — a release candidate. This block is the only place in
+> **Current release: `1.0.0`**. This block is the only place in
 > this repository that carries a release version (ADR-0012); everything outside it is
 > written against the 1.0 release.
 > npm: [`@maplat/core`](https://www.npmjs.com/package/@maplat/core)
-> [![npm rc](https://img.shields.io/npm/v/@maplat/core/rc)](https://www.npmjs.com/package/@maplat/core)
+> [![npm](https://img.shields.io/npm/v/@maplat/core)](https://www.npmjs.com/package/@maplat/core)
 
 ### Install
 
 ```bash
 # pnpm (recommended)
-pnpm add @maplat/core@rc
+pnpm add @maplat/core
 
 # npm
-npm install @maplat/core@rc
+npm install @maplat/core
 ```
 
 ### Minimal usage
@@ -78,7 +78,7 @@ before loading MaplatCore.
 <script src="https://cdn.jsdelivr.net/npm/ol@10/dist/ol.js"></script>
 
 <!-- MaplatCore -->
-<script src="https://cdn.jsdelivr.net/npm/@maplat/core@1.0.0-rc1/dist/maplat_core.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@maplat/core@1.0.0/dist/maplat_core.umd.js"></script>
 
 <div id="map_div"></div>
 <script>
