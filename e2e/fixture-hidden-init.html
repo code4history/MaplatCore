@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <base href="/" />
+  <title>oct26-m2-t1 hidden-container init</title>
+  <style>
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; }
+    /* 非表示コンテナ（非表示 iframe 相当）: 初期状態でレイアウト寸法 0 */
+    #map_div { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
+    #map_div.shown { display: block; min-height: 720px; }
+  </style>
+</head>
+<body>
+  <div id="map_div"></div>
+  <script type="module">
+    import { MaplatApp } from '/src/index.ts';
+    window.MaplatApp = MaplatApp;
+    MaplatApp.createObject({
+      appid: 'sample',
+      startFrom: 'morioka_ndl2',
+      restore: { mapID: 'morioka_ndl2' }
+    }).then(app => {
+      console.log('####Message appReady');
+      window.__MAPLAT_APP__ = app;
+    }).catch(err => {
+      console.error('createObject failed:', err);
+      window.__MAPLAT_ERROR__ = String(err && err.stack || err);
+    });
+  </script>
+</body>
+</html>

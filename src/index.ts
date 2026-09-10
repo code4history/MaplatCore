@@ -200,6 +200,11 @@ export class MaplatApp extends EventTarget {
   initialGpsMove_ = false;
   private __backMapMoving = false;
   private __selectedMarker: any;
+  // oct26-m2-t1: 可視化時の自己修復（issue #101）で使うリソース参照。
+  private __resizeObserver: ResizeObserver | null = null;
+  private __visibilityHandler = () => {
+    this.__applyInitialViewpoint();
+  };
   private uiHooks?: UiHooks;
   private lifecycleHookResults: Partial<Record<LifecyclePhaseId, any>> = {};
   private __init = true;
@@ -639,6 +644,11 @@ export class MaplatApp extends EventTarget {
       });
     }
 
+    // oct26-m2-t1: 可視化時の自己修復（issue #101）。非表示コンテナで初期化すると
+    // view の resolution が未確定のまま初期視点適用が defer されるため、可視化の
+    // 契機（visibilitychange / コンテナ寸法確定）で初期視点を再適用する。
+    this.registerSelfHeal();
+
     // MapLibre GL JS support (separate instance)
     const maplibregl = appOption.maplibregl || (typeof window !== 'undefined' ? (window as any).maplibregl : undefined);
     if (maplibregl) {
@@ -957,6 +967,13 @@ export class MaplatApp extends EventTarget {
         this.__backMapMoving = true;
         this.logger.debug("Backmap moving started");
         this.convertParametersFromCurrent(backSrc, (size: any) => {
+          if (!size) {
+            // oct26-m2-t1: 未確定ガードにより座標変換がスキップされた場合
+            // （非表示コンテナで view 未確定）。後段の setCenter(size[0]) が
+            // undefined 参照になるため、ここで終了する。
+            this.__backMapMoving = false;
+            return;
+          }
           const view = (this.backMap as MaplatMap).getView();
           view.setCenter(size[0]);
           view.setZoom(size[1]);
@@ -971,6 +988,11 @@ export class MaplatApp extends EventTarget {
   // Async initializer 16: Handle back map's behavior
   raiseChangeViewpoint() {
     this.mapObject.on("postrender", async (_evt: any) => {
+      // oct26-m2-t1: 未確定ガード。非表示コンテナ（寸法 0）では mercs2Viewpoint が
+      // size=0 から NaN の zoom/rotation を返し、後続の normalizeDegree(NaN) が
+      // while(1) 無限ループに陥る（issue #101）。コンテナ寸法が確定するまで変換を
+      // 行わず、可視化時の自己修復（__applyInitialViewpoint）の再描画に委ねる。
+      if (!this.__hasMapSize()) return;
       const view = this.mapObject.getView();
       const center = view.getCenter();
       const zoom = view.getDecimalZoom();
@@ -1599,7 +1621,12 @@ export class MaplatApp extends EventTarget {
               this.dispatchEvent(new CustomEvent("outOfMap", {}));
               this.goHome(to);
             } else if (!size) {
-              this.goHome(to);
+              if (!this.__hasMapSize()) {
+                // oct26-m2-t1: 未確定時（非表示コンテナ）は goHome が NaN 変換を起こす
+                // ため呼ばず、初期視点の適用を可視化時の自己修復へ defer する。
+              } else {
+                this.goHome(to);
+              }
             }
             to.setGPSMarker(this.currentPosition, true);
             if (restore!.hideLayer) {
@@ -1627,17 +1654,32 @@ export class MaplatApp extends EventTarget {
             this.mapObject.updateSize();
             this.mapObject.render();
             if (restore!.position) {
-              this.__init = false;
-              to.setViewpoint(restore!.position);
+              if (!this.__hasMapSize()) {
+                // oct26-m2-t1: 未確定時は __init を維持したまま自己修復へ defer する
+                // （setViewpointRadian が未確定ガードで安全に return するため、
+                //   ここで __init を false にすると初期視点未適用のまま扱われてしまう）。
+              } else {
+                this.__init = false;
+                to.setViewpoint(restore!.position);
+              }
             }
             if (restore!.transparency) {
               this.setTransparency(restore!.transparency);
             }
             if (this.__init) {
-              this.__init = false;
-              this.goHome(to);
+              if (!this.__hasMapSize()) {
+                // oct26-m2-t1: 未確定時は __init を維持したまま初期視点の適用を
+                // 可視化時の自己修復（__applyInitialViewpoint）へ defer する。
+              } else {
+                this.__init = false;
+                this.goHome(to);
+              }
             } else if (this.backMap && backTo) {
               this.convertParametersFromCurrent(backTo, (size: any) => {
+                if (!size) {
+                  // oct26-m2-t1: 未確定ガードにより座標変換がスキップされた場合。
+                  return;
+                }
                 const view = (this.backMap as MaplatMap).getView();
                 view.setCenter(size[0]);
                 view.setZoom(size[1]);
@@ -1693,6 +1735,56 @@ export class MaplatApp extends EventTarget {
   goHome(useTo?: MaplatSource) {
     const src = useTo || this.from!;
     src.goHome();
+  }
+  // oct26-m2-t1: 可視化時の自己修復ハンドラの登録（issue #101）。
+  // 非表示コンテナ（寸法 0）で初期化すると view の resolution が未確定のままとなり、
+  // changeMap での初期視点適用（goHome / setViewpoint）が defer される（__init が
+  // true のまま残る）。可視化の契機（visibilitychange / コンテナ寸法確定）で
+  // __applyInitialViewpoint を呼び、初期視点を再適用する。
+  private registerSelfHeal() {
+    const div = this.mapDivDocument;
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", this.__visibilityHandler);
+    }
+    if (div && typeof ResizeObserver !== "undefined") {
+      this.__resizeObserver = new ResizeObserver(() => {
+        this.__applyInitialViewpoint();
+      });
+      this.__resizeObserver.observe(div);
+    }
+  }
+  // oct26-m2-t1: 初期視点が未適用（__init）かつコンテナ寸法が有効なときに、初期視点
+  // を再適用して view を確定させる。再適用は initialRestore.position があれば
+  // setViewpoint、なければ goHome を使い、適用後に updateSize + render を呼ぶ
+  // （changeMap の既存描画順序 mapChanged → updateSize → render と同一の流れ）。
+  private __applyInitialViewpoint() {
+    if (!this.__init) return;
+    const map = this.mapObject;
+    const view = map ? map.getView() : undefined;
+    if (!map || !view) return;
+    const div = this.mapDivDocument;
+    if (!div || div.clientWidth <= 0 || div.clientHeight <= 0) return;
+    const to = this.from;
+    if (!to) return;
+    // 未確定のまま setViewpointRadian を呼ぶと viewpoint2MercsAsync が NaN 変換を
+    // 起こすため、先に viewport size を確定して resolution を確定させる。
+    map.updateSize();
+    if (!this.__hasMapSize()) return;
+    this.__init = false;
+    if (this.initialRestore.position) {
+      to.setViewpoint(this.initialRestore.position);
+    } else {
+      to.goHome();
+    }
+    map.updateSize();
+    map.render();
+  }
+  // oct26-m2-t1: コンテナ寸法が有効（map size が正）かどうか。非表示コンテナ
+  // （display:none 等）では OL の map size が [0,0] となり、view の resolution が
+  // NaN に崩れて座標変換が破綻する（issue #101）。未確定ガードと自己修復の判定に使う。
+  private __hasMapSize(): boolean {
+    const size = this.mapObject ? this.mapObject.getSize() : undefined;
+    return !!(size && size[0] > 0 && size[1] > 0);
   }
   resetRotation() {
     this.from!.resetRotation();
@@ -1782,6 +1874,16 @@ export class MaplatApp extends EventTarget {
 
   convertParametersFromCurrent(to: any, callback: any) {
     const view = this.mapObject.getView();
+    // oct26-m2-t1: 未確定ガード。非表示コンテナ（寸法 0）では view の resolution が
+    // NaN になる（OL が viewport size を [0,0] として resolveConstraints を走らせる
+    // ため。実測: convertParametersFromCurrent 時点 res=39135.75 → updateSize 後 NaN）。
+    // 後続の viewpoint2MercsAsync が NaN を xy2MercWithLayer へ流して issue #101 の
+    // "coordinates must contain numbers" を投げる。コンテナ寸法が無い間は座標変換を
+    // 行わず、初期視点の適用を可視化時の自己修復（__applyInitialViewpoint）へ委ねる。
+    if (view && !this.__hasMapSize()) {
+      if (callback) callback();
+      return;
+    }
     if (!this.from) {
       if (callback) callback();
       return;
@@ -1857,6 +1959,13 @@ export class MaplatApp extends EventTarget {
   }
 
   remove() {
+    if (typeof document !== "undefined") {
+      document.removeEventListener("visibilitychange", this.__visibilityHandler);
+    }
+    if (this.__resizeObserver) {
+      this.__resizeObserver.disconnect();
+      this.__resizeObserver = null;
+    }
     if (this.mapboxMap) {
       this.mapboxMap.remove();
     }

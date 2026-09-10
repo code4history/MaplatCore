@@ -259,6 +259,16 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
       const rotation = cond.rotation;
       const map = this.getMap();
       const view = map?.getView();
+      // oct26-m2-t1: 未確定ガード。非表示コンテナ（寸法 0）では view の resolution が
+      // NaN になり（OL が viewport size を [0,0] として resolveConstraints を走らせる
+      // ため）、後続の viewpoint2MercsAsync() が xy2MercWithLayer に NaN を流して
+      // issue #101 の "coordinates must contain numbers" を投げる。コンテナ寸法が無い
+      // （map size が 0 または未確定）間は変換せず安全に return し、初期視点の適用は
+      // 可視化時の自己修復（MaplatApp.__applyInitialViewpoint）に委ねる。
+      const mapSize = map ? map.getSize() : undefined;
+      if (view && (!mapSize || mapSize[0] <= 0 || mapSize[1] <= 0)) {
+        return;
+      }
       if (cond.latitude !== undefined && cond.longitude !== undefined) {
         merc = transform(
           [cond.longitude, cond.latitude],
