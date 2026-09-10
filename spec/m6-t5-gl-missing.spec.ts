@@ -92,20 +92,23 @@ describe("m6-t5: provider GL bind (AC10)", () => {
   });
 });
 
-// M6-T5 AC11: devDependencies の maplibre-gl が import 解決できること
+// M6-T5 AC11: devDependencies の maplibre-gl が解決できること
 describe("m6-t5: maplibre-gl devDep resolution (AC11)", () => {
-  it("package.json に maplibre-gl devDep（script タグ用 UMD がある 5.6.2。peer は ^5||^6）", async () => {
+  it("package.json に maplibre-gl devDep（6.x は ESM-only。peer は ^5||^6 据え置き）", async () => {
     const pkg = JSON.parse(
       readFileSync(resolve(__dirname, "../package.json"), "utf8")
     );
-    expect(pkg.devDependencies["maplibre-gl"]).toBe("5.6.2");
+    expect(pkg.devDependencies["maplibre-gl"]).toBe("6.9.0");
     expect(pkg.peerDependencies["maplibre-gl"]).toBe("^5.0.0 || ^6.0.0");
     expect(pkg.peerDependencies["mapbox-gl"]).toBe("^2.0.0 || ^3.0.0");
   });
 
-  it("maplibre-gl がモジュール解決できる（実行はブラウザ API 依存のため resolve まで）", () => {
+  it("maplibre-gl が ESM として解決できる（実行はブラウザ API 依存のため resolve まで）", () => {
+    // 6.x は exports に require/default 条件が無いため req.resolve("maplibre-gl") は
+    // ERR_PACKAGE_PATH_NOT_EXPORTED になる。export 済みの "./package.json" 経由で解決を確認する
+    // （import.meta.resolve は vite の SSR 変換環境では使えないため createRequire ベース）。
     const req = createRequire(resolve(__dirname, "../package.json"));
-    expect(() => req.resolve("maplibre-gl")).not.toThrow();
+    expect(() => req.resolve("maplibre-gl/package.json")).not.toThrow();
   });
 });
 
