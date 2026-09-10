@@ -12,6 +12,12 @@ import { NowMap } from "./source/nowmap";
 import { MapboxLayer } from "./layer_mapbox";
 import { MapLibreLayer } from "./layer_maplibre";
 import { normalizeArg } from "./functions";
+import { unByKey } from "ol/Observable";
+import {
+  create as createTransform,
+  multiply as multiplyTransform,
+  setFromArray as copyTransform
+} from "ol/transform";
 
 // @ts-ignore
 import bluedot from "../parts/bluedot.png";                         // @ts-ignore
@@ -72,6 +78,8 @@ export class MaplatMap extends Map {
   tapUIVanish: boolean;
   alwaysGpsOn: boolean;
   private __ignore_first_move: boolean;
+  // oct26-m2-t3 (#94): ソース切替中に旧フレームを保持しているリスナーのキー（解除用）
+  private __frameHoldKeys: any[] | undefined;
 
   constructor(optOptions: any) {
     optOptions = normalizeArg(optOptions || {});
@@ -357,11 +365,94 @@ export class MaplatMap extends Map {
   exchangeSource(source: any = undefined) {
     const layers = this.getLayers();
     const prevLayer = layers.item(0);
+    // oct26-m2-t3 (#94): 切替直前に表示中の描画内容を複製しておく（setSource 前に取る）
+    const heldFrame = source ? MaplatMap.captureRenderedFrame(prevLayer) : undefined;
     const layer = MaplatMap.spawnLayer(prevLayer, source, this.getTarget());
     if (layer != prevLayer) layers.setAt(0, layer);
+    this.holdRenderedFrame(layer === prevLayer ? heldFrame : undefined, layer);
     if (source) {
       source.setMap(this);
     }
+  }
+  // oct26-m2-t3 (#94): 前面地図のちらつき対策。
+  // Tile レイヤの setSource は旧ソースのタイルを描画対象から即座に外すため、新ソースのタイルが
+  // 届くまでの間 canvas が完全透明で再描画される（overlay 時は背面地図もクリア済みで、ページ背景が
+  // 露出して「前面地図が一瞬消える」）。そこで切替直前に表示していた canvas の画素を複製し、
+  // 新ソースのタイルより先に（prerender で）同じ画面位置へ敷く。新ソースのタイルは上に重なって
+  // 描かれる。地図の rendercomplete（全タイルの読込・フェード完了）で解除して再描画する。
+  // 対象は同じ Tile レイヤを使い回す経路（spawnLayer の setSource）に限る。Mapbox/MapLibre への
+  // 差し替え（layers.setAt）は描画先が WebGL canvas で 2D の prerender に敷けないため対象外。
+  static captureRenderedFrame(layer: any) {
+    // 表示中の内容が無い（ソース未設定・未描画・DOM から外れている・寸法 0）なら複製しない
+    if (!(layer instanceof Tile) || !layer.getSource() || !layer.hasRenderer()) return;
+    const renderer: any = layer.getRenderer();
+    const canvas = renderer && renderer.context ? renderer.context.canvas : undefined;
+    if (
+      !canvas ||
+      !canvas.isConnected ||
+      !canvas.width ||
+      !canvas.height ||
+      !renderer.pixelTransform
+    ) {
+      return;
+    }
+    const image = document.createElement("canvas");
+    image.width = canvas.width;
+    image.height = canvas.height;
+    const context = image.getContext("2d");
+    if (!context) return;
+    context.drawImage(canvas, 0, 0);
+    return {
+      image,
+      // 複製時点の「canvas 画素 → CSS 画素」変換（敷くときに同じ画面位置へ戻すために使う）
+      pixelTransform: copyTransform(createTransform(), renderer.pixelTransform)
+    };
+  }
+  private holdRenderedFrame(frame: any, layer: any) {
+    // 直前の保持は、次の切替（ソースのクリアを含む）で必ず解除する
+    if (this.__frameHoldKeys) {
+      unByKey(this.__frameHoldKeys);
+      this.__frameHoldKeys = undefined;
+    }
+    if (!frame) return;
+    // 切替前に描画済みのフレームの rendercomplete で解除しないよう、切替後に 1 フレーム
+    // 描画されたこと（地図の postrender）を確かめてから解除する
+    let renderedAfterSwitch = false;
+    const keys: any[] = [];
+    const release = () => {
+      unByKey(keys);
+      if (this.__frameHoldKeys === keys) this.__frameHoldKeys = undefined;
+      this.render();
+    };
+    keys.push(
+      layer.on("prerender", (evt: any) => {
+        const context = evt.context;
+        if (!context || !evt.inversePixelTransform) return;
+        // 複製時の canvas 画素 → CSS 画素 → 現在の canvas 画素
+        const transform = multiplyTransform(
+          copyTransform(createTransform(), evt.inversePixelTransform),
+          frame.pixelTransform
+        );
+        context.save();
+        context.setTransform(
+          transform[0],
+          transform[1],
+          transform[2],
+          transform[3],
+          transform[4],
+          transform[5]
+        );
+        context.drawImage(frame.image, 0, 0);
+        context.restore();
+      }),
+      this.once("postrender", () => {
+        renderedAfterSwitch = true;
+      }),
+      this.on("rendercomplete", () => {
+        if (renderedAfterSwitch) release();
+      })
+    );
+    this.__frameHoldKeys = keys;
   }
   setLayer(source: any = undefined) {
     const layers = this.getLayer("overlay").getLayers();
