@@ -10,6 +10,7 @@ import { Coordinate } from "ol/coordinate";
 import { store2HistMap4Core } from "./store_handler";
 import { Size } from "ol/size";
 import { CrossCoordinatesArray, ViewpointArray } from "./mixin";
+import { selectDisplayCandidates } from "./display_candidates";
 
 export class HistMap_tin extends HistMap {
   mapTransform: MapTransform;
@@ -151,9 +152,36 @@ export class HistMap_tin extends HistMap {
     callback(this);
   }
 
+  // GPS マーカー用（呼び出し元は mixin の setGPSMarkerAsync のみ）。
+  // Transform が merc2XyVisibleLayers を持てば、紙外の本図を除いた表示候補の 1・2 位を返す（MaplatCore#104）:
+  // 1 位は中心＋周囲 4 点を同じ層で逆変換した 5 点、2 位は中心だけ。undefined（旧 hide 表現）を含まない 0〜2 件。
+  // 持たない（@maplat/transform 1.0.x）なら従来経路（mercs2SysCoords）。
   mercs2SysCoordsAsync_multiLayer(
     mercs: CrossCoordinatesArray
   ): Promise<(CrossCoordinatesArray | undefined)[]> {
+    const points = mercs[0] as number[][];
+    const candidates = selectDisplayCandidates(
+      this.mapTransform,
+      points[0],
+      xy => this.insideCheckXy(xy)
+    );
+    if (candidates) {
+      return Promise.resolve(
+        candidates.map(([index, xy], rank) => {
+          if (rank > 0) {
+            return [[this.xy2SysCoord(xy)], mercs[1]] as CrossCoordinatesArray;
+          }
+          const tin = this.mapTransform.getLayerTransform(index)!;
+          const xys = points.map((merc, j) =>
+            j === 0 ? xy : (tin.transform(merc, true, index > 0) as Coordinate)
+          );
+          return [
+            xys.map(p => this.xy2SysCoord(p)),
+            mercs[1]
+          ] as CrossCoordinatesArray;
+        })
+      );
+    }
     const results = this.mapTransform.mercs2SysCoords(mercs[0]);
     return Promise.resolve(
       results.map(result => {
@@ -174,7 +202,16 @@ export class HistMap_tin extends HistMap {
     });
   }
 
+  // POI ピン用（呼び出し元は mixin の merc2SysCoordAsync_ignoreBackground → index.ts の setMarker のみ）。
+  // Transform が merc2XyVisibleLayers を持てば、紙外の本図を除いた表示候補の 1 位、無ければ undefined（MaplatCore#104）。
+  // 持たない（@maplat/transform 1.0.x）なら従来経路。
   merc2XyAsync_ignoreBackground(merc: Coordinate): Promise<Coordinate | void> {
+    const candidates = selectDisplayCandidates(this.mapTransform, merc, xy =>
+      this.insideCheckXy(xy)
+    );
+    if (candidates) {
+      return Promise.resolve(candidates.length ? candidates[0][1] : undefined);
+    }
     return this.merc2XyAsync_base(merc, true);
   }
 

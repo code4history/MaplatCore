@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <base href="/" />
+  <title>oct26-m2-t4 GPS / POI の層選択</title>
+  <style>
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; }
+    #map_div { position: absolute; top: 0; left: 0; width: 1024px; height: 768px; }
+  </style>
+</head>
+<body>
+  <div id="map_div"></div>
+  <script type="module">
+    // oct26-m2-t4 AC5〜AC10 のアプリ起動ページ（設計 §10）。
+    // 地図定義は e2e/fixtures/oct26-m2-t4/*.json を settingFile で読む（public/ へ置かない）。
+    // アプリ設定は setting オプションでインライン指定する。タイルは置かない（地物の座標判定に不要）。
+    // ?start=<mapID> で起動地図を選ぶ（既定 nobeoka1932）。
+    import { MaplatApp } from '/src/index.ts';
+    const params = new URLSearchParams(location.search);
+    const start = params.get('start') || 'nobeoka1932';
+    const fx = id => ({
+      mapID: id,
+      settingFile: `e2e/fixtures/oct26-m2-t4/${id}.json`,
+      imageExtension: 'png'
+    });
+    window.MaplatApp = MaplatApp;
+    // createObject と同じ（new MaplatApp → waitReady）。waitReady の reject を握りつぶさず記録するため展開する
+    const app = new MaplatApp({
+      appid: 'oct26-m2-t4',
+      startFrom: start,
+      restore: { mapID: start },
+      setting: {
+        appName: 'oct26-m2-t4',
+        lang: 'ja',
+        homePosition: [131.655753, 32.556258],
+        defaultZoom: 14,
+        startFrom: start,
+        sources: ['osm', fx('nobeoka1932'), fx('synthetic5'), fx('synthetic4'), fx('synthetic6')],
+        pois: []
+      }
+    });
+    window.__MAPLAT_PENDING__ = app;
+    app.waitReady.then(() => {
+      window.__MAPLAT_APP__ = app;
+    }, err => {
+      console.error('waitReady failed:', err);
+      window.__MAPLAT_ERROR__ = String((err && err.stack) || err);
+    });
+  </script>
+</body>
+</html>

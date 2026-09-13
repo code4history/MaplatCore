@@ -374,10 +374,15 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
       return this.mercs2SysCoordsAsync_multiLayer([mercs])
         .then(results => {
           const hide = !results[0];
-          const xys = hide ? results[1]! : results[0]!;
+          const xys = hide ? results[1] : results[0];
+          // MaplatCore#105: 表示候補が無い（空配列）か、1 位の中心が紙の外なら、前の GPS マーカーを消してから
+          // false を返す（場所の一意性）。イベントは出さない
+          if (!xys || !this.insideCheckSysCoord(xys[0][0]!)) {
+            map?.setGPSPosition(null);
+            return false;
+          }
           const sub = !hide ? results[1] : null;
           const pos: any = { xy: xys[0][0] };
-          if (!this.insideCheckSysCoord(xys[0][0]!)) return false;
           const news = xys[0].slice(1);
 
           pos.rad = news.reduce(
