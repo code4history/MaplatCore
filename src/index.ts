@@ -69,6 +69,27 @@ interface Restore {
   hideLayer?: string;
 }
 
+// oct26-m2-t1-ff: 切替前の地図の視点（地図の座標系の値）。変換核
+// __convertParameters の入力で、view の getCenter / getZoom / getDecimalZoom /
+// getRotation をそのまま控えたもの。
+interface CapturedViewState {
+  center: Coordinate;
+  zoom: number;
+  decimalZoom: number;
+  rotation: number;
+}
+
+// oct26-m2-t1-ff: 非表示中（寸法 0）・初期化済みの changeMap で保留した視点確定。
+// from/state は非表示中の最初の切替の時点の値のまま保つ（非表示の間は view が
+// 動かないので、それが「最後に表示していた地図と視点」である）。state が無いのは
+// 控えた値が有限でなかった場合で、再表示時は goHome で確定する。
+interface PendingView {
+  from: MaplatSource;
+  state?: CapturedViewState;
+  position?: PositionSet;
+  positionMapID?: string;
+}
+
 type LifecyclePhaseId =
   | "setting-loaded"
   | "appdata-ready"
@@ -204,7 +225,11 @@ export class MaplatApp extends EventTarget {
   private __resizeObserver: ResizeObserver | null = null;
   private __visibilityHandler = () => {
     this.__applyInitialViewpoint();
+    this.__schedulePendingView();
   };
+  // oct26-m2-t1-ff: 非表示中の changeMap で保留した視点確定と、その適用の予約状態。
+  private __pendingView: PendingView | null = null;
+  private __pendingViewScheduled = false;
   private uiHooks?: UiHooks;
   private lifecycleHookResults: Partial<Record<LifecyclePhaseId, any>> = {};
   private __init = true;
@@ -943,6 +968,9 @@ export class MaplatApp extends EventTarget {
     };
     this.mapObject.on("pointermove", moveHandler);
     const mapOutHandler = (evt: any) => {
+      // oct26-m2-t1-ff: 視点確定の保留中は、view の中心が切替前の地図の座標系の
+      // 値のままなので、新しい地図の範囲で縁へ引き戻さない（保留の適用に委ねる）。
+      if (this.__pendingView) return;
       let histCoord = evt.frameState.viewState.center;
       const source = this.from;
       if (!(source as MaplatSource).insideCheckSysCoord(histCoord)) {
@@ -958,6 +986,9 @@ export class MaplatApp extends EventTarget {
   setBackMapBehavior() {
     const backMapMove = (_evt: any) => {
       if (!this.backMap) return;
+      // oct26-m2-t1-ff: 保留中は誤った視点で背面地図を動かさず、mercBuffer も
+      // 切替前の状態のまま保つ（保留の適用が同じ変換核でキャッシュを使うため）。
+      if (this.__pendingView) return;
       if (this.__backMapMoving) {
         this.logger.debug("Backmap moving skipped");
         return;
@@ -993,6 +1024,13 @@ export class MaplatApp extends EventTarget {
       // while(1) 無限ループに陥る（issue #101）。コンテナ寸法が確定するまで変換を
       // 行わず、可視化時の自己修復（__applyInitialViewpoint）の再描画に委ねる。
       if (!this.__hasMapSize()) return;
+      // oct26-m2-t1-ff: 視点確定の保留中は、切替前の地図の座標系の値を
+      // changeViewpoint・stateBuffer（restoreSession 時は localStorage）へ出さない。
+      // 再表示の契機（ResizeObserver 等）が来ない場合に備え、ここからも適用を予約する。
+      if (this.__pendingView) {
+        this.__schedulePendingView();
+        return;
+      }
       const view = this.mapObject.getView();
       const center = view.getCenter();
       const zoom = view.getDecimalZoom();
@@ -1533,7 +1571,11 @@ export class MaplatApp extends EventTarget {
     return (this.changeMapSeq = this.changeMapSeq.then(
       () =>
         new Promise((resolve, _reject) => {
-          this.convertParametersFromCurrent(to, (size: any) => {
+          const convert = () => this.convertParametersFromCurrent(to, (size: any) => {
+            // oct26-m2-t1-ff: ソースの差し替え・zoomRestriction の setMinZoom より前に、
+            // 切替前の地図と視点を控える（非表示中に視点確定を保留する場合の入力）。
+            const prevFrom = this.from;
+            const prevState = this.__captureViewState();
             let backSrc: any = null;
             let backTo: any = null;
             const backRestore = restore!.backgroundID
@@ -1617,6 +1659,17 @@ export class MaplatApp extends EventTarget {
               view.setCenter(size[0]);
               view.setZoom(size[1]);
               view.setRotation(this.noRotate ? 0 : size[2]);
+            } else if (!this.__init && !size && !this.__hasMapSize() && prevFrom) {
+              // oct26-m2-t1-ff: 初期化済みで非表示中（寸法 0）の切替。変換ができないので
+              // outOfMap を発火せず goHome も呼ばず、視点の確定を再表示まで保留する。
+              // 非表示中に切替が続いても from/state は最初の保留のまま保つ。
+              if (!this.__pendingView) {
+                this.__pendingView = { from: prevFrom, state: prevState };
+              } else if (this.__pendingView.positionMapID !== to.mapID) {
+                // position は行き先の地図の座標系の値なので、別の地図への切替が続いたら捨てる。
+                delete this.__pendingView.position;
+                delete this.__pendingView.positionMapID;
+              }
             } else if (!this.__init) {
               this.dispatchEvent(new CustomEvent("outOfMap", {}));
               this.goHome(to);
@@ -1658,6 +1711,12 @@ export class MaplatApp extends EventTarget {
                 // oct26-m2-t1: 未確定時は __init を維持したまま自己修復へ defer する
                 // （setViewpointRadian が未確定ガードで安全に return するため、
                 //   ここで __init を false にすると初期視点未適用のまま扱われてしまう）。
+                // oct26-m2-t1-ff: 視点確定を保留中なら、position を行き先の mapID と共に
+                // 保留へ添え、再表示時に変換の後で上書きする。
+                if (this.__pendingView) {
+                  this.__pendingView.position = restore!.position;
+                  this.__pendingView.positionMapID = to.mapID;
+                }
               } else {
                 this.__init = false;
                 to.setViewpoint(restore!.position);
@@ -1690,6 +1749,14 @@ export class MaplatApp extends EventTarget {
             }
             resolve(undefined);
           });
+          if (this.__pendingView) {
+            // oct26-m2-t1-ff: 保留が残ったまま寸法がある状態で切替が来た場合（アプリが
+            // 自分で updateSize した直後など）、先に保留を適用してから変換する。
+            // 保留が無い通常の切替は従来どおり同期で変換へ進む。
+            this.__applyPendingView().then(convert);
+          } else {
+            convert();
+          }
         })
     ));
   }
@@ -1749,6 +1816,7 @@ export class MaplatApp extends EventTarget {
     if (div && typeof ResizeObserver !== "undefined") {
       this.__resizeObserver = new ResizeObserver(() => {
         this.__applyInitialViewpoint();
+        this.__schedulePendingView();
       });
       this.__resizeObserver.observe(div);
     }
@@ -1762,8 +1830,10 @@ export class MaplatApp extends EventTarget {
     const map = this.mapObject;
     const view = map ? map.getView() : undefined;
     if (!map || !view) return;
-    const div = this.mapDivDocument;
-    if (!div || div.clientWidth <= 0 || div.clientHeight <= 0) return;
+    // oct26-m2-t1-ff: #map_div の client 寸法では判定しない。前面地図が絶対配置の
+    // 画面（e2e/test.html 等）では表示中も #map_div の clientHeight が 0 のため、
+    // 自己修復が一度も動かなかった。寸法の判定は下の updateSize 後の __hasMapSize で行う。
+    if (!this.mapDivDocument) return;
     const to = this.from;
     if (!to) return;
     // 未確定のまま setViewpointRadian を呼ぶと viewpoint2MercsAsync が NaN 変換を
@@ -1778,6 +1848,115 @@ export class MaplatApp extends EventTarget {
     }
     map.updateSize();
     map.render();
+  }
+  // oct26-m2-t1-ff: 保留した視点確定の適用を changeMapSeq の後ろに予約する。
+  // 寸法が無ければ予約しない。ResizeObserver・visibilitychange・postrender が
+  // 続けて来ても、適用が走るまでは 1 回だけ予約する。
+  private __schedulePendingView() {
+    if (!this.__pendingView || this.__pendingViewScheduled) return;
+    const map = this.mapObject;
+    if (!map) return;
+    map.updateSize();
+    if (!this.__hasMapSize()) return;
+    this.__pendingViewScheduled = true;
+    if (!this.changeMapSeq) {
+      this.changeMapSeq = Promise.resolve();
+    }
+    this.changeMapSeq = this.changeMapSeq.then(() => {
+      this.__pendingViewScheduled = false;
+      return this.__applyPendingView();
+    });
+  }
+  // oct26-m2-t1-ff: 保留した視点確定を、表示中の changeMap と同じ規則で適用する。
+  // 切替前の地図と視点を変換核 __convertParameters に通し（mercBuffer を含む同じ変換）、
+  // 範囲内なら setCenter/setZoom/setRotation、範囲外なら outOfMap + goHome。
+  // 保留に position があり行き先が一致すれば、変換の後で setViewpoint で上書きする。
+  // 締めは m2-t1 の __applyInitialViewpoint と同じ updateSize + render。
+  private __applyPendingView(): Promise<void> {
+    const pending = this.__pendingView;
+    const map = this.mapObject;
+    const to = this.from;
+    if (!pending || !map || !to) return Promise.resolve();
+    map.updateSize();
+    if (!this.__hasMapSize()) return Promise.resolve();
+    return new Promise<void>(resolve => {
+      let done = false;
+      const finish = () => {
+        if (done) return;
+        done = true;
+        if (this.__pendingView === pending) this.__pendingView = null;
+        if (pending.position && pending.positionMapID === to.mapID) {
+          to.setViewpoint(pending.position);
+        }
+        map.updateSize();
+        map.render();
+        resolve();
+      };
+      const fallbackHome = (err: any) => {
+        // 変換が失敗しても保留を残さず changeMapSeq を止めない（後続の changeMap が
+        // 固まらないため）。確定できない切替と同じく goHome で確定する。
+        if (done) return;
+        this.logger.warn(`changeMap: pending viewpoint conversion failed: ${err}`);
+        this.goHome(to);
+        finish();
+      };
+      if (!pending.state) {
+        // oct26-m2-t1-ff MIN-3: 控えた視点が有限でなかった。変換せず goHome で確定する
+        // （outOfMap は発火しない。変換核へ NaN を流すと #101 と同じ例外になるため）。
+        this.goHome(to);
+        finish();
+        return;
+      }
+      try {
+        this.__convertParameters(
+          pending.from,
+          pending.state,
+          to,
+          (size: any) => {
+            const view = map.getView();
+            if (size && to.insideCheckSysCoord(size[0])) {
+              view.setCenter(size[0]);
+              view.setZoom(size[1]);
+              view.setRotation(this.noRotate ? 0 : size[2]);
+            } else {
+              this.dispatchEvent(new CustomEvent("outOfMap", {}));
+              this.goHome(to);
+            }
+            finish();
+          },
+          fallbackHome
+        );
+      } catch (err) {
+        fallbackHome(err);
+      }
+    });
+  }
+  // oct26-m2-t1-ff: 現在の view の視点を控える。有限でない値を含む場合は undefined
+  // （非表示中に resolution が NaN へ崩れた後など。変換核へ流すと #101 と同じ例外になる）。
+  private __captureViewState(): CapturedViewState | undefined {
+    const view = this.mapObject ? this.mapObject.getView() : undefined;
+    if (!view) return undefined;
+    const state = this.__captureRawViewState(view);
+    const { center, zoom, decimalZoom, rotation } = state;
+    if (
+      !center ||
+      ![center[0], center[1], zoom, decimalZoom, rotation].every(v =>
+        Number.isFinite(v)
+      )
+    ) {
+      return undefined;
+    }
+    return { center: [center[0], center[1]], zoom, decimalZoom, rotation };
+  }
+  // oct26-m2-t1-ff: view の値を検査せずにそのまま読む（切り出し前の
+  // convertParametersFromCurrent が変換の直前に読んでいた値と同じ）。
+  private __captureRawViewState(view: any): CapturedViewState {
+    return {
+      center: view.getCenter(),
+      zoom: view.getZoom(),
+      decimalZoom: view.getDecimalZoom(),
+      rotation: view.getRotation()
+    };
   }
   // oct26-m2-t1: コンテナ寸法が有効（map size が正）かどうか。非表示コンテナ
   // （display:none 等）では OL の map size が [0,0] となり、view の resolution が
@@ -1888,18 +2067,38 @@ export class MaplatApp extends EventTarget {
       if (callback) callback();
       return;
     }
-    let fromPromise = (this.from as MaplatSource).viewpoint2MercsAsync();
+    const state = this.__captureRawViewState(view);
+    this.__convertParameters(this.from as MaplatSource, state, to, callback);
+  }
+  // oct26-m2-t1-ff: 変換核。切替前の地図 fromSrc と、そのときの視点 state（地図の
+  // 座標系の値）から、行き先 to の視点を求めて callback(size) を呼ぶ。中身は切り出し前の
+  // convertParametersFromCurrent と同じ（mercBuffer のキャッシュ判定・
+  // viewpoint2MercsAsync・mercs2ViewpointAsync・mercBuffer の更新）。
+  // viewpoint2MercsAsync へは省略時に内部で読む値（center・getDecimalZoom・rotation）を
+  // 明示で渡す。onError を渡した場合だけ、変換の失敗を投げずに onError へ渡す。
+  private __convertParameters(
+    fromSrc: MaplatSource,
+    state: CapturedViewState,
+    to: any,
+    callback: any,
+    onError?: (err: any) => void
+  ) {
+    let fromPromise = fromSrc.viewpoint2MercsAsync([
+      state.center,
+      state.decimalZoom,
+      state.rotation
+    ]);
     const current = recursiveRound(
-      [view.getCenter(), view.getZoom(), view.getRotation()],
+      [state.center, state.zoom, state.rotation],
       10
     );
     if (
       this.mercBuffer &&
       this.mercBuffer.mercs &&
-      this.mercBuffer.buffer[(this.from as MaplatSource).mapID]
+      this.mercBuffer.buffer[fromSrc.mapID]
     ) {
       const buffer =
-        this.mercBuffer.buffer[(this.from as MaplatSource).mapID];
+        this.mercBuffer.buffer[fromSrc.mapID];
       if (
         buffer[0][0] == current[0][0] &&
         buffer[0][1] == current[0][1] &&
@@ -1916,18 +2115,18 @@ export class MaplatApp extends EventTarget {
         this.mercBuffer = {
           buffer: {}
         };
-        this.mercBuffer.buffer[(this.from as MaplatSource).mapID] = current;
+        this.mercBuffer.buffer[fromSrc.mapID] = current;
       }
     } else {
       this.mercBuffer = {
         buffer: {}
       };
-      this.mercBuffer.buffer[(this.from as MaplatSource).mapID] = current;
+      this.mercBuffer.buffer[fromSrc.mapID] = current;
     }
     this.logger.debug(
       `From: Center: ${current[0]} Zoom: ${current[1]} Rotation: ${current[2]}`
     );
-    this.logger.debug(`From: ${(this.from as MaplatSource).mapID}`);
+    this.logger.debug(`From: ${fromSrc.mapID}`);
     fromPromise
       .then((mercs: any) => {
         this.mercBuffer.mercs = mercs;
@@ -1950,11 +2149,13 @@ export class MaplatApp extends EventTarget {
             callback(size);
           })
           .catch((err: any) => {
-            throw err;
+            if (onError) onError(err);
+            else throw err;
           });
       })
       .catch((err: any) => {
-        throw err;
+        if (onError) onError(err);
+        else throw err;
       });
   }
 

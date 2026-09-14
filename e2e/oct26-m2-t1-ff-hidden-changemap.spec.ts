@@ -5,6 +5,7 @@ import { test, expect } from '@playwright/test';
 // 再表示したときに「表示したまま切り替えた場合と同じ視点」になることを確かめる。
 // 視点は地図に依存しない形（メルカトル中心・メルカトルズーム・方位）で比べる。
 // 表示したままの切替では、切替前後でこの値が一致する（設計 §2.2 の V / RV の実測）。
+// MIN3 は設計レビュー R1 MIN-3（非表示中に控えた視点が有限でない場合の防御）を固定する。
 // 実行: ./node_modules/.bin/playwright test --config=./e2e/oct26-m2-t1-probe.config.ts --grep "oct26-m2-t1-ff"
 
 const TOL_MERC = 20; // メルカトル座標での中心差の許容（盛岡の緯度で約 15 m）
@@ -215,6 +216,48 @@ test.describe('oct26-m2-t1-ff 非表示中の地図切替で視点を保つ', ()
     expectSameViewpoint(ref, after);
     expect(errs).toEqual([]);
     await page2.close();
+  });
+
+  test('MIN3: 非表示中に控えた視点が有限でなくても、例外を出さず再表示後に視点が確定し後続の切替も resolve する', async ({ page }) => {
+    // 設計レビュー R1 MIN-3。非表示の間に resolution が NaN へ崩れた後に切替が来た場合を、
+    // 切替の間だけ view.getZoom()・getDecimalZoom() を NaN にして作る。保留には視点を持たせず、再表示時に
+    // goHome で確定する（outOfMap は発火しない）ことを確かめる。
+    const errs = await boot(page);
+    await hideMap(page);
+    const r = await page.evaluate(async () => {
+      const app = (window as any).__MAPLAT_APP__;
+      const view = app.mapObject.getView();
+      const origZoom = view.getZoom;
+      const origDecimalZoom = view.getDecimalZoom;
+      view.getZoom = () => NaN;
+      view.getDecimalZoom = () => NaN;
+      try {
+        return await Promise.race([
+          app.changeMap('osm').then(() => 'resolved'),
+          new Promise(res => setTimeout(() => res('timeout'), 10000))
+        ]);
+      } finally {
+        view.getZoom = origZoom;
+        view.getDecimalZoom = origDecimalZoom;
+      }
+    });
+    expect(r).toBe('resolved');
+    await showMap(page);
+    const after = await viewpoint(page);
+    const st = await viewState(page);
+    // 保留が残っていないこと（残ると changeViewpoint の通知が止まったままになる）
+    const pendingLeft = await page.evaluate(() => (window as any).__MAPLAT_APP__.__pendingView != null);
+    console.log('FF_MIN3', JSON.stringify({ after, st, pendingLeft, errs }));
+    expect(st.mapID).toBe('osm');
+    expect(errs).toEqual([]);
+    expect(st.events).not.toContain('outOfMap');
+    expect(after).not.toBeNull();
+    const a = after as Vp;
+    expect([a[0][0], a[0][1], a[1], a[2]].every(v => Number.isFinite(v))).toBe(true);
+    expect([st.center[0], st.center[1], st.zoom].every((v: number) => Number.isFinite(v))).toBe(true);
+    expect(await changeMapBounded(page, 'morioka_ndl2')).toBe('resolved');
+    expect(pendingLeft).toBe(false);
+    expect(errs).toEqual([]);
   });
 
   test('REG-1 回帰: 表示したままの切替は視点が保たれる', async ({ page }) => {
