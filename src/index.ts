@@ -598,7 +598,7 @@ export class MaplatApp extends EventTarget {
       tapUIVanish: appOption.tapUIVanish || this.appData!.tapUIVanish || false,
       alwaysGpsOn: appOption.alwaysGpsOn || false
     });
-    let backDiv: any = null;
+    let backDiv: any;
     if (this.overlay) {
       backDiv = `${this.mapDiv}_back`;
       newElem = createElement(
