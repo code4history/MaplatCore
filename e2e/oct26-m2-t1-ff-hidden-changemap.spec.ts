@@ -6,6 +6,8 @@ import { test, expect } from '@playwright/test';
 // 視点は地図に依存しない形（メルカトル中心・メルカトルズーム・方位）で比べる。
 // 表示したままの切替では、切替前後でこの値が一致する（設計 §2.2 の V / RV の実測）。
 // MIN3 は設計レビュー R1 MIN-3（非表示中に控えた視点が有限でない場合の防御）を固定する。
+// INFO3・GUARD-D1・GUARD-D2 は実装レビュー IR1 MIN-1（追加 probe X1b・X2b・X2c を移したもの）で、
+// 保留中の changeMap の先行適用（R1 INFO-3）と、保留中の postrender ガード（設計 §4.1 (D)）を固定する。
 // 実行: ./node_modules/.bin/playwright test --config=./e2e/oct26-m2-t1-probe.config.ts --grep "oct26-m2-t1-ff"
 
 const TOL_MERC = 20; // メルカトル座標での中心差の許容（盛岡の緯度で約 15 m）
@@ -113,6 +115,20 @@ function expectSameViewpoint(before: Vp, after: Vp | null) {
   expect(dist).toBeLessThan(TOL_MERC);
   expect(Math.abs(a[1] - before[1])).toBeLessThan(TOL_ZOOM);
   expect(angleDiff(a[2], before[2])).toBeLessThan(TOL_ROT);
+}
+
+// requestUpdateState を包み、状態（stateBuffer.position）へ書かれる視点を記録する。
+async function recordPositions(page: any) {
+  await page.evaluate(() => {
+    const w = window as any;
+    const app = w.__MAPLAT_APP__;
+    w.__FF_POS__ = [];
+    const orig = app.requestUpdateState.bind(app);
+    app.requestUpdateState = (d: any) => {
+      if (d && d.position) w.__FF_POS__.push([app.from && app.from.mapID, d.position.x, d.position.y, d.position.zoom, app.__pendingView != null]);
+      return orig(d);
+    };
+  });
 }
 
 test.describe('oct26-m2-t1-ff 非表示中の地図切替で視点を保つ', () => {
@@ -257,6 +273,84 @@ test.describe('oct26-m2-t1-ff 非表示中の地図切替で視点を保つ', ()
     expect([st.center[0], st.center[1], st.zoom].every((v: number) => Number.isFinite(v))).toBe(true);
     expect(await changeMapBounded(page, 'morioka_ndl2')).toBe('resolved');
     expect(pendingLeft).toBe(false);
+    expect(errs).toEqual([]);
+  });
+
+  // 以下 3 本は実装レビュー IR1 MIN-1（X1b・X2b・X2c）。再表示と同じ同期区間で updateSize()・renderSync() を呼び、
+  // 自然な順序では 0 枚になる「保留中のフレーム」や「保留中の changeMap」を強制して作る。
+  test('INFO3: 再表示と同じ同期区間で updateSize→changeMap(古地図) しても outOfMap が出ず視点が保たれる', async ({ page }) => {
+    const errs = await boot(page);
+    const before = (await viewpoint(page)) as Vp;
+    await hideMap(page);
+    expect(await changeMapBounded(page, 'osm')).toBe('resolved');
+    const r = await page.evaluate(async () => {
+      const app = (window as any).__MAPLAT_APP__;
+      document.getElementById('map_div')!.style.display = '';
+      app.mapObject.updateSize();
+      const pendingAtCall = app.__pendingView != null;
+      const res = await Promise.race([
+        app.changeMap('morioka_ndl2').then(() => 'resolved'),
+        new Promise(res => setTimeout(() => res('timeout'), 10000))
+      ]);
+      return { pendingAtCall, res };
+    });
+    await page.waitForTimeout(2500);
+    const after = await viewpoint(page);
+    const st = await viewState(page);
+    console.log('FF_INFO3', JSON.stringify({ r, before, after, st, errs }));
+    expect(r.res).toBe('resolved');
+    expect(st.mapID).toBe('morioka_ndl2');
+    expectSameViewpoint(before, after);
+    expect(st.events).not.toContain('outOfMap');
+    expect(errs).toEqual([]);
+  });
+
+  test('GUARD-D1: 再表示直後に同期で renderSync（保留中の postrender を強制）しても stateBuffer へ漏れない', async ({ page }) => {
+    const errs = await boot(page);
+    const before = (await viewpoint(page)) as Vp;
+    await recordPositions(page);
+    await hideMap(page);
+    expect(await changeMapBounded(page, 'osm')).toBe('resolved');
+    const pendingAtRender = await page.evaluate(() => {
+      const app = (window as any).__MAPLAT_APP__;
+      document.getElementById('map_div')!.style.display = '';
+      app.mapObject.updateSize();
+      const p = app.__pendingView != null;
+      app.mapObject.renderSync();
+      return p;
+    });
+    await page.waitForTimeout(2500);
+    const pos = await page.evaluate(() => (window as any).__FF_POS__);
+    const after = await viewpoint(page);
+    console.log('FF_GUARD_D1', JSON.stringify({ pendingAtRender, pos, after, errs }));
+    expect(pendingAtRender).toBe(true);
+    const bad = pos.filter((p: any) => p[0] === 'osm' && Math.abs(p[1] - 15713006.59) > 100);
+    expect(bad).toEqual([]);
+    expectSameViewpoint(before, after);
+    expect(errs).toEqual([]);
+  });
+
+  test('GUARD-D2: 逆方向（osm→古地図）で再表示直後に renderSync しても視点が保たれる（backMapMove のガード）', async ({ page }) => {
+    const errs = await boot(page);
+    expect(await changeMapBounded(page, 'osm')).toBe('resolved');
+    await page.waitForTimeout(2000);
+    await page.evaluate(() => { (window as any).__FF_EVENTS__.length = 0; });
+    const before = (await viewpoint(page)) as Vp;
+    await hideMap(page);
+    expect(await changeMapBounded(page, 'morioka_ndl2')).toBe('resolved');
+    await page.evaluate(() => {
+      const app = (window as any).__MAPLAT_APP__;
+      document.getElementById('map_div')!.style.display = '';
+      app.mapObject.updateSize();
+      app.mapObject.renderSync();
+    });
+    await page.waitForTimeout(2500);
+    const after = await viewpoint(page);
+    const st = await viewState(page);
+    console.log('FF_GUARD_D2', JSON.stringify({ before, after, st, errs }));
+    expect(st.mapID).toBe('morioka_ndl2');
+    expectSameViewpoint(before, after);
+    expect(st.events).not.toContain('outOfMap');
     expect(errs).toEqual([]);
   });
 
