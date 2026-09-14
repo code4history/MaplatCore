@@ -957,25 +957,33 @@ export function setupTileLoadFunction(target: any) {
             const tImage = document.createElement("img");
             tImage.crossOrigin = "Anonymous";
             tImage.onload = tImage.onerror = function () {
-              if (tImage.width && tImage.height) {
-                const ctx = tCanv.getContext("2d");
-                const dx = sx === 0 ? 256 - sw : 0;
-                const dy = sy === 0 ? 256 - sh : 0;
-                sw = sx + sw > tImage.width ? tImage.width - sx : sw;
-                sh = sy + sh > tImage.height ? tImage.height - sy : sh;
-                ctx.drawImage(tImage, sx, sy, sw, sh, dx, dy, sw, sh);
-                resolve(undefined);
-              } else {
-                if (fallback) {
-                  loader(fallback);
+              // 描画中の例外（getContext("2d") が null・drawImage の失敗など）で resolve が飛ばされると、
+              // Promise.all が保留のままタイルが LOADING に残り、TileQueue の読込枠が漏れて
+              // 以後のタイルが読まれなくなる（#109）。例外時も必ず片を決着させ、既存のエラー経路へ流す。
+              try {
+                if (tImage.width && tImage.height) {
+                  const ctx = tCanv.getContext("2d");
+                  const dx = sx === 0 ? 256 - sw : 0;
+                  const dy = sy === 0 ? 256 - sh : 0;
+                  sw = sx + sw > tImage.width ? tImage.width - sx : sw;
+                  sh = sy + sh > tImage.height ? tImage.height - sy : sh;
+                  ctx.drawImage(tImage, sx, sy, sw, sh, dx, dy, sw, sh);
+                  resolve(undefined);
                 } else {
-                  resolve("tileLoadError");
-                  //reject('tileLoadError');
+                  if (fallback) {
+                    loader(fallback);
+                  } else {
+                    resolve("tileLoadError");
+                    //reject('tileLoadError');
+                  }
                 }
-              }
-              --numLoadingTiles;
-              if (numLoadingTiles === 0) {
-                // console.log('idle');
+              } catch (_err) {
+                resolve("tileLoadError");
+              } finally {
+                --numLoadingTiles;
+                if (numLoadingTiles === 0) {
+                  // console.log('idle');
+                }
               }
             };
             tImage.src = src;
