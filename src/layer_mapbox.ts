@@ -43,6 +43,24 @@ export class MapboxLayer extends Layer {
       const opacity = this.getOpacity();
       canvas.style.opacity = opacity;
 
+      // oct26-m2-t2（MaplatCore #100）: MapLibreLayer.render() と同型の canvas 同期 2 点を移植する。
+      // (b) canvas を OpenLayers の viewport 左上へ絶対配置する。
+      canvas.style.position = 'absolute';
+      canvas.style.left = '0';
+      canvas.style.top = '0';
+
+      // (a) canvas 寸法を frameState.size へ同期する（MapLibreLayer と同じ比較式。pixelRatio は掛けない）。
+      // 下の「view 不変なら早期 return」より前に置く: view が動かずコンテナ寸法だけが変わった場合にも
+      // 同期させるため。resize した frame は早期 return せず、同期描画まで進める。
+      let resized = false;
+      if (frameState.size) {
+        const [width, height] = frameState.size;
+        if (canvas.width !== width || canvas.height !== height) {
+          mbMap.resize();
+          resized = true;
+        }
+      }
+
       // adjust view parameters in mapbox
       const newBearing = (viewState.rotation * -180) / Math.PI;
       const newLonLat = toLonLat(viewState.center);
@@ -53,6 +71,7 @@ export class MapboxLayer extends Layer {
       const nowZoom = mbMap.getZoom();
 
       if (
+        !resized &&
         newBearing == nowBearing &&
         newLonLat[0] == nowLonLat[0] &&
         newLonLat[1] == nowLonLat[1] &&
