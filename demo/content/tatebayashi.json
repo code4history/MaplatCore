@@ -1,0 +1,95 @@
+{
+  "region": "tatebayashi",
+  "mapPois": [
+    {
+      "name": "館林城",
+      "lat": 36.245846,
+      "lng": 139.541183,
+      "address": "群馬県館林市城町",
+      "desc": "館林市城町にあった城。館林藩の藩庁が置かれた。跡地に城跡の碑・門跡が残る。",
+      "source": "館林城／国土地理院 住所検索 https://msearch.gsi.go.jp/（2026-09-18 照合）",
+      "verify": {
+        "area": "castle",
+        "checkedAt": "2026-09-18",
+        "sources": [
+          { "src": "gsi_address", "query": "群馬県館林市城町", "coord": [139.541183, 36.245846], "distanceM": 0, "fetchedAt": "2026-09-18T11:00:00Z" }
+        ]
+      }
+    },
+    {
+      "name": "善導寺",
+      "lat": 36.243147,
+      "lng": 139.567487,
+      "desc": "館林市にある寺院。",
+      "source": "Wikipedia「善導寺 (館林市)」／OpenStreetMap https://www.openstreetmap.org/（2026-09-18 照合）",
+      "verify": {
+        "area": "precinct",
+        "checkedAt": "2026-09-18",
+        "sources": [
+          { "src": "osm", "query": "善導寺", "coord": [139.567487, 36.243147], "distanceM": 0, "fetchedAt": "2026-09-18T11:00:00Z" }
+        ]
+      }
+    }
+  ],
+  "appPois": [
+    {
+      "name": "つつじが岡公園",
+      "lat": 36.241242,
+      "lng": 139.548759,
+      "desc": "館林市にある公園。つつじの名所として知られる。",
+      "source": "Wikipedia「つつじが岡公園」／OpenStreetMap https://www.openstreetmap.org/（2026-09-18 照合）",
+      "verify": {
+        "area": "precinct",
+        "checkedAt": "2026-09-18",
+        "sources": [
+          { "src": "osm", "query": "つつじが岡公園", "coord": [139.548759, 36.241242], "distanceM": 0, "fetchedAt": "2026-09-18T11:00:00Z" }
+        ]
+      }
+    },
+    {
+      "name": "館林城千貫門跡碑",
+      "lat": 36.245985,
+      "lng": 139.541796,
+      "desc": "館林城の門跡の一つである千貫門の跡を示す碑。",
+      "source": "館林城千貫門跡碑／OpenStreetMap https://www.openstreetmap.org/（2026-09-18 照合）",
+      "verify": {
+        "area": "point",
+        "checkedAt": "2026-09-18",
+        "sources": [
+          { "src": "osm", "query": "館林城千貫門跡碑", "coord": [139.541796, 36.245985], "distanceM": 0, "fetchedAt": "2026-09-18T11:00:00Z" }
+        ]
+      }
+    }
+  ],
+  "demoOps": {
+    "addPoi": [
+      {
+        "label": "館林城 土橋門跡を追加",
+        "poi": {
+          "name": "館林城 土橋門跡",
+          "lat": 36.245946,
+          "lng": 139.540532,
+          "desc": "館林城の門跡の一つである土橋門の跡。",
+          "source": "館林城 土橋門跡／OpenStreetMap https://www.openstreetmap.org/（2026-09-18 照合）",
+          "verify": {
+            "area": "point",
+            "checkedAt": "2026-09-18",
+            "sources": [
+              { "src": "osm", "query": "館林城 土橋門跡", "coord": [139.540532, 36.245946], "distanceM": 0, "fetchedAt": "2026-09-18T11:15:00Z" }
+            ]
+          }
+        }
+      }
+    ],
+    "movePoi": [],
+    "addLine": [
+      {
+        "label": "歴史の小径",
+        "kind": "walk",
+        "points": [[139.5286582, 36.2463943], [139.5297219, 36.2462133], [139.5303105, 36.2475958], [139.5361132, 36.2465085], [139.5364799, 36.2466501], [139.5369819, 36.2465749], [139.5371543, 36.2468989], [139.5396504, 36.2463218]],
+        "source": "館林市「歴史の小径」散策ルート（人間提供 KML）／証跡 routes/館林.kml（2026-09-17）"
+      }
+    ],
+    "addVector": []
+  }
+}

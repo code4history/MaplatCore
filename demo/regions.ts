@@ -80,6 +80,8 @@ export interface Poi {
   /** 典拠書誌・URL（この POI の由来）。必須（§12.2）。座標の正しさの照合記録は verify が別に持つ（§4.5） */
   source: string;
   image?: string;
+  /** 写真のライセンス（allowlist 完全一致。image があれば必須。t3 設計 v2 §4.6） */
+  imageLicense?: string;
   /** 写真の権利表示（撮影者・ライセンス・出典 URL）。image があれば必須（v6・HR-17/3。検査は t3 設計 v2 §4.6） */
   imageCredit?: string;
   /** 座標照合の記録（必須。§4.5 是正 1）。無い POI は機械検査で不合格 */
