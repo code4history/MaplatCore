@@ -1,0 +1,16 @@
+{
+  "appName": { "ja": "広島市古地図デモ", "en": "Historical Map Demo of Hiroshima" },
+  "lang": "ja",
+  "homePosition": [132.459863, 34.396386],
+  "defaultZoom": 14,
+  "zoomRestriction": true,
+  "minZoom": 10,
+  "maxZoom": 18,
+  "startFrom": "aki_hiroshima_castle",
+  "sources": [
+    { "mapID": "aki_hiroshima_castle", "label": "安芸国広島城所絵図" },
+    { "mapID": "kaisei_hiroshima_jissoku", "label": "改正鮮明廣島市實測地圖 1896" },
+    "gsi",
+    "osm"
+  ]
+}
