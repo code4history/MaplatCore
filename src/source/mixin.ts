@@ -467,12 +467,14 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
     }
 
     removePoi(id: string) {
-      Object.keys(this.pois).map(key => {
-        this.pois[key].pois.map((poi: any, i: number) => {
-          if (poi.id === id) {
-            delete this.pois[key].pois[i];
+      Object.keys(this.pois).forEach(key => {
+        const pois = this.pois[key].pois;
+        // 逆順に回す: splice で後ろが詰まっても、未検査の要素を飛ばさない（#111）
+        for (let i = pois.length - 1; i >= 0; i--) {
+          if (pois[i].id === id) {
+            pois.splice(i, 1);
           }
-        });
+        }
       });
     }
 
