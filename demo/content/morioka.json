@@ -161,7 +161,7 @@
         "kind": "festival",
         "points": [[141.1622937, 39.6960921], [141.1568547, 39.6984036]],
         "source": "2026 盛岡山車大絵巻 パレード経路パンフレット／証跡 morioka-parade-routes-human.kml（人間提供・2026-09-17）",
-        "maps": ["morioka_ndl"]
+        "maps": ["morioka_ndl", "morioka_ndl_affine", "gsi", "osm"]
       },
       {
         "label": "盛岡山車大絵巻パレード（9/15）",
