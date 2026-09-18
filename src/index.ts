@@ -1358,15 +1358,21 @@ export class MaplatApp extends EventTarget {
   }
   removeMarker(id: any) {
     if (!id.includes("#")) {
+      let removed = 0;
       for (const key of Object.keys(this.pois)) {
-        for (let i = 0; i < this.pois[key].pois.length; i++) {
-          const poi = this.pois[key].pois[i];
-          if (poi.id === id) {
-            delete this.pois[key].pois[i];
-            this.dispatchPoiNumber();
-            this.redrawMarkers();
+        const pois = this.pois[key].pois;
+        // 逆順に回す: splice で後ろが詰まっても、未検査の要素を飛ばさない（#111）。
+        // 同じ id が複数あれば全部消す（変更前の delete 版と同じ範囲）。
+        for (let i = pois.length - 1; i >= 0; i--) {
+          if (pois[i].id === id) {
+            pois.splice(i, 1);
+            removed++;
           }
         }
+      }
+      if (removed > 0) {
+        this.dispatchPoiNumber();
+        this.redrawMarkers();
       }
     } else {
       const splits = id.split("#");
