@@ -28,6 +28,33 @@
         "tatebayashi_castle_akimoto",
         "tatebayashi_ojozu"
       ]
+    },
+    {
+      "name": "善導寺",
+      "lat": 36.243147,
+      "lng": 139.567487,
+      "desc": "館林市にある寺院。",
+      "source": "Wikipedia「善導寺 (館林市)」／OpenStreetMap https://www.openstreetmap.org/（2026-09-18 照合）",
+      "verify": {
+        "area": "precinct",
+        "checkedAt": "2026-09-18",
+        "sources": [
+          {
+            "src": "osm",
+            "query": "善導寺",
+            "coord": [
+              139.567487,
+              36.243147
+            ],
+            "distanceM": 0,
+            "fetchedAt": "2026-09-18T11:00:00Z"
+          }
+        ]
+      },
+      "maps": [
+        "gsi",
+        "osm"
+      ]
     }
   ],
   "appPois": [
@@ -70,29 +97,6 @@
             "coord": [
               139.541796,
               36.245985
-            ],
-            "distanceM": 0,
-            "fetchedAt": "2026-09-18T11:00:00Z"
-          }
-        ]
-      }
-    },
-    {
-      "name": "善導寺",
-      "lat": 36.243147,
-      "lng": 139.567487,
-      "desc": "館林市にある寺院。",
-      "source": "Wikipedia「善導寺 (館林市)」／OpenStreetMap https://www.openstreetmap.org/（2026-09-18 照合）",
-      "verify": {
-        "area": "precinct",
-        "checkedAt": "2026-09-18",
-        "sources": [
-          {
-            "src": "osm",
-            "query": "善導寺",
-            "coord": [
-              139.567487,
-              36.243147
             ],
             "distanceM": 0,
             "fetchedAt": "2026-09-18T11:00:00Z"

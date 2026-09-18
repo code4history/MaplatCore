@@ -170,7 +170,8 @@
       }
     }
   ],
-  "appLines": [
+  "appLines": [],
+  "mapLines": [
     {
       "label": "盛岡山車大絵巻パレード（9/15）",
       "kind": "festival",
@@ -196,10 +197,14 @@
           39.7034801
         ]
       ],
-      "source": "2026 盛岡山車大絵巻 パレード経路パンフレット／証跡 morioka-parade-routes-human.kml（人間提供・2026-09-17）"
-    }
-  ],
-  "mapLines": [
+      "source": "2026 盛岡山車大絵巻 パレード経路パンフレット／証跡 morioka-parade-routes-human.kml（人間提供・2026-09-17）",
+      "maps": [
+        "morioka_ndl",
+        "morioka_ndl_affine",
+        "gsi",
+        "osm"
+      ]
+    },
     {
       "label": "八幡下りパレード（9/14）",
       "kind": "festival",
@@ -226,6 +231,12 @@
     "addPoi": [
       {
         "label": "盛岡八幡宮を追加",
+        "maps": [
+          "morioka_ndl",
+          "morioka_ndl_affine",
+          "gsi",
+          "osm"
+        ],
         "poi": {
           "name": "盛岡八幡宮",
           "lat": 39.695347,

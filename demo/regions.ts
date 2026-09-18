@@ -88,9 +88,9 @@ export interface Poi {
   verify: PoiVerify;
 }
 
-/** 地図用 POI 1 件（v6.4・HR-22）。その古地図に描かれた地物。maps の地図にだけ出す */
+/** 地図用 POI 1 件（v6.5・HR-22・IR3 Major-1）。その地図に出す POI。maps の地図にだけ出す */
 export interface MapPoi extends Poi {
-  /** この地物が描かれている古地図の mapID（1 件以上・重複なし）。当該地域 sources の古地図（object 形）に限り、gsi/osm は書かない。複数あれば各地図に 1 件ずつ出す */
+  /** 出す地図の mapID（1 件以上・重複なし・当該地域 sources に実在。gsi/osm も書ける〔v6.5〕。sources の全件と同じは不可＝アプリ用に置く）。複数あれば各地図に 1 件ずつ出す */
   maps: string[];
 }
 
@@ -119,16 +119,23 @@ export interface VectorItem {
   source: string;
 }
 
-/** 移動ピン 1 件（v6.4・HR-23）。始点・終点は line が指すアプリの線の最初と最後の頂点（座標を二重に持たない） */
+/** 追加 POI 1 件（v6.5・IR3 Major-1）。maps が無ければ全地図、あればその地図にだけ出す（規則は MapPoi.maps と同じ） */
+export interface AddPoiItem {
+  label: string;
+  maps?: string[];
+  poi: Poi;
+}
+
+/** 移動ピン 1 件（v6.4・HR-23。v6.5 で地図の線も指せる）。始点・終点は line が指す線の最初と最後の頂点（座標を二重に持たない）。出る地図は線と同じ */
 export interface MovePoiItem {
   label: string;
-  /** 同じ素材の appLines[].label のどれか 1 つ */
+  /** 同じ素材の appLines[].label か mapLines[].label のどれか 1 つ */
   line: string;
 }
 
 /** デモ操作（§8.2 demoOps。空配列なら対応する操作を出さない。§8.4）。v6.4: addLine は appLines／mapLines へ移した */
 export interface DemoOps {
-  addPoi: { label: string; poi: Poi }[];
+  addPoi: AddPoiItem[];
   movePoi: MovePoiItem[];
   addVector: VectorItem[];
 }

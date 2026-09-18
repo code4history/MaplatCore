@@ -188,6 +188,14 @@ async function main(): Promise<void> {
   const MAP_LAYER = "map";
   const MOVE_LAYER = "move";
   const mapLayerId = (mapID: string): string => `${mapID}#${MAP_LAYER}`;
+  // v4.3（IR3 Major-1）: 出る地図が限られる追加 POI・移動ピンは、地図用 POI と同じく地図ソースごとの層に載せる
+  // （Core は現在の地図のソースの層だけを描く＝その地図にだけ出る。ベースマップ gsi/osm の層も同じ。t4 §4.3 C8）
+  const ADD_LAYER = "add";
+  const addLayerId = (mapID: string): string => `${mapID}#${ADD_LAYER}`;
+  const moveLayerId = (mapID: string): string => `${mapID}#${MOVE_LAYER}`;
+  const ensureLayer = (id: string, name: string): void => {
+    if (!app.getPoiLayer(id)) app.addPoiLayer(id, { name });
+  };
   if (appPois.length > 0 || demoOps.addPoi.length > 0) app.addPoiLayer(APP_LAYER, { name: "アプリ用 POI" });
   // Core の normalizePoi は渡した POI をその場で書き換えるので、素材は写しで渡す（IR1 Major-1 と同じ理由）
   for (const poi of appPois) app.addMarker(structuredClone(poi), APP_LAYER);
@@ -349,23 +357,35 @@ async function main(): Promise<void> {
     const n = mapPoiCount.get(activeMapId() ?? "") ?? 0;
     setUsable(mapPoiCheck, n > 0, "この地図には地図用 POI がありません");
   };
+  // 追加 POI・移動のうち出る地図が限られるもの（v4.3・IR3 Major-1）。その地図に無ければチェックを無効化する（HR-20・22 の一般化）
+  const opChecks: { wrap: HTMLLabelElement; maps: string[] }[] = [];
+  const refreshOpChecks = (): void => {
+    const mapID = activeMapId() ?? "";
+    for (const { wrap, maps } of opChecks) setUsable(wrap, maps.includes(mapID), "この地図には出せません");
+  };
   if (demoOps.addPoi.length > 0 || demoOps.movePoi.length > 0) {
     const opRow = poiSec.row();
     // POI 追加（HR-23/1）: on で追加・off で削除。Core の removeMarker は #111 の修正（edd55e9 以降）が前提
+    // maps が無ければアプリ全体の層（全地図）、あれば地図ごとの層 "<mapID>#add"（その地図にだけ出る）
     for (const op of demoOps.addPoi) {
-      let addedId: string | undefined;
-      opRow.appendChild(makeCheck(op.label, false, (on) => {
-        if (on && !addedId) addedId = app.addMarker(structuredClone(op.poi), APP_LAYER) as string;
-        if (!on && addedId) {
-          app.removeMarker(addedId);
-          addedId = undefined;
+      const layers = op.maps ? op.maps.map(addLayerId) : [APP_LAYER];
+      if (op.maps) for (const id of layers) ensureLayer(id, "追加 POI");
+      let addedIds: string[] = [];
+      const wrap = makeCheck(op.label, false, (on) => {
+        if (on && addedIds.length === 0) addedIds = layers.map((id) => app.addMarker(structuredClone(op.poi), id) as string);
+        if (!on && addedIds.length > 0) {
+          for (const id of addedIds) app.removeMarker(id);
+          addedIds = [];
         }
-      }));
+      });
+      if (op.maps) opChecks.push({ wrap, maps: op.maps });
+      opRow.appendChild(wrap);
     }
-    // 移動ピン（HR-23/2・3）: 始点・終点は参照するアプリの線の最初と最後の頂点。既存の POI の座標は使わない
-    if (demoOps.movePoi.length > 0) app.addPoiLayer(MOVE_LAYER, { name: "移動ピン" });
+    // 移動ピン（HR-23/2・3）: 始点・終点は参照する線（アプリの線か地図の線）の最初と最後の頂点。既存の POI の座標は使わない
+    // 地図の線を参照するときは、その線の maps の地図ごとの層 "<mapID>#move" に 1 本ずつ置く（線と同じ地図にだけ出る）
+    const lineMapsOf = (l: LineItem | MapLineItem): string[] | undefined => ("maps" in l ? l.maps : undefined);
     for (const move of demoOps.movePoi) {
-      const line = appLines.find((l) => l.label === move.line);
+      const line = appLines.find((l) => l.label === move.line) ?? mapLines.find((l) => l.label === move.line);
       if (!line || line.points.length < 2) continue; // 素材の検査（t3 AC-T3-11）が先に落とす。ここでは出さないだけ
       const start = line.points[0];
       const end = line.points[line.points.length - 1];
@@ -376,10 +396,15 @@ async function main(): Promise<void> {
         icon: MOVE_ICON,
         selectedIcon: MOVE_ICON
       });
-      const markerId = app.addMarker(pin(start, "始点"), MOVE_LAYER) as string;
-      opRow.appendChild(makeCheck(move.label, false, (on) => {
-        app.updateMarker(markerId, on ? pin(end, "終点") : pin(start, "始点"), false);
-      }));
+      const lineMaps = lineMapsOf(line);
+      const layers = lineMaps ? lineMaps.map(moveLayerId) : [MOVE_LAYER];
+      for (const id of layers) ensureLayer(id, "移動ピン");
+      const markerIds = layers.map((id) => app.addMarker(pin(start, "始点"), id) as string);
+      const wrap = makeCheck(move.label, false, (on) => {
+        for (const id of markerIds) app.updateMarker(id, on ? pin(end, "終点") : pin(start, "始点"), false);
+      });
+      if (lineMaps) opChecks.push({ wrap, maps: lineMaps });
+      opRow.appendChild(wrap);
     }
   }
   mountSection(poiSec);
@@ -441,6 +466,7 @@ async function main(): Promise<void> {
     refreshAttr();
     renderMapSelect(activeMapId());
     refreshPoiChecks();
+    refreshOpChecks();
     refreshLineChecks();
     redrawShapes();
     void refreshViewpoint();
