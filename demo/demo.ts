@@ -90,7 +90,6 @@ function byId<T extends HTMLElement = HTMLElement>(id: string): T {
 function makeButton(label: string, onClick: () => void): HTMLButtonElement {
   const btn = document.createElement("button");
   btn.type = "button";
-  btn.className = "c4h-header-btn";
   btn.textContent = label;
   btn.addEventListener("click", onClick);
   return btn;
@@ -129,12 +128,6 @@ async function main(): Promise<void> {
   }
   note.appendChild(noteList);
 
-  // #map_div の寸法（demo-shell.css は C4H 正本のため変えず、ここで inline 指定）
-  const mapDiv = byId("map_div");
-  mapDiv.style.position = "relative";
-  mapDiv.style.width = "100%";
-  mapDiv.style.height = "560px";
-
   const status = byId("status");
   const attr = byId("map-attr");
   const controls = byId("demo-controls");
@@ -169,12 +162,21 @@ async function main(): Promise<void> {
   // 地図メタは mixin.ts が OL の this.set(key, …)（values_）に格納するため attr/license が
   // 直接プロパティになく、出典欄が空になる（レビュー Major-2）。公開 API の getMapMeta(mapID)
   // は source.get(key) で読むのでこちらを使う。attr は {ja, en} 形があり得るため i18n() を通す。
+  // 手順 4: refreshAttr の dataLicense 行を置き換える（IR2 Minor-N1。§4.4）
+  const attrDataParts = (m: { dataAttr?: string | { ja?: string; en?: string }; dataLicense?: string } | undefined): string[] => {
+    const dataAttr = m ? i18n(m.dataAttr) : "";
+    if (dataAttr && m?.dataLicense) return [`地理参照データ: ${dataAttr}（${m.dataLicense}）`];
+    if (m?.dataLicense) return [`地理参照データ: ${m.dataLicense}`];
+    if (dataAttr) return [`地理参照データ: ${dataAttr}`];
+    return [];
+  };
   const refreshAttr = (): void => {
     const m = app.getMapMeta(activeMapId()) as
       | {
           label?: string | { ja?: string; en?: string };
           attr?: string | { ja?: string; en?: string };
           license?: string;
+          dataAttr?: string | { ja?: string; en?: string };
           dataLicense?: string;
         }
       | undefined;
@@ -185,8 +187,8 @@ async function main(): Promise<void> {
     else if (attrStr) parts.push(attrStr);
     else if (label) parts.push(label);
     if (m?.license) parts.push(`ライセンス: ${m.license}`);
-    // 上位設計 §10.2-3: dataLicense（CC BY-SA など）の地図は「地理参照データ」を併記する
-    if (m?.dataLicense) parts.push(`地理参照データ: ${m.dataLicense}`);
+    // 上位設計 §10.2-3: dataAttr・dataLicense（CC BY-SA など）の地図は「地理参照データ」を併記する
+    parts.push(...attrDataParts(m));
     attr.textContent = parts.join(" ／ ");
   };
 
@@ -196,32 +198,6 @@ async function main(): Promise<void> {
     const direction = await app.getDirection();
     status.textContent = `回転 ${rotation.toFixed(1)}° / 方位 ${direction.toFixed(1)}°`;
   };
-
-  // ---- 地図セレクタ（app 設定 sources の各 entry をボタン化）----
-  const mapButtons = new Map<string, HTMLButtonElement>();
-  const renderMapButtons = (activeId: string | undefined): void => {
-    for (const [id, btn] of mapButtons) {
-      const isActive = id === activeId;
-      btn.style.background = isActive ? "#3a7bd5" : "";
-      btn.style.borderColor = isActive ? "#3a7bd5" : "";
-    }
-  };
-  for (const source of setting.sources) {
-    const isBasemap = typeof source === "string";
-    const mapID = isBasemap ? source : (source as { mapID: string }).mapID;
-    const label = isBasemap
-      ? (BASEMAP_LABEL[mapID] ?? mapID)
-      : (i18n((source as { label?: string | { ja?: string; en?: string } }).label) || mapID);
-    const btn = makeButton(label, () => {
-      // 切替前に線・面を消す。changeMap は resetVector() の後 this.vectors を非同期で
-      // 描き直すため、先に clearLine() で空にしないと、切替前の線が mapChanged（→
-      // redrawShapes の clearLine）の後に解決して対象外の地図にも描かれる（レビュー Major-3）。
-      app.clearLine();
-      void app.changeMap(mapID);
-    });
-    mapButtons.set(mapID, btn);
-    controls.appendChild(btn);
-  }
 
   // ---- POI レイヤ（アプリ用 POI / 地図用 POI）。addMarker の受け皿として先に作る ----
   const APP_LAYER = "app";
@@ -241,71 +217,6 @@ async function main(): Promise<void> {
   const ensureLayer = (id: string, name: string): void => {
     if (!app.getPoiLayer(id)) app.addPoiLayer(id, { name });
   };
-
-  // POI 一括表示 / 非表示（層を問わない一括切替）
-  if (appPois.length > 0 || mapPois.length > 0) {
-    controls.appendChild(makeButton("全 POI 表示", () => { app.showAllMarkers(); }));
-    controls.appendChild(makeButton("全 POI 非表示", () => { app.hideAllMarkers(); }));
-  }
-
-  // POI レイヤの表示切替（チェックボックス）
-  for (const layer of poiLayers) {
-    const label = document.createElement("label");
-    label.style.cssText = "display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#fff;cursor:pointer;";
-    const cb = document.createElement("input");
-    cb.type = "checkbox";
-    cb.checked = true;
-    cb.addEventListener("change", () => {
-      if (cb.checked) app.showPoiLayer(layer.id);
-      else app.hidePoiLayer(layer.id);
-    });
-    label.appendChild(cb);
-    label.appendChild(document.createTextNode(layer.name));
-    controls.appendChild(label);
-  }
-
-  // POI 追加（素材 demoOps.addPoi[].poi を写して addMarker。再押下で削除＝同じピンが重ならない）
-  for (const op of demoOps.addPoi) {
-    let added = false;
-    let markerId: string | undefined;
-    controls.appendChild(makeButton(op.label, () => {
-      ensureLayer(MAP_LAYER, "地図用 POI");
-      if (!added) {
-        // addMarker は渡したオブジェクトを書き換える（lnglat 付与・lng/lat 削除・id 付与）ため
-        // 素材を壊さないよう写しを渡す。多重押下で同じピンを重ねないようトグル（再押下で削除）。
-        markerId = app.addMarker({ ...op.poi }, MAP_LAYER) as string;
-        added = true;
-      } else {
-        app.removeMarker(markerId);
-        markerId = undefined;
-        added = false;
-      }
-    }));
-  }
-
-  // POI 移動（from を登録し、to の座標へ updateMarker。もう一度押すと from へ戻る）
-  for (const move of demoOps.movePoi) {
-    let moved = false;
-    let markerId: string | undefined;
-    controls.appendChild(makeButton(move.label, () => {
-      ensureLayer(MAP_LAYER, "地図用 POI");
-      if (!markerId) {
-        // Core の addMarker → normalizePoi は渡したオブジェクトをその場で書き換える
-        // （lnglat を足し、lng/lat/longitude/latitude を delete する）。素材の from を
-        // 壊すと 2 回目に [target.lng, target.lat] が [undefined, undefined] になる
-        // （レビュー Major-1）ため、写し（deep copy）を渡す。戻り値の namespaceID は
-        // 写し側に付くが、それをそのまま markerId に使うので往復は成り立つ。
-        markerId = app.addMarker(structuredClone(move.from), MAP_LAYER) as string;
-      }
-      const target = moved ? move.from : move.to;
-      app.updateMarker(
-        markerId,
-        { lnglat: [target.lng, target.lat], address: target.address ?? "", desc: move.label },
-        false
-      );
-      moved = !moved;
-    }));
-  }
 
   // ---- 線・面（kind 別パレット・maps による地図別表示）----
   const activeLines: DemoLine[] = [];
@@ -327,57 +238,199 @@ async function main(): Promise<void> {
       app.addVector({ type: "Polygon", lnglats: [vec.points], style: PALETTE[vec.kind ?? "feature"] });
     }
   };
-  for (const line of demoOps.addLine) {
-    controls.appendChild(makeButton(line.label, () => {
-      const idx = activeLines.indexOf(line);
-      if (idx >= 0) activeLines.splice(idx, 1);
-      else activeLines.push(line);
-      redrawShapes();
-    }));
-  }
-  for (const vec of demoOps.addVector) {
-    controls.appendChild(makeButton(vec.label, () => {
-      const idx = activeVectors.indexOf(vec);
-      if (idx >= 0) activeVectors.splice(idx, 1);
-      else activeVectors.push(vec);
-      redrawShapes();
-    }));
-  }
-  if (demoOps.addLine.length > 0 || demoOps.addVector.length > 0) {
-    controls.appendChild(makeButton("線・面を消す", () => {
-      activeLines.length = 0;
-      activeVectors.length = 0;
-      redrawShapes();
-    }));
-  }
+  // ---- 操作パネルの部品（HR-18。t4 v4.1 §4.2）----
+  interface Sec { sec: HTMLElement; row: () => HTMLDivElement; }
+  const makeSection = (title: string): Sec => {
+    const sec = document.createElement("section");
+    sec.className = "demo-sec";
+    const h = document.createElement("h2");
+    h.textContent = title;
+    sec.appendChild(h);
+    const row = (): HTMLDivElement => {
+      const r = document.createElement("div");
+      r.className = "demo-row";
+      sec.appendChild(r);
+      return r;
+    };
+    return { sec, row };
+  };
+  // 中に操作が 1 つも無い節は出さない（上位 §8.4 の欠けの非表示）
+  const mountSection = (s: Sec): void => {
+    if (s.sec.querySelector("button, input, select")) controls.appendChild(s.sec);
+  };
+  const makeCheck = (label: string, checked: boolean, onChange: (on: boolean) => void): HTMLLabelElement => {
+    const wrap = document.createElement("label");
+    wrap.className = "demo-check";
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = checked;
+    cb.addEventListener("change", () => { onChange(cb.checked); });
+    wrap.appendChild(cb);
+    wrap.appendChild(document.createTextNode(label));
+    return wrap;
+  };
 
-  // ---- 視点（goHome / 回転・方位リセット）----
-  controls.appendChild(makeButton("ホーム", () => { app.goHome(); }));
-  controls.appendChild(makeButton("回転リセット", () => { app.resetRotation(); }));
-  controls.appendChild(makeButton("方位リセット", () => { app.resetDirection(); }));
-
-  // ---- 透過度（setTransparency）----
-  controls.appendChild(makeButton("透過 0%", () => { app.setTransparency(0); }));
-  controls.appendChild(makeButton("透過 50%", () => { app.setTransparency(50); }));
-  controls.appendChild(makeButton("透過 100%", () => { app.setTransparency(100); }));
-
-  // ---- GPS（on/off・偽マーカー・クリア）----
-  const gpsBtn = makeButton("GPS 有効化", () => {
-    const next = !app.getGPSEnabled();
-    app.handleGPS(next);
-    gpsBtn.textContent = app.getGPSEnabled() ? "GPS 無効化" : "GPS 有効化";
+  // ---- 地図（ドロップダウン＋透過度スライダー）----
+  const mapSec = makeSection("地図");
+  const mapField = document.createElement("label");
+  mapField.className = "demo-field";
+  mapField.appendChild(document.createTextNode("表示する地図"));
+  const mapSelect = document.createElement("select");
+  mapSelect.id = "map-select";
+  const oldGroup = document.createElement("optgroup");
+  oldGroup.label = "古地図";
+  const baseGroup = document.createElement("optgroup");
+  baseGroup.label = "現代の地図";
+  for (const source of setting.sources) {
+    const isBasemap = typeof source === "string";
+    const mapID = isBasemap ? source : (source as { mapID: string }).mapID;
+    const label = isBasemap
+      ? (BASEMAP_LABEL[mapID] ?? mapID)
+      : (i18n((source as { label?: string | { ja?: string; en?: string } }).label) || mapID);
+    const opt = document.createElement("option");
+    opt.value = mapID;
+    opt.textContent = label;
+    (isBasemap ? baseGroup : oldGroup).appendChild(opt);
+  }
+  for (const g of [oldGroup, baseGroup]) if (g.children.length > 0) mapSelect.appendChild(g);
+  mapSelect.addEventListener("change", () => {
+    // IR1 Major-3 の是正を維持: 切替前に線・面を空にする
+    app.clearLine();
+    void app.changeMap(mapSelect.value);
   });
-  controls.appendChild(gpsBtn);
-  controls.appendChild(makeButton("偽 GPS マーカー", () => {
+  mapField.appendChild(mapSelect);
+  mapSec.row().appendChild(mapField);
+  const opField = document.createElement("label");
+  opField.className = "demo-field";
+  const opText = document.createTextNode("透過度 0%");
+  const opRange = document.createElement("input");
+  opRange.type = "range";
+  opRange.id = "opacity-range";
+  opRange.min = "0";
+  opRange.max = "100";
+  opRange.step = "10";
+  opRange.value = "0";
+  opRange.addEventListener("input", () => {
+    app.setTransparency(Number(opRange.value));
+    opText.textContent = `透過度 ${opRange.value}%`;
+  });
+  opField.appendChild(opText);
+  opField.appendChild(opRange);
+  mapSec.row().appendChild(opField);
+  mountSection(mapSec);
+  const renderMapSelect = (activeId: string | undefined): void => {
+    if (activeId !== undefined) mapSelect.value = activeId;
+  };
+
+  // ---- POI（表示のチェック・追加は 1 回だけのボタン・移動はチェック）----
+  const poiSec = makeSection("POI");
+  if (poiLayers.length > 0) {
+    const showRow = poiSec.row();
+    showRow.appendChild(makeCheck("すべての POI を表示", true, (on) => {
+      if (on) app.showAllMarkers();
+      else app.hideAllMarkers();
+    }));
+    for (const layer of poiLayers) {
+      showRow.appendChild(makeCheck(layer.name, true, (on) => {
+        if (on) app.showPoiLayer(layer.id);
+        else app.hidePoiLayer(layer.id);
+      }));
+    }
+  }
+  if (demoOps.addPoi.length > 0 || demoOps.movePoi.length > 0) {
+    const opRow = poiSec.row();
+    for (const op of demoOps.addPoi) {
+      const btn = makeButton(op.label, () => {
+        if (btn.disabled) return;
+        ensureLayer(MAP_LAYER, "地図用 POI");
+        // 1 回だけ追加する。マーカーの削除 API は呼ばない（IR2 Major-N1）。素材を壊さないよう写しを渡す
+        app.addMarker({ ...op.poi }, MAP_LAYER);
+        btn.disabled = true;
+        btn.title = "追加済み（元に戻すにはページを読み直す）";
+      });
+      opRow.appendChild(btn);
+    }
+    for (const move of demoOps.movePoi) {
+      let markerId: string | undefined;
+      opRow.appendChild(makeCheck(move.label, false, (on) => {
+        ensureLayer(MAP_LAYER, "地図用 POI");
+        // IR1 Major-1 の是正を維持: 素材の from を Core に書き換えさせない
+        if (!markerId) markerId = app.addMarker(structuredClone(move.from), MAP_LAYER) as string;
+        const target = on ? move.to : move.from;
+        app.updateMarker(
+          markerId,
+          { lnglat: [target.lng, target.lat], address: target.address ?? "", desc: move.label },
+          false
+        );
+      }));
+    }
+  }
+  mountSection(poiSec);
+
+  // ---- 線・面（チェック。maps にない地図では on のままでも描かない）----
+  const shapeSec = makeSection("線・面");
+  const shapeRow = shapeSec.row();
+  const toggleIn = <T>(list: T[], item: T, on: boolean): void => {
+    const idx = list.indexOf(item);
+    if (on && idx < 0) list.push(item);
+    if (!on && idx >= 0) list.splice(idx, 1);
+  };
+  // HR-20: maps 指定のある線は、現在の地図で描けないときチェックを無効化する（選択状態は保つ）
+  const lineChecks: { line: DemoLine; wrap: HTMLLabelElement }[] = [];
+  for (const line of demoOps.addLine) {
+    const wrap = makeCheck(line.label, false, (on) => { toggleIn(activeLines, line, on); redrawShapes(); });
+    lineChecks.push({ line, wrap });
+    shapeRow.appendChild(wrap);
+  }
+  const refreshLineChecks = (): void => {
+    const mapID = activeMapId();
+    for (const { line, wrap } of lineChecks) {
+      const cb = wrap.querySelector("input");
+      if (!cb) continue;
+      // maps 指定がない線は lineApplies が常に true を返す＝常に有効
+      const usable = lineApplies(line, mapID);
+      cb.disabled = !usable;
+      wrap.style.opacity = usable ? "" : "0.45";
+      wrap.style.cursor = usable ? "" : "not-allowed";
+      if (usable) wrap.removeAttribute("title");
+      else wrap.title = "この地図では表示できません";
+    }
+  };
+  for (const vec of demoOps.addVector) {
+    shapeRow.appendChild(makeCheck(vec.label, false, (on) => { toggleIn(activeVectors, vec, on); redrawShapes(); }));
+  }
+  mountSection(shapeSec);
+
+  // ---- 視点 ----
+  const viewSec = makeSection("視点");
+  const viewRow = viewSec.row();
+  viewRow.appendChild(makeButton("ホーム", () => { app.goHome(); }));
+  viewRow.appendChild(makeButton("回転を戻す", () => { app.resetRotation(); }));
+  viewRow.appendChild(makeButton("北を上に", () => { app.resetDirection(); }));
+  mountSection(viewSec);
+
+  // ---- GPS ----
+  const gpsSec = makeSection("GPS");
+  const gpsRow = gpsSec.row();
+  const gpsCheck = makeCheck("GPS を使う", false, (on) => {
+    app.handleGPS(on);
+    const cb = gpsCheck.querySelector("input");
+    if (cb) cb.checked = app.getGPSEnabled();
+  });
+  gpsRow.appendChild(gpsCheck);
+  const fakeRow = gpsSec.row();
+  fakeRow.appendChild(makeButton("仮の現在地を置く", () => {
     const hp = setting.homePosition;
     app.setGPSMarker({ lnglat: [hp[0], hp[1]], acc: 60 });
   }));
-  controls.appendChild(makeButton("GPS クリア", () => { app.setGPSMarker(null); }));
+  fakeRow.appendChild(makeButton("仮の現在地を消す", () => { app.setGPSMarker(null); }));
+  mountSection(gpsSec);
 
-  // ---- 地図切替・視点変化に追従して、出典・アクティブ地図ボタン・線・視点を出し直す ----
+  // ---- 地図切替・視点変化に追従して、出典・選択中の地図・線・視点を出し直す ----
   const refreshMapState = (): void => {
     refreshAttr();
-    renderMapButtons(activeMapId());
+    renderMapSelect(activeMapId());
+    refreshLineChecks();
     redrawShapes();
     void refreshViewpoint();
   };

@@ -5,25 +5,57 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MaplatCore デモ - 古地図</title>
   <link rel="stylesheet" href="./demo/demo-shell.css">
+  <style>
+    /* HR-18: 地図を主領域・右に操作パネル。C4H 正本 demo-shell.css（バイト等価）に無いレイアウトだけを置く。class は demo- 接頭辞に限る */
+    body.c4h-app { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+    .demo-layout { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 320px; }
+    .demo-map-col { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+    .demo-map-col .c4h-main-area { flex: 1; min-height: 0; display: block; padding: 8px; }
+    #map_div { position: relative; width: 100%; height: 100%; }
+    .demo-map-col .c4h-info-box { margin: 0 8px 8px; padding: 6px 12px; font-size: 12px; line-height: 1.5; }
+    .demo-panel { min-height: 0; overflow-y: auto; background: #fff; border-left: 1px solid #d5d9e2; padding: 8px 12px 16px; font-size: 13px; line-height: 1.4; }
+    .demo-panel .c4h-note { margin: 0 -12px 8px; padding: 6px 12px; }
+    .demo-sec { border-top: 1px solid #eef0f4; padding: 8px 0; }
+    .demo-sec h2 { font-size: 12px; font-weight: 700; color: #1a2744; margin-bottom: 6px; }
+    .demo-row { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin-bottom: 6px; }
+    .demo-row button { padding: 4px 10px; border: 1px solid #b8c0d0; border-radius: 4px; background: #f8f9fb; color: #1a2744; font-size: 12px; white-space: nowrap; cursor: pointer; }
+    .demo-row button:hover { background: #e8f0fe; }
+    .demo-row button:disabled { color: #99a; cursor: default; background: #f0f1f4; }
+    .demo-check { display: flex; align-items: flex-start; gap: 6px; width: 100%; font-size: 12px; cursor: pointer; }
+    .demo-field { display: flex; flex-direction: column; gap: 4px; width: 100%; font-size: 12px; }
+    .demo-field select, .demo-field input[type="range"] { width: 100%; }
+    .demo-field select { padding: 4px 6px; font-size: 13px; }
+    @media (max-width: 720px) {
+      body.c4h-app { height: auto; overflow: visible; }
+      .demo-layout { display: block; }
+      .demo-map-col { display: block; }
+      .demo-map-col .c4h-main-area { height: 55vh; min-height: 300px; }
+      .demo-panel { border-left: 0; border-top: 1px solid #d5d9e2; }
+    }
+  </style>
 </head>
 <body class="c4h-app">
   <header class="c4h-header">
     <h1>MaplatCore 古地図デモ</h1>
     <div class="c4h-control-row">
       <label>地域 <select id="region-select"></select></label>
-      <div id="demo-controls" class="c4h-btn-group"></div>
     </div>
     <span id="status" class="c4h-status">読み込み中…</span>
   </header>
 
-  <div id="region-note" class="c4h-note"></div>
-
-  <div class="c4h-main-area">
-    <div id="map_div"></div>
-  </div>
-
-  <div class="c4h-info-box">
-    <p>出典: <strong id="map-attr"></strong></p>
+  <div class="demo-layout">
+    <div class="demo-map-col">
+      <div class="c4h-main-area">
+        <div id="map_div"></div>
+      </div>
+      <div class="c4h-info-box">
+        <p>出典: <strong id="map-attr"></strong></p>
+      </div>
+    </div>
+    <aside id="demo-panel" class="demo-panel" aria-label="操作メニュー">
+      <div id="region-note" class="c4h-note"></div>
+      <div id="demo-controls"></div>
+    </aside>
   </div>
 
   <script type="module" src="./demo/demo.ts"></script>
