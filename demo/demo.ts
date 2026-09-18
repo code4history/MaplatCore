@@ -5,45 +5,24 @@
 // Core 本体（公開ライブラリ）の公開 API だけを使う（Pro 専用 API・Core 専用 export を import しない）。
 import { MaplatApp } from "../src/index.ts"; // 開発時。build:demo でバンドル
 import { REGION_IDS, REGION_META } from "./regions";
-import type { AppSetting, Poi, RegionId } from "./regions";
+import type { AppSetting, DemoOps, LineItem, LineKind, MapLineItem, MapPoi, Poi, RegionContent, RegionId, VectorItem } from "./regions";
 
 // 素材 JSON（demo/content/<region>.json）を Vite の import.meta.glob でバンドルに取り込む。
 // キーは "./content/<region>.json"（demo/ 起点の相対 glob）。ページの基点に依存しない。
 const CONTENTS = import.meta.glob("./content/*.json", { import: "default" });
 
-// 素材スキーマの実データ形。regions.ts の LineItem/VectorItem 型は t1 時点の形で
-// kind（線種）・maps（表示対象の古地図 mapID の配列）を持たない（t3 が素材に追加した語）。
-// 型正本は regions.ts だが、実データに合わせた局所型をここに持つ（regions.ts は
-// AC-T4-7 の乖離修正以外で触らないため）。
-type LngLatPair = [number, number];
-type LineKind = "festival" | "walk" | "feature";
-interface DemoLine {
-  label: string;
-  points: LngLatPair[];
-  source: string;
-  kind?: LineKind;
-  maps?: string[];
-}
-interface DemoVector {
-  label: string;
-  points: LngLatPair[];
-  source: string;
-  kind?: LineKind;
-}
-interface DemoOps {
-  addPoi: { label: string; poi: Poi }[];
-  movePoi: { label: string; from: Poi; to: Poi }[];
-  addLine: DemoLine[];
-  addVector: DemoVector[];
-}
-interface DemoContent {
-  region: RegionId;
-  mapPois: Poi[];
-  appPois: Poi[];
-  demoOps: DemoOps;
-}
+// 素材の型は regions.ts（t1 v6.4）が正本。v4.2 で局所型を廃止した
+const EMPTY_OPS: DemoOps = { addPoi: [], movePoi: [], addVector: [] };
 
-const EMPTY_OPS: DemoOps = { addPoi: [], movePoi: [], addLine: [], addVector: [] };
+// 移動ピンのアイコン（HR-23/2: 既存の POI と見分ける）。ファイルを増やさないため data URI の SVG
+const MOVE_ICON =
+  "data:image/svg+xml;charset=utf-8," +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="36" viewBox="0 0 28 36">' +
+      '<path d="M14 35C14 35 2 20 2 13a12 12 0 0 1 24 0c0 7-12 22-12 22z" fill="#7c3aed" stroke="#fff" stroke-width="2"/>' +
+      '<path d="M8 13h9m-3.5-4 4 4-4 4" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+      "</svg>"
+  );
 
 // 線・面の見た目（kind 別パレット）。単一正本はここ 1 箇所。
 // stroke は addLine の stroke、style は addVector の style（{ stroke, fill }）にそのまま渡す。
@@ -143,10 +122,12 @@ async function main(): Promise<void> {
 
   // 素材をバンドルから取得（無ければ「欠け」＝ボタンを出さないだけ）
   const loader = CONTENTS[`./content/${region}.json`];
-  const content: DemoContent | undefined = loader ? ((await loader()) as DemoContent) : undefined;
+  const content: RegionContent | undefined = loader ? ((await loader()) as RegionContent) : undefined;
   const demoOps: DemoOps = content?.demoOps ?? EMPTY_OPS;
   const appPois: Poi[] = content?.appPois ?? [];
-  const mapPois: Poi[] = content?.mapPois ?? [];
+  const mapPois: MapPoi[] = content?.mapPois ?? [];
+  const appLines: LineItem[] = content?.appLines ?? [];
+  const mapLines: MapLineItem[] = content?.mapLines ?? [];
 
   // setting を明示渡し。1 回の読み込みで app は 1 つだけ
   const app = await MaplatApp.createObject({ appid: region, setting });
@@ -199,31 +180,36 @@ async function main(): Promise<void> {
     status.textContent = `回転 ${rotation.toFixed(1)}° / 方位 ${direction.toFixed(1)}°`;
   };
 
-  // ---- POI レイヤ（アプリ用 POI / 地図用 POI）。addMarker の受け皿として先に作る ----
+  // ---- POI レイヤ（v4.2・HR-22）----
+  // アプリ用 POI はアプリ全体の層 "app"（全地図に出る）。追加 POI もここに入れる。
+  // 地図用 POI は地図ソースごとの層 "<mapID>#map"（Core は現在の地図のソースの層だけを描く＝その地図にだけ出る）。
+  // 移動ピンはアプリ全体の層 "move"（全地図に出る。独自アイコン）。
   const APP_LAYER = "app";
   const MAP_LAYER = "map";
-  const poiLayers: { id: string; name: string }[] = [];
-  if (appPois.length > 0) {
-    app.addPoiLayer(APP_LAYER, { name: "アプリ用 POI" });
-    for (const poi of appPois) app.addMarker(poi, APP_LAYER);
-    poiLayers.push({ id: APP_LAYER, name: "アプリ用 POI" });
+  const MOVE_LAYER = "move";
+  const mapLayerId = (mapID: string): string => `${mapID}#${MAP_LAYER}`;
+  if (appPois.length > 0 || demoOps.addPoi.length > 0) app.addPoiLayer(APP_LAYER, { name: "アプリ用 POI" });
+  // Core の normalizePoi は渡した POI をその場で書き換えるので、素材は写しで渡す（IR1 Major-1 と同じ理由）
+  for (const poi of appPois) app.addMarker(structuredClone(poi), APP_LAYER);
+  // 地図用 POI は maps の地図ごとに 1 件ずつ写しを載せる。地図ごとの件数はトグルの無効化に使う
+  const mapPoiCount = new Map<string, number>();
+  for (const poi of mapPois) {
+    const { maps, ...data } = poi;
+    for (const mapID of maps) {
+      if (!app.getPoiLayer(mapLayerId(mapID))) app.addPoiLayer(mapLayerId(mapID), { name: "地図用 POI" });
+      app.addMarker(structuredClone(data), mapLayerId(mapID));
+      mapPoiCount.set(mapID, (mapPoiCount.get(mapID) ?? 0) + 1);
+    }
   }
-  if (mapPois.length > 0) {
-    app.addPoiLayer(MAP_LAYER, { name: "地図用 POI" });
-    for (const poi of mapPois) app.addMarker(poi, MAP_LAYER);
-    poiLayers.push({ id: MAP_LAYER, name: "地図用 POI" });
-  }
-  // 追加・移動 POI の受け皿になる層がまだ無ければ作る（素材が無い地域でも操作を出せる）
-  const ensureLayer = (id: string, name: string): void => {
-    if (!app.getPoiLayer(id)) app.addPoiLayer(id, { name });
-  };
 
-  // ---- 線・面（kind 別パレット・maps による地図別表示）----
-  const activeLines: DemoLine[] = [];
-  const activeVectors: DemoVector[] = [];
-  const lineKind = (line: DemoLine): LineKind => line.kind ?? "feature";
-  const lineApplies = (line: DemoLine, mapID: string | undefined): boolean => {
-    if (!line.maps || line.maps.length === 0) return true;
+  // ---- 線・面（v4.2・HR-20/21）----
+  // アプリの線は全地図に、地図の線は maps の地図にだけ描く。どちらも既定で表示（チェック済み）。
+  // 地図を切り替えると Core は全部の線を描き直す（地図の区別をしない）ので、切替前に clearLine し、
+  // mapChanged で「表示中かつこの地図に出す線」だけを描く（IR1 Major-3 の是正を維持）。
+  const activeLines: LineItem[] = [...appLines, ...mapLines];
+  const activeVectors: VectorItem[] = [];
+  const lineApplies = (line: LineItem | MapLineItem, mapID: string | undefined): boolean => {
+    if (!("maps" in line)) return true; // アプリの線
     return mapID !== undefined && line.maps.includes(mapID);
   };
   const redrawShapes = (): void => {
@@ -231,11 +217,11 @@ async function main(): Promise<void> {
     app.clearLine();
     for (const line of activeLines) {
       if (lineApplies(line, mapID)) {
-        app.addLine({ lnglats: line.points, stroke: PALETTE[lineKind(line)].stroke });
+        app.addLine({ lnglats: line.points, stroke: PALETTE[line.kind].stroke });
       }
     }
     for (const vec of activeVectors) {
-      app.addVector({ type: "Polygon", lnglats: [vec.points], style: PALETTE[vec.kind ?? "feature"] });
+      app.addVector({ type: "Polygon", lnglats: [vec.points], style: PALETTE[vec.kind] });
     }
   };
   // ---- 操作パネルの部品（HR-18。t4 v4.1 §4.2）----
@@ -268,6 +254,16 @@ async function main(): Promise<void> {
     wrap.appendChild(cb);
     wrap.appendChild(document.createTextNode(label));
     return wrap;
+  };
+  // その地図に対象が無いチェックを無効にする（HR-20/2 の一般化。選択状態は保つ）
+  const setUsable = (wrap: HTMLLabelElement, usable: boolean, reason: string): void => {
+    const cb = wrap.querySelector("input");
+    if (!cb) return;
+    cb.disabled = !usable;
+    wrap.style.opacity = usable ? "" : "0.45";
+    wrap.style.cursor = usable ? "" : "not-allowed";
+    if (usable) wrap.removeAttribute("title");
+    else wrap.title = reason;
   };
 
   // ---- 地図（ドロップダウン＋透過度スライダー）----
@@ -322,52 +318,73 @@ async function main(): Promise<void> {
     if (activeId !== undefined) mapSelect.value = activeId;
   };
 
-  // ---- POI（表示のチェック・追加は 1 回だけのボタン・移動はチェック）----
+  // ---- POI（v4.2。表示のチェック・追加はチェック〔HR-23/1〕・移動はチェック〔HR-23/2・3〕）----
   const poiSec = makeSection("POI");
-  if (poiLayers.length > 0) {
+  let mapPoiCheck: HTMLLabelElement | undefined;
+  if (appPois.length > 0 || mapPoiCount.size > 0) {
     const showRow = poiSec.row();
     showRow.appendChild(makeCheck("すべての POI を表示", true, (on) => {
       if (on) app.showAllMarkers();
       else app.hideAllMarkers();
     }));
-    for (const layer of poiLayers) {
-      showRow.appendChild(makeCheck(layer.name, true, (on) => {
-        if (on) app.showPoiLayer(layer.id);
-        else app.hidePoiLayer(layer.id);
+    if (appPois.length > 0) {
+      showRow.appendChild(makeCheck("アプリ用 POI", true, (on) => {
+        if (on) app.showPoiLayer(APP_LAYER);
+        else app.hidePoiLayer(APP_LAYER);
       }));
     }
+    if (mapPoiCount.size > 0) {
+      // 地図用 POI の層は地図ごとにあるので、全部の層へ同じ表示状態を掛ける（地図を替えても揃う）
+      mapPoiCheck = makeCheck("地図用 POI", true, (on) => {
+        for (const mapID of mapPoiCount.keys()) {
+          if (on) app.showPoiLayer(mapLayerId(mapID));
+          else app.hidePoiLayer(mapLayerId(mapID));
+        }
+      });
+      showRow.appendChild(mapPoiCheck);
+    }
   }
+  const refreshPoiChecks = (): void => {
+    if (!mapPoiCheck) return;
+    const n = mapPoiCount.get(activeMapId() ?? "") ?? 0;
+    setUsable(mapPoiCheck, n > 0, "この地図には地図用 POI がありません");
+  };
   if (demoOps.addPoi.length > 0 || demoOps.movePoi.length > 0) {
     const opRow = poiSec.row();
+    // POI 追加（HR-23/1）: on で追加・off で削除。Core の removeMarker は #111 の修正（edd55e9 以降）が前提
     for (const op of demoOps.addPoi) {
-      const btn = makeButton(op.label, () => {
-        if (btn.disabled) return;
-        ensureLayer(MAP_LAYER, "地図用 POI");
-        // 1 回だけ追加する。マーカーの削除 API は呼ばない（IR2 Major-N1）。素材を壊さないよう写しを渡す
-        app.addMarker({ ...op.poi }, MAP_LAYER);
-        btn.disabled = true;
-        btn.title = "追加済み（元に戻すにはページを読み直す）";
-      });
-      opRow.appendChild(btn);
+      let addedId: string | undefined;
+      opRow.appendChild(makeCheck(op.label, false, (on) => {
+        if (on && !addedId) addedId = app.addMarker(structuredClone(op.poi), APP_LAYER) as string;
+        if (!on && addedId) {
+          app.removeMarker(addedId);
+          addedId = undefined;
+        }
+      }));
     }
+    // 移動ピン（HR-23/2・3）: 始点・終点は参照するアプリの線の最初と最後の頂点。既存の POI の座標は使わない
+    if (demoOps.movePoi.length > 0) app.addPoiLayer(MOVE_LAYER, { name: "移動ピン" });
     for (const move of demoOps.movePoi) {
-      let markerId: string | undefined;
+      const line = appLines.find((l) => l.label === move.line);
+      if (!line || line.points.length < 2) continue; // 素材の検査（t3 AC-T3-11）が先に落とす。ここでは出さないだけ
+      const start = line.points[0];
+      const end = line.points[line.points.length - 1];
+      const pin = (at: [number, number], where: string) => ({
+        name: move.label,
+        desc: `${line.label}の${where}`,
+        lnglat: [at[0], at[1]] as [number, number],
+        icon: MOVE_ICON,
+        selectedIcon: MOVE_ICON
+      });
+      const markerId = app.addMarker(pin(start, "始点"), MOVE_LAYER) as string;
       opRow.appendChild(makeCheck(move.label, false, (on) => {
-        ensureLayer(MAP_LAYER, "地図用 POI");
-        // IR1 Major-1 の是正を維持: 素材の from を Core に書き換えさせない
-        if (!markerId) markerId = app.addMarker(structuredClone(move.from), MAP_LAYER) as string;
-        const target = on ? move.to : move.from;
-        app.updateMarker(
-          markerId,
-          { lnglat: [target.lng, target.lat], address: target.address ?? "", desc: move.label },
-          false
-        );
+        app.updateMarker(markerId, on ? pin(end, "終点") : pin(start, "始点"), false);
       }));
     }
   }
   mountSection(poiSec);
 
-  // ---- 線・面（チェック。maps にない地図では on のままでも描かない）----
+  // ---- 線・面（v4.2。アプリの線・地図の線とも既定で表示。地図の線はその地図に無いときチェックを無効化）----
   const shapeSec = makeSection("線・面");
   const shapeRow = shapeSec.row();
   const toggleIn = <T>(list: T[], item: T, on: boolean): void => {
@@ -375,26 +392,19 @@ async function main(): Promise<void> {
     if (on && idx < 0) list.push(item);
     if (!on && idx >= 0) list.splice(idx, 1);
   };
-  // HR-20: maps 指定のある線は、現在の地図で描けないときチェックを無効化する（選択状態は保つ）
-  const lineChecks: { line: DemoLine; wrap: HTMLLabelElement }[] = [];
-  for (const line of demoOps.addLine) {
-    const wrap = makeCheck(line.label, false, (on) => { toggleIn(activeLines, line, on); redrawShapes(); });
+  for (const line of appLines) {
+    shapeRow.appendChild(makeCheck(line.label, true, (on) => { toggleIn<LineItem>(activeLines, line, on); redrawShapes(); }));
+  }
+  // HR-20: 地図の線は、現在の地図に無いときチェックを無効化する（選択状態は保つ）
+  const lineChecks: { line: MapLineItem; wrap: HTMLLabelElement }[] = [];
+  for (const line of mapLines) {
+    const wrap = makeCheck(line.label, true, (on) => { toggleIn<LineItem>(activeLines, line, on); redrawShapes(); });
     lineChecks.push({ line, wrap });
     shapeRow.appendChild(wrap);
   }
   const refreshLineChecks = (): void => {
     const mapID = activeMapId();
-    for (const { line, wrap } of lineChecks) {
-      const cb = wrap.querySelector("input");
-      if (!cb) continue;
-      // maps 指定がない線は lineApplies が常に true を返す＝常に有効
-      const usable = lineApplies(line, mapID);
-      cb.disabled = !usable;
-      wrap.style.opacity = usable ? "" : "0.45";
-      wrap.style.cursor = usable ? "" : "not-allowed";
-      if (usable) wrap.removeAttribute("title");
-      else wrap.title = "この地図では表示できません";
-    }
+    for (const { line, wrap } of lineChecks) setUsable(wrap, lineApplies(line, mapID), "この地図では表示できません");
   };
   for (const vec of demoOps.addVector) {
     shapeRow.appendChild(makeCheck(vec.label, false, (on) => { toggleIn(activeVectors, vec, on); redrawShapes(); }));
@@ -430,6 +440,7 @@ async function main(): Promise<void> {
   const refreshMapState = (): void => {
     refreshAttr();
     renderMapSelect(activeMapId());
+    refreshPoiChecks();
     refreshLineChecks();
     redrawShapes();
     void refreshViewpoint();

@@ -2,7 +2,10 @@
   "region": "morioka",
   "mapPois": [
     {
-      "name": { "ja": "盛岡城", "en": "Morioka Castle" },
+      "name": {
+        "ja": "盛岡城",
+        "en": "Morioka Castle"
+      },
       "address": "岩手県盛岡市内丸1-37",
       "lat": 39.700125,
       "lng": 141.150205,
@@ -13,9 +16,23 @@
         "area": "castle",
         "checkedAt": "2026-09-18",
         "sources": [
-          { "src": "osm", "query": "盛岡城", "coord": [141.150205, 39.700125], "distanceM": 0, "fetchedAt": "2026-09-18T10:20:00Z" }
+          {
+            "src": "osm",
+            "query": "盛岡城",
+            "coord": [
+              141.150205,
+              39.700125
+            ],
+            "distanceM": 0,
+            "fetchedAt": "2026-09-18T10:20:00Z"
+          }
         ]
-      }
+      },
+      "maps": [
+        "morioka_ndl",
+        "morioka",
+        "morioka_ndl_affine"
+      ]
     },
     {
       "name": "三ツ石神社",
@@ -29,9 +46,22 @@
         "area": "precinct",
         "checkedAt": "2026-09-18",
         "sources": [
-          { "src": "osm", "query": "三ツ石神社", "coord": [141.154358, 39.709013], "distanceM": 0, "fetchedAt": "2026-09-18T10:20:00Z" }
+          {
+            "src": "osm",
+            "query": "三ツ石神社",
+            "coord": [
+              141.154358,
+              39.709013
+            ],
+            "distanceM": 0,
+            "fetchedAt": "2026-09-18T10:20:00Z"
+          }
         ]
-      }
+      },
+      "maps": [
+        "morioka_ndl",
+        "morioka_ndl_affine"
+      ]
     },
     {
       "name": "報恩寺",
@@ -45,9 +75,22 @@
         "area": "precinct",
         "checkedAt": "2026-09-18",
         "sources": [
-          { "src": "osm", "query": "報恩寺", "coord": [141.156345, 39.712292], "distanceM": 0, "fetchedAt": "2026-09-18T10:20:00Z" }
+          {
+            "src": "osm",
+            "query": "報恩寺",
+            "coord": [
+              141.156345,
+              39.712292
+            ],
+            "distanceM": 0,
+            "fetchedAt": "2026-09-18T10:20:00Z"
+          }
         ]
-      }
+      },
+      "maps": [
+        "morioka_ndl",
+        "morioka_ndl_affine"
+      ]
     }
   ],
   "appPois": [
@@ -63,14 +106,23 @@
         "area": "precinct",
         "checkedAt": "2026-09-18",
         "sources": [
-          { "src": "gsi_address", "query": "岩手県盛岡市内丸1-42", "coord": [141.152283, 39.701637], "distanceM": 0, "fetchedAt": "2026-09-18T10:20:00Z" }
+          {
+            "src": "gsi_address",
+            "query": "岩手県盛岡市内丸1-42",
+            "coord": [
+              141.152283,
+              39.701637
+            ],
+            "distanceM": 0,
+            "fetchedAt": "2026-09-18T10:20:00Z"
+          }
         ]
       }
     },
     {
       "name": "石割桜",
       "address": "岩手県盛岡市内丸9-1",
-      "lat": 39.703790,
+      "lat": 39.70379,
       "lng": 141.151233,
       "start": 1650,
       "desc": "花崗岩の巨石の割れ目から幹を伸ばした桜で、樹齢は360年を超えるとされる。1923年（大正12年）に国の天然記念物に指定された。",
@@ -79,7 +131,16 @@
         "area": "point",
         "checkedAt": "2026-09-18",
         "sources": [
-          { "src": "osm", "query": "石割桜", "coord": [141.151233, 39.703790], "distanceM": 0, "fetchedAt": "2026-09-18T10:20:00Z" }
+          {
+            "src": "osm",
+            "query": "石割桜",
+            "coord": [
+              141.151233,
+              39.70379
+            ],
+            "distanceM": 0,
+            "fetchedAt": "2026-09-18T10:20:00Z"
+          }
         ]
       }
     },
@@ -95,9 +156,70 @@
         "area": "point",
         "checkedAt": "2026-09-18",
         "sources": [
-          { "src": "gsi_address", "query": "岩手県盛岡市中ノ橋通1-2-20", "coord": [141.155304, 39.700447], "distanceM": 0, "fetchedAt": "2026-09-18T10:20:00Z" }
+          {
+            "src": "gsi_address",
+            "query": "岩手県盛岡市中ノ橋通1-2-20",
+            "coord": [
+              141.155304,
+              39.700447
+            ],
+            "distanceM": 0,
+            "fetchedAt": "2026-09-18T10:20:00Z"
+          }
         ]
       }
+    }
+  ],
+  "appLines": [
+    {
+      "label": "盛岡山車大絵巻パレード（9/15）",
+      "kind": "festival",
+      "points": [
+        [
+          141.1534995,
+          39.7011293
+        ],
+        [
+          141.151957,
+          39.7018738
+        ],
+        [
+          141.1502538,
+          39.7023376
+        ],
+        [
+          141.1447858,
+          39.7034987
+        ],
+        [
+          141.1434095,
+          39.7034801
+        ]
+      ],
+      "source": "2026 盛岡山車大絵巻 パレード経路パンフレット／証跡 morioka-parade-routes-human.kml（人間提供・2026-09-17）"
+    }
+  ],
+  "mapLines": [
+    {
+      "label": "八幡下りパレード（9/14）",
+      "kind": "festival",
+      "points": [
+        [
+          141.1622937,
+          39.6960921
+        ],
+        [
+          141.1568547,
+          39.6984036
+        ]
+      ],
+      "source": "2026 盛岡山車大絵巻 パレード経路パンフレット／証跡 morioka-parade-routes-human.kml（人間提供・2026-09-17）",
+      "maps": [
+        "morioka_ndl",
+        "morioka_ndl_affine",
+        "gsi",
+        "osm"
+      ]
     }
   ],
   "demoOps": {
@@ -107,14 +229,23 @@
         "poi": {
           "name": "盛岡八幡宮",
           "lat": 39.695347,
-          "lng": 141.164110,
+          "lng": 141.16411,
           "desc": "盛岡市にある八幡神社。盛岡山車大絵巻の八幡下りパレード（9月14日）の始点。",
           "source": "Wikipedia「盛岡八幡宮」／OpenStreetMap https://www.openstreetmap.org/（2026-09-18 照合）",
           "verify": {
             "area": "precinct",
             "checkedAt": "2026-09-18",
             "sources": [
-              { "src": "osm", "query": "盛岡八幡宮", "coord": [141.164110, 39.695347], "distanceM": 0, "fetchedAt": "2026-09-18T10:20:00Z" }
+              {
+                "src": "osm",
+                "query": "盛岡八幡宮",
+                "coord": [
+                  141.16411,
+                  39.695347
+                ],
+                "distanceM": 0,
+                "fetchedAt": "2026-09-18T10:20:00Z"
+              }
             ]
           }
         }
@@ -123,51 +254,7 @@
     "movePoi": [
       {
         "label": "大絵巻パレード（始点→終点）",
-        "from": {
-          "name": "もりおか歴史文化館",
-          "address": "岩手県盛岡市内丸1-50",
-          "lat": 39.701030,
-          "lng": 141.152606,
-          "desc": "盛岡城跡公園に隣接する歴史・文化の展示施設。盛岡山車大絵巻の大絵巻パレード（9月15日）の始点。",
-          "source": "もりおか歴史文化館／OpenStreetMap https://www.openstreetmap.org/（2026-09-18 照合）",
-          "verify": {
-            "area": "point",
-            "checkedAt": "2026-09-18",
-            "sources": [
-              { "src": "osm", "query": "もりおか歴史文化館", "coord": [141.152606, 39.701030], "distanceM": 0, "fetchedAt": "2026-09-18T10:20:00Z" }
-            ]
-          }
-        },
-        "to": {
-          "name": "大通三丁目",
-          "address": "岩手県盛岡市大通三丁目",
-          "lat": 39.703488,
-          "lng": 141.143425,
-          "desc": "盛岡市中心部の大通り三丁目。盛岡山車大絵巻の大絵巻パレード（9月15日）の終点。",
-          "source": "2026 盛岡山車大絵巻 パレード経路（人間提供 KML）／OpenStreetMap https://www.openstreetmap.org/（2026-09-18 照合）",
-          "verify": {
-            "area": "point",
-            "checkedAt": "2026-09-18",
-            "sources": [
-              { "src": "osm", "query": "大通三丁目", "coord": [141.143425, 39.703488], "distanceM": 0, "fetchedAt": "2026-09-18T10:20:00Z" }
-            ]
-          }
-        }
-      }
-    ],
-    "addLine": [
-      {
-        "label": "八幡下りパレード（9/14）",
-        "kind": "festival",
-        "points": [[141.1622937, 39.6960921], [141.1568547, 39.6984036]],
-        "source": "2026 盛岡山車大絵巻 パレード経路パンフレット／証跡 morioka-parade-routes-human.kml（人間提供・2026-09-17）",
-        "maps": ["morioka_ndl", "morioka_ndl_affine", "gsi", "osm"]
-      },
-      {
-        "label": "盛岡山車大絵巻パレード（9/15）",
-        "kind": "festival",
-        "points": [[141.1534995, 39.7011293], [141.151957, 39.7018738], [141.1502538, 39.7023376], [141.1447858, 39.7034987], [141.1434095, 39.7034801]],
-        "source": "2026 盛岡山車大絵巻 パレード経路パンフレット／証跡 morioka-parade-routes-human.kml（人間提供・2026-09-17）"
+        "line": "盛岡山車大絵巻パレード（9/15）"
       }
     ],
     "addVector": []

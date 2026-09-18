@@ -82,17 +82,16 @@ function allPois(content) {
   if (c.demoOps) {
     const ops = c.demoOps;
     if (Array.isArray(ops.addPoi)) ops.addPoi.forEach((x, i) => push(x && x.poi, `${content.path}#demoOps.addPoi[${i}].poi`));
-    if (Array.isArray(ops.movePoi)) ops.movePoi.forEach((x, i) => {
-      push(x && x.from, `${content.path}#demoOps.movePoi[${i}].from`);
-      push(x && x.to, `${content.path}#demoOps.movePoi[${i}].to`);
-    });
+    // v2.3（HR-23）: movePoi は座標を持たない（参照する線の端点を使う）ので POI の照合対象から外した
   }
   return pois;
 }
+// v2.3（HR-20/21）: 線はアプリの線 appLines と地図の線 mapLines の 2 配列
 function allLines(content) {
   const lines = [];
-  const ops = content.data.demoOps;
-  if (ops && Array.isArray(ops.addLine)) ops.addLine.forEach((x, i) => lines.push({ item: x, where: `${content.path}#demoOps.addLine[${i}]` }));
+  const c = content.data;
+  if (Array.isArray(c.appLines)) c.appLines.forEach((x, i) => lines.push({ item: x, where: `${content.path}#appLines[${i}]` }));
+  if (Array.isArray(c.mapLines)) c.mapLines.forEach((x, i) => lines.push({ item: x, where: `${content.path}#mapLines[${i}]` }));
   return lines;
 }
 function allVectors(content) {
@@ -134,14 +133,7 @@ function checkSchema(contents) {
       must(typeof v.kind === "string" && KINDS.has(v.kind), `${where}: kind が allowlist 外`);
       must(typeof v.source === "string" && v.source.trim() !== "", `${where}: source が空`);
     }
-    if (c.demoOps && Array.isArray(c.demoOps.movePoi)) {
-      c.demoOps.movePoi.forEach((x, i) => {
-        for (const end of ["from", "to"]) {
-          const p = x && x[end];
-          must(p && p.verify && Array.isArray(p.verify.sources) && p.verify.sources.length >= 1, `${content.path}#demoOps.movePoi[${i}].${end}: 完全な POI（verify あり）でない`);
-        }
-      });
-    }
+    // v2.3: movePoi の形（label・line・from/to 不在）は checkScope（AC-T3-11）が見る
   }
   if (fails === 0) console.log("OK: schema");
 }
@@ -351,18 +343,76 @@ function checkExtent(contents) {
         must(vertexInside(pt, union), `${where}: 範囲外頂点 [${pt[0]},${pt[1]}]`);
       }
     }
-    if (content.data.demoOps && Array.isArray(content.data.demoOps.movePoi)) {
-      content.data.demoOps.movePoi.forEach((x, i) => {
-        for (const end of ["from", "to"]) {
-          const p = x && x[end];
-          if (p && typeof p.lng === "number" && typeof p.lat === "number") {
-            must(vertexInside([p.lng, p.lat], union), `${content.path}#demoOps.movePoi[${i}].${end}: 範囲外頂点 [${p.lng},${p.lat}]`);
-          }
-        }
-      });
-    }
+    // v2.3: movePoi の始点・終点は参照する appLines の端点なので、上の線の検査に含まれる
   }
   if (fails === 0) console.log("OK: extent");
+}
+
+// ---- AC-T3-11 アプリ用／地図用の区分・移動ピン（v2.3・HR-20〜23）----
+// 古地図 1 枚の対応点外接矩形（パディング無し）。regionUnion と同じ導出で、+PAD と union をしない
+function mapBox(mid) {
+  const p = `public/maps/${mid}.json`;
+  if (!fs.existsSync(p)) return null;
+  const mp = readJson(p);
+  let pts = null;
+  if (Array.isArray(mp.envelopeLngLats) && mp.envelopeLngLats.length > 0) pts = mp.envelopeLngLats;
+  else if (mp.compiled && Array.isArray(mp.compiled.points) && mp.compiled.points.length > 0) pts = mp.compiled.points.map(q => mercToLngLat(q[1][0], q[1][1]));
+  else if (mp.compiled) { const m = mercBboxFromCompiled(mp.compiled); if (m.length > 0) pts = m.map(([x, y]) => mercToLngLat(x, y)); }
+  return pts ? bboxOf(pts) : null;
+}
+// 当該地域の古地図（sources の object 形）の mapID
+function oldMapIDs(region) {
+  const app = readJson(`public/apps/${region}.json`);
+  return (Array.isArray(app.sources) ? app.sources : []).filter(s => s && typeof s === "object" && typeof s.mapID === "string").map(s => s.mapID);
+}
+// rec(cond, msg): 本番は must、selftest は静かなカウンタを渡す（checkPoi と同じ作り）
+function scopeFails(c, where0, rec) {
+  const all = regionSources(c.region);
+  const olds = new Set(oldMapIDs(c.region));
+  const uniq = a => new Set(a).size === a.length;
+  const ops = c.demoOps || {};
+  rec(!("addLine" in ops), `${where0}: demoOps.addLine が残っている（v2.3 で appLines／mapLines へ移した）`);
+  rec(Array.isArray(c.appLines) && Array.isArray(c.mapLines), `${where0}: appLines／mapLines が配列でない`);
+  (c.appPois || []).forEach((p, i) => rec(!("maps" in p), `${where0}#appPois[${i}]: アプリ用 POI が maps を持つ`));
+  (c.mapPois || []).forEach((p, i) => {
+    const w = `${where0}#mapPois[${i}]`;
+    const ok = Array.isArray(p.maps) && p.maps.length >= 1 && uniq(p.maps);
+    rec(ok, `${w}: maps が 1 件以上・重複なしの配列でない`);
+    if (!ok) return;
+    for (const mid of p.maps) {
+      rec(olds.has(mid), `${w}: maps の ${JSON.stringify(mid)} が当該地域の古地図でない（gsi/osm・他地域・不存在は不可）`);
+      if (!olds.has(mid)) continue;
+      const b = mapBox(mid);
+      rec(b !== null && vertexInside([p.lng, p.lat], b), `${w}: ${mid} の対応点外接矩形の外（描かれていない地図を maps に入れている）`);
+    }
+  });
+  (c.appLines || []).forEach((l, i) => rec(!("maps" in l), `${where0}#appLines[${i}]: アプリの線が maps を持つ`));
+  (c.mapLines || []).forEach((l, i) => {
+    const w = `${where0}#mapLines[${i}]`;
+    const ok = Array.isArray(l.maps) && l.maps.length >= 1 && uniq(l.maps);
+    rec(ok, `${w}: maps が 1 件以上・重複なしの配列でない`);
+    if (!ok) return;
+    for (const mid of l.maps) rec(all.has(mid), `${w}: maps の ${JSON.stringify(mid)} が当該地域 sources に無い`);
+    rec(!(l.maps.length === all.size && [...all].every(m => l.maps.includes(m))), `${w}: maps が全地図と同じ。全地図に出す線はアプリの線（appLines）に置く（HR-21）`);
+    for (const mid of l.maps) {
+      if (!olds.has(mid)) continue;
+      const b = mapBox(mid);
+      rec(b !== null && Array.isArray(l.points) && l.points.every(pt => vertexInside(pt, b)), `${w}: ${mid} の対応点外接矩形からはみ出す頂点がある`);
+    }
+  });
+  const labels = [...(c.appLines || []), ...(c.mapLines || [])].map(l => l.label);
+  rec(uniq(labels), `${where0}: 線の label が重複している（移動ピンの参照先が一意に決まらない）`);
+  const appLabels = new Set((c.appLines || []).map(l => l.label));
+  (ops.movePoi || []).forEach((m, i) => {
+    const w = `${where0}#demoOps.movePoi[${i}]`;
+    rec(!!m && typeof m.label === "string" && m.label.trim() !== "", `${w}: label が空`);
+    rec(!!m && !("from" in m) && !("to" in m), `${w}: from/to を持つ（v2.3 で廃止。始点・終点は参照する線の端点）`);
+    rec(!!m && appLabels.has(m.line), `${w}: line ${JSON.stringify(m && m.line)} が appLines の label に無い（移動ピンはアプリの線の始点→終点）`);
+  });
+}
+function checkScope(contents) {
+  for (const content of contents) scopeFails(content.data, content.path, must);
+  if (fails === 0) console.log("OK: scope");
 }
 
 // ---- 陽性対照（--selftest）----
@@ -439,6 +489,27 @@ function runSelftest(contents) {
   must(checkPoiDetects(gsiQueryBad), "selftest: gsi_address の query 不一致を checkPoi が FAIL にしなかった");
   must(!checkPoiDetects(goodPoi), "selftest: 正しい例を checkPoi が FAIL にした");
 
+  // (5) 区分・移動ピンの陽性対照（v2.3・AC-T3-11）: 実素材は緑、注入した誤りは 1 件ずつ FAIL になること
+  const scopeDetects = (c) => { let n = 0; scopeFails(c, "selftest", (cond) => { if (!cond) n++; }); return n > 0; };
+  const baseOf = (r) => { const x = contents.find(k => k.data.region === r); must(!!x, `selftest: ${r} の素材が無い（区分の陽性対照が組めない）`); return x ? JSON.parse(JSON.stringify(x.data)) : null; };
+  const inj = [
+    ["morioka", "報恩寺を 1735 年図（矩形の外）に入れる", c => { c.mapPois.find(p => p.name === "報恩寺").maps.push("morioka"); }],
+    ["morioka", "地図用 POI の maps に gsi", c => { c.mapPois[0].maps.push("gsi"); }],
+    ["morioka", "地図用 POI の maps が空", c => { c.mapPois[0].maps = []; }],
+    ["morioka", "アプリ用 POI が maps を持つ", c => { c.appPois[0].maps = ["morioka_ndl"]; }],
+    ["morioka", "アプリの線が maps を持つ", c => { c.appLines[0].maps = ["gsi"]; }],
+    ["morioka", "demoOps.addLine が残る", c => { c.demoOps.addLine = []; }],
+    ["morioka", "移動ピンが from/to を持つ", c => { c.demoOps.movePoi[0].from = {}; }],
+    ["morioka", "移動ピンが無い線を指す", c => { c.demoOps.movePoi[0].line = "存在しない線"; }],
+    ["morioka", "移動ピンが地図の線を指す", c => { c.demoOps.movePoi[0].line = c.mapLines[0].label; }],
+    // 全頂点が両図の矩形に入る館林の線で、HR-21 の規則だけが効くことを見る
+    ["tatebayashi", "全地図に出す線を地図の線に置く", c => { const l = c.appLines.shift(); c.mapLines.push({ ...l, maps: ["tatebayashi_castle_akimoto", "tatebayashi_ojozu", "gsi", "osm"] }); }]
+  ];
+  for (const r of ["morioka", "tatebayashi"]) { const c = baseOf(r); if (c) must(!scopeDetects(c), `selftest: 実素材（${r}）が区分検査で FAIL した`); }
+  for (const [r, name, f] of inj) { const c = baseOf(r); if (!c) continue; f(c); must(scopeDetects(c), `selftest: 区分検査が「${name}」を検出しなかった`); }
+  // 上の HR-21 の注入が「全地図」の規則で落ちたこと（一部の地図だけなら緑）の確認
+  { const c = baseOf("tatebayashi"); if (c) { const l = c.appLines.shift(); c.mapLines.push({ ...l, maps: ["tatebayashi_castle_akimoto", "tatebayashi_ojozu"] }); must(!scopeDetects(c), "selftest: 一部の地図だけの線（館林 2 枚）が誤って FAIL した"); } }
+
   if (fails === 0) console.log("OK: selftest");
 }
 
@@ -453,7 +524,7 @@ function denominatorAssert() {
 // ---- main ----
 const argv = process.argv.slice(2);
 const flags = new Set(argv.filter(a => a.startsWith("--")));
-const CONTENT_FLAGS = ["--schema", "--independence", "--verify", "--extent", "--source", "--kindmaps", "--image"];
+const CONTENT_FLAGS = ["--schema", "--independence", "--verify", "--extent", "--source", "--kindmaps", "--image", "--scope"];
 const runAll = (argv.length === 0 || flags.has("--all")) && !flags.has("--selftest");
 
 denominatorAssert();
@@ -466,6 +537,7 @@ if (flags.has("--source")) checkSource(contents);
 if (flags.has("--kindmaps")) checkKindmaps(contents);
 if (flags.has("--image")) checkImage(contents);
 if (flags.has("--extent")) checkExtent(contents);
+if (flags.has("--scope")) checkScope(contents);
 if (flags.has("--selftest")) runSelftest(contents);
 
 if (runAll) {
@@ -476,6 +548,7 @@ if (runAll) {
   checkKindmaps(contents);
   checkImage(contents);
   checkExtent(contents);
+  checkScope(contents);
 }
 
 if (fails) {

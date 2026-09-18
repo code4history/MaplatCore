@@ -88,35 +88,62 @@ export interface Poi {
   verify: PoiVerify;
 }
 
-/** 線 1 件（§12.2） */
+/** 地図用 POI 1 件（v6.4・HR-22）。その古地図に描かれた地物。maps の地図にだけ出す */
+export interface MapPoi extends Poi {
+  /** この地物が描かれている古地図の mapID（1 件以上・重複なし）。当該地域 sources の古地図（object 形）に限り、gsi/osm は書かない。複数あれば各地図に 1 件ずつ出す */
+  maps: string[];
+}
+
+/** 線・面の種別（t3 §3.1。kind 別パレットは demo/demo.ts の PALETTE） */
+export type LineKind = "festival" | "walk" | "feature";
+
+/** アプリの線 1 件（§12.2。v6.4: 全地図に出す。maps を持たない） */
 export interface LineItem {
   label: string;
+  kind: LineKind;
   points: [number, number][]; // [lng, lat][]
   source: string;
+}
+
+/** 地図の線 1 件（v6.4・HR-20/21）。maps の地図にだけ出す。maps が当該地域の全地図と同じなら LineItem（appLines）に置く */
+export interface MapLineItem extends LineItem {
+  /** 表示する地図の mapID（1 件以上・重複なし・当該地域 sources に実在。gsi/osm も書ける） */
+  maps: string[];
 }
 
 /** 面 1 件（addVector に渡す閉領域） */
 export interface VectorItem {
   label: string;
+  kind: LineKind;
   points: [number, number][];
   source: string;
 }
 
-/** デモ操作（§8.2 demoOps。空配列なら対応ボタンを非表示。§8.4） */
+/** 移動ピン 1 件（v6.4・HR-23）。始点・終点は line が指すアプリの線の最初と最後の頂点（座標を二重に持たない） */
+export interface MovePoiItem {
+  label: string;
+  /** 同じ素材の appLines[].label のどれか 1 つ */
+  line: string;
+}
+
+/** デモ操作（§8.2 demoOps。空配列なら対応する操作を出さない。§8.4）。v6.4: addLine は appLines／mapLines へ移した */
 export interface DemoOps {
   addPoi: { label: string; poi: Poi }[];
-  movePoi: { label: string; from: Poi; to: Poi }[];
-  addLine: LineItem[];
+  movePoi: MovePoiItem[];
   addVector: VectorItem[];
 }
 
 /** 素材 JSON（demo/content/<region>.json）。地域 1 件＝1 ファイル */
 export interface RegionContent {
   region: RegionId;
-  /** 地図用 POI（唯一の正本。その古地図に描かれた地物） */
-  mapPois: Poi[];
-  /** アプリ用 POI（唯一の正本。現代に実在し典拠が置ける地物） */
+  /** 地図用 POI（唯一の正本。その古地図に描かれた地物。maps の地図にだけ出す） */
+  mapPois: MapPoi[];
+  /** アプリ用 POI（唯一の正本。現代に実在し典拠が置ける地物。全地図に出す） */
   appPois: Poi[];
+  /** アプリの線（全地図に出す。v6.4） */
+  appLines: LineItem[];
+  /** 地図の線（maps の地図にだけ出す。v6.4） */
+  mapLines: MapLineItem[];
   demoOps: DemoOps;
   // 注意: sources キーは持たない（地図ソース正本は app 設定。INV-1 / AC17）
 }

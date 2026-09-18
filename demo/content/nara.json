@@ -3,7 +3,7 @@
   "mapPois": [
     {
       "name": "元興寺",
-      "lat": 34.677630,
+      "lat": 34.67763,
       "lng": 135.831213,
       "desc": "ならまちにある寺院。",
       "source": "Wikipedia「元興寺」／OpenStreetMap https://www.openstreetmap.org/（2026-09-18 照合）",
@@ -11,13 +11,26 @@
         "area": "precinct",
         "checkedAt": "2026-09-18",
         "sources": [
-          { "src": "osm", "query": "元興寺", "coord": [135.831213, 34.677630], "distanceM": 0, "fetchedAt": "2026-09-18T10:35:00Z" }
+          {
+            "src": "osm",
+            "query": "元興寺",
+            "coord": [
+              135.831213,
+              34.67763
+            ],
+            "distanceM": 0,
+            "fetchedAt": "2026-09-18T10:35:00Z"
+          }
         ]
-      }
+      },
+      "maps": [
+        "naramachi_yasui_bunko",
+        "nara_1894"
+      ]
     },
     {
       "name": "猿沢池",
-      "lat": 34.681440,
+      "lat": 34.68144,
       "lng": 135.830963,
       "desc": "興福寺の南側にある池。奈良の名所の一つ。",
       "source": "Wikipedia「猿沢池」／OpenStreetMap https://www.openstreetmap.org/（2026-09-18 照合）",
@@ -25,9 +38,22 @@
         "area": "precinct",
         "checkedAt": "2026-09-18",
         "sources": [
-          { "src": "osm", "query": "猿沢池", "coord": [135.830963, 34.681440], "distanceM": 0, "fetchedAt": "2026-09-18T10:35:00Z" }
+          {
+            "src": "osm",
+            "query": "猿沢池",
+            "coord": [
+              135.830963,
+              34.68144
+            ],
+            "distanceM": 0,
+            "fetchedAt": "2026-09-18T10:35:00Z"
+          }
         ]
-      }
+      },
+      "maps": [
+        "naramachi_yasui_bunko",
+        "nara_1894"
+      ]
     }
   ],
   "appPois": [
@@ -41,39 +67,112 @@
         "area": "precinct",
         "checkedAt": "2026-09-18",
         "sources": [
-          { "src": "osm", "query": "興福寺", "coord": [135.831902, 34.683178], "distanceM": 0, "fetchedAt": "2026-09-18T10:35:00Z" }
+          {
+            "src": "osm",
+            "query": "興福寺",
+            "coord": [
+              135.831902,
+              34.683178
+            ],
+            "distanceM": 0,
+            "fetchedAt": "2026-09-18T10:35:00Z"
+          }
         ]
       }
     },
     {
       "name": "東大寺",
       "lat": 34.688233,
-      "lng": 135.840160,
+      "lng": 135.84016,
       "desc": "奈良公園にある寺院。大仏（盧舎那仏坐像）で知られる。",
       "source": "Wikipedia「東大寺」／OpenStreetMap https://www.openstreetmap.org/（2026-09-18 照合）",
       "verify": {
         "area": "precinct",
         "checkedAt": "2026-09-18",
         "sources": [
-          { "src": "osm", "query": "東大寺", "coord": [135.840160, 34.688233], "distanceM": 0, "fetchedAt": "2026-09-18T10:35:00Z" }
+          {
+            "src": "osm",
+            "query": "東大寺",
+            "coord": [
+              135.84016,
+              34.688233
+            ],
+            "distanceM": 0,
+            "fetchedAt": "2026-09-18T10:35:00Z"
+          }
         ]
       }
     },
     {
       "name": "春日大社",
       "lat": 34.680239,
-      "lng": 135.842830,
+      "lng": 135.84283,
       "desc": "春日山の麓にある神社。春日若宮おん祭が行われる。",
       "source": "Wikipedia「春日大社」／OpenStreetMap https://www.openstreetmap.org/（2026-09-18 照合）",
       "verify": {
         "area": "precinct",
         "checkedAt": "2026-09-18",
         "sources": [
-          { "src": "osm", "query": "春日大社", "coord": [135.842830, 34.680239], "distanceM": 0, "fetchedAt": "2026-09-18T10:35:00Z" }
+          {
+            "src": "osm",
+            "query": "春日大社",
+            "coord": [
+              135.84283,
+              34.680239
+            ],
+            "distanceM": 0,
+            "fetchedAt": "2026-09-18T10:35:00Z"
+          }
         ]
       }
     }
   ],
+  "appLines": [
+    {
+      "label": "春日若宮おん祭 お渡り式道順",
+      "kind": "festival",
+      "points": [
+        [
+          135.8318694,
+          34.6844727
+        ],
+        [
+          135.8294325,
+          34.6844848
+        ],
+        [
+          135.8286189,
+          34.6843105
+        ],
+        [
+          135.8217866,
+          34.6842894
+        ],
+        [
+          135.8210085,
+          34.6843859
+        ],
+        [
+          135.820616,
+          34.6819912
+        ],
+        [
+          135.8303351,
+          34.6819775
+        ],
+        [
+          135.8331367,
+          34.6820831
+        ],
+        [
+          135.8382672,
+          34.6820984
+        ]
+      ],
+      "source": "春日若宮おん祭 お渡り式道順（人間提供 KML）／証跡 routes/奈良.kml（2026-09-17）"
+    }
+  ],
+  "mapLines": [],
   "demoOps": {
     "addPoi": [
       {
@@ -88,7 +187,16 @@
             "area": "precinct",
             "checkedAt": "2026-09-18",
             "sources": [
-              { "src": "osm", "query": "庚申堂", "coord": [135.829836, 34.676543], "distanceM": 0, "fetchedAt": "2026-09-18T10:35:00Z" }
+              {
+                "src": "osm",
+                "query": "庚申堂",
+                "coord": [
+                  135.829836,
+                  34.676543
+                ],
+                "distanceM": 0,
+                "fetchedAt": "2026-09-18T10:35:00Z"
+              }
             ]
           }
         }
@@ -96,43 +204,8 @@
     ],
     "movePoi": [
       {
-        "label": "春日若宮おん祭 お渡り式（春日大社 → 御旅所）",
-        "from": {
-          "name": "春日大社",
-          "lat": 34.680239,
-          "lng": 135.842830,
-          "desc": "春日山の麓にある神社。春日若宮おん祭が行われる。",
-          "source": "Wikipedia「春日大社」／OpenStreetMap https://www.openstreetmap.org/（2026-09-18 照合）",
-          "verify": {
-            "area": "precinct",
-            "checkedAt": "2026-09-18",
-            "sources": [
-              { "src": "osm", "query": "春日大社", "coord": [135.842830, 34.680239], "distanceM": 0, "fetchedAt": "2026-09-18T10:35:00Z" }
-            ]
-          }
-        },
-        "to": {
-          "name": "春日若宮御旅所",
-          "lat": 34.682164,
-          "lng": 135.838354,
-          "desc": "春日若宮おん祭の御旅所。お渡り式の行列が向かう先。",
-          "source": "春日若宮おん祭 お渡り式道順（人間提供 KML）／OpenStreetMap https://www.openstreetmap.org/（2026-09-18 照合）",
-          "verify": {
-            "area": "point",
-            "checkedAt": "2026-09-18",
-            "sources": [
-              { "src": "osm", "query": "春日若宮御旅所", "coord": [135.838354, 34.682164], "distanceM": 0, "fetchedAt": "2026-09-18T10:35:00Z" }
-            ]
-          }
-        }
-      }
-    ],
-    "addLine": [
-      {
-        "label": "春日若宮おん祭 お渡り式道順",
-        "kind": "festival",
-        "points": [[135.8318694, 34.6844727], [135.8294325, 34.6844848], [135.8286189, 34.6843105], [135.8217866, 34.6842894], [135.8210085, 34.6843859], [135.820616, 34.6819912], [135.8303351, 34.6819775], [135.8331367, 34.6820831], [135.8382672, 34.6820984]],
-        "source": "春日若宮おん祭 お渡り式道順（人間提供 KML）／証跡 routes/奈良.kml（2026-09-17）"
+        "label": "春日若宮おん祭 お渡り式（始点→終点）",
+        "line": "春日若宮おん祭 お渡り式道順"
       }
     ],
     "addVector": []
