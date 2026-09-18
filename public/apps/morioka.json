@@ -1,0 +1,17 @@
+{
+  "appName": { "ja": "盛岡市古地図デモ", "en": "Historical Map Demo of Morioka" },
+  "lang": "ja",
+  "homePosition": [141.149989, 39.699952],
+  "defaultZoom": 14,
+  "zoomRestriction": true,
+  "minZoom": 10,
+  "maxZoom": 18,
+  "startFrom": "morioka_ndl",
+  "sources": [
+    { "mapID": "morioka_ndl", "settingFile": "maps/morioka_ndl.json", "label": "1644 正保城絵図", "url": "tiles/morioka_ndl/{z}/{x}/{y}.jpg" },
+    { "mapID": "morioka", "settingFile": "maps/morioka.json", "label": "1735 奥州盛岡城図", "url": "tiles/morioka/{z}/{x}/{y}.jpg" },
+    { "mapID": "morioka_ndl_affine", "label": "1644 正保城絵図 (TMS)" },
+    "gsi",
+    "osm"
+  ]
+}

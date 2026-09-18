@@ -1,0 +1,16 @@
+{
+  "appName": { "ja": "延岡市古地図デモ", "en": "Historical Map Demo of Nobeoka" },
+  "lang": "ja",
+  "homePosition": [131.665945, 32.583609],
+  "defaultZoom": 14,
+  "zoomRestriction": true,
+  "minZoom": 10,
+  "maxZoom": 18,
+  "startFrom": "1932_nobeoka",
+  "sources": [
+    { "mapID": "1932_nobeoka", "label": "1932 延岡市街地図" },
+    { "mapID": "1953_nobeoka", "label": "1953 日本商工別明細図 延岡市" },
+    "gsi",
+    "osm"
+  ]
+}

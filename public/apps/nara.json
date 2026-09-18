@@ -1,0 +1,16 @@
+{
+  "appName": { "ja": "奈良市古地図デモ", "en": "Historical Map Demo of Nara" },
+  "lang": "ja",
+  "homePosition": [135.847711, 34.694744],
+  "defaultZoom": 14,
+  "zoomRestriction": true,
+  "minZoom": 10,
+  "maxZoom": 18,
+  "startFrom": "naramachi_yasui_bunko",
+  "sources": [
+    { "mapID": "naramachi_yasui_bunko", "label": "奈良町絵図 天理図書館保井文庫" },
+    { "mapID": "nara_1894", "label": "奈良市街名区古蹟図 1894" },
+    "gsi",
+    "osm"
+  ]
+}

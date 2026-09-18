@@ -1,0 +1,16 @@
+{
+  "appName": { "ja": "館林市古地図デモ", "en": "Historical Map Demo of Tatebayashi" },
+  "lang": "ja",
+  "homePosition": [139.541175, 36.247517],
+  "defaultZoom": 14,
+  "zoomRestriction": true,
+  "minZoom": 10,
+  "maxZoom": 18,
+  "startFrom": "tatebayashi_castle_akimoto",
+  "sources": [
+    { "mapID": "tatebayashi_castle_akimoto", "label": "館林城絵図（秋元時代）" },
+    { "mapID": "tatebayashi_ojozu", "label": "館林御城図" },
+    "gsi",
+    "osm"
+  ]
+}
