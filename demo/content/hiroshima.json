@@ -1,0 +1,108 @@
+{
+  "region": "hiroshima",
+  "mapPois": [
+    {
+      "name": "広島城",
+      "lat": 34.401534,
+      "lng": 132.459514,
+      "desc": "広島市中心部にあった城。広島藩の藩庁が置かれた。",
+      "source": "Wikipedia「広島城」／OpenStreetMap https://www.openstreetmap.org/（2026-09-18 照合）",
+      "verify": {
+        "area": "castle",
+        "checkedAt": "2026-09-18",
+        "sources": [
+          { "src": "osm", "query": "広島城", "coord": [132.459514, 34.401534], "distanceM": 0, "fetchedAt": "2026-09-18T11:05:00Z" }
+        ]
+      }
+    },
+    {
+      "name": "縮景園",
+      "lat": 34.400406,
+      "lng": 132.467707,
+      "desc": "広島藩主浅野氏の庭園。江戸時代の大名庭園として知られる。",
+      "source": "Wikipedia「縮景園」／OpenStreetMap https://www.openstreetmap.org/（2026-09-18 照合）",
+      "verify": {
+        "area": "precinct",
+        "checkedAt": "2026-09-18",
+        "sources": [
+          { "src": "osm", "query": "縮景園", "coord": [132.467707, 34.400406], "distanceM": 0, "fetchedAt": "2026-09-18T11:05:00Z" }
+        ]
+      }
+    },
+    {
+      "name": "原爆ドーム",
+      "lat": 34.395471,
+      "lng": 132.453580,
+      "desc": "広島市の原爆被災の遺構。世界遺産に登録されている。",
+      "source": "Wikipedia「原爆ドーム」／OpenStreetMap https://www.openstreetmap.org/（2026-09-18 照合）",
+      "verify": {
+        "area": "precinct",
+        "checkedAt": "2026-09-18",
+        "sources": [
+          { "src": "osm", "query": "原爆ドーム", "coord": [132.453580, 34.395471], "distanceM": 0, "fetchedAt": "2026-09-18T11:05:00Z" }
+        ]
+      }
+    }
+  ],
+  "appPois": [
+    {
+      "name": "広島城天守閣跡",
+      "lat": 34.402456,
+      "lng": 132.459047,
+      "desc": "広島城本丸の天守閣が建っていた場所。礎石が残る。",
+      "source": "広島城天守閣跡／OpenStreetMap https://www.openstreetmap.org/（2026-09-18 照合）",
+      "verify": {
+        "area": "point",
+        "checkedAt": "2026-09-18",
+        "sources": [
+          { "src": "osm", "query": "広島城天守閣跡", "coord": [132.459047, 34.402456], "distanceM": 0, "fetchedAt": "2026-09-18T11:10:00Z" }
+        ]
+      }
+    },
+    {
+      "name": "広島護国神社",
+      "lat": 34.401100,
+      "lng": 132.458868,
+      "desc": "広島城の敷地内にある神社。広島県の護国神社。",
+      "source": "広島護国神社／OpenStreetMap https://www.openstreetmap.org/（2026-09-18 照合）",
+      "verify": {
+        "area": "precinct",
+        "checkedAt": "2026-09-18",
+        "sources": [
+          { "src": "osm", "query": "広島護国神社", "coord": [132.458868, 34.401100], "distanceM": 0, "fetchedAt": "2026-09-18T11:10:00Z" }
+        ]
+      }
+    }
+  ],
+  "demoOps": {
+    "addPoi": [
+      {
+        "label": "広島県立美術館を追加",
+        "poi": {
+          "name": "広島県立美術館",
+          "lat": 34.399990,
+          "lng": 132.466212,
+          "desc": "縮景園に隣接する広島県立の美術館。",
+          "source": "広島県立美術館／OpenStreetMap https://www.openstreetmap.org/（2026-09-18 照合）",
+          "verify": {
+            "area": "precinct",
+            "checkedAt": "2026-09-18",
+            "sources": [
+              { "src": "osm", "query": "広島県立美術館", "coord": [132.466212, 34.399990], "distanceM": 0, "fetchedAt": "2026-09-18T11:15:00Z" }
+            ]
+          }
+        }
+      }
+    ],
+    "movePoi": [],
+    "addLine": [
+      {
+        "label": "原爆ドーム周辺徒歩ルート",
+        "kind": "walk",
+        "points": [[132.4499405, 34.3958293], [132.4501502, 34.3969265], [132.451779, 34.3966631], [132.4533233, 34.39631], [132.4533061, 34.395489], [132.4539903, 34.3941614], [132.4525756, 34.3937964], [132.4523204, 34.3936459], [132.4521763, 34.3936222], [132.4521884, 34.3932056], [132.4520752, 34.3929374], [132.4529116, 34.3927123], [132.4530577, 34.393004], [132.4527159, 34.3916738]],
+        "source": "原爆ドーム周辺徒歩ルート（人間提供 KML・証跡 routes/広島.kml・2026-09-17）。近代以降の徒歩ルートで、江戸期の安芸国広島城所絵図に描かれた道ではない（設計 §5.3）"
+      }
+    ],
+    "addVector": []
+  }
+}
