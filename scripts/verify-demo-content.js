@@ -348,13 +348,27 @@ function checkExtent(contents) {
   if (fails === 0) console.log("OK: extent");
 }
 
-// ---- AC-T3-11 アプリ用／地図用の区分・移動ピン（v2.4・HR-20〜23・IR3 Major-1）----
+// ---- AC-T3-11 アプリ用／地図用の区分・移動ピン（v2.5・HR-20〜23・IR3 Major-1・HR-25/3・HR-25/4）----
 // v2.4: 古地図ごとの「範囲に入るか」はここでは見ない。対応点の外接矩形は Core の実描画と両方向にずれ
 // （矩形の内なのに描かれない点が最大 924 m、矩形の外なのに描かれる点が 1500 m 超。t3 v2.4 §5.7.1）、判定に使えないため。
-// 範囲は Core の実描画で t4 §7.5 AC20(10) が見る。ここでは maps の形と区分の規則だけを見る。
+// 範囲は Core の実描画で t4 §7.5 AC20(10) が見る。ここでは maps・clipped の形と区分の規則だけを見る。
+// v2.5: 地図用 POI は古地図にだけ置く（gsi/osm は不可。HR-25/4）。線は古地図ごとに範囲で切った部分 clipped を持てる（HR-25/3）
+const BASEMAPS = new Set(["gsi", "osm"]);
+// 点 p が折れ線 pts の上にあれば位置（辺の番号＋辺の中の比 0〜1）を返す。無ければ null（許容は経緯度 1e-6 度＝約 0.1 m）
+function posOnLine(pts, p) {
+  const TOL = 1e-6;
+  for (let i = 0; i + 1 < pts.length; i++) {
+    const [ax, ay] = pts[i], [bx, by] = pts[i + 1];
+    const dx = bx - ax, dy = by - ay, L2 = dx * dx + dy * dy;
+    const t = L2 === 0 ? 0 : Math.max(0, Math.min(1, ((p[0] - ax) * dx + (p[1] - ay) * dy) / L2));
+    if (Math.hypot(ax + dx * t - p[0], ay + dy * t - p[1]) <= TOL) return i + t;
+  }
+  return null;
+}
 // rec(cond, msg): 本番は must、selftest は静かなカウンタを渡す（checkPoi と同じ作り）
 function scopeFails(c, where0, rec) {
   const all = regionSources(c.region);
+  const olds = new Set([...all].filter(m => !BASEMAPS.has(m)));
   const uniq = a => new Set(a).size === a.length;
   const ops = c.demoOps || {};
   // maps の共通規則: 1 件以上・重複なし・当該地域 sources に実在・sources の全件と同じでない（全地図ならアプリ用に置く。HR-21）
@@ -365,12 +379,35 @@ function scopeFails(c, where0, rec) {
     for (const mid of maps) rec(all.has(mid), `${w}: maps の ${JSON.stringify(mid)} が当該地域 sources に無い`);
     rec(!(maps.length === all.size && [...all].every(m => maps.includes(m))), `${w}: maps が全地図と同じ。全地図に出すものはアプリ用に置く（HR-21）`);
   };
+  // v2.5（HR-25/3）: clipped の形。キーはこの線を出す古地図（allowed）、値は 2 点以上・どの点も元の points の上・線に沿った順
+  const clipOk = (l, w, allowed) => {
+    if (!("clipped" in l)) return;
+    const cl = l.clipped;
+    const okObj = !!cl && typeof cl === "object" && !Array.isArray(cl) && Object.keys(cl).length >= 1;
+    rec(okObj, `${w}: clipped が 1 件以上の地図を持つ object でない`);
+    if (!okObj) return;
+    for (const [mid, pts] of Object.entries(cl)) {
+      rec(allowed.has(mid), `${w}: clipped の ${JSON.stringify(mid)} がこの線を出す古地図でない（gsi/osm と他の地図は切らない）`);
+      const okPts = Array.isArray(pts) && pts.length >= 2 && pts.every(p => Array.isArray(p) && p.length === 2 && p.every(Number.isFinite));
+      rec(okPts, `${w}: clipped.${mid} が 2 点以上の [lng,lat] 配列でない`);
+      if (!okPts) continue;
+      let prev = -1;
+      for (const p of pts) {
+        const s = posOnLine(l.points, p);
+        rec(s !== null && s >= prev - 1e-9, `${w}: clipped.${mid} の点 [${p}] が元の線の上に無いか、線に沿った順でない`);
+        if (s !== null) prev = s;
+      }
+    }
+  };
   rec(!("addLine" in ops), `${where0}: demoOps.addLine が残っている（v2.3 で appLines／mapLines へ移した）`);
   rec(Array.isArray(c.appLines) && Array.isArray(c.mapLines), `${where0}: appLines／mapLines が配列でない`);
   (c.appPois || []).forEach((p, i) => rec(!("maps" in p), `${where0}#appPois[${i}]: アプリ用 POI が maps を持つ`));
-  (c.mapPois || []).forEach((p, i) => mapsOk(p.maps, `${where0}#mapPois[${i}]`));
-  (c.appLines || []).forEach((l, i) => rec(!("maps" in l), `${where0}#appLines[${i}]: アプリの線が maps を持つ`));
-  (c.mapLines || []).forEach((l, i) => mapsOk(l.maps, `${where0}#mapLines[${i}]`));
+  (c.mapPois || []).forEach((p, i) => {
+    mapsOk(p.maps, `${where0}#mapPois[${i}]`);
+    if (Array.isArray(p.maps)) for (const mid of p.maps) rec(!BASEMAPS.has(mid), `${where0}#mapPois[${i}]: 地図用 POI の maps に現代の地図 ${mid}（地図用 POI は古地図に描かれた地物。現代の地図に出すならアプリ用に置く。HR-25/4）`);
+  });
+  (c.appLines || []).forEach((l, i) => { rec(!("maps" in l), `${where0}#appLines[${i}]: アプリの線が maps を持つ`); clipOk(l, `${where0}#appLines[${i}]`, olds); });
+  (c.mapLines || []).forEach((l, i) => { mapsOk(l.maps, `${where0}#mapLines[${i}]`); clipOk(l, `${where0}#mapLines[${i}]`, new Set((Array.isArray(l.maps) ? l.maps : []).filter(m => olds.has(m)))); });
   // v2.4: 追加 POI は maps を持てる（無ければ全地図。あれば地図用と同じ規則）
   (ops.addPoi || []).forEach((a, i) => { if (a && "maps" in a) mapsOk(a.maps, `${where0}#demoOps.addPoi[${i}]`); });
   const labels = [...(c.appLines || []), ...(c.mapLines || [])].map(l => l.label);
@@ -463,7 +500,7 @@ function runSelftest(contents) {
   must(checkPoiDetects(gsiQueryBad), "selftest: gsi_address の query 不一致を checkPoi が FAIL にしなかった");
   must(!checkPoiDetects(goodPoi), "selftest: 正しい例を checkPoi が FAIL にした");
 
-  // (5) 区分・移動ピンの陽性対照（v2.4・AC-T3-11）: 実素材は緑、注入した誤りは 1 件ずつ FAIL になること
+  // (5) 区分・移動ピンの陽性対照（v2.5・AC-T3-11）: 実素材は緑、注入した誤りは 1 件ずつ FAIL になること
   const scopeDetects = (c) => { let n = 0; scopeFails(c, "selftest", (cond) => { if (!cond) n++; }); return n > 0; };
   const baseOf = (r) => { const x = contents.find(k => k.data.region === r); must(!!x, `selftest: ${r} の素材が無い（区分の陽性対照が組めない）`); return x ? JSON.parse(JSON.stringify(x.data)) : null; };
   const ALL = { morioka: ["morioka_ndl", "morioka", "morioka_ndl_affine", "gsi", "osm"], tatebayashi: ["tatebayashi_castle_akimoto", "tatebayashi_ojozu", "gsi", "osm"] };
@@ -471,6 +508,8 @@ function runSelftest(contents) {
     ["morioka", "地図用 POI の maps が空", c => { c.mapPois[0].maps = []; }],
     ["morioka", "地図用 POI の maps に他地域の地図", c => { c.mapPois[0].maps.push("nara_1894"); }],
     ["morioka", "地図用 POI の maps が全地図", c => { c.mapPois[0].maps = ALL.morioka.slice(); }],
+    ["tatebayashi", "地図用 POI の maps が gsi・osm（v2.4 の善導寺の形。HR-25/4）", c => { c.mapPois[0].maps = ["gsi", "osm"]; }],
+    ["tatebayashi", "地図用 POI の maps に古地図と osm（HR-25/4）", c => { c.mapPois[0].maps.push("osm"); }],
     ["morioka", "アプリ用 POI が maps を持つ", c => { c.appPois[0].maps = ["morioka_ndl"]; }],
     ["tatebayashi", "アプリの線が maps を持つ", c => { c.appLines[0].maps = ["gsi"]; }],
     ["morioka", "地図の線の maps が全地図", c => { c.mapLines[0].maps = ALL.morioka.slice(); }],
@@ -481,18 +520,27 @@ function runSelftest(contents) {
     ["morioka", "移動ピンが from/to を持つ", c => { c.demoOps.movePoi[0].from = {}; }],
     ["morioka", "移動ピンが maps を持つ", c => { c.demoOps.movePoi[0].maps = ["gsi"]; }],
     ["morioka", "移動ピンが無い線を指す", c => { c.demoOps.movePoi[0].line = "存在しない線"; }],
-    ["morioka", "線の label が重複", c => { c.mapLines[1].label = c.mapLines[0].label; }],
+    ["morioka", "線の label が重複", c => { c.mapLines[0].label = c.appLines[0].label; }],
     // 全頂点が両図に入る館林の線で、HR-21 の規則だけが効くことを見る
-    ["tatebayashi", "全地図に出す線を地図の線に置く", c => { const l = c.appLines.shift(); c.mapLines.push({ ...l, maps: ALL.tatebayashi.slice() }); }]
+    ["tatebayashi", "全地図に出す線を地図の線に置く", c => { const l = c.appLines.shift(); c.mapLines.push({ ...l, maps: ALL.tatebayashi.slice() }); }],
+    // v2.5（HR-25/3）: clipped の形
+    ["morioka", "clipped のキーが gsi", c => { c.appLines[0].clipped.gsi = c.appLines[0].points.slice(0, 2); }],
+    ["morioka", "clipped のキーが他地域の地図", c => { c.appLines[0].clipped.nara_1894 = c.appLines[0].points.slice(0, 2); }],
+    ["morioka", "clipped が空の object", c => { c.appLines[0].clipped = {}; }],
+    ["morioka", "clipped が 1 点", c => { c.appLines[0].clipped.morioka = [c.appLines[0].clipped.morioka[0]]; }],
+    ["morioka", "clipped の点が線の外", c => { c.appLines[0].clipped.morioka[3] = [141.15, 39.71]; }],
+    ["morioka", "clipped が線と逆の順", c => { c.appLines[0].clipped.morioka.reverse(); }],
+    ["morioka", "地図の線の clipped が maps に無い古地図", c => { c.mapLines[0].clipped = { morioka: c.mapLines[0].points.slice() }; }]
   ];
   for (const r of ["morioka", "nobeoka", "nara", "tatebayashi", "hiroshima"]) { const c = baseOf(r); if (c) must(!scopeDetects(c), `selftest: 実素材（${r}）が区分検査で FAIL した`); }
   for (const [r, name, f] of inj) { const c = baseOf(r); if (!c) continue; f(c); must(scopeDetects(c), `selftest: 区分検査が「${name}」を検出しなかった`); }
-  // 陰性対照（v2.4 で許すようになった形が誤って FAIL しないこと）
+  // 陰性対照（許す形が誤って FAIL しないこと）
   const ok = [
     ["tatebayashi", "一部の地図だけの線（館林 2 枚）", c => { const l = c.appLines.shift(); c.mapLines.push({ ...l, maps: ["tatebayashi_castle_akimoto", "tatebayashi_ojozu"] }); }],
-    ["tatebayashi", "地図用 POI の maps が gsi・osm（善導寺の形）", c => { c.mapPois[0].maps = ["gsi", "osm"]; }],
-    ["morioka", "移動ピンが地図の線を指す（大絵巻の形）", c => { c.demoOps.movePoi[0].line = c.mapLines[1].label; }],
-    ["nara", "追加 POI が maps を持たない（全地図）", c => { delete c.demoOps.addPoi[0].maps; }]
+    ["morioka", "移動ピンが地図の線を指す", c => { c.demoOps.movePoi[0].line = c.mapLines[0].label; }],
+    ["nara", "追加 POI が maps を持たない（全地図）", c => { delete c.demoOps.addPoi[0].maps; }],
+    ["morioka", "地図の線が maps の古地図で clipped を持つ", c => { c.mapLines[0].clipped = { morioka_ndl: c.mapLines[0].points.slice() }; }],
+    ["morioka", "clipped を持たないアプリの線（範囲は AC20 (10) が見る）", c => { delete c.appLines[0].clipped; }]
   ];
   for (const [r, name, f] of ok) { const c = baseOf(r); if (!c) continue; f(c); must(!scopeDetects(c), `selftest: 「${name}」が誤って FAIL した`); }
 

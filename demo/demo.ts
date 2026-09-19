@@ -23,6 +23,15 @@ const MOVE_ICON =
       '<path d="M8 13h9m-3.5-4 4 4-4 4" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' +
       "</svg>"
   );
+// 選んだ移動ピンのアイコン（HR-25/1）。地の色を橙に替え、縁を太くする（既定のピンの selected と同じく「選ばれた」と分かる形）
+const MOVE_ICON_SELECTED =
+  "data:image/svg+xml;charset=utf-8," +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="36" viewBox="0 0 28 36">' +
+      '<path d="M14 35C14 35 2 20 2 13a12 12 0 0 1 24 0c0 7-12 22-12 22z" fill="#f59e0b" stroke="#7c3aed" stroke-width="3"/>' +
+      '<path d="M8 13h9m-3.5-4 4 4-4 4" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+      "</svg>"
+  );
 
 // 線・面の見た目（kind 別パレット）。単一正本はここ 1 箇所。
 // stroke は addLine の stroke、style は addVector の style（{ stroke, fill }）にそのまま渡す。
@@ -220,12 +229,15 @@ async function main(): Promise<void> {
     if (!("maps" in line)) return true; // アプリの線
     return mapID !== undefined && line.maps.includes(mapID);
   };
+  // v4.4（HR-25/3）: 素材がその古地図の範囲で切った部分（clipped）を持てばそれを、無ければ points をそのまま描く
+  const drawnPoints = (line: LineItem, mapID: string | undefined): [number, number][] =>
+    (mapID !== undefined ? line.clipped?.[mapID] : undefined) ?? line.points;
   const redrawShapes = (): void => {
     const mapID = activeMapId();
     app.clearLine();
     for (const line of activeLines) {
       if (lineApplies(line, mapID)) {
-        app.addLine({ lnglats: line.points, stroke: PALETTE[line.kind].stroke });
+        app.addLine({ lnglats: drawnPoints(line, mapID), stroke: PALETTE[line.kind].stroke });
       }
     }
     for (const vec of activeVectors) {
@@ -328,6 +340,22 @@ async function main(): Promise<void> {
 
   // ---- POI（v4.2。表示のチェック・追加はチェック〔HR-23/1〕・移動はチェック〔HR-23/2・3〕）----
   const poiSec = makeSection("POI");
+  // POI の選択（v4.4・HR-25/1・2）: クリックした POI を Core の selectMarker で選ぶ（アイコンが selected になり、画面の中央へ来る）。
+  // 「選択中の POI」のチェックは選択があるときだけ有効で、外すと unselectMarker で全部を未選択に戻す
+  let selectedId: string | undefined;
+  const selectWrap = makeCheck("選択中の POI", false, (on) => { if (!on) clearSelection(); });
+  const refreshSelectCheck = (): void => {
+    const cb = selectWrap.querySelector("input");
+    if (cb) cb.checked = selectedId !== undefined;
+    setUsable(selectWrap, selectedId !== undefined, "地図の POI をクリックすると選べます");
+  };
+  const clearSelection = (): void => {
+    if (selectedId === undefined) return;
+    selectedId = undefined;
+    app.unselectMarker();
+    markerInfo.style.display = "none";
+    refreshSelectCheck();
+  };
   let mapPoiCheck: HTMLLabelElement | undefined;
   if (appPois.length > 0 || mapPoiCount.size > 0) {
     const showRow = poiSec.row();
@@ -374,6 +402,7 @@ async function main(): Promise<void> {
       const wrap = makeCheck(op.label, false, (on) => {
         if (on && addedIds.length === 0) addedIds = layers.map((id) => app.addMarker(structuredClone(op.poi), id) as string);
         if (!on && addedIds.length > 0) {
+          if (selectedId !== undefined && addedIds.includes(selectedId)) clearSelection(); // 消す POI を選んだままにしない
           for (const id of addedIds) app.removeMarker(id);
           addedIds = [];
         }
@@ -384,29 +413,39 @@ async function main(): Promise<void> {
     // 移動ピン（HR-23/2・3）: 始点・終点は参照する線（アプリの線か地図の線）の最初と最後の頂点。既存の POI の座標は使わない
     // 地図の線を参照するときは、その線の maps の地図ごとの層 "<mapID>#move" に 1 本ずつ置く（線と同じ地図にだけ出る）
     const lineMapsOf = (l: LineItem | MapLineItem): string[] | undefined => ("maps" in l ? l.maps : undefined);
+    const sourceIds = setting.sources.map((s) => (typeof s === "string" ? s : (s as { mapID: string }).mapID));
     for (const move of demoOps.movePoi) {
       const line = appLines.find((l) => l.label === move.line) ?? mapLines.find((l) => l.label === move.line);
       if (!line || line.points.length < 2) continue; // 素材の検査（t3 AC-T3-11）が先に落とす。ここでは出さないだけ
-      const start = line.points[0];
-      const end = line.points[line.points.length - 1];
       const pin = (at: [number, number], where: string) => ({
         name: move.label,
         desc: `${line.label}の${where}`,
         lnglat: [at[0], at[1]] as [number, number],
         icon: MOVE_ICON,
-        selectedIcon: MOVE_ICON
+        selectedIcon: MOVE_ICON_SELECTED
       });
       const lineMaps = lineMapsOf(line);
-      const layers = lineMaps ? lineMaps.map(moveLayerId) : [MOVE_LAYER];
-      for (const id of layers) ensureLayer(id, "移動ピン");
-      const markerIds = layers.map((id) => app.addMarker(pin(start, "始点"), id) as string);
+      // v4.4（HR-25/3）: 線が古地図の範囲で切った部分（clipped）を持つときは、地図ごとの層に置き、
+      // その地図で描く部分の最初と最後の頂点を始点・終点にする（範囲の外へ移って消えない）。
+      // 地図の線は maps の地図ごと、切った部分を持つアプリの線は全地図ごと、どちらでもなければアプリ全体の層に 1 本
+      const perMap = lineMaps ?? (line.clipped ? sourceIds : undefined);
+      const places = perMap
+        ? perMap.map((mapID) => ({ layer: moveLayerId(mapID), pts: drawnPoints(line, mapID) }))
+        : [{ layer: MOVE_LAYER, pts: line.points }];
+      const ends = places.map(({ layer, pts }) => {
+        ensureLayer(layer, "移動ピン");
+        const start = pts[0];
+        const end = pts[pts.length - 1];
+        return { id: app.addMarker(pin(start, "始点"), layer) as string, start, end };
+      });
       const wrap = makeCheck(move.label, false, (on) => {
-        for (const id of markerIds) app.updateMarker(id, on ? pin(end, "終点") : pin(start, "始点"), false);
+        for (const { id, start, end } of ends) app.updateMarker(id, on ? pin(end, "終点") : pin(start, "始点"), false);
       });
       if (lineMaps) opChecks.push({ wrap, maps: lineMaps });
       opRow.appendChild(wrap);
     }
   }
+  poiSec.row().appendChild(selectWrap);
   mountSection(poiSec);
 
   // ---- 線・面（v4.2。アプリの線・地図の線とも既定で表示。地図の線はその地図に無いときチェックを無効化）----
@@ -463,6 +502,9 @@ async function main(): Promise<void> {
 
   // ---- 地図切替・視点変化に追従して、出典・選択中の地図・線・視点を出し直す ----
   const refreshMapState = (): void => {
+    // v4.4（HR-25/2）: 地図ごとの層の POI（"<mapID>#…"）を選んだまま別の地図へ替えたら、選択を外す（描かれない POI を選んだままにしない）
+    if (selectedId?.includes("#") && !selectedId.startsWith(`${activeMapId()}#`)) clearSelection();
+    refreshSelectCheck();
     refreshAttr();
     renderMapSelect(activeMapId());
     refreshPoiChecks();
@@ -483,6 +525,12 @@ async function main(): Promise<void> {
     if (data.image && typeof data.imageCredit === "string") parts.push(`写真: ${data.imageCredit}`);
     markerInfo.textContent = parts.join(" — ");
     markerInfo.style.display = "";
+    // v4.4（HR-25/1）: クリックした POI を選ぶ（Core が selected のアイコンで描き直す）
+    if (typeof data.namespaceID === "string") {
+      selectedId = data.namespaceID;
+      app.selectMarker(selectedId);
+      refreshSelectCheck();
+    }
   });
 
   // 初期状態を反映

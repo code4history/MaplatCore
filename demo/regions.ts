@@ -88,9 +88,9 @@ export interface Poi {
   verify: PoiVerify;
 }
 
-/** 地図用 POI 1 件（v6.5・HR-22・IR3 Major-1）。その地図に出す POI。maps の地図にだけ出す */
+/** 地図用 POI 1 件（v6.6・HR-22・HR-25/4）。その古地図に描かれた地物。maps の古地図にだけ出す */
 export interface MapPoi extends Poi {
-  /** 出す地図の mapID（1 件以上・重複なし・当該地域 sources に実在。gsi/osm も書ける〔v6.5〕。sources の全件と同じは不可＝アプリ用に置く）。複数あれば各地図に 1 件ずつ出す */
+  /** 出す古地図の mapID（1 件以上・重複なし・当該地域 sources の古地図に実在。gsi/osm は書けない〔v6.6・HR-25/4〕。sources の古地図の全件と同じでもよい）。複数あれば各地図に 1 件ずつ出す */
   maps: string[];
 }
 
@@ -103,6 +103,8 @@ export interface LineItem {
   kind: LineKind;
   points: [number, number][]; // [lng, lat][]
   source: string;
+  /** v6.6（HR-25/3）: 古地図の範囲で切った部分。キーは古地図の mapID、値はその地図で points の代わりに描く点列（points の上の点・2 点以上）。無い地図では points をそのまま描く */
+  clipped?: Record<string, [number, number][]>;
 }
 
 /** 地図の線 1 件（v6.4・HR-20/21）。maps の地図にだけ出す。maps が当該地域の全地図と同じなら LineItem（appLines）に置く */
