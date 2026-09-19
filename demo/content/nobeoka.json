@@ -1,0 +1,180 @@
+{
+  "region": "nobeoka",
+  "mapPois": [
+    {
+      "name": "延岡城跡",
+      "lat": 32.580718,
+      "lng": 131.662763,
+      "desc": "延岡市中心部の城山にあった延岡城の跡。現在は城山公園として整備されている。",
+      "source": "延岡城跡／OpenStreetMap https://www.openstreetmap.org/（2026-09-18 照合）",
+      "verify": {
+        "area": "castle",
+        "checkedAt": "2026-09-18",
+        "sources": [
+          {
+            "src": "osm",
+            "query": "延岡城跡",
+            "coord": [
+              131.662763,
+              32.580718
+            ],
+            "distanceM": 0,
+            "fetchedAt": "2026-09-18T10:30:00Z"
+          }
+        ]
+      },
+      "maps": [
+        "1932_nobeoka"
+      ]
+    },
+    {
+      "name": "今山八幡宮",
+      "lat": 32.588741,
+      "lng": 131.667781,
+      "desc": "延岡市今山にある八幡宮。",
+      "source": "今山八幡宮／OpenStreetMap https://www.openstreetmap.org/（2026-09-18 照合）",
+      "verify": {
+        "area": "precinct",
+        "checkedAt": "2026-09-18",
+        "sources": [
+          {
+            "src": "osm",
+            "query": "今山八幡宮",
+            "coord": [
+              131.667781,
+              32.588741
+            ],
+            "distanceM": 0,
+            "fetchedAt": "2026-09-18T10:30:00Z"
+          }
+        ]
+      },
+      "maps": [
+        "1932_nobeoka"
+      ]
+    }
+  ],
+  "appPois": [
+    {
+      "name": "城山公園",
+      "lat": 32.580729,
+      "lng": 131.662095,
+      "desc": "延岡城跡の城山を整備した公園。",
+      "source": "城山公園／OpenStreetMap https://www.openstreetmap.org/（2026-09-18 照合）",
+      "verify": {
+        "area": "precinct",
+        "checkedAt": "2026-09-18",
+        "sources": [
+          {
+            "src": "osm",
+            "query": "城山公園",
+            "coord": [
+              131.662095,
+              32.580729
+            ],
+            "distanceM": 0,
+            "fetchedAt": "2026-09-18T10:30:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "name": "延岡駅",
+      "lat": 32.590141,
+      "lng": 131.67191,
+      "desc": "JR日豊本線の駅。延岡市の中心駅。",
+      "source": "延岡駅／OpenStreetMap https://www.openstreetmap.org/（2026-09-18 照合）",
+      "verify": {
+        "area": "point",
+        "checkedAt": "2026-09-18",
+        "sources": [
+          {
+            "src": "osm",
+            "query": "延岡駅",
+            "coord": [
+              131.67191,
+              32.590141
+            ],
+            "distanceM": 0,
+            "fetchedAt": "2026-09-18T10:30:00Z"
+          }
+        ]
+      }
+    }
+  ],
+  "appLines": [
+    {
+      "label": "延岡大師祭市中パレード",
+      "kind": "festival",
+      "points": [
+        [
+          131.669621,
+          32.5883075
+        ],
+        [
+          131.6689702,
+          32.5867267
+        ],
+        [
+          131.6686899,
+          32.5821668
+        ],
+        [
+          131.6689843,
+          32.5801717
+        ],
+        [
+          131.6700542,
+          32.576679
+        ],
+        [
+          131.6691461,
+          32.575344
+        ],
+        [
+          131.668871,
+          32.5726347
+        ]
+      ],
+      "source": "延岡大師祭市中パレード経路（人間提供 KML）／証跡 routes/延岡.kml（2026-09-17）"
+    }
+  ],
+  "mapLines": [],
+  "demoOps": {
+    "addPoi": [
+      {
+        "label": "五ヶ瀬川を追加",
+        "poi": {
+          "name": "五ヶ瀬川",
+          "lat": 32.584197,
+          "lng": 131.663912,
+          "desc": "延岡市街地を流れ日向灘へ注ぐ川。",
+          "source": "五ヶ瀬川／OpenStreetMap https://www.openstreetmap.org/（2026-09-18 照合）",
+          "verify": {
+            "area": "point",
+            "checkedAt": "2026-09-18",
+            "sources": [
+              {
+                "src": "osm",
+                "query": "五ヶ瀬川",
+                "coord": [
+                  131.663912,
+                  32.584197
+                ],
+                "distanceM": 0,
+                "fetchedAt": "2026-09-18T10:30:00Z"
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "movePoi": [
+      {
+        "label": "延岡大師祭市中パレード（始点→終点）",
+        "line": "延岡大師祭市中パレード"
+      }
+    ],
+    "addVector": []
+  }
+}
