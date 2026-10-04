@@ -16,11 +16,11 @@ importers:
   .:
     dependencies:
       '@c4h/weiwudi':
-        specifier: ^1.1.0-rc.1
-        version: 1.1.0-rc.1(workbox-routing@7.4.1)
+        specifier: ^1.1.0
+        version: 1.1.0(workbox-routing@7.4.1)
       '@maplat/transform':
-        specifier: ^1.1.0-rc.1
-        version: 1.1.0-rc.1
+        specifier: ^1.1.0
+        version: 1.1.0
       '@turf/turf':
         specifier: ^7.4.0
         version: 7.4.0
@@ -136,8 +136,8 @@ packages:
     resolution: {integrity: sha512-ctxtJ/eA+t+6q2++vj5j7FYX3nRu311q1wfYH3xjlLOsczhlhxAg2FWNUXhpGvAw3BWo1xBcvOV6/YLc2r5FJw==}
     hasBin: true
 
-  '@c4h/weiwudi@1.1.0-rc.1':
-    resolution: {integrity: sha512-GNc3gHyJnGhCNQ5ClnYsCQTPGVakS9UKqj1UJ4ojgpUZbsf9WOwZfDHkP4QhORTwTL3QZ+BaPSeY6ppGS4ft3Q==}
+  '@c4h/weiwudi@1.1.0':
+    resolution: {integrity: sha512-7sMmBQ+1hyLqvTYZvaoZZEY7Ce+HZinmTtEaDY7mhfnyEnkBtkPTaKleXEbLLyLuIyFUeVb0vXHibO0Kd4aaFw==}
     engines: {node: '>=20.0.0', pnpm: '>=9.0.0'}
     peerDependencies:
       workbox-routing: ^7.4.0
@@ -452,8 +452,8 @@ packages:
   '@mapbox/vector-tile@3.0.0':
     resolution: {integrity: sha512-Qf10S1uIHMk20ri/IVBnpS+esUEkVaR5Hftmz88jTInrpmWgPGJfPe3LVjjlE77trLx8tH6qjTG7uWH9hIq/0Q==}
 
-  '@maplat/transform@1.1.0-rc.1':
-    resolution: {integrity: sha512-7hh41P/dZHeL49GxgEBy6EYIGvIMF8vL29E1MrtB18qqH4z/M/ogjeyHBoQi+RM8mFGd0kAKGkPWanTCkIlDaQ==}
+  '@maplat/transform@1.1.0':
+    resolution: {integrity: sha512-oBfH0vSJQx+xsVUE/tFI42JCSrXMKjFcoKbbN4yG2Cv5M2gaOhQyzn9ZO8RZFcQ18Do0c7WWpFbx72R+IhWeZw==}
     engines: {node: '>=20', pnpm: '>=9'}
 
   '@maplibre/geojson-vt@6.1.1':
@@ -2237,7 +2237,7 @@ snapshots:
     dependencies:
       css-tree: 3.2.1
 
-  '@c4h/weiwudi@1.1.0-rc.1(workbox-routing@7.4.1)':
+  '@c4h/weiwudi@1.1.0(workbox-routing@7.4.1)':
     dependencies:
       workbox-routing: 7.4.1
 
@@ -2450,7 +2450,7 @@ snapshots:
       '@types/geojson': 7946.0.16
       pbf: 5.1.2
 
-  '@maplat/transform@1.1.0-rc.1':
+  '@maplat/transform@1.1.0':
     dependencies:
       '@turf/turf': 7.4.0
 
