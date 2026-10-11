@@ -3,6 +3,7 @@ import { MaplatMap } from '../map_ex';
 import { Coordinate } from 'ol/coordinate';
 import { Size } from 'ol/size';
 import { Feature, Polygon } from 'geojson';
+import { META_KEYS, META_KEYS_OPTION } from '../meta_keys';
 type SourceConstructor<T = object> = new (...args: any[]) => T;
 type ViewpointObject = {
     x?: number;
@@ -400,9 +401,7 @@ export declare function setCustomFunctionMaplat<TBase extends SourceConstructor>
     isMapLibre(): boolean;
     createAsync(options: any): Promise<any>;
 }) & TBase;
-export declare const META_KEYS: string[];
-export declare const META_KEYS_OPTION: string[];
+export { META_KEYS, META_KEYS_OPTION };
 export declare const isProviderMapType: (maptype?: string) => RegExpMatchArray | null;
 export declare function addCommonOptions(options: any): any;
 export declare function setupTileLoadFunction(target: any): void;
-export {};

@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { META_KEYS } from "./source/mixin";
+// META_KEYS は依存の無い src/meta_keys.ts から読む（source/mixin.ts 経由だと OpenLayers を引き込む。
+// このファイルは @maplat/core/common から読まれる）。
+import { META_KEYS } from "./meta_keys";
 
 export function createElement(domStr: string) {
   const context = document;

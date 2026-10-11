@@ -49,7 +49,7 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'pnpm run dev',
+    command: 'pnpm --ignore-workspace run dev',
     url: 'http://localhost:5175',
     reuseExistingServer: !process.env.CI,
   },

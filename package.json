@@ -10,12 +10,24 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/maplat_core.js"
+    },
+    "./element": {
+      "types": "./dist/element.d.ts",
+      "import": "./dist/maplat_core_element.js"
+    },
+    "./common": {
+      "types": "./dist/common.d.ts",
+      "import": "./dist/maplat_core_common.js"
+    },
+    "./conformance": {
+      "types": "./dist/conformance/index.d.ts",
+      "import": "./dist/maplat_core_conformance.js"
     }
   },
   "engines": {
     "pnpm": ">=9"
   },
-  "sideEffects": true,
+  "sideEffects": ["./dist/maplat_core.js", "./dist/maplat_core.umd.js", "./dist/maplat_core_element.js", "./src/index.ts", "./src/element.ts", "./src/view_ex.ts", "*.css"],
   "files": [
     "src/",
     "dist/",
@@ -23,9 +35,10 @@
   ],
   "scripts": {
     "dev": "vite --host",
-    "build": "cross-env BUILD_MODE=package vite build",
+    "build": "cross-env BUILD_MODE=package vite build && cross-env BUILD_MODE=element vite build && cross-env BUILD_MODE=common vite build && cross-env BUILD_MODE=conformance vite build && node scripts/verify-common-bundle.mjs",
+    "verify:common": "node scripts/verify-common-bundle.mjs",
     "build:demo": "vite build",
-    "build:with-typecheck": "pnpm run typecheck && cross-env BUILD_MODE=package vite build",
+    "build:with-typecheck": "pnpm --ignore-workspace run typecheck && cross-env BUILD_MODE=package vite build && cross-env BUILD_MODE=element vite build && cross-env BUILD_MODE=common vite build && cross-env BUILD_MODE=conformance vite build && node scripts/verify-common-bundle.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -37,7 +50,7 @@
     "lint": "eslint src spec --fix",
     "format": "prettier --write \"src/**/*.{ts,js}\" \"spec/**/*.{ts,js}\"",
     "preview": "vite preview",
-    "prepublishOnly": "pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build",
+    "prepublishOnly": "pnpm --ignore-workspace run lint && pnpm --ignore-workspace run typecheck && pnpm --ignore-workspace run test && pnpm --ignore-workspace run build",
     "version:bump": "node scripts/bump-version.js",
     "version:sync": "node scripts/sync-version.js",
     "publish:npm": "node scripts/publish-npm.js",

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- 設定ファイル（apps/<id>.json）・地図の設定・タイルはページ起点の相対パスで読まれるので、
+       基点を MaplatCore の公開ルート（public/ が載る / ）にそろえる -->
+  <base href="../">
+  <title>maplat-app 確認ページ</title>
+  <style>
+    :root { --fg: #1a2744; --line: #d5d9e2; --bg: #fff; --muted: #5b6478; --accent: #e8f0fe; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 13px/1.5 system-ui, sans-serif; color: var(--fg); background: var(--bg); }
+    header { padding: 8px 16px; border-bottom: 1px solid var(--line); display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+    header h1 { font-size: 16px; margin: 0; }
+    #status { color: var(--muted); }
+    main { display: grid; grid-template-columns: minmax(0, 1fr) 340px; height: calc(100vh - 42px); }
+    /* 要素の既定の高さ（400px）をページの CSS で上書きする（:where なので常にこちらが勝つ） */
+    maplat-app { height: 100%; }
+    /* U5: 中心の目印は class で表現を差し替えられる */
+    maplat-app.demo-ring .maplat-center-marker { filter: hue-rotate(200deg) drop-shadow(0 0 2px #000); }
+    aside { border-left: 1px solid var(--line); padding: 8px 12px; overflow-y: auto; }
+    section { border-top: 1px solid #eef0f4; padding: 8px 0; }
+    section h2 { font-size: 12px; margin: 0 0 6px; }
+    .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 6px; }
+    button, select { font: inherit; padding: 3px 8px; border: 1px solid #b8c0d0; border-radius: 4px; background: #f8f9fb; color: var(--fg); }
+    button:hover { background: var(--accent); }
+    #log { font: 11px/1.4 ui-monospace, monospace; white-space: pre-wrap; max-height: 260px; overflow-y: auto; background: #f6f7f9; padding: 6px; margin: 0; }
+    code { font-size: 11px; }
+    @media (max-width: 720px) {
+      main { display: block; height: auto; }
+      maplat-app { height: 55vh; }
+      aside { border-left: 0; border-top: 1px solid var(--line); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>&lt;maplat-app&gt; 確認ページ</h1>
+    <span id="status" data-testid="status">読み込み中…</span>
+  </header>
+  <main>
+    <!-- タグを書くだけで地図が出る（app-id から apps/morioka.json を読む） -->
+    <maplat-app id="app" app-id="morioka" map-id="morioka_ndl"></maplat-app>
+    <aside>
+      <section>
+        <h2>属性 map-id（起動後に反映）</h2>
+        <div class="row">
+          <select id="map-select" data-testid="map-select">
+            <option value="morioka_ndl">morioka_ndl（1644 正保城絵図）</option>
+            <option value="morioka">morioka（1735 奥州盛岡城図）</option>
+            <option value="gsi">gsi（地理院地図）</option>
+            <option value="osm">osm（OpenStreetMap）</option>
+          </select>
+        </div>
+        <div>現在の地図（<code>currentMapId</code>）: <strong id="current" data-testid="current">-</strong></div>
+      </section>
+      <section>
+        <h2>属性 transparency</h2>
+        <div class="row"><input id="transparency" type="range" min="0" max="100" value="0"></div>
+      </section>
+      <section>
+        <h2>メソッド（要素へ委譲）</h2>
+        <div class="row">
+          <button id="add-marker" data-testid="add-marker">addMarker（盛岡城跡）</button>
+          <button id="clear-marker">clearMarker</button>
+          <button id="go-home">goHome</button>
+          <button id="zoom-in">zoomBy(+1)</button>
+        </div>
+        <div>追加したマーカーの id: <code id="marker-id" data-testid="marker-id">-</code></div>
+      </section>
+      <section>
+        <h2>枠線と範囲（setEnvelopes・getMapEnvelope・getViewExtent）</h2>
+        <div class="row">
+          <button id="envelopes" data-testid="envelopes">範囲を持つ全地図の枠線</button>
+          <button id="envelopes-clear">setEnvelopes([])</button>
+          <button id="extent" data-testid="extent">getViewExtent</button>
+        </div>
+        <div>枠線: <code id="envelope-info" data-testid="envelope-info">-</code></div>
+        <div>画面の 4 隅: <code id="extent-info" data-testid="extent-info">-</code></div>
+      </section>
+      <section>
+        <h2>中心の目印（U5）</h2>
+        <div class="row">
+          <button id="toggle-center" data-testid="toggle-center">no-center-marker 切替</button>
+          <button id="swap-center">center-marker-src 切替</button>
+          <button id="class-center">class で色替え</button>
+        </div>
+      </section>
+      <section>
+        <h2>起動時だけ効くキー（U2）</h2>
+        <div class="row">
+          <button id="change-app-id" data-testid="change-app-id">app-id を nara に変える（無視される）</button>
+        </div>
+        <div><code>appId</code> の読み取り: <code id="app-id-read" data-testid="app-id-read">-</code></div>
+      </section>
+      <section>
+        <h2>Pro 固有の属性（U3）</h2>
+        <div class="row">
+          <button id="display-mode" data-testid="display-mode">display-mode="map-warp" を付ける（警告して無視）</button>
+        </div>
+        <div><code>supports("display-mode")</code>: <code id="supports-dm">-</code>・<code>displayMode</code>: <code id="display-mode-read" data-testid="display-mode-read">-</code></div>
+      </section>
+      <section>
+        <h2>イベント（addEventListener で受けたもの）</h2>
+        <pre id="log" data-testid="log"></pre>
+      </section>
+    </aside>
+  </main>
+  <script type="module" src="/demo/element-demo.ts"></script>
+</body>
+</html>
