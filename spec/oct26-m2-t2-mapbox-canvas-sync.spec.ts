@@ -2,7 +2,7 @@
 // canvas を同期することを、mapbox-gl をスタブにして決定論的に検証する。
 // 同期の内容は MapLibreLayer.render() と同型の 2 点:
 //   (a) canvas.width / canvas.height が frameState.size[0] / [1] と一致しないとき mapboxMap.resize() を呼ぶ
-//       （pixelRatio は掛けない。MapLibreLayer と同じ比較式）
+//       （DPR 1（jsdom の既定）では canvas と size を直接比べるのと同じ。MapLibreLayer と同じ比較式）
 //   (b) canvas を position:absolute; left:0; top:0 に配置する
 // MapLibreLayer の描画後 zoom 再同期（setZoom）は MapLibre 固有の回避策なので移植しておらず、ここでは検証しない。
 // 正常対照として MapLibreLayer も同じ条件で走らせ、スタブ自体が健全であることを併せて確かめる。
@@ -101,7 +101,7 @@ describe("oct26-m2-t2 AC-1: MapboxLayer は frameState へ canvas を同期す�
     expect(canvas.style.top).toBe("0");
   });
 
-  it("MapboxLayer: canvas 寸法が frameState.size と一致するときは resize() を呼ばない（pixelRatio を掛けない比較）", () => {
+  it("MapboxLayer: canvas 寸法が frameState.size と一致するときは resize() を呼ばない（DPR 1（jsdom の既定）では canvas と size を直接比べるのと同じ）", () => {
     const mbMap = makeMbMapStub([800, 600]);
     makeMapboxLayer(mbMap).render(frameState, undefined as any);
     expect(mbMap.resize).not.toHaveBeenCalled();
