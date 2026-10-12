@@ -75,8 +75,8 @@ All methods below are on the `MaplatApp` instance returned by
     modified.
 - `addVector(data: object): string`
   - Add a line or polygon feature and return its id (same id rules as
-    `addLine`). `data.type` of `"Line"` draws a line; any other value draws a
-    polygon. Coordinates are given as `lnglats` (longitude/latitude) or
+    `addLine`). `data.type` of `"Line"` (or omitted) draws a line; any other
+    value draws a polygon. Coordinates are given as `lnglats` (longitude/latitude) or
     `coordinates` (Web Mercator), with `style: { stroke?, fill? }`.
 - `removeLine(id: string): boolean` / `removeVector(id: string): boolean`
   - Remove the single line/vector with the given id (not filtered by kind;

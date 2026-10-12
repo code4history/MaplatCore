@@ -72,8 +72,8 @@
     前の項目を置き換えます。渡した `data` オブジェクトは変更しません。
 - `addVector(data: object): string`
   - ラインまたはポリゴンのフィーチャを追加し、その id を返します（id の
-    規則は `addLine` と同じ）。`data.type` が `"Line"` ならライン、それ以外は
-    ポリゴンを描きます。座標は `lnglats`（経緯度）か `coordinates`
+    規則は `addLine` と同じ）。`data.type` が `"Line"`（または省略）ならライン、
+    それ以外はポリゴンを描きます。座標は `lnglats`（経緯度）か `coordinates`
     （Web メルカトル）で与え、`style: { stroke?, fill? }` を添えます。
 - `removeLine(id: string): boolean` / `removeVector(id: string): boolean`
   - 指定した id の 1 件だけを消します（種類では絞りません。`removeLine` は

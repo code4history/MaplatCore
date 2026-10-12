@@ -1279,7 +1279,8 @@ export class MaplatApp extends EventTarget {
     const entry: VectorEntry = {
       id,
       data,
-      kind: data.type === "Line" ? "Line" : "Polygon",
+      kind:
+        data.type === undefined || data.type === "Line" ? "Line" : "Polygon",
       drawToken: 0
     };
     store.set(id, entry);

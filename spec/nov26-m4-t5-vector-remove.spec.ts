@@ -107,6 +107,20 @@ describe("nov26-m4-t5: 線・面の id と個別・種類ごとの削除（#91�
     expect(app.vectors.map((v: any) => v.type)).toEqual(["Line"]);
   });
 
+  it("B26-MIN-1: type を省いた addVector は線として数え、{ type: \"Line\" } で消える", async () => {
+    const app = createAppStub();
+    app.addVector(line());
+    app.addVector(polygon());
+    await settle();
+    expect(app.vectors).toHaveLength(2);
+    app.clearVector({ type: "Line" });
+    expect(app.vectors.map((v: any) => v.type)).toEqual(["Polygon"]);
+    app.addVector(line());
+    app.clearVector({ type: "Polygon" });
+    expect(app.vectors).toHaveLength(1);
+    expect(app.vectors[0].type).toBeUndefined();
+  });
+
   it("AC4: 引数なしの clearLine()／clearVector() は全部消す", async () => {
     const app = createAppStub();
     app.addLine(line());
