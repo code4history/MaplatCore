@@ -220,6 +220,7 @@ export class MaplatApp extends EventTarget {
   firstGpsRequest_ = false;
   initialGpsMove_ = false;
   private __backMapMoving = false;
+  private __backMapErrorWarned = false;
   private __selectedMarker: any;
   // oct26-m2-t1: 可視化時の自己修復（issue #101）で使うリソース参照。
   private __resizeObserver: ResizeObserver | null = null;
@@ -997,7 +998,13 @@ export class MaplatApp extends EventTarget {
       if (backSrc) {
         this.__backMapMoving = true;
         this.logger.debug("Backmap moving started");
-        this.convertParametersFromCurrent(backSrc, (size: any) => {
+        // nov26-m4-t1（#108）: 変換が同期で投げても非同期で失敗しても、フラグを戻して
+        // 次の postrender で追従を再開する。例外は postrender の dispatch へ出さない。
+        const onError = (err: any) => {
+          this.__backMapMoving = false;
+          this.__reportBackMapError(err);
+        };
+        this.__convertFromCurrent(backSrc, (size: any) => {
           if (!size) {
             // oct26-m2-t1: 未確定ガードにより座標変換がスキップされた場合
             // （非表示コンテナで view 未確定）。後段の setCenter(size[0]) が
@@ -1011,10 +1018,20 @@ export class MaplatApp extends EventTarget {
           view.setRotation(this.noRotate ? 0 : size[2]);
           this.logger.debug("Backmap moving ended");
           this.__backMapMoving = false;
-        });
+        }, onError);
       }
     };
     this.mapObject.on("postrender", backMapMove);
+  }
+  // nov26-m4-t1（#108）: 変換が恒常的に失敗する地図では postrender ごとに失敗するので、
+  // warn は最初の 1 回だけにし、以降は debug に落とす。
+  private __reportBackMapError(err: any) {
+    if (!this.__backMapErrorWarned) {
+      this.__backMapErrorWarned = true;
+      this.logger.warn("Backmap follow skipped: coordinate conversion failed", err);
+    } else {
+      this.logger.debug("Backmap follow skipped: coordinate conversion failed", err);
+    }
   }
   // Async initializer 16: Handle back map's behavior
   raiseChangeViewpoint() {
@@ -2058,23 +2075,45 @@ export class MaplatApp extends EventTarget {
   }
 
   convertParametersFromCurrent(to: any, callback: any) {
-    const view = this.mapObject.getView();
-    // oct26-m2-t1: 未確定ガード。非表示コンテナ（寸法 0）では view の resolution が
-    // NaN になる（OL が viewport size を [0,0] として resolveConstraints を走らせる
-    // ため。実測: convertParametersFromCurrent 時点 res=39135.75 → updateSize 後 NaN）。
-    // 後続の viewpoint2MercsAsync が NaN を xy2MercWithLayer へ流して issue #101 の
-    // "coordinates must contain numbers" を投げる。コンテナ寸法が無い間は座標変換を
-    // 行わず、初期視点の適用を可視化時の自己修復（__applyInitialViewpoint）へ委ねる。
-    if (view && !this.__hasMapSize()) {
-      if (callback) callback();
-      return;
+    this.__convertFromCurrent(to, callback);
+  }
+  // nov26-m4-t1（#108）: convertParametersFromCurrent の本体。公開の型を変えずに
+  // onError の口を得るために private へ移した。onError を渡したときだけ、同期例外も
+  // 非同期の失敗（__convertParameters の onError）も投げずに onError へ渡す。
+  // onError が無いときは今までと同じ（例外をそのまま投げる）。
+  private __convertFromCurrent(
+    to: any,
+    callback: any,
+    onError?: (err: any) => void
+  ) {
+    try {
+      const view = this.mapObject.getView();
+      // oct26-m2-t1: 未確定ガード。非表示コンテナ（寸法 0）では view の resolution が
+      // NaN になる（OL が viewport size を [0,0] として resolveConstraints を走らせる
+      // ため。実測: convertParametersFromCurrent 時点 res=39135.75 → updateSize 後 NaN）。
+      // 後続の viewpoint2MercsAsync が NaN を xy2MercWithLayer へ流して issue #101 の
+      // "coordinates must contain numbers" を投げる。コンテナ寸法が無い間は座標変換を
+      // 行わず、初期視点の適用を可視化時の自己修復（__applyInitialViewpoint）へ委ねる。
+      if (view && !this.__hasMapSize()) {
+        if (callback) callback();
+        return;
+      }
+      if (!this.from) {
+        if (callback) callback();
+        return;
+      }
+      const state = this.__captureRawViewState(view);
+      this.__convertParameters(
+        this.from as MaplatSource,
+        state,
+        to,
+        callback,
+        onError
+      );
+    } catch (err) {
+      if (onError) onError(err);
+      else throw err;
     }
-    if (!this.from) {
-      if (callback) callback();
-      return;
-    }
-    const state = this.__captureRawViewState(view);
-    this.__convertParameters(this.from as MaplatSource, state, to, callback);
   }
   // oct26-m2-t1-ff: 変換核。切替前の地図 fromSrc と、そのときの視点 state（地図の
   // 座標系の値）から、行き先 to の視点を求めて callback(size) を呼ぶ。中身は切り出し前の

@@ -78,7 +78,7 @@ describe("nov26-m4-t1: 背面地図の追従が座標変換の例外で止まら
     const { app, backView, fromSrc, fire } = createBackMapStub();
     injectReject(fromSrc);
     // 修正前は reject が未処理のまま再送出される。ここでは握って判定を続ける。
-    const swallow = (_reason: any) => {};
+    const swallow = (_reason: any) => undefined;
     process.on("unhandledRejection", swallow);
     try {
       fire();
@@ -122,7 +122,7 @@ describe("nov26-m4-t1: 背面地図の追従が座標変換の例外で止まら
   it("AC4: 変換中の postrender は \"Backmap moving skipped\" で抑止される", async () => {
     const { app, fromSrc, fire } = createBackMapStub();
     fromSrc.viewpoint2MercsAsync.mockImplementation(
-      () => new Promise(() => {})
+      () => new Promise(() => undefined)
     );
     fire();
     fire();
