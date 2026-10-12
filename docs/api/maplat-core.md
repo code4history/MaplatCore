@@ -66,18 +66,32 @@ All methods below are on the `MaplatApp` instance returned by
 
 ## Lines & vectors
 
-- `addLine(data: object): void`
-  - Add a line feature. `data`:
-    `{ lnglats: [[lng, lat], ...], stroke: { color: '#...', width: 2 } }`.
-- `addVector(data: object): void`
-  - Add a polygon/vector feature (GeoJSON compatible).
+- `addLine(data: object): string`
+  - Add a line feature and return its id. `data`:
+    `{ id?: string, lnglats: [[lng, lat], ...], stroke: { color: '#...', width: 2 } }`.
+    Give `data.id` to use your own id; otherwise an id is generated
+    automatically (unique within the app instance). Adding again with an
+    existing id replaces the previous item. The passed `data` object is not
+    modified.
+- `addVector(data: object): string`
+  - Add a line or polygon feature and return its id (same id rules as
+    `addLine`). `data.type` of `"Line"` (or omitted) draws a line; any other
+    value draws a polygon. Coordinates are given as `lnglats` (longitude/latitude) or
+    `coordinates` (Web Mercator), with `style: { stroke?, fill? }`.
+- `removeLine(id: string): boolean` / `removeVector(id: string): boolean`
+  - Remove the single line/vector with the given id (not filtered by kind;
+    `removeLine` is an alias of `removeVector`). Returns `true` if it was
+    removed, `false` if no such id exists.
 - `setLine(data: object): void` / `setVector(data: object): void`
-  - Batch set lines/vectors.
+  - Batch set lines/vectors. `setVector` draws without registering, so the
+    item is not redrawn when the map is switched.
 - `resetLine()` / `resetVector()` / `resetMarker()`
   - Clear and reset basic lines/vectors/markers (often used for default
     layers).
-- `clearLine()` / `clearVector()`
-  - Clear all lines/vectors.
+- `clearLine(filter?: { type?: "Line" | "Polygon" })` / `clearVector(filter?)`
+  - Without an argument, clear all lines and polygons (as before).
+    `{ type: "Line" }` clears lines only, `{ type: "Polygon" }` clears
+    polygons only. `clearLine` is an alias of `clearVector`.
 
 ## POI layers
 

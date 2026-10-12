@@ -64,18 +64,31 @@
 
 ## ラインとベクター
 
-- `addLine(data: object): void`
-  - ラインフィーチャを追加します。`data`:
-    `{ lnglats: [[lng, lat], ...], stroke: { color: '#...', width: 2 } }`。
-- `addVector(data: object): void`
-  - ポリゴン/ベクターフィーチャを追加します (GeoJSON 互換)。
+- `addLine(data: object): string`
+  - ラインフィーチャを追加し、その id を返します。`data`:
+    `{ id?: string, lnglats: [[lng, lat], ...], stroke: { color: '#...', width: 2 } }`。
+    `data.id` を与えるとその id を使い、無ければ自動の id（アプリの
+    インスタンス内で重なりません）を振ります。既にある id で追加すると
+    前の項目を置き換えます。渡した `data` オブジェクトは変更しません。
+- `addVector(data: object): string`
+  - ラインまたはポリゴンのフィーチャを追加し、その id を返します（id の
+    規則は `addLine` と同じ）。`data.type` が `"Line"`（または省略）ならライン、
+    それ以外はポリゴンを描きます。座標は `lnglats`（経緯度）か `coordinates`
+    （Web メルカトル）で与え、`style: { stroke?, fill? }` を添えます。
+- `removeLine(id: string): boolean` / `removeVector(id: string): boolean`
+  - 指定した id の 1 件だけを消します（種類では絞りません。`removeLine` は
+    `removeVector` の別名）。消したら `true`、その id が無ければ `false` を
+    返します。
 - `setLine(data: object): void` / `setVector(data: object): void`
-  - ライン/ベクターを一括設定します。
+  - ライン/ベクターを一括設定します。`setVector` は登録せずに描くので、
+    地図の切替では描き直されません。
 - `resetLine()` / `resetVector()` / `resetMarker()`
   - 基本的なライン/ベクター/マーカーをクリアしてリセットします
     （デフォルトレイヤなどで使用）。
-- `clearLine()` / `clearVector()`
-  - すべてのライン/ベクターをクリアします。
+- `clearLine(filter?: { type?: "Line" | "Polygon" })` / `clearVector(filter?)`
+  - 引数なしはラインもポリゴンもすべて消します（従来どおり）。
+    `{ type: "Line" }` でラインだけ、`{ type: "Polygon" }` でポリゴンだけを
+    消します。`clearLine` は `clearVector` の別名です。
 
 ## POI レイヤ
 
