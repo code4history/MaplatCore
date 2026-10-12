@@ -68,6 +68,10 @@ export interface PoiLayer {
     selectedIcon?: string;
     [key: string]: any;
 }
+export type VectorType = "Line" | "Polygon";
+export interface VectorFilter {
+    type?: VectorType;
+}
 export declare class MaplatApp extends EventTarget {
     static createObject: (option: any) => Promise<MaplatApp>;
     appid: string;
@@ -92,7 +96,6 @@ export declare class MaplatApp extends EventTarget {
     currentPosition: any;
     startFrom?: string | undefined;
     from?: MaplatSource;
-    vectors: any;
     mapDivDocument: HTMLElement | null;
     mapObject: any;
     mapboxMap: any;
@@ -115,13 +118,21 @@ export declare class MaplatApp extends EventTarget {
     firstGpsRequest_: boolean;
     initialGpsMove_: boolean;
     private __backMapMoving;
+    private __backMapErrorWarned;
     private __selectedMarker;
+    private __resizeObserver;
+    private __visibilityHandler;
+    private __pendingView;
+    private __pendingViewScheduled;
     private uiHooks?;
     private lifecycleHookResults;
     private __init;
     private __redrawMarkerBlock;
     private __redrawMarkerThrottle;
     private __transparency;
+    private __vectors?;
+    private __vectorSeq?;
+    private __vectorDrawSeq?;
     lastClickEvent: any;
     constructor(appOption: any);
     private buildLifecycleContext;
@@ -147,6 +158,7 @@ export declare class MaplatApp extends EventTarget {
     setMapOnOff(): void;
     setMouseCursor(): void;
     setBackMapBehavior(): void;
+    private __reportBackMapError;
     raiseChangeViewpoint(): void;
     getRotation(): number;
     getDirection(): Promise<number>;
@@ -164,6 +176,12 @@ export declare class MaplatApp extends EventTarget {
     resetMarker(): void;
     setLine(data: any): void;
     setVector(data: any): void;
+    private __projectVector;
+    private __vectorStore;
+    private __nextVectorDrawToken;
+    private __drawVectorEntry;
+    private __addEntry;
+    get vectors(): any[];
     resetLine(): void;
     resetVector(): void;
     redrawMarkers(source?: MaplatSource | undefined): void;
@@ -183,10 +201,12 @@ export declare class MaplatApp extends EventTarget {
     getPoiLayer(id: any): any;
     addPoiLayer(id: any, data: any): void;
     removePoiLayer(id: any): void;
-    addLine(data: any): void;
-    addVector(data: any): void;
-    clearLine(): void;
-    clearVector(): void;
+    addLine(data: any): string;
+    addVector(data: any): string;
+    removeVector(id: string): boolean;
+    removeLine(id: string): boolean;
+    clearLine(filter?: VectorFilter): void;
+    clearVector(filter?: VectorFilter): void;
     setGPSMarker(position: any): void;
     changeMap(mapID: string, restore?: Restore): Promise<void>;
     requestUpdateState(data: Restore): void;
@@ -194,6 +214,13 @@ export declare class MaplatApp extends EventTarget {
     getTransparency(): any;
     setViewpoint(cond: any): void;
     goHome(useTo?: MaplatSource): void;
+    private registerSelfHeal;
+    private __applyInitialViewpoint;
+    private __schedulePendingView;
+    private __applyPendingView;
+    private __captureViewState;
+    private __captureRawViewState;
+    private __hasMapSize;
     resetRotation(): void;
     resetDirection(): void;
     resetCirculation(): void;
@@ -205,6 +232,8 @@ export declare class MaplatApp extends EventTarget {
     fetchAllMapTileCacheAsync(mapID: string, callback: any): Promise<void>;
     cancelMapTileCacheAsync(mapID: string): Promise<void>;
     convertParametersFromCurrent(to: any, callback: any): void;
+    private __convertFromCurrent;
+    private __convertParameters;
     remove(): void;
 }
 export { createElement };
