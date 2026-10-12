@@ -1,5 +1,6 @@
 import Layer from "ol/layer/Layer";
 import { toLonLat } from "ol/proj";
+import { glCanvasMatchesSize } from "./gl_canvas_size";
 
 export class MapboxLayer extends Layer {
   constructor(options: any) {
@@ -49,13 +50,13 @@ export class MapboxLayer extends Layer {
       canvas.style.left = '0';
       canvas.style.top = '0';
 
-      // (a) canvas 寸法を frameState.size へ同期する（MapLibreLayer と同じ比較式。pixelRatio は掛けない）。
+      // (a) canvas 寸法を frameState.size へ同期する（MapLibreLayer と同じ比較式。GL の画素比で割って CSS ピクセル同士で比べる（#107））。
       // 下の「view 不変なら早期 return」より前に置く: view が動かずコンテナ寸法だけが変わった場合にも
       // 同期させるため。resize した frame は早期 return せず、同期描画まで進める。
       let resized = false;
       if (frameState.size) {
         const [width, height] = frameState.size;
-        if (canvas.width !== width || canvas.height !== height) {
+        if (!glCanvasMatchesSize(mbMap, canvas, [width, height])) {
           mbMap.resize();
           resized = true;
         }
