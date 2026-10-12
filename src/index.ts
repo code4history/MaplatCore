@@ -586,12 +586,12 @@ export class MaplatApp extends EventTarget {
     this.appName = this.appData!.appName;
     const fakeGps = appOption.fake ? this.appData!.fakeGps : false;
     const fakeRadius = appOption.fake ? this.appData!.fakeRadius : false;
-    this.noRotate = appOption.noRotate || this.appData!.noRotate || false;
+    this.noRotate = appOption.noRotate ?? this.appData!.noRotate ?? false;
     this.poiTemplate =
-      appOption.poiTemplate || this.appData!.poiTemplate || false;
-    this.poiStyle = appOption.poiStyle || this.appData!.poiStyle || false;
+      appOption.poiTemplate ?? this.appData!.poiTemplate ?? false;
+    this.poiStyle = appOption.poiStyle ?? this.appData!.poiStyle ?? false;
     this.iconTemplate =
-      appOption.iconTemplate || this.appData!.iconTemplate || false;
+      appOption.iconTemplate ?? this.appData!.iconTemplate ?? false;
     this.currentPosition = null;
     this.__init = true;
     const frontDiv = `${this.mapDiv}_front`;
@@ -617,11 +617,11 @@ export class MaplatApp extends EventTarget {
       fakeGps,
       fakeRadius,
       homePosition: homePos,
-      northUp: appOption.northUp || this.appData!.northUp || false,
-      tapDuration: appOption.tapDuration || this.appData!.tapDuration || 3000,
+      northUp: appOption.northUp ?? this.appData!.northUp ?? false,
+      tapDuration: appOption.tapDuration ?? this.appData!.tapDuration ?? 3000,
       homeMarginPixels:
-        appOption.homeMarginPixels || this.appData!.homeMarginPixels || 50,
-      tapUIVanish: appOption.tapUIVanish || this.appData!.tapUIVanish || false,
+        appOption.homeMarginPixels ?? this.appData!.homeMarginPixels ?? 50,
+      tapUIVanish: appOption.tapUIVanish ?? this.appData!.tapUIVanish ?? false,
       alwaysGpsOn: appOption.alwaysGpsOn || false
     });
     let backDiv: any;
