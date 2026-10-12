@@ -17,6 +17,8 @@
 - `changeMap(mapID: string, restore?: object): Promise<void>`
   - 別の地図に切り替えます。`restore` オブジェクトで初期位置
     (x, y, zoom, rotation) を指定できます。
+    `restore.transparency`（0〜100。`0` も有効）で切替先の透過度を指定できます。
+    省略すると現在の透過度を切替後も保ちます。
 - `requestUpdateState(data: object): Promise<void>`
   - 地図の状態（位置、透過度など）の更新をリクエストします。
 - `getRotation(): number`

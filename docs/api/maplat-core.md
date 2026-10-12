@@ -18,6 +18,8 @@ All methods below are on the `MaplatApp` instance returned by
 - `changeMap(mapID: string, restore?: object): Promise<void>`
   - Switch to a different map. `restore` object can optionally set initial
     position (x, y, zoom, rotation).
+    `restore.transparency` (0–100, `0` included) sets the transparency of the new
+    map; without it, the current transparency is kept across the map change.
 - `requestUpdateState(data: object): Promise<void>`
   - Request an update to the map state (position, transparency, etc.).
 - `getRotation(): number`

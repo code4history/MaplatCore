@@ -110,6 +110,11 @@
       option[key] = val;
     }
   }
+  // nov26-m4-t4: restore を渡さずに起動する口（restoreSession の localStorage 経路を e2e で通すため）
+  if (option.noRestore === true) {
+    delete option.restore;
+    delete option.noRestore;
+  }
 
   MaplatApp.createObject(option).then(function (app) {
     console.log("####Message appReady");

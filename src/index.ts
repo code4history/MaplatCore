@@ -1745,9 +1745,14 @@ export class MaplatApp extends EventTarget {
                 to.setViewpoint(restore!.position);
               }
             }
-            if (restore!.transparency) {
-              this.setTransparency(restore!.transparency);
-            }
+            // #117: OL の層は切替で作り直され、NowMap と古地図で当てる層も違うので、
+            // 透過度は毎回当て直す（restore.transparency の 0 も有効、無ければ現在値）。
+            // 起動時にも当てるので、状態（stateBuffer）に transparency が必ず載る。
+            this.setTransparency(
+              restore!.transparency !== undefined && restore!.transparency !== null
+                ? restore!.transparency
+                : this.getTransparency()
+            );
             if (this.__init) {
               if (!this.__hasMapSize()) {
                 // oct26-m2-t1: 未確定時は __init を維持したまま初期視点の適用を
