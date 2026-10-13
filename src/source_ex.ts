@@ -278,7 +278,8 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
 
 export async function registerMapToSW(options: any) {
   const setting: any = {};
-  if (options.maptype === "mapbox" || options.maptype === "maplibre" || options.maptype === "google" || !options.enableCache) return;
+  // #90: 地図ごとの noCache で Weiwudi への登録を外す。設定ファイルは JSON なので真偽値で書ける ∴ "true" 等の文字列は真とみなさない（=== true）
+  if (options.maptype === "mapbox" || options.maptype === "maplibre" || options.maptype === "google" || !options.enableCache || options.noCache === true) return;
   else if (options.maptype === "base" || options.maptype === "overlay")
     setting.type = "wmts";
   else setting.type = "xyz";
