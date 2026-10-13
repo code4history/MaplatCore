@@ -25,6 +25,20 @@
     .demo-field { display: flex; flex-direction: column; gap: 4px; width: 100%; font-size: 12px; }
     .demo-field select, .demo-field input[type="range"] { width: 100%; }
     .demo-field select { padding: 4px 6px; font-size: 13px; }
+    /* nov26-m4-t8: POI の層の一覧・clickMarkers・detail.html・状態・イベント履歴 */
+    .demo-note { margin: 2px 0 6px; font-size: 11px; color: #5a6478; }
+    .demo-poi-layers { margin-top: 6px; }
+    .demo-poi-layer { flex-wrap: nowrap; margin-bottom: 4px; }
+    .demo-poi-layer .demo-check { flex: 1; width: auto; min-width: 0; word-break: break-all; }
+    .demo-poi-hits { margin: 4px 0; font-size: 12px; }
+    .demo-poi-detail { border: 1px solid #eef0f4; border-radius: 4px; padding: 4px 8px; font-size: 12px; }
+    .demo-poi-detail:empty { display: none; }
+    .demo-state-row { flex-wrap: nowrap; align-items: flex-start; gap: 8px; margin-bottom: 2px; }
+    .demo-state-key { flex: 0 0 104px; color: #5a6478; font-size: 11px; }
+    .demo-state-val { flex: 1; min-width: 0; font-size: 11px; word-break: break-all; }
+    .demo-log { margin: 0; padding: 0; list-style: none; max-height: 240px; overflow-y: auto; font-size: 11px; }
+    .demo-log li { padding: 2px 0; border-bottom: 1px dotted #eef0f4; word-break: break-all; }
+    .demo-log-time { color: #8a93a6; }
     @media (max-width: 720px) {
       body.c4h-app { height: auto; overflow: visible; }
       .demo-layout { display: block; }
