@@ -112,6 +112,33 @@ const logTypes = (page: Page) =>
 test.describe('nov26-m4-t8: デモ機能（NayutaProducts#37）', () => {
     test.setTimeout(180000);
 
+    test('m4-t9 E-1: 盛岡の初期表示は可視 POI と marker Feature の namespaceID が一対一', async ({ page }) => {
+        await openDemo(page, 'morioka');
+        // redraw・clear・hide を呼ばず、初期化時に始まった描画と視点移動の完了だけを待つ。
+        await page.waitForFunction(() => {
+            const app = (window as any).__MAPLAT_DEMO_APP__;
+            return app && app.__redrawMarkerBlock === false && !app.__redrawMarkerThrottle?.length;
+        }, undefined, { timeout: 30000 });
+        await waitViewSettled(page);
+        const { expected, actual } = await page.evaluate(() => {
+            const app = (window as any).__MAPLAT_DEMO_APP__;
+            const visible = (layers: Record<string, any>) => Object.values(layers ?? {})
+                .filter((layer: any) => !layer.hide)
+                .flatMap((layer: any) => layer.pois.map((poi: any) => poi.namespaceID));
+            const expected: string[] = app.stateBuffer.hideMarker ? [] : [
+                ...visible(app.pois), ...visible(app.from.pois)
+            ];
+            const actual: string[] = app.mapObject.getSource('marker').getFeatures()
+                .map((feature: any) => feature.get('datum')?.namespaceID);
+            // Feature 側を Set にせず、多重集合のまま比較する。
+            return { expected: expected.sort(), actual: actual.sort() };
+        });
+        expect(expected).toHaveLength(7);
+        expect(expected.every(id => typeof id === 'string' && id.length > 0)).toBe(true);
+        expect(new Set(expected).size, '入力 POI の namespaceID に重複がある').toBe(expected.length);
+        expect(actual).toEqual(expected);
+    });
+
     // 項目 1（t8/AC2・AC3）: 面が rgba で塗られ、面の出典が読める。人間の確認用に画面を保存する
     for (const region of REGIONS) {
         test(`項目 1: ${region} の面が rgba で塗られ、出典（OpenStreetMap・ODbL）が出る`, async ({ page }) => {
@@ -145,11 +172,8 @@ test.describe('nov26-m4-t8: デモ機能（NayutaProducts#37）', () => {
         await openDemo(page, 'morioka');
         await expect.poll(async () => (await polygons(page)).length, { timeout: 30000 }).toBe(1);
         // アプリ用 POI（層 "app"）の先頭は桜山神社＝盛岡城跡公園の面の内側（Issue #37 の実測）
-        // 断言は「1 以上」。本来は「ちょうど 1」だが、Core の redrawMarkers の間引き（src/index.ts の __redrawMarkerThrottle）が
-        // 待ち行列の末尾と同じ source の呼び出しを素通りさせ、描画が並行して走るため、初期化で addMarker を続けて呼ぶと
-        // 同じ POI の Feature が重複する（盛岡で app_0 が 27 個。origin/master の demo でも同じ値＝t8 の前からある Core の欠陥）。
-        // Core の修正は別タスク TBD-CORE-MARKER-DUP。その修正で「ちょうど 1」（toBe(1)）へ戻す。
-        await expect.poll(async () => (await markersOf(page, 'app_0')).length, { timeout: 30000 }).toBeGreaterThanOrEqual(1);
+        // nov26-m4-t9（#134）で描画を直列化したため、B32 で保留した厳密な一件を復元する。
+        await expect.poll(async () => (await markersOf(page, 'app_0')).length, { timeout: 30000 }).toBe(1);
         await clickPoi(page, 'app_0');
         const hit = await page.evaluate(() => (window as any).__T8_LAST_CLICK_MARKER__);
         expect(hit, 'clickMarker が発火しない').toBeTruthy();
@@ -210,7 +234,7 @@ test.describe('nov26-m4-t8: デモ機能（NayutaProducts#37）', () => {
         await expect(page.locator('#poi-layers .demo-poi-layer[data-layer="era_demo"]')).toHaveCount(1);
     });
 
-    test('項目 4: 同じ地点の 2 件で clickMarkers が 2 件以上、detail.html は sanitizeHtml を通して script が無い', async ({ page }) => {
+    test('項目 4: 同じ地点の 2 件で clickMarkers が 2 件、detail.html は sanitizeHtml を通して script が無い', async ({ page }) => {
         await openDemo(page, 'morioka');
         await page.getByRole('button', { name: '同じ地点に 2 件置く' }).click();
         await expect.poll(async () => (await markersOf(page, 'overlap_demo_')).length, { timeout: 30000 }).toBe(2);
@@ -218,9 +242,8 @@ test.describe('nov26-m4-t8: デモ機能（NayutaProducts#37）', () => {
         await clickPoi(page, 'overlap_demo_');
         await expect(page.locator('#poi-hits')).toContainText('clickMarkers:');
         const n = Number((await page.locator('#poi-hits').innerText()).match(/clickMarkers: (\d+) 件/)?.[1] ?? '0');
-        // 断言は「2 以上」。本来は「ちょうど 2」だが、Core の redrawMarkers の並行描画で同じ POI の Feature が重複し得るため
-        // （R-t8-5 の注記と同じ欠陥）、clickMarkers の件数が膨らむことがある。Core の修正（TBD-CORE-MARKER-DUP）で toBe(2) へ戻す。
-        expect(n).toBeGreaterThanOrEqual(2);
+        // nov26-m4-t9（#134）: 同位置の二つの POI を、一件ずつ返す厳密条件。
+        expect(n).toBe(2);
         await expect(page.locator('#poi-hits')).toContainText('重なった POI');
         await expect(page.locator('#poi-detail strong')).toHaveCount(1);
         await expect(page.locator('#poi-detail script')).toHaveCount(0);
