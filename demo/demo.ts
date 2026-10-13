@@ -35,10 +35,11 @@ const MOVE_ICON_SELECTED =
 
 // 線・面の見た目（kind 別パレット）。単一正本はここ 1 箇所。
 // stroke は addLine の stroke、style は addVector の style（{ stroke, fill }）にそのまま渡す。
-const PALETTE: Record<LineKind, { stroke: { color: string; width: number }; fill: string }> = {
-  festival: { stroke: { color: "#e60033", width: 4 }, fill: "rgba(230, 0, 51, 0.15)" },
-  walk: { stroke: { color: "#1a7f37", width: 4 }, fill: "rgba(26, 127, 55, 0.15)" },
-  feature: { stroke: { color: "#f97316", width: 4 }, fill: "rgba(249, 115, 22, 0.15)" }
+// nov26-m4-t8（NayutaProducts#37）: fill は OpenLayers の Fill の options（{ color }）の形で渡す（素の文字列では塗られない）
+const PALETTE: Record<LineKind, { stroke: { color: string; width: number }; fill: { color: string } }> = {
+  festival: { stroke: { color: "#e60033", width: 4 }, fill: { color: "rgba(230, 0, 51, 0.15)" } },
+  walk: { stroke: { color: "#1a7f37", width: 4 }, fill: { color: "rgba(26, 127, 55, 0.15)" } },
+  feature: { stroke: { color: "#f97316", width: 4 }, fill: { color: "rgba(249, 115, 22, 0.15)" } }
 };
 
 // ベースマップ（gsi / osm）の表示名。地図の id 自体は app 設定の sources（bare string）から得る。
@@ -140,6 +141,8 @@ async function main(): Promise<void> {
 
   // setting を明示渡し。1 回の読み込みで app は 1 つだけ
   const app = await MaplatApp.createObject({ appid: region, setting });
+  // nov26-m4-t8: 検査用の口（e2e が Feature の style を読む。デモはパッケージに入らない）
+  (window as any).__MAPLAT_DEMO_APP__ = app;
 
   // 現在地図の mapID（currentMapInfo().mapID）。出典表示・線の地図別表示で使う。
   const activeMapId = (): string | undefined => {
@@ -224,7 +227,16 @@ async function main(): Promise<void> {
   // 地図を切り替えると Core は全部の線を描き直す（地図の区別をしない）ので、切替前に clearLine し、
   // mapChanged で「表示中かつこの地図に出す線」だけを描く（IR1 Major-3 の是正を維持）。
   const activeLines: LineItem[] = [...appLines, ...mapLines];
-  const activeVectors: VectorItem[] = [];
+  // nov26-m4-t8: 面は既定で表示（チェック済み）。面の出典（ODbL の表示義務）を出典の領域に textContent で出す
+  const activeVectors: VectorItem[] = [...demoOps.addVector];
+  const vectorAttr = document.createElement("p");
+  vectorAttr.id = "vector-attr";
+  vectorAttr.style.cssText = "margin-top:4px;";
+  document.querySelector(".c4h-info-box")?.appendChild(vectorAttr);
+  const refreshVectorAttr = (): void => {
+    vectorAttr.textContent = activeVectors.map((vec) => `面の出典: ${vec.source}`).join(" ／ ");
+    vectorAttr.style.display = activeVectors.length > 0 ? "" : "none";
+  };
   const lineApplies = (line: LineItem | MapLineItem, mapID: string | undefined): boolean => {
     if (!("maps" in line)) return true; // アプリの線
     return mapID !== undefined && line.maps.includes(mapID);
@@ -471,8 +483,9 @@ async function main(): Promise<void> {
     for (const { line, wrap } of lineChecks) setUsable(wrap, lineApplies(line, mapID), "この地図では表示できません");
   };
   for (const vec of demoOps.addVector) {
-    shapeRow.appendChild(makeCheck(vec.label, false, (on) => { toggleIn(activeVectors, vec, on); redrawShapes(); }));
+    shapeRow.appendChild(makeCheck(vec.label, true, (on) => { toggleIn(activeVectors, vec, on); refreshVectorAttr(); redrawShapes(); }));
   }
+  refreshVectorAttr();
   mountSection(shapeSec);
 
   // ---- 視点 ----
