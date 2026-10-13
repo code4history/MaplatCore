@@ -159,6 +159,26 @@ OpenStreetMap は `attr: "©︎ OpenStreetMap contributors"` に対して
 MaplatCore はフィールドの意味の定義と、結果として得られるクレジットの描画のみを
 受け持ちます。
 
+### 地図をタイルキャッシュから外す（`noCache`）
+
+`MaplatApp` を `enableCache: true`（`MaplatApp` のオプション）で起動すると、タイルの
+地図はすべて Service Worker のタイルキャッシュ（Weiwudi）に登録されます。設定に
+`noCache: true` を持つ地図は**登録されません**。その地図のタイルは常にネットワークから
+読み込まれ、`getMapCacheEnable(mapID)` は `false` を返します。キーが無いとき・
+`noCache: false` のときは従来どおりキャッシュされます。
+
+- JSON の真偽値で書きます。除外になるのは `true` だけで、`"true"` のような文字列は
+  真とみなしません。
+- 書ける場所は、地図マスタ（`maps/<mapID>.json`）と、app 設定の `sources` の要素の
+  2 か所です。両方にあれば app の要素が勝ちます（例: 地図マスタの `noCache: true` を
+  app の要素の `noCache: false` で打ち消せます）。
+- 文字列で書いたソース（`"osm"`・`"gsi"` などの同梱ベースマップ）は `noCache` を
+  持てません。外したいときはオブジェクト形で書きます:
+  `{ "mapID": "osm", "noCache": true }`。
+- 既に保存されたキャッシュは `noCache` を付けても消えません。除外した地図は登録され
+  ないため、`clearMapTileCacheAsync(mapID)` もその地図には働きません。消すときは
+  `noCache` を付ける**前に** `clearMapTileCacheAsync(mapID)` で消してください。
+
 ### ライフサイクル
 
 - ライフサイクルフェーズと uiHooks については
