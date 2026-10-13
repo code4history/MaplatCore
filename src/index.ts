@@ -1309,12 +1309,9 @@ export class MaplatApp extends EventTarget {
       source = this.from;
     }
     if (this.__redrawMarkerBlock) {
-      if (!this.__redrawMarkerThrottle) this.__redrawMarkerThrottle = [];
-      const throttle = this.__redrawMarkerThrottle;
-      if (throttle.length == 0 || throttle[throttle.length - 1] !== source) {
-        throttle.push(source as MaplatSource);
-        return;
-      }
+      // 描画中は同 source でも素通りせず、最新の要求一件だけを保留する。
+      this.__redrawMarkerThrottle = [source as MaplatSource];
+      return;
     }
     this.__redrawMarkerBlock = true;
     const redrawLogic = (source: any) => {
