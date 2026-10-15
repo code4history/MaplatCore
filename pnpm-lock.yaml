@@ -16,8 +16,8 @@ importers:
   .:
     dependencies:
       '@c4h/weiwudi':
-        specifier: ^1.1.0
-        version: 1.1.0(workbox-routing@7.4.1)
+        specifier: file:/Users/kochizufan/zcode/nov26-work/m9-artifacts/Weiwudi/nov26-m9-t5-0275/base/c4h-weiwudi-1.1.0.tgz
+        version: file:../m9-artifacts/Weiwudi/nov26-m9-t5-0275/base/c4h-weiwudi-1.1.0.tgz(workbox-routing@7.4.1)
       '@maplat/transform':
         specifier: ^1.1.0
         version: 1.1.0
@@ -136,8 +136,9 @@ packages:
     resolution: {integrity: sha512-0GEz8qJWokkUVYQYRukmkSHIFNoBH8QTreeHrAFbvz1XFYc3Y+puhMs8PQ5x8GNugiC2l5jvDBXKLbBIByeSBw==}
     hasBin: true
 
-  '@c4h/weiwudi@1.1.0':
-    resolution: {integrity: sha512-7sMmBQ+1hyLqvTYZvaoZZEY7Ce+HZinmTtEaDY7mhfnyEnkBtkPTaKleXEbLLyLuIyFUeVb0vXHibO0Kd4aaFw==}
+  '@c4h/weiwudi@file:../m9-artifacts/Weiwudi/nov26-m9-t5-0275/base/c4h-weiwudi-1.1.0.tgz':
+    resolution: {integrity: sha512-e3kpXXNX3ZeNOC5dopkRn8r3Mwh9Z0EyPoKMTlrar14gGiE3r+wHPsvh5o8q5LEqBjO4XUUrPruB7V3qGN0YFw==, tarball: file:../m9-artifacts/Weiwudi/nov26-m9-t5-0275/base/c4h-weiwudi-1.1.0.tgz}
+    version: 1.1.0
     engines: {node: '>=20.0.0', pnpm: '>=9.0.0'}
     peerDependencies:
       workbox-routing: ^7.4.0
@@ -2073,7 +2074,7 @@ snapshots:
     dependencies:
       css-tree: 3.2.1
 
-  '@c4h/weiwudi@1.1.0(workbox-routing@7.4.1)':
+  '@c4h/weiwudi@file:../m9-artifacts/Weiwudi/nov26-m9-t5-0275/base/c4h-weiwudi-1.1.0.tgz(workbox-routing@7.4.1)':
     dependencies:
       workbox-routing: 7.4.1
 
