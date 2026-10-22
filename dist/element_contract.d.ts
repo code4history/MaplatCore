@@ -323,6 +323,8 @@ export interface MaplatAppDelegatedMethods {
     removePoiLayer: AnyFn;
     addLine: AnyFn;
     addVector: AnyFn;
+    removeVector: AnyFn;
+    removeLine: AnyFn;
     clearLine: AnyFn;
     clearVector: AnyFn;
     setGPSMarker: AnyFn;

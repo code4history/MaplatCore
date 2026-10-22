@@ -24,7 +24,7 @@ for (const impl of ['core', 'mock'] as const) {
     for (const r of state.results) console.log(`  ${r.ok ? 'OK' : 'NG'} [${r.group}] ${r.name}${r.error ? ` — ${r.error}` : ''}`);
     await page.screenshot({ path: `${SHOTS}/conformance-${impl}.png`, fullPage: true });
     expect(failed, failed.map(r => `[${r.group}] ${r.name}: ${r.error}`).join('\n')).toEqual([]);
-    expect(state.results.length).toBeGreaterThanOrEqual(45);
+    expect(state.results.length).toBeGreaterThanOrEqual(53);
     expect(pageErrors.filter(e => !/Failed to load resource|net::/.test(e))).toEqual([]);
   });
 }

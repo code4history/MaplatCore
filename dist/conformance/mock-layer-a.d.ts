@@ -9,6 +9,7 @@ export interface MockSource {
     isOverlay?: boolean;
     envelope?: [number, number][];
     cacheEnable?: boolean;
+    tileCacheTotal?: number;
     usable?: boolean;
     homePosition?: [number, number];
     defaultZoom?: number;
@@ -21,6 +22,10 @@ export interface MockLayerAOptions {
 }
 export declare const MOCK_DEFAULT_PIN: string;
 export declare const MOCK_DEFAULT_PIN_SELECTED: string;
+type MockVectorType = "Line" | "Polygon";
+interface MockVectorFilter {
+    type?: MockVectorType;
+}
 export declare class MockLayerAApp extends EventTarget implements LayerAImplementation {
     #private;
     waitReady: Promise<void>;
@@ -61,10 +66,13 @@ export declare class MockLayerAApp extends EventTarget implements LayerAImplemen
     getPoiLayer(id: string): PoiLayer | undefined;
     addPoiLayer(id: string, data?: unknown): void;
     removePoiLayer(id: string): void;
-    addLine(data: unknown): void;
-    addVector(data: unknown): void;
-    clearLine(): void;
-    clearVector(): void;
+    addLine(data: any): string;
+    addVector(data: any): string;
+    removeVector(id: string): boolean;
+    removeLine(id: string): boolean;
+    clearLine(filter?: MockVectorFilter): void;
+    clearVector(filter?: MockVectorFilter): void;
+    get vectors(): any[];
     setGPSMarker(_position: unknown): void;
     changeMap(mapID: string, restore?: Restore): Promise<void>;
     requestUpdateState(data: Partial<Restore>): void;
@@ -100,3 +108,4 @@ export declare class MockLayerAApp extends EventTarget implements LayerAImplemen
 export declare function getMockLayerAController(el: HTMLElement): MockLayerAApp | null;
 export declare function createMockMaplatAppClass(options?: MockLayerAOptions): CustomElementConstructor;
 export declare function defineMockMaplatApp(tagName?: string, options?: MockLayerAOptions): CustomElementConstructor;
+export {};

@@ -47,6 +47,12 @@ export interface MockSource {
   /** 地図の範囲（経緯度の多角形） */
   envelope?: [number, number][];
   cacheEnable?: boolean;
+  /**
+   * タイルキャッシュの全タイル数（本物の Weiwudi のインスタンスが持つ totalTile に当たる）。
+   * 模擬はキャッシュを持たないので、getMapTileCacheStatsAsync はここを total として返す。
+   * 数が無ければ本物で total が分からないときと同じく total を載せない。
+   */
+  tileCacheTotal?: number;
   /** false なら読込で落ちた source（sourceLoaded で usable: false・listMaps に載らない） */
   usable?: boolean;
   /** 地図のホーム（経緯度）と zoom */
@@ -95,6 +101,19 @@ export const MOCK_DEFAULT_PIN_SELECTED = mockPinUrl(true);
 /** 模擬の POI のレイヤー（Core の normalizeLayer の形。__nextId は id の連番）。 */
 type MockPoiLayer = PoiLayer & { __nextId: number };
 
+/** 線・面の種類と、clear の絞り込み（Core の VectorType・VectorFilter と同じ）。 */
+type MockVectorType = "Line" | "Polygon";
+interface MockVectorFilter {
+  type?: MockVectorType;
+}
+
+/** 登録簿の 1 件（Core の VectorEntry から、描画に使う feature・drawToken を除いた形）。 */
+interface MockVectorEntry {
+  id: string;
+  data: any; // 呼び手の data は変えず、写しを持つ
+  kind: MockVectorType; // data.type が "Line" か未指定なら "Line"、それ以外は "Polygon"
+}
+
 /** POI の座標を lnglat にまとめる（Core の normalizePoi と同じ）。 */
 function normalizePoi(raw: Record<string, any>): MaplatPoi {
   const poi = { ...raw } as Record<string, any>;
@@ -140,7 +159,7 @@ function normalizeSource(raw: unknown): MockSource | null {
   return null;
 }
 
-/** 模擬の中身（旧クラス MaplatApp と同じ形の 44 メソッドとイベントを持つ）。 */
+/** 模擬の中身（旧クラス MaplatApp と同じ形の 46 メソッドとイベントを持つ）。 */
 export class MockLayerAApp extends EventTarget implements LayerAImplementation {
   waitReady: Promise<void>;
   appid: string | undefined;
@@ -163,8 +182,10 @@ export class MockLayerAApp extends EventTarget implements LayerAImplementation {
   #timer: ReturnType<typeof setTimeout> | undefined;
   #layers = new Map<string, MockPoiLayer>();
   #selected: string | undefined;
-  #lines: unknown[] = [];
-  #vectors: unknown[] = [];
+  /** addLine／addVector で登録した線・面の登録簿（Map の挿入順が一覧の順。置き換えは末尾へ移る）。 */
+  #vectorStore = new Map<string, MockVectorEntry>();
+  /** 自動の id の連番（clear では戻さない。Core の __vectorSeq と同じ）。 */
+  #vectorSeq = 0;
   #removed = false;
   /** 視点の連続変化の始まり・止まり（要素が moveStart / moveEnd に変える） */
   onMove: ((kind: "start" | "end") => void) | null = null;
@@ -198,20 +219,23 @@ export class MockLayerAApp extends EventTarget implements LayerAImplementation {
       const epoch = parseInt(localStorage.getItem("epoch") || "0", 10);
       const now = Math.floor(Date.now() / 1000);
       if (!epoch || now - epoch >= 3600) return out;
-      const mapID = localStorage.getItem("mapID");
-      if (mapID) out.mapID = mapID;
-      const x = localStorage.getItem("x");
-      const y = localStorage.getItem("y");
-      if (x !== null && y !== null) {
-        out.position = {
-          x: parseFloat(x),
-          y: parseFloat(y),
-          zoom: parseFloat(localStorage.getItem("zoom") || "0"),
-          rotation: parseFloat(localStorage.getItem("rotation") || "0")
-        };
-      }
-      const t = localStorage.getItem("transparency");
-      if (t !== null) out.transparency = parseFloat(t);
+      // 本物の Core（src/index.ts の restoreSession）と同じ読み方にする:
+      // ・mapID は sourceID、backgroundID は backID へも落とす
+      // ・position は x・y が無くても 0 で載せる（メルカトル原点に当たる）
+      // ・transparency は無ければ 0、hideMarker は parseInt で 0（どちらも常に載る）
+      // ・hideLayer は文字列のまま（無ければ載せない）
+      out.mapID = localStorage.getItem("mapID") || localStorage.getItem("sourceID") || undefined;
+      out.backgroundID = localStorage.getItem("backgroundID") || localStorage.getItem("backID") || undefined;
+      out.position = {
+        x: parseFloat(localStorage.getItem("x") || "0"),
+        y: parseFloat(localStorage.getItem("y") || "0"),
+        zoom: parseFloat(localStorage.getItem("zoom") || "0"),
+        rotation: parseFloat(localStorage.getItem("rotation") || "0")
+      };
+      out.transparency = parseFloat(localStorage.getItem("transparency") || "0");
+      out.hideMarker = parseInt(localStorage.getItem("hideMarker") || "0", 10);
+      out.hideLayer = localStorage.getItem("hideLayer") || undefined;
+      // 層 B の拡張キーは既にあるキーを上書きしない（値は文字列のまま・無いキーは載せない）
       if (Array.isArray(extensionKeys)) {
         for (const key of extensionKeys) {
           if (typeof key !== "string" || key in out) continue;
@@ -438,17 +462,68 @@ export class MockLayerAApp extends EventTarget implements LayerAImplementation {
   removePoiLayer(id: string) {
     if (id !== "main") this.#layers.delete(id);
   }
-  addLine(data: unknown) {
-    this.#lines.push(data);
+  // nov26-m4-t5（#91）: 線を足して id を返す。data.id があればその id、無ければ自動の id。
+  // 呼び手の data は変えず、写しに setLine と同じ正規化（type・stroke → style）をする（Core と同じ）。
+  addLine(data: any): string {
+    const d: any = { ...data, type: "Line" };
+    if (!d.style && d.stroke) {
+      d.style = {
+        stroke: d.stroke
+      };
+    }
+    delete d.id;
+    return this.#addVectorEntry(data.id, d);
   }
-  addVector(data: unknown) {
-    this.#vectors.push(data);
+  // 線・面を足して id を返す（data.type が "Line" または未指定なら線、それ以外は面）
+  addVector(data: any): string {
+    const d: any = { ...data };
+    delete d.id;
+    return this.#addVectorEntry(data.id, d);
   }
-  clearLine() {
-    this.#lines = [];
+  // id の 1 件だけを消す。消したら true、無ければ false
+  removeVector(id: string): boolean {
+    return this.#vectorStore.delete(id);
   }
-  clearVector() {
-    this.#vectors = [];
+  // removeVector の別名（種類で絞らない）
+  removeLine(id: string): boolean {
+    return this.removeVector(id);
+  }
+  // 引数なしは線も面も全部消す。filter.type で線だけ・面だけを消す
+  clearLine(filter?: MockVectorFilter) {
+    this.clearVector(filter);
+  }
+  clearVector(filter?: MockVectorFilter) {
+    const type = filter?.type;
+    if (!type) {
+      this.#vectorStore.clear();
+      return;
+    }
+    for (const entry of Array.from(this.#vectorStore.values())) {
+      if (entry.kind === type) this.#vectorStore.delete(entry.id);
+    }
+  }
+  // addLine／addVector で登録した線・面の data（写し）の配列。読み取り専用（Core の getter と同じ）
+  get vectors(): any[] {
+    return Array.from(this.#vectorStore.values()).map(entry => entry.data);
+  }
+  /** 登録簿に 1 件足す（既にある id なら置き換え、末尾＝描画では最前面へ移る）。 */
+  #addVectorEntry(givenId: unknown, data: any): string {
+    let id: string;
+    if (givenId !== undefined && givenId !== null) {
+      id = String(givenId);
+    } else {
+      do {
+        id = `vector_${++this.#vectorSeq}`;
+      } while (this.#vectorStore.has(id));
+    }
+    // 既にある id なら置き換える（Map#delete → set で挿入順の末尾へ移る）
+    this.#vectorStore.delete(id);
+    this.#vectorStore.set(id, {
+      id,
+      data,
+      kind: data.type === undefined || data.type === "Line" ? "Line" : "Polygon"
+    });
+    return id;
   }
   setGPSMarker(_position: unknown) {
     // 模擬は GPS のマーカーを描かない
@@ -471,6 +546,14 @@ export class MockLayerAApp extends EventTarget implements LayerAImplementation {
     this.#emit("mapChanged", this.getMapMeta(to.mapID));
     // §3.8 A4: 透過度は地図を切り替えても保つ（restore の 0 も有効）
     this.setTransparency(restore.transparency ?? this.getTransparency());
+    // 本物の Core と同じく、restore の hideLayer（カンマ区切りのレイヤー ID）を当てる
+    if (restore.hideLayer) {
+      for (const key of restore.hideLayer.split(",")) {
+        const layer = this.#layers.get(key);
+        if (layer) layer.hide = true;
+      }
+      this.#hideLayerState();
+    }
     if (restore.hideMarker) this.hideAllMarkers();
     this.#poiNumber();
     this.#moved();
@@ -544,7 +627,14 @@ export class MockLayerAApp extends EventTarget implements LayerAImplementation {
     return !!source?.cacheEnable;
   }
   async getMapTileCacheStatsAsync(mapID?: string): Promise<TileCacheStats> {
-    return this.getMapCacheEnable(mapID) ? { size: 0, count: 0, total: 0 } : {};
+    // 本物の Core と同じく、キャッシュを持たない地図は {}（source.getTileCacheStatsAsync が {} を返す）
+    if (!this.getMapCacheEnable(mapID)) return {};
+    const source = mapID ? this.#find(mapID) : this.#current;
+    // §3.8 A10: 本物の Core は Weiwudi の stats に total が無ければインスタンスの totalTile で補う。
+    // 模擬は Weiwudi を持たないので、設定の tileCacheTotal を total として返す。数が無ければ
+    // 本物で total が分からないとき（total を載せない）と同じ形にする。
+    const total = source?.tileCacheTotal;
+    return typeof total === "number" ? { size: 0, count: 0, total } : { size: 0, count: 0 };
   }
   async getMapTileCacheSizeAsync(mapID?: string) {
     return (await this.getMapTileCacheStatsAsync(mapID)).size || 0;

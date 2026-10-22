@@ -538,7 +538,7 @@ export function createLayerAConformanceCases(options: LayerAConformanceOptions):
   });
 
   // ---- A-メソッド ----
-  add("A-メソッド", "44 の委譲メソッドと新設メソッドが関数として在る", async () => {
+  add("A-メソッド", "46 の委譲メソッドと新設メソッドが関数として在る", async () => {
     const el = document.createElement(tag) as El;
     for (const name of [...MAPLAT_APP_METHODS, ...ELEMENT_OWN_METHODS]) {
       same(typeof el[name], "function", `typeof ${name}`);
@@ -724,6 +724,33 @@ export function createLayerAConformanceCases(options: LayerAConformanceOptions):
     same(typeof el.getMapCacheEnable(fx.initialMapId), "boolean", "getMapCacheEnable()");
   });
 
+  // §3.8 A10: 統計には全タイル数 total を含める。キャッシュを持つ地図があるときだけ見る
+  // （Core は enable-cache 無しで起動すると Weiwudi を持たず、getMapCacheEnable も統計も空になる。
+  //  固定データの地図がキャッシュを持たない実装では、この検査は省く）
+  add("A-メソッド", "キャッシュを持つ地図の統計には全タイル数 total が数で載る（§3.8 A10）", async ctx => {
+    const el = await ctx.mountReady();
+    if (!el.supports("tile-cache")) return;
+    const cached = el.listMaps().find(m => m.cacheEnable);
+    if (!cached) return;
+    const stats = await el.getMapTileCacheStatsAsync(cached.mapID);
+    assert(stats && typeof stats === "object", `getMapTileCacheStatsAsync(${cached.mapID}) result`);
+    assert(
+      typeof stats.total === "number" && Number.isFinite(stats.total) && Number.isInteger(stats.total) && stats.total >= 0,
+      `getMapTileCacheStatsAsync(${cached.mapID}).total is not a tile count: ${JSON.stringify(stats)}`
+    );
+    same(typeof stats.size, "number", "stats.size of a cached map");
+    same(typeof stats.count, "number", "stats.count of a cached map");
+    // キャッシュを持たない地図は本物と同じく空（total を 0 で埋めない）
+    const plain = el.listMaps().find(m => !m.cacheEnable);
+    if (plain) {
+      const empty = await el.getMapTileCacheStatsAsync(plain.mapID);
+      assert(
+        empty && typeof empty === "object" && (empty as Record<string, unknown>).total === undefined,
+        `getMapTileCacheStatsAsync(${plain.mapID}) of a map without cache: ${JSON.stringify(empty)}`
+      );
+    }
+  });
+
   add("A-メソッド", "requestUpdateState の拡張キーが state と updateState に載る", async ctx => {
     const el = await ctx.mountReady();
     const updated = nextEvent(el, "updateState", timeout, e => e.detail?.conformanceExt === 1);
@@ -737,6 +764,107 @@ export function createLayerAConformanceCases(options: LayerAConformanceOptions):
     const vp = await waitFor(() => el.getViewpoint(), timeout, "a viewpoint");
     el.zoomBy(1);
     await waitFor(() => (el.getViewpoint()?.zoom ?? -Infinity) > vp.zoom + 0.5, timeout, "zoom increased");
+  });
+
+  // ---- A-ベクター（nov26-m4-t5・#91: 線・面の id・個別削除・種類ごとの削除）----
+  //
+  // 要素の公開面には、Core の中身が持つ一覧（vectors getter）に当たる読み取りが無い。そこで一覧の中身は
+  // 「消せるか」で確かめる: add が返した id を removeVector に渡す true／false と、clearLine・clearVector の
+  // { type } の絞り込み。並び（追加順・置き換えたものは末尾）と stroke → style の正規化は、公開面から
+  // 読めないのでここでは確かめない（正規化は Core の単体試験 spec/nov26-m4-t5-vector-remove.spec.ts が見る）。
+  // 描画の画素も見ない（それは各実装の e2e の役目）。座標は固定データの地図の範囲に置く。
+  const vectorLine = () => ({ lnglats: [[141.15, 39.7], [141.16, 39.71]] });
+  const vectorPolygon = (extra: Record<string, unknown> = {}) => ({
+    type: "Polygon",
+    lnglats: [[141.14, 39.69], [141.16, 39.69], [141.16, 39.71], [141.14, 39.69]],
+    ...extra
+  });
+
+  add("A-ベクター", "addLine・addVector は id（文字列）を返し、与えた id はそのまま・自動の id は重ならない", async ctx => {
+    const el = await ctx.mountReady();
+    const lineId = el.addLine(vectorLine());
+    const polygonId = el.addVector(vectorPolygon());
+    assert(typeof lineId === "string" && lineId !== "", `addLine() returned ${JSON.stringify(lineId)}`);
+    assert(typeof polygonId === "string" && polygonId !== "", `addVector() returned ${JSON.stringify(polygonId)}`);
+    assert(lineId !== polygonId, `two automatic ids collide: ${lineId}`);
+    same(el.addVector(vectorPolygon({ id: "conformance-vector" })), "conformance-vector", "addVector({ id })");
+    same(el.addLine({ ...vectorLine(), id: 42 }), "42", "addLine({ id: 42 }) (the id is a string)");
+    el.clearVector();
+  });
+
+  add("A-ベクター", "addLine・addVector は呼び手の data を変えない（凍結した data でも例外にしない）", async ctx => {
+    const el = await ctx.mountReady();
+    const line = Object.freeze({ lnglats: [[141.15, 39.7], [141.16, 39.71]], stroke: { color: "#ff0000", width: 2 } });
+    const polygon = Object.freeze(vectorPolygon({ id: "conformance-frozen" }));
+    const before = [JSON.stringify(line), JSON.stringify(polygon)];
+    el.addLine(line);
+    el.addVector(polygon);
+    same([JSON.stringify(line), JSON.stringify(polygon)], before, "the caller's data after addLine() / addVector()");
+    el.clearVector();
+  });
+
+  add("A-ベクター", "既にある id で足すと置き換わり、1 件のまま新しい種類で数える", async ctx => {
+    const el = await ctx.mountReady();
+    const id = el.addLine({ ...vectorLine(), id: "conformance-replace" });
+    same(id, "conformance-replace", "the id of the first addLine()");
+    same(el.addVector(vectorPolygon({ id })), id, "the id of the replacing addVector()");
+    // 置き換えで前の線が残っていれば、面だけを消した後も同じ id がまだ消せる（残っていないことを見る）
+    el.clearVector({ type: "Polygon" });
+    same(el.removeVector(id), false, "the Line replaced by the Polygon is gone (an entry was left behind)");
+  });
+
+  add("A-ベクター", "type を省いた addVector は線として数え、{ type } の clear がその種類だけを消す", async ctx => {
+    const el = await ctx.mountReady();
+    const implicitLine = el.addVector(vectorLine()); // type を省く
+    el.clearVector({ type: "Line" });
+    same(el.removeVector(implicitLine), false, "addVector() without type is counted as Line");
+    const polygon = el.addVector(vectorPolygon());
+    const line = el.addLine(vectorLine());
+    el.clearLine({ type: "Line" });
+    same(el.removeVector(line), false, "addLine() is cleared by clearLine({ type: 'Line' })");
+    same(el.removeVector(polygon), true, "a Polygon is not cleared by clearLine({ type: 'Line' })");
+    el.clearVector();
+  });
+
+  add("A-ベクター", "removeVector・removeLine はその 1 件だけを消し、消したら true・無ければ false", async ctx => {
+    const el = await ctx.mountReady();
+    const line = el.addLine(vectorLine());
+    const polygon = el.addVector(vectorPolygon());
+    same(el.removeVector(line), true, "removeVector(a line)");
+    same(el.removeVector(line), false, "removeVector(the same id again)");
+    same(el.removeVector("conformance-no-such-vector"), false, "removeVector(unknown)");
+    // removeLine は種類で絞らない別名（残っている面も消せる）
+    same(el.removeLine(polygon), true, "removeLine(a polygon)");
+    same(el.removeLine(polygon), false, "removeLine(the same id again)");
+    // 消した id で足し直せる（消えていることの裏取り）
+    same(el.addVector(vectorPolygon({ id: line })), line, "addVector() with the removed id");
+    same(el.removeLine(line), true, "removeLine(the re-added entry)");
+  });
+
+  add("A-ベクター", "clearLine・clearVector は引数なしで全部、filter.type でその種類だけを消す（どちらも別名）", async ctx => {
+    const el = await ctx.mountReady();
+    const line1 = el.addLine(vectorLine());
+    const line2 = el.addLine(vectorLine());
+    const polygon1 = el.addVector(vectorPolygon());
+    const polygon2 = el.addVector(vectorPolygon());
+    el.clearVector({ type: "Line" });
+    same(el.removeVector(line1), false, "clearVector({ type: 'Line' }) removed the first line");
+    same(el.removeVector(line2), false, "clearVector({ type: 'Line' }) removed the second line");
+    same(el.removeVector(polygon1), true, "clearVector({ type: 'Line' }) kept the first polygon");
+    same(el.removeVector(polygon2), true, "clearVector({ type: 'Line' }) kept the second polygon");
+    // 引数なしは線も面も全部消す（clearLine も同じ）
+    const line3 = el.addLine(vectorLine());
+    const polygon3 = el.addVector(vectorPolygon());
+    el.clearVector();
+    same(el.removeVector(line3), false, "clearVector() removed the line");
+    same(el.removeVector(polygon3), false, "clearVector() removed the polygon");
+    const line4 = el.addLine(vectorLine());
+    const polygon4 = el.addVector(vectorPolygon());
+    el.clearLine();
+    same(el.removeVector(line4), false, "clearLine() removed the line");
+    same(el.removeVector(polygon4), false, "clearLine() removed the polygon");
+    // 対象が無いときの clearLine(filter) も例外にしない
+    el.clearLine({ type: "Polygon" });
   });
 
   // ---- A-イベント ----
@@ -980,6 +1108,36 @@ export function createLayerAConformanceCases(options: LayerAConformanceOptions):
     assert(!("conformanceMissing" in el.initialRestore), "a missing extension key was added");
     same(el.initialRestore.mapID, fx.initialMapId, "initialRestore.mapID");
     same(el.getTransparency(), 20, "transparency from localStorage");
+  });
+
+  // 本物の Core は restoreSession で hideMarker（と hideLayer・transparency）も localStorage から読む
+  // （src/index.ts の restoreSession）。模擬が mapID・position・transparency しか読まないと、
+  // 保存したマーカーの非表示が作り直した要素に戻らない。
+  add("A-優先", "restoreSession で保存した hideMarker が、作り直した要素の initialRestore に入る", async ctx => {
+    const keys = ["epoch", "mapID", "sourceID", "x", "y", "zoom", "rotation", "transparency", "hideMarker", "hideLayer", "backgroundID", "backID"];
+    const saved = keys.map(k => [k, localStorage.getItem(k)] as const);
+    ctx.onCleanup(() => {
+      for (const [k, v] of saved) {
+        if (v === null) localStorage.removeItem(k);
+        else localStorage.setItem(k, v);
+      }
+    });
+    // 前の試験の残りを読まないよう、保存する前は消しておく（載った値がこの試験の保存だけであること）
+    for (const k of keys) localStorage.removeItem(k);
+    // 1 つ目の要素で保存させる（hideAllMarkers → requestUpdateState が restoreSession の localStorage に書く）
+    let probe: El | null = await ctx.mountReady({ attributes: { "restore-session": "" } });
+    await waitFor(() => probe!.getViewpoint(), timeout, "a viewpoint");
+    const updated = nextEvent(probe, "updateState", timeout, e => e.detail?.hideMarker === 1);
+    probe.hideAllMarkers();
+    await updated;
+    same(localStorage.getItem("hideMarker"), "1", "localStorage.hideMarker after hideAllMarkers()");
+    probe.remove();
+    probe = null;
+    await sleep(50);
+    // 作り直した要素は、保存した hideMarker を number として initialRestore と state に読む
+    const el = await ctx.mountReady({ attributes: { "restore-session": "" } });
+    same(el.initialRestore.hideMarker, 1, "initialRestore.hideMarker");
+    await waitFor(() => el.state.hideMarker === 1, timeout, "state.hideMarker from the session");
   });
 
   return cases;

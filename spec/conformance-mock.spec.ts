@@ -1,7 +1,7 @@
 // 模擬の層 A（src/conformance/mock-layer-a.ts）に、層 A の適合テスト群（src/conformance/layer-a.ts）を流す。
 // 模擬が層 A の公開面を満たすことと、群が公開面だけで書けていることの確認（仕様 §8・U7）。
 // 実物の Core の要素には実ブラウザで同じ群を流す（e2e/wc-conformance.spec.ts）。
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
   runLayerAConformance,
   createLayerAConformanceCases,
@@ -26,7 +26,10 @@ const SETTING = {
         [141.2, 39.75],
         [141.1, 39.75]
       ],
-      meta: { title: "古地図", license: "CC BY" }
+      meta: { title: "古地図", license: "CC BY" },
+      // タイルキャッシュを持つ地図（§3.8 A10 の total の検査を、模擬の固定データでも通す）
+      cacheEnable: true,
+      tileCacheTotal: 48
     },
     { mapID: "broken", usable: false },
     "gsi",
@@ -169,6 +172,131 @@ describe("模擬の層 A: 公開面以外を持たない", () => {
   });
 });
 
+describe("模擬の層 A: 線・面の登録簿（nov26-m4-t5・#91）", () => {
+  // 適合テスト群は要素の公開面（メソッドの戻り値と clear の絞り込み）だけで書くので、一覧の並びと
+  // stroke → style の正規化は公開面から読めない。模擬の中身が Core と同じ結果を返すことは、ここで見る。
+  it("id・置き換えは末尾・stroke → style の正規化・呼び手の data を変えない（Core と同じ）", async () => {
+    defineMockMaplatApp("maplat-app");
+    const el = document.createElement("maplat-app") as any;
+    el.setting = SETTING;
+    document.body.appendChild(el);
+    await el.ready;
+    const ctl = getMockLayerAController(el)!;
+    const stroke = { color: "#ff0000", width: 2 };
+    const lineData: any = { lnglats: [[141.15, 39.7], [141.16, 39.71]], stroke };
+    const a = el.addLine(lineData);
+    const b = el.addVector({ type: "Polygon", lnglats: [[141.14, 39.69], [141.16, 39.69], [141.16, 39.71], [141.14, 39.69]] });
+    const c = el.addVector({ lnglats: [[141.15, 39.7], [141.17, 39.72]] }); // type を省くと線
+    expect([typeof a, typeof b, typeof c]).toEqual(["string", "string", "string"]);
+    expect(new Set([a, b, c]).size).toBe(3);
+    // type を省いた addVector は登録簿でも線として数える（data 自体には type を書かない）
+    expect(ctl.vectors.map(v => v.type)).toEqual(["Line", "Polygon", undefined]);
+    // addLine は写しに stroke を style.stroke へ正規化し、呼び手の data は変えない
+    expect(ctl.vectors[0].style).toEqual({ stroke });
+    expect(lineData.type).toBeUndefined();
+    expect(lineData.style).toBeUndefined();
+    // 既にある id で足すと置き換わり、末尾（描画では最前面）へ移る: a・b・c の後に a を置き換えると b・c・a
+    expect(el.addLine({ id: a, lnglats: [[141.17, 39.72], [141.18, 39.73]], stroke })).toBe(a);
+    expect(ctl.vectors.map(v => v.type)).toEqual(["Polygon", undefined, "Line"]);
+    expect(ctl.vectors.map(v => v.lnglats[0])).toEqual([
+      [141.14, 39.69],
+      [141.15, 39.7],
+      [141.17, 39.72]
+    ]);
+    expect(el.removeVector(a)).toBe(true);
+    expect(el.removeVector(a)).toBe(false);
+    expect(el.removeLine(b)).toBe(true);
+    el.clearVector();
+    expect(ctl.vectors).toEqual([]);
+  });
+});
+
+// CORE-MOCK-FIX-1023: 模擬を本物の Core に揃えた 2 件（タイルキャッシュの統計の total・
+// restoreSession の hideMarker）の中身を、模擬の設定を直接与えて確かめる。適合テスト群は
+// 公開面だけを使うので値までは見られない（total が数であること・initialRestore に載ることだけを見る）。
+describe("模擬の層 A: タイルキャッシュの統計の total（§3.8 A10・CORE-MOCK-FIX-1023）", () => {
+  it("設定の tileCacheTotal を total として返し、総数が分からない地図は total を載せず、キャッシュを持たない地図は {}", async () => {
+    defineMockMaplatApp("maplat-app");
+    const el = document.createElement("maplat-app") as any;
+    el.setting = {
+      ...SETTING,
+      sources: [
+        { mapID: "cached", cacheEnable: true, tileCacheTotal: 48 },
+        { mapID: "no-total", cacheEnable: true },
+        { mapID: "plain" },
+        "gsi"
+      ]
+    };
+    document.body.appendChild(el);
+    await el.ready;
+    expect(await el.getMapTileCacheStatsAsync("cached")).toEqual({ size: 0, count: 0, total: 48 });
+    expect(await el.getMapTileCacheStatsAsync("no-total")).toEqual({ size: 0, count: 0 });
+    expect(await el.getMapTileCacheStatsAsync("plain")).toEqual({});
+    expect(await el.getMapTileCacheStatsAsync()).toEqual({}); // 表示中の地図（sources の最後の gsi）はキャッシュを持たない
+    expect(await el.getMapTileCacheSizeAsync("cached")).toBe(0);
+  });
+});
+
+describe("模擬の層 A: restoreSession の読み取り（CORE-MOCK-FIX-1023）", () => {
+  const KEYS = ["epoch", "mapID", "sourceID", "x", "y", "zoom", "rotation", "transparency", "hideMarker", "hideLayer", "backgroundID", "backID"];
+  let saved: Array<[string, string | null]> = [];
+  beforeEach(() => {
+    defineMockMaplatApp("maplat-app");
+    saved = KEYS.map(k => [k, localStorage.getItem(k)]);
+    for (const k of KEYS) localStorage.removeItem(k);
+  });
+  afterEach(() => {
+    for (const [k, v] of saved) {
+      if (v === null) localStorage.removeItem(k);
+      else localStorage.setItem(k, v);
+    }
+  });
+
+  it("本物の Core と同じく、hideMarker・hideLayer・backgroundID（sourceID・backID への落とし込みも）を読む", async () => {
+    localStorage.setItem("epoch", `${Math.floor(Date.now() / 1000)}`);
+    localStorage.setItem("sourceID", "old"); // mapID が無ければ sourceID
+    localStorage.setItem("x", "1");
+    localStorage.setItem("y", "2");
+    localStorage.setItem("zoom", "3");
+    localStorage.setItem("rotation", "0");
+    localStorage.setItem("transparency", "40");
+    localStorage.setItem("hideMarker", "1");
+    localStorage.setItem("hideLayer", "main");
+    localStorage.setItem("backID", "gsi"); // backgroundID が無ければ backID
+    const el = document.createElement("maplat-app") as any;
+    el.setting = SETTING;
+    el.setAttribute("restore-session", "");
+    document.body.appendChild(el);
+    await el.ready;
+    expect(el.initialRestore.mapID).toBe("old");
+    expect(el.initialRestore.backgroundID).toBe("gsi");
+    // position・transparency・hideMarker は本物と同じく、無ければ 0 で載る（ここでは全部ある）
+    expect(el.initialRestore.position).toEqual({ x: 1, y: 2, zoom: 3, rotation: 0 });
+    expect(el.initialRestore.transparency).toBe(40);
+    expect(el.initialRestore.hideMarker).toBe(1); // parseInt（文字列ではない）
+    expect(el.initialRestore.hideLayer).toBe("main");
+    // 読んだ hideMarker・hideLayer が起動時に当たる（本物の Core と同じ）
+    expect(el.state.hideMarker).toBe(1);
+    expect(el.listPoiLayers(true).map((l: any) => l.namespaceID)).toEqual(["main"]);
+  });
+
+  it("hideMarker が保存されていなければ 0（number）で、hideLayer は載らない", async () => {
+    localStorage.setItem("epoch", `${Math.floor(Date.now() / 1000)}`);
+    localStorage.setItem("mapID", "old");
+    const el = document.createElement("maplat-app") as any;
+    el.setting = SETTING;
+    el.setAttribute("restore-session", "");
+    document.body.appendChild(el);
+    await el.ready;
+    expect(el.initialRestore.mapID).toBe("old");
+    expect(el.initialRestore.hideMarker).toBe(0);
+    expect(el.initialRestore.hideLayer).toBeUndefined();
+    // 保存が無い position・transparency も本物と同じく 0 で載る（メルカトル原点に当たる）
+    expect(el.initialRestore.position).toEqual({ x: 0, y: 0, zoom: 0, rotation: 0 });
+    expect(el.initialRestore.transparency).toBe(0);
+  });
+});
+
 describe("適合テスト群の形", () => {
   it("群の名前は仕様 §8.2 の群で、名前は重ならない", () => {
     const cases = createLayerAConformanceCases({
@@ -177,9 +305,12 @@ describe("適合テスト群の形", () => {
       fixture
     });
     expect(new Set(cases.map(c => c.group))).toEqual(
-      new Set(["A-形", "A-同期", "A-優先", "A-起動後", "A-メソッド", "A-互換", "A-イベント", "A-機能", "A-破棄"])
+      new Set(["A-形", "A-同期", "A-優先", "A-起動後", "A-メソッド", "A-互換", "A-ベクター", "A-イベント", "A-機能", "A-破棄"])
     );
     expect(new Set(cases.map(c => c.name)).size).toBe(cases.length);
+    // 件数の下限（nov26-m4-t5・#91 の A-ベクター 6 件・CORE-MOCK-FIX-1023 の 2 件を含む）。
+    // layout の 2 件を足すと e2e の下限 53
+    expect(cases.length).toBeGreaterThanOrEqual(51);
     // 実ブラウザ（layout）でだけ足す群がある
     const withLayout = createLayerAConformanceCases({
       implementation: "core",
