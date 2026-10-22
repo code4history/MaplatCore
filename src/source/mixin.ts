@@ -3,6 +3,7 @@ import { MaplatMap } from "../map_ex";
 import { Coordinate } from "ol/coordinate";
 import { Size } from "ol/size";
 import { transform } from "ol/proj";
+import TileState from "ol/TileState";
 import { canvBase, MERC_CROSSMATRIX, MERC_MAX } from "../const_ex";
 import {
   zoom2Radius as transformZoom2Radius,
@@ -826,6 +827,7 @@ export function setCustomFunctionMaplat<TBase extends SourceConstructor>(Base: T
   return Mixin;
 }
 
+
 // META_KEYS / META_KEYS_OPTION の正本は src/meta_keys.ts（@maplat/core/common の分割で移した）。
 // 従来の import 元（"./source/mixin"）を壊さないよう、ここから再 export する。
 export { META_KEYS, META_KEYS_OPTION };
@@ -917,6 +919,36 @@ export function setupTileLoadFunction(target: any) {
     (function () {
       let numLoadingTiles = 0;
       const tileLoadFn = self.getTileLoadFunction();
+      // #110: 合成中の例外（getContext("2d") が null・drawImage／toDataURL の失敗など）で ERROR になったタイルは、
+      // 一時的な失敗のことがあるのに 404 と同じく ERROR のまま残り、OL のレンダラは IDLE のタイルしか
+      // キューに入れないので、原因が解消してもパン・ズームしない限り読み直されない。
+      // 例外由来に限り、タイルごとに最大 3 回、1／2／4 秒の遅延で OL の ImageTile.load()
+      // （ERROR → IDLE → LOADING で tileLoadFunction を呼び直す OL 自身の経路）により読み直す。
+      // 404（0×0・onerror）は今までどおり再試行しない。
+      const RETRY_DELAYS = [1000, 2000, 4000];
+      const retryCount = new WeakMap<any, number>();
+      let warned = false; // 記録は source ごとに最初の 1 回だけ
+      const scheduleRetry = function (tile: any, err?: unknown) {
+        if (!warned) {
+          warned = true;
+          console.warn(
+            "Maplat: tile composition failed by an exception; retrying (up to 3 times)",
+            err
+          );
+        }
+        const n = retryCount.get(tile) ?? 0;
+        if (n >= RETRY_DELAYS.length) return; // 上限を超えたら ERROR のまま止める
+        retryCount.set(tile, n + 1);
+        // タイマーは保持しない。破棄の判定は発火時に行う（残っても高々 7 秒で、何もせずに終わる）
+        setTimeout(() => {
+          // 地図が破棄された（target 要素が DOM から外れた）なら読み直さない
+          const el = self.getMap?.()?.getTargetElement?.();
+          if (el && !el.isConnected) return;
+          // その間に読み直された・捨てられた（ERROR でない）なら何もしない
+          if (tile.getState?.() !== TileState.ERROR) return;
+          tile.load();
+        }, RETRY_DELAYS[n]);
+      };
       const tImageLoader = function (
         _tileCoord: any,
         src: any,
@@ -956,7 +988,9 @@ export function setupTileLoadFunction(target: any) {
                   }
                 }
               } catch (_err) {
-                resolve("tileLoadError");
+                // 例外由来の失敗は、画像の読込失敗（0×0・onerror＝"tileLoadError"）と区別し、
+                // 回数上限つきの再試行の対象にする（#110）
+                resolve("tileException");
               } finally {
                 --numLoadingTiles;
                 if (numLoadingTiles === 0) {
@@ -1056,16 +1090,22 @@ export function setupTileLoadFunction(target: any) {
           .then(rets => {
             const err = rets.reduce((prev, ret) => prev && ret, true);
             if (err) {
+              // 先に ERROR で決着させ、TileQueue の読込枠を空ける（#109）
               tile.handleImageError_();
+              if (rets.includes("tileException")) scheduleRetry(tile);
             } else {
+              // 一部の片だけが失敗した場合も、今までどおり残りの片で合成する（集約規則は変えない）
               const dataUrl = tCanv.toDataURL();
               const image = tile.getImage();
               image.crossOrigin = null;
               tileLoadFn(tile, dataUrl);
+              retryCount.delete(tile);
             }
           })
-          .catch(_err => {
+          .catch(err => {
+            // toDataURL・tileLoadFn の例外も例外由来とみなす（canvas のメモリ枯渇は toDataURL でも起こりうる）
             tile.handleImageError_();
+            scheduleRetry(tile, err);
           });
       };
     })()

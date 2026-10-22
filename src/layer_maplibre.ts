@@ -1,5 +1,6 @@
 import Layer from "ol/layer/Layer";
 import { toLonLat } from "ol/proj";
+import { glCanvasMatchesSize } from "./gl_canvas_size";
 
 export class MapLibreLayer extends Layer {
   constructor(options: any) {
@@ -97,7 +98,8 @@ export class MapLibreLayer extends Layer {
       // Ensure map size is correct
       if (frameState.size) {
         const [width, height] = frameState.size;
-        if (canvas.width !== width || canvas.height !== height) {
+        // nov26-m4-t2（#107）: GL の画素比で割って CSS ピクセル同士で比べる
+        if (!glCanvasMatchesSize(mlMap, canvas, [width, height])) {
           // console.log('MapLibre size mismatch, resizing:', {
           //   current: { width: canvas.width, height: canvas.height },
           //   expected: { width, height }

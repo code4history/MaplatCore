@@ -22,7 +22,6 @@
     "sourceMap": true,
     "experimentalDecorators": true,
     "outDir": "./dist",
-    "baseUrl": ".",
     "paths": {
       "@/*": [
         "./src/*"
@@ -36,7 +35,6 @@
       "node"
     ],
     "allowJs": true,
-    "downlevelIteration": true,
     "removeComments": true
   },
   "include": [

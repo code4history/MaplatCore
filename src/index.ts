@@ -176,6 +176,21 @@ export interface PoiLayer {
   [key: string]: any;
 }
 
+// 公開型: 線・面の種類と、clearLine／clearVector の絞り込み（nov26-m4-t5 / #91）
+export type VectorType = "Line" | "Polygon";
+export interface VectorFilter {
+  type?: VectorType;
+}
+
+// nov26-m4-t5: addLine／addVector で登録した線・面の 1 件
+interface VectorEntry {
+  id: string;
+  data: any; // 描画に使う写し（呼び手の data は変えない）
+  kind: VectorType; // data.type === "Line" なら "Line"、それ以外は "Polygon"
+  feature?: any; // 描いた OL の Feature（未描画・座標変換中は undefined）
+  drawToken: number; // 描画の世代。古い変換の完了を捨てるのに使う
+}
+
 export class MaplatApp extends EventTarget {
   // Static method declaration
   static createObject: (option: any) => Promise<MaplatApp>;
@@ -195,7 +210,6 @@ export class MaplatApp extends EventTarget {
   currentPosition: any;
   startFrom? = "";
   from?: MaplatSource;
-  vectors: any = [];
   mapObject: any;
   mapboxMap: any;
   maplibreMap: any;
@@ -213,6 +227,7 @@ export class MaplatApp extends EventTarget {
   firstGpsRequest_ = false;
   initialGpsMove_ = false;
   private __backMapMoving = false;
+  private __backMapErrorWarned = false;
   private __selectedMarker: any;
   // oct26-m2-t1: 可視化時の自己修復（issue #101）で使うリソース参照。
   private __resizeObserver: ResizeObserver | null = null;
@@ -228,6 +243,11 @@ export class MaplatApp extends EventTarget {
   private __redrawMarkerBlock = false;
   private __redrawMarkerThrottle: MaplatSource[] = [];
   private __transparency: any;
+  // nov26-m4-t5: 線・面の登録簿と連番。Object.create(MaplatApp.prototype) の殻でも
+  // 動くよう初期化子に頼らず遅延で作る（__vectorStore・連番は undefined を 0 とみなす）。
+  private __vectors?: Map<string, VectorEntry>;
+  private __vectorSeq?: number;
+  private __vectorDrawSeq?: number;
 
   lastClickEvent: any;
 
@@ -1156,7 +1176,13 @@ export class MaplatApp extends EventTarget {
       if (backSrc) {
         this.__backMapMoving = true;
         this.logger.debug("Backmap moving started");
-        this.convertParametersFromCurrent(backSrc, (size: any) => {
+        // nov26-m4-t1（#108）: 変換が同期で投げても非同期で失敗しても、フラグを戻して
+        // 次の postrender で追従を再開する。例外は postrender の dispatch へ出さない。
+        const onError = (err: any) => {
+          this.__backMapMoving = false;
+          this.__reportBackMapError(err);
+        };
+        this.__convertFromCurrent(backSrc, (size: any) => {
           if (!size) {
             // oct26-m2-t1: 未確定ガードにより座標変換がスキップされた場合
             // （非表示コンテナで view 未確定）。後段の setCenter(size[0]) が
@@ -1170,10 +1196,20 @@ export class MaplatApp extends EventTarget {
           view.setRotation(this.noRotate ? 0 : size[2]);
           this.logger.debug("Backmap moving ended");
           this.__backMapMoving = false;
-        });
+        }, onError);
       }
     };
     this.mapObject.on("postrender", backMapMove);
+  }
+  // nov26-m4-t1（#108）: 変換が恒常的に失敗する地図では postrender ごとに失敗するので、
+  // warn は最初の 1 回だけにし、以降は debug に落とす。
+  private __reportBackMapError(err: any) {
+    if (!this.__backMapErrorWarned) {
+      this.__backMapErrorWarned = true;
+      this.logger.warn("Backmap follow skipped: coordinate conversion failed", err);
+    } else {
+      this.logger.debug("Backmap follow skipped: coordinate conversion failed", err);
+    }
   }
   // Async initializer 16: Handle back map's behavior
   raiseChangeViewpoint() {
@@ -1331,6 +1367,13 @@ export class MaplatApp extends EventTarget {
   }
   setVector(data: any) {
     // Ready for Polygon
+    // 登録せずに描く（地図の切替では描き直されない）。挙動は従来どおり。
+    this.__projectVector(data).then(xys => {
+      this.mapObject.setVector(xys, data.type, data.style);
+    });
+  }
+  // nov26-m4-t5: data の座標（coordinates はメルカトル・lnglats は経緯度）を今の地図の座標へ変換する
+  private __projectVector(data: any): Promise<any> {
     this.logger.debug(data);
     let xyPromises;
     const merc2XyRecurse = (coords: any, isLnglat = false) =>
@@ -1350,9 +1393,62 @@ export class MaplatApp extends EventTarget {
     } else {
       xyPromises = merc2XyRecurse(data.lnglats, true);
     }
-    xyPromises.then(xys => {
-      this.mapObject.setVector(xys, data.type, data.style);
+    return xyPromises;
+  }
+  private __vectorStore(): Map<string, VectorEntry> {
+    if (!this.__vectors) this.__vectors = new Map();
+    return this.__vectors;
+  }
+  private __nextVectorDrawToken(): number {
+    this.__vectorDrawSeq = (this.__vectorDrawSeq || 0) + 1;
+    return this.__vectorDrawSeq;
+  }
+  // nov26-m4-t5: 登録簿の 1 件を描く。変換の解決までに消された・置き換えられた・
+  // 描き直しが始まった（世代が進んだ）場合は描かない。
+  private __drawVectorEntry(entry: VectorEntry) {
+    const token = this.__nextVectorDrawToken();
+    entry.drawToken = token;
+    entry.feature = undefined;
+    this.__projectVector(entry.data).then(xys => {
+      if (
+        this.__vectorStore().get(entry.id) !== entry ||
+        entry.drawToken !== token
+      )
+        return;
+      entry.feature = this.mapObject.setVector(
+        xys,
+        entry.data.type,
+        entry.data.style
+      );
     });
+  }
+  private __addEntry(givenId: any, data: any): string {
+    const store = this.__vectorStore();
+    let id: string;
+    if (givenId !== undefined && givenId !== null) {
+      id = String(givenId);
+    } else {
+      do {
+        this.__vectorSeq = (this.__vectorSeq || 0) + 1;
+        id = `vector_${this.__vectorSeq}`;
+      } while (store.has(id));
+    }
+    // 既にある id なら置き換える
+    if (store.has(id)) this.removeVector(id);
+    const entry: VectorEntry = {
+      id,
+      data,
+      kind:
+        data.type === undefined || data.type === "Line" ? "Line" : "Polygon",
+      drawToken: 0
+    };
+    store.set(id, entry);
+    this.__drawVectorEntry(entry);
+    return id;
+  }
+  // addLine／addVector で登録した線・面の data（写し）の配列。読み取り専用。
+  get vectors(): any[] {
+    return Array.from(this.__vectorStore().values()).map(entry => entry.data);
   }
   resetLine() {
     // Ready for Polygon
@@ -1361,18 +1457,20 @@ export class MaplatApp extends EventTarget {
   resetVector() {
     // Ready for Polygon
     this.mapObject.resetVector();
+    // 登録簿は残し、描いた Feature の参照を外して、変換中の描画の完了を捨てる
+    this.__vectorStore().forEach(entry => {
+      entry.feature = undefined;
+      entry.drawToken = this.__nextVectorDrawToken();
+    });
   }
   redrawMarkers(source: MaplatSource | undefined = undefined) {
     if (!source) {
       source = this.from;
     }
     if (this.__redrawMarkerBlock) {
-      if (!this.__redrawMarkerThrottle) this.__redrawMarkerThrottle = [];
-      const throttle = this.__redrawMarkerThrottle;
-      if (throttle.length == 0 || throttle[throttle.length - 1] !== source) {
-        throttle.push(source as MaplatSource);
-        return;
-      }
+      // 描画中は同 source でも素通りせず、最新の要求一件だけを保留する。
+      this.__redrawMarkerThrottle = [source as MaplatSource];
+      return;
     }
     this.__redrawMarkerBlock = true;
     const redrawLogic = (source: any) => {
@@ -1702,21 +1800,54 @@ export class MaplatApp extends EventTarget {
       this.redrawMarkers();
     }
   }
-  addLine(data: any) {
-    this.vectors.push(data);
-    this.setLine(data);
+  // nov26-m4-t5（#91）: 線を足して id を返す。data.id を与えればその id、無ければ自動の id。
+  // 呼び手の data は変えず、写しに setLine と同じ正規化（type・stroke → style）をする。
+  addLine(data: any): string {
+    const d: any = { ...data, type: "Line" };
+    if (!d.style && d.stroke) {
+      d.style = {
+        stroke: d.stroke
+      };
+    }
+    delete d.id;
+    return this.__addEntry(data.id, d);
   }
-  addVector(data: any) {
-    this.vectors.push(data);
-    this.setVector(data);
+  // nov26-m4-t5（#91）: 線・面を足して id を返す（data.type が "Line" なら線、それ以外は面）
+  addVector(data: any): string {
+    const d: any = { ...data };
+    delete d.id;
+    return this.__addEntry(data.id, d);
   }
-  clearLine() {
-    this.vectors = [];
-    this.resetLine();
+  // nov26-m4-t5（#91）: id の 1 件だけを消す。消したら true、無ければ false
+  removeVector(id: string): boolean {
+    const store = this.__vectorStore();
+    const entry = store.get(id);
+    if (!entry) return false;
+    store.delete(id);
+    if (entry.feature) {
+      this.mapObject.removeFeature(entry.feature, "feature");
+      entry.feature = undefined;
+    }
+    return true;
   }
-  clearVector() {
-    this.vectors = [];
-    this.resetVector();
+  // removeVector の別名（種類で絞らない）
+  removeLine(id: string): boolean {
+    return this.removeVector(id);
+  }
+  // 引数なしは線も面も全部消す（従来どおり）。filter.type で線だけ・面だけを消す
+  clearLine(filter?: VectorFilter) {
+    this.clearVector(filter);
+  }
+  clearVector(filter?: VectorFilter) {
+    const type = filter?.type;
+    if (!type) {
+      this.__vectorStore().clear();
+      this.resetVector();
+      return;
+    }
+    Array.from(this.__vectorStore().values())
+      .filter(entry => entry.kind === type)
+      .forEach(entry => this.removeVector(entry.id));
   }
   setGPSMarker(position: any) {
     this.currentPosition = position;
@@ -1863,9 +1994,8 @@ export class MaplatApp extends EventTarget {
               this.redrawMarkers();
             }
             this.resetVector();
-            this.vectors.forEach((data: any) => {
-              this.setVector(data);
-            });
+            // nov26-m4-t5: 登録簿に残っている線・面だけを新しい地図の座標で描き直す
+            this.__vectorStore().forEach(entry => this.__drawVectorEntry(entry));
             this.dispatchEvent(
               new CustomEvent("mapChanged", this.getMapMeta(to.mapID))
             );
@@ -2223,23 +2353,45 @@ export class MaplatApp extends EventTarget {
   }
 
   convertParametersFromCurrent(to: any, callback: any) {
-    const view = this.mapObject.getView();
-    // oct26-m2-t1: 未確定ガード。非表示コンテナ（寸法 0）では view の resolution が
-    // NaN になる（OL が viewport size を [0,0] として resolveConstraints を走らせる
-    // ため。実測: convertParametersFromCurrent 時点 res=39135.75 → updateSize 後 NaN）。
-    // 後続の viewpoint2MercsAsync が NaN を xy2MercWithLayer へ流して issue #101 の
-    // "coordinates must contain numbers" を投げる。コンテナ寸法が無い間は座標変換を
-    // 行わず、初期視点の適用を可視化時の自己修復（__applyInitialViewpoint）へ委ねる。
-    if (view && !this.__hasMapSize()) {
-      if (callback) callback();
-      return;
+    this.__convertFromCurrent(to, callback);
+  }
+  // nov26-m4-t1（#108）: convertParametersFromCurrent の本体。公開の型を変えずに
+  // onError の口を得るために private へ移した。onError を渡したときだけ、同期例外も
+  // 非同期の失敗（__convertParameters の onError）も投げずに onError へ渡す。
+  // onError が無いときは今までと同じ（例外をそのまま投げる）。
+  private __convertFromCurrent(
+    to: any,
+    callback: any,
+    onError?: (err: any) => void
+  ) {
+    try {
+      const view = this.mapObject.getView();
+      // oct26-m2-t1: 未確定ガード。非表示コンテナ（寸法 0）では view の resolution が
+      // NaN になる（OL が viewport size を [0,0] として resolveConstraints を走らせる
+      // ため。実測: convertParametersFromCurrent 時点 res=39135.75 → updateSize 後 NaN）。
+      // 後続の viewpoint2MercsAsync が NaN を xy2MercWithLayer へ流して issue #101 の
+      // "coordinates must contain numbers" を投げる。コンテナ寸法が無い間は座標変換を
+      // 行わず、初期視点の適用を可視化時の自己修復（__applyInitialViewpoint）へ委ねる。
+      if (view && !this.__hasMapSize()) {
+        if (callback) callback();
+        return;
+      }
+      if (!this.from) {
+        if (callback) callback();
+        return;
+      }
+      const state = this.__captureRawViewState(view);
+      this.__convertParameters(
+        this.from as MaplatSource,
+        state,
+        to,
+        callback,
+        onError
+      );
+    } catch (err) {
+      if (onError) onError(err);
+      else throw err;
     }
-    if (!this.from) {
-      if (callback) callback();
-      return;
-    }
-    const state = this.__captureRawViewState(view);
-    this.__convertParameters(this.from as MaplatSource, state, to, callback);
   }
   // oct26-m2-t1-ff: 変換核。切替前の地図 fromSrc と、そのときの視点 state（地図の
   // 座標系の値）から、行き先 to の視点を求めて callback(size) を呼ぶ。中身は切り出し前の

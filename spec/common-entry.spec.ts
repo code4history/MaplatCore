@@ -99,7 +99,7 @@ describe("@maplat/core/common の公開物", () => {
   it("名前の表・機能表・型ガード・基底クラス", () => {
     expect(common.MAPLAT_APP_TAG).toBe("maplat-app");
     expect(common.MAPLAT_APP_EVENTS.length).toBe(24);
-    expect(common.MAPLAT_APP_METHODS.length).toBe(44);
+    expect(common.MAPLAT_APP_METHODS.length).toBe(46);
     expect(common.featuresOf("core")).toEqual({
       "display-mode": false,
       "display-mode:map-warp": false,

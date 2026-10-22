@@ -36,7 +36,7 @@ MaplatCore is open-source under the Apache License 2.0 (from version 0.13.2).
 ## Quick Start
 
 <!-- release-pinned:start -->
-> **Current release: `1.0.0`**. This block is the only place in
+> **Current release: `1.1.0`**. This block is the only place in
 > this repository that carries a release version (ADR-0012); everything outside it is
 > written against the 1.0 release.
 > npm: [`@maplat/core`](https://www.npmjs.com/package/@maplat/core)
@@ -78,7 +78,7 @@ before loading MaplatCore.
 <script src="https://cdn.jsdelivr.net/npm/ol@10/dist/ol.js"></script>
 
 <!-- MaplatCore -->
-<script src="https://cdn.jsdelivr.net/npm/@maplat/core@1.0.0/dist/maplat_core.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@maplat/core@1.1.0/dist/maplat_core.umd.js"></script>
 
 <div id="map_div"></div>
 <script>
@@ -163,6 +163,28 @@ spells the terms out in `licenseNote`.
 
 Choosing these values in a UI is the authoring tool's concern (MaplatEditor);
 MaplatCore only defines what the fields mean and renders the resulting credit.
+
+### Excluding a map from the tile cache (`noCache`)
+
+When `MaplatApp` is started with `enableCache: true` (a `MaplatApp` option),
+every tile map is registered with the Service Worker tile cache (Weiwudi). A map
+whose setting has `noCache: true` is **not** registered, so its tiles are always
+fetched from the network and `getMapCacheEnable(mapID)` returns `false` for it.
+Without the key, or with `noCache: false`, the map is cached as before.
+
+- Write it as a JSON boolean. Only `true` excludes the map; a string such as
+  `"true"` is not treated as true.
+- It can be written in two places: the map master (`maps/<mapID>.json`) and the
+  element of `sources` in the app setting. When both have it, the app element
+  wins (e.g. `noCache: false` in the app element cancels `noCache: true` in the
+  map master).
+- A source written as a string (a bundled base map such as `"osm"` or `"gsi"`)
+  cannot carry `noCache`. Write it in object form instead:
+  `{ "mapID": "osm", "noCache": true }`.
+- Tiles that were already cached are not deleted by setting `noCache`. Once a
+  map is excluded it is no longer registered, so `clearMapTileCacheAsync(mapID)`
+  has nothing to act on for it; clear the cache with
+  `clearMapTileCacheAsync(mapID)` **before** turning `noCache` on.
 
 ### Lifecycle
 

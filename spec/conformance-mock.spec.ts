@@ -191,8 +191,8 @@ describe("適合テスト群の形", () => {
     expect(withLayout.length).toBe(cases.length + 2);
   });
 
-  it("委譲メソッド 44・新設メソッド 8 の表", () => {
-    expect(MAPLAT_APP_METHODS.length).toBe(44);
+  it("委譲メソッド 46・新設メソッド 8 の表", () => {
+    expect(MAPLAT_APP_METHODS.length).toBe(46);
     expect([...ELEMENT_OWN_METHODS]).toEqual([
       "getViewpoint", "listMaps", "supports", "setEnvelopes", "getMapEnvelope", "getViewExtent", "zoomBy",
       "getDefaultPinIcon"

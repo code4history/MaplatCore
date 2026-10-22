@@ -1,9 +1,9 @@
-import { transform as Mt, toLonLat as fr, Projection as Ro, addProjection as Ki, addCoordinateTransforms as Qn, getTransform as Ri, identityTransform as Ti } from "ol/proj";
-import { View as og, Map as To, Feature as So } from "ol";
-import { Vector as kn, Group as Po, Tile as Si } from "ol/layer";
-import { XYZ as ag, Google as xo, Vector as Nn } from "ol/source";
-import { Style as zt, Icon as uA, Stroke as Ji, Fill as qi } from "ol/style";
-class te {
+import { transform as Rt, toLonLat as wr, Projection as Pg, addProjection as er, addCoordinateTransforms as Yn, getTransform as xi, identityTransform as Di } from "ol/proj";
+import { View as Co, Map as xg, Feature as Dg } from "ol";
+import { Vector as Nn, Group as Og, Tile as Oi } from "ol/layer";
+import { XYZ as co, Google as Bg, Vector as Gn } from "ol/source";
+import { Style as Ut, Icon as dA, Stroke as Ar, Fill as nr } from "ol/style";
+class oe {
   /**
    * @param {string} type Type.
    */
@@ -26,13 +26,13 @@ class te {
     this.propagationStopped = !0;
   }
 }
-let ot = class extends te {
+let gt = class extends oe {
   detail;
   constructor(t, e) {
     super(t), this.detail = e;
   }
 };
-const Do = ["ALL", "OFF"], _A = {
+const Lg = ["ALL", "OFF"], JA = {
   ALL: -99,
   DEBUG: -1,
   INFO: 0,
@@ -40,25 +40,25 @@ const Do = ["ALL", "OFF"], _A = {
   ERROR: 2,
   OFF: 99
 };
-class Oo {
-  constructor(t = _A.INFO) {
+class kg {
+  constructor(t = JA.INFO) {
     this.level = t, this.make();
   }
   level;
   make() {
-    const t = Object.keys(_A).filter(
+    const t = Object.keys(JA).filter(
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
-      (e) => !Do.includes(e)
+      (e) => !Lg.includes(e)
     );
     for (const e of t) {
-      const n = _A[e], i = e.toLowerCase();
+      const n = JA[e], i = e.toLowerCase();
       this[i] = this.level <= n ? console.log : () => {
       };
     }
   }
 }
-function Bo(A, t) {
+function Ng(A, t) {
   return A.isMapbox() ? t.mapboxMap ? (A.mapboxMap = t.mapboxMap, !0) : (t.warn?.(
     "Mapbox GL JS is not available; skipping Mapbox source:",
     A.mapID
@@ -67,7 +67,7 @@ function Bo(A, t) {
     A.mapID
   ), !1) : !0;
 }
-const WA = [
+const $A = [
   "title",
   "officialTitle",
   "author",
@@ -84,7 +84,7 @@ const WA = [
   "dataAttr",
   "reference",
   "description"
-], Lo = [
+], Gg = [
   "title",
   "official_title",
   "author",
@@ -101,7 +101,7 @@ const WA = [
   "reference",
   "description"
 ];
-function LA(A) {
+function XA(A) {
   const t = document, e = t.createDocumentFragment(), n = [];
   A = A.replace(/(<\/?)d([ >])/g, "$1div$2").replace(/(<\/?)s([ >])/g, "$1span$2").replace(/ din="/g, ' data-i18n="').replace(/ dinh="/g, ' data-i18n-html="').replace(/ c="/g, ' class="');
   const i = e.appendChild(t.createElement("div"));
@@ -109,32 +109,32 @@ function LA(A) {
   for (let r = 0; r < i.childNodes.length; r++) {
     const s = i.childNodes[r];
     if (s.nodeName && s.nodeName.toLowerCase() === "script") {
-      const o = t.createElement("script");
-      s.type && (o.type = s.type), s.src ? o.src = s.src : o.text = s.text, n[r] = o;
+      const g = t.createElement("script");
+      s.type && (g.type = s.type), s.src ? g.src = s.src : g.text = s.text, n[r] = g;
     } else
       n[r] = s;
   }
   return n;
 }
-function Gn(A) {
+function jn(A) {
   for (; !(A <= 180 && A > -180); ) {
     const t = A > 0 ? -1 : 1;
     A = A + t * 360;
   }
   return A;
 }
-function _r(A) {
+function Hr(A) {
   if (!A) return;
   const t = {
     mapID: A.mapID
   };
-  for (let e = 0; e < WA.length; e++) {
-    const n = WA[e];
+  for (let e = 0; e < $A.length; e++) {
+    const n = $A[e];
     A[n] && (t[n] = A[n]);
   }
   return t;
 }
-function Ft(A) {
+function Wt(A) {
   const t = {
     max_zoom: "maxZoom",
     min_zoom: "minZoom",
@@ -179,7 +179,7 @@ function Ft(A) {
     return e;
   }, A);
 }
-class Ig {
+class lo {
   constructor() {
     this.disposed = !1;
   }
@@ -196,18 +196,18 @@ class Ig {
   disposeInternal() {
   }
 }
-function ko(A, t, e) {
+function jg(A, t, e) {
   let n, i;
-  e = e || Cg;
-  let r = 0, s = A.length, o = !1;
+  e = e || uo;
+  let r = 0, s = A.length, g = !1;
   for (; r < s; )
-    n = r + (s - r >> 1), i = +e(A[n], t), i < 0 ? r = n + 1 : (s = n, o = !i);
-  return o ? r : ~r;
+    n = r + (s - r >> 1), i = +e(A[n], t), i < 0 ? r = n + 1 : (s = n, g = !i);
+  return g ? r : ~r;
 }
-function Cg(A, t) {
+function uo(A, t) {
   return A > t ? 1 : A < t ? -1 : 0;
 }
-function cg(A, t, e) {
+function ho(A, t, e) {
   if (A[0] <= t)
     return 0;
   const n = A.length;
@@ -243,12 +243,12 @@ function cg(A, t, e) {
   }
   return n - 1;
 }
-function lg(A, t) {
+function fo(A, t) {
   const e = Array.isArray(t) ? t : [t], n = e.length;
   for (let i = 0; i < n; i++)
     A[A.length] = e[i];
 }
-function No(A, t) {
+function _g(A, t) {
   const e = A.length;
   if (e !== t.length)
     return !1;
@@ -257,32 +257,44 @@ function No(A, t) {
       return !1;
   return !0;
 }
-function Go() {
+function dt() {
+  throw new Error("Unimplemented abstract method.");
+}
+let Xg = 0;
+function Zg(A) {
+  const t = (
+    /** @type {{ol_uid: (string|undefined)}} */
+    /** @type {unknown} */
+    A
+  );
+  return t.ol_uid || (t.ol_uid = String(++Xg));
+}
+function zg() {
   return !0;
 }
-function ri() {
+function si() {
   return !1;
 }
-function $i() {
+function ir() {
 }
-function jo(A) {
+function Fg(A) {
   let t, e, n;
   return function() {
     const i = Array.prototype.slice.call(arguments);
-    return (!e || this !== n || !No(i, e)) && (n = this, e = i, t = A.apply(this, arguments)), t;
+    return (!e || this !== n || !_g(i, e)) && (n = this, e = i, t = A.apply(this, i)), t;
   };
 }
-function hg(A) {
+function mo(A) {
   for (const t in A)
     delete A[t];
 }
-function Xo(A) {
+function Ug(A) {
   let t;
   for (t in A)
     return !1;
   return !t;
 }
-class ug extends Ig {
+class po extends lo {
   /**
    * @param {*} [target] Default event target for dispatched events.
    */
@@ -313,35 +325,38 @@ class ug extends Ig {
     const e = typeof t == "string", n = e ? t : t.type, i = this.listeners_ && this.listeners_[n];
     if (!i)
       return;
-    const r = e ? new te(t) : (
+    const r = e ? new oe(t) : (
       /** @type {Event} */
       t
     );
     r.target || (r.target = this.eventTarget_ || this);
-    const s = this.dispatching_ || (this.dispatching_ = {}), o = this.pendingRemovals_ || (this.pendingRemovals_ = {});
-    n in s || (s[n] = 0, o[n] = 0), ++s[n];
-    let g;
+    const s = this.dispatching_ || (this.dispatching_ = {}), g = this.pendingRemovals_ || (this.pendingRemovals_ = {});
+    n in s || (s[n] = 0, g[n] = 0), ++s[n];
+    let o;
     for (let a = 0, C = i.length; a < C; ++a)
-      if ("handleEvent" in i[a] ? g = /** @type {import("../events.js").ListenerObject} */
-      i[a].handleEvent(r) : g = /** @type {import("../events.js").ListenerFunction} */
-      i[a].call(this, r), g === !1 || r.propagationStopped) {
-        g = !1;
+      if ("handleEvent" in i[a] ? o = /** @type {import("../events.js").ListenerObject} */
+      i[a].handleEvent(r) : o = /** @type {import("../events.js").ListenerFunction} */
+      i[a].call(this, r), o === !1 || r.propagationStopped) {
+        o = !1;
         break;
       }
     if (--s[n] === 0) {
-      let a = o[n];
-      for (delete o[n]; a--; )
-        this.removeEventListener(n, $i);
+      let a = g[n];
+      for (delete g[n]; a--; )
+        this.removeEventListener(n, ir);
       delete s[n];
     }
-    return g;
+    return (
+      /** @type {boolean|undefined} */
+      o
+    );
   }
   /**
    * Clean up.
    * @override
    */
   disposeInternal() {
-    this.listeners_ && hg(this.listeners_);
+    this.listeners_ && mo(this.listeners_);
   }
   /**
    * Get the listeners for a specified event type. Listeners are returned in the
@@ -372,10 +387,10 @@ class ug extends Ig {
     if (!n)
       return;
     const i = n.indexOf(e);
-    i !== -1 && (this.pendingRemovals_ && t in this.pendingRemovals_ ? (n[i] = $i, ++this.pendingRemovals_[t]) : (n.splice(i, 1), n.length === 0 && delete this.listeners_[t]));
+    i !== -1 && (this.pendingRemovals_ && t in this.pendingRemovals_ ? (n[i] = ir, ++this.pendingRemovals_[t]) : (n.splice(i, 1), n.length === 0 && delete this.listeners_[t]));
   }
 }
-og.prototype.getDecimalZoom = function() {
+Co.prototype.getDecimalZoom = function() {
   const A = this.getResolution(), t = (
     // NOTE: `resolution` maybe `undefined`
     // NOTE: `offset` maybe `NaN`
@@ -385,7 +400,7 @@ og.prototype.getDecimalZoom = function() {
   );
   return t !== void 0 ? this.minZoom_ + t : t;
 };
-const it = {
+const rt = {
   UNKNOWN: 0,
   INTERSECTING: 1,
   ABOVE: 2,
@@ -393,127 +408,120 @@ const it = {
   BELOW: 8,
   LEFT: 16
 };
-function dr(A, t, e) {
+function vr(A, t, e) {
   let n, i;
   return t < A[0] ? n = A[0] - t : A[2] < t ? n = t - A[2] : n = 0, e < A[1] ? i = A[1] - e : A[3] < e ? i = e - A[3] : i = 0, n * n + i * i;
 }
-function Zo(A, t, e) {
+function Wg(A, t, e) {
   return A[0] <= t && t <= A[2] && A[1] <= e && e <= A[3];
 }
-function Wr(A, t) {
-  const e = A[0], n = A[1], i = A[2], r = A[3], s = t[0], o = t[1];
-  let g = it.UNKNOWN;
-  return s < e ? g = g | it.LEFT : s > i && (g = g | it.RIGHT), o < n ? g = g | it.BELOW : o > r && (g = g | it.ABOVE), g === it.UNKNOWN && (g = it.INTERSECTING), g;
+function Qr(A, t) {
+  const e = A[0], n = A[1], i = A[2], r = A[3], s = t[0], g = t[1];
+  let o = rt.UNKNOWN;
+  return s < e ? o = o | rt.LEFT : s > i && (o = o | rt.RIGHT), g < n ? o = o | rt.BELOW : g > r && (o = o | rt.ABOVE), o === rt.UNKNOWN && (o = rt.INTERSECTING), o;
 }
-function fg() {
+function yo() {
   return [1 / 0, 1 / 0, -1 / 0, -1 / 0];
 }
-function si(A, t, e, n, i) {
+function oi(A, t, e, n, i) {
   return i ? (i[0] = A, i[1] = t, i[2] = e, i[3] = n, i) : [A, t, e, n];
 }
-function dg(A) {
-  return si(1 / 0, 1 / 0, -1 / 0, -1 / 0, A);
+function wo(A) {
+  return oi(1 / 0, 1 / 0, -1 / 0, -1 / 0, A);
 }
-function zo(A, t) {
+function Vg(A, t) {
   const e = A[0], n = A[1];
-  return si(e, n, e, n, t);
+  return oi(e, n, e, n, t);
 }
-function Fo(A, t, e, n, i) {
-  const r = dg(i);
-  return mg(r, A, t, e, n);
+function Hg(A, t, e, n, i) {
+  const r = wo(i);
+  return vo(r, A, t, e, n);
 }
-function mg(A, t, e, n, i) {
+function vo(A, t, e, n, i) {
   for (; e < n; e += i)
-    Uo(A, t[e], t[e + 1]);
+    Qg(A, t[e], t[e + 1]);
   return A;
 }
-function Uo(A, t, e) {
+function Qg(A, t, e) {
   A[0] = Math.min(A[0], t), A[1] = Math.min(A[1], e), A[2] = Math.max(A[2], t), A[3] = Math.max(A[3], e);
 }
-function pg(A, t) {
+function bo(A, t) {
   let e;
-  return e = t(_o(A)), e || (e = t(Wo(A)), e) || (e = t(Yo(A)), e) || (e = t(Qo(A)), e) ? e : !1;
+  return e = t(Yg(A)), e || (e = t(Kg(A)), e) || (e = t(ta(A)), e) || (e = t($g(A)), e) ? e : !1;
 }
-function _o(A) {
+function Yg(A) {
   return [A[0], A[1]];
 }
-function Wo(A) {
+function Kg(A) {
   return [A[2], A[1]];
 }
-function Yn(A) {
+function Kn(A) {
   return [(A[0] + A[2]) / 2, (A[1] + A[3]) / 2];
 }
-function Ho(A, t, e, n, i) {
-  const [r, s, o, g, a, C, I, c] = Vo(
+function Jg(A, t, e, n, i) {
+  const [r, s, g, o, a, C, I, c] = qg(
     A,
     t,
     e,
     n
   );
-  return si(
-    Math.min(r, o, a, I),
-    Math.min(s, g, C, c),
-    Math.max(r, o, a, I),
-    Math.max(s, g, C, c),
+  return oi(
+    Math.min(r, g, a, I),
+    Math.min(s, o, C, c),
+    Math.max(r, g, a, I),
+    Math.max(s, o, C, c),
     i
   );
 }
-function Vo(A, t, e, n) {
-  const i = t * n[0] / 2, r = t * n[1] / 2, s = Math.cos(e), o = Math.sin(e), g = i * s, a = i * o, C = r * s, I = r * o, c = A[0], h = A[1];
+function qg(A, t, e, n) {
+  const i = t * n[0] / 2, r = t * n[1] / 2, s = Math.cos(e), g = Math.sin(e), o = i * s, a = i * g, C = r * s, I = r * g, c = A[0], u = A[1];
   return [
-    c - g + I,
-    h - a - C,
-    c - g - I,
-    h - a + C,
-    c + g - I,
-    h + a + C,
-    c + g + I,
-    h + a - C,
-    c - g + I,
-    h - a - C
+    c - o + I,
+    u - a - C,
+    c - o - I,
+    u - a + C,
+    c + o - I,
+    u + a + C,
+    c + o + I,
+    u + a - C,
+    c - o + I,
+    u - a - C
   ];
 }
-function HA(A) {
+function tn(A) {
   return A[3] - A[1];
 }
-function Qo(A) {
+function $g(A) {
   return [A[0], A[3]];
 }
-function Yo(A) {
+function ta(A) {
   return [A[2], A[3]];
 }
-function mr(A) {
+function br(A) {
   return A[2] - A[0];
 }
-function pr(A, t) {
+function Er(A, t) {
   return A[0] <= t[2] && A[2] >= t[0] && A[1] <= t[3] && A[3] >= t[1];
 }
-function yg(A) {
+function Eo(A) {
   return A[2] < A[0] || A[3] < A[1];
 }
-function Ko(A, t) {
+function ea(A, t) {
   return t ? (t[0] = A[0], t[1] = A[1], t[2] = A[2], t[3] = A[3], t) : A;
 }
-function Jo(A, t, e) {
+function Aa(A, t, e) {
   let n = !1;
-  const i = Wr(A, t), r = Wr(A, e);
-  if (i === it.INTERSECTING || r === it.INTERSECTING)
+  const i = Qr(A, t), r = Qr(A, e);
+  if (i === rt.INTERSECTING || r === rt.INTERSECTING)
     n = !0;
   else {
-    const s = A[0], o = A[1], g = A[2], a = A[3], C = t[0], I = t[1], c = e[0], h = e[1], p = (h - I) / (c - C);
-    let d, m;
-    r & it.ABOVE && !(i & it.ABOVE) && (d = c - (h - a) / p, n = d >= s && d <= g), !n && r & it.RIGHT && !(i & it.RIGHT) && (m = h - (c - g) * p, n = m >= o && m <= a), !n && r & it.BELOW && !(i & it.BELOW) && (d = c - (h - o) / p, n = d >= s && d <= g), !n && r & it.LEFT && !(i & it.LEFT) && (m = h - (c - s) * p, n = m >= o && m <= a);
+    const s = A[0], g = A[1], o = A[2], a = A[3], C = t[0], I = t[1], c = e[0], u = e[1], d = (u - I) / (c - C);
+    let f, m;
+    r & rt.ABOVE && !(i & rt.ABOVE) && (f = c - (u - a) / d, n = f >= s && f <= o), !n && r & rt.RIGHT && !(i & rt.RIGHT) && (m = u - (c - o) * d, n = m >= g && m <= a), !n && r & rt.BELOW && !(i & rt.BELOW) && (f = c - (u - g) / d, n = f >= s && f <= o), !n && r & rt.LEFT && !(i & rt.LEFT) && (m = u - (c - s) * d, n = m >= g && m <= a);
   }
   return n;
 }
-function mt() {
-  throw new Error("Unimplemented abstract method.");
-}
-let qo = 0;
-function $o(A) {
-  return A.ol_uid || (A.ol_uid = String(++qo));
-}
-const ta = {
+const na = {
   /**
    * Triggered when a property is changed.
    * @event module:ol/Object.ObjectEvent#propertychange
@@ -521,11 +529,11 @@ const ta = {
    */
   PROPERTYCHANGE: "propertychange"
 };
-function pe(A, t, e, n, i) {
+function CA(A, t, e, n, i) {
   if (i) {
     const s = e;
-    e = function(o) {
-      return A.removeEventListener(t, e), s.call(n ?? this, o);
+    e = function(g) {
+      return A.removeEventListener(t, e), s.call(n ?? this, g);
     };
   } else n && n !== A && (e = e.bind(n));
   const r = {
@@ -535,13 +543,13 @@ function pe(A, t, e, n, i) {
   };
   return A.addEventListener(t, e), r;
 }
-function Hr(A, t, e, n) {
-  return pe(A, t, e, n, !0);
+function Yr(A, t, e, n) {
+  return CA(A, t, e, n, !0);
 }
-function IA(A) {
-  A && A.target && (A.target.removeEventListener(A.type, A.listener), hg(A));
+function qA(A) {
+  A && A.target && (A.target.removeEventListener(A.type, A.listener), mo(A));
 }
-const ye = {
+const ve = {
   /**
    * Generic change event. Triggered when the revision counter is increased.
    * @event module:ol/events/Event~BaseEvent#change
@@ -553,7 +561,7 @@ const ye = {
   KEYPRESS: "keypress",
   WHEEL: "wheel"
 };
-class gi extends ug {
+class gi extends po {
   constructor() {
     super(), this.on = /** @type {ObservableOnSignature<import("./events.js").EventsKey>} */
     this.onInternal, this.once = /** @type {ObservableOnSignature<import("./events.js").EventsKey>} */
@@ -565,7 +573,7 @@ class gi extends ug {
    * @api
    */
   changed() {
-    ++this.revision_, this.dispatchEvent(ye.CHANGE);
+    ++this.revision_, this.dispatchEvent(ve.CHANGE);
   }
   /**
    * Get the version number for this object.  Each time the object is modified,
@@ -586,10 +594,10 @@ class gi extends ug {
     if (Array.isArray(t)) {
       const n = t.length, i = new Array(n);
       for (let r = 0; r < n; ++r)
-        i[r] = pe(this, t[r], e);
+        i[r] = CA(this, t[r], e);
       return i;
     }
-    return pe(
+    return CA(
       this,
       /** @type {string} */
       t,
@@ -608,9 +616,9 @@ class gi extends ug {
       const i = t.length;
       n = new Array(i);
       for (let r = 0; r < i; ++r)
-        n[r] = Hr(this, t[r], e);
+        n[r] = Yr(this, t[r], e);
     } else
-      n = Hr(
+      n = Yr(
         this,
         /** @type {string} */
         t,
@@ -626,11 +634,11 @@ class gi extends ug {
    */
   unInternal(t, e) {
     const n = (
-      /** @type {Object} */
+      /** @type {ListenerWithKey} */
       e.ol_key
     );
     if (n)
-      ea(n);
+      ia(n);
     else if (Array.isArray(t))
       for (let i = 0, r = t.length; i < r; ++i)
         this.removeEventListener(t[i], e);
@@ -641,17 +649,17 @@ class gi extends ug {
 gi.prototype.on;
 gi.prototype.once;
 gi.prototype.un;
-function ea(A) {
+function ia(A) {
   if (Array.isArray(A))
     for (let t = 0, e = A.length; t < e; ++t)
-      IA(A[t]);
+      qA(A[t]);
   else
-    IA(
+    qA(
       /** @type {import("./events.js").EventsKey} */
       A
     );
 }
-class Vr extends te {
+class Kr extends oe {
   /**
    * @param {string} type The event type.
    * @param {string} key The property name.
@@ -661,12 +669,12 @@ class Vr extends te {
     super(t), this.key = e, this.oldValue = n;
   }
 }
-class pA extends gi {
+class wA extends gi {
   /**
    * @param {NoInfer<Properties>} [values] An object with key-value pairs.
    */
   constructor(t) {
-    super(), this.on, this.once, this.un, $o(this), this.values_ = null, t !== void 0 && this.setProperties(t);
+    super(), this.on, this.once, this.un, Zg(this), this.values_ = null, t !== void 0 && this.setProperties(t);
   }
   /**
    * Gets a value.
@@ -716,7 +724,7 @@ class pA extends gi {
    */
   notify(t, e) {
     let n;
-    n = `change:${t}`, this.hasListener(n) && this.dispatchEvent(new Vr(n, t, e)), n = ta.PROPERTYCHANGE, this.hasListener(n) && this.dispatchEvent(new Vr(n, t, e));
+    n = `change:${t}`, this.hasListener(n) && this.dispatchEvent(new Kr(n, t, e)), n = na.PROPERTYCHANGE, this.hasListener(n) && this.dispatchEvent(new Kr(n, t, e));
   }
   /**
    * @param {string} key Key name.
@@ -740,7 +748,11 @@ class pA extends gi {
    * @api
    */
   set(t, e, n) {
-    const i = this.values_ || (this.values_ = {});
+    const i = (
+      /** @type {Object<string, *>} */
+      this.values_ || (this.values_ = /** @type {Partial<NoInfer<Properties>>} */
+      {})
+    );
     if (n)
       i[t] = e;
     else {
@@ -776,51 +788,51 @@ class pA extends gi {
   unset(t, e) {
     if (this.values_ && t in this.values_) {
       const n = this.values_[t];
-      delete this.values_[t], Xo(this.values_) && (this.values_ = null), e || this.notify(t, n);
+      delete this.values_[t], Ug(this.values_) && (this.values_ = null), e || this.notify(t, n);
     }
   }
 }
-function Aa(...A) {
+function ra(...A) {
   console.warn(...A);
 }
-function jt(A, t, e) {
+function Lt(A, t, e) {
   return Math.min(Math.max(A, t), e);
 }
-function na(A, t, e, n, i, r) {
-  const s = i - e, o = r - n;
-  if (s !== 0 || o !== 0) {
-    const g = ((A - e) * s + (t - n) * o) / (s * s + o * o);
-    g > 1 ? (e = i, n = r) : g > 0 && (e += s * g, n += o * g);
+function sa(A, t, e, n, i, r) {
+  const s = i - e, g = r - n;
+  if (s !== 0 || g !== 0) {
+    const o = ((A - e) * s + (t - n) * g) / (s * s + g * g);
+    o > 1 ? (e = i, n = r) : o > 0 && (e += s * o, n += g * o);
   }
-  return CA(A, t, e, n);
+  return cA(A, t, e, n);
 }
-function CA(A, t, e, n) {
+function cA(A, t, e, n) {
   const i = e - A, r = n - t;
   return i * i + r * r;
 }
-function Qr(A) {
+function Jr(A) {
   return A * 180 / Math.PI;
 }
-function cA(A) {
+function lA(A) {
   return A * Math.PI / 180;
 }
-function tr(A, t) {
+function rr(A, t) {
   const e = A % t;
   return e * t < 0 ? e + t : e;
 }
-function yr(A, t, e) {
+function Mr(A, t, e) {
   return A + e * (t - A);
 }
-function er(A, t, e) {
+function sr(A, t, e) {
   if (A >= t && A < e)
     return A;
   const n = e - t;
   return ((A - t) % n + n) % n + t;
 }
-function ia(A, t) {
+function oa(A, t) {
   return A[0] += +t[0], A[1] += +t[1], A;
 }
-function Kn(A, t) {
+function Jn(A, t) {
   let e = !0;
   for (let n = A.length - 1; n >= 0; --n)
     if (A[n] != t[n]) {
@@ -829,14 +841,14 @@ function Kn(A, t) {
     }
   return e;
 }
-function wr(A, t) {
+function Rr(A, t) {
   const e = Math.cos(t), n = Math.sin(t), i = A[0] * e - A[1] * n, r = A[1] * e + A[0] * n;
   return A[0] = i, A[1] = r, A;
 }
-function ra(A, t) {
+function ga(A, t) {
   return A[0] *= t, A[1] *= t, A;
 }
-const wg = {
+const Mo = {
   // use the radius of the Normal sphere
   radians: 6370997 / (2 * Math.PI),
   degrees: 2 * Math.PI * 6370997 / 360,
@@ -844,7 +856,7 @@ const wg = {
   m: 1,
   "us-ft": 1200 / 3937
 };
-class VA {
+class en {
   /**
    * @param {Options} options Projection options.
    */
@@ -872,7 +884,10 @@ class VA {
    * @api
    */
   getExtent() {
-    return this.extent_;
+    return (
+      /** @type {import("../extent.js").Extent} */
+      this.extent_
+    );
   }
   /**
    * Get the units of this projection.
@@ -890,7 +905,7 @@ class VA {
    * @api
    */
   getMetersPerUnit() {
-    return this.metersPerUnit_ || wg[this.units_];
+    return this.metersPerUnit_ || Mo[this.units_];
   }
   /**
    * Get the world extent for this projection.
@@ -898,7 +913,10 @@ class VA {
    * @api
    */
   getWorldExtent() {
-    return this.worldExtent_;
+    return (
+      /** @type {import("../extent.js").Extent} */
+      this.worldExtent_
+    );
   }
   /**
    * Get the axis orientation of this projection.
@@ -931,7 +949,7 @@ class VA {
     this.global_ = t, this.canWrapX_ = !!(t && this.extent_);
   }
   /**
-   * @return {import("../tilegrid/TileGrid.js").default} The default tile grid.
+   * @return {import("../tilegrid/TileGrid.js").default|null} The default tile grid.
    */
   getDefaultTileGrid() {
     return this.defaultTileGrid_;
@@ -977,8 +995,8 @@ class VA {
     return this.getPointResolutionFunc_;
   }
 }
-const en = 6378137, aA = Math.PI * en, sa = [-aA, -aA, aA, aA], ga = [-180, -85, 180, 85], jn = en * Math.log(Math.tan(Math.PI / 2));
-class qe extends VA {
+const In = 6378137, IA = Math.PI * In, aa = [-IA, -IA, IA, IA], Ia = [-180, -85, 180, 85], _n = In * Math.log(Math.tan(Math.PI / 2));
+class eA extends en {
   /**
    * @param {string} code Code.
    */
@@ -986,42 +1004,42 @@ class qe extends VA {
     super({
       code: t,
       units: "m",
-      extent: sa,
+      extent: aa,
       global: !0,
-      worldExtent: ga,
+      worldExtent: Ia,
       getPointResolution: function(e, n) {
-        return e / Math.cosh(n[1] / en);
+        return e / Math.cosh(n[1] / In);
       }
     });
   }
 }
-const Yr = [
-  new qe("EPSG:3857"),
-  new qe("EPSG:102100"),
-  new qe("EPSG:102113"),
-  new qe("EPSG:900913"),
-  new qe("http://www.opengis.net/def/crs/EPSG/0/3857"),
-  new qe("http://www.opengis.net/gml/srs/epsg.xml#3857")
+const qr = [
+  new eA("EPSG:3857"),
+  new eA("EPSG:102100"),
+  new eA("EPSG:102113"),
+  new eA("EPSG:900913"),
+  new eA("http://www.opengis.net/def/crs/EPSG/0/3857"),
+  new eA("http://www.opengis.net/gml/srs/epsg.xml#3857")
 ];
-function oa(A, t, e, n) {
+function Ca(A, t, e, n) {
   const i = A.length;
-  e = e > 1 ? e : 2, n = n ?? e, t === void 0 && (e > 2 ? t = A.slice() : t = new Array(i));
+  e = e !== void 0 && e > 1 ? e : 2, n = n ?? e, t === void 0 && (e > 2 ? t = A.slice() : t = new Array(i));
   for (let r = 0; r < i; r += n) {
-    t[r] = aA * A[r] / 180;
-    let s = en * Math.log(Math.tan(Math.PI * (+A[r + 1] + 90) / 360));
-    s > jn ? s = jn : s < -jn && (s = -jn), t[r + 1] = s;
+    t[r] = IA * A[r] / 180;
+    let s = In * Math.log(Math.tan(Math.PI * (+A[r + 1] + 90) / 360));
+    s > _n ? s = _n : s < -_n && (s = -_n), t[r + 1] = s;
   }
   return t;
 }
-function aa(A, t, e, n) {
+function ca(A, t, e, n) {
   const i = A.length;
-  e = e > 1 ? e : 2, n = n ?? e, t === void 0 && (e > 2 ? t = A.slice() : t = new Array(i));
+  e = e !== void 0 && e > 1 ? e : 2, n = n ?? e, t === void 0 && (e > 2 ? t = A.slice() : t = new Array(i));
   for (let r = 0; r < i; r += n)
-    t[r] = 180 * A[r] / aA, t[r + 1] = 360 * Math.atan(Math.exp(A[r + 1] / en)) / Math.PI - 90;
+    t[r] = 180 * A[r] / IA, t[r + 1] = 360 * Math.atan(Math.exp(A[r + 1] / In)) / Math.PI - 90;
   return t;
 }
-const Ia = 6378137, Kr = [-180, -90, 180, 90], Ca = Math.PI * Ia / 180;
-class Re extends VA {
+const la = 6378137, $r = [-180, -90, 180, 90], ua = Math.PI * la / 180;
+class Se extends en {
   /**
    * @param {string} code Code.
    * @param {string} [axisOrientation] Axis orientation.
@@ -1030,66 +1048,66 @@ class Re extends VA {
     super({
       code: t,
       units: "degrees",
-      extent: Kr,
+      extent: $r,
       axisOrientation: e,
       global: !0,
-      metersPerUnit: Ca,
-      worldExtent: Kr
+      metersPerUnit: ua,
+      worldExtent: $r
     });
   }
 }
-const Jr = [
-  new Re("CRS:84"),
-  new Re("EPSG:4326", "neu"),
-  new Re("urn:ogc:def:crs:OGC:1.3:CRS84"),
-  new Re("urn:ogc:def:crs:OGC:2:84"),
-  new Re("http://www.opengis.net/def/crs/OGC/1.3/CRS84"),
-  new Re("http://www.opengis.net/gml/srs/epsg.xml#4326", "neu"),
-  new Re("http://www.opengis.net/def/crs/EPSG/0/4326", "neu")
+const ts = [
+  new Se("CRS:84"),
+  new Se("EPSG:4326", "neu"),
+  new Se("urn:ogc:def:crs:OGC:1.3:CRS84"),
+  new Se("urn:ogc:def:crs:OGC:2:84"),
+  new Se("http://www.opengis.net/def/crs/OGC/1.3/CRS84"),
+  new Se("http://www.opengis.net/gml/srs/epsg.xml#4326", "neu"),
+  new Se("http://www.opengis.net/def/crs/EPSG/0/4326", "neu")
 ];
-let Ar = {};
-function ca(A) {
-  return Ar[A] || Ar[A.replace(/urn:(x-)?ogc:def:crs:EPSG:(.*:)?(\w+)$/, "EPSG:$3")] || null;
+let or = {};
+function ha(A) {
+  return or[A] || or[A.replace(/urn:(x-)?ogc:def:crs:EPSG:(.*:)?(\w+)$/, "EPSG:$3")] || null;
 }
-function la(A, t) {
-  Ar[A] = t;
+function fa(A, t) {
+  or[A] = t;
 }
-let lA = {};
-function QA(A, t, e) {
+let uA = {};
+function An(A, t, e) {
   const n = A.getCode(), i = t.getCode();
-  n in lA || (lA[n] = {}), lA[n][i] = e;
+  n in uA || (uA[n] = {}), uA[n][i] = e;
 }
-function Pi(A, t) {
-  return A in lA && t in lA[A] ? lA[A][t] : null;
+function Bi(A, t) {
+  return A in uA && t in uA[A] ? uA[A][t] : null;
 }
-const Jn = 0.9996, Pt = 669438e-8, oi = Pt * Pt, ai = oi * Pt, De = Pt / (1 - Pt), qr = Math.sqrt(1 - Pt), fA = (1 - qr) / (1 + qr), bg = fA * fA, br = bg * fA, vr = br * fA, vg = vr * fA, Eg = 1 - Pt / 4 - 3 * oi / 64 - 5 * ai / 256, ha = 3 * Pt / 8 + 3 * oi / 32 + 45 * ai / 1024, ua = 15 * oi / 256 + 45 * ai / 1024, fa = 35 * ai / 3072, da = 3 / 2 * fA - 27 / 32 * br + 269 / 512 * vg, ma = 21 / 16 * bg - 55 / 32 * vr, pa = 151 / 96 * br - 417 / 128 * vg, ya = 1097 / 512 * vr, qn = 6378137;
-function wa(A, t, e) {
-  const n = A - 5e5, s = (e.north ? t : t - 1e7) / Jn / (qn * Eg), o = s + da * Math.sin(2 * s) + ma * Math.sin(4 * s) + pa * Math.sin(6 * s) + ya * Math.sin(8 * s), g = Math.sin(o), a = g * g, C = Math.cos(o), I = g / C, c = I * I, h = c * c, p = 1 - Pt * a, d = Math.sqrt(1 - Pt * a), m = qn / d, f = (1 - Pt) / p, v = De * C ** 2, M = v * v, E = n / (m * Jn), R = E * E, P = R * E, x = P * E, D = x * E, N = D * E, G = o - I / f * (R / 2 - x / 24 * (5 + 3 * c + 10 * v - 4 * M - 9 * De)) + N / 720 * (61 + 90 * c + 298 * v + 45 * h - 252 * De - 3 * M);
-  let k = (E - P / 6 * (1 + 2 * c + v) + D / 120 * (5 - 2 * v + 28 * c - 3 * M + 8 * De + 24 * h)) / C;
-  return k = er(
-    k + cA(Mg(e.number)),
+const qn = 0.9996, xt = 669438e-8, ai = xt * xt, Ii = ai * xt, Oe = xt / (1 - xt), es = Math.sqrt(1 - xt), mA = (1 - es) / (1 + es), Ro = mA * mA, Sr = Ro * mA, Tr = Sr * mA, So = Tr * mA, To = 1 - xt / 4 - 3 * ai / 64 - 5 * Ii / 256, da = 3 * xt / 8 + 3 * ai / 32 + 45 * Ii / 1024, ma = 15 * ai / 256 + 45 * Ii / 1024, pa = 35 * Ii / 3072, ya = 3 / 2 * mA - 27 / 32 * Sr + 269 / 512 * So, wa = 21 / 16 * Ro - 55 / 32 * Tr, va = 151 / 96 * Sr - 417 / 128 * So, ba = 1097 / 512 * Tr, $n = 6378137;
+function Ea(A, t, e) {
+  const n = A - 5e5, s = (e.north ? t : t - 1e7) / qn / ($n * To), g = s + ya * Math.sin(2 * s) + wa * Math.sin(4 * s) + va * Math.sin(6 * s) + ba * Math.sin(8 * s), o = Math.sin(g), a = o * o, C = Math.cos(g), I = o / C, c = I * I, u = c * c, d = 1 - xt * a, f = Math.sqrt(1 - xt * a), m = $n / f, h = (1 - xt) / d, w = Oe * C ** 2, S = w * w, E = n / (m * qn), P = E * E, x = P * E, D = x * E, B = D * E, k = B * E, j = g - I / h * (P / 2 - D / 24 * (5 + 3 * c + 10 * w - 4 * S - 9 * Oe)) + k / 720 * (61 + 90 * c + 298 * w + 45 * u - 252 * Oe - 3 * S);
+  let _ = (E - x / 6 * (1 + 2 * c + w) + B / 120 * (5 - 2 * w + 28 * c - 3 * S + 8 * Oe + 24 * u)) / C;
+  return _ = sr(
+    _ + lA(Po(e.number)),
     -Math.PI,
     Math.PI
-  ), [Qr(k), Qr(G)];
+  ), [Jr(_), Jr(j)];
 }
-const $r = -80, ts = 84, ba = -180, va = 180;
-function Ea(A, t, e) {
-  A = er(A, ba, va), t < $r ? t = $r : t > ts && (t = ts);
-  const n = cA(t), i = Math.sin(n), r = Math.cos(n), s = i / r, o = s * s, g = o * o, a = cA(A), C = Mg(e.number), I = cA(C), c = qn / Math.sqrt(1 - Pt * i ** 2), h = De * r ** 2, p = r * er(a - I, -Math.PI, Math.PI), d = p * p, m = d * p, f = m * p, v = f * p, M = v * p, E = qn * (Eg * n - ha * Math.sin(2 * n) + ua * Math.sin(4 * n) - fa * Math.sin(6 * n)), R = Jn * c * (p + m / 6 * (1 - o + h) + v / 120 * (5 - 18 * o + g + 72 * h - 58 * De)) + 5e5;
-  let P = Jn * (E + c * s * (d / 2 + f / 24 * (5 - o + 9 * h + 4 * h ** 2) + M / 720 * (61 - 58 * o + g + 600 * h - 330 * De)));
-  return e.north || (P += 1e7), [R, P];
+const As = -80, ns = 84, Ma = -180, Ra = 180;
+function Sa(A, t, e) {
+  A = sr(A, Ma, Ra), t < As ? t = As : t > ns && (t = ns);
+  const n = lA(t), i = Math.sin(n), r = Math.cos(n), s = i / r, g = s * s, o = g * g, a = lA(A), C = Po(e.number), I = lA(C), c = $n / Math.sqrt(1 - xt * i ** 2), u = Oe * r ** 2, d = r * sr(a - I, -Math.PI, Math.PI), f = d * d, m = f * d, h = m * d, w = h * d, S = w * d, E = $n * (To * n - da * Math.sin(2 * n) + ma * Math.sin(4 * n) - pa * Math.sin(6 * n)), P = qn * c * (d + m / 6 * (1 - g + u) + w / 120 * (5 - 18 * g + o + 72 * u - 58 * Oe)) + 5e5;
+  let x = qn * (E + c * s * (f / 2 + h / 24 * (5 - g + 9 * u + 4 * u ** 2) + S / 720 * (61 - 58 * g + o + 600 * u - 330 * Oe)));
+  return e.north || (x += 1e7), [P, x];
 }
-function Mg(A) {
+function Po(A) {
   return (A - 1) * 6 - 180 + 3;
 }
-const Ma = [
+const Ta = [
   /^EPSG:(\d+)$/,
   /^urn:ogc:def:crs:EPSG::(\d+)$/,
   /^http:\/\/www\.opengis\.net\/def\/crs\/EPSG\/0\/(\d+)$/
 ];
-function Rg(A) {
+function xo(A) {
   let t = 0;
-  for (const i of Ma) {
+  for (const i of Ta) {
     const r = A.match(i);
     if (r) {
       t = parseInt(r[1]);
@@ -1101,33 +1119,33 @@ function Rg(A) {
   let e = 0, n = !1;
   return t > 32700 && t < 32761 ? e = t - 32700 : t > 32600 && t < 32661 && (n = !0, e = t - 32600), e ? { number: e, north: n } : null;
 }
-function es(A, t) {
+function is(A, t) {
   return function(e, n, i, r) {
     const s = e.length;
-    i = i > 1 ? i : 2, r = r ?? i, n || (i > 2 ? n = e.slice() : n = new Array(s));
-    for (let o = 0; o < s; o += r) {
-      const g = e[o], a = e[o + 1], C = A(g, a, t);
-      n[o] = C[0], n[o + 1] = C[1];
+    i = i !== void 0 && i > 1 ? i : 2, r = r ?? i, n || (i > 2 ? n = e.slice() : n = new Array(s));
+    for (let g = 0; g < s; g += r) {
+      const o = e[g], a = e[g + 1], C = A(o, a, t);
+      n[g] = C[0], n[g + 1] = C[1];
     }
     return n;
   };
 }
-function Ra(A) {
-  return Rg(A) ? new VA({ code: A, units: "m" }) : null;
+function Pa(A) {
+  return xo(A) ? new en({ code: A, units: "m" }) : null;
 }
-function Ta(A) {
-  const t = Rg(A.getCode());
+function xa(A) {
+  const t = xo(A.getCode());
   return t ? {
-    forward: es(Ea, t),
-    inverse: es(wa, t)
+    forward: is(Sa, t),
+    inverse: is(Ea, t)
   } : null;
 }
-const Sa = [Ta], Pa = [Ra];
-let nr = !0;
-function xa(A) {
-  nr = !1;
+const Da = [xa], Oa = [Pa];
+let gr = !0;
+function Ba(A) {
+  gr = !1;
 }
-function Tg(A, t) {
+function Do(A, t) {
   if (t !== void 0) {
     for (let e = 0, n = A.length; e < n; ++e)
       t[e] = A[e];
@@ -1136,172 +1154,174 @@ function Tg(A, t) {
     t = A.slice();
   return t;
 }
-function ir(A) {
-  la(A.getCode(), A), QA(A, A, Tg);
+function ar(A) {
+  fa(A.getCode(), A), An(A, A, Do);
 }
-function Da(A) {
-  A.forEach(ir);
+function La(A) {
+  A.forEach(ar);
 }
-function YA(A) {
+function nn(A) {
   if (typeof A != "string")
-    return A;
-  const t = ca(A);
+    return A !== void 0 ? A : null;
+  const t = ha(A);
   if (t)
     return t;
-  for (const e of Pa) {
+  for (const e of Oa) {
     const n = e(A);
     if (n)
       return n;
   }
   return null;
 }
-function As(A) {
-  Da(A), A.forEach(function(t) {
+function rs(A) {
+  La(A), A.forEach(function(t) {
     A.forEach(function(e) {
-      t !== e && QA(t, e, Tg);
+      t !== e && An(t, e, Do);
     });
   });
 }
-function Oa(A, t, e, n) {
+function ka(A, t, e, n) {
   A.forEach(function(i) {
     t.forEach(function(r) {
-      QA(i, r, e), QA(r, i, n);
+      An(i, r, e), An(r, i, n);
     });
   });
 }
-function Er(A, t) {
-  return A ? typeof A == "string" ? YA(A) : (
+function Pr(A, t) {
+  return A ? typeof A == "string" ? nn(A) : (
     /** @type {Projection} */
     A
-  ) : YA(t);
+  ) : nn(t);
 }
-function Ba(A, t) {
+function Na(A, t) {
+  if (!A || !t)
+    return null;
   const e = A.getCode(), n = t.getCode();
-  let i = Pi(e, n);
+  let i = Bi(e, n);
   if (i)
     return i;
   let r = null, s = null;
-  for (const g of Sa)
-    r || (r = g(A)), s || (s = g(t));
+  for (const o of Da)
+    r || (r = o(A)), s || (s = o(t));
   if (!r && !s)
     return null;
-  const o = "EPSG:4326";
-  if (s)
-    if (r)
-      i = xi(
-        r.inverse,
-        s.forward
-      );
-    else {
-      const g = Pi(e, o);
-      g && (i = xi(
-        g,
-        s.forward
-      ));
-    }
-  else {
-    const g = Pi(o, n);
-    g && (i = xi(
+  const g = "EPSG:4326";
+  if (!s && r) {
+    const o = Bi(g, n);
+    o && (i = Li(
       r.inverse,
-      g
+      o
     ));
-  }
-  return i && (ir(A), ir(t), QA(A, t, i)), i;
+  } else if (!r && s) {
+    const o = Bi(e, g);
+    o && (i = Li(
+      o,
+      s.forward
+    ));
+  } else r && s && (i = Li(
+    r.inverse,
+    s.forward
+  ));
+  return i && (ar(A), ar(t), An(A, t, i)), i;
 }
-function xi(A, t) {
+function Li(A, t) {
   return function(e, n, i, r) {
     return n = A(e, n, i, r), t(n, n, i, r);
   };
 }
-function ns(A, t) {
-  const e = YA(A), n = YA(t);
-  return Ba(e, n);
+function ss(A, t) {
+  const e = nn(A), n = nn(t);
+  return Na(e, n);
 }
-function is(A, t) {
+let Ga = null;
+function ja() {
+  return Ga;
+}
+function os(A, t) {
   return A;
 }
-function ce(A, t) {
-  return nr && !Kn(A, [0, 0]) && A[0] >= -180 && A[0] <= 180 && A[1] >= -90 && A[1] <= 90 && (nr = !1, Aa(
+function he(A, t) {
+  return gr && !Jn(A, [0, 0]) && A[0] >= -180 && A[0] <= 180 && A[1] >= -90 && A[1] <= 90 && (gr = !1, ra(
     "Call useGeographic() from ol/proj once to work with [longitude, latitude] coordinates."
   )), A;
 }
-function La(A, t) {
+function _a(A, t) {
   return A;
 }
 function Xn(A, t) {
   return A;
 }
-function ka() {
-  As(Yr), As(Jr), Oa(
-    Jr,
-    Yr,
-    oa,
-    aa
+function Xa() {
+  rs(qr), rs(ts), ka(
+    ts,
+    qr,
+    Ca,
+    ca
   );
 }
-ka();
-function fe(A, t) {
+Xa();
+function ye(A, t) {
   if (!A)
     throw new Error(t);
 }
-const Na = [1, 0, 0, 1, 0, 0];
+const Za = [1, 0, 0, 1, 0, 0];
 new Array(6);
-function Ga() {
-  return Na.slice(0);
+function za() {
+  return Za.slice(0);
 }
-function ja(A, t, e, n, i, r, s, o) {
-  const g = Math.sin(r), a = Math.cos(r);
-  return A[0] = n * a, A[1] = i * g, A[2] = -n * g, A[3] = i * a, A[4] = s * n * a - o * n * g + t, A[5] = s * i * g + o * i * a + e, A;
+function Fa(A, t, e, n, i, r, s, g) {
+  const o = Math.sin(r), a = Math.cos(r);
+  return A[0] = n * a, A[1] = i * o, A[2] = -n * o, A[3] = i * a, A[4] = s * n * a - g * n * o + t, A[5] = s * i * o + g * i * a + e, A;
 }
-function Xa(A, t, e, n, i, r, s) {
+function Ua(A, t, e, n, i, r, s) {
   r = r || [], s = s || 2;
-  let o = 0;
-  for (let g = t; g < e; g += n) {
-    const a = A[g], C = A[g + 1];
-    r[o++] = i[0] * a + i[2] * C + i[4], r[o++] = i[1] * a + i[3] * C + i[5];
+  let g = 0;
+  for (let o = t; o < e; o += n) {
+    const a = A[o], C = A[o + 1];
+    r[g++] = i[0] * a + i[2] * C + i[4], r[g++] = i[1] * a + i[3] * C + i[5];
     for (let I = 2; I < s; I++)
-      r[o++] = A[g + I];
+      r[g++] = A[o + I];
   }
-  return r && r.length != o && (r.length = o), r;
+  return r && r.length != g && (r.length = g), r;
 }
-function Sg(A, t, e, n, i, r, s) {
+function Oo(A, t, e, n, i, r, s) {
   s = s || [];
-  const o = Math.cos(i), g = Math.sin(i), a = r[0], C = r[1];
+  const g = Math.cos(i), o = Math.sin(i), a = r[0], C = r[1];
   let I = 0;
   for (let c = t; c < e; c += n) {
-    const h = A[c] - a, p = A[c + 1] - C;
-    s[I++] = a + h * o - p * g, s[I++] = C + h * g + p * o;
-    for (let d = c + 2; d < c + n; ++d)
-      s[I++] = A[d];
+    const u = A[c] - a, d = A[c + 1] - C;
+    s[I++] = a + u * g - d * o, s[I++] = C + u * o + d * g;
+    for (let f = c + 2; f < c + n; ++f)
+      s[I++] = A[f];
   }
   return s && s.length != I && (s.length = I), s;
 }
-function Za(A, t, e, n, i, r, s, o) {
-  o = o || [];
-  const g = s[0], a = s[1];
+function Wa(A, t, e, n, i, r, s, g) {
+  g = g || [];
+  const o = s[0], a = s[1];
   let C = 0;
   for (let I = t; I < e; I += n) {
-    const c = A[I] - g, h = A[I + 1] - a;
-    o[C++] = g + i * c, o[C++] = a + r * h;
-    for (let p = I + 2; p < I + n; ++p)
-      o[C++] = A[p];
+    const c = A[I] - o, u = A[I + 1] - a;
+    g[C++] = o + i * c, g[C++] = a + r * u;
+    for (let d = I + 2; d < I + n; ++d)
+      g[C++] = A[d];
   }
-  return o && o.length != C && (o.length = C), o;
+  return g && g.length != C && (g.length = C), g;
 }
-function za(A, t, e, n, i, r, s) {
+function Va(A, t, e, n, i, r, s) {
   s = s || [];
-  let o = 0;
-  for (let g = t; g < e; g += n) {
-    s[o++] = A[g] + i, s[o++] = A[g + 1] + r;
-    for (let a = g + 2; a < g + n; ++a)
-      s[o++] = A[a];
+  let g = 0;
+  for (let o = t; o < e; o += n) {
+    s[g++] = A[o] + i, s[g++] = A[o + 1] + r;
+    for (let a = o + 2; a < o + n; ++a)
+      s[g++] = A[a];
   }
-  return s && s.length != o && (s.length = o), s;
+  return s && s.length != g && (s.length = g), s;
 }
-const rs = Ga(), Fa = [NaN, NaN];
-class Ua extends pA {
+const gs = za(), Ha = [NaN, NaN];
+class Qa extends wA {
   constructor() {
-    super(), this.extent_ = fg(), this.extentRevision_ = -1, this.simplifiedGeometryMaxMinSquaredTolerance = 0, this.simplifiedGeometryRevision = 0, this.simplifyTransformedInternal = jo(
+    super(), this.extent_ = yo(), this.extentRevision_ = -1, this.simplifiedGeometryMaxMinSquaredTolerance = 0, this.simplifiedGeometryRevision = 0, this.simplifyTransformedInternal = Fg(
       (t, e, n) => {
         if (!n)
           return this.getSimplifiedGeometry(e);
@@ -1330,7 +1350,7 @@ class Ua extends pA {
    * @return {!Geometry} Clone.
    */
   clone() {
-    return mt();
+    return dt();
   }
   /**
    * @abstract
@@ -1341,7 +1361,7 @@ class Ua extends pA {
    * @return {number} Minimum squared distance.
    */
   closestPointXY(t, e, n, i) {
-    return mt();
+    return dt();
   }
   /**
    * @param {number} x X.
@@ -1349,7 +1369,7 @@ class Ua extends pA {
    * @return {boolean} Contains (x, y).
    */
   containsXY(t, e) {
-    return this.closestPointXY(t, e, Fa, Number.MIN_VALUE) === 0;
+    return this.closestPointXY(t, e, Ha, Number.MIN_VALUE) === 0;
   }
   /**
    * Return the closest point of the geometry to the passed point as
@@ -1379,7 +1399,7 @@ class Ua extends pA {
    * @return {import("../extent.js").Extent} extent Extent.
    */
   computeExtent(t) {
-    return mt();
+    return dt();
   }
   /**
    * Get the extent of the geometry.
@@ -1390,9 +1410,9 @@ class Ua extends pA {
   getExtent(t) {
     if (this.extentRevision_ != this.getRevision()) {
       const e = this.computeExtent(this.extent_);
-      (isNaN(e[0]) || isNaN(e[1])) && dg(e), this.extentRevision_ = this.getRevision();
+      (isNaN(e[0]) || isNaN(e[1])) && wo(e), this.extentRevision_ = this.getRevision();
     }
-    return Ko(this.extent_, t);
+    return ea(this.extent_, t);
   }
   /**
    * Rotate the geometry around a given coordinate. This modifies the geometry
@@ -1403,7 +1423,7 @@ class Ua extends pA {
    * @api
    */
   rotate(t, e) {
-    mt();
+    dt();
   }
   /**
    * Scale the geometry (with an optional origin).  This modifies the geometry
@@ -1416,7 +1436,7 @@ class Ua extends pA {
    * @api
    */
   scale(t, e, n) {
-    mt();
+    dt();
   }
   /**
    * Create a simplified version of this geometry.  For linestrings, this uses
@@ -1439,7 +1459,7 @@ class Ua extends pA {
    * @return {Geometry} Simplified geometry.
    */
   getSimplifiedGeometry(t) {
-    return mt();
+    return dt();
   }
   /**
    * Get the type of this geometry.
@@ -1447,7 +1467,7 @@ class Ua extends pA {
    * @return {Type} Geometry type.
    */
   getType() {
-    return mt();
+    return dt();
   }
   /**
    * Apply a transform function to the coordinates of the geometry.
@@ -1459,7 +1479,7 @@ class Ua extends pA {
    * Called with a flat array of geometry coordinates.
    */
   applyTransform(t) {
-    mt();
+    dt();
   }
   /**
    * Test if the geometry and the passed extent intersect.
@@ -1468,7 +1488,7 @@ class Ua extends pA {
    * @return {boolean} `true` if the geometry and the extent intersect.
    */
   intersectsExtent(t) {
-    return mt();
+    return dt();
   }
   /**
    * Translate the geometry.  This modifies the geometry coordinates in place.  If
@@ -1479,7 +1499,7 @@ class Ua extends pA {
    * @api
    */
   translate(t, e) {
-    mt();
+    dt();
   }
   /**
    * Transform each coordinate of the geometry from one coordinate reference
@@ -1497,32 +1517,46 @@ class Ua extends pA {
    * @api
    */
   transform(t, e) {
-    const n = YA(t), i = n.getUnits() == "tile-pixels" ? function(r, s, o) {
-      const g = n.getExtent(), a = n.getWorldExtent(), C = HA(a) / HA(g);
-      ja(
-        rs,
-        a[0],
-        a[3],
-        C,
-        -C,
-        0,
-        0,
-        0
-      );
-      const I = Xa(
-        r,
-        0,
-        r.length,
-        o,
-        rs,
-        s
-      ), c = ns(n, e);
-      return c ? c(I, I, o) : I;
-    } : ns(n, e);
-    return this.applyTransform(i), this;
+    const n = nn(t);
+    if (!n)
+      return this;
+    const i = n.getUnits() == "tile-pixels" ? (
+      /**
+       * @param {Array<number>} inCoordinates Input coordinates.
+       * @param {Array<number>} outCoordinates Output coordinates.
+       * @param {number} stride Stride.
+       * @return {Array<number>} Output coordinates.
+       */
+      function(r, s, g) {
+        const o = n.getExtent(), a = n.getWorldExtent(), C = tn(a) / tn(o);
+        Fa(
+          gs,
+          a[0],
+          a[3],
+          C,
+          -C,
+          0,
+          0,
+          0
+        );
+        const I = Ua(
+          r,
+          0,
+          r.length,
+          g,
+          gs,
+          s
+        ), c = ss(n, e);
+        return c ? c(I, I, g) : I;
+      }
+    ) : ss(n, e);
+    return i && this.applyTransform(
+      /** @type {import("../proj.js").TransformFunction} */
+      i
+    ), this;
   }
 }
-class An extends Ua {
+class Cn extends Qa {
   constructor() {
     super(), this.layout = "XY", this.stride = 2, this.flatCoordinates;
   }
@@ -1533,7 +1567,7 @@ class An extends Ua {
    * @override
    */
   computeExtent(t) {
-    return Fo(
+    return Hg(
       this.flatCoordinates,
       0,
       this.flatCoordinates.length,
@@ -1546,7 +1580,7 @@ class An extends Ua {
    * @return {Array<*> | null} Coordinates.
    */
   getCoordinates() {
-    return mt();
+    return dt();
   }
   /**
    * Return the first coordinate of the geometry.
@@ -1611,7 +1645,7 @@ class An extends Ua {
    * @param {Array<number>} flatCoordinates Flat coordinates.
    */
   setFlatCoordinates(t, e) {
-    this.stride = ss(t), this.layout = t, this.flatCoordinates = e;
+    this.stride = as(t), this.layout = t, this.flatCoordinates = e;
   }
   /**
    * @abstract
@@ -1619,7 +1653,7 @@ class An extends Ua {
    * @param {import("./Geometry.js").GeometryLayout} [layout] Layout.
    */
   setCoordinates(t, e) {
-    mt();
+    dt();
   }
   /**
    * @param {import("./Geometry.js").GeometryLayout|undefined} layout Layout.
@@ -1630,7 +1664,7 @@ class An extends Ua {
   setLayout(t, e, n) {
     let i;
     if (t)
-      i = ss(t);
+      i = as(t);
     else {
       for (let r = 0; r < n; ++r) {
         if (e.length === 0) {
@@ -1640,7 +1674,7 @@ class An extends Ua {
         e = /** @type {Array<unknown>} */
         e[0];
       }
-      i = e.length, t = _a(i);
+      i = e.length, t = Ya(i);
     }
     this.layout = t, this.stride = i;
   }
@@ -1674,7 +1708,7 @@ class An extends Ua {
     const n = this.getFlatCoordinates();
     if (n) {
       const i = this.getStride();
-      Sg(
+      Oo(
         n,
         0,
         n.length,
@@ -1696,11 +1730,11 @@ class An extends Ua {
    * @override
    */
   scale(t, e, n) {
-    e === void 0 && (e = t), n || (n = Yn(this.getExtent()));
+    e === void 0 && (e = t), n || (n = Kn(this.getExtent()));
     const i = this.getFlatCoordinates();
     if (i) {
       const r = this.getStride();
-      Za(
+      Wa(
         i,
         0,
         i.length,
@@ -1724,7 +1758,7 @@ class An extends Ua {
     const n = this.getFlatCoordinates();
     if (n) {
       const i = this.getStride();
-      za(
+      Va(
         n,
         0,
         n.length,
@@ -1736,44 +1770,44 @@ class An extends Ua {
     }
   }
 }
-function _a(A) {
+function Ya(A) {
   let t;
   return A == 2 ? t = "XY" : A == 3 ? t = "XYZ" : A == 4 && (t = "XYZM"), /** @type {import("./Geometry.js").GeometryLayout} */
   t;
 }
-function ss(A) {
+function as(A) {
   let t;
   return A == "XY" ? t = 2 : A == "XYZ" || A == "XYM" ? t = 3 : A == "XYZM" && (t = 4), /** @type {number} */
   t;
 }
-function Pg(A, t, e, n) {
-  for (let i = 0, r = e.length; i < r; ++i)
+function Bo(A, t, e, n) {
+  for (let i = 0; i < n; ++i)
     A[t++] = e[i];
   return t;
 }
-function Mr(A, t, e, n) {
+function xr(A, t, e, n) {
   for (let i = 0, r = e.length; i < r; ++i) {
     const s = e[i];
-    for (let o = 0; o < n; ++o)
-      A[t++] = s[o];
+    for (let g = 0; g < n; ++g)
+      A[t++] = s[g];
   }
   return t;
 }
-function Wa(A, t, e, n, i) {
+function Ka(A, t, e, n, i) {
   i = i || [];
   let r = 0;
-  for (let s = 0, o = e.length; s < o; ++s) {
-    const g = Mr(
+  for (let s = 0, g = e.length; s < g; ++s) {
+    const o = xr(
       A,
       t,
       e[s],
       n
     );
-    i[r++] = g, t = g;
+    i[r++] = o, t = o;
   }
   return i.length = r, i;
 }
-class Rr extends An {
+class Dr extends Cn {
   /**
    * @param {!import("../coordinate.js").Coordinate} center Center.
    *     For internal use, flat coordinates in combination with `layout` and no
@@ -1791,7 +1825,7 @@ class Rr extends An {
    * @override
    */
   clone() {
-    const t = new Rr(
+    const t = new Dr(
       this.flatCoordinates.slice(),
       void 0,
       this.layout
@@ -1807,18 +1841,18 @@ class Rr extends An {
    * @override
    */
   closestPointXY(t, e, n, i) {
-    const r = this.flatCoordinates, s = t - r[0], o = e - r[1], g = s * s + o * o;
-    if (g < i) {
-      if (g === 0)
+    const r = this.flatCoordinates, s = t - r[0], g = e - r[1], o = s * s + g * g;
+    if (o < i) {
+      if (o === 0)
         for (let a = 0; a < this.stride; ++a)
           n[a] = r[a];
       else {
-        const a = this.getRadius() / Math.sqrt(g);
-        n[0] = r[0] + a * s, n[1] = r[1] + a * o;
+        const a = this.getRadius() / Math.sqrt(o);
+        n[0] = r[0] + a * s, n[1] = r[1] + a * g;
         for (let C = 2; C < this.stride; ++C)
           n[C] = r[C];
       }
-      return n.length = this.stride, g;
+      return n.length = this.stride, o;
     }
     return i;
   }
@@ -1848,7 +1882,7 @@ class Rr extends An {
    */
   computeExtent(t) {
     const e = this.flatCoordinates, n = e[this.stride] - e[0];
-    return si(
+    return oi(
       e[0] - n,
       e[1] - n,
       e[0] + n,
@@ -1890,9 +1924,9 @@ class Rr extends An {
    */
   intersectsExtent(t) {
     const e = this.getExtent();
-    if (pr(t, e)) {
+    if (Er(t, e)) {
       const n = this.getCenter();
-      return t[0] <= n[0] && t[2] >= n[0] || t[1] <= n[1] && t[3] >= n[1] ? !0 : pg(t, this.intersectsCoordinate.bind(this));
+      return t[0] <= n[0] && t[2] >= n[0] || t[1] <= n[1] && t[3] >= n[1] ? !0 : bo(t, this.intersectsCoordinate.bind(this));
     }
     return !1;
   }
@@ -1919,9 +1953,9 @@ class Rr extends An {
   setCenterAndRadius(t, e, n) {
     this.setLayout(n, t, 0), this.flatCoordinates || (this.flatCoordinates = []);
     const i = this.flatCoordinates;
-    let r = Pg(i, 0, t, this.stride);
+    let r = Bo(i, 0, t, this.stride);
     i[r++] = i[0] + e;
-    for (let s = 1, o = this.stride; s < o; ++s)
+    for (let s = 1, g = this.stride; s < g; ++s)
       i[r++] = i[s];
     i.length = r, this.changed();
   }
@@ -1932,6 +1966,8 @@ class Rr extends An {
     return null;
   }
   /**
+   * @param {import("../coordinate.js").Coordinate} coordinates Coordinates.
+   * @param {import("./Geometry.js").GeometryLayout} [layout] Layout.
    * @override
    */
   setCoordinates(t, e) {
@@ -1955,42 +1991,42 @@ class Rr extends An {
   rotate(t, e) {
     const n = this.getCenter(), i = this.getStride();
     this.setCenter(
-      Sg(n, 0, n.length, i, t, e, n)
+      Oo(n, 0, n.length, i, t, e, n)
     ), this.changed();
   }
 }
-function xg(A, t, e, n) {
+function Lo(A, t, e, n) {
   let i = 0;
   const r = A[e - n], s = A[e - n + 1];
-  let o = 0, g = 0;
+  let g = 0, o = 0;
   for (; t < e; t += n) {
     const a = A[t] - r, C = A[t + 1] - s;
-    i += g * a - o * C, o = a, g = C;
+    i += o * a - g * C, g = a, o = C;
   }
   return i / 2;
 }
-function Ha(A, t, e, n) {
+function Ja(A, t, e, n) {
   let i = 0;
   for (let r = 0, s = e.length; r < s; ++r) {
-    const o = e[r];
-    i += xg(A, t, o, n), t = o;
+    const g = e[r];
+    i += Lo(A, t, g, n), t = g;
   }
   return i;
 }
-function gs(A, t, e, n, i, r, s) {
-  const o = A[t], g = A[t + 1], a = A[e] - o, C = A[e + 1] - g;
+function Is(A, t, e, n, i, r, s) {
+  const g = A[t], o = A[t + 1], a = A[e] - g, C = A[e + 1] - o;
   let I;
   if (a === 0 && C === 0)
     I = t;
   else {
-    const c = ((i - o) * a + (r - g) * C) / (a * a + C * C);
+    const c = ((i - g) * a + (r - o) * C) / (a * a + C * C);
     if (c > 1)
       I = e;
     else if (c > 0) {
-      for (let h = 0; h < n; ++h)
-        s[h] = yr(
-          A[t + h],
-          A[e + h],
+      for (let u = 0; u < n; ++u)
+        s[u] = Mr(
+          A[t + u],
+          A[e + u],
           c
         );
       s.length = n;
@@ -2002,124 +2038,124 @@ function gs(A, t, e, n, i, r, s) {
     s[c] = A[I + c];
   s.length = n;
 }
-function Tr(A, t, e, n, i) {
+function Or(A, t, e, n, i) {
   let r = A[t], s = A[t + 1];
   for (t += n; t < e; t += n) {
-    const o = A[t], g = A[t + 1], a = CA(r, s, o, g);
-    a > i && (i = a), r = o, s = g;
+    const g = A[t], o = A[t + 1], a = cA(r, s, g, o);
+    a > i && (i = a), r = g, s = o;
   }
   return i;
 }
-function Va(A, t, e, n, i) {
+function qa(A, t, e, n, i) {
   for (let r = 0, s = e.length; r < s; ++r) {
-    const o = e[r];
-    i = Tr(A, t, o, n, i), t = o;
+    const g = e[r];
+    i = Or(A, t, g, n, i), t = g;
   }
   return i;
 }
-function Sr(A, t, e, n, i, r, s, o, g, a, C) {
+function Br(A, t, e, n, i, r, s, g, o, a, C) {
   if (t == e)
     return a;
   let I, c;
   if (i === 0) {
-    if (c = CA(
+    if (c = cA(
       s,
-      o,
+      g,
       A[t],
       A[t + 1]
     ), c < a) {
       for (I = 0; I < n; ++I)
-        g[I] = A[t + I];
-      return g.length = n, c;
+        o[I] = A[t + I];
+      return o.length = n, c;
     }
     return a;
   }
   C = C || [NaN, NaN];
-  let h = t + n;
-  for (; h < e; )
-    if (gs(
+  let u = t + n;
+  for (; u < e; )
+    if (Is(
       A,
-      h - n,
-      h,
+      u - n,
+      u,
       n,
       s,
-      o,
+      g,
       C
-    ), c = CA(s, o, C[0], C[1]), c < a) {
+    ), c = cA(s, g, C[0], C[1]), c < a) {
       for (a = c, I = 0; I < n; ++I)
-        g[I] = C[I];
-      g.length = n, h += n;
+        o[I] = C[I];
+      o.length = n, u += n;
     } else
-      h += n * Math.max(
+      u += n * Math.max(
         (Math.sqrt(c) - Math.sqrt(a)) / i | 0,
         1
       );
-  if (r && (gs(
+  if (r && (Is(
     A,
     e - n,
     t,
     n,
     s,
-    o,
+    g,
     C
-  ), c = CA(s, o, C[0], C[1]), c < a)) {
+  ), c = cA(s, g, C[0], C[1]), c < a)) {
     for (a = c, I = 0; I < n; ++I)
-      g[I] = C[I];
-    g.length = n;
+      o[I] = C[I];
+    o.length = n;
   }
   return a;
 }
-function Qa(A, t, e, n, i, r, s, o, g, a, C) {
+function $a(A, t, e, n, i, r, s, g, o, a, C) {
   C = C || [NaN, NaN];
   for (let I = 0, c = e.length; I < c; ++I) {
-    const h = e[I];
-    a = Sr(
+    const u = e[I];
+    a = Br(
       A,
       t,
-      h,
+      u,
       n,
       i,
       r,
       s,
-      o,
       g,
+      o,
       a,
       C
-    ), t = h;
+    ), t = u;
   }
   return a;
 }
-function Pr(A, t, e, n, i) {
+function Lr(A, t, e, n, i) {
   i = i !== void 0 ? i : [];
   let r = 0;
   for (let s = t; s < e; s += n)
     i[r++] = A.slice(s, s + n);
   return i.length = r, i;
 }
-function Ya(A, t, e, n, i) {
+function tI(A, t, e, n, i) {
   i = i !== void 0 ? i : [];
   let r = 0;
-  for (let s = 0, o = e.length; s < o; ++s) {
-    const g = e[s];
-    i[r++] = Pr(
+  for (let s = 0, g = e.length; s < g; ++s) {
+    const o = e[s];
+    i[r++] = Lr(
       A,
       t,
-      g,
+      o,
       n,
       i[r]
-    ), t = g;
+    ), t = o;
   }
   return i.length = r, i;
 }
-function Ka(A, t, e, n, i) {
-  return !pg(
+function eI(A, t, e, n, i) {
+  return !bo(
     i,
     /**
      * @param {import("../../coordinate.js").Coordinate} coordinate Coordinate.
      * @return {boolean} Contains (x, y).
      */
     function(s) {
-      return !Oe(
+      return !Be(
         A,
         t,
         e,
@@ -2130,23 +2166,23 @@ function Ka(A, t, e, n, i) {
     }
   );
 }
-function Oe(A, t, e, n, i, r) {
-  let s = 0, o = A[e - n], g = A[e - n + 1];
+function Be(A, t, e, n, i, r) {
+  let s = 0, g = A[e - n], o = A[e - n + 1];
   for (; t < e; t += n) {
     const a = A[t], C = A[t + 1];
-    g <= r ? C > r && (a - o) * (r - g) - (i - o) * (C - g) > 0 && s++ : C <= r && (a - o) * (r - g) - (i - o) * (C - g) < 0 && s--, o = a, g = C;
+    o <= r ? C > r && (a - g) * (r - o) - (i - g) * (C - o) > 0 && s++ : C <= r && (a - g) * (r - o) - (i - g) * (C - o) < 0 && s--, g = a, o = C;
   }
   return s !== 0;
 }
-function Dg(A, t, e, n, i, r) {
-  if (e.length === 0 || !Oe(A, t, e[0], n, i, r))
+function ko(A, t, e, n, i, r) {
+  if (e.length === 0 || !Be(A, t, e[0], n, i, r))
     return !1;
-  for (let s = 1, o = e.length; s < o; ++s)
-    if (Oe(A, e[s - 1], e[s], n, i, r))
+  for (let s = 1, g = e.length; s < g; ++s)
+    if (Be(A, e[s - 1], e[s], n, i, r))
       return !1;
   return !0;
 }
-function Og(A, t, e, n, i) {
+function No(A, t, e, n, i) {
   let r;
   for (t += n; t < e; t += n)
     if (r = i(
@@ -2156,8 +2192,8 @@ function Og(A, t, e, n, i) {
       return r;
   return !1;
 }
-function Ii(A, t, e, n, i, r) {
-  return r = r ?? mg(fg(), A, t, e, n), pr(i, r) ? r[0] >= i[0] && r[2] <= i[2] || r[1] >= i[1] && r[3] <= i[3] ? !0 : Og(
+function Ci(A, t, e, n, i, r) {
+  return r = r ?? vo(yo(), A, t, e, n), Er(i, r) ? r[0] >= i[0] && r[2] <= i[2] || r[1] >= i[1] && r[3] <= i[3] ? !0 : No(
     A,
     t,
     e,
@@ -2168,34 +2204,34 @@ function Ii(A, t, e, n, i, r) {
      * @return {boolean} `true` if the segment and the extent intersect,
      *     `false` otherwise.
      */
-    function(s, o) {
-      return Jo(i, s, o);
+    function(s, g) {
+      return Aa(i, s, g);
     }
   ) : !1;
 }
-function Ja(A, t, e, n, i) {
-  return !!(Ii(A, t, e, n, i) || Oe(
+function AI(A, t, e, n, i) {
+  return !!(Ci(A, t, e, n, i) || Be(
     A,
     t,
     e,
     n,
     i[0],
     i[1]
-  ) || Oe(
+  ) || Be(
     A,
     t,
     e,
     n,
     i[0],
     i[3]
-  ) || Oe(
+  ) || Be(
     A,
     t,
     e,
     n,
     i[2],
     i[1]
-  ) || Oe(
+  ) || Be(
     A,
     t,
     e,
@@ -2204,19 +2240,19 @@ function Ja(A, t, e, n, i) {
     i[3]
   ));
 }
-function qa(A, t, e, n, i) {
-  if (!Ja(A, t, e[0], n, i))
+function nI(A, t, e, n, i) {
+  if (!AI(A, t, e[0], n, i))
     return !1;
   if (e.length === 1)
     return !0;
   for (let r = 1, s = e.length; r < s; ++r)
-    if (Ka(
+    if (eI(
       A,
       e[r - 1],
       e[r],
       n,
       i
-    ) && !Ii(
+    ) && !Ci(
       A,
       e[r - 1],
       e[r],
@@ -2226,61 +2262,67 @@ function qa(A, t, e, n, i) {
       return !1;
   return !0;
 }
-function Bg(A, t, e, n, i, r, s) {
-  const o = (e - t) / n;
-  if (o < 3) {
+function Go(A, t, e, n, i, r, s) {
+  const g = (e - t) / n;
+  if (g < 3) {
     for (; t < e; t += n)
       r[s++] = A[t], r[s++] = A[t + 1];
     return s;
   }
-  const g = new Array(o);
-  g[0] = 1, g[o - 1] = 1;
+  const o = new Array(g);
+  o[0] = 1, o[g - 1] = 1;
   const a = [t, e - n];
   let C = 0;
   for (; a.length > 0; ) {
-    const I = a.pop(), c = a.pop();
-    let h = 0;
-    const p = A[c], d = A[c + 1], m = A[I], f = A[I + 1];
-    for (let v = c + n; v < I; v += n) {
-      const M = A[v], E = A[v + 1], R = na(M, E, p, d, m, f);
-      R > h && (C = v, h = R);
+    const I = (
+      /** @type {number} */
+      a.pop()
+    ), c = (
+      /** @type {number} */
+      a.pop()
+    );
+    let u = 0;
+    const d = A[c], f = A[c + 1], m = A[I], h = A[I + 1];
+    for (let w = c + n; w < I; w += n) {
+      const S = A[w], E = A[w + 1], P = sa(S, E, d, f, m, h);
+      P > u && (C = w, u = P);
     }
-    h > i && (g[(C - t) / n] = 1, c + n < C && a.push(c, C), C + n < I && a.push(C, I));
+    u > i && (o[(C - t) / n] = 1, c + n < C && a.push(c, C), C + n < I && a.push(C, I));
   }
-  for (let I = 0; I < o; ++I)
-    g[I] && (r[s++] = A[t + I * n], r[s++] = A[t + I * n + 1]);
+  for (let I = 0; I < g; ++I)
+    o[I] && (r[s++] = A[t + I * n], r[s++] = A[t + I * n + 1]);
   return s;
 }
-function $e(A, t) {
+function AA(A, t) {
   return t * Math.round(A / t);
 }
-function $a(A, t, e, n, i, r, s) {
+function iI(A, t, e, n, i, r, s) {
   if (t == e)
     return s;
-  let o = $e(A[t], i), g = $e(A[t + 1], i);
-  t += n, r[s++] = o, r[s++] = g;
+  let g = AA(A[t], i), o = AA(A[t + 1], i);
+  t += n, r[s++] = g, r[s++] = o;
   let a, C;
   do
-    if (a = $e(A[t], i), C = $e(A[t + 1], i), t += n, t == e)
+    if (a = AA(A[t], i), C = AA(A[t + 1], i), t += n, t == e)
       return r[s++] = a, r[s++] = C, s;
-  while (a == o && C == g);
+  while (a == g && C == o);
   for (; t < e; ) {
-    const I = $e(A[t], i), c = $e(A[t + 1], i);
+    const I = AA(A[t], i), c = AA(A[t + 1], i);
     if (t += n, I == a && c == C)
       continue;
-    const h = a - o, p = C - g, d = I - o, m = c - g;
-    if (h * m == p * d && (h < 0 && d < h || h == d || h > 0 && d > h) && (p < 0 && m < p || p == m || p > 0 && m > p)) {
+    const u = a - g, d = C - o, f = I - g, m = c - o;
+    if (u * m == d * f && (u < 0 && f < u || u == f || u > 0 && f > u) && (d < 0 && m < d || d == m || d > 0 && m > d)) {
       a = I, C = c;
       continue;
     }
-    r[s++] = a, r[s++] = C, o = a, g = C, a = I, C = c;
+    r[s++] = a, r[s++] = C, g = a, o = C, a = I, C = c;
   }
   return r[s++] = a, r[s++] = C, s;
 }
-function tI(A, t, e, n, i, r, s, o) {
-  for (let g = 0, a = e.length; g < a; ++g) {
-    const C = e[g];
-    s = $a(
+function rI(A, t, e, n, i, r, s, g) {
+  for (let o = 0, a = e.length; o < a; ++o) {
+    const C = e[o];
+    s = iI(
       A,
       t,
       C,
@@ -2288,11 +2330,11 @@ function tI(A, t, e, n, i, r, s, o) {
       i,
       r,
       s
-    ), o.push(s), t = C;
+    ), g.push(s), t = C;
   }
   return s;
 }
-class KA extends An {
+class rn extends Cn {
   /**
    * @param {Array<import("../coordinate.js").Coordinate>|Array<number>} coordinates Coordinates.
    *     For internal use, flat coordinates in combination with `layout` are also accepted.
@@ -2316,7 +2358,7 @@ class KA extends An {
    * @override
    */
   clone() {
-    return new KA(this.flatCoordinates.slice(), this.layout);
+    return new rn(this.flatCoordinates.slice(), this.layout);
   }
   /**
    * @param {number} x X.
@@ -2327,15 +2369,15 @@ class KA extends An {
    * @override
    */
   closestPointXY(t, e, n, i) {
-    return i < dr(this.getExtent(), t, e) ? i : (this.maxDeltaRevision_ != this.getRevision() && (this.maxDelta_ = Math.sqrt(
-      Tr(
+    return i < vr(this.getExtent(), t, e) ? i : (this.maxDeltaRevision_ != this.getRevision() && (this.maxDelta_ = Math.sqrt(
+      Or(
         this.flatCoordinates,
         0,
         this.flatCoordinates.length,
         this.stride,
         0
       )
-    ), this.maxDeltaRevision_ = this.getRevision()), Sr(
+    ), this.maxDeltaRevision_ = this.getRevision()), Br(
       this.flatCoordinates,
       0,
       this.flatCoordinates.length,
@@ -2354,7 +2396,7 @@ class KA extends An {
    * @api
    */
   getArea() {
-    return xg(
+    return Lo(
       this.flatCoordinates,
       0,
       this.flatCoordinates.length,
@@ -2368,7 +2410,7 @@ class KA extends An {
    * @override
    */
   getCoordinates() {
-    return Pr(
+    return Lr(
       this.flatCoordinates,
       0,
       this.flatCoordinates.length,
@@ -2383,7 +2425,7 @@ class KA extends An {
    */
   getSimplifiedGeometryInternal(t) {
     const e = [];
-    return e.length = Bg(
+    return e.length = Go(
       this.flatCoordinates,
       0,
       this.flatCoordinates.length,
@@ -2391,7 +2433,7 @@ class KA extends An {
       t,
       e,
       0
-    ), new KA(e, "XY");
+    ), new rn(e, "XY");
   }
   /**
    * Get the type of this geometry.
@@ -2411,7 +2453,7 @@ class KA extends An {
    * @override
    */
   intersectsExtent(t) {
-    return Ii(
+    return Ci(
       this.flatCoordinates,
       0,
       this.flatCoordinates.length,
@@ -2427,7 +2469,7 @@ class KA extends An {
    * @override
    */
   setCoordinates(t, e) {
-    this.setLayout(e, t, 1), this.flatCoordinates || (this.flatCoordinates = []), this.flatCoordinates.length = Mr(
+    this.setLayout(e, t, 1), this.flatCoordinates || (this.flatCoordinates = []), this.flatCoordinates.length = xr(
       this.flatCoordinates,
       0,
       t,
@@ -2435,29 +2477,29 @@ class KA extends An {
     ), this.changed();
   }
 }
-function eI(A, t, e, n, i, r, s) {
-  let o, g;
+function sI(A, t, e, n, i, r, s) {
+  let g, o;
   const a = (e - t) / n;
   if (a === 1)
-    o = t;
+    g = t;
   else if (a === 2)
-    o = t, g = i;
+    g = t, o = i;
   else if (a !== 0) {
     let C = A[t], I = A[t + 1], c = 0;
-    const h = [0];
+    const u = [0];
     for (let m = t + n; m < e; m += n) {
-      const f = A[m], v = A[m + 1];
-      c += Math.sqrt((f - C) * (f - C) + (v - I) * (v - I)), h.push(c), C = f, I = v;
+      const h = A[m], w = A[m + 1];
+      c += Math.sqrt((h - C) * (h - C) + (w - I) * (w - I)), u.push(c), C = h, I = w;
     }
-    const p = i * c, d = ko(h, p);
-    d < 0 ? (g = (p - h[-d - 2]) / (h[-d - 1] - h[-d - 2]), o = t + (-d - 2) * n) : o = t + d * n;
+    const d = i * c, f = jg(u, d);
+    f < 0 ? (o = (d - u[-f - 2]) / (u[-f - 1] - u[-f - 2]), g = t + (-f - 2) * n) : g = t + f * n;
   }
-  s = s > 1 ? s : 2, r = r || new Array(s);
+  s = s !== void 0 && s > 1 ? s : 2, r = r || new Array(s);
   for (let C = 0; C < s; ++C)
-    r[C] = o === void 0 ? NaN : g === void 0 ? A[o + C] : yr(A[o + C], A[o + n + C], g);
+    r[C] = g === void 0 ? NaN : o === void 0 ? A[g + C] : Mr(A[g + C], A[g + n + C], o);
   return r;
 }
-function AI(A, t, e, n, i, r) {
+function oI(A, t, e, n, i, r) {
   if (e == t)
     return null;
   let s;
@@ -2467,35 +2509,35 @@ function AI(A, t, e, n, i, r) {
     return r ? (s = A.slice(e - n, e), s[n - 1] = i, s) : null;
   if (i == A[t + n - 1])
     return A.slice(t, t + n);
-  let o = t / n, g = e / n;
-  for (; o < g; ) {
-    const c = o + g >> 1;
-    i < A[(c + 1) * n - 1] ? g = c : o = c + 1;
+  let g = t / n, o = e / n;
+  for (; g < o; ) {
+    const c = g + o >> 1;
+    i < A[(c + 1) * n - 1] ? o = c : g = c + 1;
   }
-  const a = A[o * n - 1];
+  const a = A[g * n - 1];
   if (i == a)
-    return A.slice((o - 1) * n, (o - 1) * n + n);
-  const C = A[(o + 1) * n - 1], I = (i - a) / (C - a);
+    return A.slice((g - 1) * n, (g - 1) * n + n);
+  const C = A[(g + 1) * n - 1], I = (i - a) / (C - a);
   s = [];
   for (let c = 0; c < n - 1; ++c)
     s.push(
-      yr(
-        A[(o - 1) * n + c],
-        A[o * n + c],
+      Mr(
+        A[(g - 1) * n + c],
+        A[g * n + c],
         I
       )
     );
   return s.push(i), s;
 }
-function nI(A, t, e, n) {
+function gI(A, t, e, n) {
   let i = A[t], r = A[t + 1], s = 0;
-  for (let o = t + n; o < e; o += n) {
-    const g = A[o], a = A[o + 1];
-    s += Math.sqrt((g - i) * (g - i) + (a - r) * (a - r)), i = g, r = a;
+  for (let g = t + n; g < e; g += n) {
+    const o = A[g], a = A[g + 1];
+    s += Math.sqrt((o - i) * (o - i) + (a - r) * (a - r)), i = o, r = a;
   }
   return s;
 }
-class $n extends An {
+class ti extends Cn {
   /**
    * @param {Array<import("../coordinate.js").Coordinate>|Array<number>} coordinates Coordinates.
    *     For internal use, flat coordinates in combination with `layout` are also accepted.
@@ -2518,7 +2560,7 @@ class $n extends An {
    * @api
    */
   appendCoordinate(t) {
-    lg(this.flatCoordinates, t), this.changed();
+    fo(this.flatCoordinates, t), this.changed();
   }
   /**
    * Make a complete copy of the geometry.
@@ -2527,7 +2569,7 @@ class $n extends An {
    * @override
    */
   clone() {
-    const t = new $n(
+    const t = new ti(
       this.flatCoordinates.slice(),
       this.layout
     );
@@ -2542,15 +2584,15 @@ class $n extends An {
    * @override
    */
   closestPointXY(t, e, n, i) {
-    return i < dr(this.getExtent(), t, e) ? i : (this.maxDeltaRevision_ != this.getRevision() && (this.maxDelta_ = Math.sqrt(
-      Tr(
+    return i < vr(this.getExtent(), t, e) ? i : (this.maxDeltaRevision_ != this.getRevision() && (this.maxDelta_ = Math.sqrt(
+      Or(
         this.flatCoordinates,
         0,
         this.flatCoordinates.length,
         this.stride,
         0
       )
-    ), this.maxDeltaRevision_ = this.getRevision()), Sr(
+    ), this.maxDeltaRevision_ = this.getRevision()), Br(
       this.flatCoordinates,
       0,
       this.flatCoordinates.length,
@@ -2575,7 +2617,7 @@ class $n extends An {
    * @api
    */
   forEachSegment(t) {
-    return Og(
+    return No(
       this.flatCoordinates,
       0,
       this.flatCoordinates.length,
@@ -2598,7 +2640,7 @@ class $n extends An {
    * @api
    */
   getCoordinateAtM(t, e) {
-    return this.layout != "XYM" && this.layout != "XYZM" ? null : (e = e !== void 0 ? e : !1, AI(
+    return this.layout != "XYM" && this.layout != "XYZM" ? null : (e = e !== void 0 ? e : !1, oI(
       this.flatCoordinates,
       0,
       this.flatCoordinates.length,
@@ -2614,7 +2656,7 @@ class $n extends An {
    * @override
    */
   getCoordinates() {
-    return Pr(
+    return Lr(
       this.flatCoordinates,
       0,
       this.flatCoordinates.length,
@@ -2632,7 +2674,7 @@ class $n extends An {
    * @api
    */
   getCoordinateAt(t, e) {
-    return eI(
+    return sI(
       this.flatCoordinates,
       0,
       this.flatCoordinates.length,
@@ -2648,7 +2690,7 @@ class $n extends An {
    * @api
    */
   getLength() {
-    return nI(
+    return gI(
       this.flatCoordinates,
       0,
       this.flatCoordinates.length,
@@ -2673,7 +2715,7 @@ class $n extends An {
    */
   getSimplifiedGeometryInternal(t) {
     const e = [];
-    return e.length = Bg(
+    return e.length = Go(
       this.flatCoordinates,
       0,
       this.flatCoordinates.length,
@@ -2681,7 +2723,7 @@ class $n extends An {
       t,
       e,
       0
-    ), new $n(e, "XY");
+    ), new ti(e, "XY");
   }
   /**
    * Get the type of this geometry.
@@ -2700,7 +2742,7 @@ class $n extends An {
    * @override
    */
   intersectsExtent(t) {
-    return Ii(
+    return Ci(
       this.flatCoordinates,
       0,
       this.flatCoordinates.length,
@@ -2717,7 +2759,7 @@ class $n extends An {
    * @override
    */
   setCoordinates(t, e) {
-    this.setLayout(e, t, 1), this.flatCoordinates || (this.flatCoordinates = []), this.flatCoordinates.length = Mr(
+    this.setLayout(e, t, 1), this.flatCoordinates || (this.flatCoordinates = []), this.flatCoordinates.length = xr(
       this.flatCoordinates,
       0,
       t,
@@ -2725,7 +2767,7 @@ class $n extends An {
     ), this.changed();
   }
 }
-class JA extends An {
+class sn extends Cn {
   /**
    * @param {import("../coordinate.js").Coordinate} coordinates Coordinates.
    * @param {import("./Geometry.js").GeometryLayout} [layout] Layout.
@@ -2740,7 +2782,7 @@ class JA extends An {
    * @override
    */
   clone() {
-    const t = new JA(this.flatCoordinates.slice(), this.layout);
+    const t = new sn(this.flatCoordinates.slice(), this.layout);
     return t.applyProperties(this), t;
   }
   /**
@@ -2752,17 +2794,17 @@ class JA extends An {
    * @override
    */
   closestPointXY(t, e, n, i) {
-    const r = this.flatCoordinates, s = CA(
+    const r = this.flatCoordinates, s = cA(
       t,
       e,
       r[0],
       r[1]
     );
     if (s < i) {
-      const o = this.stride;
-      for (let g = 0; g < o; ++g)
-        n[g] = r[g];
-      return n.length = o, s;
+      const g = this.stride;
+      for (let o = 0; o < g; ++o)
+        n[o] = r[o];
+      return n.length = g, s;
     }
     return i;
   }
@@ -2782,7 +2824,7 @@ class JA extends An {
    * @override
    */
   computeExtent(t) {
-    return zo(this.flatCoordinates, t);
+    return Vg(this.flatCoordinates, t);
   }
   /**
    * Get the type of this geometry.
@@ -2801,7 +2843,7 @@ class JA extends An {
    * @override
    */
   intersectsExtent(t) {
-    return Zo(t, this.flatCoordinates[0], this.flatCoordinates[1]);
+    return Wg(t, this.flatCoordinates[0], this.flatCoordinates[1]);
   }
   /**
    * @param {!Array<*>} coordinates Coordinates.
@@ -2810,7 +2852,7 @@ class JA extends An {
    * @override
    */
   setCoordinates(t, e) {
-    this.setLayout(e, t, 0), this.flatCoordinates || (this.flatCoordinates = []), this.flatCoordinates.length = Pg(
+    this.setLayout(e, t, 0), this.flatCoordinates || (this.flatCoordinates = []), this.flatCoordinates.length = Bo(
       this.flatCoordinates,
       0,
       t,
@@ -2818,23 +2860,23 @@ class JA extends An {
     ), this.changed();
   }
 }
-function iI(A, t, e, n, i, r, s) {
-  let o, g, a, C, I, c, h;
-  const p = i[r + 1], d = [];
-  for (let v = 0, M = e.length; v < M; ++v) {
-    const E = e[v];
-    for (C = A[E - n], c = A[E - n + 1], o = t; o < E; o += n)
-      I = A[o], h = A[o + 1], (p <= c && h <= p || c <= p && p <= h) && (a = (p - c) / (h - c) * (I - C) + C, d.push(a)), C = I, c = h;
+function aI(A, t, e, n, i, r, s) {
+  let g, o, a, C, I, c, u;
+  const d = i[r + 1], f = [];
+  for (let w = 0, S = e.length; w < S; ++w) {
+    const E = e[w];
+    for (C = A[E - n], c = A[E - n + 1], g = t; g < E; g += n)
+      I = A[g], u = A[g + 1], (d <= c && u <= d || c <= d && d <= u) && (a = (d - c) / (u - c) * (I - C) + C, f.push(a)), C = I, c = u;
   }
-  let m = NaN, f = -1 / 0;
-  for (d.sort(Cg), C = d[0], o = 1, g = d.length; o < g; ++o) {
-    I = d[o];
-    const v = Math.abs(I - C);
-    v > f && (a = (C + I) / 2, Dg(A, t, e, n, a, p) && (m = a, f = v)), C = I;
+  let m = NaN, h = -1 / 0;
+  for (f.sort(uo), C = f[0], g = 1, o = f.length; g < o; ++g) {
+    I = f[g];
+    const w = Math.abs(I - C);
+    w > h && (a = (C + I) / 2, ko(A, t, e, n, a, d) && (m = a, h = w)), C = I;
   }
-  return isNaN(m) && (m = i[r]), [m, p, f];
+  return isNaN(m) && (m = i[r]), [m, d, h];
 }
-function rI(A, t, e, n) {
+function II(A, t, e, n) {
   for (; t < e - n; ) {
     for (let i = 0; i < n; ++i) {
       const r = A[t + i];
@@ -2843,46 +2885,46 @@ function rI(A, t, e, n) {
     t += n, e -= n;
   }
 }
-function Lg(A, t, e, n) {
+function jo(A, t, e, n) {
   let i = 0, r = A[e - n], s = A[e - n + 1];
   for (; t < e; t += n) {
-    const o = A[t], g = A[t + 1];
-    i += (o - r) * (g + s), r = o, s = g;
+    const g = A[t], o = A[t + 1];
+    i += (g - r) * (o + s), r = g, s = o;
   }
   return i === 0 ? void 0 : i > 0;
 }
-function sI(A, t, e, n, i) {
+function CI(A, t, e, n, i) {
   i = i !== void 0 ? i : !1;
   for (let r = 0, s = e.length; r < s; ++r) {
-    const o = e[r], g = Lg(
+    const g = e[r], o = jo(
       A,
       t,
-      o,
+      g,
       n
     );
     if (r === 0) {
-      if (i && g || !i && !g)
+      if (i && o || !i && !o)
         return !1;
-    } else if (i && !g || !i && g)
+    } else if (i && !o || !i && o)
       return !1;
-    t = o;
+    t = g;
   }
   return !0;
 }
-function os(A, t, e, n, i) {
+function Cs(A, t, e, n, i) {
   i = i !== void 0 ? i : !1;
   for (let r = 0, s = e.length; r < s; ++r) {
-    const o = e[r], g = Lg(
+    const g = e[r], o = jo(
       A,
       t,
-      o,
+      g,
       n
     );
-    (r === 0 ? i && g || !i && !g : i && !g || !i && g) && rI(A, t, o, n), t = o;
+    (r === 0 ? i && o || !i && !o : i && !o || !i && o) && II(A, t, g, n), t = g;
   }
   return t;
 }
-class Le extends An {
+class ke extends Cn {
   /**
    * @param {!Array<Array<import("../coordinate.js").Coordinate>>|!Array<number>} coordinates
    *     Array of linear rings that define the polygon. The first linear ring of the
@@ -2911,7 +2953,7 @@ class Le extends An {
    * @api
    */
   appendLinearRing(t) {
-    this.flatCoordinates ? lg(this.flatCoordinates, t.getFlatCoordinates()) : this.flatCoordinates = t.getFlatCoordinates().slice(), this.ends_.push(this.flatCoordinates.length), this.changed();
+    this.flatCoordinates ? fo(this.flatCoordinates, t.getFlatCoordinates()) : this.flatCoordinates = t.getFlatCoordinates().slice(), this.ends_.push(this.flatCoordinates.length), this.changed();
   }
   /**
    * Make a complete copy of the geometry.
@@ -2920,7 +2962,7 @@ class Le extends An {
    * @override
    */
   clone() {
-    const t = new Le(
+    const t = new ke(
       this.flatCoordinates.slice(),
       this.layout,
       this.ends_.slice()
@@ -2936,15 +2978,15 @@ class Le extends An {
    * @override
    */
   closestPointXY(t, e, n, i) {
-    return i < dr(this.getExtent(), t, e) ? i : (this.maxDeltaRevision_ != this.getRevision() && (this.maxDelta_ = Math.sqrt(
-      Va(
+    return i < vr(this.getExtent(), t, e) ? i : (this.maxDeltaRevision_ != this.getRevision() && (this.maxDelta_ = Math.sqrt(
+      qa(
         this.flatCoordinates,
         0,
         this.ends_,
         this.stride,
         0
       )
-    ), this.maxDeltaRevision_ = this.getRevision()), Qa(
+    ), this.maxDeltaRevision_ = this.getRevision()), $a(
       this.flatCoordinates,
       0,
       this.ends_,
@@ -2964,7 +3006,7 @@ class Le extends An {
    * @override
    */
   containsXY(t, e) {
-    return Dg(
+    return ko(
       this.getOrientedFlatCoordinates(),
       0,
       this.ends_,
@@ -2979,7 +3021,7 @@ class Le extends An {
    * @api
    */
   getArea() {
-    return Ha(
+    return Ja(
       this.getOrientedFlatCoordinates(),
       0,
       this.ends_,
@@ -3002,7 +3044,7 @@ class Le extends An {
    */
   getCoordinates(t) {
     let e;
-    return t !== void 0 ? (e = this.getOrientedFlatCoordinates().slice(), os(e, 0, this.ends_, this.stride, t)) : e = this.flatCoordinates, Ya(e, 0, this.ends_, this.stride);
+    return t !== void 0 ? (e = this.getOrientedFlatCoordinates().slice(), Cs(e, 0, this.ends_, this.stride, t)) : e = this.flatCoordinates, tI(e, 0, this.ends_, this.stride);
   }
   /**
    * @return {Array<number>} Ends.
@@ -3015,8 +3057,8 @@ class Le extends An {
    */
   getFlatInteriorPoint() {
     if (this.flatInteriorPointRevision_ != this.getRevision()) {
-      const t = Yn(this.getExtent());
-      this.flatInteriorPoint_ = iI(
+      const t = Kn(this.getExtent());
+      this.flatInteriorPoint_ = aI(
         this.getOrientedFlatCoordinates(),
         0,
         this.ends_,
@@ -3037,7 +3079,7 @@ class Le extends An {
    * @api
    */
   getInteriorPoint() {
-    return new JA(this.getFlatInteriorPoint(), "XYM");
+    return new sn(this.getFlatInteriorPoint(), "XYM");
   }
   /**
    * Return the number of rings of the polygon,  this includes the exterior
@@ -3060,7 +3102,7 @@ class Le extends An {
    * @api
    */
   getLinearRing(t) {
-    return t < 0 || this.ends_.length <= t ? null : new KA(
+    return t < 0 || this.ends_.length <= t ? null : new rn(
       this.flatCoordinates.slice(
         t === 0 ? 0 : this.ends_[t - 1],
         this.ends_[t]
@@ -3076,12 +3118,12 @@ class Le extends An {
   getLinearRings() {
     const t = this.layout, e = this.flatCoordinates, n = this.ends_, i = [];
     let r = 0;
-    for (let s = 0, o = n.length; s < o; ++s) {
-      const g = n[s], a = new KA(
-        e.slice(r, g),
+    for (let s = 0, g = n.length; s < g; ++s) {
+      const o = n[s], a = new rn(
+        e.slice(r, o),
         t
       );
-      i.push(a), r = g;
+      i.push(a), r = o;
     }
     return i;
   }
@@ -3091,7 +3133,7 @@ class Le extends An {
   getOrientedFlatCoordinates() {
     if (this.orientedRevision_ != this.getRevision()) {
       const t = this.flatCoordinates;
-      sI(t, 0, this.ends_, this.stride) ? this.orientedFlatCoordinates_ = t : (this.orientedFlatCoordinates_ = t.slice(), this.orientedFlatCoordinates_.length = os(
+      CI(t, 0, this.ends_, this.stride) ? this.orientedFlatCoordinates_ = t : (this.orientedFlatCoordinates_ = t.slice(), this.orientedFlatCoordinates_.length = Cs(
         this.orientedFlatCoordinates_,
         0,
         this.ends_,
@@ -3111,7 +3153,7 @@ class Le extends An {
    */
   getSimplifiedGeometryInternal(t) {
     const e = [], n = [];
-    return e.length = tI(
+    return e.length = rI(
       this.flatCoordinates,
       0,
       this.ends_,
@@ -3120,7 +3162,7 @@ class Le extends An {
       e,
       0,
       n
-    ), new Le(e, "XY", n);
+    ), new ke(e, "XY", n);
   }
   /**
    * Get the type of this geometry.
@@ -3139,7 +3181,7 @@ class Le extends An {
    * @override
    */
   intersectsExtent(t) {
-    return qa(
+    return nI(
       this.getOrientedFlatCoordinates(),
       0,
       this.ends_,
@@ -3156,7 +3198,7 @@ class Le extends An {
    */
   setCoordinates(t, e) {
     this.setLayout(e, t, 2), this.flatCoordinates || (this.flatCoordinates = []);
-    const n = Wa(
+    const n = Ka(
       this.flatCoordinates,
       0,
       t,
@@ -3166,8 +3208,8 @@ class Le extends An {
     this.flatCoordinates.length = n.length === 0 ? 0 : n[n.length - 1], this.changed();
   }
 }
-function as(A) {
-  if (yg(A))
+function cs(A) {
+  if (Eo(A))
     throw new Error("Cannot create polygon from empty extent");
   const t = A[0], e = A[1], n = A[2], i = A[3], r = [
     t,
@@ -3181,27 +3223,34 @@ function as(A) {
     t,
     e
   ];
-  return new Le(r, "XY", [r.length]);
+  return new ke(r, "XY", [r.length]);
 }
-function kg(A, t, e = {}) {
+const cI = {
+  /**
+   * Indicates that tile loading failed
+   * @type {number}
+   */
+  ERROR: 3
+};
+function _o(A, t, e = {}) {
   const n = { type: "Feature" };
   return (e.id === 0 || e.id) && (n.id = e.id), e.bbox && (n.bbox = e.bbox), n.properties = t || {}, n.geometry = A, n;
 }
-function Kt(A, t, e = {}) {
+function ne(A, t, e = {}) {
   if (!A)
     throw new Error("coordinates is required");
   if (!Array.isArray(A))
     throw new Error("coordinates must be an Array");
   if (A.length < 2)
     throw new Error("coordinates must be at least 2 numbers long");
-  if (!Is(A[0]) || !Is(A[1]))
+  if (!ls(A[0]) || !ls(A[1]))
     throw new Error("coordinates must contain numbers");
-  return kg({
+  return _o({
     type: "Point",
     coordinates: A
   }, t, e);
 }
-function rr(A, t, e = {}) {
+function Ir(A, t, e = {}) {
   for (const n of A) {
     if (n.length < 4)
       throw new Error(
@@ -3213,19 +3262,19 @@ function rr(A, t, e = {}) {
       if (n[n.length - 1][i] !== n[0][i])
         throw new Error("First and last Position are not equivalent.");
   }
-  return kg({
+  return _o({
     type: "Polygon",
     coordinates: A
   }, t, e);
 }
-function dA(A, t = {}) {
+function pA(A, t = {}) {
   const e = { type: "FeatureCollection" };
   return t.id && (e.id = t.id), t.bbox && (e.bbox = t.bbox), e.features = A, e;
 }
-function Is(A) {
+function ls(A) {
   return !isNaN(A) && A !== null && !Array.isArray(A);
 }
-function gI(A) {
+function lI(A) {
   if (!A)
     throw new Error("coord is required");
   if (!Array.isArray(A)) {
@@ -3238,7 +3287,7 @@ function gI(A) {
     return [...A];
   throw new Error("coord must be GeoJSON Point or an Array of numbers");
 }
-function Cs(A) {
+function us(A) {
   if (Array.isArray(A))
     return A;
   if (A.type === "Feature") {
@@ -3250,183 +3299,183 @@ function Cs(A) {
     "coords must be GeoJSON Feature, Geometry Object or an Array"
   );
 }
-function oI(A) {
+function uI(A) {
   return A.type === "Feature" ? A.geometry : A;
 }
-const Jt = 11102230246251565e-32, at = 134217729, aI = (3 + 8 * Jt) * Jt;
-function Di(A, t, e, n, i) {
-  let r, s, o, g, a = t[0], C = n[0], I = 0, c = 0;
+const ie = 11102230246251565e-32, at = 134217729, hI = (3 + 8 * ie) * ie;
+function ki(A, t, e, n, i) {
+  let r, s, g, o, a = t[0], C = n[0], I = 0, c = 0;
   C > a == C > -a ? (r = a, a = t[++I]) : (r = C, C = n[++c]);
-  let h = 0;
+  let u = 0;
   if (I < A && c < e)
-    for (C > a == C > -a ? (s = a + r, o = r - (s - a), a = t[++I]) : (s = C + r, o = r - (s - C), C = n[++c]), r = s, o !== 0 && (i[h++] = o); I < A && c < e; )
-      C > a == C > -a ? (s = r + a, g = s - r, o = r - (s - g) + (a - g), a = t[++I]) : (s = r + C, g = s - r, o = r - (s - g) + (C - g), C = n[++c]), r = s, o !== 0 && (i[h++] = o);
+    for (C > a == C > -a ? (s = a + r, g = r - (s - a), a = t[++I]) : (s = C + r, g = r - (s - C), C = n[++c]), r = s, g !== 0 && (i[u++] = g); I < A && c < e; )
+      C > a == C > -a ? (s = r + a, o = s - r, g = r - (s - o) + (a - o), a = t[++I]) : (s = r + C, o = s - r, g = r - (s - o) + (C - o), C = n[++c]), r = s, g !== 0 && (i[u++] = g);
   for (; I < A; )
-    s = r + a, g = s - r, o = r - (s - g) + (a - g), a = t[++I], r = s, o !== 0 && (i[h++] = o);
+    s = r + a, o = s - r, g = r - (s - o) + (a - o), a = t[++I], r = s, g !== 0 && (i[u++] = g);
   for (; c < e; )
-    s = r + C, g = s - r, o = r - (s - g) + (C - g), C = n[++c], r = s, o !== 0 && (i[h++] = o);
-  return (r !== 0 || h === 0) && (i[h++] = r), h;
+    s = r + C, o = s - r, g = r - (s - o) + (C - o), C = n[++c], r = s, g !== 0 && (i[u++] = g);
+  return (r !== 0 || u === 0) && (i[u++] = r), u;
 }
-function II(A, t) {
+function fI(A, t) {
   let e = t[0];
   for (let n = 1; n < A; n++) e += t[n];
   return e;
 }
-function nn(A) {
+function cn(A) {
   return new Float64Array(A);
 }
-const CI = (3 + 16 * Jt) * Jt, cI = (2 + 12 * Jt) * Jt, lI = (9 + 64 * Jt) * Jt * Jt, tA = nn(4), cs = nn(8), ls = nn(12), hs = nn(16), ut = nn(4);
-function hI(A, t, e, n, i, r, s) {
-  let o, g, a, C, I, c, h, p, d, m, f, v, M, E, R, P, x, D;
-  const N = A - i, G = e - i, k = t - r, X = n - r;
-  E = N * X, c = at * N, h = c - (c - N), p = N - h, c = at * X, d = c - (c - X), m = X - d, R = p * m - (E - h * d - p * d - h * m), P = k * G, c = at * k, h = c - (c - k), p = k - h, c = at * G, d = c - (c - G), m = G - d, x = p * m - (P - h * d - p * d - h * m), f = R - x, I = R - f, tA[0] = R - (f + I) + (I - x), v = E + f, I = v - E, M = E - (v - I) + (f - I), f = M - P, I = M - f, tA[1] = M - (f + I) + (I - P), D = v + f, I = D - v, tA[2] = v - (D - I) + (f - I), tA[3] = D;
-  let Z = II(4, tA), J = cI * s;
-  if (Z >= J || -Z >= J || (I = A - N, o = A - (N + I) + (I - i), I = e - G, a = e - (G + I) + (I - i), I = t - k, g = t - (k + I) + (I - r), I = n - X, C = n - (X + I) + (I - r), o === 0 && g === 0 && a === 0 && C === 0) || (J = lI * s + aI * Math.abs(Z), Z += N * C + X * o - (k * a + G * g), Z >= J || -Z >= J)) return Z;
-  E = o * X, c = at * o, h = c - (c - o), p = o - h, c = at * X, d = c - (c - X), m = X - d, R = p * m - (E - h * d - p * d - h * m), P = g * G, c = at * g, h = c - (c - g), p = g - h, c = at * G, d = c - (c - G), m = G - d, x = p * m - (P - h * d - p * d - h * m), f = R - x, I = R - f, ut[0] = R - (f + I) + (I - x), v = E + f, I = v - E, M = E - (v - I) + (f - I), f = M - P, I = M - f, ut[1] = M - (f + I) + (I - P), D = v + f, I = D - v, ut[2] = v - (D - I) + (f - I), ut[3] = D;
-  const xt = Di(4, tA, 4, ut, cs);
-  E = N * C, c = at * N, h = c - (c - N), p = N - h, c = at * C, d = c - (c - C), m = C - d, R = p * m - (E - h * d - p * d - h * m), P = k * a, c = at * k, h = c - (c - k), p = k - h, c = at * a, d = c - (c - a), m = a - d, x = p * m - (P - h * d - p * d - h * m), f = R - x, I = R - f, ut[0] = R - (f + I) + (I - x), v = E + f, I = v - E, M = E - (v - I) + (f - I), f = M - P, I = M - f, ut[1] = M - (f + I) + (I - P), D = v + f, I = D - v, ut[2] = v - (D - I) + (f - I), ut[3] = D;
-  const O = Di(xt, cs, 4, ut, ls);
-  E = o * C, c = at * o, h = c - (c - o), p = o - h, c = at * C, d = c - (c - C), m = C - d, R = p * m - (E - h * d - p * d - h * m), P = g * a, c = at * g, h = c - (c - g), p = g - h, c = at * a, d = c - (c - a), m = a - d, x = p * m - (P - h * d - p * d - h * m), f = R - x, I = R - f, ut[0] = R - (f + I) + (I - x), v = E + f, I = v - E, M = E - (v - I) + (f - I), f = M - P, I = M - f, ut[1] = M - (f + I) + (I - P), D = v + f, I = D - v, ut[2] = v - (D - I) + (f - I), ut[3] = D;
-  const q = Di(O, ls, 4, ut, hs);
-  return hs[q - 1];
+const dI = (3 + 16 * ie) * ie, mI = (2 + 12 * ie) * ie, pI = (9 + 64 * ie) * ie * ie, nA = cn(4), hs = cn(8), fs = cn(12), ds = cn(16), ut = cn(4);
+function yI(A, t, e, n, i, r, s) {
+  let g, o, a, C, I, c, u, d, f, m, h, w, S, E, P, x, D, B;
+  const k = A - i, j = e - i, _ = t - r, X = n - r;
+  E = k * X, c = at * k, u = c - (c - k), d = k - u, c = at * X, f = c - (c - X), m = X - f, P = d * m - (E - u * f - d * f - u * m), x = _ * j, c = at * _, u = c - (c - _), d = _ - u, c = at * j, f = c - (c - j), m = j - f, D = d * m - (x - u * f - d * f - u * m), h = P - D, I = P - h, nA[0] = P - (h + I) + (I - D), w = E + h, I = w - E, S = E - (w - I) + (h - I), h = S - x, I = S - h, nA[1] = S - (h + I) + (I - x), B = w + h, I = B - w, nA[2] = w - (B - I) + (h - I), nA[3] = B;
+  let Z = fI(4, nA), Y = mI * s;
+  if (Z >= Y || -Z >= Y || (I = A - k, g = A - (k + I) + (I - i), I = e - j, a = e - (j + I) + (I - i), I = t - _, o = t - (_ + I) + (I - r), I = n - X, C = n - (X + I) + (I - r), g === 0 && o === 0 && a === 0 && C === 0) || (Y = pI * s + hI * Math.abs(Z), Z += k * C + X * g - (_ * a + j * o), Z >= Y || -Z >= Y)) return Z;
+  E = g * X, c = at * g, u = c - (c - g), d = g - u, c = at * X, f = c - (c - X), m = X - f, P = d * m - (E - u * f - d * f - u * m), x = o * j, c = at * o, u = c - (c - o), d = o - u, c = at * j, f = c - (c - j), m = j - f, D = d * m - (x - u * f - d * f - u * m), h = P - D, I = P - h, ut[0] = P - (h + I) + (I - D), w = E + h, I = w - E, S = E - (w - I) + (h - I), h = S - x, I = S - h, ut[1] = S - (h + I) + (I - x), B = w + h, I = B - w, ut[2] = w - (B - I) + (h - I), ut[3] = B;
+  const ot = ki(4, nA, 4, ut, hs);
+  E = k * C, c = at * k, u = c - (c - k), d = k - u, c = at * C, f = c - (c - C), m = C - f, P = d * m - (E - u * f - d * f - u * m), x = _ * a, c = at * _, u = c - (c - _), d = _ - u, c = at * a, f = c - (c - a), m = a - f, D = d * m - (x - u * f - d * f - u * m), h = P - D, I = P - h, ut[0] = P - (h + I) + (I - D), w = E + h, I = w - E, S = E - (w - I) + (h - I), h = S - x, I = S - h, ut[1] = S - (h + I) + (I - x), B = w + h, I = B - w, ut[2] = w - (B - I) + (h - I), ut[3] = B;
+  const L = ki(ot, hs, 4, ut, fs);
+  E = g * C, c = at * g, u = c - (c - g), d = g - u, c = at * C, f = c - (c - C), m = C - f, P = d * m - (E - u * f - d * f - u * m), x = o * a, c = at * o, u = c - (c - o), d = o - u, c = at * a, f = c - (c - a), m = a - f, D = d * m - (x - u * f - d * f - u * m), h = P - D, I = P - h, ut[0] = P - (h + I) + (I - D), w = E + h, I = w - E, S = E - (w - I) + (h - I), h = S - x, I = S - h, ut[1] = S - (h + I) + (I - x), B = w + h, I = B - w, ut[2] = w - (B - I) + (h - I), ut[3] = B;
+  const et = ki(L, fs, 4, ut, ds);
+  return ds[et - 1];
 }
-function uI(A, t, e, n, i, r) {
-  const s = (t - r) * (e - i), o = (A - i) * (n - r), g = s - o, a = Math.abs(s + o);
-  return Math.abs(g) >= CI * a ? g : -hI(A, t, e, n, i, r, a);
+function wI(A, t, e, n, i, r) {
+  const s = (t - r) * (e - i), g = (A - i) * (n - r), o = s - g, a = Math.abs(s + g);
+  return Math.abs(o) >= dI * a ? o : -yI(A, t, e, n, i, r, a);
 }
-function fI(A, t) {
-  var e, n, i = 0, r, s, o, g, a, C, I, c = A[0], h = A[1], p = t.length;
-  for (e = 0; e < p; e++) {
+function vI(A, t) {
+  var e, n, i = 0, r, s, g, o, a, C, I, c = A[0], u = A[1], d = t.length;
+  for (e = 0; e < d; e++) {
     n = 0;
-    var d = t[e], m = d.length - 1;
-    if (C = d[0], C[0] !== d[m][0] && C[1] !== d[m][1])
+    var f = t[e], m = f.length - 1;
+    if (C = f[0], C[0] !== f[m][0] && C[1] !== f[m][1])
       throw new Error("First and last coordinates in a ring must be the same");
-    for (s = C[0] - c, o = C[1] - h, n; n < m; n++) {
-      if (I = d[n + 1], g = I[0] - c, a = I[1] - h, o === 0 && a === 0) {
-        if (g <= 0 && s >= 0 || s <= 0 && g >= 0)
+    for (s = C[0] - c, g = C[1] - u, n; n < m; n++) {
+      if (I = f[n + 1], o = I[0] - c, a = I[1] - u, g === 0 && a === 0) {
+        if (o <= 0 && s >= 0 || s <= 0 && o >= 0)
           return 0;
-      } else if (a >= 0 && o <= 0 || a <= 0 && o >= 0) {
-        if (r = uI(s, g, o, a, 0, 0), r === 0)
+      } else if (a >= 0 && g <= 0 || a <= 0 && g >= 0) {
+        if (r = wI(s, o, g, a, 0, 0), r === 0)
           return 0;
-        (r > 0 && a > 0 && o <= 0 || r < 0 && a <= 0 && o > 0) && i++;
+        (r > 0 && a > 0 && g <= 0 || r < 0 && a <= 0 && g > 0) && i++;
       }
-      C = I, o = a, s = g;
+      C = I, g = a, s = o;
     }
   }
   return i % 2 !== 0;
 }
-function Be(A, t, e = {}) {
+function Le(A, t, e = {}) {
   if (!A)
     throw new Error("point is required");
   if (!t)
     throw new Error("polygon is required");
-  const n = gI(A), i = oI(t), r = i.type, s = t.bbox;
-  let o = i.coordinates;
-  if (s && dI(n, s) === !1)
+  const n = lI(A), i = uI(t), r = i.type, s = t.bbox;
+  let g = i.coordinates;
+  if (s && bI(n, s) === !1)
     return !1;
-  r === "Polygon" && (o = [o]);
-  for (var g = 0; g < o.length; ++g) {
-    const a = fI(n, o[g]);
+  r === "Polygon" && (g = [g]);
+  for (var o = 0; o < g.length; ++o) {
+    const a = vI(n, g[o]);
     if (a === 0 && !e.ignoreBoundary || a) return !0;
   }
   return !1;
 }
-function dI(A, t) {
+function bI(A, t) {
   return t[0] <= A[0] && t[1] <= A[1] && t[2] >= A[0] && t[3] >= A[1];
 }
-function Oi(A, t) {
+function Ni(A, t) {
   for (let e = 0; e < t.features.length; e++)
-    if (Be(A, t.features[e]))
+    if (Le(A, t.features[e]))
       return t.features[e];
 }
-function Ng(A, t) {
-  const e = t.geometry.coordinates[0][0], n = t.geometry.coordinates[0][1], i = t.geometry.coordinates[0][2], r = A.geometry.coordinates, s = t.properties.a.geom, o = t.properties.b.geom, g = t.properties.c.geom, a = [n[0] - e[0], n[1] - e[1]], C = [i[0] - e[0], i[1] - e[1]], I = [r[0] - e[0], r[1] - e[1]], c = [o[0] - s[0], o[1] - s[1]], h = [g[0] - s[0], g[1] - s[1]], p = (C[1] * I[0] - C[0] * I[1]) / (a[0] * C[1] - a[1] * C[0]), d = (a[0] * I[1] - a[1] * I[0]) / (a[0] * C[1] - a[1] * C[0]);
+function Xo(A, t) {
+  const e = t.geometry.coordinates[0][0], n = t.geometry.coordinates[0][1], i = t.geometry.coordinates[0][2], r = A.geometry.coordinates, s = t.properties.a.geom, g = t.properties.b.geom, o = t.properties.c.geom, a = [n[0] - e[0], n[1] - e[1]], C = [i[0] - e[0], i[1] - e[1]], I = [r[0] - e[0], r[1] - e[1]], c = [g[0] - s[0], g[1] - s[1]], u = [o[0] - s[0], o[1] - s[1]], d = (C[1] * I[0] - C[0] * I[1]) / (a[0] * C[1] - a[1] * C[0]), f = (a[0] * I[1] - a[1] * I[0]) / (a[0] * C[1] - a[1] * C[0]);
   return [
-    p * c[0] + d * h[0] + s[0],
-    p * c[1] + d * h[1] + s[1]
+    d * c[0] + f * u[0] + s[0],
+    d * c[1] + f * u[1] + s[1]
   ];
 }
-function mI(A, t, e) {
-  const n = A.geometry.coordinates, i = e.geometry.coordinates, r = Math.atan2(n[0] - i[0], n[1] - i[1]), s = yI(r, t[0]);
+function EI(A, t, e) {
+  const n = A.geometry.coordinates, i = e.geometry.coordinates, r = Math.atan2(n[0] - i[0], n[1] - i[1]), s = RI(r, t[0]);
   if (s === void 0)
     throw new Error("Unable to determine vertex index");
-  const o = t[1][s];
-  return Ng(A, o.features[0]);
+  const g = t[1][s];
+  return Xo(A, g.features[0]);
 }
-function pI(A, t, e, n, i, r, s, o) {
-  let g;
-  if (s && (g = Oi(A, dA([s]))), !g)
+function MI(A, t, e, n, i, r, s, g) {
+  let o;
+  if (s && (o = Ni(A, pA([s]))), !o)
     if (e) {
-      const a = A.geometry.coordinates, C = e.gridNum, I = e.xOrigin, c = e.yOrigin, h = e.xUnit, p = e.yUnit, d = e.gridCache, m = Xt(a[0], I, h, C), f = Xt(a[1], c, p, C), v = d[m] ? d[m][f] ? d[m][f] : [] : [], M = dA(v.map((E) => t.features[E]));
-      g = Oi(A, M);
+      const a = A.geometry.coordinates, C = e.gridNum, I = e.xOrigin, c = e.yOrigin, u = e.xUnit, d = e.yUnit, f = e.gridCache, m = zt(a[0], I, u, C), h = zt(a[1], c, d, C), w = f[m] ? f[m][h] ? f[m][h] : [] : [], S = pA(w.map((E) => t.features[E]));
+      o = Ni(A, S);
     } else
-      g = Oi(A, t);
-  return o && o(g), g ? Ng(A, g) : mI(A, n, i);
+      o = Ni(A, t);
+  return g && g(o), o ? Xo(A, o) : EI(A, n, i);
 }
-function Xt(A, t, e, n) {
+function zt(A, t, e, n) {
   let i = Math.floor((A - t) / e);
   return i < 0 && (i = 0), i >= n && (i = n - 1), i;
 }
-function yI(A, t) {
-  let e = us(A - t[0]), n = Math.PI * 2, i;
+function RI(A, t) {
+  let e = ms(A - t[0]), n = Math.PI * 2, i;
   for (let r = 0; r < t.length; r++) {
-    const s = (r + 1) % t.length, o = us(A - t[s]), g = Math.min(Math.abs(e), Math.abs(o));
-    e * o <= 0 && g < n && (n = g, i = r), e = o;
+    const s = (r + 1) % t.length, g = ms(A - t[s]), o = Math.min(Math.abs(e), Math.abs(g));
+    e * g <= 0 && o < n && (n = o, i = r), e = g;
   }
   return i;
 }
-function us(A, t = !1) {
+function ms(A, t = !1) {
   const e = 2 * Math.PI, n = A - Math.floor(A / e) * e;
   return t ? n : n > Math.PI ? n - e : n;
 }
-function wI(A) {
+function SI(A) {
   const t = [0, 1, 2, 0].map((n) => A[n][0][0]), e = {
     a: { geom: A[0][0][1], index: A[0][1] },
     b: { geom: A[1][0][1], index: A[1][1] },
     c: { geom: A[2][0][1], index: A[2][1] }
   };
-  return rr([t], e);
+  return Ir([t], e);
 }
-function sr(A, t, e, n, i, r = !1, s) {
-  const o = A.map(
-    (g) => {
-      (!s || s < 2.00703) && (g = bI(g));
-      const a = isFinite(g) ? t[g] : g === "c" ? n : (function() {
-        const C = g.match(/^b(\d+)$/);
+function Cr(A, t, e, n, i, r = !1, s) {
+  const g = A.map(
+    (o) => {
+      (!s || s < 2.00703) && (o = TI(o));
+      const a = isFinite(o) ? t[o] : o === "c" ? n : (function() {
+        const C = o.match(/^b(\d+)$/);
         if (C) return i[parseInt(C[1])];
-        const I = g.match(/^e(\d+)$/);
+        const I = o.match(/^e(\d+)$/);
         if (I) return e[parseInt(I[1])];
         throw new Error("Bad index value for indexesToTri");
       })();
-      return r ? [[a[1], a[0]], g] : [[a[0], a[1]], g];
+      return r ? [[a[1], a[0]], o] : [[a[0], a[1]], o];
     }
   );
-  return wI(o);
+  return SI(g);
 }
-function bI(A) {
+function TI(A) {
   return typeof A == "number" ? A : A.replace(/^(c|e|b)(?:ent|dgeNode|box)(\d+)?$/, "$1$2");
 }
-function vI(A, t) {
+function PI(A, t) {
   return t && t >= 2.00703 || Array.isArray(A[0]) ? A : A.map((e) => [
     e.illstNodes,
     e.mercNodes,
     e.startEnd
   ]);
 }
-const EI = 2.00704;
-function MI(A) {
+const xI = 2.00704;
+function DI(A) {
   return !!(A.version !== void 0 || !A.tins && A.points && A.tins_points);
 }
-function RI(A) {
+function OI(A) {
   return {
     points: A.points,
-    strictStatus: SI(A),
-    verticesParams: PI(A),
-    centroid: xI(A),
-    edges: vI(A.edges || []),
+    strictStatus: LI(A),
+    verticesParams: kI(A),
+    centroid: NI(A),
+    edges: PI(A.edges || []),
     edgeNodes: A.edgeNodes || [],
-    tins: DI(A),
-    kinks: OI(A.kinks_points),
+    tins: GI(A),
+    kinks: jI(A.kinks_points),
     yaxisMode: A.yaxisMode ?? "invert",
     strictMode: A.strictMode ?? "auto",
     vertexMode: A.vertexMode,
@@ -3436,52 +3485,52 @@ function RI(A) {
     xy: A.xy ?? [0, 0]
   };
 }
-function TI(A) {
-  const t = BI(A), e = t.tins;
+function BI(A) {
+  const t = _I(A), e = t.tins;
   return {
     compiled: t,
     tins: e,
-    points: LI(e),
+    points: XI(e),
     strictStatus: t.strict_status,
     verticesParams: t.vertices_params,
     centroid: t.centroid,
     kinks: t.kinks
   };
 }
-function SI(A) {
+function LI(A) {
   return A.strict_status ? A.strict_status : A.kinks_points ? "strict_error" : A.tins_points.length === 2 ? "loose" : "strict";
 }
-function PI(A) {
+function kI(A) {
   const t = {
     forw: [A.vertices_params[0]],
     bakw: [A.vertices_params[1]]
   };
-  return t.forw[1] = fs(A, !1), t.bakw[1] = fs(A, !0), t;
+  return t.forw[1] = ps(A, !1), t.bakw[1] = ps(A, !0), t;
 }
-function fs(A, t) {
+function ps(A, t) {
   const e = A.vertices_points.length;
   return Array.from({ length: e }, (n, i) => {
-    const r = (i + 1) % e, s = sr(
+    const r = (i + 1) % e, s = Cr(
       ["c", `b${i}`, `b${r}`],
       A.points,
       A.edgeNodes || [],
       A.centroid_point,
       A.vertices_points,
       t,
-      EI
+      xI
     );
-    return dA([s]);
+    return pA([s]);
   });
 }
-function xI(A) {
+function NI(A) {
   return {
-    forw: Kt(A.centroid_point[0], {
+    forw: ne(A.centroid_point[0], {
       target: {
         geom: A.centroid_point[1],
         index: "c"
       }
     }),
-    bakw: Kt(A.centroid_point[1], {
+    bakw: ne(A.centroid_point[1], {
       target: {
         geom: A.centroid_point[0],
         index: "c"
@@ -3489,12 +3538,12 @@ function xI(A) {
     })
   };
 }
-function DI(A) {
+function GI(A) {
   const t = A.tins_points.length === 1 ? 0 : 1;
   return {
-    forw: dA(
+    forw: pA(
       A.tins_points[0].map(
-        (e) => sr(
+        (e) => Cr(
           e,
           A.points,
           A.edgeNodes || [],
@@ -3505,9 +3554,9 @@ function DI(A) {
         )
       )
     ),
-    bakw: dA(
+    bakw: pA(
       A.tins_points[t].map(
-        (e) => sr(
+        (e) => Cr(
           e,
           A.points,
           A.edgeNodes || [],
@@ -3520,31 +3569,31 @@ function DI(A) {
     )
   };
 }
-function OI(A) {
+function jI(A) {
   if (A)
     return {
-      bakw: dA(
-        A.map((t) => Kt(t))
+      bakw: pA(
+        A.map((t) => ne(t))
       )
     };
 }
-function BI(A) {
+function _I(A) {
   return JSON.parse(
     JSON.stringify(A).replace('"cent"', '"c"').replace(/"bbox(\d+)"/g, '"b$1"')
   );
 }
-function LI(A) {
+function XI(A) {
   const t = [], e = A.forw.features;
   for (let n = 0; n < e.length; n++) {
     const i = e[n];
     ["a", "b", "c"].forEach((r, s) => {
-      const o = i.geometry.coordinates[0][s], g = i.properties[r].geom, a = i.properties[r].index;
-      typeof a == "number" && (t[a] = [o, g]);
+      const g = i.geometry.coordinates[0][s], o = i.properties[r].geom, a = i.properties[r].index;
+      typeof a == "number" && (t[a] = [g, o]);
     });
   }
   return t;
 }
-class St {
+class Pt {
   /**
    * 各種モードの定数定義
    * すべてreadonlyで、型安全性を確保
@@ -3569,9 +3618,9 @@ class St {
   edges;
   tins;
   kinks;
-  yaxisMode = St.YAXIS_INVERT;
-  strictMode = St.MODE_AUTO;
-  vertexMode = St.VERTEX_PLAIN;
+  yaxisMode = Pt.YAXIS_INVERT;
+  strictMode = Pt.MODE_AUTO;
+  vertexMode = Pt.VERTEX_PLAIN;
   bounds;
   boundsPolygon;
   wh;
@@ -3608,14 +3657,14 @@ class St {
    * 4. インデックスの作成
    */
   setCompiled(t) {
-    if (MI(t)) {
-      this.applyModernState(RI(t));
+    if (DI(t)) {
+      this.applyModernState(OI(t));
       return;
     }
-    this.applyLegacyState(TI(t));
+    this.applyLegacyState(BI(t));
   }
   applyModernState(t) {
-    this.points = t.points, this.strict_status = t.strictStatus, this.vertices_params = t.verticesParams, this.centroid = t.centroid, this.edges = t.edges, this.edgeNodes = t.edgeNodes || [], this.tins = t.tins, this.addIndexedTin(), this.kinks = t.kinks, this.yaxisMode = t.yaxisMode ?? St.YAXIS_INVERT, this.vertexMode = t.vertexMode ?? St.VERTEX_PLAIN, this.strictMode = t.strictMode ?? St.MODE_AUTO, t.bounds ? (this.bounds = t.bounds, this.boundsPolygon = t.boundsPolygon, this.xy = t.xy, this.wh = t.wh) : (this.bounds = void 0, this.boundsPolygon = void 0, this.xy = t.xy ?? [0, 0], t.wh && (this.wh = t.wh));
+    this.points = t.points, this.strict_status = t.strictStatus, this.vertices_params = t.verticesParams, this.centroid = t.centroid, this.edges = t.edges, this.edgeNodes = t.edgeNodes || [], this.tins = t.tins, this.addIndexedTin(), this.kinks = t.kinks, this.yaxisMode = t.yaxisMode ?? Pt.YAXIS_INVERT, this.vertexMode = t.vertexMode ?? Pt.VERTEX_PLAIN, this.strictMode = t.strictMode ?? Pt.MODE_AUTO, t.bounds ? (this.bounds = t.bounds, this.boundsPolygon = t.boundsPolygon, this.xy = t.xy, this.wh = t.wh) : (this.bounds = void 0, this.boundsPolygon = void 0, this.xy = t.xy ?? [0, 0], t.wh && (this.wh = t.wh));
   }
   applyLegacyState(t) {
     this.tins = t.tins, this.addIndexedTin(), this.strict_status = t.strictStatus, this.vertices_params = t.verticesParams, this.centroid = t.centroid, this.kinks = t.kinks, this.points = t.points;
@@ -3634,36 +3683,36 @@ class St {
       return;
     }
     let r = [], s = [];
-    const o = e.features.map((d) => {
+    const g = e.features.map((f) => {
       let m = [];
-      return Cs(d)[0].map((f) => {
-        r.length === 0 ? r = [Array.from(f), Array.from(f)] : (f[0] < r[0][0] && (r[0][0] = f[0]), f[0] > r[1][0] && (r[1][0] = f[0]), f[1] < r[0][1] && (r[0][1] = f[1]), f[1] > r[1][1] && (r[1][1] = f[1])), m.length === 0 ? m = [Array.from(f), Array.from(f)] : (f[0] < m[0][0] && (m[0][0] = f[0]), f[0] > m[1][0] && (m[1][0] = f[0]), f[1] < m[0][1] && (m[0][1] = f[1]), f[1] > m[1][1] && (m[1][1] = f[1]));
+      return us(f)[0].map((h) => {
+        r.length === 0 ? r = [Array.from(h), Array.from(h)] : (h[0] < r[0][0] && (r[0][0] = h[0]), h[0] > r[1][0] && (r[1][0] = h[0]), h[1] < r[0][1] && (r[0][1] = h[1]), h[1] > r[1][1] && (r[1][1] = h[1])), m.length === 0 ? m = [Array.from(h), Array.from(h)] : (h[0] < m[0][0] && (m[0][0] = h[0]), h[0] > m[1][0] && (m[1][0] = h[0]), h[1] < m[0][1] && (m[0][1] = h[1]), h[1] > m[1][1] && (m[1][1] = h[1]));
       }), m;
-    }), g = (r[1][0] - r[0][0]) / i, a = (r[1][1] - r[0][1]) / i, C = o.reduce(
-      (d, m, f) => {
-        const v = Xt(m[0][0], r[0][0], g, i), M = Xt(m[1][0], r[0][0], g, i), E = Xt(m[0][1], r[0][1], a, i), R = Xt(m[1][1], r[0][1], a, i);
-        for (let P = v; P <= M; P++) {
-          d[P] || (d[P] = []);
-          for (let x = E; x <= R; x++)
-            d[P][x] || (d[P][x] = []), d[P][x].push(f);
+    }), o = (r[1][0] - r[0][0]) / i, a = (r[1][1] - r[0][1]) / i, C = g.reduce(
+      (f, m, h) => {
+        const w = zt(m[0][0], r[0][0], o, i), S = zt(m[1][0], r[0][0], o, i), E = zt(m[0][1], r[0][1], a, i), P = zt(m[1][1], r[0][1], a, i);
+        for (let x = w; x <= S; x++) {
+          f[x] || (f[x] = []);
+          for (let D = E; D <= P; D++)
+            f[x][D] || (f[x][D] = []), f[x][D].push(h);
         }
-        return d;
+        return f;
       },
       []
-    ), I = n.features.map((d) => {
+    ), I = n.features.map((f) => {
       let m = [];
-      return Cs(d)[0].map((f) => {
-        s.length === 0 ? s = [Array.from(f), Array.from(f)] : (f[0] < s[0][0] && (s[0][0] = f[0]), f[0] > s[1][0] && (s[1][0] = f[0]), f[1] < s[0][1] && (s[0][1] = f[1]), f[1] > s[1][1] && (s[1][1] = f[1])), m.length === 0 ? m = [Array.from(f), Array.from(f)] : (f[0] < m[0][0] && (m[0][0] = f[0]), f[0] > m[1][0] && (m[1][0] = f[0]), f[1] < m[0][1] && (m[0][1] = f[1]), f[1] > m[1][1] && (m[1][1] = f[1]));
+      return us(f)[0].map((h) => {
+        s.length === 0 ? s = [Array.from(h), Array.from(h)] : (h[0] < s[0][0] && (s[0][0] = h[0]), h[0] > s[1][0] && (s[1][0] = h[0]), h[1] < s[0][1] && (s[0][1] = h[1]), h[1] > s[1][1] && (s[1][1] = h[1])), m.length === 0 ? m = [Array.from(h), Array.from(h)] : (h[0] < m[0][0] && (m[0][0] = h[0]), h[0] > m[1][0] && (m[1][0] = h[0]), h[1] < m[0][1] && (m[0][1] = h[1]), h[1] > m[1][1] && (m[1][1] = h[1]));
       }), m;
-    }), c = (s[1][0] - s[0][0]) / i, h = (s[1][1] - s[0][1]) / i, p = I.reduce(
-      (d, m, f) => {
-        const v = Xt(m[0][0], s[0][0], c, i), M = Xt(m[1][0], s[0][0], c, i), E = Xt(m[0][1], s[0][1], h, i), R = Xt(m[1][1], s[0][1], h, i);
-        for (let P = v; P <= M; P++) {
-          d[P] || (d[P] = []);
-          for (let x = E; x <= R; x++)
-            d[P][x] || (d[P][x] = []), d[P][x].push(f);
+    }), c = (s[1][0] - s[0][0]) / i, u = (s[1][1] - s[0][1]) / i, d = I.reduce(
+      (f, m, h) => {
+        const w = zt(m[0][0], s[0][0], c, i), S = zt(m[1][0], s[0][0], c, i), E = zt(m[0][1], s[0][1], u, i), P = zt(m[1][1], s[0][1], u, i);
+        for (let x = w; x <= S; x++) {
+          f[x] || (f[x] = []);
+          for (let D = E; D <= P; D++)
+            f[x][D] || (f[x][D] = []), f[x][D].push(h);
         }
-        return d;
+        return f;
       },
       []
     );
@@ -3672,7 +3721,7 @@ class St {
         gridNum: i,
         xOrigin: r[0][0],
         yOrigin: r[0][1],
-        xUnit: g,
+        xUnit: o,
         yUnit: a,
         gridCache: C
       },
@@ -3681,8 +3730,8 @@ class St {
         xOrigin: s[0][0],
         yOrigin: s[0][1],
         xUnit: c,
-        yUnit: h,
-        gridCache: p
+        yUnit: u,
+        gridCache: d
       }
     };
   }
@@ -3699,45 +3748,45 @@ class St {
   transform(t, e, n) {
     if (!this.tins)
       throw new Error("setCompiled() must be called before transform()");
-    if (e && this.strict_status == St.STATUS_ERROR)
+    if (e && this.strict_status == Pt.STATUS_ERROR)
       throw new Error('Backward transform is not allowed if strict_status == "strict_error"');
-    this.yaxisMode == St.YAXIS_FOLLOW && e && (t = [t[0], -1 * t[1]]);
-    const i = Kt(t);
-    if (this.bounds && !e && !n && !Be(i, this.boundsPolygon))
+    this.yaxisMode == Pt.YAXIS_FOLLOW && e && (t = [t[0], -1 * t[1]]);
+    const i = ne(t);
+    if (this.bounds && !e && !n && !Le(i, this.boundsPolygon))
       return !1;
-    const r = e ? this.tins.bakw : this.tins.forw, s = e ? this.indexedTins.bakw : this.indexedTins.forw, o = e ? this.vertices_params.bakw : this.vertices_params.forw, g = e ? this.centroid.bakw : this.centroid.forw;
+    const r = e ? this.tins.bakw : this.tins.forw, s = e ? this.indexedTins.bakw : this.indexedTins.forw, g = e ? this.vertices_params.bakw : this.vertices_params.forw, o = e ? this.centroid.bakw : this.centroid.forw;
     let a, C;
     this.stateFull && (this.stateBackward == e ? a = this.stateTriangle : (this.stateBackward = e, this.stateTriangle = void 0), C = (c) => {
       this.stateTriangle = c;
     });
-    let I = pI(
+    let I = MI(
       i,
       r,
       s,
-      o,
       g,
+      o,
       void 0,
       a,
       C
     );
     if (this.bounds && e && !n) {
-      const c = Kt(I);
-      if (!Be(c, this.boundsPolygon)) return !1;
-    } else this.yaxisMode == St.YAXIS_FOLLOW && !e && (I = [I[0], -1 * I[1]]);
+      const c = ne(I);
+      if (!Le(c, this.boundsPolygon)) return !1;
+    } else this.yaxisMode == Pt.YAXIS_FOLLOW && !e && (I = [I[0], -1 * I[1]]);
     return I;
   }
 }
-const W = 20037508342789244e-9, Gg = [
+const V = 20037508342789244e-9, Zo = [
   [0, 0],
   [0, 1],
   [1, 0],
   [0, -1],
   [-1, 0]
 ];
-function xr(A, t) {
-  return Math.floor(Math.min(A[0], A[1]) / 4) * W / 128 / Math.pow(2, t);
+function kr(A, t) {
+  return Math.floor(Math.min(A[0], A[1]) / 4) * V / 128 / Math.pow(2, t);
 }
-function jg(A, t) {
+function zo(A, t) {
   const e = [];
   for (let n = 0; n < A.length; n++) {
     const i = A[n], r = i[0] * Math.cos(t) - i[1] * Math.sin(t), s = i[0] * Math.sin(t) + i[1] * Math.cos(t);
@@ -3745,14 +3794,14 @@ function jg(A, t) {
   }
   return e;
 }
-function gr(A, t, e, n) {
-  const i = xr(n, t);
-  return jg(Gg, e).map((r) => [
+function cr(A, t, e, n) {
+  const i = kr(n, t);
+  return zo(Zo, e).map((r) => [
     r[0] * i + A[0],
     r[1] * i + A[1]
   ]);
 }
-function or(A, t) {
+function lr(A, t) {
   const e = A[0], n = A.slice(1, 5).map((c) => [
     c[0] - e[0],
     c[1] - e[1]
@@ -3762,28 +3811,28 @@ function or(A, t) {
     [0, -1],
     [-1, 0]
   ];
-  let r = 0, s = 0, o = 0;
+  let r = 0, s = 0, g = 0;
   for (let c = 0; c < 4; c++) {
-    const h = n[c], p = i[c], d = Math.sqrt(Math.pow(h[0], 2) + Math.pow(h[1], 2));
-    r += d;
-    const m = h[0] * p[1] - h[1] * p[0], f = Math.acos(
-      (h[0] * p[0] + h[1] * p[1]) / d
-    ), v = m > 0 ? -1 * f : f;
-    s += Math.cos(v), o += Math.sin(v);
+    const u = n[c], d = i[c], f = Math.sqrt(Math.pow(u[0], 2) + Math.pow(u[1], 2));
+    r += f;
+    const m = u[0] * d[1] - u[1] * d[0], h = Math.acos(
+      (u[0] * d[0] + u[1] * d[1]) / f
+    ), w = m > 0 ? -1 * h : h;
+    s += Math.cos(w), g += Math.sin(w);
   }
-  const g = r / 4, a = Math.atan2(o, s), C = Math.floor(Math.min(t[0], t[1]) / 4), I = Math.log(C * W / 128 / g) / Math.log(2);
+  const o = r / 4, a = Math.atan2(g, s), C = Math.floor(Math.min(t[0], t[1]) / 4), I = Math.log(C * V / 128 / o) / Math.log(2);
   return { center: e, zoom: I, rotation: a };
 }
-function Bi(A, t) {
-  const e = A[0] * (2 * W) / t - W, n = -1 * (A[1] * (2 * W) / t - W);
+function Gi(A, t) {
+  const e = A[0] * (2 * V) / t - V, n = -1 * (A[1] * (2 * V) / t - V);
   return [e, n];
 }
-function ds(A, t) {
-  const e = (A[0] + W) * t / (2 * W), n = (-A[1] + W) * t / (2 * W);
+function ys(A, t) {
+  const e = (A[0] + V) * t / (2 * V), n = (-A[1] + V) * t / (2 * V);
   return [e, n];
 }
-const Li = 256;
-class Xg {
+const ji = 256;
+class Fo {
   mainTin = null;
   subTins = [];
   _maxxy = 0;
@@ -3794,24 +3843,24 @@ class Xg {
    * @param mapData - メイン TIN と sub_maps の情報
    */
   setMapData(t) {
-    const e = new St();
+    const e = new Pt();
     if (e.setCompiled(t.compiled), this.mainTin = e, t.maxZoom !== void 0)
-      this._maxxy = Math.pow(2, t.maxZoom) * Li;
+      this._maxxy = Math.pow(2, t.maxZoom) * ji;
     else if (t.compiled.wh) {
-      const n = Math.max(t.compiled.wh[0], t.compiled.wh[1]), i = Math.ceil(Math.log2(n / Li));
-      this._maxxy = Math.pow(2, i) * Li;
+      const n = Math.max(t.compiled.wh[0], t.compiled.wh[1]), i = Math.ceil(Math.log2(n / ji));
+      this._maxxy = Math.pow(2, i) * ji;
     }
     if (this.subTins = [], t.sub_maps)
       for (const n of t.sub_maps) {
-        const i = new St();
+        const i = new Pt();
         i.setCompiled(n.compiled);
         const r = n.bounds ?? n.compiled.bounds;
         if (!r)
           throw new Error(
             "SubMapData must have bounds or compiled.bounds to create xyBounds polygon"
           );
-        const s = [...r, r[0]], o = s.map((g) => {
-          const a = i.transform(g, !1);
+        const s = [...r, r[0]], g = s.map((o) => {
+          const a = i.transform(o, !1);
           if (!a) throw new Error("Failed to transform sub-map bounds to mercator");
           return a;
         });
@@ -3819,8 +3868,8 @@ class Xg {
           tin: i,
           priority: n.priority,
           importance: n.importance,
-          xyBounds: rr([s]),
-          mercBounds: rr([o])
+          xyBounds: Ir([s]),
+          mercBounds: Ir([g])
         });
       }
   }
@@ -3857,7 +3906,7 @@ class Xg {
     const e = this._getTinsSortedByPriority();
     for (let n = 0; n < e.length; n++) {
       const { index: i, isMain: r } = e[n];
-      if (r || Be(Kt(t), this.subTins[i - 1].xyBounds)) {
+      if (r || Le(ne(t), this.subTins[i - 1].xyBounds)) {
         const s = this._transformByIndex(t, i, !1);
         if (s === !1) continue;
         return [i, s];
@@ -3879,28 +3928,28 @@ class Xg {
   merc2XyWithLayer(t) {
     return this._assertMapData(), this._getAllTinsWithIndex().map(({ index: e, tin: n, isMain: i }) => {
       const r = this._transformByIndex(t, e, !0);
-      return r === !1 ? [n, e] : i || Be(Kt(r), this.subTins[e - 1].xyBounds) ? [n, e, r] : [n, e];
+      return r === !1 ? [n, e] : i || Le(ne(r), this.subTins[e - 1].xyBounds) ? [n, e, r] : [n, e];
     }).sort((e, n) => {
       const i = e[0].priority ?? 0, r = n[0].priority ?? 0;
       return i < r ? 1 : -1;
     }).reduce(
       (e, n, i, r) => {
-        const s = n[0], o = n[1], g = n[2];
-        if (!g) return e;
+        const s = n[0], g = n[1], o = n[2];
+        if (!o) return e;
         for (let a = 0; a < i; a++) {
           const C = r[a][1], I = C === 0;
-          if (r[a][2] && (I || Be(Kt(g), this.subTins[C - 1].xyBounds)))
+          if (r[a][2] && (I || Le(ne(o), this.subTins[C - 1].xyBounds)))
             if (e.length) {
-              const c = !e[0], h = c ? e[1][2] : e[0][2], p = s.importance ?? 0, d = h.importance ?? 0;
-              return c ? p < d ? e : [void 0, [o, g, s]] : [...e.filter(
+              const c = !e[0], u = c ? e[1][2] : e[0][2], d = s.importance ?? 0, f = u.importance ?? 0;
+              return c ? d < f ? e : [void 0, [g, o, s]] : [...e.filter(
                 (m) => m !== void 0
-              ), [o, g, s]].sort(
-                (m, f) => (m[2].importance ?? 0) < (f[2].importance ?? 0) ? 1 : -1
+              ), [g, o, s]].sort(
+                (m, h) => (m[2].importance ?? 0) < (h[2].importance ?? 0) ? 1 : -1
               ).slice(0, 2);
             } else
-              return [[o, g, s]];
+              return [[g, o, s]];
         }
-        return !e.length || !e[0] ? [[o, g, s]] : (e.push([o, g, s]), e.sort((a, C) => {
+        return !e.length || !e[0] ? [[g, o, s]] : (e.push([g, o, s]), e.sort((a, C) => {
           const I = a[2].importance ?? 0, c = C[2].importance ?? 0;
           return I < c ? 1 : -1;
         }).filter((a, C) => C < 2));
@@ -3931,15 +3980,15 @@ class Xg {
    */
   merc2XyVisibleLayers(t) {
     this._assertMapData();
-    const e = this._getAllTinsWithIndex(), n = (g) => g === 0 ? 0 : this.subTins[g - 1].priority ?? 0, i = (g) => g === 0 ? 0 : this.subTins[g - 1].importance ?? 0, r = (g, a) => g === 0 || Be(Kt(a), this.subTins[g - 1].xyBounds), s = [];
-    for (const { index: g } of e) {
-      const a = this._transformByIndex(t, g, !0);
-      a !== !1 && r(g, a) && s.push({ index: g, xy: a });
+    const e = this._getAllTinsWithIndex(), n = (o) => o === 0 ? 0 : this.subTins[o - 1].priority ?? 0, i = (o) => o === 0 ? 0 : this.subTins[o - 1].importance ?? 0, r = (o, a) => o === 0 || Le(ne(a), this.subTins[o - 1].xyBounds), s = [];
+    for (const { index: o } of e) {
+      const a = this._transformByIndex(t, o, !0);
+      a !== !1 && r(o, a) && s.push({ index: o, xy: a });
     }
-    const o = (g) => e.some(
-      ({ index: a }) => a !== 0 && a !== g.index && (n(a) > n(g.index) || g.index === 0 && n(a) === 0) && r(a, g.xy)
+    const g = (o) => e.some(
+      ({ index: a }) => a !== 0 && a !== o.index && (n(a) > n(o.index) || o.index === 0 && n(a) === 0) && r(a, o.xy)
     );
-    return s.filter((g) => !o(g)).sort((g, a) => i(a.index) - i(g.index) || n(a.index) - n(g.index) || g.index - a.index).map((g) => [g.index, g.xy]);
+    return s.filter((o) => !g(o)).sort((o, a) => i(a.index) - i(o.index) || n(a.index) - n(o.index) || o.index - a.index).map((o) => [o.index, o.xy]);
   }
   /**
    * メルカトル5点 → システム座標（複数レイヤー）
@@ -3957,8 +4006,8 @@ class Xg {
         n = !0;
         return;
       }
-      const s = i[0], o = i[1];
-      return r !== 0 && !n ? [this.xy2SysCoordInternal(o)] : t.map((g, a) => a === 0 ? o : this._transformByIndex(g, s, !0)).map((g) => this.xy2SysCoordInternal(g));
+      const s = i[0], g = i[1];
+      return r !== 0 && !n ? [this.xy2SysCoordInternal(g)] : t.map((o, a) => a === 0 ? g : this._transformByIndex(o, s, !0)).map((o) => this.xy2SysCoordInternal(o));
     });
   }
   // ─── 処理3: ビューポート変換 ───────────────────────────────────────────────
@@ -3972,13 +4021,13 @@ class Xg {
    */
   viewpoint2Mercs(t, e) {
     this._assertMapData(), this._assertMaxxy();
-    const n = gr(t.center, t.zoom, t.rotation, e).map((o) => ds(o, this._maxxy)), i = this.xy2MercWithLayer(n[0]);
+    const n = cr(t.center, t.zoom, t.rotation, e).map((g) => ys(g, this._maxxy)), i = this.xy2MercWithLayer(n[0]);
     if (!i) throw new Error("viewpoint2Mercs: center point is out of bounds");
     const r = i[0], s = i[1];
-    return n.map((o, g) => {
-      if (g === 0) return s;
-      const a = this._transformByIndex(o, r, !1);
-      if (a === !1) throw new Error(`viewpoint2Mercs: point ${g} is out of bounds`);
+    return n.map((g, o) => {
+      if (o === 0) return s;
+      const a = this._transformByIndex(g, r, !1);
+      if (a === !1) throw new Error(`viewpoint2Mercs: point ${o} is out of bounds`);
       return a;
     });
   }
@@ -3994,34 +4043,34 @@ class Xg {
     this._assertMapData(), this._assertMaxxy();
     const n = this.merc2XyWithLayer(t[0]), i = n[0] || n[1];
     if (!i) throw new Error("mercs2Viewpoint: center point is out of bounds");
-    const r = i[0], s = i[1], o = t.map((g, a) => {
+    const r = i[0], s = i[1], g = t.map((o, a) => {
       if (a === 0) return s;
-      const C = this._transformByIndex(g, r, !0);
+      const C = this._transformByIndex(o, r, !0);
       if (C === !1) throw new Error(`mercs2Viewpoint: point ${a} is out of bounds`);
       return C;
-    }).map((g) => Bi(g, this._maxxy));
-    return or(o, e);
+    }).map((o) => Gi(o, this._maxxy));
+    return lr(g, e);
   }
   // ─── ユーティリティ（静的メソッド）────────────────────────────────────────
   /** zoom2Radius の静的ラッパー */
   static zoom2Radius(t, e) {
-    return xr(t, e);
+    return kr(t, e);
   }
   /** mercViewpoint2Mercs の静的ラッパー */
   static mercViewpoint2Mercs(t, e, n, i) {
-    return gr(t, e, n, i);
+    return cr(t, e, n, i);
   }
   /** mercs2MercViewpoint の静的ラッパー */
   static mercs2MercViewpoint(t, e) {
-    return or(t, e);
+    return lr(t, e);
   }
   /** xy2SysCoord の静的ラッパー */
   static xy2SysCoord(t, e) {
-    return Bi(t, e);
+    return Gi(t, e);
   }
   /** sysCoord2Xy の静的ラッパー */
   static sysCoord2Xy(t, e) {
-    return ds(t, e);
+    return ys(t, e);
   }
   // ─── 内部ヘルパー ──────────────────────────────────────────────────────────
   _assertMapData() {
@@ -4085,11 +4134,11 @@ class Xg {
   }
   /** 内部用 xy2SysCoord（_maxxy を使用） */
   xy2SysCoordInternal(t) {
-    return Bi(t, this._maxxy);
+    return Gi(t, this._maxxy);
   }
 }
-const Zg = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAMAAABrrFhUAAAAB3RJTUUH3QgIBToaSbAjlwAAABd0RVh0U29mdHdhcmUAR0xEUE5HIHZlciAzLjRxhaThAAAACHRwTkdHTEQzAAAAAEqAKR8AAAAEZ0FNQQAAsY8L/GEFAAAAA1BMVEX///+nxBvIAAAAAXRSTlMAQObYZgAAAFRJREFUeNrtwQEBAAAAgJD+r+4ICgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgBDwABHHIJwwAAAABJRU5ErkJggg==", Pe = 256, kI = `<canvas width="${Pe}" height="${Pe}" src="${Zg}"></canvas>`;
-async function kA(A) {
+const Uo = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAMAAABrrFhUAAAAB3RJTUUH3QgIBToaSbAjlwAAABd0RVh0U29mdHdhcmUAR0xEUE5HIHZlciAzLjRxhaThAAAACHRwTkdHTEQzAAAAAEqAKR8AAAAEZ0FNQQAAsY8L/GEFAAAAA1BMVEX///+nxBvIAAAAAXRSTlMAQObYZgAAAFRJREFUeNrtwQEBAAAAgJD+r+4ICgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgBDwABHHIJwwAAAABJRU5ErkJggg==", xe = 256, ZI = `<canvas width="${xe}" height="${xe}" src="${Uo}"></canvas>`;
+async function ZA(A) {
   if (typeof A == "string") {
     const t = A.match(/\//) ? A : `pois/${A}`, e = await fetch(t);
     if (!e.ok)
@@ -4098,29 +4147,29 @@ async function kA(A) {
   } else
     return A;
 }
-const zg = ["hide", "title", "icon", "selectedIcon"], NI = [
+const Wo = ["hide", "title", "icon", "selectedIcon"], zI = [
   "lnglat",
   "lng",
   "lat",
   "longitude",
   "latitude"
 ];
-function ti(A) {
+function ei(A) {
   return typeof A == "object" && A !== null && !Array.isArray(A);
 }
-function ar(A) {
-  if (!ti(A) || A.type === "FeatureCollection") return !1;
-  const t = A.layer, e = typeof t == "string", n = ti(t) && t.type === "FeatureCollection";
-  return !(!e && !n || NI.some((i) => A[i] !== void 0));
+function ur(A) {
+  if (!ei(A) || A.type === "FeatureCollection") return !1;
+  const t = A.layer, e = typeof t == "string", n = ei(t) && t.type === "FeatureCollection";
+  return !(!e && !n || zI.some((i) => A[i] !== void 0));
 }
-function GI(A) {
-  return ar(A) && zg.some((t) => A[t] !== void 0);
+function FI(A) {
+  return ur(A) && Wo.some((t) => A[t] !== void 0);
 }
-function ms(A) {
+function ws(A) {
   const t = {};
   for (const [e, n] of Object.entries(A))
     if (e !== "layer") {
-      if (zg.includes(e)) {
+      if (Wo.includes(e)) {
         t[e] = n;
         continue;
       }
@@ -4128,99 +4177,99 @@ function ms(A) {
     }
   return t;
 }
-function ps(A, t) {
+function vs(A, t) {
   if (!t) return A;
   t.hide === !0 && (A.hide = !0);
   const e = t.title;
-  (typeof e == "string" ? e !== "" : ti(e) && Object.keys(e).length > 0) && (A.name = e);
+  (typeof e == "string" ? e !== "" : ei(e) && Object.keys(e).length > 0) && (A.name = e);
   for (const n of ["icon", "selectedIcon"]) {
     const i = t[n];
     typeof i == "string" && i !== "" && (A[n] = i);
   }
   return A;
 }
-async function Fg(A, t) {
-  if (A = await kA(A), Array.isArray(A)) {
+async function Vo(A, t) {
+  if (A = await ZA(A), Array.isArray(A)) {
     const e = A[0];
-    if (A.length > 0 && (typeof e == "string" || ti(e) && e.type === "FeatureCollection" || ar(e))) {
+    if (A.length > 0 && (typeof e == "string" || ei(e) && e.type === "FeatureCollection" || ur(e))) {
       const i = await Promise.all(
         A.map(async (r, s) => {
-          let o, g;
-          ar(r) ? (o = await kA(r.layer), g = ms(r)) : (o = await kA(r), g = null);
-          let a = o.id || o.properties && o.properties.id;
+          let g, o;
+          ur(r) ? (g = await ZA(r.layer), o = ws(r)) : (g = await ZA(r), o = null);
+          let a = g.id || g.properties && g.properties.id;
           if (!a)
             if (s === 0) a = "main";
             else throw "POI layers include bad key setting";
-          const C = ue(o, a, t);
-          return [a, ps(C, g)];
+          const C = pe(g, a, t);
+          return [a, vs(C, o)];
         })
       );
       A = Object.fromEntries(i);
     } else
-      A = await Promise.all(A.map(async (i) => await kA(i))), A = {
-        main: ue(A, "main", t)
+      A = await Promise.all(A.map(async (i) => await ZA(i))), A = {
+        main: pe(A, "main", t)
       };
   } else if (A.type === "FeatureCollection") {
     const e = A.id || A.properties && A.properties.id || "main";
-    A = { [e]: ue(A, e, t) };
-  } else if (GI(A)) {
-    const e = await kA(A.layer), n = e.id || e.properties && e.properties.id || "main", i = ue(e, n, t);
-    A = { [n]: ps(i, ms(A)) };
+    A = { [e]: pe(A, e, t) };
+  } else if (FI(A)) {
+    const e = await ZA(A.layer), n = e.id || e.properties && e.properties.id || "main", i = pe(e, n, t);
+    A = { [n]: vs(i, ws(A)) };
   } else
     Object.keys(A).map((e) => {
-      A[e] = ue(A[e], e, t);
+      A[e] = pe(A[e], e, t);
     });
-  return A.main || (A.main = ue([], "main", t)), Object.keys(A).map((e) => {
-    Dr(A, e, t);
+  return A.main || (A.main = pe([], "main", t)), Object.keys(A).map((e) => {
+    Nr(A, e, t);
   }), A;
 }
-function ue(A, t, e) {
+function pe(A, t, e) {
   if (Array.isArray(A))
     A = {
-      pois: A.map((n) => qA(n))
+      pois: A.map((n) => on(n))
     };
   else if (A.type === "FeatureCollection") {
     const n = Object.assign({}, A.properties || {});
-    A.name && (n.name = A.name), n.pois = A.features.map((i) => qA(i)), A = n;
+    A.name && (n.name = A.name), n.pois = A.features.map((i) => on(i)), A = n;
   }
   if (typeof A.id > "u")
     A.id = t;
   else if (A.id !== t) throw "POI layers include bad key setting";
   return A.namespaceID || (A.namespaceID = `${e.namespace ? `${e.namespace}#` : ""}${t}`), A.name || (A.name = t === "main" ? e.name : t), A.pois || (A.pois = []), A;
 }
-function qA(A) {
+function on(A) {
   if (A.type === "Feature") {
     const t = Object.assign({}, A.properties || {});
     t.lnglat = A.geometry.coordinates, t.id || (t.id = A.id), t.name || (t.name = A.name), A = t;
   }
   return A.lnglat || (A.lnglat = [A.lng || A.longitude, A.lat || A.latitude]), delete A.lng, delete A.lat, delete A.longitude, delete A.latitude, A;
 }
-function Dr(A, t, e) {
+function Nr(A, t, e) {
   if (!A[t]) return;
   const n = A[t], i = n.pois;
   n.__nextId || (n.__nextId = 0), i.map((r) => {
     r.id || (r.id = `${t}_${n.__nextId}`, n.__nextId++), r.namespaceID || (r.namespaceID = `${e.namespace ? `${e.namespace}#` : ""}${r.id}`);
   });
 }
-function $A(A, t, e = {}) {
+function gn(A, t, e = {}) {
   const n = { type: "Feature" };
   return (e.id === 0 || e.id) && (n.id = e.id), e.bbox && (n.bbox = e.bbox), n.properties = t || {}, n.geometry = A, n;
 }
-function Ug(A, t, e = {}) {
+function Ho(A, t, e = {}) {
   if (!A)
     throw new Error("coordinates is required");
   if (!Array.isArray(A))
     throw new Error("coordinates must be an Array");
   if (A.length < 2)
     throw new Error("coordinates must be at least 2 numbers long");
-  if (!ws(A[0]) || !ws(A[1]))
+  if (!Es(A[0]) || !Es(A[1]))
     throw new Error("coordinates must contain numbers");
-  return $A({
+  return gn({
     type: "Point",
     coordinates: A
   }, t, e);
 }
-function _g(A, t, e = {}) {
+function Qo(A, t, e = {}) {
   for (const i of A) {
     if (i.length < 4)
       throw new Error(
@@ -4232,27 +4281,27 @@ function _g(A, t, e = {}) {
       if (i[i.length - 1][r] !== i[0][r])
         throw new Error("First and last Position are not equivalent.");
   }
-  return $A({
+  return gn({
     type: "Polygon",
     coordinates: A
   }, t, e);
 }
-function jI(A, t, e = {}) {
+function UI(A, t, e = {}) {
   if (A.length < 2)
     throw new Error("coordinates must be an array of two or more positions");
-  return $A({
+  return gn({
     type: "LineString",
     coordinates: A
   }, t, e);
 }
-function ys(A, t = {}) {
+function bs(A, t = {}) {
   const e = { type: "FeatureCollection" };
   return t.id && (e.id = t.id), t.bbox && (e.bbox = t.bbox), e.features = A, e;
 }
-function ws(A) {
+function Es(A) {
   return !isNaN(A) && A !== null && !Array.isArray(A);
 }
-function XI(A) {
+function WI(A) {
   if (!A)
     throw new Error("coord is required");
   if (!Array.isArray(A)) {
@@ -4265,91 +4314,91 @@ function XI(A) {
     return [...A];
   throw new Error("coord must be GeoJSON Point or an Array of numbers");
 }
-function ZI(A) {
+function VI(A) {
   return A.type === "Feature" ? A.geometry : A;
 }
-function Wg(A, t, e) {
+function Yo(A, t, e) {
   if (A !== null)
-    for (var n, i, r, s, o, g, a, C = 0, I = 0, c, h = A.type, p = h === "FeatureCollection", d = h === "Feature", m = p ? A.features.length : 1, f = 0; f < m; f++) {
-      a = p ? (
+    for (var n, i, r, s, g, o, a, C = 0, I = 0, c, u = A.type, d = u === "FeatureCollection", f = u === "Feature", m = d ? A.features.length : 1, h = 0; h < m; h++) {
+      a = d ? (
         // @ts-expect-error: Known type conflict
-        A.features[f].geometry
-      ) : d ? (
+        A.features[h].geometry
+      ) : f ? (
         // @ts-expect-error: Known type conflict
         A.geometry
-      ) : A, c = a ? a.type === "GeometryCollection" : !1, o = c ? a.geometries.length : 1;
-      for (var v = 0; v < o; v++) {
-        var M = 0, E = 0;
-        if (s = c ? a.geometries[v] : a, s !== null) {
-          g = s.coordinates;
-          var R = s.type;
-          switch (C = R === "Polygon" || R === "MultiPolygon" ? 1 : 0, R) {
+      ) : A, c = a ? a.type === "GeometryCollection" : !1, g = c ? a.geometries.length : 1;
+      for (var w = 0; w < g; w++) {
+        var S = 0, E = 0;
+        if (s = c ? a.geometries[w] : a, s !== null) {
+          o = s.coordinates;
+          var P = s.type;
+          switch (C = P === "Polygon" || P === "MultiPolygon" ? 1 : 0, P) {
             case null:
               break;
             case "Point":
               if (
                 // @ts-expect-error: Known type conflict
                 t(
-                  g,
+                  o,
                   I,
-                  f,
-                  M,
+                  h,
+                  S,
                   E
                 ) === !1
               )
                 return !1;
-              I++, M++;
+              I++, S++;
               break;
             case "LineString":
             case "MultiPoint":
-              for (n = 0; n < g.length; n++) {
+              for (n = 0; n < o.length; n++) {
                 if (
                   // @ts-expect-error: Known type conflict
                   t(
-                    g[n],
+                    o[n],
                     I,
-                    f,
-                    M,
+                    h,
+                    S,
                     E
                   ) === !1
                 )
                   return !1;
-                I++, R === "MultiPoint" && M++;
+                I++, P === "MultiPoint" && S++;
               }
-              R === "LineString" && M++;
+              P === "LineString" && S++;
               break;
             case "Polygon":
             case "MultiLineString":
-              for (n = 0; n < g.length; n++) {
-                for (i = 0; i < g[n].length - C; i++) {
+              for (n = 0; n < o.length; n++) {
+                for (i = 0; i < o[n].length - C; i++) {
                   if (
                     // @ts-expect-error: Known type conflict
                     t(
-                      g[n][i],
+                      o[n][i],
                       I,
-                      f,
-                      M,
+                      h,
+                      S,
                       E
                     ) === !1
                   )
                     return !1;
                   I++;
                 }
-                R === "MultiLineString" && M++, R === "Polygon" && E++;
+                P === "MultiLineString" && S++, P === "Polygon" && E++;
               }
-              R === "Polygon" && M++;
+              P === "Polygon" && S++;
               break;
             case "MultiPolygon":
-              for (n = 0; n < g.length; n++) {
-                for (E = 0, i = 0; i < g[n].length; i++) {
-                  for (r = 0; r < g[n][i].length - C; r++) {
+              for (n = 0; n < o.length; n++) {
+                for (E = 0, i = 0; i < o[n].length; i++) {
+                  for (r = 0; r < o[n][i].length - C; r++) {
                     if (
                       // @ts-expect-error: Known type conflict
                       t(
-                        g[n][i][r],
+                        o[n][i][r],
                         I,
-                        f,
-                        M,
+                        h,
+                        S,
                         E
                       ) === !1
                     )
@@ -4358,14 +4407,14 @@ function Wg(A, t, e) {
                   }
                   E++;
                 }
-                M++;
+                S++;
               }
               break;
             case "GeometryCollection":
               for (n = 0; n < s.geometries.length; n++)
                 if (
                   // @ts-expect-error: Known type conflict
-                  Wg(s.geometries[n], t) === !1
+                  Yo(s.geometries[n], t) === !1
                 )
                   return !1;
               break;
@@ -4376,90 +4425,90 @@ function Wg(A, t, e) {
       }
     }
 }
-const qt = 11102230246251565e-32, It = 134217729, zI = (3 + 8 * qt) * qt;
-function ki(A, t, e, n, i) {
-  let r, s, o, g, a = t[0], C = n[0], I = 0, c = 0;
+const re = 11102230246251565e-32, It = 134217729, HI = (3 + 8 * re) * re;
+function _i(A, t, e, n, i) {
+  let r, s, g, o, a = t[0], C = n[0], I = 0, c = 0;
   C > a == C > -a ? (r = a, a = t[++I]) : (r = C, C = n[++c]);
-  let h = 0;
+  let u = 0;
   if (I < A && c < e)
-    for (C > a == C > -a ? (s = a + r, o = r - (s - a), a = t[++I]) : (s = C + r, o = r - (s - C), C = n[++c]), r = s, o !== 0 && (i[h++] = o); I < A && c < e; )
-      C > a == C > -a ? (s = r + a, g = s - r, o = r - (s - g) + (a - g), a = t[++I]) : (s = r + C, g = s - r, o = r - (s - g) + (C - g), C = n[++c]), r = s, o !== 0 && (i[h++] = o);
+    for (C > a == C > -a ? (s = a + r, g = r - (s - a), a = t[++I]) : (s = C + r, g = r - (s - C), C = n[++c]), r = s, g !== 0 && (i[u++] = g); I < A && c < e; )
+      C > a == C > -a ? (s = r + a, o = s - r, g = r - (s - o) + (a - o), a = t[++I]) : (s = r + C, o = s - r, g = r - (s - o) + (C - o), C = n[++c]), r = s, g !== 0 && (i[u++] = g);
   for (; I < A; )
-    s = r + a, g = s - r, o = r - (s - g) + (a - g), a = t[++I], r = s, o !== 0 && (i[h++] = o);
+    s = r + a, o = s - r, g = r - (s - o) + (a - o), a = t[++I], r = s, g !== 0 && (i[u++] = g);
   for (; c < e; )
-    s = r + C, g = s - r, o = r - (s - g) + (C - g), C = n[++c], r = s, o !== 0 && (i[h++] = o);
-  return (r !== 0 || h === 0) && (i[h++] = r), h;
+    s = r + C, o = s - r, g = r - (s - o) + (C - o), C = n[++c], r = s, g !== 0 && (i[u++] = g);
+  return (r !== 0 || u === 0) && (i[u++] = r), u;
 }
-function FI(A, t) {
+function QI(A, t) {
   let e = t[0];
   for (let n = 1; n < A; n++) e += t[n];
   return e;
 }
-function rn(A) {
+function ln(A) {
   return new Float64Array(A);
 }
-const UI = (3 + 16 * qt) * qt, _I = (2 + 12 * qt) * qt, WI = (9 + 64 * qt) * qt * qt, eA = rn(4), bs = rn(8), vs = rn(12), Es = rn(16), ft = rn(4);
-function HI(A, t, e, n, i, r, s) {
-  let o, g, a, C, I, c, h, p, d, m, f, v, M, E, R, P, x, D;
-  const N = A - i, G = e - i, k = t - r, X = n - r;
-  E = N * X, c = It * N, h = c - (c - N), p = N - h, c = It * X, d = c - (c - X), m = X - d, R = p * m - (E - h * d - p * d - h * m), P = k * G, c = It * k, h = c - (c - k), p = k - h, c = It * G, d = c - (c - G), m = G - d, x = p * m - (P - h * d - p * d - h * m), f = R - x, I = R - f, eA[0] = R - (f + I) + (I - x), v = E + f, I = v - E, M = E - (v - I) + (f - I), f = M - P, I = M - f, eA[1] = M - (f + I) + (I - P), D = v + f, I = D - v, eA[2] = v - (D - I) + (f - I), eA[3] = D;
-  let Z = FI(4, eA), J = _I * s;
-  if (Z >= J || -Z >= J || (I = A - N, o = A - (N + I) + (I - i), I = e - G, a = e - (G + I) + (I - i), I = t - k, g = t - (k + I) + (I - r), I = n - X, C = n - (X + I) + (I - r), o === 0 && g === 0 && a === 0 && C === 0) || (J = WI * s + zI * Math.abs(Z), Z += N * C + X * o - (k * a + G * g), Z >= J || -Z >= J)) return Z;
-  E = o * X, c = It * o, h = c - (c - o), p = o - h, c = It * X, d = c - (c - X), m = X - d, R = p * m - (E - h * d - p * d - h * m), P = g * G, c = It * g, h = c - (c - g), p = g - h, c = It * G, d = c - (c - G), m = G - d, x = p * m - (P - h * d - p * d - h * m), f = R - x, I = R - f, ft[0] = R - (f + I) + (I - x), v = E + f, I = v - E, M = E - (v - I) + (f - I), f = M - P, I = M - f, ft[1] = M - (f + I) + (I - P), D = v + f, I = D - v, ft[2] = v - (D - I) + (f - I), ft[3] = D;
-  const xt = ki(4, eA, 4, ft, bs);
-  E = N * C, c = It * N, h = c - (c - N), p = N - h, c = It * C, d = c - (c - C), m = C - d, R = p * m - (E - h * d - p * d - h * m), P = k * a, c = It * k, h = c - (c - k), p = k - h, c = It * a, d = c - (c - a), m = a - d, x = p * m - (P - h * d - p * d - h * m), f = R - x, I = R - f, ft[0] = R - (f + I) + (I - x), v = E + f, I = v - E, M = E - (v - I) + (f - I), f = M - P, I = M - f, ft[1] = M - (f + I) + (I - P), D = v + f, I = D - v, ft[2] = v - (D - I) + (f - I), ft[3] = D;
-  const O = ki(xt, bs, 4, ft, vs);
-  E = o * C, c = It * o, h = c - (c - o), p = o - h, c = It * C, d = c - (c - C), m = C - d, R = p * m - (E - h * d - p * d - h * m), P = g * a, c = It * g, h = c - (c - g), p = g - h, c = It * a, d = c - (c - a), m = a - d, x = p * m - (P - h * d - p * d - h * m), f = R - x, I = R - f, ft[0] = R - (f + I) + (I - x), v = E + f, I = v - E, M = E - (v - I) + (f - I), f = M - P, I = M - f, ft[1] = M - (f + I) + (I - P), D = v + f, I = D - v, ft[2] = v - (D - I) + (f - I), ft[3] = D;
-  const q = ki(O, vs, 4, ft, Es);
-  return Es[q - 1];
+const YI = (3 + 16 * re) * re, KI = (2 + 12 * re) * re, JI = (9 + 64 * re) * re * re, iA = ln(4), Ms = ln(8), Rs = ln(12), Ss = ln(16), ht = ln(4);
+function qI(A, t, e, n, i, r, s) {
+  let g, o, a, C, I, c, u, d, f, m, h, w, S, E, P, x, D, B;
+  const k = A - i, j = e - i, _ = t - r, X = n - r;
+  E = k * X, c = It * k, u = c - (c - k), d = k - u, c = It * X, f = c - (c - X), m = X - f, P = d * m - (E - u * f - d * f - u * m), x = _ * j, c = It * _, u = c - (c - _), d = _ - u, c = It * j, f = c - (c - j), m = j - f, D = d * m - (x - u * f - d * f - u * m), h = P - D, I = P - h, iA[0] = P - (h + I) + (I - D), w = E + h, I = w - E, S = E - (w - I) + (h - I), h = S - x, I = S - h, iA[1] = S - (h + I) + (I - x), B = w + h, I = B - w, iA[2] = w - (B - I) + (h - I), iA[3] = B;
+  let Z = QI(4, iA), Y = KI * s;
+  if (Z >= Y || -Z >= Y || (I = A - k, g = A - (k + I) + (I - i), I = e - j, a = e - (j + I) + (I - i), I = t - _, o = t - (_ + I) + (I - r), I = n - X, C = n - (X + I) + (I - r), g === 0 && o === 0 && a === 0 && C === 0) || (Y = JI * s + HI * Math.abs(Z), Z += k * C + X * g - (_ * a + j * o), Z >= Y || -Z >= Y)) return Z;
+  E = g * X, c = It * g, u = c - (c - g), d = g - u, c = It * X, f = c - (c - X), m = X - f, P = d * m - (E - u * f - d * f - u * m), x = o * j, c = It * o, u = c - (c - o), d = o - u, c = It * j, f = c - (c - j), m = j - f, D = d * m - (x - u * f - d * f - u * m), h = P - D, I = P - h, ht[0] = P - (h + I) + (I - D), w = E + h, I = w - E, S = E - (w - I) + (h - I), h = S - x, I = S - h, ht[1] = S - (h + I) + (I - x), B = w + h, I = B - w, ht[2] = w - (B - I) + (h - I), ht[3] = B;
+  const ot = _i(4, iA, 4, ht, Ms);
+  E = k * C, c = It * k, u = c - (c - k), d = k - u, c = It * C, f = c - (c - C), m = C - f, P = d * m - (E - u * f - d * f - u * m), x = _ * a, c = It * _, u = c - (c - _), d = _ - u, c = It * a, f = c - (c - a), m = a - f, D = d * m - (x - u * f - d * f - u * m), h = P - D, I = P - h, ht[0] = P - (h + I) + (I - D), w = E + h, I = w - E, S = E - (w - I) + (h - I), h = S - x, I = S - h, ht[1] = S - (h + I) + (I - x), B = w + h, I = B - w, ht[2] = w - (B - I) + (h - I), ht[3] = B;
+  const L = _i(ot, Ms, 4, ht, Rs);
+  E = g * C, c = It * g, u = c - (c - g), d = g - u, c = It * C, f = c - (c - C), m = C - f, P = d * m - (E - u * f - d * f - u * m), x = o * a, c = It * o, u = c - (c - o), d = o - u, c = It * a, f = c - (c - a), m = a - f, D = d * m - (x - u * f - d * f - u * m), h = P - D, I = P - h, ht[0] = P - (h + I) + (I - D), w = E + h, I = w - E, S = E - (w - I) + (h - I), h = S - x, I = S - h, ht[1] = S - (h + I) + (I - x), B = w + h, I = B - w, ht[2] = w - (B - I) + (h - I), ht[3] = B;
+  const et = _i(L, Rs, 4, ht, Ss);
+  return Ss[et - 1];
 }
-function VI(A, t, e, n, i, r) {
-  const s = (t - r) * (e - i), o = (A - i) * (n - r), g = s - o, a = Math.abs(s + o);
-  return Math.abs(g) >= UI * a ? g : -HI(A, t, e, n, i, r, a);
+function $I(A, t, e, n, i, r) {
+  const s = (t - r) * (e - i), g = (A - i) * (n - r), o = s - g, a = Math.abs(s + g);
+  return Math.abs(o) >= YI * a ? o : -qI(A, t, e, n, i, r, a);
 }
-function QI(A, t) {
-  var e, n, i = 0, r, s, o, g, a, C, I, c = A[0], h = A[1], p = t.length;
-  for (e = 0; e < p; e++) {
+function tC(A, t) {
+  var e, n, i = 0, r, s, g, o, a, C, I, c = A[0], u = A[1], d = t.length;
+  for (e = 0; e < d; e++) {
     n = 0;
-    var d = t[e], m = d.length - 1;
-    if (C = d[0], C[0] !== d[m][0] && C[1] !== d[m][1])
+    var f = t[e], m = f.length - 1;
+    if (C = f[0], C[0] !== f[m][0] && C[1] !== f[m][1])
       throw new Error("First and last coordinates in a ring must be the same");
-    for (s = C[0] - c, o = C[1] - h, n; n < m; n++) {
-      if (I = d[n + 1], g = I[0] - c, a = I[1] - h, o === 0 && a === 0) {
-        if (g <= 0 && s >= 0 || s <= 0 && g >= 0)
+    for (s = C[0] - c, g = C[1] - u, n; n < m; n++) {
+      if (I = f[n + 1], o = I[0] - c, a = I[1] - u, g === 0 && a === 0) {
+        if (o <= 0 && s >= 0 || s <= 0 && o >= 0)
           return 0;
-      } else if (a >= 0 && o <= 0 || a <= 0 && o >= 0) {
-        if (r = VI(s, g, o, a, 0, 0), r === 0)
+      } else if (a >= 0 && g <= 0 || a <= 0 && g >= 0) {
+        if (r = $I(s, o, g, a, 0, 0), r === 0)
           return 0;
-        (r > 0 && a > 0 && o <= 0 || r < 0 && a <= 0 && o > 0) && i++;
+        (r > 0 && a > 0 && g <= 0 || r < 0 && a <= 0 && g > 0) && i++;
       }
-      C = I, o = a, s = g;
+      C = I, g = a, s = o;
     }
   }
   return i % 2 !== 0;
 }
-function YI(A, t, e = {}) {
+function eC(A, t, e = {}) {
   if (!A)
     throw new Error("point is required");
   if (!t)
     throw new Error("polygon is required");
-  const n = XI(A), i = ZI(t), r = i.type, s = t.bbox;
-  let o = i.coordinates;
-  if (s && KI(n, s) === !1)
+  const n = WI(A), i = VI(t), r = i.type, s = t.bbox;
+  let g = i.coordinates;
+  if (s && AC(n, s) === !1)
     return !1;
-  r === "Polygon" && (o = [o]);
-  for (var g = 0; g < o.length; ++g) {
-    const a = QI(n, o[g]);
+  r === "Polygon" && (g = [g]);
+  for (var o = 0; o < g.length; ++o) {
+    const a = tC(n, g[o]);
     if (a === 0 && !e.ignoreBoundary) return !0;
     if (a) return !0;
   }
   return !1;
 }
-function KI(A, t) {
+function AC(A, t) {
   return t[0] <= A[0] && t[1] <= A[1] && t[2] >= A[0] && t[3] >= A[1];
 }
-class Hg {
-  constructor(t = [], e = JI) {
+class Ko {
+  constructor(t = [], e = nC) {
     if (this.data = t, this.length = this.data.length, this.compare = e, this.length > 0)
       for (let n = (this.length >> 1) - 1; n >= 0; n--) this._down(n);
   }
@@ -4486,95 +4535,95 @@ class Hg {
   _down(t) {
     const { data: e, compare: n } = this, i = this.length >> 1, r = e[t];
     for (; t < i; ) {
-      let s = (t << 1) + 1, o = e[s];
-      const g = s + 1;
-      if (g < this.length && n(e[g], o) < 0 && (s = g, o = e[g]), n(o, r) >= 0) break;
-      e[t] = o, t = s;
+      let s = (t << 1) + 1, g = e[s];
+      const o = s + 1;
+      if (o < this.length && n(e[o], g) < 0 && (s = o, g = e[o]), n(g, r) >= 0) break;
+      e[t] = g, t = s;
     }
     e[t] = r;
   }
 }
-function JI(A, t) {
+function nC(A, t) {
   return A < t ? -1 : A > t ? 1 : 0;
 }
-const $t = 11102230246251565e-32, Ct = 134217729, qI = (3 + 8 * $t) * $t;
-function Ni(A, t, e, n, i) {
-  let r, s, o, g, a = t[0], C = n[0], I = 0, c = 0;
+const se = 11102230246251565e-32, Ct = 134217729, iC = (3 + 8 * se) * se;
+function Xi(A, t, e, n, i) {
+  let r, s, g, o, a = t[0], C = n[0], I = 0, c = 0;
   C > a == C > -a ? (r = a, a = t[++I]) : (r = C, C = n[++c]);
-  let h = 0;
+  let u = 0;
   if (I < A && c < e)
-    for (C > a == C > -a ? (s = a + r, o = r - (s - a), a = t[++I]) : (s = C + r, o = r - (s - C), C = n[++c]), r = s, o !== 0 && (i[h++] = o); I < A && c < e; )
-      C > a == C > -a ? (s = r + a, g = s - r, o = r - (s - g) + (a - g), a = t[++I]) : (s = r + C, g = s - r, o = r - (s - g) + (C - g), C = n[++c]), r = s, o !== 0 && (i[h++] = o);
+    for (C > a == C > -a ? (s = a + r, g = r - (s - a), a = t[++I]) : (s = C + r, g = r - (s - C), C = n[++c]), r = s, g !== 0 && (i[u++] = g); I < A && c < e; )
+      C > a == C > -a ? (s = r + a, o = s - r, g = r - (s - o) + (a - o), a = t[++I]) : (s = r + C, o = s - r, g = r - (s - o) + (C - o), C = n[++c]), r = s, g !== 0 && (i[u++] = g);
   for (; I < A; )
-    s = r + a, g = s - r, o = r - (s - g) + (a - g), a = t[++I], r = s, o !== 0 && (i[h++] = o);
+    s = r + a, o = s - r, g = r - (s - o) + (a - o), a = t[++I], r = s, g !== 0 && (i[u++] = g);
   for (; c < e; )
-    s = r + C, g = s - r, o = r - (s - g) + (C - g), C = n[++c], r = s, o !== 0 && (i[h++] = o);
-  return (r !== 0 || h === 0) && (i[h++] = r), h;
+    s = r + C, o = s - r, g = r - (s - o) + (C - o), C = n[++c], r = s, g !== 0 && (i[u++] = g);
+  return (r !== 0 || u === 0) && (i[u++] = r), u;
 }
-function $I(A, t) {
+function rC(A, t) {
   let e = t[0];
   for (let n = 1; n < A; n++) e += t[n];
   return e;
 }
-function sn(A) {
+function un(A) {
   return new Float64Array(A);
 }
-const tC = (3 + 16 * $t) * $t, eC = (2 + 12 * $t) * $t, AC = (9 + 64 * $t) * $t * $t, AA = sn(4), Ms = sn(8), Rs = sn(12), Ts = sn(16), dt = sn(4);
-function nC(A, t, e, n, i, r, s) {
-  let o, g, a, C, I, c, h, p, d, m, f, v, M, E, R, P, x, D;
-  const N = A - i, G = e - i, k = t - r, X = n - r;
-  E = N * X, c = Ct * N, h = c - (c - N), p = N - h, c = Ct * X, d = c - (c - X), m = X - d, R = p * m - (E - h * d - p * d - h * m), P = k * G, c = Ct * k, h = c - (c - k), p = k - h, c = Ct * G, d = c - (c - G), m = G - d, x = p * m - (P - h * d - p * d - h * m), f = R - x, I = R - f, AA[0] = R - (f + I) + (I - x), v = E + f, I = v - E, M = E - (v - I) + (f - I), f = M - P, I = M - f, AA[1] = M - (f + I) + (I - P), D = v + f, I = D - v, AA[2] = v - (D - I) + (f - I), AA[3] = D;
-  let Z = $I(4, AA), J = eC * s;
-  if (Z >= J || -Z >= J || (I = A - N, o = A - (N + I) + (I - i), I = e - G, a = e - (G + I) + (I - i), I = t - k, g = t - (k + I) + (I - r), I = n - X, C = n - (X + I) + (I - r), o === 0 && g === 0 && a === 0 && C === 0) || (J = AC * s + qI * Math.abs(Z), Z += N * C + X * o - (k * a + G * g), Z >= J || -Z >= J)) return Z;
-  E = o * X, c = Ct * o, h = c - (c - o), p = o - h, c = Ct * X, d = c - (c - X), m = X - d, R = p * m - (E - h * d - p * d - h * m), P = g * G, c = Ct * g, h = c - (c - g), p = g - h, c = Ct * G, d = c - (c - G), m = G - d, x = p * m - (P - h * d - p * d - h * m), f = R - x, I = R - f, dt[0] = R - (f + I) + (I - x), v = E + f, I = v - E, M = E - (v - I) + (f - I), f = M - P, I = M - f, dt[1] = M - (f + I) + (I - P), D = v + f, I = D - v, dt[2] = v - (D - I) + (f - I), dt[3] = D;
-  const xt = Ni(4, AA, 4, dt, Ms);
-  E = N * C, c = Ct * N, h = c - (c - N), p = N - h, c = Ct * C, d = c - (c - C), m = C - d, R = p * m - (E - h * d - p * d - h * m), P = k * a, c = Ct * k, h = c - (c - k), p = k - h, c = Ct * a, d = c - (c - a), m = a - d, x = p * m - (P - h * d - p * d - h * m), f = R - x, I = R - f, dt[0] = R - (f + I) + (I - x), v = E + f, I = v - E, M = E - (v - I) + (f - I), f = M - P, I = M - f, dt[1] = M - (f + I) + (I - P), D = v + f, I = D - v, dt[2] = v - (D - I) + (f - I), dt[3] = D;
-  const O = Ni(xt, Ms, 4, dt, Rs);
-  E = o * C, c = Ct * o, h = c - (c - o), p = o - h, c = Ct * C, d = c - (c - C), m = C - d, R = p * m - (E - h * d - p * d - h * m), P = g * a, c = Ct * g, h = c - (c - g), p = g - h, c = Ct * a, d = c - (c - a), m = a - d, x = p * m - (P - h * d - p * d - h * m), f = R - x, I = R - f, dt[0] = R - (f + I) + (I - x), v = E + f, I = v - E, M = E - (v - I) + (f - I), f = M - P, I = M - f, dt[1] = M - (f + I) + (I - P), D = v + f, I = D - v, dt[2] = v - (D - I) + (f - I), dt[3] = D;
-  const q = Ni(O, Rs, 4, dt, Ts);
-  return Ts[q - 1];
+const sC = (3 + 16 * se) * se, oC = (2 + 12 * se) * se, gC = (9 + 64 * se) * se * se, rA = un(4), Ts = un(8), Ps = un(12), xs = un(16), ft = un(4);
+function aC(A, t, e, n, i, r, s) {
+  let g, o, a, C, I, c, u, d, f, m, h, w, S, E, P, x, D, B;
+  const k = A - i, j = e - i, _ = t - r, X = n - r;
+  E = k * X, c = Ct * k, u = c - (c - k), d = k - u, c = Ct * X, f = c - (c - X), m = X - f, P = d * m - (E - u * f - d * f - u * m), x = _ * j, c = Ct * _, u = c - (c - _), d = _ - u, c = Ct * j, f = c - (c - j), m = j - f, D = d * m - (x - u * f - d * f - u * m), h = P - D, I = P - h, rA[0] = P - (h + I) + (I - D), w = E + h, I = w - E, S = E - (w - I) + (h - I), h = S - x, I = S - h, rA[1] = S - (h + I) + (I - x), B = w + h, I = B - w, rA[2] = w - (B - I) + (h - I), rA[3] = B;
+  let Z = rC(4, rA), Y = oC * s;
+  if (Z >= Y || -Z >= Y || (I = A - k, g = A - (k + I) + (I - i), I = e - j, a = e - (j + I) + (I - i), I = t - _, o = t - (_ + I) + (I - r), I = n - X, C = n - (X + I) + (I - r), g === 0 && o === 0 && a === 0 && C === 0) || (Y = gC * s + iC * Math.abs(Z), Z += k * C + X * g - (_ * a + j * o), Z >= Y || -Z >= Y)) return Z;
+  E = g * X, c = Ct * g, u = c - (c - g), d = g - u, c = Ct * X, f = c - (c - X), m = X - f, P = d * m - (E - u * f - d * f - u * m), x = o * j, c = Ct * o, u = c - (c - o), d = o - u, c = Ct * j, f = c - (c - j), m = j - f, D = d * m - (x - u * f - d * f - u * m), h = P - D, I = P - h, ft[0] = P - (h + I) + (I - D), w = E + h, I = w - E, S = E - (w - I) + (h - I), h = S - x, I = S - h, ft[1] = S - (h + I) + (I - x), B = w + h, I = B - w, ft[2] = w - (B - I) + (h - I), ft[3] = B;
+  const ot = Xi(4, rA, 4, ft, Ts);
+  E = k * C, c = Ct * k, u = c - (c - k), d = k - u, c = Ct * C, f = c - (c - C), m = C - f, P = d * m - (E - u * f - d * f - u * m), x = _ * a, c = Ct * _, u = c - (c - _), d = _ - u, c = Ct * a, f = c - (c - a), m = a - f, D = d * m - (x - u * f - d * f - u * m), h = P - D, I = P - h, ft[0] = P - (h + I) + (I - D), w = E + h, I = w - E, S = E - (w - I) + (h - I), h = S - x, I = S - h, ft[1] = S - (h + I) + (I - x), B = w + h, I = B - w, ft[2] = w - (B - I) + (h - I), ft[3] = B;
+  const L = Xi(ot, Ts, 4, ft, Ps);
+  E = g * C, c = Ct * g, u = c - (c - g), d = g - u, c = Ct * C, f = c - (c - C), m = C - f, P = d * m - (E - u * f - d * f - u * m), x = o * a, c = Ct * o, u = c - (c - o), d = o - u, c = Ct * a, f = c - (c - a), m = a - f, D = d * m - (x - u * f - d * f - u * m), h = P - D, I = P - h, ft[0] = P - (h + I) + (I - D), w = E + h, I = w - E, S = E - (w - I) + (h - I), h = S - x, I = S - h, ft[1] = S - (h + I) + (I - x), B = w + h, I = B - w, ft[2] = w - (B - I) + (h - I), ft[3] = B;
+  const et = Xi(L, Ps, 4, ft, xs);
+  return xs[et - 1];
 }
-function Ss(A, t, e, n, i, r) {
-  const s = (t - r) * (e - i), o = (A - i) * (n - r), g = s - o;
-  if (s === 0 || o === 0 || s > 0 != o > 0) return g;
-  const a = Math.abs(s + o);
-  return Math.abs(g) >= tC * a ? g : -nC(A, t, e, n, i, r, a);
+function Ds(A, t, e, n, i, r) {
+  const s = (t - r) * (e - i), g = (A - i) * (n - r), o = s - g;
+  if (s === 0 || g === 0 || s > 0 != g > 0) return o;
+  const a = Math.abs(s + g);
+  return Math.abs(o) >= sC * a ? o : -aC(A, t, e, n, i, r, a);
 }
-function iC(A, t) {
-  const e = new Hg([], Vg);
-  return sC(A, e), oC(e, t);
+function IC(A, t) {
+  const e = new Ko([], Jo);
+  return cC(A, e), uC(e, t);
 }
-function Vg(A, t) {
+function Jo(A, t) {
   return A.p.x > t.p.x ? 1 : A.p.x < t.p.x || A.p.x === t.p.x && (A.featureId !== t.featureId || A.ringId !== t.ringId) && A.isLeftEndpoint && !t.isLeftEndpoint ? -1 : A.p.y !== t.p.y ? A.p.y > t.p.y ? 1 : -1 : 1;
 }
-function rC(A, t) {
+function CC(A, t) {
   return A.rightSweepEvent.p.x > t.rightSweepEvent.p.x ? 1 : A.rightSweepEvent.p.x < t.rightSweepEvent.p.x ? -1 : A.rightSweepEvent.p.y !== t.rightSweepEvent.p.y ? A.rightSweepEvent.p.y < t.rightSweepEvent.p.y ? 1 : -1 : 1;
 }
-function sC(A, t) {
+function cC(A, t) {
   {
     const e = A.features;
     for (let n = 0; n < e.length; n++)
-      gC(e[n], t);
+      lC(e[n], t);
   }
 }
 var Zn = 0, zn = 0, Fn = 0;
-function gC(A, t) {
+function lC(A, t) {
   const e = A.type === "Feature" ? A.geometry : A;
   let n = e.coordinates;
   (e.type === "Polygon" || e.type === "MultiLineString") && (n = [n]), e.type === "LineString" && (n = [[n]]);
   for (let i = 0; i < n.length; i++)
     for (let r = 0; r < n[i].length; r++) {
-      let s = n[i][r][0], o = null;
+      let s = n[i][r][0], g = null;
       zn = zn + 1;
-      for (let g = 0; g < n[i][r].length - 1; g++) {
-        o = n[i][r][g + 1];
-        const a = new Ps(s, Zn, zn, Fn), C = new Ps(o, Zn, zn, Fn + 1);
-        a.otherEvent = C, C.otherEvent = a, Vg(a, C) > 0 ? (C.isLeftEndpoint = !0, a.isLeftEndpoint = !1) : (a.isLeftEndpoint = !0, C.isLeftEndpoint = !1), t.push(a), t.push(C), s = o, Fn = Fn + 1;
+      for (let o = 0; o < n[i][r].length - 1; o++) {
+        g = n[i][r][o + 1];
+        const a = new Os(s, Zn, zn, Fn), C = new Os(g, Zn, zn, Fn + 1);
+        a.otherEvent = C, C.otherEvent = a, Jo(a, C) > 0 ? (C.isLeftEndpoint = !0, a.isLeftEndpoint = !1) : (a.isLeftEndpoint = !0, C.isLeftEndpoint = !1), t.push(a), t.push(C), s = g, Fn = Fn + 1;
       }
     }
   Zn = Zn + 1;
 }
-var Ps = class {
+var Os = class {
   constructor(A, t, e, n) {
     this.p = {
       x: A[0],
@@ -4588,33 +4637,33 @@ var Ps = class {
     return [this.p.x, this.p.y];
   }
 };
-function oC(A, t = !1) {
-  const e = [], n = new Hg([], rC);
+function uC(A, t = !1) {
+  const e = [], n = new Ko([], CC);
   for (; A.length; ) {
     const i = A.pop();
     if (i.isLeftEndpoint) {
-      const r = new aC(i);
+      const r = new hC(i);
       for (let s = 0; s < n.data.length; s++) {
-        const o = n.data[s];
-        if (t && o.leftSweepEvent.featureId === i.featureId)
+        const g = n.data[s];
+        if (t && g.leftSweepEvent.featureId === i.featureId)
           continue;
-        const g = IC(r, o);
-        g !== !1 && e.push(g);
+        const o = fC(r, g);
+        o !== !1 && e.push(o);
       }
       n.push(r);
     } else i.isLeftEndpoint === !1 && n.pop();
   }
   return e;
 }
-var aC = class {
+var hC = class {
   /** @param event must have otherEvent non-null */
   constructor(A) {
     this.leftSweepEvent = A, this.rightSweepEvent = A.otherEvent;
   }
 };
-function IC(A, t) {
+function fC(A, t) {
   if (A === null || t === null) return !1;
-  const e = A.leftSweepEvent.p.x, n = A.leftSweepEvent.p.y, i = A.rightSweepEvent.p.x, r = A.rightSweepEvent.p.y, s = t.leftSweepEvent.p.x, o = t.leftSweepEvent.p.y, g = t.rightSweepEvent.p.x, a = t.rightSweepEvent.p.y, C = Ss(e, n, i, r, s, o), I = Ss(e, n, i, r, g, a);
+  const e = A.leftSweepEvent.p.x, n = A.leftSweepEvent.p.y, i = A.rightSweepEvent.p.x, r = A.rightSweepEvent.p.y, s = t.leftSweepEvent.p.x, g = t.leftSweepEvent.p.y, o = t.rightSweepEvent.p.x, a = t.rightSweepEvent.p.y, C = Ds(e, n, i, r, s, g), I = Ds(e, n, i, r, o, a);
   if (C > 0 && I > 0) return !1;
   if (C < 0 && I < 0) return !1;
   if (A.leftSweepEvent.ringId === t.leftSweepEvent.ringId) {
@@ -4630,48 +4679,48 @@ function IC(A, t) {
     if (A.leftSweepEvent.isSamePoint(t.rightSweepEvent))
       return t.rightSweepEvent.asNewXY();
   }
-  const c = (a - o) * (i - e) - (g - s) * (r - n), h = (g - s) * (n - o) - (a - o) * (e - s), p = (i - e) * (n - o) - (r - n) * (e - s);
+  const c = (a - g) * (i - e) - (o - s) * (r - n), u = (o - s) * (n - g) - (a - g) * (e - s), d = (i - e) * (n - g) - (r - n) * (e - s);
   if (c === 0)
     return !1;
-  const d = h / c, m = p / c;
-  if (d >= 0 && d <= 1 && m >= 0 && m <= 1) {
-    const f = e + d * (i - e), v = n + d * (r - n);
-    return [f, v];
+  const f = u / c, m = d / c;
+  if (f >= 0 && f <= 1 && m >= 0 && m <= 1) {
+    const h = e + f * (i - e), w = n + f * (r - n);
+    return [h, w];
   }
   return !1;
 }
-function CC(A, t, e = {}) {
+function dC(A, t, e = {}) {
   const { removeDuplicates: n = !0, ignoreSelfIntersections: i = !0 } = e;
   let r = [];
-  A.type === "FeatureCollection" ? r = r.concat(A.features) : A.type === "Feature" ? r.push(A) : (A.type === "LineString" || A.type === "Polygon" || A.type === "MultiLineString" || A.type === "MultiPolygon") && r.push($A(A)), t.type === "FeatureCollection" ? r = r.concat(t.features) : t.type === "Feature" ? r.push(t) : (t.type === "LineString" || t.type === "Polygon" || t.type === "MultiLineString" || t.type === "MultiPolygon") && r.push($A(t));
-  const s = iC(
-    ys(r),
+  A.type === "FeatureCollection" ? r = r.concat(A.features) : A.type === "Feature" ? r.push(A) : (A.type === "LineString" || A.type === "Polygon" || A.type === "MultiLineString" || A.type === "MultiPolygon") && r.push(gn(A)), t.type === "FeatureCollection" ? r = r.concat(t.features) : t.type === "Feature" ? r.push(t) : (t.type === "LineString" || t.type === "Polygon" || t.type === "MultiLineString" || t.type === "MultiPolygon") && r.push(gn(t));
+  const s = IC(
+    bs(r),
     i
   );
-  let o = [];
+  let g = [];
   if (n) {
-    const g = {};
+    const o = {};
     s.forEach((a) => {
       const C = a.join(",");
-      g[C] || (g[C] = !0, o.push(a));
+      o[C] || (o[C] = !0, g.push(a));
     });
   } else
-    o = s;
-  return ys(o.map((g) => Ug(g)));
+    g = s;
+  return bs(g.map((o) => Ho(o)));
 }
-function cC(A) {
+function mC(A) {
   return A && A.__esModule && Object.prototype.hasOwnProperty.call(A, "default") ? A.default : A;
 }
-function lC(A, t = {}) {
+function pC(A, t = {}) {
   let e = 0, n = 0, i = 0;
-  return Wg(
+  return Yo(
     A,
     function(r) {
       e += r[0], n += r[1], i++;
     }
-  ), Ug([e / i, n / i], t.properties);
+  ), Ho([e / i, n / i], t.properties);
 }
-function Qg(A) {
+function qo(A) {
   class t extends A {
     weiwudi;
     _map;
@@ -4705,28 +4754,28 @@ function Qg(A) {
     static isMapbox_ = !1;
     static isMapLibre_ = !1;
     initialize(n) {
-      if (n = Ft(n), this.mapID = n.mapID, this.homePosition = n.homePosition, this.mercZoom = n.mercZoom, this.label = n.label, this.maxZoom = n.maxZoom, this.minZoom = n.minZoom, this.poiTemplate = n.poiTemplate, this.poiStyle = n.poiStyle, this.iconTemplate = n.iconTemplate, this.icon = n.icon, this.selectedIcon = n.selectedIcon, this.mercatorXShift = n.mercatorXShift, this.mercatorYShift = n.mercatorYShift, this.weiwudi = n.weiwudi, n.envelopeLngLats) {
-        const o = n.envelopeLngLats.map(
-          (g) => Mt(g, "EPSG:4326", "EPSG:3857")
+      if (n = Wt(n), this.mapID = n.mapID, this.homePosition = n.homePosition, this.mercZoom = n.mercZoom, this.label = n.label, this.maxZoom = n.maxZoom, this.minZoom = n.minZoom, this.poiTemplate = n.poiTemplate, this.poiStyle = n.poiStyle, this.iconTemplate = n.iconTemplate, this.icon = n.icon, this.selectedIcon = n.selectedIcon, this.mercatorXShift = n.mercatorXShift, this.mercatorYShift = n.mercatorYShift, this.weiwudi = n.weiwudi, n.envelopeLngLats) {
+        const g = n.envelopeLngLats.map(
+          (o) => Rt(o, "EPSG:4326", "EPSG:3857")
         );
-        o.push(o[0]), this.envelope = _g([o]), this.centroid = lC(this.envelope).geometry?.coordinates;
+        g.push(g[0]), this.envelope = Qo([g]), this.centroid = pC(this.envelope).geometry?.coordinates;
       }
-      for (let s = 0; s < WA.length; s++) {
-        const o = WA[s], g = Lo[s];
-        this.set(o, n[g] || n[o]);
+      for (let s = 0; s < $A.length; s++) {
+        const g = $A[s], o = Gg[s];
+        this.set(g, n[o] || n[g]);
       }
       const i = n.thumbnail ? new Promise((s) => {
         this.thumbnail = n.thumbnail, s(void 0);
       }) : new Promise((s) => {
-        this.thumbnail = `./tmbs/${n.mapID}.jpg`, fetch(this.thumbnail).then((o) => {
-          o.ok || (this.thumbnail = `./tmbs/${n.mapID}_menu.jpg`), s(void 0);
-        }).catch((o) => {
+        this.thumbnail = `./tmbs/${n.mapID}.jpg`, fetch(this.thumbnail).then((g) => {
+          g.ok || (this.thumbnail = `./tmbs/${n.mapID}_menu.jpg`), s(void 0);
+        }).catch((g) => {
           this.thumbnail = `./tmbs/${n.mapID}_menu.jpg`, s(void 0);
         });
       }).catch((s) => {
         this.thumbnail = `./tmbs/${n.mapID || n.sourceID}_menu.jpg`;
       }), r = this.resolvePois(n.pois);
-      this.initialWait = Promise.all([r, i]), uC(this);
+      this.initialWait = Promise.all([r, i]), wC(this);
     }
     static isBasemap() {
       return this.isBasemap_;
@@ -4802,19 +4851,19 @@ function Qg(A) {
     // 経緯度lnglat、メルカトルズームmercZoom、地図ズームzoom、方角direction、地図回転rotation等を指定し地図移動
     setViewpointRadian(n) {
       let i, r;
-      const s = n.mercZoom, o = n.zoom, g = n.direction, a = n.rotation, C = this.getMap(), I = C?.getView(), c = C ? C.getSize() : void 0;
-      I && (!c || c[0] <= 0 || c[1] <= 0) || (n.latitude !== void 0 && n.longitude !== void 0 && (i = Mt(
+      const s = n.mercZoom, g = n.zoom, o = n.direction, a = n.rotation, C = this.getMap(), I = C?.getView(), c = C ? C.getSize() : void 0;
+      I && (!c || c[0] <= 0 || c[1] <= 0) || (n.latitude !== void 0 && n.longitude !== void 0 && (i = Rt(
         [n.longitude, n.latitude],
         "EPSG:4326",
         "EPSG:3857"
-      )), n.x !== void 0 && n.y != null && (r = [n.x, n.y]), this.viewpoint2MercsAsync().then((h) => this.mercs2MercViewpoint(h)).then((h) => {
-        const p = this.mercViewpoint2Mercs([
-          i || h[0],
-          s || h[1] || 17,
-          g ?? a ?? h[2]
+      )), n.x !== void 0 && n.y != null && (r = [n.x, n.y]), this.viewpoint2MercsAsync().then((u) => this.mercs2MercViewpoint(u)).then((u) => {
+        const d = this.mercViewpoint2Mercs([
+          i || u[0],
+          s || u[1] || 17,
+          o ?? a ?? u[2]
         ]);
-        this.mercs2ViewpointAsync(p).then((d) => {
-          i != null ? I?.setCenter(d[0]) : r != null && I?.setCenter(r), s != null ? I?.setZoom(d[1]) : o != null && I?.setZoom(o), g != null ? I?.setRotation(d[2]) : a != null && I?.setRotation(a);
+        this.mercs2ViewpointAsync(d).then((f) => {
+          i != null ? I?.setCenter(f[0]) : r != null && I?.setCenter(r), s != null ? I?.setZoom(f[1]) : g != null && I?.setZoom(g), o != null ? I?.setRotation(f[2]) : a != null && I?.setRotation(a);
         });
       }));
     }
@@ -4826,15 +4875,15 @@ function Qg(A) {
       const i = this.getMap();
       let r = i.getTarget();
       typeof r == "string" && (r = document.getElementById(r));
-      const s = i.homeMarginPixels, o = [
+      const s = i.homeMarginPixels, g = [
         (r.clientWidth - s - 10) * 1,
         (r.clientHeight - s - 10) * 1
-      ], g = {
+      ], o = {
         longitude: this.homePosition[0],
         latitude: this.homePosition[1],
-        zoom: this.defZoom(o)
+        zoom: this.defZoom(g)
       };
-      this.getMap().northUp ? g.direction = 0 : g.rotation = 0, this.setViewpointRadian(g);
+      this.getMap().northUp ? o.direction = 0 : o.rotation = 0, this.setViewpointRadian(o);
     }
     resetRotation() {
       this.setViewpointRadian({ rotation: 0 });
@@ -4848,26 +4897,26 @@ function Qg(A) {
     setGPSMarkerAsync(n, i = !1) {
       const r = this.getMap(), s = r?.getView();
       if (!n)
-        return new Promise((g, a) => {
-          r?.setGPSPosition(null), g(!0);
+        return new Promise((o, a) => {
+          r?.setGPSPosition(null), o(!0);
         });
-      const o = this.mercsFromGPSValue(n.lnglat, n.acc);
-      return this.mercs2SysCoordsAsync_multiLayer([o]).then((g) => {
-        const a = !g[0], C = a ? g[1] : g[0];
+      const g = this.mercsFromGPSValue(n.lnglat, n.acc);
+      return this.mercs2SysCoordsAsync_multiLayer([g]).then((o) => {
+        const a = !o[0], C = a ? o[1] : o[0];
         if (!C || !this.insideCheckSysCoord(C[0][0]))
           return r?.setGPSPosition(null), !1;
-        const I = a ? null : g[1], c = { xy: C[0][0] }, h = C[0].slice(1);
-        return c.rad = h.reduce(
-          (p, d, m) => {
-            const f = p + Math.sqrt(
-              Math.pow(d[0] - c.xy[0], 2) + Math.pow(d[1] - c.xy[1], 2)
+        const I = a ? null : o[1], c = { xy: C[0][0] }, u = C[0].slice(1);
+        return c.rad = u.reduce(
+          (d, f, m) => {
+            const h = d + Math.sqrt(
+              Math.pow(f[0] - c.xy[0], 2) + Math.pow(f[1] - c.xy[1], 2)
             );
-            return m === 3 ? f / 4 : f;
+            return m === 3 ? h / 4 : h;
           },
           0
         ), i || s?.setCenter(c.xy), r?.setGPSPosition(c, a ? "hide" : null), I && r?.setGPSPosition({ xy: I[0][0] }, "sub"), !0;
-      }).catch((g) => {
-        throw g;
+      }).catch((o) => {
+        throw o;
       });
     }
     setGPSMarker(n, i = !1) {
@@ -4875,18 +4924,18 @@ function Qg(A) {
       });
     }
     mercsFromGPSValue(n, i) {
-      const r = Mt(n, "EPSG:4326", "EPSG:3857"), s = n[1] * Math.PI / 180, o = i / Math.cos(s);
-      return Gg.map((g) => [
-        g[0] * o + r[0],
-        g[1] * o + r[1]
+      const r = Rt(n, "EPSG:4326", "EPSG:3857"), s = n[1] * Math.PI / 180, g = i / Math.cos(s);
+      return Zo.map((o) => [
+        o[0] * g + r[0],
+        o[1] * g + r[1]
       ]);
     }
     // 与えられた差分行列を回転。theta無指定の場合は自動取得
     rotateMatrix(n, i) {
-      return i === void 0 && (i = this.getMap().getView().getRotation()), jg(n, i);
+      return i === void 0 && (i = this.getMap().getView().getRotation()), zo(n, i);
     }
     async resolvePois(n) {
-      this.pois = await Fg(n || [], {
+      this.pois = await Vo(n || [], {
         name: this.officialTitle || this.title,
         namespace: this.mapID
       });
@@ -4894,14 +4943,14 @@ function Qg(A) {
     getPoi(n) {
       let i;
       return Object.keys(this.pois).map((r) => {
-        this.pois[r].pois.map((s, o) => {
-          s.id === n && (i = this.pois[r].pois[o]);
+        this.pois[r].pois.map((s, g) => {
+          s.id === n && (i = this.pois[r].pois[g]);
         });
       }), i;
     }
     addPoi(n, i) {
       if (i || (i = "main"), this.pois[i])
-        return n = qA(n), this.pois[i].pois.push(n), Dr(this.pois, i, {
+        return n = on(n), this.pois[i].pois.push(n), Nr(this.pois, i, {
           name: this.officialTitle || this.title,
           namespace: this.mapID
         }), n.namespaceID;
@@ -4927,7 +4976,7 @@ function Qg(A) {
       return this.pois[n];
     }
     addPoiLayer(n, i) {
-      n !== "main" && (this.pois[n] || (this.pois[n] = ue(i || [], n, {
+      n !== "main" && (this.pois[n] || (this.pois[n] = pe(i || [], n, {
         name: this.officialTitle || this.title,
         namespace: this.mapID
       })));
@@ -4951,7 +5000,7 @@ function Qg(A) {
     }
     // size(画面サイズ)とズームから、地図面座標上での半径を得る。zoom無指定の場合は自動取得
     zoom2Radius(n, i) {
-      return i === void 0 && (i = this.getMap().getView().getDecimalZoom()), xr(n, i);
+      return i === void 0 && (i = this.getMap().getView().getDecimalZoom()), kr(n, i);
     }
     // 画面サイズと地図ズームから、地図面座標上での5座標を取得する。zoom, rotate無指定の場合は自動取得
     viewpoint2SysCoords(n, i) {
@@ -4959,12 +5008,12 @@ function Qg(A) {
     }
     mercViewpoint2Mercs(n, i) {
       let r = n ? n[0] : void 0;
-      const s = n ? n[1] : void 0, o = n ? n[2] : void 0;
+      const s = n ? n[1] : void 0, g = n ? n[2] : void 0;
       r === void 0 && (r = this.getMap().getView().getCenter()), i === void 0 && (i = this.getMap().getSize());
-      const g = s ?? this.getMap().getView().getDecimalZoom(), a = o ?? this.getMap().getView().getRotation();
-      return [gr(
+      const o = s ?? this.getMap().getView().getDecimalZoom(), a = g ?? this.getMap().getView().getRotation();
+      return [cr(
         r,
-        g,
+        o,
         a,
         i
       ), i];
@@ -4977,7 +5026,7 @@ function Qg(A) {
     mercs2MercViewpoint(n) {
       let i = n[1];
       i || (i = this.getMap().getSize());
-      const r = or(
+      const r = lr(
         n[0],
         i
       );
@@ -5008,19 +5057,19 @@ function Qg(A) {
   }
   return t;
 }
-function Yg(A) {
-  class t extends Qg(A) {
+function $o(A) {
+  class t extends qo(A) {
     static isBasemap_ = !0;
     static isWmts_ = !0;
     insideCheckXy(n) {
-      return this.envelope ? YI(n, this.envelope) : !0;
+      return this.envelope ? eC(n, this.envelope) : !0;
     }
     insideCheckSysCoord(n) {
       return this.insideCheckXy(n);
     }
     modulateXyInside(n) {
       if (!this.centroid) return n;
-      const i = jI([n, this.centroid]), r = CC(this.envelope, i);
+      const i = UI([n, this.centroid]), r = dC(this.envelope, i);
       return r.features.length > 0 && r.features[0].geometry ? r.features[0].geometry.coordinates : n;
     }
     modulateSysCoordInside(n) {
@@ -5064,8 +5113,8 @@ function Yg(A) {
   }
   return t;
 }
-function hC(A) {
-  class t extends Qg(A) {
+function yC(A) {
+  class t extends qo(A) {
     static isBasemap_ = !1;
     static isWmts_ = !1;
     width = 0;
@@ -5091,116 +5140,128 @@ function hC(A) {
     // unifyTerm対応
     // https://github.com/code4history/MaplatCore/issues/19
     xy2SysCoord(n) {
-      const i = n[0] * (2 * W) / this._maxxy - W, r = -1 * (n[1] * (2 * W) / this._maxxy - W);
+      const i = n[0] * (2 * V) / this._maxxy - V, r = -1 * (n[1] * (2 * V) / this._maxxy - V);
       return [i, r];
     }
     sysCoord2Xy(n) {
-      const i = (n[0] + W) * this._maxxy / (2 * W), r = (-n[1] + W) * this._maxxy / (2 * W);
+      const i = (n[0] + V) * this._maxxy / (2 * V), r = (-n[1] + V) * this._maxxy / (2 * V);
       return [i, r];
     }
     defZoom(n) {
-      const i = n[0], r = n[1], s = Math.log2((i - 10) / this.width), o = Math.log2((r - 10) / this.height), g = this.maxZoom;
+      const i = n[0], r = n[1], s = Math.log2((i - 10) / this.width), g = Math.log2((r - 10) / this.height), o = this.maxZoom;
       let a;
-      return o > s ? a = o : a = s, g + a;
+      return g > s ? a = g : a = s, o + a;
     }
   }
   return t;
 }
-const Ir = (A) => (A || "").match(/^(?:google(?:_(?:roadmap|satellite|hybrid|terrain))?|mapbox|maplibre)$/);
-function Kg(A) {
-  return A = Ft(A), A.imageExtension || (A.imageExtension = "jpg"), Ir(A.maptype) ? (delete A.url, delete A.urls) : A.mapID && !A.url && !A.urls && (A.url = A.tms ? `tiles/${A.mapID}/{z}/{x}/{-y}.${A.imageExtension}` : `tiles/${A.mapID}/{z}/{x}/{y}.${A.imageExtension}`), A;
+const hr = (A) => (A || "").match(/^(?:google(?:_(?:roadmap|satellite|hybrid|terrain))?|mapbox|maplibre)$/);
+function tg(A) {
+  return A = Wt(A), A.imageExtension || (A.imageExtension = "jpg"), hr(A.maptype) ? (delete A.url, delete A.urls) : A.mapID && !A.url && !A.urls && (A.url = A.tms ? `tiles/${A.mapID}/{z}/{x}/{-y}.${A.imageExtension}` : `tiles/${A.mapID}/{z}/{x}/{y}.${A.imageExtension}`), A;
 }
-function uC(A) {
+function wC(A) {
   const t = A;
   A.setTileLoadFunction(
     (function() {
-      const e = t.getTileLoadFunction(), n = function(i, r, s, o, g, a, C) {
-        return new Promise((I, c) => {
-          const h = function(p, d = void 0) {
-            const m = document.createElement("img");
-            m.crossOrigin = "Anonymous", m.onload = m.onerror = function() {
+      const e = t.getTileLoadFunction(), n = [1e3, 2e3, 4e3], i = /* @__PURE__ */ new WeakMap();
+      let r = !1;
+      const s = function(o, a) {
+        r || (r = !0, console.warn(
+          "Maplat: tile composition failed by an exception; retrying (up to 3 times)",
+          a
+        ));
+        const C = i.get(o) ?? 0;
+        C >= n.length || (i.set(o, C + 1), setTimeout(() => {
+          const I = t.getMap?.()?.getTargetElement?.();
+          I && !I.isConnected || o.getState?.() === cI.ERROR && o.load();
+        }, n[C]));
+      }, g = function(o, a, C, I, c, u, d) {
+        return new Promise((f, m) => {
+          const h = function(w, S = void 0) {
+            const E = document.createElement("img");
+            E.crossOrigin = "Anonymous", E.onload = E.onerror = function() {
               try {
-                if (m.width && m.height) {
-                  const f = s.getContext("2d"), v = o === 0 ? 256 - a : 0, M = g === 0 ? 256 - C : 0;
-                  a = o + a > m.width ? m.width - o : a, C = g + C > m.height ? m.height - g : C, f.drawImage(m, o, g, a, C, v, M, a, C), I(void 0);
+                if (E.width && E.height) {
+                  const P = C.getContext("2d"), x = I === 0 ? 256 - u : 0, D = c === 0 ? 256 - d : 0;
+                  u = I + u > E.width ? E.width - I : u, d = c + d > E.height ? E.height - c : d, P.drawImage(E, I, c, u, d, x, D, u, d), f(void 0);
                 } else
-                  d ? h(d) : I("tileLoadError");
+                  S ? h(S) : f("tileLoadError");
               } catch {
-                I("tileLoadError");
+                f("tileException");
               }
-            }, m.src = p;
+            }, E.src = w;
           };
-          h(r);
+          h(a);
         });
       };
-      return function(i, r) {
-        const s = i.tileCoord[0];
-        let o = i.tileCoord[1], g = i.tileCoord[2], a = Math.round(
-          (t.mercatorXShift || 0) * 128 * Math.pow(2, s) / W
-        ), C = Math.round(
-          (t.mercatorYShift || 0) * -128 * Math.pow(2, s) / W
+      return function(o, a) {
+        const C = o.tileCoord[0];
+        let I = o.tileCoord[1], c = o.tileCoord[2], u = Math.round(
+          (t.mercatorXShift || 0) * 128 * Math.pow(2, C) / V
+        ), d = Math.round(
+          (t.mercatorYShift || 0) * -128 * Math.pow(2, C) / V
         );
-        for (; a < 0 || a >= 256; )
-          a < 0 ? (a = a + 256, o++) : (a = a - 256, o--);
-        for (; C < 0 || C >= 256; )
-          C < 0 ? (C = C + 256, g++) : (C = C - 256, g--);
-        const I = document.createElement("div");
-        I.innerHTML = kI;
-        const c = I.childNodes[0], h = [
-          [[s, o, g], 0, 0, 256 - a, 256 - C]
+        for (; u < 0 || u >= 256; )
+          u < 0 ? (u = u + 256, I++) : (u = u - 256, I--);
+        for (; d < 0 || d >= 256; )
+          d < 0 ? (d = d + 256, c++) : (d = d - 256, c--);
+        const f = document.createElement("div");
+        f.innerHTML = ZI;
+        const m = f.childNodes[0], h = [
+          [[C, I, c], 0, 0, 256 - u, 256 - d]
         ];
-        a !== 0 && h.push([
-          [s, o - 1, g],
-          256 - a,
+        u !== 0 && h.push([
+          [C, I - 1, c],
+          256 - u,
           0,
-          a,
-          256 - C
-        ]), C !== 0 && (h.push([
-          [s, o, g - 1],
+          u,
+          256 - d
+        ]), d !== 0 && (h.push([
+          [C, I, c - 1],
           0,
-          256 - C,
-          256 - a,
-          C
-        ]), a !== 0 && h.push([
-          [s, o - 1, g - 1],
-          256 - a,
-          256 - C,
-          a,
-          C
+          256 - d,
+          256 - u,
+          d
+        ]), u !== 0 && h.push([
+          [C, I - 1, c - 1],
+          256 - u,
+          256 - d,
+          u,
+          d
         ])), Promise.all(
-          h.map((p) => {
-            const d = t.tileUrlFunction(
-              p[0],
+          h.map((w) => {
+            const S = t.tileUrlFunction(
+              w[0],
               t.tilePixelRatio_,
               t.projection_
             );
-            return n(
-              p[0],
-              d,
-              c,
-              p[1],
-              p[2],
-              p[3],
-              p[4]
+            return g(
+              w[0],
+              S,
+              m,
+              w[1],
+              w[2],
+              w[3],
+              w[4]
             );
           })
-        ).then((p) => {
-          if (p.reduce((m, f) => m && f, !0))
-            i.handleImageError_();
+        ).then((w) => {
+          if (w.reduce((E, P) => E && P, !0))
+            o.handleImageError_(), w.includes("tileException") && s(o);
           else {
-            const m = c.toDataURL(), f = i.getImage();
-            f.crossOrigin = null, e(i, m);
+            const E = m.toDataURL(), P = o.getImage();
+            P.crossOrigin = null, e(o, E), i.delete(o);
           }
-        }).catch((p) => {
-          i.handleImageError_();
+        }).catch((w) => {
+          o.handleImageError_(), s(o, w);
         });
       };
     })()
   );
 }
-class mA extends Yg(ag) {
+class yA extends $o(co) {
   constructor(t = {}) {
-    const e = Kg(t);
+    const e = tg(t);
     if (super(e), t.mapID && (this.mapID = t.mapID), t.mapID === "morioka_ndl_affine") {
       const n = this.getTileUrlFunction();
       this.setTileUrlFunction((i, r, s) => n(i, r, s));
@@ -5208,7 +5269,7 @@ class mA extends Yg(ag) {
     this.initialize(t);
   }
 }
-class ei extends mA {
+class Ai extends yA {
   style = "";
   accessToken = "";
   mapboxMap;
@@ -5217,7 +5278,7 @@ class ei extends mA {
     super(t), this.style = t.style, this.mapboxMap = t.mapboxMap, this.accessToken = t.accessToken;
   }
 }
-class Ai extends mA {
+class ni extends yA {
   style = "";
   maplibreMap;
   static isMapLibre_ = !0;
@@ -5225,33 +5286,33 @@ class Ai extends mA {
     super(t), this.style = t.style || "https://tile.openstreetmap.jp/styles/osm-bright/style.json", this.maplibreMap = t.maplibreMap;
   }
 }
-function fC(A, t) {
+function vC(A, t) {
   const n = A ? {
     google_roadmap: { mapType: "roadmap", derivedLayers: [] },
     google_satellite: { mapType: "satellite", derivedLayers: [] },
     google_hybrid: { mapType: "satellite", derivedLayers: ["layerRoadmap"] },
     google_terrain: { mapType: "terrain", derivedLayers: ["layerRoadmap"] }
   }[A] : void 0, i = n?.mapType ?? "roadmap", r = n?.derivedLayers ?? [], s = (t || []).map(
-    (g) => `layer${g.charAt(0).toUpperCase()}${g.slice(1).toLowerCase()}`
-  ), o = new Set(r);
-  for (const g of s) o.add(g);
-  return { mapType: i, layerTypes: [...o] };
+    (o) => `layer${o.charAt(0).toUpperCase()}${o.slice(1).toLowerCase()}`
+  ), g = new Set(r);
+  for (const o of s) g.add(o);
+  return { mapType: i, layerTypes: [...g] };
 }
-class Cr extends Yg(xo) {
+class fr extends $o(Bg) {
   constructor(t = {}) {
-    const e = Object.assign({}, t), { mapType: n, layerTypes: i } = fC(t.maptype, t.layers);
+    const e = Object.assign({}, t), { mapType: n, layerTypes: i } = vC(t.maptype, t.layers);
     e.mapType = n, e.layerTypes = i, super(e), t.mapID && (this.mapID = t.mapID), this.initialize(t);
   }
 }
-const le = {
+const fe = {
   ANIMATING: 0,
   INTERACTING: 1
-}, Nt = {
+}, Bt = {
   CENTER: "center",
   RESOLUTION: "resolution",
   ROTATION: "rotation"
 };
-function xs(A, t, e) {
+function Bs(A, t, e) {
   return (
     /**
      * @param {import("./coordinate.js").Coordinate|undefined} center Center.
@@ -5261,48 +5322,48 @@ function xs(A, t, e) {
      * @param {Array<number>} [centerShift] Shift between map center and viewport center.
      * @return {import("./coordinate.js").Coordinate|undefined} Center.
      */
-    (function(n, i, r, s, o) {
+    (function(n, i, r, s, g) {
       if (!n)
         return;
       if (!i && !t)
         return n;
-      const g = t ? 0 : r[0] * i, a = t ? 0 : r[1] * i, C = o ? o[0] : 0, I = o ? o[1] : 0;
-      let c = A[0] + g / 2 + C, h = A[2] - g / 2 + C, p = A[1] + a / 2 + I, d = A[3] - a / 2 + I;
-      c > h && (c = (h + c) / 2, h = c), p > d && (p = (d + p) / 2, d = p);
-      let m = jt(n[0], c, h), f = jt(n[1], p, d);
+      const o = t ? 0 : r[0] * (i ?? 0), a = t ? 0 : r[1] * (i ?? 0), C = g ? g[0] : 0, I = g ? g[1] : 0;
+      let c = A[0] + o / 2 + C, u = A[2] - o / 2 + C, d = A[1] + a / 2 + I, f = A[3] - a / 2 + I;
+      c > u && (c = (u + c) / 2, u = c), d > f && (d = (f + d) / 2, f = d);
+      let m = Lt(n[0], c, u), h = Lt(n[1], d, f);
       if (s && e && i) {
-        const v = 30 * i;
-        m += -v * Math.log(1 + Math.max(0, c - n[0]) / v) + v * Math.log(1 + Math.max(0, n[0] - h) / v), f += -v * Math.log(1 + Math.max(0, p - n[1]) / v) + v * Math.log(1 + Math.max(0, n[1] - d) / v);
+        const w = 30 * i;
+        m += -w * Math.log(1 + Math.max(0, c - n[0]) / w) + w * Math.log(1 + Math.max(0, n[0] - u) / w), h += -w * Math.log(1 + Math.max(0, d - n[1]) / w) + w * Math.log(1 + Math.max(0, n[1] - f) / w);
       }
-      return [m, f];
+      return [m, h];
     })
   );
 }
-function dC(A) {
+function bC(A) {
   return A;
 }
-function mC(A) {
+function EC(A) {
   return Math.pow(A, 3);
 }
-function Ci(A) {
-  return 1 - mC(1 - A);
+function ci(A) {
+  return 1 - EC(1 - A);
 }
-function pC(A) {
+function MC(A) {
   return 3 * A * A - 2 * A * A * A;
 }
-function yC(A) {
+function RC(A) {
   return A;
 }
-function Or(A, t, e, n) {
-  const i = mr(t) / e[0], r = HA(t) / e[1];
+function Gr(A, t, e, n) {
+  const i = br(t) / e[0], r = tn(t) / e[1];
   return n ? Math.min(A, Math.max(i, r)) : Math.min(A, Math.min(i, r));
 }
-function Br(A, t, e) {
+function jr(A, t, e) {
   let n = Math.min(A, t);
   const i = 50;
-  return n *= Math.log(1 + i * Math.max(0, A / t - 1)) / i + 1, e && (n = Math.max(n, e), n /= Math.log(1 + i * Math.max(0, e / A - 1)) / i + 1), jt(n, e / 2, t * 2);
+  return n *= Math.log(1 + i * Math.max(0, A / t - 1)) / i + 1, e && (n = Math.max(n, e), n /= Math.log(1 + i * Math.max(0, e / A - 1)) / i + 1), Lt(n, e / 2, t * 2);
 }
-function wC(A, t, e, n) {
+function SC(A, t, e, n) {
   return t = t !== void 0 ? t : !0, /**
    * @param {number|undefined} resolution Resolution.
    * @param {number} direction Direction.
@@ -5310,26 +5371,26 @@ function wC(A, t, e, n) {
    * @param {boolean} [isMoving] True if an interaction or animation is in progress.
    * @return {number|undefined} Resolution.
    */
-  (function(i, r, s, o) {
+  (function(i, r, s, g) {
     if (i !== void 0) {
-      const g = A[0], a = A[A.length - 1], C = e ? Or(
-        g,
+      const o = A[0], a = A[A.length - 1], C = e ? Gr(
+        o,
         e,
         s,
-        n
-      ) : g;
-      if (o)
-        return t ? Br(
+        !!n
+      ) : o;
+      if (g)
+        return t ? jr(
           i,
           C,
           a
-        ) : jt(i, a, C);
-      const I = Math.min(C, i), c = Math.floor(cg(A, I, r));
+        ) : Lt(i, a, C);
+      const I = Math.min(C, i), c = Math.floor(ho(A, I, r));
       return A[c] > C && c < A.length - 1 ? A[c + 1] : A[c];
     }
   });
 }
-function bC(A, t, e, n, i, r) {
+function TC(A, t, e, n, i, r) {
   return n = n !== void 0 ? n : !0, e = e !== void 0 ? e : 0, /**
    * @param {number|undefined} resolution Resolution.
    * @param {number} direction Direction.
@@ -5337,30 +5398,30 @@ function bC(A, t, e, n, i, r) {
    * @param {boolean} [isMoving] True if an interaction or animation is in progress.
    * @return {number|undefined} Resolution.
    */
-  (function(s, o, g, a) {
+  (function(s, g, o, a) {
     if (s !== void 0) {
-      const C = i ? Or(
+      const C = i ? Gr(
         t,
         i,
-        g,
-        r
+        o,
+        !!r
       ) : t;
       if (a)
-        return n ? Br(
+        return n ? jr(
           s,
           C,
           e
-        ) : jt(s, e, C);
+        ) : Lt(s, e, C);
       const I = 1e-9, c = Math.ceil(
         Math.log(t / C) / Math.log(A) - I
-      ), h = -o * (0.5 - I) + 0.5, p = Math.min(C, s), d = Math.floor(
-        Math.log(t / p) / Math.log(A) + h
-      ), m = Math.max(c, d), f = t / Math.pow(A, m);
-      return jt(f, e, C);
+      ), u = -g * (0.5 - I) + 0.5, d = Math.min(C, s), f = Math.floor(
+        Math.log(t / d) / Math.log(A) + u
+      ), m = Math.max(c, f), h = t / Math.pow(A, m);
+      return Lt(h, e, C);
     }
   });
 }
-function Ds(A, t, e, n, i) {
+function Ls(A, t, e, n, i) {
   return e = e !== void 0 ? e : !0, /**
    * @param {number|undefined} resolution Resolution.
    * @param {number} direction Direction.
@@ -5368,15 +5429,15 @@ function Ds(A, t, e, n, i) {
    * @param {boolean} [isMoving] True if an interaction or animation is in progress.
    * @return {number|undefined} Resolution.
    */
-  (function(r, s, o, g) {
+  (function(r, s, g, o) {
     if (r !== void 0) {
-      const a = n ? Or(
+      const a = n ? Gr(
         A,
         n,
-        o,
-        i
+        g,
+        !!i
       ) : A;
-      return !e || !g ? jt(r, t, a) : Br(
+      return !e || !o ? Lt(r, t, a) : jr(
         r,
         a,
         t
@@ -5384,15 +5445,15 @@ function Ds(A, t, e, n, i) {
     }
   });
 }
-function Lr(A) {
+function _r(A) {
   if (A !== void 0)
     return 0;
 }
-function Os(A) {
+function ks(A) {
   if (A !== void 0)
     return A;
 }
-function vC(A) {
+function PC(A) {
   const t = 2 * Math.PI / A;
   return (
     /**
@@ -5408,8 +5469,8 @@ function vC(A) {
     })
   );
 }
-function EC(A) {
-  const t = cA(5);
+function xC(A) {
+  const t = lA(5);
   return (
     /**
      * @param {number|undefined} rotation Rotation.
@@ -5421,26 +5482,37 @@ function EC(A) {
     })
   );
 }
-const MC = 256, Gi = 0;
-class Bs extends pA {
+const DC = 256, Zi = 0;
+class Ns extends wA {
   /**
    * @param {ViewOptions} [options] View options.
    */
   constructor(t) {
-    super(), this.on, this.once, this.un, t = Object.assign({}, t), this.hints_ = [0, 0], this.animations_ = [], this.updateAnimationKey_, this.projection_ = Er(t.projection, "EPSG:3857"), this.viewportSize_ = [100, 100], this.targetCenter_ = null, this.targetResolution_, this.targetRotation_, this.nextCenter_ = null, this.nextResolution_, this.nextRotation_, this.cancelAnchor_ = void 0, t.projection && xa(), t.center && (t.center = ce(t.center, this.projection_)), t.extent && (t.extent = Xn(t.extent, this.projection_)), this.applyOptions_(t);
+    super(), this.on, this.once, this.un, t = Object.assign({}, t), this.hints_ = [0, 0], this.animations_ = [], this.updateAnimationKey_, this.projection_ = Pr(t.projection, "EPSG:3857"), this.viewportSize_ = [100, 100], this.targetCenter_ = null, this.targetResolution_, this.targetRotation_, this.nextCenter_ = null, this.nextResolution_, this.nextRotation_, this.cancelAnchor_ = void 0, t.projection && Ba(), t.center && (t.center = he(
+      t.center,
+      /** @type {import("./proj.js").ProjectionLike} */
+      this.projection_
+    )), t.extent && (t.extent = Xn(
+      t.extent,
+      /** @type {import("./proj.js").ProjectionLike} */
+      this.projection_
+    )), this.applyOptions_(t);
   }
   /**
    * Set up the view with the given options.
    * @param {ViewOptions} options View options.
    */
   applyOptions_(t) {
-    const e = Object.assign({}, t);
-    for (const o in Nt)
-      delete e[o];
+    const e = (
+      /** @type {Object<string, *>} */
+      Object.assign({}, t)
+    );
+    for (const g in Bt)
+      delete e[g];
     this.setProperties(e, !0);
-    const n = TC(t);
+    const n = BC(t);
     this.maxResolution_ = n.maxResolution, this.minResolution_ = n.minResolution, this.zoomFactor_ = n.zoomFactor, this.resolutions_ = t.resolutions, this.padding_ = t.padding, this.minZoom_ = n.minZoom;
-    const i = RC(t), r = n.constraint, s = SC(t);
+    const i = OC(t), r = n.constraint, s = LC(t);
     this.constraints_ = {
       center: i,
       resolution: r,
@@ -5468,8 +5540,11 @@ class Bs extends pA {
     if (n) {
       const i = t || [0, 0, 0, 0];
       e = e || [0, 0, 0, 0];
-      const r = this.getResolution(), s = r / 2 * (i[3] - e[3] + e[1] - i[1]), o = r / 2 * (i[0] - e[0] + e[2] - i[2]);
-      this.setCenterInternal([n[0] + s, n[1] - o]);
+      const r = (
+        /** @type {number} */
+        this.getResolution()
+      ), s = r / 2 * (i[3] - e[3] + e[1] - i[1]), g = r / 2 * (i[0] - e[0] + e[2] - i[2]);
+      this.setCenterInternal([n[0] + s, n[1] - g]);
     }
   }
   /**
@@ -5522,10 +5597,10 @@ class Bs extends pA {
     const e = new Array(arguments.length);
     for (let n = 0; n < e.length; ++n) {
       let i = arguments[n];
-      i.center && (i = Object.assign({}, i), i.center = ce(
+      i.center && (i = Object.assign({}, i), i.center = he(
         i.center,
         this.getProjection()
-      )), i.anchor && (i = Object.assign({}, i), i.anchor = ce(
+      )), i.anchor && (i = Object.assign({}, i), i.anchor = he(
         i.anchor,
         this.getProjection()
       )), e[n] = i;
@@ -5547,28 +5622,38 @@ class Bs extends pA {
       n && Un(n, !0);
       return;
     }
-    let r = Date.now(), s = this.targetCenter_.slice(), o = this.targetResolution_, g = this.targetRotation_;
+    let r = Date.now(), s = (
+      /** @type {import("./coordinate.js").Coordinate} */
+      /** @type {import("./coordinate.js").Coordinate} */
+      this.targetCenter_.slice()
+    ), g = this.targetResolution_, o = (
+      /** @type {number} */
+      this.targetRotation_
+    );
     const a = [];
     for (; i < e; ++i) {
       const C = (
         /** @type {AnimationOptions} */
         arguments[i]
-      ), I = {
-        start: r,
-        complete: !1,
-        anchor: C.anchor,
-        duration: C.duration !== void 0 ? C.duration : 1e3,
-        easing: C.easing || pC,
-        callback: n
-      };
-      if (C.center && (I.sourceCenter = s, I.targetCenter = C.center.slice(), s = I.targetCenter), C.zoom !== void 0 ? (I.sourceResolution = o, I.targetResolution = this.getResolutionForZoom(C.zoom), o = I.targetResolution) : C.resolution && (I.sourceResolution = o, I.targetResolution = C.resolution, o = I.targetResolution), C.rotation !== void 0) {
-        I.sourceRotation = g;
-        const c = tr(C.rotation - g + Math.PI, 2 * Math.PI) - Math.PI;
-        I.targetRotation = g + c, g = I.targetRotation;
+      ), I = (
+        /** @type {Animation} */
+        {
+          start: r,
+          complete: !1,
+          anchor: C.anchor,
+          duration: C.duration !== void 0 ? C.duration : 1e3,
+          easing: C.easing || MC,
+          callback: n
+        }
+      );
+      if (C.center && (I.sourceCenter = s, I.targetCenter = C.center.slice(), s = I.targetCenter), C.zoom !== void 0 ? (I.sourceResolution = g, I.targetResolution = this.getResolutionForZoom(C.zoom), g = I.targetResolution) : C.resolution && (I.sourceResolution = g, I.targetResolution = C.resolution, g = I.targetResolution), C.rotation !== void 0) {
+        I.sourceRotation = o;
+        const c = rr(C.rotation - o + Math.PI, 2 * Math.PI) - Math.PI;
+        I.targetRotation = o + c, o = I.targetRotation;
       }
-      PC(I) ? I.complete = !0 : r += I.duration, a.push(I);
+      kC(I) ? I.complete = !0 : r += I.duration, a.push(I);
     }
-    this.animations_.push(a), this.setHint(le.ANIMATING, 1), this.updateAnimations_();
+    this.animations_.push(a), this.setHint(fe.ANIMATING, 1), this.updateAnimations_();
   }
   /**
    * Determine if the view is being animated.
@@ -5576,7 +5661,7 @@ class Bs extends pA {
    * @api
    */
   getAnimating() {
-    return this.hints_[le.ANIMATING] > 0;
+    return this.hints_[fe.ANIMATING] > 0;
   }
   /**
    * Determine if the user is interacting with the view, such as panning or zooming.
@@ -5584,22 +5669,32 @@ class Bs extends pA {
    * @api
    */
   getInteracting() {
-    return this.hints_[le.INTERACTING] > 0;
+    return this.hints_[fe.INTERACTING] > 0;
   }
   /**
    * Cancel any ongoing animations.
    * @api
    */
   cancelAnimations() {
-    this.setHint(le.ANIMATING, -this.hints_[le.ANIMATING]);
+    this.setHint(fe.ANIMATING, -this.hints_[fe.ANIMATING]);
     let t;
     for (let e = 0, n = this.animations_.length; e < n; ++e) {
-      const i = this.animations_[e];
-      if (i[0].callback && Un(i[0].callback, !1), !t)
+      const i = (
+        /** @type {Array<Animation>} */
+        this.animations_[e]
+      );
+      if (
+        /** @type {Animation} */
+        i[0].callback && Un(
+          /** @type {Animation} */
+          i[0].callback,
+          !1
+        ), !t
+      )
         for (let r = 0, s = i.length; r < s; ++r) {
-          const o = i[r];
-          if (!o.complete) {
-            t = o.anchor;
+          const g = i[r];
+          if (!g.complete) {
+            t = g.anchor;
             break;
           }
         }
@@ -5615,57 +5710,69 @@ class Bs extends pA {
     const t = Date.now();
     let e = !1;
     for (let n = this.animations_.length - 1; n >= 0; --n) {
-      const i = this.animations_[n];
+      const i = (
+        /** @type {Array<Animation>} */
+        this.animations_[n]
+      );
       let r = !0;
-      for (let s = 0, o = i.length; s < o; ++s) {
-        const g = i[s];
-        if (g.complete)
+      for (let s = 0, g = i.length; s < g; ++s) {
+        const o = i[s];
+        if (o.complete)
           continue;
-        const a = t - g.start;
-        let C = g.duration > 0 ? a / g.duration : 1;
-        C >= 1 ? (g.complete = !0, C = 1) : r = !1;
-        const I = g.easing(C);
-        if (g.sourceCenter) {
-          const c = g.sourceCenter[0], h = g.sourceCenter[1], p = g.targetCenter[0], d = g.targetCenter[1];
-          this.nextCenter_ = g.targetCenter;
-          const m = c + I * (p - c), f = h + I * (d - h);
-          this.targetCenter_ = [m, f];
+        const a = t - o.start;
+        let C = o.duration > 0 ? a / o.duration : 1;
+        C >= 1 ? (o.complete = !0, C = 1) : r = !1;
+        const I = o.easing(C);
+        if (o.sourceCenter) {
+          const c = o.sourceCenter[0], u = o.sourceCenter[1], d = (
+            /** @type {import("./coordinate.js").Coordinate} */
+            o.targetCenter[0]
+          ), f = (
+            /** @type {import("./coordinate.js").Coordinate} */
+            o.targetCenter[1]
+          );
+          this.nextCenter_ = /** @type {import("./coordinate.js").Coordinate} */
+          o.targetCenter;
+          const m = c + I * (d - c), h = u + I * (f - u);
+          this.targetCenter_ = [m, h];
         }
-        if (g.sourceResolution && g.targetResolution) {
-          const c = I === 1 ? g.targetResolution : g.sourceResolution + I * (g.targetResolution - g.sourceResolution);
-          if (g.anchor) {
-            const h = this.getViewportSize_(this.getRotation()), p = this.constraints_.resolution(
-              c,
-              0,
-              h,
-              !0
+        if (o.sourceResolution && o.targetResolution) {
+          const c = I === 1 ? o.targetResolution : o.sourceResolution + I * (o.targetResolution - o.sourceResolution);
+          if (o.anchor) {
+            const u = this.getViewportSize_(this.getRotation()), d = (
+              /** @type {Constraints} */
+              this.constraints_.resolution(c, 0, u, !0)
             );
             this.targetCenter_ = this.calculateCenterZoom(
-              p,
-              g.anchor
+              /** @type {number} */
+              d,
+              /** @type {import("./coordinate.js").Coordinate} */
+              o.anchor
             );
           }
-          this.nextResolution_ = g.targetResolution, this.targetResolution_ = c, this.applyTargetState_(!0);
+          this.nextResolution_ = o.targetResolution, this.targetResolution_ = c, this.applyTargetState_(!0);
         }
-        if (g.sourceRotation !== void 0 && g.targetRotation !== void 0) {
-          const c = I === 1 ? tr(g.targetRotation + Math.PI, 2 * Math.PI) - Math.PI : g.sourceRotation + I * (g.targetRotation - g.sourceRotation);
-          if (g.anchor) {
-            const h = this.constraints_.rotation(
-              c,
-              !0
+        if (o.sourceRotation !== void 0 && o.targetRotation !== void 0) {
+          const c = I === 1 ? rr(o.targetRotation + Math.PI, 2 * Math.PI) - Math.PI : o.sourceRotation + I * (o.targetRotation - o.sourceRotation);
+          if (o.anchor) {
+            const u = (
+              /** @type {Constraints} */
+              this.constraints_.rotation(c, !0)
             );
             this.targetCenter_ = this.calculateCenterRotate(
-              h,
-              g.anchor
+              /** @type {number} */
+              u,
+              /** @type {import("./coordinate.js").Coordinate} */
+              o.anchor
             );
           }
-          this.nextRotation_ = g.targetRotation, this.targetRotation_ = c;
+          this.nextRotation_ = o.targetRotation, this.targetRotation_ = c;
         }
-        if (this.applyTargetState_(!0), e = !0, !g.complete)
+        if (this.applyTargetState_(!0), e = !0, !o.complete)
           break;
       }
       if (r) {
-        this.animations_[n] = null, this.setHint(le.ANIMATING, -1), this.nextCenter_ = null, this.nextResolution_ = NaN, this.nextRotation_ = NaN;
+        this.animations_[n] = null, this.setHint(fe.ANIMATING, -1), this.nextCenter_ = null, this.nextResolution_ = NaN, this.nextRotation_ = NaN;
         const s = i[0].callback;
         s && Un(s, !0);
       }
@@ -5682,7 +5789,7 @@ class Bs extends pA {
   calculateCenterRotate(t, e) {
     let n;
     const i = this.getCenterInternal();
-    return i !== void 0 && (n = [i[0] - e[0], i[1] - e[1]], wr(n, t - this.getRotation()), ia(n, e)), n;
+    return i !== void 0 && (n = [i[0] - e[0], i[1] - e[1]], Rr(n, t - this.getRotation()), oa(n, e)), n;
   }
   /**
    * @param {number} resolution Target resolution.
@@ -5693,8 +5800,8 @@ class Bs extends pA {
     let n;
     const i = this.getCenterInternal(), r = this.getResolution();
     if (i !== void 0 && r !== void 0) {
-      const s = e[0] - t * (e[0] - i[0]) / r, o = e[1] - t * (e[1] - i[1]) / r;
-      n = [s, o];
+      const s = e[0] - t * (e[0] - i[0]) / r, g = e[1] - t * (e[1] - i[1]) / r;
+      n = [s, g];
     }
     return n;
   }
@@ -5733,7 +5840,7 @@ class Bs extends pA {
    */
   getCenter() {
     const t = this.getCenterInternal();
-    return t && is(t, this.getProjection());
+    return t && os(t, this.getProjection());
   }
   /**
    * Get the view center without transforming to user projection.
@@ -5742,14 +5849,17 @@ class Bs extends pA {
   getCenterInternal() {
     return (
       /** @type {import("./coordinate.js").Coordinate|undefined} */
-      this.get(Nt.CENTER)
+      this.get(Bt.CENTER)
     );
   }
   /**
    * @return {Constraints} Constraints.
    */
   getConstraints() {
-    return this.constraints_;
+    return (
+      /** @type {Constraints} */
+      this.constraints_
+    );
   }
   /**
    * @return {boolean} Resolution constraint is set
@@ -5776,7 +5886,7 @@ class Bs extends pA {
    */
   calculateExtent(t) {
     const e = this.calculateExtentInternal(t);
-    return La(e, this.getProjection());
+    return _a(e, this.getProjection());
   }
   /**
    * @param {import("./size.js").Size} [size] Box pixel size. If not provided,
@@ -5789,17 +5899,17 @@ class Bs extends pA {
       /** @type {!import("./coordinate.js").Coordinate} */
       this.getCenterInternal()
     );
-    fe(e, "The view center is not defined");
+    ye(e, "The view center is not defined");
     const n = (
       /** @type {!number} */
       this.getResolution()
     );
-    fe(n !== void 0, "The view resolution is not defined");
+    ye(n !== void 0, "The view resolution is not defined");
     const i = (
       /** @type {!number} */
       this.getRotation()
     );
-    return fe(i !== void 0, "The view rotation is not defined"), Ho(e, n, i, t);
+    return ye(i !== void 0, "The view rotation is not defined"), Jg(e, n, i, t);
   }
   /**
    * Get the maximum resolution of the view.
@@ -5807,7 +5917,10 @@ class Bs extends pA {
    * @api
    */
   getMaxResolution() {
-    return this.maxResolution_;
+    return (
+      /** @type {number} */
+      this.maxResolution_
+    );
   }
   /**
    * Get the minimum resolution of the view.
@@ -5815,7 +5928,10 @@ class Bs extends pA {
    * @api
    */
   getMinResolution() {
-    return this.minResolution_;
+    return (
+      /** @type {number} */
+      this.minResolution_
+    );
   }
   /**
    * Get the maximum zoom level for the view.
@@ -5825,7 +5941,10 @@ class Bs extends pA {
   getMaxZoom() {
     return (
       /** @type {number} */
-      this.getZoomForResolution(this.minResolution_)
+      this.getZoomForResolution(
+        /** @type {number} */
+        this.minResolution_
+      )
     );
   }
   /**
@@ -5844,7 +5963,10 @@ class Bs extends pA {
   getMinZoom() {
     return (
       /** @type {number} */
-      this.getZoomForResolution(this.maxResolution_)
+      this.getZoomForResolution(
+        /** @type {number} */
+        this.maxResolution_
+      )
     );
   }
   /**
@@ -5869,7 +5991,10 @@ class Bs extends pA {
    * @api
    */
   getProjection() {
-    return this.projection_;
+    return (
+      /** @type {import("./proj/Projection.js").default} */
+      this.projection_
+    );
   }
   /**
    * Get the view resolution.
@@ -5880,7 +6005,7 @@ class Bs extends pA {
   getResolution() {
     return (
       /** @type {number|undefined} */
-      this.get(Nt.RESOLUTION)
+      this.get(Bt.RESOLUTION)
     );
   }
   /**
@@ -5915,7 +6040,7 @@ class Bs extends pA {
    */
   getResolutionForExtentInternal(t, e) {
     e = e || this.getViewportSizeMinusPadding_();
-    const n = mr(t) / e[0], i = HA(t) / e[1];
+    const n = br(t) / e[0], i = tn(t) / e[1];
     return Math.max(n, i);
   }
   /**
@@ -5926,7 +6051,16 @@ class Bs extends pA {
    */
   getResolutionForValueFunction(t) {
     t = t || 2;
-    const e = this.getConstrainedResolution(this.maxResolution_), n = this.minResolution_, i = Math.log(e / n) / Math.log(t);
+    const e = (
+      /** @type {number} */
+      this.getConstrainedResolution(
+        /** @type {number} */
+        this.maxResolution_
+      )
+    ), n = (
+      /** @type {number} */
+      this.minResolution_
+    ), i = Math.log(e / n) / Math.log(t);
     return (
       /**
        * @param {number} value Value.
@@ -5946,7 +6080,7 @@ class Bs extends pA {
   getRotation() {
     return (
       /** @type {number} */
-      this.get(Nt.ROTATION)
+      this.get(Bt.ROTATION)
     );
   }
   /**
@@ -5956,7 +6090,16 @@ class Bs extends pA {
    * @return {function(number): number} Value for resolution function.
    */
   getValueForResolutionFunction(t) {
-    const e = Math.log(t || 2), n = this.getConstrainedResolution(this.maxResolution_), i = this.minResolution_, r = Math.log(n / i) / e;
+    const e = Math.log(t || 2), n = (
+      /** @type {number} */
+      this.getConstrainedResolution(
+        /** @type {number} */
+        this.maxResolution_
+      )
+    ), i = (
+      /** @type {number} */
+      this.minResolution_
+    ), r = Math.log(n / i) / e;
     return (
       /**
        * @param {number} resolution Resolution.
@@ -5993,23 +6136,37 @@ class Bs extends pA {
     const r = this.padding_;
     if (r) {
       const s = this.getViewportSizeMinusPadding_();
-      i = ji(
+      i = zi(
         i,
         this.getViewportSize_(),
         [s[0] / 2 + r[3], s[1] / 2 + r[0]],
+        /** @type {number} */
         e,
         n
       );
     }
     return {
       center: i.slice(0),
-      projection: t !== void 0 ? t : null,
-      resolution: e,
-      nextCenter: this.nextCenter_,
+      projection: (
+        /** @type {import("./proj/Projection.js").default} */
+        t !== void 0 ? t : null
+      ),
+      resolution: (
+        /** @type {number} */
+        e
+      ),
+      nextCenter: (
+        /** @type {import("./coordinate.js").Coordinate|undefined} */
+        /** @type {unknown} */
+        this.nextCenter_
+      ),
       nextResolution: this.nextResolution_,
       nextRotation: this.nextRotation_,
       rotation: n,
-      zoom: this.getZoom()
+      zoom: (
+        /** @type {number} */
+        this.getZoom()
+      )
     };
   }
   /**
@@ -6042,11 +6199,19 @@ class Bs extends pA {
   getZoomForResolution(t) {
     let e = this.minZoom_ || 0, n, i;
     if (this.resolutions_) {
-      const r = cg(this.resolutions_, t, 1);
+      const r = ho(this.resolutions_, t, 1);
       e = r, n = this.resolutions_[r], r == this.resolutions_.length - 1 ? i = 2 : i = n / this.resolutions_[r + 1];
     } else
-      n = this.maxResolution_, i = this.zoomFactor_;
-    return e + Math.log(n / t) / Math.log(i);
+      n = /** @type {number} */
+      this.maxResolution_, i = /** @type {number} */
+      this.zoomFactor_;
+    return e + Math.log(
+      /** @type {number} */
+      n / t
+    ) / Math.log(
+      /** @type {number} */
+      i
+    );
   }
   /**
    * Get the resolution for a zoom level.
@@ -6058,14 +6223,22 @@ class Bs extends pA {
     if (this.resolutions_?.length) {
       if (this.resolutions_.length === 1)
         return this.resolutions_[0];
-      const e = jt(
+      const e = Lt(
         Math.floor(t),
         0,
         this.resolutions_.length - 2
       ), n = this.resolutions_[e] / this.resolutions_[e + 1];
-      return this.resolutions_[e] / Math.pow(n, jt(t - e, 0, 1));
+      return this.resolutions_[e] / Math.pow(n, Lt(t - e, 0, 1));
     }
-    return this.maxResolution_ / Math.pow(this.zoomFactor_, t - this.minZoom_);
+    return (
+      /** @type {number} */
+      this.maxResolution_ / Math.pow(
+        /** @type {number} */
+        this.zoomFactor_,
+        t - /** @type {number} */
+        this.minZoom_
+      )
+    );
   }
   /**
    * Fit the given geometry or extent based on the given map size and border.
@@ -6079,25 +6252,28 @@ class Bs extends pA {
    */
   fit(t, e) {
     let n;
-    if (fe(
+    if (ye(
       Array.isArray(t) || typeof /** @type {?} */
       t.getSimplifiedGeometry == "function",
       "Invalid extent or geometry provided as `geometry`"
     ), Array.isArray(t)) {
-      fe(
-        !yg(t),
+      ye(
+        !Eo(t),
         "Cannot fit empty extent provided as `geometry`"
       );
       const i = Xn(t, this.getProjection());
-      n = as(i);
+      n = cs(i);
     } else if (t.getType() === "Circle") {
       const i = Xn(
         t.getExtent(),
         this.getProjection()
       );
-      n = as(i), n.rotate(this.getRotation(), Yn(i));
-    } else
-      n = t;
+      n = cs(i), n.rotate(this.getRotation(), Kn(i));
+    } else {
+      const i = ja();
+      i ? n = /** @type {import("./geom/SimpleGeometry.js").default} */
+      t.clone().transform(i, this.getProjection()) : n = t;
+    }
     this.fitInternal(n, e);
   }
   /**
@@ -6107,12 +6283,12 @@ class Bs extends pA {
    */
   rotatedExtentForGeometry(t) {
     const e = this.getRotation(), n = Math.cos(e), i = Math.sin(-e), r = t.getFlatCoordinates(), s = t.getStride();
-    let o = 1 / 0, g = 1 / 0, a = -1 / 0, C = -1 / 0;
+    let g = 1 / 0, o = 1 / 0, a = -1 / 0, C = -1 / 0;
     for (let I = 0, c = r.length; I < c; I += s) {
-      const h = r[I] * n - r[I + 1] * i, p = r[I] * i + r[I + 1] * n;
-      o = Math.min(o, h), g = Math.min(g, p), a = Math.max(a, h), C = Math.max(C, p);
+      const u = r[I] * n - r[I + 1] * i, d = r[I] * i + r[I + 1] * n;
+      g = Math.min(g, u), o = Math.min(o, d), a = Math.max(a, u), C = Math.max(C, d);
     }
-    return [o, g, a, C];
+    return [g, o, a, C];
   }
   /**
    * @param {import("./geom/SimpleGeometry.js").default} geometry The geometry.
@@ -6125,24 +6301,25 @@ class Bs extends pA {
     const i = e.padding !== void 0 ? e.padding : [0, 0, 0, 0], r = e.nearest !== void 0 ? e.nearest : !1;
     let s;
     e.minResolution !== void 0 ? s = e.minResolution : e.maxZoom !== void 0 ? s = this.getResolutionForZoom(e.maxZoom) : s = 0;
-    const o = this.rotatedExtentForGeometry(t);
-    let g = this.getResolutionForExtentInternal(o, [
+    const g = this.rotatedExtentForGeometry(t);
+    let o = this.getResolutionForExtentInternal(g, [
       n[0] - i[1] - i[3],
       n[1] - i[0] - i[2]
     ]);
-    g = isNaN(g) ? s : Math.max(g, s), g = this.getConstrainedResolution(g, r ? 0 : 1);
-    const a = this.getRotation(), C = Math.sin(a), I = Math.cos(a), c = Yn(o);
-    c[0] += (i[1] - i[3]) / 2 * g, c[1] += (i[0] - i[2]) / 2 * g;
-    const h = c[0] * I - c[1] * C, p = c[1] * I + c[0] * C, d = this.getConstrainedCenter([h, p], g), m = e.callback ? e.callback : $i;
+    o = isNaN(o) ? s : Math.max(o, s), o = /** @type {number} */
+    this.getConstrainedResolution(o, r ? 0 : 1);
+    const a = this.getRotation(), C = Math.sin(a), I = Math.cos(a), c = Kn(g);
+    c[0] += (i[1] - i[3]) / 2 * o, c[1] += (i[0] - i[2]) / 2 * o;
+    const u = c[0] * I - c[1] * C, d = c[1] * I + c[0] * C, f = this.getConstrainedCenter([u, d], o), m = e.callback ? e.callback : ir;
     e.duration !== void 0 ? this.animateInternal(
       {
-        resolution: g,
-        center: d,
+        resolution: o,
+        center: f,
         duration: e.duration,
         easing: e.easing
       },
       m
-    ) : (this.targetResolution_ = g, this.targetCenter_ = d, this.applyTargetState_(!1, !0), Un(m, !0));
+    ) : (this.targetResolution_ = o, this.targetCenter_ = f, this.applyTargetState_(!1, !0), Un(m, !0));
   }
   /**
    * Center on coordinate and view position.
@@ -6153,7 +6330,7 @@ class Bs extends pA {
    */
   centerOn(t, e, n) {
     this.centerOnInternal(
-      ce(t, this.getProjection()),
+      he(t, this.getProjection()),
       e,
       n
     );
@@ -6165,10 +6342,11 @@ class Bs extends pA {
    */
   centerOnInternal(t, e, n) {
     this.setCenterInternal(
-      ji(
+      zi(
         t,
         e,
         n,
+        /** @type {number} */
         this.getResolution(),
         this.getRotation()
       )
@@ -6186,16 +6364,16 @@ class Bs extends pA {
     let r;
     const s = this.padding_;
     if (s && t) {
-      const o = this.getViewportSizeMinusPadding_(-n), g = ji(
+      const g = this.getViewportSizeMinusPadding_(-n), o = zi(
         t,
         i,
-        [o[0] / 2 + s[3], o[1] / 2 + s[0]],
+        [g[0] / 2 + s[3], g[1] / 2 + s[0]],
         e,
         n
       );
       r = [
-        t[0] - g[0],
-        t[1] - g[1]
+        t[0] - o[0],
+        t[1] - o[1]
       ];
     }
     return r;
@@ -6212,7 +6390,11 @@ class Bs extends pA {
    * @api
    */
   adjustCenter(t) {
-    const e = is(this.targetCenter_, this.getProjection());
+    const e = os(
+      /** @type {import("./coordinate.js").Coordinate} */
+      this.targetCenter_,
+      this.getProjection()
+    );
     this.setCenter([
       e[0] + t[0],
       e[1] + t[1]
@@ -6223,7 +6405,10 @@ class Bs extends pA {
    * @param {import("./coordinate.js").Coordinate} deltaCoordinates Relative value to add.
    */
   adjustCenterInternal(t) {
-    const e = this.targetCenter_;
+    const e = (
+      /** @type {import("./coordinate.js").Coordinate} */
+      this.targetCenter_
+    );
     this.setCenterInternal([
       e[0] + t[0],
       e[1] + t[1]
@@ -6237,7 +6422,7 @@ class Bs extends pA {
    * @api
    */
   adjustResolution(t, e) {
-    e = e && ce(e, this.getProjection()), this.adjustResolutionInternal(t, e);
+    e = e && he(e, this.getProjection()), this.adjustResolutionInternal(t, e);
   }
   /**
    * Multiply the view resolution by a ratio, optionally using an anchor. Any resolution
@@ -6246,13 +6431,22 @@ class Bs extends pA {
    * @param {import("./coordinate.js").Coordinate} [anchor] The origin of the transformation.
    */
   adjustResolutionInternal(t, e) {
-    const n = this.getAnimating() || this.getInteracting(), i = this.getViewportSize_(this.getRotation()), r = this.constraints_.resolution(
-      this.targetResolution_ * t,
-      0,
-      i,
-      n
+    const n = this.getAnimating() || this.getInteracting(), i = this.getViewportSize_(this.getRotation()), r = (
+      /** @type {Constraints} */
+      this.constraints_.resolution(
+        /** @type {number} */
+        this.targetResolution_ * t,
+        0,
+        i,
+        n
+      )
     );
-    e && (this.targetCenter_ = this.calculateCenterZoom(r, e)), this.targetResolution_ *= t, this.applyTargetState_();
+    e && (this.targetCenter_ = this.calculateCenterZoom(
+      /** @type {number} */
+      r,
+      e
+    )), this.targetResolution_ = /** @type {number} */
+    this.targetResolution_ * t, this.applyTargetState_();
   }
   /**
    * Adds a value to the view zoom level, optionally using an anchor. Any resolution
@@ -6262,7 +6456,14 @@ class Bs extends pA {
    * @api
    */
   adjustZoom(t, e) {
-    this.adjustResolution(Math.pow(this.zoomFactor_, -t), e);
+    this.adjustResolution(
+      Math.pow(
+        /** @type {number} */
+        this.zoomFactor_,
+        -t
+      ),
+      e
+    );
   }
   /**
    * Adds a value to the view rotation, optionally using an anchor. Any rotation
@@ -6272,18 +6473,27 @@ class Bs extends pA {
    * @api
    */
   adjustRotation(t, e) {
-    e && (e = ce(e, this.getProjection())), this.adjustRotationInternal(t, e);
+    e && (e = he(e, this.getProjection())), this.adjustRotationInternal(t, e);
   }
   /**
    * @param {number} delta Relative value to add to the zoom rotation, in radians.
    * @param {import("./coordinate.js").Coordinate} [anchor] The rotation center.
    */
   adjustRotationInternal(t, e) {
-    const n = this.getAnimating() || this.getInteracting(), i = this.constraints_.rotation(
-      this.targetRotation_ + t,
-      n
+    const n = this.getAnimating() || this.getInteracting(), i = (
+      /** @type {Constraints} */
+      this.constraints_.rotation(
+        /** @type {number} */
+        this.targetRotation_ + t,
+        n
+      )
     );
-    e && (this.targetCenter_ = this.calculateCenterRotate(i, e)), this.targetRotation_ += t, this.applyTargetState_();
+    e && (this.targetCenter_ = this.calculateCenterRotate(
+      /** @type {number} */
+      i,
+      e
+    )), this.targetRotation_ = /** @type {number} */
+    this.targetRotation_ + t, this.applyTargetState_();
   }
   /**
    * Set the center of the current view. Any extent constraint will apply.
@@ -6293,12 +6503,12 @@ class Bs extends pA {
    */
   setCenter(t) {
     this.setCenterInternal(
-      t && ce(t, this.getProjection())
+      t && he(t, this.getProjection())
     );
   }
   /**
    * Set the center using the view projection (not the user projection).
-   * @param {import("./coordinate.js").Coordinate|undefined} center The center of the view.
+   * @param {import("./coordinate.js").Coordinate|null|undefined} center The center of the view.
    */
   setCenterInternal(t) {
     this.targetCenter_ = t, this.applyTargetState_();
@@ -6346,27 +6556,44 @@ class Bs extends pA {
    * @private
    */
   applyTargetState_(t, e) {
-    const n = this.getAnimating() || this.getInteracting() || e, i = this.constraints_.rotation(
-      this.targetRotation_,
-      n
-    ), r = this.getViewportSize_(i), s = this.constraints_.resolution(
-      this.targetResolution_,
-      0,
-      r,
-      n
-    ), o = this.constraints_.center(
-      this.targetCenter_,
-      s,
-      r,
-      n,
-      this.calculateCenterShift(
+    const n = this.getAnimating() || this.getInteracting() || e, i = (
+      /** @type {Constraints} */
+      this.constraints_.rotation(
+        /** @type {number} */
+        this.targetRotation_,
+        n
+      )
+    ), r = this.getViewportSize_(i), s = (
+      /** @type {Constraints} */
+      this.constraints_.resolution(
+        /** @type {number} */
+        this.targetResolution_,
+        0,
+        r,
+        n
+      )
+    ), g = (
+      /** @type {Constraints} */
+      this.constraints_.center(
+        /** @type {import("./coordinate.js").Coordinate|undefined} */
         this.targetCenter_,
+        /** @type {number} */
         s,
-        i,
-        r
+        r,
+        n,
+        /** @type {import("./coordinate.js").Coordinate} */
+        this.calculateCenterShift(
+          /** @type {import("./coordinate.js").Coordinate} */
+          this.targetCenter_,
+          /** @type {number} */
+          s,
+          /** @type {number} */
+          i,
+          r
+        )
       )
     );
-    this.get(Nt.ROTATION) !== i && this.set(Nt.ROTATION, i), this.get(Nt.RESOLUTION) !== s && (this.set(Nt.RESOLUTION, s), this.set("zoom", this.getZoom(), !0)), (!o || !this.get(Nt.CENTER) || !Kn(this.get(Nt.CENTER), o)) && this.set(Nt.CENTER, o), this.getAnimating() && !t && this.cancelAnimations(), this.cancelAnchor_ = void 0;
+    this.get(Bt.ROTATION) !== i && this.set(Bt.ROTATION, i), this.get(Bt.RESOLUTION) !== s && (this.set(Bt.RESOLUTION, s), this.set("zoom", this.getZoom(), !0)), (!g || !this.get(Bt.CENTER) || !Jn(this.get(Bt.CENTER), g)) && this.set(Bt.CENTER, g), this.getAnimating() && !t && this.cancelAnimations(), this.cancelAnchor_ = void 0;
   }
   /**
    * If any constraints need to be applied, an animation will be triggered.
@@ -6379,32 +6606,56 @@ class Bs extends pA {
    */
   resolveConstraints(t, e, n) {
     t = t !== void 0 ? t : 200;
-    const i = e || 0, r = this.constraints_.rotation(this.targetRotation_), s = this.getViewportSize_(r), o = this.constraints_.resolution(
-      this.targetResolution_,
-      i,
-      s
-    ), g = this.constraints_.center(
-      this.targetCenter_,
-      o,
-      s,
-      !1,
-      this.calculateCenterShift(
-        this.targetCenter_,
-        o,
-        r,
+    const i = e || 0, r = (
+      /** @type {Constraints} */
+      this.constraints_.rotation(
+        /** @type {number} */
+        this.targetRotation_
+      )
+    ), s = this.getViewportSize_(r), g = (
+      /** @type {Constraints} */
+      this.constraints_.resolution(
+        /** @type {number} */
+        this.targetResolution_,
+        i,
         s
+      )
+    ), o = (
+      /** @type {Constraints} */
+      this.constraints_.center(
+        /** @type {import("./coordinate.js").Coordinate|undefined} */
+        this.targetCenter_,
+        /** @type {number} */
+        g,
+        s,
+        !1,
+        /** @type {import("./coordinate.js").Coordinate} */
+        this.calculateCenterShift(
+          /** @type {import("./coordinate.js").Coordinate} */
+          this.targetCenter_,
+          /** @type {number} */
+          g,
+          /** @type {number} */
+          r,
+          s
+        )
       )
     );
     if (t === 0 && !this.cancelAnchor_) {
-      this.targetResolution_ = o, this.targetRotation_ = r, this.targetCenter_ = g, this.applyTargetState_();
+      this.targetResolution_ = g, this.targetRotation_ = r, this.targetCenter_ = o, this.applyTargetState_();
       return;
     }
-    n = n || (t === 0 ? this.cancelAnchor_ : void 0), this.cancelAnchor_ = void 0, (this.getResolution() !== o || this.getRotation() !== r || !this.getCenterInternal() || !Kn(this.getCenterInternal(), g)) && (this.getAnimating() && this.cancelAnimations(), this.animateInternal({
+    n = n || (t === 0 ? this.cancelAnchor_ : void 0), this.cancelAnchor_ = void 0, (this.getResolution() !== g || this.getRotation() !== r || !this.getCenterInternal() || !Jn(
+      /** @type {import("./coordinate.js").Coordinate} */
+      this.getCenterInternal(),
+      /** @type {import("./coordinate.js").Coordinate} */
+      o
+    )) && (this.getAnimating() && this.cancelAnimations(), this.animateInternal({
       rotation: r,
-      center: g,
-      resolution: o,
+      center: o,
+      resolution: g,
       duration: t,
-      easing: Ci,
+      easing: ci,
       anchor: n
     }));
   }
@@ -6415,7 +6666,7 @@ class Bs extends pA {
    * @api
    */
   beginInteraction() {
-    this.resolveConstraints(0), this.setHint(le.INTERACTING, 1);
+    this.resolveConstraints(0), this.setHint(fe.INTERACTING, 1);
   }
   /**
    * Notify the View that an interaction has ended. The view state will be resolved
@@ -6426,7 +6677,7 @@ class Bs extends pA {
    * @api
    */
   endInteraction(t, e, n) {
-    n = n && ce(n, this.getProjection()), this.endInteractionInternal(t, e, n);
+    n = n && he(n, this.getProjection()), this.endInteractionInternal(t, e, n);
   }
   /**
    * Notify the View that an interaction has ended. The view state will be resolved
@@ -6436,7 +6687,7 @@ class Bs extends pA {
    * @param {import("./coordinate.js").Coordinate} [anchor] The origin of the transformation.
    */
   endInteractionInternal(t, e, n) {
-    this.getInteracting() && (this.setHint(le.INTERACTING, -1), this.resolveConstraints(t, e, n));
+    this.getInteracting() && (this.setHint(fe.INTERACTING, -1), this.resolveConstraints(t, e, n));
   }
   /**
    * Get a valid position for the view center according to the current constraints.
@@ -6447,10 +6698,14 @@ class Bs extends pA {
    */
   getConstrainedCenter(t, e) {
     const n = this.getViewportSize_(this.getRotation());
-    return this.constraints_.center(
-      t,
-      e || this.getResolution(),
-      n
+    return (
+      /** @type {Constraints} */
+      this.constraints_.center(
+        t,
+        e || /** @type {number} */
+        this.getResolution(),
+        n
+      )
     );
   }
   /**
@@ -6463,8 +6718,12 @@ class Bs extends pA {
    * @return {number|undefined} Valid zoom level.
    */
   getConstrainedZoom(t, e) {
-    const n = this.getResolutionForZoom(t);
+    const n = this.getResolutionForZoom(
+      /** @type {number} */
+      t
+    );
     return this.getZoomForResolution(
+      /** @type {number} */
       this.getConstrainedResolution(n, e)
     );
   }
@@ -6480,7 +6739,14 @@ class Bs extends pA {
   getConstrainedResolution(t, e) {
     e = e || 0;
     const n = this.getViewportSize_(this.getRotation());
-    return this.constraints_.resolution(t, e, n);
+    return (
+      /** @type {Constraints} */
+      this.constraints_.resolution(
+        t,
+        e,
+        n
+      )
+    );
   }
 }
 function Un(A, t) {
@@ -6488,55 +6754,72 @@ function Un(A, t) {
     A(t);
   }, 0);
 }
-function RC(A) {
+function OC(A) {
   if (A.extent !== void 0) {
     const e = A.smoothExtentConstraint !== void 0 ? A.smoothExtentConstraint : !0;
-    return xs(A.extent, A.constrainOnlyCenter, e);
+    return Bs(
+      A.extent,
+      /** @type {boolean} */
+      A.constrainOnlyCenter,
+      e
+    );
   }
-  const t = Er(A.projection, "EPSG:3857");
+  const t = (
+    /** @type {import("./proj/Projection.js").default} */
+    Pr(A.projection, "EPSG:3857")
+  );
   if (A.multiWorld !== !0 && t.isGlobal()) {
     const e = t.getExtent().slice();
-    return e[0] = -1 / 0, e[2] = 1 / 0, xs(e, !1, !1);
+    return e[0] = -1 / 0, e[2] = 1 / 0, Bs(e, !1, !1);
   }
-  return dC;
+  return bC;
 }
-function TC(A) {
-  let t, e, n, s = A.minZoom !== void 0 ? A.minZoom : Gi, o = A.maxZoom !== void 0 ? A.maxZoom : 28;
-  const g = A.zoomFactor !== void 0 ? A.zoomFactor : 2, a = A.multiWorld !== void 0 ? A.multiWorld : !1, C = A.smoothResolutionConstraint !== void 0 ? A.smoothResolutionConstraint : !0, I = A.showFullExtent !== void 0 ? A.showFullExtent : !1, c = Er(A.projection, "EPSG:3857"), h = c.getExtent();
-  let p = A.constrainOnlyCenter, d = A.extent;
-  if (!a && !d && c.isGlobal() && (p = !1, d = h), A.resolutions !== void 0) {
+function BC(A) {
+  let t, e, n, s = A.minZoom !== void 0 ? A.minZoom : Zi, g = A.maxZoom !== void 0 ? A.maxZoom : 28;
+  const o = A.zoomFactor !== void 0 ? A.zoomFactor : 2, a = A.multiWorld !== void 0 ? A.multiWorld : !1, C = A.smoothResolutionConstraint !== void 0 ? A.smoothResolutionConstraint : !0, I = A.showFullExtent !== void 0 ? A.showFullExtent : !1, c = (
+    /** @type {import("./proj/Projection.js").default} */
+    Pr(A.projection, "EPSG:3857")
+  ), u = c.getExtent();
+  let d = A.constrainOnlyCenter, f = A.extent;
+  if (!a && !f && c.isGlobal() && (d = !1, f = u), A.resolutions !== void 0) {
     const m = A.resolutions;
-    e = m[s], n = m[o] !== void 0 ? m[o] : m[m.length - 1], A.constrainResolution ? t = wC(
+    e = m[s], n = m[g] !== void 0 ? m[g] : m[m.length - 1], A.constrainResolution ? t = SC(
       m,
       C,
-      !p && d,
+      /** @type {import("./extent.js").Extent|undefined} */
+      !d && f,
       I
-    ) : t = Ds(
+    ) : t = Ls(
       e,
       n,
       C,
-      !p && d,
+      /** @type {import("./extent.js").Extent|undefined} */
+      !d && f,
       I
     );
   } else {
-    const f = (h ? Math.max(mr(h), HA(h)) : (
+    const h = (u ? Math.max(br(u), tn(u)) : (
       // use an extent that can fit the whole world if need be
-      360 * wg.degrees / c.getMetersPerUnit()
-    )) / MC / Math.pow(2, Gi), v = f / Math.pow(2, 28 - Gi);
-    e = A.maxResolution, e !== void 0 ? s = 0 : e = f / Math.pow(g, s), n = A.minResolution, n === void 0 && (A.maxZoom !== void 0 ? A.maxResolution !== void 0 ? n = e / Math.pow(g, o) : n = f / Math.pow(g, o) : n = v), o = s + Math.floor(
-      Math.log(e / n) / Math.log(g)
-    ), n = e / Math.pow(g, o - s), A.constrainResolution ? t = bC(
-      g,
+      360 * /** @type {number} */
+      Mo.degrees / /** @type {number} */
+      c.getMetersPerUnit()
+    )) / DC / Math.pow(2, Zi), w = h / Math.pow(2, 28 - Zi);
+    e = A.maxResolution, e !== void 0 ? s = 0 : e = h / Math.pow(o, s), n = A.minResolution, n === void 0 && (A.maxZoom !== void 0 ? A.maxResolution !== void 0 ? n = e / Math.pow(o, g) : n = h / Math.pow(o, g) : n = w), g = s + Math.floor(
+      Math.log(e / n) / Math.log(o)
+    ), n = e / Math.pow(o, g - s), A.constrainResolution ? t = TC(
+      o,
       e,
       n,
       C,
-      !p && d,
+      /** @type {import("./extent.js").Extent|undefined} */
+      !d && f,
       I
-    ) : t = Ds(
+    ) : t = Ls(
       e,
       n,
       C,
-      !p && d,
+      /** @type {import("./extent.js").Extent|undefined} */
+      !d && f,
       I
     );
   }
@@ -6545,27 +6828,27 @@ function TC(A) {
     maxResolution: e,
     minResolution: n,
     minZoom: s,
-    zoomFactor: g
+    zoomFactor: o
   };
 }
-function SC(A) {
+function LC(A) {
   if (A.enableRotation !== void 0 ? A.enableRotation : !0) {
     const e = A.constrainRotation;
-    return e === void 0 || e === !0 ? EC() : e === !1 ? Os : typeof e == "number" ? vC(e) : Os;
+    return e === void 0 || e === !0 ? xC() : e === !1 ? ks : typeof e == "number" ? PC(e) : ks;
   }
-  return Lr;
+  return _r;
 }
-function PC(A) {
-  return !(A.sourceCenter && A.targetCenter && !Kn(A.sourceCenter, A.targetCenter) || A.sourceResolution !== A.targetResolution || A.sourceRotation !== A.targetRotation);
+function kC(A) {
+  return !(A.sourceCenter && A.targetCenter && !Jn(A.sourceCenter, A.targetCenter) || A.sourceResolution !== A.targetResolution || A.sourceRotation !== A.targetRotation);
 }
-function ji(A, t, e, n, i) {
+function zi(A, t, e, n, i) {
   const r = Math.cos(-i);
-  let s = Math.sin(-i), o = A[0] * r - A[1] * s, g = A[1] * r + A[0] * s;
-  o += (t[0] / 2 - e[0]) * n, g += (e[1] - t[1] / 2) * n, s = -s;
-  const a = o * r - g * s, C = g * r + o * s;
+  let s = Math.sin(-i), g = A[0] * r - A[1] * s, o = A[1] * r + A[0] * s;
+  g += (t[0] / 2 - e[0]) * n, o += (e[1] - t[1] / 2) * n, s = -s;
+  const a = g * r - o * s, C = o * r + g * s;
   return [a, C];
 }
-const xC = {
+const NC = {
   /**
    * Triggered before layers are composed.  When dispatched by the map, the event object will not have
    * a `context` set.  When dispatched by a layer, the event object will have a `context` set.  Only
@@ -6574,7 +6857,7 @@ const xC = {
    * @api
    */
   PRECOMPOSE: "precompose"
-}, _ = {
+}, W = {
   OPACITY: "opacity",
   VISIBLE: "visible",
   EXTENT: "extent",
@@ -6586,21 +6869,21 @@ const xC = {
   SOURCE: "source",
   MAP: "map"
 };
-class DC extends pA {
+class GC extends wA {
   /**
    * @param {Options<NoInfer<Properties>>} options Layer options.
    */
   constructor(t) {
     super(), this.on, this.once, this.un, this.background_ = t.background;
     const e = Object.assign({}, t);
-    typeof t.properties == "object" && (delete e.properties, Object.assign(e, t.properties)), e[_.OPACITY] = t.opacity !== void 0 ? t.opacity : 1, fe(
-      typeof e[_.OPACITY] == "number",
+    typeof t.properties == "object" && (delete e.properties, Object.assign(e, t.properties)), e[W.OPACITY] = t.opacity !== void 0 ? t.opacity : 1, ye(
+      typeof e[W.OPACITY] == "number",
       "Layer opacity must be a number"
-    ), e[_.VISIBLE] = t.visible !== void 0 ? t.visible : !0, e[_.Z_INDEX] = t.zIndex, e[_.MAX_RESOLUTION] = t.maxResolution !== void 0 ? t.maxResolution : 1 / 0, e[_.MIN_RESOLUTION] = t.minResolution !== void 0 ? t.minResolution : 0, e[_.MIN_ZOOM] = t.minZoom !== void 0 ? t.minZoom : -1 / 0, e[_.MAX_ZOOM] = t.maxZoom !== void 0 ? t.maxZoom : 1 / 0, this.className_ = e.className !== void 0 ? e.className : "ol-layer", delete e.className, this.setProperties(e), this.state_ = null;
+    ), e[W.VISIBLE] = t.visible !== void 0 ? t.visible : !0, e[W.Z_INDEX] = t.zIndex, e[W.MAX_RESOLUTION] = t.maxResolution !== void 0 ? t.maxResolution : 1 / 0, e[W.MIN_RESOLUTION] = t.minResolution !== void 0 ? t.minResolution : 0, e[W.MIN_ZOOM] = t.minZoom !== void 0 ? t.minZoom : -1 / 0, e[W.MAX_ZOOM] = t.maxZoom !== void 0 ? t.maxZoom : 1 / 0, this.className_ = e.className !== void 0 ? e.className : "ol-layer", delete e.className, this.setProperties(e), this.state_ = null;
   }
   /**
    * Get the background for this layer.
-   * @return {BackgroundColor|false} Layer background.
+   * @return {BackgroundColor|false|undefined} Layer background.
    */
   getBackground() {
     return this.background_;
@@ -6624,7 +6907,7 @@ class DC extends pA {
       layer: this,
       managed: t === void 0 ? !0 : t
     }, n = this.getZIndex();
-    return e.opacity = jt(Math.round(this.getOpacity() * 100) / 100, 0, 1), e.visible = this.getVisible(), e.extent = this.getExtent(), e.zIndex = n === void 0 && !e.managed ? 1 / 0 : n, e.maxResolution = this.getMaxResolution(), e.minResolution = Math.max(this.getMinResolution(), 0), e.minZoom = this.getMinZoom(), e.maxZoom = this.getMaxZoom(), this.state_ = e, e;
+    return e.opacity = Lt(Math.round(this.getOpacity() * 100) / 100, 0, 1), e.visible = this.getVisible(), e.extent = this.getExtent(), e.zIndex = n === void 0 && !e.managed ? 1 / 0 : n, e.maxResolution = this.getMaxResolution(), e.minResolution = Math.max(this.getMinResolution(), 0), e.minZoom = this.getMinZoom(), e.maxZoom = this.getMaxZoom(), this.state_ = e, e;
   }
   /**
    * @abstract
@@ -6633,7 +6916,7 @@ class DC extends pA {
    * @return {Array<import("./Layer.js").default>} Array of layers.
    */
   getLayersArray(t) {
-    return mt();
+    return dt();
   }
   /**
    * @abstract
@@ -6642,7 +6925,7 @@ class DC extends pA {
    * @return {Array<import("./Layer.js").State>} List of layer states.
    */
   getLayerStatesArray(t) {
-    return mt();
+    return dt();
   }
   /**
    * Return the {@link module:ol/extent~Extent extent} of the layer or `undefined` if it
@@ -6654,7 +6937,7 @@ class DC extends pA {
   getExtent() {
     return (
       /** @type {import("../extent.js").Extent|undefined} */
-      this.get(_.EXTENT)
+      this.get(W.EXTENT)
     );
   }
   /**
@@ -6667,7 +6950,7 @@ class DC extends pA {
   getMaxResolution() {
     return (
       /** @type {number} */
-      this.get(_.MAX_RESOLUTION)
+      this.get(W.MAX_RESOLUTION)
     );
   }
   /**
@@ -6680,7 +6963,7 @@ class DC extends pA {
   getMinResolution() {
     return (
       /** @type {number} */
-      this.get(_.MIN_RESOLUTION)
+      this.get(W.MIN_RESOLUTION)
     );
   }
   /**
@@ -6693,7 +6976,7 @@ class DC extends pA {
   getMinZoom() {
     return (
       /** @type {number} */
-      this.get(_.MIN_ZOOM)
+      this.get(W.MIN_ZOOM)
     );
   }
   /**
@@ -6706,7 +6989,7 @@ class DC extends pA {
   getMaxZoom() {
     return (
       /** @type {number} */
-      this.get(_.MAX_ZOOM)
+      this.get(W.MAX_ZOOM)
     );
   }
   /**
@@ -6718,7 +7001,7 @@ class DC extends pA {
   getOpacity() {
     return (
       /** @type {number} */
-      this.get(_.OPACITY)
+      this.get(W.OPACITY)
     );
   }
   /**
@@ -6726,7 +7009,7 @@ class DC extends pA {
    * @return {import("../source/Source.js").State} Source state.
    */
   getSourceState() {
-    return mt();
+    return dt();
   }
   /**
    * Return the value of this layer's `visible` property. To find out whether the layer
@@ -6738,7 +7021,7 @@ class DC extends pA {
   getVisible() {
     return (
       /** @type {boolean} */
-      this.get(_.VISIBLE)
+      this.get(W.VISIBLE)
     );
   }
   /**
@@ -6751,12 +7034,12 @@ class DC extends pA {
   getZIndex() {
     return (
       /** @type {number|undefined} */
-      this.get(_.Z_INDEX)
+      this.get(W.Z_INDEX)
     );
   }
   /**
    * Sets the background color.
-   * @param {BackgroundColor} [background] Background color.
+   * @param {BackgroundColor|undefined} [background] Background color.
    */
   setBackground(t) {
     this.background_ = t, this.changed();
@@ -6769,7 +7052,7 @@ class DC extends pA {
    * @api
    */
   setExtent(t) {
-    this.set(_.EXTENT, t);
+    this.set(W.EXTENT, t);
   }
   /**
    * Set the maximum resolution at which the layer is visible.
@@ -6778,7 +7061,7 @@ class DC extends pA {
    * @api
    */
   setMaxResolution(t) {
-    this.set(_.MAX_RESOLUTION, t);
+    this.set(W.MAX_RESOLUTION, t);
   }
   /**
    * Set the minimum resolution at which the layer is visible.
@@ -6787,7 +7070,7 @@ class DC extends pA {
    * @api
    */
   setMinResolution(t) {
-    this.set(_.MIN_RESOLUTION, t);
+    this.set(W.MIN_RESOLUTION, t);
   }
   /**
    * Set the maximum zoom (exclusive) at which the layer is visible.
@@ -6798,7 +7081,7 @@ class DC extends pA {
    * @api
    */
   setMaxZoom(t) {
-    this.set(_.MAX_ZOOM, t);
+    this.set(W.MAX_ZOOM, t);
   }
   /**
    * Set the minimum zoom (inclusive) at which the layer is visible.
@@ -6809,7 +7092,7 @@ class DC extends pA {
    * @api
    */
   setMinZoom(t) {
-    this.set(_.MIN_ZOOM, t);
+    this.set(W.MIN_ZOOM, t);
   }
   /**
    * Set the opacity of the layer, allowed values range from 0 to 1.
@@ -6818,7 +7101,7 @@ class DC extends pA {
    * @api
    */
   setOpacity(t) {
-    fe(typeof t == "number", "Layer opacity must be a number"), this.set(_.OPACITY, t);
+    ye(typeof t == "number", "Layer opacity must be a number"), this.set(W.OPACITY, t);
   }
   /**
    * Set the visibility of the layer (`true` or `false`).
@@ -6827,7 +7110,7 @@ class DC extends pA {
    * @api
    */
   setVisible(t) {
-    this.set(_.VISIBLE, t);
+    this.set(W.VISIBLE, t);
   }
   /**
    * Set Z-index of the layer, which is used to order layers before rendering.
@@ -6837,24 +7120,25 @@ class DC extends pA {
    * @api
    */
   setZIndex(t) {
-    this.set(_.Z_INDEX, t);
+    this.set(W.Z_INDEX, t);
   }
   /**
    * Clean up.
    * @override
    */
   disposeInternal() {
-    this.state_ && (this.state_.layer = null, this.state_ = null), super.disposeInternal();
+    this.state_ && (this.state_.layer = /** @type {?} */
+    null, this.state_ = null), super.disposeInternal();
   }
 }
-class Jg extends DC {
+class eg extends GC {
   /**
    * @param {Options<SourceType, NoInfer<Properties>>} options Layer options.
    */
   constructor(t) {
     const e = Object.assign({}, t);
     delete e.source, super(e), this.on, this.once, this.un, this.mapPrecomposeKey_ = null, this.mapRenderKey_ = null, this.sourceChangeKey_ = null, this.renderer_ = null, this.sourceReady_ = !1, this.rendered = !1, t.render && (this.render = t.render), t.map && this.setMap(t.map), this.addChangeListener(
-      _.SOURCE,
+      W.SOURCE,
       this.handleSourcePropertyChange_
     );
     const n = t.source ? (
@@ -6888,7 +7172,7 @@ class Jg extends DC {
   getSource() {
     return (
       /** @type {SourceType} */
-      this.get(_.SOURCE) || null
+      this.get(W.SOURCE) || null
     );
   }
   /**
@@ -6909,17 +7193,19 @@ class Jg extends DC {
    * @private
    */
   handleSourceChange_() {
-    this.changed(), !(this.sourceReady_ || this.getSource().getState() !== "ready") && (this.sourceReady_ = !0, this.dispatchEvent("sourceready"));
+    this.changed();
+    const t = this.getSource();
+    !t || this.sourceReady_ || t.getState() !== "ready" || (this.sourceReady_ = !0, this.dispatchEvent("sourceready"));
   }
   /**
    * @private
    */
   handleSourcePropertyChange_() {
-    this.sourceChangeKey_ && (IA(this.sourceChangeKey_), this.sourceChangeKey_ = null), this.sourceReady_ = !1;
+    this.sourceChangeKey_ && (qA(this.sourceChangeKey_), this.sourceChangeKey_ = null), this.sourceReady_ = !1;
     const t = this.getSource();
-    t && (this.sourceChangeKey_ = pe(
+    t && (this.sourceChangeKey_ = CA(
       t,
-      ye.CHANGE,
+      ve.CHANGE,
       this.handleSourceChange_,
       this
     ), t.getState() === "ready" && (this.sourceReady_ = !0, setTimeout(() => {
@@ -6953,20 +7239,25 @@ class Jg extends DC {
   isVisible(t) {
     let e;
     const n = this.getMapInternal();
-    !t && n && (t = n.getView()), t instanceof Bs ? e = {
+    !t && n && (t = n.getView()), t instanceof Ns ? e = {
       viewState: t.getState(),
       extent: t.calculateExtent()
-    } : e = t, !e.layerStatesArray && n && (e.layerStatesArray = n.getLayerGroup().getLayerStatesArray());
-    let i;
-    if (e.layerStatesArray) {
-      if (i = e.layerStatesArray.find(
-        (s) => s.layer === this
-      ), !i)
+    } : e = t;
+    const i = (
+      /** @type {import("../View.js").ViewStateLayerStateExtent} */
+      e
+    );
+    !i.layerStatesArray && n && (i.layerStatesArray = n.getLayerGroup().getLayerStatesArray());
+    let r;
+    if (i.layerStatesArray) {
+      if (r = i.layerStatesArray.find(
+        (g) => g.layer === this
+      ), !r)
         return !1;
     } else
-      i = this.getLayerState();
-    const r = this.getExtent();
-    return OC(i, e.viewState) && (!r || pr(r, e.extent));
+      r = this.getLayerState();
+    const s = this.getExtent();
+    return jC(r, i.viewState) && (!s || Er(s, i.extent));
   }
   /**
    * Get the attributions of the source of this layer for the given view.
@@ -6981,8 +7272,11 @@ class Jg extends DC {
     const e = this.getSource()?.getAttributions();
     if (!e)
       return [];
-    const n = t instanceof Bs ? t.getViewStateAndExtent() : t;
-    let i = e(n);
+    const n = t instanceof Ns ? t.getViewStateAndExtent() : t;
+    let i = e(
+      /** @type {import("../View.js").ViewStateLayerStateExtent} */
+      n
+    );
     return Array.isArray(i) || (i = [i]), i;
   }
   /**
@@ -6994,8 +7288,18 @@ class Jg extends DC {
    * @return {HTMLElement|null} The rendered element.
    */
   render(t, e) {
-    const n = this.getRenderer();
-    return n.prepareFrame(t) ? (this.rendered = !0, n.renderFrame(t, e)) : null;
+    const n = (
+      /** @type {RendererType} */
+      this.getRenderer()
+    );
+    return n.prepareFrame(
+      /** @type {import("../Map.js").FrameState} */
+      t
+    ) ? (this.rendered = !0, n.renderFrame(
+      /** @type {import("../Map.js").FrameState} */
+      t,
+      e
+    )) : null;
   }
   /**
    * Called when a layer is not visible during a map render.
@@ -7003,7 +7307,7 @@ class Jg extends DC {
   unrender() {
     this.rendered = !1;
   }
-  /** @return {string} Declutter */
+  /** @return {string|undefined} Declutter */
   getDeclutter() {
   }
   /**
@@ -7025,14 +7329,14 @@ class Jg extends DC {
    * @param {import("../Map.js").default|null} map Map.
    */
   setMapInternal(t) {
-    t || this.unrender(), this.set(_.MAP, t);
+    t || this.unrender(), this.set(W.MAP, t);
   }
   /**
    * For use inside the library only.
    * @return {import("../Map.js").default|null} Map.
    */
   getMapInternal() {
-    return this.get(_.MAP);
+    return this.get(W.MAP);
   }
   /**
    * Sets the layer to be rendered on top of other layers on a map. The map will
@@ -7046,12 +7350,13 @@ class Jg extends DC {
    * @api
    */
   setMap(t) {
-    this.mapPrecomposeKey_ && (IA(this.mapPrecomposeKey_), this.mapPrecomposeKey_ = null), t || this.changed(), this.mapRenderKey_ && (IA(this.mapRenderKey_), this.mapRenderKey_ = null), t && (this.mapPrecomposeKey_ = pe(
+    this.mapPrecomposeKey_ && (qA(this.mapPrecomposeKey_), this.mapPrecomposeKey_ = null), t || this.changed(), this.mapRenderKey_ && (qA(this.mapRenderKey_), this.mapRenderKey_ = null), t && (this.mapPrecomposeKey_ = CA(
       t,
-      xC.PRECOMPOSE,
+      NC.PRECOMPOSE,
+      /** @type {import("../events.js").ListenerFunction} */
       this.handlePrecompose_,
       this
-    ), this.mapRenderKey_ = pe(this, ye.CHANGE, t.render, t), this.changed());
+    ), this.mapRenderKey_ = CA(this, ve.CHANGE, t.render, t), this.changed());
   }
   /**
    * @param {import("../events/Event.js").default} renderEvent Render event
@@ -7060,9 +7365,12 @@ class Jg extends DC {
   handlePrecompose_(t) {
     const e = (
       /** @type {import("../render/Event.js").default} */
-      t.frameState.layerStatesArray
-    ), n = this.getLayerState(!1);
-    fe(
+      t.frameState?.layerStatesArray
+    );
+    if (!e)
+      return;
+    const n = this.getLayerState(!1);
+    ye(
       !e.some(
         (i) => i.layer === n.layer
       ),
@@ -7076,7 +7384,7 @@ class Jg extends DC {
    * @api
    */
   setSource(t) {
-    this.set(_.SOURCE, t);
+    this.set(W.SOURCE, t);
   }
   /**
    * Get the renderer for this layer.
@@ -7097,7 +7405,11 @@ class Jg extends DC {
    * @protected
    */
   createRenderer() {
-    return null;
+    return (
+      /** @type {RendererType} */
+      /** @type {unknown} */
+      null
+    );
   }
   /**
    * This will clear the renderer so that a new one can be created next time it is needed
@@ -7113,7 +7425,7 @@ class Jg extends DC {
     this.clearRenderer(), this.setSource(null), super.disposeInternal();
   }
 }
-function OC(A, t) {
+function jC(A, t) {
   if (!A.visible)
     return !1;
   const e = t.resolution;
@@ -7122,7 +7434,15 @@ function OC(A, t) {
   const n = t.zoom;
   return n > A.minZoom && n <= A.maxZoom;
 }
-class BC extends Jg {
+function _C(A) {
+  const t = A && typeof A.getPixelRatio == "function" ? A.getPixelRatio() : typeof window < "u" && window.devicePixelRatio || 1;
+  return typeof t == "number" && Number.isFinite(t) && t > 0 ? t : 1;
+}
+function Ag(A, t, e) {
+  const n = _C(A);
+  return Math.abs(t.width / n - e[0]) < 1 && Math.abs(t.height / n - e[1]) < 1;
+}
+class XC extends eg {
   constructor(t) {
     let e;
     const n = function(i) {
@@ -7130,23 +7450,23 @@ class BC extends Jg {
       if (!s)
         return console.error("MapboxLayer: mapboxMap is undefined!"), null;
       r.style !== e && (s.setStyle(r.style), e = r.style);
-      const o = s.getCanvas(), g = i.viewState, a = this.getVisible();
-      o.style.display = a ? "block" : "none";
+      const g = s.getCanvas(), o = i.viewState, a = this.getVisible();
+      g.style.display = a ? "block" : "none";
       const C = this.getOpacity();
-      o.style.opacity = C, o.style.position = "absolute", o.style.left = "0", o.style.top = "0";
+      g.style.opacity = C, g.style.position = "absolute", g.style.left = "0", g.style.top = "0";
       let I = !1;
       if (i.size) {
-        const [v, M] = i.size;
-        (o.width !== v || o.height !== M) && (s.resize(), I = !0);
+        const [w, S] = i.size;
+        Ag(s, g, [w, S]) || (s.resize(), I = !0);
       }
-      const c = g.rotation * -180 / Math.PI, h = fr(g.center), p = g.zoom - 1, d = s.getBearing(), m = s.getCenter().toArray(), f = s.getZoom();
-      return !I && c == d && h[0] == m[0] && h[1] == m[1] && p == f || (c != d && s.rotateTo(c, {
+      const c = o.rotation * -180 / Math.PI, u = wr(o.center), d = o.zoom - 1, f = s.getBearing(), m = s.getCenter().toArray(), h = s.getZoom();
+      return !I && c == f && u[0] == m[0] && u[1] == m[1] && d == h || (c != f && s.rotateTo(c, {
         animate: !1
-      }), (h[0] != m[0] || h[1] != m[1] || p != f) && s.jumpTo({
-        center: h,
-        zoom: p,
+      }), (u[0] != m[0] || u[1] != m[1] || d != h) && s.jumpTo({
+        center: u,
+        zoom: d,
         animate: !1
-      }), s._frame && (s._frame.cancel(), s._frame = null), s._render()), o;
+      }), s._frame && (s._frame.cancel(), s._frame = null), s._render()), g;
     };
     super({
       render: n,
@@ -7154,7 +7474,7 @@ class BC extends Jg {
     });
   }
 }
-class LC extends Jg {
+class ZC extends eg {
   constructor(t) {
     let e;
     const n = function(i) {
@@ -7162,22 +7482,22 @@ class LC extends Jg {
       if (!s)
         return console.error("MapLibreLayer: maplibreMap is undefined!"), null;
       r.style !== e && (s.setStyle(r.style), e = r.style);
-      const o = s.getCanvas(), g = i.viewState, a = this.getVisible();
-      o.style.display = a ? "block" : "none";
+      const g = s.getCanvas(), o = i.viewState, a = this.getVisible();
+      g.style.display = a ? "block" : "none";
       const C = this.getOpacity();
-      o.style.opacity = C;
-      const c = -g.rotation * 180 / Math.PI, h = s.getBearing();
-      Math.abs(c - h) > 0.01 && (s.stop(), s.setBearing(c));
-      const p = fr(g.center), d = g.zoom - 1;
-      if ((s.getCenter().toArray().toString() !== p.toString() || s.getZoom() !== d) && s.jumpTo({
-        center: p,
-        zoom: d,
+      g.style.opacity = C;
+      const c = -o.rotation * 180 / Math.PI, u = s.getBearing();
+      Math.abs(c - u) > 0.01 && (s.stop(), s.setBearing(c));
+      const d = wr(o.center), f = o.zoom - 1;
+      if ((s.getCenter().toArray().toString() !== d.toString() || s.getZoom() !== f) && s.jumpTo({
+        center: d,
+        zoom: f,
         animate: !1
       }), s._frame && (s._frame.cancel(), s._frame = null), i.size) {
-        const [m, f] = i.size;
-        (o.width !== m || o.height !== f) && s.resize();
+        const [m, h] = i.size;
+        Ag(s, g, [m, h]) || s.resize();
       }
-      return s._render(), Math.abs(s.getZoom() - d) > 0.01 && s.setZoom(d), o.style.position = "absolute", o.style.left = "0", o.style.top = "0", o;
+      return s._render(), Math.abs(s.getZoom() - f) > 0.01 && s.setZoom(f), g.style.position = "absolute", g.style.left = "0", g.style.top = "0", g;
     };
     super({
       render: n,
@@ -7185,44 +7505,44 @@ class LC extends Jg {
     });
   }
 }
-const qg = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACIAAAAiCAYAAAA6RwvCAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAABBF0RVh0WE1MOmNvbS5hZG9iZS54bXAAPD94cGFja2V0IGJlZ2luPSIgICAiIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4KPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNC4xLWMwMzQgNDYuMjcyOTc2LCBTYXQgSmFuIDI3IDIwMDcgMjI6MTE6NDEgICAgICAgICI+CiAgIDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+CiAgICAgIDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiCiAgICAgICAgICAgIHhtbG5zOnhhcD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLyI+CiAgICAgICAgIDx4YXA6Q3JlYXRvclRvb2w+QWRvYmUgRmlyZXdvcmtzIENTMzwveGFwOkNyZWF0b3JUb29sPgogICAgICAgICA8eGFwOkNyZWF0ZURhdGU+MjAxMS0xMC0yNlQyMTo1MjoxOFo8L3hhcDpDcmVhdGVEYXRlPgogICAgICAgICA8eGFwOk1vZGlmeURhdGU+MjAxMS0xMC0yN1QxNzo0MjowN1o8L3hhcDpNb2RpZnlEYXRlPgogICAgICA8L3JkZjpEZXNjcmlwdGlvbj4KICAgICAgPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIKICAgICAgICAgICAgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIj4KICAgICAgICAgPGRjOmZvcm1hdD5pbWFnZS9wbmc8L2RjOmZvcm1hdD4KICAgICAgPC9yZGY6RGVzY3JpcHRpb24+CiAgIDwvcmRmOlJERj4KPC94OnhtcG1ldGE+CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgkVIwmwAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTM5jWRgMAAAAWdEVYdENyZWF0aW9uIFRpbWUAMTAvMjYvMTHjwOqVAAARQHByVld4nMWbB3wURdvAd6/u3V6/27sts/PMQQhFpEU6SlNBRXqTfgkkQOhFSigHIgIWkJqAIJ1QBCz0KkJoQYrSQaQjioBKC+XezWU5fH2/3+/L8fu+fWd3bubZKf95nnlmdjeX2/dk602qD9UnooRc5YjkKp9KyIrkZikfkazcSFaWcuZmpUZScyOpWcqZm6rkU3OTIpGk3EhSViQpVTlzk5IiSUm5VCRC5UaorAiVqpy5VFKESspND6UY03O6U0oYGHo3NCg0ODSj59BQRmhYaHhoaDofFsJiGIVfC78e/hnOwwW4CI1Ttve/AlehLClH6oTrhl8N1wu3CIcFKhqWiwVpWvrG9EcjmXC2nC/1Sd+dHgonh1PCpxQ5nN4pfHHk3qGzOlFUepiiPk5PC/cO9wn3DfcL59deGOqWXC95Saigp/fCY8Lvh0e9Xm94q3DBlXLd2qm5kmRpSrdw9/CEqNwneWQ4HH6hXul6FHVs5Gfh2eGbI6eFp0fLxoZqhE/KC6P5Oa9lhzN7ymofy5PN4anhCRlfFpSVXxNeG26UQf0jyBSO5R1UcjTdF/3c8o+a66j11AbqhCrtpvZQe6lzqnSRukRdjtU8Q52lfqJuqNJt6g/qTzW/ltpKbaO2U99SO9QrF6j71AMqL9b2OvUr9VtMYmgLbaU9dIHkpwM0r+YdtJN20W76ytOa/zZWjpZpTANdNlr7NJVEv0RXpCtFpR+panR1ugZdPCodoGrTdei69MNou3p0ffoN+k36aT+rqcZqfheVQzWiW9HUP0Kn6BVEJ9DFlFxaVKpFp9M96J5q3RQ1HRhNu9ND6KF0Bj3sP3r6/w5z6AXUYnoRtZhaQs2ll2qNp/rTifRhaj+VSzWkv6cOas4vrXtRV0bH0jbaThelsU5r/kDdu7pBurK6BvTbdIZumOb8NbrxmvvcP8Ml3WXdFd1V3TXdL5rrT1GivqS+lL6qPj//teb8ZH2K3qjvqTfr0/Rd9d30WvPX6NfqG+pL61/Ul9GX1ZfTnK/s2Qpzkcr9/L/A36nOeYi6rL+iOb+HoSDtbOhi0JqdHzYZNhu2GLYaBhuGGIYalmg+hvOGC4aLhquGiIEy0sZrmvOf6EsaKQNt0BnAeJx+2ag1/6ChtzFHv1u/R79Xf8dwV3P9DQajwWRoYmQMFQ1Wg6y5/sOMt42/GW4YfjfcMd4y3NZc/zGGKqa7xnvG+8bipjzjQ83172HaZcgx7DZ0Nr1iqmmqZdKaP8801LTFtNW0zTTfZDWymut/wnTSdMp02nTGdNX0k+mO5vp3N6YbJxqrmKuahxv7GPtqrv8y43LjCmPQvNI40nzEJJm15l83fmz+zTjF/LvxpvGWsZ/m/EGmR+bH5ifmiJliBpuGaD7/f5nvmCswCUwxJpEpzpRg/vcW/7chxCQz1ZkazMvMQCaN6ao5fy4zj+HNy5kV5kXMYmaJ5vw65rrmV833mQdMHpNufkNz/1vInGXGmN83jzXPNo8z/6K5/jvMpS07zbvMOeYhTDOmueb8N5m3mMnMAstqi5lhGIvm/POWC5ZNlieWiIWy0ladVWt+0FrEWtSaYC1mTbQWt76gOb+19R1rG2tb6ymmizXV0lFzfqY1y3qOvsH8ztxkbjE+i9b8/HDeWt36oqWMpYm1qeb6d7N0tySyPSx+tpelEttHc/1DbDKbwnZmq1h/tj6xDmK15g9gB7KT2dXsInYxu4TNfh6+3uLk/AGfy/I8L88P2UfsY3Yzu4U9xf7JXoufb+FkGcmSciCZe77pK8OWZcux5dlSthdscTbVK3QsKfRokKVAvDY4bf3eetB6yDrENtSWYbsXp/9bsCzF6NEQsMfXw0ZbeVuyzc16WC9biuXis38+XpZ8z+iiJCFnXF00ZBuxX9iasE3ZZqzJ9nNcfHsgn+71ep+NQBQlLq4BVLcfZ0+wYEuwl7dPZafFw9cHZFny2m02xvPvA4jHC0P2ZHuKvYZ9pD1sH2UfHc/sBfJ5XptZZ7Z5n02AoAwgDidcbZ9vX2BfaF9kX2xfYs+Og2+RJcXz7TYdpbPZCuY+/xQFMR4fvGS/bL9rv2q/Zv/Ffj0u3+Xyfe+p/t7oAJRD4QtSoPB/xv3EttG+yZ5pm2ybYptqI45CN9T7FTxS3I+x2RT7i08P0SOIqPAekGc7aDtkO2w7ZvvB9pvtaOH3H4uM8icc+bx2j7dAcyl6CrxHchW6m9WONfa19nX29fY59rccDQqvv0t6uvVEJz6KjgZB4CVXoT3wgmONY61jneOm40fHUcexwvN9OF/7gigilZ2vvofn41gBDxx5joeOUs7HjieOiKNy4feOwLNdV3W8p+oLvFj420B750H7IfthewdHR0cnR6jw+vsLtn0k/R1egHfHwV/oXORc7FzizHYudS5zLi+8/pz8P2mv8N1x2b+ho5GjsSNTl6Us2YfOFoXX34mebbkF5GhU1Ofj8T+Pa6JjkuNTB++a4ijh2lJ4/a3yf6ovKIuf591CHPwM1zDXu85BzmHOfq40V9fCL1z93+wfwwtR84uctdD8ia5lrk9dk12DXUNcw107Cs8vuP38fQD5eGXxufl47oAbXLddx1zHXTdcJ12nXNvj4FvQs3tOdN/3CtHJ58U4zE+9GiV+R9dX0lruOfE8vgUKJl/V/6nx3cr9z1T4+08bd1t3O3d7dwd3R3cnd8gdB1+P/77rKtq7laWfv/gccWhxyznTvdS9zL3Bfcd513kvrmcnVtFdiOnOR43PS8gVzx9Rx7rLu/LcSa7r7oquSq7Kccy/Elw+ZQAeha1EPup6yr3XaY3nS9xd7hx3BY/gFt1lPMgtx2N/JTg5ZQB8/pE/84rriQGXIa5XgEaexp5+nl6eZp7mnhae6p74+MrbjzIHnqjheeXBRwo49PG9gQzxfOmZ7pnhyfSs8cz0zIqXT+lY7uk6kAKcq/AbjxpOuU+7z7jPupm4yU+DnnG5ApzCdlmf4w000bvXOd09w53pznJvce9+rlHQOn1BeI62A72XPMfcx915noeeR57Hz22F5w0LvZxnqjfg+cYreESPpDn/vPeC97yno7eT9473qveaV2u+y1fGV9SX4CvmS/QV95Xwac3P8FXzVfe19vX1pfrSfF015+cqFl/h/cK70rvKm+1bqjm/vreH957vvq+N921vQ28jzed/nHe8d6XvQ+8r3CrfJd9EzfkNuL3eptx+7y3fAW957qDm/E3cZm4Lt5XbxrXwtfTN1nz+v+Fucxe5S9xl7gp3ldvOac0P+vO4h9wj7iV/or+4v4Rfa35nfxd/qj/N39Xfzd/dn645f6Xfybk4N+fhXvHX9CPN7f+ZvxE32d+EG8E145pzLTTnlwtU9FfyV/a/FKjqr+avrrn9BwUqBioFKgdSA1UD1QLVA1rzHX6n3+VfEBgeGBEYGVipOX9D4FHgceBJ4Hygmb+5v4Xm9id8C9s4/3h/Al+MT+SL81rzbwT2+Xf6d/lz/B34nnwvzfkt+PLm66YifFG+Fl+bX6A5/wx/lq9gbsO35dvx7flRmvNfEioKlYTK6u85Vmj+/7+JQhnhYSCirrsdmvO5wDQhEFgkXOdnCFIAab7+RwhZ/E3hknBZuCJcFa4JWvOd4h3hrpAn1BRribXFh5rzm4vdxZZiK/Fl8RWxjjha1JqfoMsSZ4rtxW3idvFbcYfm/G3CduGKmGLrbDupW6W59Smqja6SZNKZdSWl3uY+Zlbz9ddTaC29I7WR3tbV09XXWTS3wBpprbROWi+N1X2gG6cbr7n+J8ST4inxtHhGPCveFc9p7n9FUFGUgIqhRFQclUAlkdb88kJLqZU0GA1BQ1EGqvpfWAHzxDWq1o8k7el/oTtoK1qL1qH1aAPaqLn9vxbLRX+z2UMaiz7QnE5RZ5Un3ubREbjkJnKakhul+EAFeag8Wn5PflrrirQs+s3wh/JH0Wt/SePlCfIUeapaI1POkmfKs1QpVZ4rj4m1XSwvkeep0kR5kppbraZfyCvlVfL6qJQhDJAHKrltatlmeYs8Cm2P7gmZ0ufyfjlXLakmV4/130HeJx+JSRT1k3xOvhX1pIvyJfmyfEX+WT4fLe8v/ybf+FvN7+SdMWmGXF9+KOeoHthFzpN1mKJuFpTjLOlO7D9jktFh+a9YOwf24wDm1Z+rjpJljLFZLX0gM9iilHiwV/kshV/ApWM/a/1OqoCTsF6V10X3nZfxJGmc2rYGroPr4lfxfnGG8kxaH7+B38RvYRpXw9VxI9wYN8FNcQIuhlvTLXEr3Bq/g9vgtrgdbo874I64Ew7hZMwrfXWOEo6hWrg27qnk26Jv5OXKXPbA/XB/PAA3w82VqyhK7SZmisPw8NgYO0hdcTecGJM/xB9hiEo+zOEx+H08IlbWG5+I2WSR/Kc8BTdT5bPyEpyNl+Jlat0zqpePdlPUelp5A1Ovb1HSa4odvlPlQ0rZUsUXNynydidFHVHkvWrZYTU9qqQ/KHGXEvcr8aB6/eyznw9T55T8r0o8rsQD6vXdSnpSiZeVeE+9xqrpPDxfzX2BV+JV+HdVj+Mx/WRxfew+wYINnuatUBXPxNZo61PoNFqDK6JKirYHhN95n3SLzxNvY0bxsNn6HOGSaoVy8Ih/HHvrmIAnY1np7zpaJZ6Ri0BRSIj1/iYgeA2uqqMw47eggVJWUpF7UW54rHpuR/DEWjSFZrG8AYxKXorpMBcXfFvQClrDO9AGZuH+0bo+4MAPAeBBABEk6A7pgAGAQBCawEfwMdghEYpDCSgJpeBFbxkvRVWCylAFqkI1qA414GW4oOj2UrS3YlALakMdqAuvwlR4HepBfXgDJsMU+BK+gobQCBrDWhgBIyFb1wJawjAYDlthG7SFdtAeOkBn6AQhSIYU2A9dIBXSoCt0g3WwHnpAT+gFvaEP9IV+MAoGwEB4FwbBYBgCQyEDvoOdsAtyIAznYDS8B2PgfRgLH8A4GA8T4EM4BsfhE5gIk+BT2AL34QFMg+kwAzIhC2bCLPgMZsMc+BzmwjyYDwtgISyCxbAEsqN61YQV8AWshFWwGiiyAb6Gb2ANPIEIyASTjbAJNkMRch1+he3wLeyAa/ALlCIvkN2wB/bCPjgEuXAAvoeDUJkchiPwA/wIR6EoSSAn4CScgtNwJjZzyr5AXiE1SS1Sm9QhdclqXFleI64Va+I/YYO4UdwrSqQBzhWPiCGSTFJIZ9KF/CDmiLvFPWJ70oF0JJ1IKulN+pC+pB/pT9JIV/JAypMeSjVIFfJEikgUopGJ+Iyc0W+sgsyIQRZUA2Vbz2NsvIKI0UOKGMeSBKNDKm12IZbYSFXvK7CV96OTyECMJExU/5cuoulkjuCR5gofkXbGhaQeqo/KonKoPPqMzCZzyOdkLplH5pMFZBlZRBaTJSSbLCXryXKygryB3kRvoQaoldyMNCc/yE1QU9QMNUeI7CZ7SCp6B7VBGfgA+Z4cJKNRJxRCmTgLVyA90CGShrqiNHyanCFnyQDUC/VGf8g55Cg5Ri6TgehdVE/+kVwnv5LjZBgajkYgJ3bhu9Y/yXtoDMpD98h98oBMEz8QxglDSQYZRoaTEWQk+YpMEj4VJguTSHfZEfyAjCOZws/oPPqErCNbyQaykWwim8l8wUUWCtXQYsEkZQsTyDKhFnKiqWSlkBisjfzBr4SvhW+EmWQWWU2+JNbgRmGTsFlwBbcKJFgdeYJXxRt4p1AiOI3wwT1CleA+Yb+QK5SB74WDwiEBBY8IRYI/CkeFYwIdPCGcFE4JQTlN7CqOxu/hJyRCqGDT4ATxQ/EjsWXwE3GiOEn8VBwk3iZ/kA7B6eIMsU2wJ+lFBpA+wb7BfsH+wQHBgaSjeF/qHuwY7BQMBZODKcHOwS7B1GBakKL+Bd//0G8igUP6AAAASG1rQkb63sr+AAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAppDOhAABauW1rVFN4nO19WXMcN7ZmTl+7ba22um/0fZgXRszcmIiJcHUmcu+XCRaLRarNpbqKlEm/OGq1OC1LuhIlt4dR/33OOUAuQOUCFMkiZUG0maxckMCHgw9nAU4dft/9ePViOLq4SpcvhocXV96yP9wpHYb/OILDYhpG7nixPDvYWVy5y3N++OF5b3HlB8v95yd0HO6OFlcxWw5HpxdwubsHJSzo33JwcPDxqjuAXzvbJ++vnK+diTN1fnK6zth571w40+Xzo0M4/xjOv4bz+3D+nTNztpwDuPramS+HveMJFrp9RGVvQ5X9ebLs9p5fXAXL7iHUfQ4HOD1edke7dNOoj03ojvbpU/eAH76nw86RKGC3T5+HJ3Rvv0uf+kM6HPGTowHcO112T/jFE176yYi/5JCXxw/Pt7GWR1grd9k79rA6vWOGxfSOfTr04SSDA+MHHw9LDWy+WcFm6LxxPsC5mTN3ZtdFyPv0EcqkZwS4LJzL60iPtwjWlh/vmuh4tys/BTrXlB8VIxMJumOMHguMtgGfd4BEF35/ALReCqy+FlgVGDahg/UuwRMFHB+63opPEkj4uBI+PpMRml1zjDGOEOMIBRyhgCMULEeDH3mvjkbwx3QCJ455M0ajYzphguEjgeEJSNe/QN4+wPU2OfNZlaA1A+mlAko2mRpAOU04lHT+1sBkqR6YTwWYOyBwr+DnwvkZ4Bo7b52Xzm8C0AclofwF/n7jvGkE0xOj1vO1ad9zg+ph6zYM29DlSBIfIJKLsfbIZYk2ln7COJa+NzPGrnlAxzMOXTLlyM1vSKFwm6ZLtibZ6UG2LkD/gHF6gXdJAAUhB8ibKLK1EBC5HKNp00BFsWiXLSLEEk7IpogTCdUtALUqW/lAXXeADuHqhAbo60Yx89KblbObnVRvR87+KDD6AeaCy0p0YkXEFKWjSS/DRyV82J3jMxp0OfuPuiuk/yjH6yXp9FOQGEBOkaYdmjeR8n/TonuBl8emlYgphB9PzUUqiDhkY4GZPwu05871ByW8kIVjDiRONeZIDoj8LwHNV0ZILgKNmXORzZyoT2gCmXObAJJ0kpvHEeEbZdoIkhtXS7I/EFmul2R/DI0h/ko2LkzgpTmj1ZwgcTbGdy40E3wYAU6jmwZ4CLiy+Zxjpk4azZitoyBXkyILGxXkKTMf47l6HDIOHcdQDztvrk2NueCxhQTdgxw6nEF+o7l0HdtMNs3IRFjT96EzkFkitBQySjTR8lkVWhFHK+JoRXwocwLEPyYLZSjjHDPcN8Dxq1xbGTv/bPGRJBzFlKNIKloJRfe6KAYcRS5ilTCGY44ja8AxdIUbIBV+gFQgKQQvEpIXBXVg8jMlMEHpNBPKExjpIJLOP01GsZZU6mnP1WJJgxkn6smN8x9NMDSGMyCH5ZmGzz3t4tmjwfyS+E92V5WuaA/6Si/CPXBXeWu6q+pR+rYSpR459iaggjcP6/uKE9sQTicwji/APPlUcfJvHKcHOU5vQCO53KBjuInH0mmwppEmpgSXQ+NyaFwOjcuhcTWheVopQiIaYy4+Mte7m4++NJFRyBEKOULhtSh7n6zXjy3W632NMAiUYMYmmEIOU8hhGnOYxhymcaXu30dzk8ItJ8g1FcL0DtSvLedQ/DV33umoYiaqgxfOdYINbqWRbzzkqhUHoc4mHKqEK/881lDvGGnGbp8cTC+Fo+klsZWMHWqN5LZEC4h605UUWW43rSiylYORZFHXIz6+Vez0ocpG5EEOUb2gqf63adWIRK91LW0VNvoazqRbk7OyXl94klBTJU9SMjfA8ytJzX99szF3zUCWMjVuYJjmYCGOZbD+KMA6xpCBgOhhbp6jboXutjbtarzu4gS0Ztpg8hXTMjOFMlcbCfSKYelpuDPwLGlYAiyWcNuHLJ1tMthI+KKIWz4BHsmd2IrhsxKG6DHCxR4j0lPHQitrniPGlQ42DUjRk9UQmpmOOahMgDplin9tJnxEfOJusTBBdDmsicA14cBOEw7sVAA7TVR7Hf8YZn9IA5xfyv/IHEyDobBJh8PMxTladddVdUXmpNsI/P5MC37FRZej3xh3rfGVBELvCzj2oCAR9nT06UhIcxQrkaZJHAEmQR9ywdeF92EO7yX5VHAxynsd/ScLameLLbzxXANfHf0nVBhDZlbk2xEtlKsHNwrMwM2A8xa5j4QAZO1M8edqH7JYjqHHv/Ga/Ks1TQnX3mKsrBEQcAYTiX6DKvrN4FR5IhR2XCgMOTjKiy64F2rIAR0NBTWLzwi0t6ik5MzCGQCUr+GvVXH1nO/g6gVA3hpLkuPka3ufm2w/Ax1AFtRkXcfBKjL/UYUMiOE2nL2Ez9/BX6ioo2XYGuS4WcxuVm+6QcyyaX4HJvlX8H82dMt3VpkzZLbUqphjc8eCgYKpP8VoAUXjFPlvdW5BzROvjPhRD9Jsut7LFx5c4IR9O8uHp/pqutFqM0X7FPQ35kCOOZDJiqIuVM/yajMJ0DKATwSAP5BGMxehSZJBJaCh571R1u3ldrWeAwdDjIbSmOs8pDJdKyxZiWQeMy8CbeSryP4YHpembZfPJoqQ6mOsFzRiSZWccgfQDSKcxYz8LO4b6gNcbVP6VTEjGtl1Y98MRhOjfCG0x4WsPS7GGiDqmJvXdQBViyirQpBb5WUrKA+2qSskM74cCg37jfOLwpc4Bb12FrgoC6frKgy9MOAYRjKGYwMIo0o5rFRqeOh3Ha0mk0KZMJkQQzr6dOSjNxLDVx+0TOB4kKTZXPGrBq2yTLJ6dnH1tWvi21WsJkF70Dy3VZSgORIs4cX/8PkfXL9O5kK/xj8GGYajzPQbZhzJnR56mGbrAvtowlQhOgkk4zqTPhPrunG+JgyrFiNU238CU78K02lSbbCkwruWikUdacQ9RWSWZDHybmGmZDFzxTteD2JhTf8XwDgmhbJZPMN1dR+DGYXbfCXfm8EqLLAPK8UTz/fF+T4/n0NJs3UsJuuYS2gGKQnoPjcNzQb7OeHZPLvIM7TWukETXVJI5qQyGKpY0pWzS51jom6FjLwCU4giWcw1e0FOAarXNFF/IAU8U8u/FCD6Tm+N5W2xzj4aHZPGl1UcGUAQlQpXhJ7bjCUVvuB9Pkeb4PSwwAnswD1Sc35tRqxygtHbepRB5rXL3LRygvHmVWTobRSyx7kG85IWSaPbYb6y9F6FLVo35uDpRwFzW8WPzBcFZopgm9W3n6nO+6uqcxt0z/I59xXt+jANM1RHCK8verSevBRnGFdq05nw6Xhi1Zm4UvgyjWaYBwtWFRjdAXwM5y/J4dW2/fQmBnCo74BVMEzbJ41seaqiTt/Q8M1kENfmX5Cv8NZlcGUlpV8phGkiB7sWlbNGdfxQWeA7rabAKn1QdeMUYS6hxZT92FxcoYFxyKflyExan+SW8xsyZV4C8GKLRLPM3tyCuKZ5OqncIod+kBLizCQCUye1XL8ZrRqBbQg+LSH4L3LibJGnwhhDcgwabHbNcQzaTem14wNoK2tMQuSEmMYVC9JpkQ+dyP7Iwi8DoUxiE3lAtqRdqpHDtl74i+iFFxTxmtLq1/cUfEAGRh/xVkEw5nTCt1LpCnYlm8iCrWhT5Gpb5RIjDdQXPiJfuNbhSFwiuqc8vw1E50jOTOqtUqgskSNlqO8v+we9j1f9cqaBBXXLiBxyF6VFpAvqjiOKafxCHXVae0V0R58D0ufc0Oc49HdJivvDHt0yHPJr+/xwhodlv2zF8QqJtA9osSlVKl85rb2yXpUYrxIc9vIaPYP6TPN4xExI42Up5PM+5+KpWPOBU9/U+SfwSBa96O+9AOCPdnjhz+HvvQFmYOnzFCsu/VuWLnnZJZF/Ba+d4zX3+uV4axaRXcJ//fKCq4XYU3FBvt0P1H6134YCvVVRKl9Zr9983m++7TeTfnsq+m0IyEyhteg3+Vnpvad5H1Xdc6pxz3o9OuY9OrY9atKjD/ORiLEA1GXKds2iFCfIrp02XFuv5wLec4HtuXXGIu+BS9J/3mV4KWOx+p5TjXuuxa6eZ7vUpEsL3WpM62eKjYYL4eLPzp/WnF+vu0LeXaHtrXV6a0BK5LSUR2ohvBvZ+dOa8+v1Vsx7K7a9tU5v9QmRWY5H1ivF+dOa8+v1VsJ7K7G9ZdJbT0Rv7YqcMm+J38rKyRPRP1V3nLbesV5fprwvU9uXJn35lejLLgVT3+ch1kWe0eFdPurUs+v105T309T2k0k/PciNOxwrfIO0apAXV1SDvLiyXp/NeJ/NbJ+tM6v9QOs15yuzWnH+tOb8er015701t721jrE9KOJcuY7/MNcOy9dOG66t13ML3nMLqWKPczGaOxOnR13xksJwWbw9Exv1+mnL9fUq6QlPLx57XgnRfo9Jn3zpUyB9OsFSl8s9cmCvI6YPhJiOKDniR2pPIZ5RlUykfuqmkky4HZZkVwOGP/LVIMyuTsKJP/Hkq1F2MaJ/8sU4f3Q2x59KUUxc/FkdFZ9e9W9gMK4lBt8IMRjSTo09WmCH93ZpBUWZsfyqmvEKyE0Pi7rh/7XVrqKz23rJXcH7rDQZAJzOOa3moUVQbRB3ikpMXDYe17R/MVvAZfliqj7ZCPMNv+iuoH4oSfIquJX1WRWtoj6p606Y5oyrV85dQfMo5/q3IiaBia1/aeP7qnHHyhdxcEl8WVSYjdWL0bJ2xLqdpCi2djhn1dEi+/tb97sSgs9JL72WRoRX3tJIKWtEQaVKEQeRpxCmnzdpMkumoSIr+dVoyuZeVNmQ+WI2mc5WMb2bKtxVd3wrumOXlsDS4hhaz5nrKG30xVx/ukIB+WD1JmnsTer0PW8eLIKwhgSi8XzqKspgoe+tFuypNdJisHtd/bue5EuJj+Fa6zy2qp8XSKIKvjIZ5HBEEeelSiTxwXhRhyR/cQ3bxfCf9lR2j6t/V4LwtETWE+KGS0oRoWp9lYi6rp+oqBSIggKQjuM6REGZixrUg9VH44ZHPbVGWgJxr6t/1+pNrtQUis6y1QhQB8lqrfSMAJ1y7no+zUxRbieVDNJli62fGTLV1mG9AQT/Kme923rJXbtScM3uG9qzc+kcixxAP7cr2Sx1x2Fax7eVCF6jnJtw/u72ex+vdvuluOacoHpOi5pRZ+vC74+UUSabvucE0Y+Uve9HgOZnhy13B6OPV72dXfz1PQG56yxo6zaaqs9houfLoC9EAuDezgu46wthxs6Xy9Kzj6RnDynZ2HOnJ575T+fKielq5Hjw4zrM+Q7+nsIZ/AvPzSjjSwLnYrji0k9Id8bw24Mr+GkpvfVB0VLnxPkNjQfxxv/muNKdD0t3/kA7lC6dl+LeP2CNpLuflO7OljC946pP/kzshMozu1AqCBylD6ANs3CkOH9NnZ5QTpufSWSz71J7Tc+9z5/wpSceU87F92BD1t2vvqHI19gTSZzGtE4kw+nfqDdUrIqn8hqW7veVlj+A2rwi422+0guBdOc3pTsPaWnmpUibfEFmX/aUpzzFN0FJkl0QgXjqK+d/AP4LITlyi57SDvtfhX8Vx8Js5fkH8Lxb+vGdhYLlPk1wzSUsSj9qCY+ohFdimqyqf+lp5ckRbUqcUSuqnizVXMFuV3zFF0iJ06eJefXdattXJWJEsvwr9MTE+b98lItnv4Taoh74foURutRrlzR+RiR5l7Xj81m2R1Xc+a5WYtUnH+RPquNavfN/ARL/hPr3qRfmpLS8E71xDO94BbLLE6D9AjL5hkb8OzhXZrZTuP+Ibw8Vb3lU4t2tEvMSURtw9INVjrYMbRn61hnatwxtGdoytAZDfyUYekhrbS07W3a+fXYOLTtbdrbsbMDOfXI/Xlp2tux86+yscoVlZ8vOlp2bvBsjKFukiLEMbRn61hla5VrL0JahLUM3MfQQUMP34ZizDG0Z+rYZOrIMbRnaMrQGQ/9pVYcW99M2Mod/ya7lbMvZt83ZzHK25WzL2TlnV0jyZ7zyzrMcfQ842q68sxz9e+foQjqvw9Gf38o7y9D3gaHtyjvL0JahdRj681p5Z9n5PrCzXXln2dmyswk7fx4r7yw73wd2tivvLDtbdjbxbnw+K+8sQ98HhrYr7yxDW4Y2YejPZ+WdZej7wNB25Z1laMvQOgxtV95Zzr4fnG1X3lnOtpxdcHYP7kL5L/VnnhaQc3aRd/sn6a7NsvUY+C11AviZQXnJjbB1sxSrMjhWuOOh9HTbOuvyvTyTZcEugcIN5XvrZC5uaMkqR/qAQLgR2cvkaUuSFVPZyyIiYlb57GQtUmyLm5O1xFjWUBthn7C0PRXSVp53VP3069yDMCYMfu/+A5XJ6nVR9d5PVxNV23HXmqiNwFlN9PetiT4p+NTBb8Ao4X0NjkavAZb4e18n4VuOthxtOXoNjvaUsW05up6jHxd82sjQ30h9uEWt4t9q9Kpktz2Udv1l1zbL04y+VyUBhgO7BaQYOZnBj5vzNJ7De7A1mcwkxOwLsvlQgpbGjBopvNLOduoOM12eqBsttyOFwQaksFpu1pHAx1JJd+evCoUOsKDZH3WEGH4CuH99KTT1V4UVLGj9VavsVyUt68jeNzTSX9EIkkpzOvizIoHtUjRxUujJKfxG3XFOOmdAekImReidQhlaEMPxfse7kfNQ9mZw/3IDSLa1vVyD/w5t7cI7FlQDzng/wbveEeuhLvUrfL7M64dj8v/lb/qS2r6Fv6VSv3TGihz9AdouS9HXzkzTx/UlXG3Wj4h9JSl5DJI8A/3iA71hqzRCs9mx+PKdLYH/qw3z0gx+QsAFe2dKc+KYLJRU4aUUzo4lK4Y0QvKIzjciUdVoyX1Up4VWzY5fQV3ekgaJNfutwYJ4UNKSMV49k3nSqM//WI5yr8EAM0Ae+wt1mZQsTJxPZsADqtWZ5OMfewtnGt7DPjy3if6SW3pL490I+7/AW9/ltqDQvpy/qhrc2uzsA8qI7oRmbj6z47jxpLGE10GCqG/m1DcpydyMWFr1CNxO35ghIeuUk4onf6LS3wDyr3MNeNVaniql6zx1V7LywDnIde73a0sEam0BXF+QPHCtzwMEw4rRyu50tFa1V9bq3lNPvSOL+ydhHfwEn392JrU9Lj/zUsiN/NS/EaOpttKMJOtS801PSvfrv+UBXEcMfoHfavmeZuvntf6wptYXT+m3vv5Nda1vfova+nL5cuu/rWn9z072DcZ1XpA6BNQnq+r3tAKFtjd+U4mEztseSWisvkf14VUjMnH497ZW107Fsaih/FxV/Z5UoNH8tqeVWLS/6aGEhPoO716w8zNnn777869gWaAf7gOxHL4HZ5ibmb9n+fzN7t38rdN+uU9f0v06My6O2tUydZ78luw9c83gMTzxiu7NbSxFTqp9snenG+wQOh+pjTcjbfNc2vx7J21V7ZWli+ZOwv6Nc0E63vvl3gAA3RucfLw6O9jBL2U954dlcY6FIT+LfyxXysQo4U2W+bjg9Rst91HGkjda6l1J9yO4/oHiHFtlnfDa2q+Xa7/BvdN+69psNWCrAVsN2GrAm9eAvwQ2w10x85K3uE8zC185w9dmrMPKC1qR4gKzov8WGXhBEYIiEuUSK6Nf925ZubrFd4P+t8I3lu1P2hKzxTaU/BajG2v0BKM+YKTLjcnKmMIxoBhOeX4MKQqot4LodnqivfWb6JUv8sgj75Pi8zqjwINrC+KhINdNMj38PukmRSvvAuOntGYPo2RogW1lV6/hEUXcfYroBiTzjMpHmQ/IVx5SDArRxd4J4VpKthL2xIKQn24E9+aW31JflEr9E9Uze382D72rtKj/AAjJc9+fa5/+LziOnVdS1OsPKOMtkvAgR2CLevZdxap403HH7vG4q2rvXYzAb509qNcH8qZcUJz6JkZh2TJzc8vMv3e90N76ch3+nTS38t1lyc9GxId8zdWfoEUd0oXqf6I74l3st8z7dv0eD6HHEtIaIkAkIq1vIeLGAY3ABfGuR/wa0joTXN2MNkBCd4ydzcT5m1t++7z7jNi18HuWeVddT5IqrPvvtc/WrzNp493Hzo8O7pH/5QakIBV72LDfo9y/yIh9cX/bhKQA5SSiNSETkoAFrRJh5JFE3XMTUlDf6tuXgG/hHv5u01n3WeWTujPuV2Kd1DtaUf463/sonzXv9SlxONp4uBaWW3x8V8KqxRffKdurbd0E81aj/lg+ey2dx6PVeAvyNPA1OymNwnhlts3Wft4V/vWtvrue+Abq+Zp2n/ArW/k66nVZUNZBg3usg7a1/fa58M/EeEUNfiKv2Hva/X8T+lRT+VWMGyqM+5eG5y+bdi4p/p4jittghDEb/9s0620VV9aWtzlJDq79xhl2Sn4el2zc7+jKRKyx9KF1HulpfH8CzrVzmrHRFt7M+K9rtTw/jumun+A92V16vfXnyic/iKO6wnbTcd+vHL7rUF7FnWWTOyIUUbo2vUZ30zsN5fX8N5+ZSN0Zo7PX0FOeaNtriPqV2f6b1TXfdr9hFkex+w0/xz3hm9hx80XN7q5qLs7ywOwTZm8sD1+Th9Vn7gMPq3JnWdiy8O+PhRNtFt7Efts6Fv4joPyKtPoZjM9sB1P53DrW94I8ytzTMRWex7S0KozvYXSBNe92D6Pc0tu3tR9BPbL3rVpDOEIyG9pXMmk8ID79reEpbCccNfr3Gcksx+UdsQSOtq1r9vqMvMwxzYwp9XpEUd1U6vUJRR1Sqdfx/wXdu5n4g077f4+ygPz8llDhMeNsh2W2d25A7HlJLPzS4VnWcI79SOiUMV2Vj9vVy9BzN6eZZUEaFvpX5/REJltjYhTcb496Gd8ZyQT/pHAFoyGb2XdngmK5Pl+QVE5L2puIHC0PR9CFy8H2ycer7s7BxdVC/Fv25U+DvKe/Jt/nT8UO7dzTsVjxdJzWXhn2jidX7rJ/0r3Aw26fDqPDiysGn04urrxlf9ijW4ZDfm2fH87wsDw563684i/+EqYfBPDCeQ3N+f7j1Q8DuCdxl/vieDL6Ecpz4Y/n0IqT572Lq3gxCxaEwMlZ/2YKWu6eDT5e9Q9PsH47B1TpwQG1ZLBNIB8c8XNDXsjgRHwGJLzl9uCAH0bY6O3tHfq03aPDCIqZw509fGDvgF7x98E/Lq5CPI74x2N+GODze/3nePj7CO8Zw3GXfzzB4v4+6hKwBwNC9Agrtzc6wHMHo1M89PjhYEQ9sDM6xMd2d0bYmKPzEX46GNGn/ZNDLGT/hJNAj4gLhfZXOtKSr+VZn6p4dkj1PxlScfAkHs5621R4/wwKcJZHh8HHK/h1cRUt6bDgB48fXOUAxz7eD+ITLukARLh7tIPHk+0Det3gB3o5VhQuHh7BA4dHPXrbcrB3RBPZwBmT6bIFRPr8kCAcPD/gB7z1f8JQ7sFg3wayRhrYJcVjF35C+qsL11EF6cIdIfyPQYGEpqs+3MOfQgWkB7gdAtzPDzjc54D9wfY5DL7v9/DE6ZCk4ECMmx+gShMa42NgB4Ty4IAadTii+w53qJjec+qSnQMcpLtY5M73eH73AN+1XL54Dm1+wW9aLlfe54r3fZ3vRNgiPftSepvL3+bxt7mlt73gJ8ovHZzs57UwIZdHglx2YBDiMl80kMal7e+lRVWCXORz9bTiNdCKz2kFDnt5TZ7B27kLIQtUzMkMLtIIZCrPE7hPTm38Ay0YRlW/v/cCOAHlEWht7zn8vTfATRz9vZ0SAKVLXnYpon9LvHaO19zrl+M1FeHSv8oiskucLu8d73aHAyLZE969xyfYvcMjuMnzwnA6mSxPjs8WV98xH/44hz+8YNlFKvXY8niwDf2ehMvBTh9lezCCOz2vk8K/GD7B7R5I8C6eDTuBH8Odu+JkX7q1D2ej5aALFRx0YSJ4PiIG744OEOTBAJAM4HK2dSfhG3egnPMBHlmHuakXwekRfIw7ceomPlvuDF9gKdSa6WLiL49GPXhPh8V+GvrL7o/wuu6PRHfd7R9psBfvyCtHr4qWZ/imlIp22fIMX+QF9F4/Ut/Eym9KWdubIrk5ef2pNUXjlJd4Zi+RmgOdSO0pWkANypunvMrVQA5etoPdh3Qkuo/6jeFxteMGwxEOkhe72MMdj4XL3ilxStFbx0dUSvnxjpt4LPJ5KWnHS0H6WHtZgVyI7wW+7/FCkk4Q+K4btxcSyoVEie8xUQj0WOSHQdpeSFQuBBoQe2EQZ4Xgp0ijObFcCL6bpUJOeb00apKUC/FcgIGlCctKIYii9lJSqRSPeoT5WSnUW0F7KWOlFGngtT7NKiQFRk3iRp6XmFbFl0rxO2EYpVFsCoskcDjI/Cgw76JQKSVhSZCBqy8tksgBD/vAJZGp3MZKIVESRmFqOoQSpZTUS2I/MB3NssxF+pTiVQmKXAsYCCg3QaIjdvWQgAyj4KS+qcBJ3YPUD4ITmstbWVJwKMBHX6NJqsCVxRbGAlZNo5ejhiEEHxEnnZEYN4xnKIZ6TWMoJvXc4mnUwq2SGZnnDCrjNZCuATSsfgLQ7ya/fioyEJmgflbUF9+wfn42GElRvapgMKwlsVtLX1kuj7tH77N99PQdiORVopXJy97JNuhLu8d9LlRaph7zk2AxvWVTj91jU8+d1Zporh/N8ZKWqadXzudn6kUpY/gYmXqe7wpbjwWMG3sht/W81JVtvbSDLfY9YewVH9HmY1Ent/iKK335ub6wB3VNP0+kciiKIJuJAQfHbhT7wmgKOi5LgXrKhgwLXGECwmUPTBkvbTOaipeId2dWE5YOkxFZTcW7lbex8tsY2MnNb2NJZdPytpw3vsyTXhYmZk2Dd5/JOJ6NpJYqb3Olt9VYn3UmoR9Ks6Da6maqpV6smJPdjhtEQZSpTsD/cZq0zRpQWKCU4uHMl82DoGUnEfM06hSqMzvUJpvYwW6AiTBt0w+glEgpJXZjlhcTdoI0gkmtvZhY0VZcaESQSVfQiYEiEo02qapT6MduGBVKT5S4rE3RgGJSRZFzw9ALC3WFxaEXtykJUMxYKSbyI+DsXNXAj4FGbSaKdoqt8IJC2YA2tqpgUMxUUduha+I0zbUN6jiN2sykYri4uTndcGFsU1qgmLlUDJd9Vpg0YmS0FrOQilkhv9bnKy3xtJMyd43KSPopAwXO85N8eOtDI41vxjqh67MoNO4oaXwzoEWfueZSI41vBsZeBFRqLsOxUkwaBEkcGY8oaXzDbA2Mlcbe9cY3FJN6fhz7xmwjjW8Wd2BWgXYYc99EKSZMQz+JjZl4qhSToH2UGE8LM6UYqAz8mM5R0vBeVRNan69yfKiVyYapxiCvR6YYpobDW+4n5nUiMGoTjdoEDVJTjHbD4S3LMOhELEnbTdCV8S2PqJw0rjW8oZQY5vJEA+GkgWyKj4bDW2K+ooWGo1um4aLbDEe3PCkUsmg4e0szVDEuDCfvFYW69flK35I8eRvUxmtQJQygUd2aZcXGoKNUP3pZzTIQG1k7l5U+AxkOlWLKKqjBiJLVc1khXnN4K9q5AdeoAZyyrWDAfKlSTMlwMaDhsVJK2YoymBQmSjGSSac9Q8mj+zr2ZebK+4IWseMiXT33ncuiaDFR3Hfdwn33gDYj/uQMxCLHi3yx33/AFXSS4XaGAZz/Fy1W36KF9OhC/I4SP13QMn5Mmncqtkyq92df1yscfd1tWi7V3R6B+T1Plt3ec/RvdQ8PcZFQ9xBOj5fd0S7dNKKVQF30+MGhS6tYut3v6bBzJArgq0O6Q3ImdftdfiAcu0f85GhwcQW6Vpc7GbsnvPSTEX/JIS+PH57TOqYjrJW77B17F1cJHBgW0zv26dD3sMa9PuMHHw+fx+qXoNoPGczm07If0u2EMHjdQPVolu9IogSDAxru0Mk8qXKr3nFdPh/XrCcvFj91juD/kbPr9HKJLp9bb9lv/eaL+/fF3E3bVG7uC7WYsvFH5wu13IZWVH+h1iY2ltR/JffnISt8uTm+Uf2KbSsrty0rn95X9THa/oLJQG/rq/rWkRZmLC13/lV9PKDoptPpdJEFFNNs7Wgqhw/BEPOjOA5E+LD4iOFDH9R/loAZI0KIxdW+/Gyfiu54aRJ6BotI/U4cBbm7MxZxxKDju2kcijhi2olS13fl8NfMXYg4Ilg2cRKE7XFEYQllrxRrSUXZPIiYv1h5FZNe5bctWwXUGK4GUdqVv+y88WWe9LIg0m1X/tIzGcSzJhBdnZbVxRCD8rJStSubLTzqv1XPi99JfN8NimgbmJ5x1GYuQmGSjwK9AH7kZqUAEmCGe212OJQSyqX4YRr7xWonNwpY63IlKCWSS0ncIE6zUrxOEiTMbVvtB6VIHgr0sjCPFbGtKIVH2ox5KEVyUEQwmEM3TrLFfhHq4xoNSuVC4iTCtc5i3WGYeJ7b5tOCQiTvRAwd6zGWrYDkH1qLkDwT+ZvPpVq1FiI5JnIMziV8WguZKT4S0R3nUl+1ljJXnFBCNM4luWktZaF4+YSYnksy3FIKGkXyskMxZM6l8dRairqsUwzfc2lst5Yiuz8V3m7FozIAmgAQPgtSs6ogScnu5SiKg4xYdGFR2Am4NvVBds16SCEnxjpe6CUZOPrSIkdHfJgkkjhjbX3JlaMjQSeAQVRacq45itTgSOAlqRebDmg19AnYJq5vSC0rgU/Pd7Mgnz7HqXHPNA5SPzalWznsmXQiP06SwJj65bAnLu0OmWc8Dc2VUqIA/arGc+JCKSbFNbZm07PCUaDveFGU5vFgXV1BIalVXa21LVWRXLU2Od9o0FUtMjndmNGU0ks53xjSlCQxBd8Y8pQsvgXhGBKVPJYKxjFkKnlgF5RjSFUyyRQfDblKZryicoZsJdNvAZUhXclzQdFxhnwlT0y5FBnSlTRHFgJtqFLJ83U2uAw1KkV1yAe6oUq1Yqa1VqMyNK3oVLq1QdaqV/C0kZE1M1nXNOglWauSFV99iVFXjZaVcAPxlfhKNggMxpKy8aFsmxgMbImtJCPJgGQUm69srhkwnmL0lS1HA/qVmEq2Yg3mAomoZIvaYGKayqWUrXv9OXImFyI5GvTna4mmFKeHvuqwkEtZ2/9SRNgnPKatGWEPJiGbMyUXgo2w33yE/b5GS11lI8sGoqW/z+SVclJwneSV6lcv3E7yykBpR3vySrVWOskrY6X9n27yyrrkjzZ5ZXvyynLN73fySv0Uwu4GIoHl5JWb5dS7WVNQJ6Of2pqCTUSJ69cUVMWIWb7nVN5iCoYIqI8UHw75dtIzbmG5PPsFhobBPolcsJRiHhr2xTP9/BndkDDLNVgeDA47uAs+FcHgpIMZN6LaYDBmOggT19MMmjIeLM1L5WHg/JU1YWD+EkzC1BwGVpqSv+W88S2e9BYW68Z/RVuKcs+aAHN12qIV+GXrmBylxztuHAdBtlcJDNQo8lu3PK14K8GWDKCYYuNUHKWhhg0leys7YL/5+c401gn9NGjNKaFa/37Hi5M4d5J7HS8Co1ejRbFiFXouLlQX0YMkdN1Ew7RMZAM1jLw4yJPERJ7vt66+Vo1/6BIWsjDPsxSESahTk7HsQQCRxOxj59InM9M/f/e5VC8zyz9H4VxCyMzyz/vjXOor45CvEI1zSW4MHZS5mJ5LMmzon8yHzLk0noxDvmL4nktje72Qr4aM1QR7Q9+P8piDZiXUKAouffLdfFedJiAqL3kACBQSm3XOarQ38ZM4i1voC4ocRAk6XpCmGUnqC626Fw73kaSR6fhRQyhh4OW0rz+U5QgKaBluFAWxKavIARSQlziIo8SU4OT4SdoJ/IRlSZb0uVYiJ3ToJ2mUbRHUp/2ZUkrCPJZPqvpTkOyY9Do+C6PcM6k/Hy6UYoBYWCndgN7krAZ8vU7KWFgK+OppCmrA10BfqYz0KtXIycYseKKAUrCNGUspXVTQjRlNKQJT8I0ZTynSWxCOIVHJQ6lgHEOmksd1QTmGVCWTTPHReGVKmfGKyhmSlUy/BVSGbKXMBXnHGUd7pYkpFyPDcK88SxZCbbg8RZ6yiyFmHPEt6w/FgF8z4qvRjJpQb1mX0q6GGuqVFTsDUGSdTNYyDbpIDfZKKq++wEh8pajf+tKrJpAtWQIGQ0liK9koMRjXElnJ9pEByUhcJZtqBownUZVsNRrQr8RUsgFrMBdM5FLKxrTBxCTzlGTYG8ySMk1JTgaDKVtmKdnhoa8/yGvorhPofZAFep0tcjK+dn5WQr5Szn23Kef+N2rOfSpzToGV185YMwO/Tb3ftPnY10uZ73Zwq34QZXfEU/xp3ourbC2+1Td9PhuHxeBT0vcH2RasME/fX5G1P0qVtP1Rh6VRUpO4H+8mJ7u+hz1LxFRk7o8jL4jDLHM/wxTQYU3m/riTBCwINVPdR2IOCbPtVpiGIQ3zxIb4Yi+oSd3PX5XoboAqUveLBmSp+0XrqlP3675Ebo8X5lkoRRPELivRvurc/Y3Y1fnapdz9RVObWb8md3/cAWM4jHN3cJoyvzWDlppgOAZNhaWenxXihj5uM2stJJQLSUI/yXLaQJe57WrKanphoKDAz/Pl46dWjWk1dT++Olt8GGK10tal/hWp+xGFTFUPOUIapaiJX6BDWOHexs7SKKQqc38x8Fofr3Sh+h3XjaPQM6zKSsahIGIFtrqoqJnU4zQM/ci0h0LFmAr9MGSRqbDI6YYiUGIjN2aGYhsrhUARbmw8gBKllCRNAi8xHcuyyBkQSmXmfrkWmEgJxCbR+DID1gAJyjAIjk73+A3dg9QPkqNRStAgKpg8Hz4aM5wit5ilF+rWuu67Ind/eRBBMYhUq0d4RejkAY1fTwD9plFKVer+0izY+nylZ0MmOv3KrGQbLpGuATKsfgIw6Ca/fi4ykJmgflbUl9+wfn42GEtRvapgMLDlJezr6Cs2d7/N3f+J2Xm6ufvH/ieVuz9Ibzd5f7rJ5P3oz7y77P0rSNrs/UoxNnt/bTE2e399MTZ7f8Mol4OjNnt/9fi22fvrx7fN3m+z99vs/RVkY7P3181QNnt/vWJjs/fXK8Q2e3+dFWWz99vs/Vc2e//6TtFQN2N+FMJPpPo0y3fEMKDjImN+lCYrOfVTH37UxPlV/k7hTVVdr/e+tp+Pg3cj3wDw6ey/xn36vvhJ+c8t7cH21tiDbZ6p2+Z1t3nd79eO/Xuc1z02zeueB9Wvk9i9daWhlB8YXmkTu99GYvdSXxosOJd2A2CSs8IbaTO7ix0bNrO7zeyusyvt3md210i93JDZXWfk6Kd21yAWm9q9nZ1savdKhrKp3etYyqZ2l+iqFhmb2r1mLNnU7vX0a1O7183XNrV7nYZnU7tXWwQ2tXul6WhTu1d7Gq6X2t0zVh0qUruv54Gxud3vefz1vsbBbG53m9vd5na3ud1tbneb293mdr+HkeLN53YPbW73XCW3ud01gr42t3u1+W9zu6/a/ja3e5WH0uZ2X4n22tzuVVEUm9u9OoJic7vXeCZtbneb292Ep2xu98alKTa3e1281+Z2t7ndTfjK5nav5iqb272Gp2xu93Kg1zC3O33eG/Y+Xu2hn9Bd7qGXEA7oHARG2EPPIB55IDiif/BEbwRP9Cin+17ve765D/+HT/vwrr3eC/QyHY8ocHo82sbDctDbgdcORxdX6fLFkO8LHe6UDsN/HMFhMQ0jd7xYEhhi87G7/OF5D2oSLPefn9BxuAvYxGw5HJ1SALbIVb4cYF75UrD6axGs7hIyF85UBC0fi1D1PjlcZ4DYASE2bww6BzzoPG8IOrsGQWe3KujsT7WDzq4UdB5rBZ01sPlmBZuh88b5QMEpDNtfEyGTsPw9RSiTnixceg3p8WAKXFd+KhctGKDj3a78FOhcU35UjK69sGNzGD0WGG3TxvotwApDcu+dlwKrrwVWBYZN6GC9S/BEAceHrrfiA5NRGR9XwsdnMkKza44xxhFiHKGAIxRwhILlaPAj79URrkaZTuDEMW/GaHRMJ0wwfCQwxDDav0DePtBCiWY581mVoDUD6aUCSjaZGkA5TTiUdP7WwGSpHphPBZg7FF1/RSsyMOr41nnp/CYAfVASSh7lf9MIpidGredr0z7okNXD1m0YtqHLkSQ+QCRBNdUduSzRxhLMBY6l782MsWse0PGMQ5dMOXLzG1Io3Kbpkq1JdnqQrQvQP2CcYlD8lQRQEHKAvIkiW9lCP5djNG0aqCgW7bJFhFjCCdkUcSKhugWgVmUrH6jrDtAhLfmYUHbsJjHDbL03KWc3O6nejpz9UWD0A34jVSU6sSJiitLRpJfhoxI+7M7xGQ26nP1H3RXSf5Tj9ZJ0+ikt+3mlSNMOzZtI+b9p0b3Ay2PTSsQUwo+n5iIViAW4Y4GZPwu05871ByW8kIVjDiRONeZIDviyTlxQaITkItCYORfZzIn6hCaQObcJIEknuXkcEb5Rpo0guXG1JPsDkeV6SfbH0Bjir2TjwgRemjNazQkSZ2N850IzwYcRYFo6fqMADwFXNp9zzNRJoxmzdRTkalKk3Oj10E2Z+RjP1WPM94HQcQz1sPPm2tSYCx5bLKu2M+zQDPIbzaXr2GayaUYmwpq+D52BzBKhpZBRoomWz6rQijhaEUcr4kOZEyD+MVkoQxnnmOG+AY5f5drK2Plni48k4SimHEVS0UooutdFMeAochGrhDEccxxZA46hK9wAqfADpAJJIXiRkLwoqAOTnymBiU52I6E8oVx3U+efJqNYSyr1tOdqsaTBjBP15Mb5jyYYGsMZkMPyTMPnnnbx7NFgfkn8J7urSle0B32lF+EeuKu8Nd1V9Sh9W4lSjxx7fNX5p4gT2xBOJxSQefvJ4uTfOE4Pcpze0G6OzTmGm3gsnQZrGmliSnA5NC6HxuXQuBwaVxOap5UiJKIx5uIjc727+ehLExmFHKGQIxRei7L3yXr92GK93tcIg0AJZmyCKeQwhRymMYdpzGEaV+r+fdq/huGWE+SaCmF6B+rXFu31w79wZ5yGKmaiOnjhXCfY4FYa+cZDrlpxEOpswqFKuPLPYw31jpFm7PbFvsVX+f5FFTvUGsltiRYQ9aYrKbLcblpRZCsHI8mirkd8fKvY6UOVjchii2e9oKn+t2nViESvdS1tFTb6Gs6kW5Ozsl5feJJQUyVPUjI3wPMrSc1/fbMxd81Alnszm+ENhmkOFuJYBuuPAqzjUraBh7l5/k7s3mvTrsbrLk5Aa6YNJl8xLTNTKHO1kUCvGJaehjsDz5KGJcBiCbd9yNLZJoONhC+KuOUT4JHcia0YPith+Ib2EeKOwreUUf2ygueaEZ0m2pCiJ6shNDMdc1CZAHXKFP/aTPiI+MTdYmGC6HJYE4FrwoGdJhzYqQB2mqj2Ov4xzP6QBji/lP+ROZgGQ2GTYpp77uIcrbrrqroic9JtBH5/pgW/4qLL0W+Mu9b4SgKh9wUce1CQCHs6+nQkpDmKlUjTJI4Ak6APueDrwvswh5dnXcDFKO919J8sqJ0ttvDGcw18dfSfUGEMmVmRb/kXKNSDGwVm4GbAeYvcR0IAsnam+HO1D1ksx9Dj33hN/tWapoRrbzFW1ggIOIOJRL9BFf1mcKo8EQo7LhSGHBzlRRfcCzXkgI6GgprFZwTaW1RScn0qnUxcpdQ4za6+m02IU2n7GegAsqDqJcS5lSRDG8TsZvWmG8Qsm+aLL1HhQ7d8Z5U5Q2ZLrYo5NncsGCiY+lOMFlA0TpH/VucW1Dzxyogf9SDNpuu9fOEB/+aZW1k+PNVX041Wmynap6C/MQdyzIFMVhR1oXqWV5tJgJYBfCIA/IGnaRGhSZ78Qw5o6HlvlHV7uV2t58DBEKOhNOY6D6lM1wpLViKZx8yLQBv5KrI/hseladvls4kipPoY6wWNWFIlp9wBdIMIZzEjP4v7hvoAV9uUflXMiEZ23dg3g9HEKF8I7XEha4+LsQaIOubmdR1A1SLKqhDkVnnZCsqDbeoKyYwvh0LDfuP8ovAlz3yGuW3QwLmowtALA45hJGM4NoAwqpTDSqWGh37X0WoyKZQJkwkxpKNPRz56IzF89UHLBI4HSZrNFb9q0CrLJKtnF1dfuya+XcVqErQHzXNbRQmaI8ESXvwPn//B9etkLvRr/GOQYTjKTL9hxpHc6aGHabYusE/JoSoQnQSScZ1Jn4l13ThfE4ZVixGq7T+BqV+F6TSpNlhS4V1LxaKONOKeIjJLshh5tzBTspi54h2vB7Gwpv8LYBzzzISN4hmuq/sYzCjc5iv53gxWYYF9WCmeeL4vzvf5+RxKmq1jMVnHXEIzSElA97lpaDbYzwnP5tlFnqG11g2a6JJCMieVwVDFkq6cXeocE3UrZOQVmEIUyWKu2QtySl+VNRaOiGKp25cCRN/prbG8LdbZR6Nj0viyiiMDCKJS4YrQc5uxpMIXvM/naBOcHhY4gR2YpRpsRKxygtHbepRB5rXL3LRygvHmVWTobRSyx7kG85Jn46OMfurSexW2aN2Yg6cfBcxtFT8yXxSYKYJtVt9+pjrvr6rObdA9y+fcV7TrwzTMUB0hvL7o0XryUpxhXKlNZ8Kn44lVZ+JK4cs0mmEeLFhVYHQHMM9h+0pj++lNDOBQ3wGrYJi2TxrZ8lRFnb6h4ZvJ4IBnx6aI6y3L4MpKSr9SCNNEDnYtKmeN6vihssB3Wk2BVfqg6sYpwlxCiyn7sbm4QgPjkE/LkZm0Pskt5zdkyrwE4MUWiWaZvbkFcU3zdFK5RQ79ICXEmUkEpk5quX4zWjUC2xB8WkLwX+TE2SJPhTGG5Bg02Oya4xi0m9JrxwfQVtaYhMgJMY0rFqTTIh86kf2RhV8GQpmkLxyfJ7J2qUYO23rhL6IXeL7lKa1+fU/Bh1fim8q3CoIxpxO+lUpXsCvZRBZsRZsiV9sqlxhpoL7wEfnCtQ5H4hLRPeX5bSA6R3JmUm+VQmWJHClDfX/ZP+h9vCp9Pf3X4uvpR+SQuygtIl1QdxxRTOMXp/h6+qor9V9Szxq+pN7lX1KPX2tetuJ4hUTaB7TYlCqVr5zWXlmvSoxXCb+DPa/RM6jPNI9HzIQ0XpZCPu9zLp6KNR+vKG/7P4FHsuhFf+/Fml/wLvKvrHyj/TXKuYnvmu+XF1wtxJ6KC/LtfqD2q/02FOitilL5ynr95vN+822/mfTbU9FvQ5EPfUx51+Xee5r3UdU9pxr3rNejY96jY9ujJj36MB+JGAtAXaZs1yxKcYLs2mnDtfV6LuA9F9ieW2csZt9f84b0I4GXMhar7znVuOda7Op5tktNurTQrca0fqbYaLgQLv7s/GnN+fW6K+TdFdreWqe3BqRETkt5pBbCu5GdP605v15vxby3Yttb6/RWn39lV45H1ivF+dOa8+v1VsJ7K7G9ZdJbT0Rv7YqcMm+J38rKyRPRP1V3nLbesV5fprwvU9uXJn35lejLLgVT3+ch1kWe0eFdPurUs+v105T309T2k0k/PciNOxwrfIO0apAXV1SDvLiyXp/NeJ/NbJ+tM6v9QOs15yuzWnH+tOb8er015701t721jrE9KOJcuY7/MNcOy9dOG66t13ML3nMLqWKPczGaOxP6Br5L2sqd+XQe52KjXj9tub5eJT3h6cVjzysh2u8x6ZMvfQqkT/SFucvlHjmw1xHTB0JMR5Qc8SO1pxDPqEomUj91U0km3A5LsqsBwx/5ahBmVyfhxJ948tUou5il/C5fjPNHZ3P8qRTFxMWf1VHx6VX/BgbjWmLwjRCDIe3U2KMFdngv/1LLMmP5VTXjFZCbHhZ1o3TtddWuorPbesldwfusNBkAnM45reZ5Vfre0FqIO0UlJi4bj2vav5gtJq4it6n6ZCPMN/yiu4L6oSTJq+BW1mdVtIr6pK47YZozrl45dwXNo5zr34qYBCa2/qWN76vGHStfxMEl8WVRYTZWL0bL2hHrdpKi2NrhnFVHi+zvb93vSgg+J730WhrRDn3j8VtFIwoqVYo4iDyFMP28SZNZMg0VWcmvRlM296LKhswXs8l0torp3VThrrrjW9Edu7QElhbH0HrOXEdpoy/m+tMVCsgHqzdJY29Sp+9582ARhDUkEI3nU1dRBgt9b7VgT62RFoPd6+rf9SRfSnwM11rnsVX9vEASVfCVySCHI4o4L1UiiQ/Gizok+Ytr2C5e4Bd4aU5l97j6dyUIT0tkPSFuuKQUEarWV4mo6/qJikqBKCgA6TiuQxSUuahBPVh9NG541FNrpCUQ97r6d63e5EpNoegsW40AdZCs1krPCNAp567n08wU5XZSySBdttj6mSFTbR3WG0Dwr3LWu62X3LUrBdfsvqE9O5fOscgB9HO7ks1SdxymdXxbieA1yrkJ5+9uv/fxardfimvOCarntKgZdbYu/P5IGWWyuNg8358zdi6Xu4PRx6vezi7++p4g3HUWtGkbjdTnMMXzBdAXIvVvb+cF3PWFMGDny2Xp2UfSs4eUZuy50xPP/Kdz5cR0NXI8+HEd5nwHf0/hDP6F52aU6yWBczFcceknpDtj+O3BFfy0lN76oGijc+L8hmaDeON/c1zpzoelO3+gvUmXzktx7x+wRtLdT0p3Z4uX3nGlJ38mdkLlmV0oFUSNEgfQVlk4UoS/pk5PKJvNzySs2beovabn3udP+NITjynb4nuwHuvuV99QZGrsifRNY1ohkuH0b9QbKlbFU3kNS/f7SssfQG1ekdk2b+mFb0p3HtKizEuRMPmCDL7sKU95im9/kmS6oADx1FfO/wD8F0Jy5Pc+pb31vwrPKo6C2crzD+B5t/TjOwsFy32a2ppLWJR+1BIeUQmvxARZVf/S08qTI9qOOKNWVD1ZqrmC3a74ci+QEhj5YxpzbW1flYgRyfKv0BMT5//yUS6e/RJqixrg+xVG6FKvXdL4GZHkXdZKxrNsd6q4812txKpPPsifVMe1euf/AiT+CfXvUy/MSV15J3rjGN7xCmSXpz77BWTyDY34d3CuzGyncP8R3xgq3vKoxLhbJc4lijZg5weCnX+ksfcjvONny9CWoW+doX3L0JahLUNrMPTDVYZ2mOVoy9G3ztGB5WjL0ZajDXwcQ9oJYTVoy863z86hZWfLzpadDXwcQ0AN34djzjK0ZejbZujIMrRlaMvQGgz9J8HQIyg7S+LF76dNCg7/CkfL2Zazb5uzmeVsy9mWsw206hJnW4a2DH3rDK1yrWVoy9CfM0NXSPJnufLOs+x8D9jZrryz7Px7Z+dCOq/Dzp/fyjvL0PeBoe3KO8vQlqF1GPpzXHlnOfo+cLRdeWc52nK0iY/j81h5Z9n5PrCzXXln2dmys4mP4/NZeWcZ+j4wtF15ZxnaMrQOQ9uVd5az7wdn25V3lrMtZ5to1Z/PyjvL0PeBoe3KO8vQlqELhu7BXSj/pf7M0wJyhi7ybv8k3bVZth4Dv6VOAD8zKC+5EbZulmJVBseKdvdQerptnXX5Xp7JsmCXQOGG8r11Mhc3tGSVI31AINyI7GXytCXJiqnsZRERMat8drIWKd6fm5O1xFjWUBthn7C0PRXSVp53VG30ayFv6DOAeeN3v87YVySmXhdVbdpPVxNV23HXmqhdZfwpaqKeMratJlrPz48LPgWGLqF9DYYewhsuCNHfN0OruqZlaMvQlqGtr+BmGfpJwafOrJGjv5F6cYvaxb/V6FXJbnso7frLrm2WqRl9r0oCHAd2C8gxsjKDHzdnajyH92BrMplJiNsXZPMhXy+NOTVSmKWd79QVsrpMUSfptyOHwQbksFpu1pHAx1JJd+evCoUWsKD5H7WEGH4CuH99KTT1V4UVPGj9VasaapW0rCN739BIf0UjSCrN6eDPigS2S9HESaEnp/Abtcc5aZ0BaQqZFKF3CmVoQQzH+x3vRs5D2ZvB/csNINnW9nIN/ju0tQvvWFANOOP9BO96R6yH2tSv8Pkyrx+Oyf+Xv+lLavsW/pZK/dIZK3L0B2i7LEVfOzNNH9eXcLVZQyL2laTkMUjyDDSMD/SGrdIIzb7OdJsY/g1cO8gZ/v0acoHsEMD1BVkcHrGLB30arFgjiZCLMbEQ8s8M/kcNMd2IXNS1WWaQ93AdGIb0u5/ETPQTfP7ZmdRq4/IzL4XWLz/1b9DmcGVentE8fKn5piel+/Xf8gCuIw6/wG+1fE+z9fNa66up9cVT+q2vf1Nd65vfora+XL7c+m9rWv+zk31bZp3OXYeA+mRV/Z5WoND2xm8qkdB52yMJjdX3qBZjNSITh39HYHXtVByLGsrPVdXvSQUazW97WolF+5seSkio7/Bua5YwYum/wFvf5T4EobM7f1X1/rXndB9YGNl3Qvoe1wdTwMqTNEO8jhi7NO8jd6fk7ZjR3K56km6Hu82QkEfnpOLJn6h0lNLXud20OsqmSuk6T92VrDwsfZ3elkD/1YYtjRnJRED61pSs3DF5HVPF0kAZG0ueSfLyUIxzvhF5qkZL1rrqPEtV9u5XUJe35BXCmv2W886qV/BByfOFsjSTmc2ozx/AGeTZjyTVN8MC85wF/HvHAlXtlTmdtBsab2+cCxq775d7AwB0b3Dy8ersYAe/ovGcH5bFORaG/Cz+sVwpEz1SN1nm42LmvdFyH2Xz2I2WeleM9szZp7b8FWw49Hl+ICnB9yAr34y0z3JpZ/dO2nXaL0vqS9H37bMU6qyrZeo8+S1Z1uaz6WN44hXdm1uzipxU+7/vSvr+WN61sZZdzGgu9ITsfEfet5kTVdjFmbfkbuxiuaX3AfsHZft87ZEueyZY7pkI751noqq91ithvRLWK2G9Epv3SnwJTIb7Fuc5H38r7OxsD+OW8KJuQ8lv0b++BjvjrOjDb9SoxsTOUzgGFEUos3NIcSi9VSy3w87trb+bXnlI7XwtouV8zcw6HvwFrRRyqT8WhPqC4jZFfNClnkDb/G7nyeoWbwL9L/LII8e++LwO3h5cWxAPBXnEJLO875NeUrTyLjB+kH2Guw+pzqsr7UzRZvcY7ar23gXu3zp7UK8PZNldUHRyK6/Zzejibq6L+/euF9pbX67Dv9N8Xb47m7XfkV43pijvh3ylzZ+gRR3i2vqf6E56/Sn1W+YJuH6Ph9BjCc3UESAS0ayyEPZvQCNwQf5hj1YVhLS6AFe1ouaX0B1jZzO+4OaW31JfSJr6L6X3l+VndRVBquiZ/177bP3qAtXLvCoJQyG36I+5ibGPDOzTShrOwIzKT0gSMNoUkiTgCF+QLMxIFwmIDRY0+qcbkoSmlt++JPwpZwx8vywJqn/tD4CQLAt/rn36v+A4dl5JsYk/IM+2SMJj50cHd8T/cgNSkIo9bMgAUe5jZTQP4/62CfEBMkZEEaQJccGCYkqMvLKo+W9CCupbffsS8C3cw99t2vvPKp/U7fmvxDqpd7Sm/HW+91E+a97rU5rN0ZrAtbDctuD7ElZti/hO5321rZuYg6tRfyyfvZb269FqvAV5GrgXOqVRGK/oXdnaz7vCv77Vd9cT30A9X9P+E35lK19HvS4LytZIcI+tkba23z4X/pkYr6jBT+QVe0+7/29Cs24qv4pxQ4Vx/9Lw/GXT3iXFr3NEkVqMe2Xjf5tmva3iytryNifJwbXfOMNOycvmkq71HV2ZiBUZPrTOI42d70/AuXZOMzbqZJsZ/3WtlufHMd31E7wnu0uvt/5c+eQHcVRX2G46GvlHZ4fe/wFq+D6PQJbPrcM1C7KkOK9PhZ6Vllbm8hXbLvT13a7Yllt6+8zyCOqRvW+173GdT8YYvrJz8AGN798anlqQ9zTV6N9ntEOB4/KO5jycFbau2esz0qlj0rFS6vWIbKlU6vUJWdup1Ov4/4Lu3YzdrdP+36Ms4I6Tt4QKt9Sy1WfZms8BzRkYY+Czx1tar35B8YctCdNV+bjd9X0JeWfGtOsjJM09JRut0F7GxCi4uyii9TUuzSWu2DkyJttvM+tFTVAs1+cLksppaSZZ9Zh85fBd4vKemyyP3BHVEnWBTa+/3PTOcHn31c3nkVP3MersDfeUJ9r2hqM1bLZbcnWHjt0fnkW97f7wz3F/+Cb2R35Rsxe3mouzrF37hNkby8PX5GH1mfvAw6rcWRa2LPz7Y+FEm4U3kR1BYuHlYPvk41V35+DiaiH+Lfvyp0HJ6lkQT+9AmbgGD8fDuLTauhR5W55WnBv2jidX7rJ/0r3Aw26fDqPDiysPPp3QYdijW4ZDfm3/4sqHwxkd9vKaPIO38xkj8yLOifWKHUGZhf4E7pPzjv5Aq/mwZ/t7Lz5e9Y92eOHP4e+9Ae6p6O/tlAAoX+oEEf5kd8RT/Cnf4WWXXPq3xGvneM3dxJs88RJW9ZLsvqYi4N/JWffjFcfuS4HvhfN6eTj6/uPVDwPoiMRd7ovjyehH6DR48uQ5dM3J897FVbyYBQuXF9S/mYKWu2cDqPHhCTZs52CIh8EBictgG26HD0coLQO8hIUMTsRnEDdvuT044IcRStb29g592u7RYQTFzOHOHj6wh4W6y78P/nFxFeJxxD8e88MAn9/rP8fD30d4zxiOu/zjCRb391GXpPdgQNJ7hJXbGx3guYPRKR56/HAwIjHfGR3iY7s7I2zM0fmIX6NP+yeHWMj+CR95PZqjcRz/Skdaybg869O9zw97cNO+cKvMnb85f6WfOYj9GAjhP8mAP3T45rbXuUn9V6CH9zRN4UbM90Rec9rUhhSGm1Y42fCrF7Qg9q/kcO3QJDinoN8b2oiCwUp84yW8469Uwtvlwdn9rNfZIfX3yZDgB6QR97PeNnVG/4wk9n9TWfQFev0uTcnZxqwZOSW+ow65pHqPy5y5PDoMPl7Br4uraEmHBT94/OAqBzj28X5gw3BJB9AmdnEYe8uT7QOq6OAHPJydEFUuD4/ggcMjxBY0zMHeETHtwBmTPrfloECQsA6eH/AD3vo/AeqeEwD0XdCS+IqNlLTWLvmVd+Bnm85tk6fsOzjPyKPYhRmoBz8JxWZ2QEIPQbAPzkG8D7aB3brf7+FrTodc0kWGvQyuLQ7Y8uCA2nLIx8PhDo3K3nOS+Z0DpPZd+PWCnzjY+R4PuwfwpsHJPryIn7DTVS2/r04iOb9H9G91MrpGOb/TqaY7HNC8csK79/gEu3d4BDd5XhhOJ5PlyfHZ4uo75sMf5/CHFyy7OHt4bHk82IZ+T8LlYKePsj0YwZ2e10nhXwyf4HYPJHgXz4adwI/hzl1xsi/d2oez0XLQhQoOujD3PR/RpNUdHSDIgwEgGcDlbONnwrd9QjnnAzyyDnNTL4LTI/gYd+LUTXyYOocvsBRqzXQx8ZdHox68p8NiPw39ZfdHeF33R+Kd7vaPMMKXpXfklaNXRcszfFNKRbtseYYv8gJ6rx+pb2LlN6Ws7U2R3Jy8/tSaonHKSzyzl0jNgU6k9hQtoAblzVNe5WogBy/bwe5DOhLdR/3G8LjacYPhCAfJi13s4Y7HwmXvlDil6K3jIyql/HjHTTwW+byUtOOlIH2svaxALsT3At/3eCFJJwh8143bCwnlQqLE95goBHos8sMgbS8kKhcCDYi9MIizQvBTpNGcWC4E381SIae8Xho1ScqFeKB+ByxNWFYKQRS1l5JKpXjUI8zPSqHeCtpLGSulSAOv9WlWISkwahI38rzEtCq+VIrfCcMojWJTWCSBw0HmR4F5F4VKKQlLggxcfWmRRA542AcuiUzlNlYKiZIwClPTIZQopaReEvuB6WiWZS7SpxSvSlDkWsBAQLkJEh2xq4cEZBgFJ/VNBU7qHqR+EJzQXN7KkoJDAT76Gk1SBa4stjAWsGoavRw1DCH4iDjpjMS4YTxDMdRrGkMxqecWT6MWbpXMyDxnUBmvgXQNoGH1E4B+N/n1U5GByAT1s6K++Ib187PBSIrqVQWDYS2J3Vr6ynJ53D16n2VhoW88Js8k7XdY9k62QV/aPe5zodIy9ZifBIvpLZt67B6beu6s1kRz/WiOl7RMPb1yPj9TL0oZw8fI1PN8V9h6LGDc2Au5reelrmzrpR1sse8JY6/4iDYfizq5xVdc6cvP9YU9qGv6eSIRUFEE2UwMODh2o9gXRlPQcVkK1FM2ZFjgChMQLntgynhpm9FUvES8O7OasHSYjMhqKt6tvI2V38bATm5+G0sqm5a35bzxZZ70sjAxaxq8+0zG8WwktVR5myu9rcb6rDMJ/VCaBdVWN1Mt9WLFnOx2XIwfZKoT8H+cJm2zBhQWKKV4OPNl8yBo2UnEPI06herMDrXJJnawG2AiTNv0AyglUkqJ3ZjlxYSdII1gUmsvJla0FRcaEWTSFXRioIhEo02q6hT6sRtGhdITJS5rUzSgmFRR5Nww9MJCXWFx6MVtSgIUM1aKifwIODtXNfBjoFGbiaKdYiu8oFA2oI2tKhgUM1XUduiaOE1zbYM6TqM2M6kYLm5uTjdcGNuUFihmLhXDZZ8VJo0YGa3FLKRiVsiv9flKSzztpMxdozKSfspAgfP8JB/e+tBI45uxTuj6LAqNO0oa3wxo0WeuudRI45uBsRcBlZrLcKwUkwZBEkfGI0oa3zBbA2OlsXe98Q3FpJ4fx74x20jjm8UdmFWgHcbcN1GKCdPQT2JjJp4qxSRoHyXG08JMKQYqAz+mc5Q0vFfVhNbnqxwfamWyYaoxyOuRKYap4fCW+4l5nQiM2kSjNkGD1BSj3XB4yzIMOhFL0nYTdGV8yyMqJ41rDW8oJYa5PNFAOGkgm+Kj4fCWmK9ooeHolmm46DbD0S1PCoUsGs7e0gxVjAvDyXtFoW59vtK3JE/eBrXxGlQJA2hUt2ZZsTHoKNWPXlazDMRG1s5lpc9AhkOlmLIKajCiZPVcVojXHN6Kdm7ANWoAp2wrGDBfqhRTMlwMaHislFK2ogwmhYlSjGTSac9Q8ui+jn2ZufK+oCW2uIRQz33nsihaTBT3Xbdw3z2gja0/OQOxhewi30r1H3AFnWS42HoA5/9FS2m3aJkvuhC/oxRuF7TIGBMwnortt+r92Vc/C0dfd5tWiHW3R2B+z5Nlt/cc/Vvdw0NcrdM9hNPjZXe0SzeNaElOFz1+cOjSKpZu93s67ByJAvjqkO6QnEndfpcfCMfuET85Glxcga7V5U7G7gkv/WTEX3LIy+OH57QU6Qhr5S57x97FVQIHhsX0jn069D2sca/P+MHHw+ex+iWo9kMGs/lUXkIZwuB1A9WjWb4jiRIMDmi4QyfzpMqtesd1+Xxcs568FffUOYL/R86u08slunxuvc0i9UvD79+XvDctor+5L2djyrYEnS9ncxtaUf3lbJtY9l7/9e6fh6zwzbz4RvXLgK2s3LasfHpf+8gouQCm9b2tr31cR1qYsbTc+dc+8oCim06n00UWUEyztaOpHD4EQ8yP4jgQ4cPiI4YPfVD/WQJmjAghFlf78rN9KrrjpUnoGSwi9TtxFOTuzljEEYOO76ZxKOKIaSdKXd+Vw18zdyHiiGDZxEkQtscRhSWUvVKsJRVl8yBi/mLlVUx6ld+2bBVQY7gaRGlX/rLzxpd50suCSLdd+UvPZBDPmkB0dVpWF0MMystK1a5stvCo/1Y9L34n8X03KKJtYHrGUZu5CIVJPgr0AviRm5UCSIAZ7rXZ4VBKKJfih2nsF6ud3ChgrcuVoJRILiVxgzjNSvE6SZAwt221H5QieSjQy8I8VsS2ohQeaTPmoRTJQRHBYA7dOMkW+0Woj2s0KJULiZMI1zqLdYdh4nlum08LCpG8EzF0rMdYtgKSf2gtQvJM5G8+l2rVWojkmMgxOJfwaS1kpvhIRHecS33VWspccUIJ0TiX5Ka1lIXi5RNiei7JcEspaBTJyw7FkDmXxlNrKeqyTjF8z6Wx3VqK7P5UeLsVj8oAaAJA+CxIzaqCJCW7l6MoDjJi0YVFYSfg2tQH2TXrIYWcGOt4oZdk4OhLixwd8WGSSOKMtfUlV46OBJ0ABlFpybnmKFKDI4GXpF5sOqDV0Cdgm7i+IbWsBD49382CfPocp8Y90zhI/diUbuWwZ9KJ/DhJAmPql8OeuLQ7ZJ7xNDRXSokC9Ksaz4kLpZgU19iaTc8KR4G+40VRmseDdXUFhaRWdbXWtlRFctXa5HyjQVe1yOR0Y0ZTSi/lfGNIU5LEFHxjyFOy+BaEY0hU8lgqGMeQqeSBXVCOIVXJJFN8NOQqmfGKyhmylUy/BVSGdCXPBUXHGfKVPDHlUmRIV9IcWQi0oUolz9fZ4DLUqBTVIR/ohirVipnWWo3K0LSiU+nWBlmrXsHTRkbWzGRd06CXZK1KVnz1JUZdNVpWwg3EV+Ir2SAwGEvKxoeybWIwsCW2kowkA5JRbL6yuWbAeIrRV7YcDehXYirZijWYCySiki1qg4lpKpdStu7158iZXIjkaNCfryWaUpwe+qrDQi5lbf9LEWGf8Ji2ZoQ9mIRszpRcCDbCfvMR9vsaLXWVjSwbiJb+PlPryQnmdVLrqV/jcTup9QKlHe2p9dRa6aTWi5X2f7qp9epS09nUeu2p9co1v9+p9fQTnLobiASWU+ttllPvZk1BnYx+amsKNhElrl9TUBUjZvmeU3mLKRgioD5SfDjk20nPuIXl8uwXGBoG+yRywVKKeWjYF8/082d0Q8Is12B5MDjs4C74VASDkw5m3Ihqg8GY6SBMXE8zaMp4sDQvlYeB81fWhIH5SzAJU3MYWGlK/pbzxrd40ltYrBv/FW0pyj1rAszVaYtW4JetY3KUHu+4cRwE2V4lMFCjyG/d8rTirQRbMoBiio1TcZSGGjaU7K3sgP3m5zvTWCf006A1p4Rq/fsdL07i3EnudbwIjF6NFsWKVei5uFBdRA+S0HUTDdMykQ3UMPLiIE8SE3m+37r6WjX+oUtYyMI8z1IQJqFOTcayBwFEErOPnUufzEz//N3nUr3MLP8chXMJITPLP++Pc6mvjEO+QjTOJbkxdFDmYnouybChfzIfMufSeDIO+Yrhey6N7fVCvhoyVhPsDX0/ymMOmpVQoyi49Ml38111moCovOQBIFBIbNY5q9HexE/iLG6hLyhyECXoeEGaZiSpL7TqXjjcR5JGpuNHDaGEgZfTvv5QliMooGW4URTEpqwiB1BAXuIgjhJTgpPjJ2kn8BOWJVnS51qJnNChn6RRtkVQn/ZnSikJ81g+qepPQbJj0uv4LIxyz6T+fLhQigFiYaV0A3qTsxrw9TopY2Ep4KunKagBXwN9pTLSq1QjJxuz4IkCSsE2ZiyldFFBN2Y0pQhMwTdmPKVIb0E4hkQlD6WCcQyZSh7XBeUYUpVMMsVH45UpZcYrKmdIVjL9FlAZspUyF+QdZxztlSamXIwMw73yLFkIteHyFHnKLoaYccS3rD8UA37NiK9GM2pCvWVdSrsaaqhXVuwMQJF1MlnLNOgiNdgrqbz6AiPxlaJ+60uvmkC2ZAkYDCWJrWSjxGBcS2Ql20cGJCNxlWyqGTCeRFWy1WhAvxJTyQaswVwwkUspG9MGE5PMU5JhbzBLyjQlORkMpmyZpWSHh77+IK+hu06g90EW6HW2yMmIXzggh3zh34vn/Twz/nJZm3P/GzXnPpVZfEmBXgZ+m3rfflPM72jjsBh8Svr+INuCFebp+yuy9kepkrY/6rA0SmoS9+Pd5GTX97BniZiKzP1x5AVxmGXuZ5gCOqzJ3B93koAFoWaq+0jMIWG23QrTMKRhntgQX+wFNan7+asS3Q1QRep+0YAsdb9oXXXqft2XyO3xwjwLpWiC2GUl2ledu78Ruzpfu5S7v2hqM+vX5O6PO2AMh3HuDk5T5rdm0FITDMegqbDU87NC3NDHbWathYRyIUnoJ1lOG+gyt11NWU0vDBQU+Hm+fPzUqjGtpu7HV2eLD0OsVtq61L8idT+ikKnqIUdIoxQ18Qt0CCvc29hZGoVUZe4vBl7r45UuVL/junEUeoZVWck4FESswFYXFTWTepyGoR+Z9lCoGFOhH4YsMhUWOd1QBEps5MbMUGxjpRAowo2NB1CilJKkSeAlpmNZFjkDQqnM3C/XAhMpgdgkGl9mwBogQRkGwdHpHr+he5D6QXI0SgkaRAWT58NHY4ZT5Baz9ELdWtd9V+TuLw8iKAaRavUIrwidPKDx6wmg3zRKqUrdX5oFW5+v9GzIRKdfmZVswyXSNUCG1U8ABt3k189FBjIT1M+K+vIb1s/PBmMpqlcVDAa2vIR9HX3F5u63ufs/MTtPN3f/2P+kcvcH6e0m7083mbwf/Zl3l71/BUmbvV8pxmbvry3GZu+vL8Zm728Y5XJw1Gbvrx7fNnt//fi22ftt9n6bvb+CbGz2/roZymbvr1dsbPb+eoXYZu+vs6Js9n6bvf/KZu9f3yka6mbMj0L4iVSfZvmOGAZ0XGTMj9JkJad+6sOPmji/yt8pvKmq6/Xe1/bzcfBu5BsAPp3917hP3xc/Kf+5pT3Y3hp7sM0zddu87jav+/3asX+P87rHpnnd86D6dRK7t640lPIDwyttYvfbSOxe6kuDBefSbgBMclZ4I21md7Fjw2Z2t5nddXal3fvM7hqplxsyu+uMHP3U7hrEYlO7t7OTTe1eyVA2tXsdS9nU7hJd1SJjU7vXjCWb2r2efm1q97r52qZ2r9PwbGr3aovApnavNB1tavdqT8P1Urt7xqpDRWr39TwwNrf7PY+/3tc4mM3tbnO729zuNre7ze1uc7vb3O73MFK8+dzuoc3tnqvkNre7RtDX5navNv9tbvdV29/mdq/yUNrc7ivRXpvbvSqKYnO7V0dQbG73Gs+kze1uc7ub8JTN7d64NMXmdq+L99rc7ja3uwlf2dzu1Vxlc7vX8JTN7V4O9Brmdveqcrt7Irf7A+cHKGcCJR1Amb9RGKWcz93j+dxdns/dq8nnvvK+5d6w9/FqD/2S7nIPvZJwIGckg+M5P/LAc0T/4IneCJ7o0cv2et/zzYT4P3zah1fs9V7giw7OelDt/wMV7VKFtyimNSUYLilO8dL5m3NK8LyD33+jyAX6YWfOL+T3/ZszEp5ZfhW9/nP46wP83aFoEgIyp7LG6FmGa5jsfgpHLOGt8zeoRR9q8ac8MT5Pi/9dOS0+lYVdczyi0PLxaBsPy/8P8eZE28kawkEAAAC+bWtCU3icXU7LDoIwEOzN3/ATAIPAUcqrYasGagRvaGzCVZMmZrP/bsvDg3OZyczOZmSdGiwaPqJPHXCNHvUzXUWmMQj3VAml0Y8CavJWo+P2MtqDtLQtvYCgB4Nw6A2mdXm38aUBR3CUb2QbBmxgH/ZkL7ZlPsl2CjnYEs9dk9fOyEEaFLL8Gd2pmDbN9Lfw3NnZnkeVE8ODVHsbMfZICftRiWzESCc6imnRg46eq97Fj3DVYRgnRJk6GKQFX7oeX6ZDsdxFAAAEeW1rQlT6zsr+AH84xQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAeJztmolt6zAQBV1IGkkhKSSNpJAUkkZSiD82+GM8bEjZsWT4mgcMdJDisctDIrXfK6WUUkoppZRSSv3X9/f3/uvra0qF34OyHpdM+xLpX1NVn91uN+Xz83P/+vr6c37LdaceVdYtVb5/eXk52GPr9K+t9P/7+/svSnWsej+j/2n7z+D/mT4+Pn7aAHMBbaOuK4x2wXWF1ZH4Fc69WZp1zDiztPqzdU4Z0j+kV1A+yjFKc6SKV2lW/+f8kf1fdUvwRR//ic+4iC9ynMz5o8KIX+KaZ0uVV13XsZ6ZzUVZHvJjbMrzLFumn1ScWRtIu1S+z+D/Drab+f/t7e3wjoh9eKb3x0wjfUGbILzS4pz2R/yeVh3LN7yXkV73fT6TadKeurIt5xz46P6faeb/7Dt9nkxK+LDsWO0mx1TKUPcz/VTeI6/036gdZ/+u8EofH9b5bA4gHmXk/SfvPYrW+D+FzZhv6ef5boDtsWH26+yb9L18NxiNFfk+mv0/x5D0VZYlyzur7xKPoq38jy/xbfa1nk5/L+jjSY612fdm81HWg/x6e8jxPNNkzOk26WSZbvk76K/ayv+lslG+A5Zt+3t79zXtJP3A+wRp0aZ45hT/ZzzGJPIizV6+JT3q/K+UUkoppZ5Tl9rnzXTvZS/51pTrIJewYX0bzb5r+vfUX7X2ebU/rDnUmslszXqN0v99bSO/80ff/EtrIayb9PNrKMs56kf84zG7v5Te6HqW1yytUb8m7mzNaVbmv4r9stz7I1/WPPKc9sIzuc6ebST3XjlnDZd7OSawd7MmvNs6y5nriXWP9WbWmvq6UoX3Ota9TCttV8f0GZBXXqMep8R6JfdJl73upTKfo+6XbG+j/s9aG7ZmP75rNPZXvNzHLegjrPOtCT9WL+yXY17/tyH3IRB7GXXMtcq0VabZ8xrZt/8TQZzR/ZH/R2U+R33+P8X/GX/2/pB24py9GY74M//JWBN+ar36nJd7Avh6VKf0QbdPXs/yyrDRPhP3sz9znXmPynyutvB/30cpn1CmPC8x1jF+MpbRnteGn1Ivwhg3+I8AG9O+EHNt938fc3KP8pj/+X8i8yj1+93/szKfq2P+z7kdO/R+knUt9fEpfYO/iMs8tlX4MbtnGLbk/TrnYcZw4mLntDV7nfgz9yiPlYN/a/EhbSdtyp7ZyP+jMp/zLsh+W9YpfUffzrpij9FYRdxMr+fX/dn7wZpwwpbqlWHUg7mk+zfn8tE3GM/350Z59TDaQN+LTBsTP/Oelbn3tUtoab1APb70v1JKKaWUUkoppZRSSl1NOxERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERGRO+Qfh5eOajemXSYAAAFTbWtCVPrOyv4Af1WJAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB4nO3W4WmDYBSGUQdxEQdxEBdxEAdxEQexvIELt6Yh/4oJ54FDm0/7601szlOSJEmSJEmSJEmSJEmSJEmSJEkf0XEc577vT+c5y7V397+6T/dvXddzHMdzmqbHz+wY/Sz31L11FsuyPF7HMAx/vod077JjlX2zYXatzfs9tX/VN7/+je5ftut7Vjnrn+V6nX37xtm/ul7T/ctzvu9f/9fneX7aP9fs/31l23ru1+/btv36zPfnv/2/r/oe1/er90Cu1Xf7nEXVnx3Xa5IkSZIkSZIkSfr3BgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+EA/CvmsuD1UqYgAAA7XbWtCVPrOyv4Af594AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB4nO2djZEcKQyFHYgTcSAOxIk4EAfiRBzIXunqPte7Z0lAz8/+WK9qame7aRASCNCDnpeXwWAwGAwGg8FgMBgMBoPB4D/8+vXr5efPn3984jr3qufic6WsAGX498H/Uen5iv4zfP/+/eXTp09/fOI69zJ8+fLl388uvn379jvvsDdlBPT7R0bU+7SelZ5P9b8CNtH+rvZf9VH6dpWmk9ft3/mdXVTyrOQEXRq9XqXLrmftvHs+cGrnq3rr7B/la991ubRvex6aD3kFqv6veWX1jvufP3/+93voLdL9+PHj9714hrqoLwtEOr0e6TNE/p4m8oi8uRdlq15IF9f1eeqgaSMvT0cd9Hr8jc+q/8ffr1+//n7uCjr7c01l0fIjTZTPM1mfIz33Mvu7DFGe2wibx9/QmaaJ74xbXHM9RRqd8zi0fUU+pEcXyKnpVO74oAvassod11Qfqmctn/F91/76zBWs/H9WZtb/6X+dvIHM/upvqFNWd+wcelZ90S7igy/QPqh+gTxWcna6QD7KIT/3FVWd/fmQz8vfGf/vMRe4xf7oPPoj9e7kpf6V/X0d4sC22D3+Rlsgf/73foas9FHai0LzoU6ZLvC3LivtkbleZX9k1Oe9/ExvK1tcxS32px1ru+/kDWT2V3+H7836KH3d/Y/qNu5x3f0kviOzP3rQNpbpQtOpzWkXyO/2xz/yTPzlGc03riHjM+xPX1F90J8BdfXv6m8Z3xyaHpnpW/o9nqUPdGulyIv7+E3A/5HG7yEnfS8D9caHZLrQcjL5yV/HQ/qH/++yqPw6l6n06bodDAaDwWAwGAw6OPeX3X/N8m/BPbiEKzgt8zR9xduewmPlxKVYz2RxgXtiVf7q2RWf1nGYj8Kpzq7ouOJt7yGrxrarZyrOqvIfVVx6t/xb+bRHQeXWPRNepytydfH8e7XrTFbl1fz+CedVpT8p/1Y+rdKT84bOKfoeBed4kIV8nANZ6azSgcYVu2ceaX/045xcxXlp3F5j5lX60/Jv4dMqPRGjC8CzwvMh88r+xO1UFpWz01mlA7U/cmbyZ/7/yh6aE/tXnJdz1sq9VhzZbvnU9SqfVtkf7lj5I+UUPf/MRsjc/X+qA8+rkn+XK1uhGqvgRvR+xXkFSKtcTJd+t/xb+bTOT9KHo4xoD/Q1nt21v44ZnvZUB6f2vxXqb+AalHevfFNmF6773MHTn5R/K5/W6Smzt847GRe07MxGAeUWs7Q7OngN++vYycf34ikviE9Tzgt5sutV+pPyb+HTMt7OZQPKKVZlMyd3rpTnkWdHZ5mOPe9K/q5eg8FgMBgMBoPBCsS+iPmcgnUga5hVLKpLE3PbHf7nHtiRNYBuHlnmriz3BudiWHd7DH8F4h+sv3fWJt369Zn7GTOuUdeUgfhOrPBRZXbXHwmPXQeor8a3uvavZ2NIr/rLnucZ7mm9nfeKe+6X9MxBpjOe6fRJf/M4hsdos/J38spkzNJ113fLyPS4g1UcSffkV+dxlIPwOK3u1dfnSaM+B50rl6PxQOXslA9wmfQcUcWf4fPIR2P+Wpeq/J3yXMaqzOr6jrzEG1XGE6zs3523BF3M0vkv+Drt/+jKzzNk5zvJqzpnQjnIUp2NyPTvfEdXfpWX7td3Gasyq+s78mZ6PEHHj5Hfimfs7F/pf+dsEfn6p8sXedD9js/S/p7F4rPyPa+ds4RVmdX1HXkzPZ4gG/+VW/Q2X+37udr/M11V/V/L7uzvHPSq/2veXf+v5n9d/9eyqzKr6zvy3mr/gI4tPobhn3R86fgrl2k1/qvcbv+AnuGrzp9nulrNWXw89TFOecWsfEU3/mv6qszq+o6897A/9a7W/3ova5vc1z7kPJrP/z2NzpF9Tp/N5bsYgc6F+Z4BGfw+5XXlV3mtZKzKrK6v0mR6HAwGg8FgMBgMKujcXD9XOMBHo5LL1x8fAc/iAlm7+x7M1TqC/dLPRBVnq/Zjvmc8iwvM9jIrsriA7tnV/f8n61e1FbE2vZ5xbtife54Hcuh15yJ3uDzSVGv0zi6ZHvRcoHKklb5u5RtP4Pvv1T5V7I+YE35jhyNUP6PxK67rnnn273u8UfnCLI8sXp1xRh0vWMX7dji6LtapZxPh1zN97ci44gJPUPl/7I8Mfm4l42hVB95HNA6n5/goX/uFc258V31UZyZ4XmPr9JMsRu39hbbH+RWww9GtuA7yq/S1K+OKCzzByv8jK30v41V3OELOUmhfz8rv5NF8uzMzIQ9tlnJcN1U5jG3q3yh7xdGdcJ2ZvnZl3OUCd9DpW/us+niv6w5HqO+1zPq/jt9d/9+xP2c79Sznbt/SvQPab3c4ul2us9LXlf6vz99if/f/yO7jP/rHT1bpvD35uFrZX/POxv8d+6Mjv3Zl/D/h6Ha5zk5fV8b/nbOOFar1v3LeWUyA69pvO44Q+bCfzjGzZ7I5cFZelUe1fj6ZW1/h6Ha4Tk+3U/cdGZ8VMxgMBoPBYDAYvH/A5+ja71G4kre+W+Me777X2MAJdmV/T1wUa144ANaUj6gDdjwB61pierqvstsHXAGO4RQaT+xwpY6vBWIWvm4kfhbwfay+Dsdv6HqVMxjx0ZgNbUvjC+ir43ZVxs7+XV67abROug/e5bhXHUH2uyO093iO65Sr6QKR5mrfynTE9ewcC3ELjbM6B6O/z0U90A16JdaF33H5KUNj8dVZAbVFxdHtpHGZtK7KeVJH/S2hK3UMKA9LXA/7aKxQ0xEnpdwqXtihsr9er+yv8XHaPW0SPXl8S/Py+HbFq2X8idtc/ZhyyIqdNAG1n8cfPY6b8XtX6rj63THS+/sEnTs93bfl8ngc2usTcPs7b0A++puUyJjpBlRc1I79Kx5DsZMGPSrvmcmrfJi/R/BKHU+4Q8rlA1dd+ZYVeI4xLrOZ77WgDzlfRZ/QsaniDb39Vv1xx/4B9X/K4yl20ijnqOOgypF9z+y/W0flBPH5HXeonJ/ux7oCHdv043st4oNv9L0c3FMdZNeVX8ue787Xg8r++DLl1B07aVQmn3cq3853+oe3mZM6BtQGuqfHx2fXrbaTU/5PoeMHc8zs3mqP3eq67yVajVt+X8uvZOnWrrek8bIrnZzW8fS5zHdd2f83GAwGg8FgMPi7oOsYXc/cax7Z7UmMdZC+K2WnTF2rEu/O1oLvAW9BXo/nsO47PUdSobM/nADpduyvsRbWOzz3FvR5grcgbxaPJE7uMRvntIg9Ot+lUO5W4xUBnnWfozy0xyA8Jqv8v+ozS6t5E0OpuBgvF/k0lqMccscpaT21/iovfM6OXpBdy1G5TtCdMXGOR7kIjaV3PsO5e+WV4Qs8Rqr18/ONzsFW/p9ysjK9btnebG//2I3Yp8d8sW22b5u2AificWLsre2i04vL7nKdYGV/7OplZrH/FY/oNgowB6hsepKfc0HeX7K8qxiw7g/SeDex1uy3oyruVX2N7q1SriXzGSu9uL9DrhOs/L/bX+cJt9qffklc/VH2136xa3/8BnmpzyNft/9qbwd+RHlV5Q/Arl6q+p5gNf+jnnCMugflFvtrue6Hb7U/OqQc1cuu/clDxw61ue532ckHf678n8vrPj/TS3bP5TpBtv7zfUU6t8jOX6tuHCt70f51/8M97K/zv+rccqCzm/dxzZO+zLNdPj7/y2TRfRgrvfj8z+UafEy8hfXi4PUw9v+7Mfz+YDAYDO6FbP23imWAt/Su+Y5nOoWu17rxtoqdnmBX1/csM8tP4z+rvZEBXZe+BVw5+1CB+Nfufs1bsKNrT/8I+1f5aexHYxV+xinjCB3ELTyeDnemvC79jzNxzH2VD+Oefyd2qnXwdyRWsZKsbhqT0Xbh8iiycrK6wv+4rjWO7zKpvYhTO1e4i8r/a4xfz0vRz5TzrThCLwfdwZ1o+ehFz9WgH5cniznqdz9/SzvSeDryeBvwugU8lux8QLYP22OzxM+9rhWHp/lW+uB54sYVB7tjf/f/QNuWjlMed804QgcclfJxrsPu/137oxc9j+kyB/Rsj0LTZTZWfWX297mInq2r8lL9KLfY6cPL4d4JVv7fZcr2WlQcoeuENN37H+9hf2SirWUyB96S/Stu8Vn2z+Z/+EL1l7qPAp9UcYSuU/x/1/8Du/4O35TpPJvD7/h/rVsmzz38f2b/jlt8hv/3D/X3c7B67lDnKRlH6OXo2cGqfXta14XOM6uzmW43xWr+F3D7V/O/zndm5XT277hFv3fP+d9bx73XO4P3hbH/YGw/GAwGg8FgMBgMBoPBYDAYDAaDwWDw9+ERe9HZ+/SRwX4T/6z2vbPH0t9pEWBvTPZ5hD51b6nD32lccYnsS/N8ff8I7wDSD/s3nslTdnU5zUf37fGp7K+/Y8K+I/bZ6T63LM9qb/Ct8nd79dWG+h4Qh9Yb3bKHTPsE+T2rbVfo6vLIMnVfpPaNrP842K+W5emfam+eP7vaG7Jrf97LRPr439+xofZ/bbyG/f13B9Q+9MMO7COuoH2p28sW1/W3RTqs7E/boU87PP+s/3Od/HmXm+6h1H2bAdqbvmuJfX76jO6x1Xy1TZKG7yc4GUNUF/6uoaxvK6hbV576gsz2jL34hlWZ5Knv71GZ9f1yJ/b3ve5c53+tJ+eSdJxUWbjPd/SKzHouRPOlPajcV3zTyX5xPV+hvgB5qr5Nu9zx59nZAc3H95av5MePa/4BdKfvYlM9Mub7fKXSsc95tE7aX31Pr+5l1/mU5pG924/24P3wdEzgnFM2n3FgQ//tzGocZv20M5Yjy+ncsLM/etUxC//p7Ujtr/5d95qT54n99Vwi7VfLzN5d5fOsyv78Tzu+MidAvuzjQH50RxvO/Dq6q/yq53vl3XWByv7qNwFtMYsV6JlRXd9QV50fVucbMvtTro7lel3PpXqf0nMfnf2RydvXM9DFXXbnFpHuqtzdeHfSnvTdOtqXPtp5isFg8KHxD4gkaqI/dFX5AAAKtW1rQlT6zsr+AH+vfgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAeJztnY2R2zgMRlNIGkkhKSSNpJAUkkZSSG6Qm3fz7gtIyVmvHdt4M57V6oekCBKiAJD6+XMYhmEYhmEYhmEYhmF4Sb5///7b78ePH/8duydVjnuX4dn58OHDb7+vX7/+qvfavmf9VzmqDMP7gbzP4vbwlv65u7aO1W8nf65HVw17Pn782NbVSv7u/2x/+vTp199v3779/PLly3/6ovYXta/yKSovzuUY55FO/Vyu2s+x2m/5k3adW2laX9WxYc9Kzp3+Lzr5f/78+dc29U//LbmUDJA5MmI/51T+yBSZ1/5sF/RrziU/txPaAuUb9uzkXzLy+K/o5M8x5EJ/tQyRc7UV91nkxzXgPr46hj4AymM9MezZyf+s/k/5d+8M6HnkXn+rLSDX2rYs/cxYyd96AOj7lZ51w9BzTfkj15JVXes+SF/3mMB5+FmSx3a6IduJ9YzlX23EaQz/UnXi/nO0H13NWJxtH6dfZ/spWVneKQ/6beZd13ksl7KsbdogeoYxyeqaYRiGYRiGYXhFGMffk0ew16f/828v71ny3foeXOprujb1rniEy+jtagfP5mdInfCW9r67lvfznfzP2PGPfIZ5nvd1vsQuvZX8/4b+8xZc/vSzYc/Dpo5NJv136dvDF+Rr6SOdz5D6JD/OXfkDTedvpIxcj/3IvizbL+3f2qWX8rcf4lHbQMrffjYfcz8pfYnOLLkgG2y+7Oec9AvYZ1ggI+x2BedR57QPk/Zntx3aDPdCnpkW8u7s2Zleyt919Kjjga7/A3VoveC+bT+OfXtdjNAufsh90HZf9/9KO+t452/MZ0r26/RZXZLes+t/QLbpAy7sqymZ4W9xf0OW/L+TP33fPkDH+1ifwM7fmPInLfwA5NPJ/yi9V5E/z/b6m7KxvIv0xdsX5/re6Qb0idsJusW6GHb+xpS/z+vkT5zKmfRS/pzX+cP+duxbSz9bQX2lPy39d/bt5bXUbdHVkf19PEfIY+VLhJW/MX2IvKd15fF45kx63qYeHlX+wzAMwzAMw1BjW+yb/Dw+v2dcPfaAGWO/H7Z98bNNvosLvRV/w/zDZ2dn0+r84NYJ6A7HhOfcwPQtQl7r82tfZz/M8qCvRj+co7OrIP+V3dd2MHx82I7QG9h/PcenSL9Qxu7bZ+dz7LfjL8doH9iR8UkNx3T93H4X13uR8uf6bl6nfYG271rm+A+6eUSe65fzz+y38zXoiOn/51jJf6X/V3bw9KWnTx0bKe0i+7FjMM4cy3ZZ4JPYxQsM/+da8u98fuC5XyUvzwUszvR/cFyAy8m5ec6w51ryL9DJ6TsveIYX1uHOc/X8X+kGtzk//x2rUMzcrzXdu1ztW73jeXze2QIYw+f1xI04ndTP3fifZwDk+7/LyrFMe+Q/DMMwDMMwDOcYX+BrM77A54Y+tJLj+AKfG9vcxhf4euQaq8n4Al+DnfzHF/j8XFP+4wt8PK4p/2J8gY/Fyuc3vsBhGIZhGIZheG4utZV064YcYX8SP2zE915D45XfEXZrrazYvSOu4P3cfmX7kO4p/7QzPDNe1wfbG7a5wmvwrGRs+WN/wSa3aksrm5zlb38iZfL6PC7jyp5gm8HqXigzeszyz/bodQqfwaZs2ys2u/rfdrTumzyZhtcQw6+HDb5rN13/L2zTYxtbYP1P2vb50G59vdfn8pqEq+8LkUfK3+uOsQaa18R6dJARuF523+QyKX8/O1dtxnL1NZ38HW/kY/Yfs5/+SXrsP/q+mI+RT+73enj3jHu5JtjHIfuFZbl6Lv6p/Lv9nfzTF9TFItGv0e2kf/QNud0x/BTW8+TB8Udn1//teyvSjwO3kn/XHmz7dzwB/T19R9297NpGxqiQXvopH/WdgbbsekkdcORHv5X8C6/jS+wArNacznvNe9nJ32XI7wv7mkeVf5ExMunH262vz3Gvp5lpdW1mF5eTPr8uv9X+3X2srs3r8pyufp5h7D8MwzAMwzAMsJpbdbS/myvwN/hTdnGsw+/s5tat9nnOhecKHb0/3oKRf499GLah5ZwaWPnnd+3FtpHadsw/3+Ww36nw90Tw/4GP+Vrbk/AtcS+WP9+z8T2/6jwRy8x+toybhyP939nmrf/Z5rs+ttPZRmv/jNsicf74erABcq2/UehvCTnGxHKmLPiI7q2nbs1ZWzsc7adv5joBKX9AD7gtYNenLdg3i/woe84bsd+vm1PS7afd+rtAr8K15d/1n0vk7zkf6O781qC/ybiTfz4POp9uwTPpFecKX1v/Xyp/6210sGNt7MNDPuRxpP9T/rSNTJP4EMcIPLI/5xI8bqKP0a9uIf/CPj3359088rw2x387+ePHq/Rz/Pfo/txhGIZhGIZhGIZ74HjLjJlcxX/eit376nAdeOe2PzDXi7wXI/81nt/g+Hrmx9GPmYNjv12ms7KheA5e+upsh/K8oJUP0McoE9dm+bH/On4fn6bL09mjXgFsoGkPxW7nNRo5r7OpF55Xx89+t1w7FNs/dv5ujpftu/bnkjZlzHKl39H9v/NVYlN+dvmn/qNeufdVDE83TyjpfDsr+VPP6Uf0/DR8P9hm7R+0/9D3tio/x3KOl/dXfs8yz2/FTv6W2Z/Kf6X/U/45/9d+ZI5hq+eY5/Lu1ofcyd9tFEiLNvbsbcBY/1v/3Ur+hf2Qfs5zLuMS2gN5nNH/kG2DNNm2T9zt7xV8Qh7/rWT8nvL3+C/n+NkHmP7BYjX+28m/yHn+3fjvVeQ/DMMwDMMwDMMwDMMwDMMwDMMwDMMwvC7EUBaXfg8EH/4q1s4xQEdc4p+/5NxLyvDeEN9yS1j/mLVzMn/isSjfpfLnuo5K6+y3Fro4lI6MJz7iklhA4pa8Ds5RrPtR/Rpio+DacfSOnfJ3eIkL7GL3KZO/6+64X8pLfJWPkXbOFyDe3DHnjtVNvDYQawhln2UtMseb7/o1+Z85l/MdP0tejkW6pH6JOfLPsVHvsa5ZrtdGuTiW638RD04/5X47Oj1KPJfv29/+oS3sdADxusSSeU5B3hvH6We7/kP+jglc4ftO/eJYykvql3MpJ+leS/9nXH7i5zJ9mzbtfdSzv7fh7ym5HtxuXU+7+3LeHV4bzPezaod+hiK37nsfcOa54vkyOXeANpQc1S/QLhyfei127Tr7K/3H/6Pzsk173leXHv2P+0pZua9a963K6rWiYCW3jA3t0qRsOY+FvBLnle2etpkc1a/PI0/PVXor6MFV/z877v0T+XOO59xkmn4edvHgTrebh0Sd5zcqLlnnqxsrdjrTeWU79Pg4y32mfun/3XyFt7Irw5HehU7+OX+j4N3AfZV7QsaeI3QGr+mY13jukOPVrXOPWMm/a6+MU6wfVu2b/C/V57t1Sj1v6gxH/b/wPIvVu0wn/6Oy80ys8joP5ERdsjbcaqxmnZnyZ0yY6wR6nS+vK9i9W3uOmd8dunLw3UP0Ta5Z13GmfuHoW7sce495i7yjrvLNeRoJYwXIekG/p970u/SR3jvT7nfvhKuxgMc5l6wTeslzele/lPtIrpzz7PNWh2F4M/8AoIL6IK3Xo8IAACoXbWtCVPrOyv4Af9TwAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB4nO19K7jsKNb2kkgsEonEIpFIJBYZicQiI5FYJBIZiY2MjIyNLJl/Ufuc7p6e6fnU/9SIWnPpPlV71wmwLu+7LlTm5302ngDas5EtxtdGYIejwwJwXcUFawDfhX7D82Id4IEKEAG2ChvQniTBd92T2bGEwfHNfHP88UNvAJWb3UEr1XEztr5sTxUU4HidQOEo6TDwYbmvKz/3CRKg3FQspF+NA683gbhzXJ3b3s+YXkJsMSn8QxHzldIPDyvUa9so7kZ5TiI49ZZkUEPMXzkWyNI+TwYwJmyrNLiPSW0r/u7rbpB37ttHF49yxbD4jZngATxRqoNxCQ/RFAkrr5eyhUiTfQz6oa7BZaG3HX9xj7mufn6CWykuozVjg4k2LNb6uMXAwYJtDp4dBHVPoPjvqDlwXPjT/TwvGw8vP7z8t7hOxDoSnpNNwpsFcCm2FSAV9sScLRzVHjJwwCcPh3VLcWACvrTNX7fg2ubAH9UvuJn7Nvw0HTx+AIULtB43N1PqG4HH4U7d1UJR1+HW7fPrp6iUdU3g93uPjvs1yCUuQqZOyYoLGGs6GAlrm07AvG2BOdgP/OcCKqd1gVXFfDKohtklO9HvEYGbqx24XUbhYdeSKc8LqlJFJUhXYzBNZwPGPrv4KS90aWiTZpj11QnRuFiGPsrKHKgSy0XLxfLjKRWW1DwPLOk29nM0xeHAf9Y1m3rgYvA/pKJKH/Dg9lwbPBlPHE0lTyMoN+Q24DqnFj0Jnarq/dOLB1lBo/fCg0gNtqsIkEygczabzgNNg1jqyPlCY1idJseYSr0TdARluy7K9hL8qM8JMy4YamUolM8/1Dw/nS0x6SRwnU8BPQD9f3gUGhKMC//a/QkfXTxKdMKht1Znm5pgfEksPOS4lX3gRvMOUWpd0G8lW1Bh0f0BiDb9GFgSWb/NPOEXqj8QqFlvaACARp4X/DA2N+GBrR82Skbxl0db8IUFd3Ypms83Pywc5EB3jgqNBm5N4Mem3RNtzAXKaz4/9ejJTNpq7w+zFT2A3Q/aJXeDWohpekZUeAaBEPSEJBGBr2tQ9jibRbeQbfL4CWpBT5nx1Nf63oCrnhw+fv6ShuXc4NiGkboG6UI5+rXiCYYL1qQCOFWtq0scDkPDdrRqYusPTAvo5edDvALvgHmvBaEL5x6NO6RtF2oLUC7UBSCX+OPvRGvxFcLqd/6hVf9FwsKAM/TcqMGUkZWSOHjrVcCFSsr8uXMSj6MSiZ5chLMIDujJn44rOwZ9BwRzrRhGEOMdUSgeS0mt7vemWN2bhMaoCrkxC8v6/itLj/qo6GRYjB9dO0rEo47vYwiIeCSdp0TR17feDxCeohNYYGnXHiDsqOvREEBszI/7cm6wbSSBqMZe1znOhO96QkfPnqBRPRXGbmYQ5GuEROr2rGU7Cjyo/fgWYdP8Piy14qKem2rG72uHMEKfW3Ao9eIkvx0AuofHoJHb9sxw/TQMbssZy3FglFjGk/kJ+nbPtfboGNkuePVIboz7jW9yn0q+gM81rPHB4P9I4Bx1qYnx6uuHl48LZuCnFgzt19dh7BiVholbWhcZOj48x01ASqM58wL9AqziJNNxXRUBoQB9PUiFFgxrBND+M8bKGLrjr/npsrp0v1GTPX+CASwJN8bHBrXfu/3s6udzDcQ+kOOiM/i2797cNlum0WeVqJcMUkyN2I2qqPkRrT8XtygMjSZ33S43QyN+QnsIgl2v0wrX4pdV1FcCsgw3mdIxf2prfoJllGNHu79yFsvH+R/Q40TYLhsSPfTLS7Tc7usIxUDdV93HsU0SA/sw5YCQA+P77ejkvDDOXAba8nh/kPOuds9x305aogs+IwTGDYOEjOBCRZcJmaUplYK6JnnYQX105T9C++oLWextKMJXSXDhgcmx8oDxC7h8vTKXK+j94Fwyt/Yg7d4pkGzcOLfWdGwYBRzBQFouQr2Ao+8YBJVl8YWLjYNSU9/0gcaDbT5kmEmB6f5s/vTyJ04NYYZkxKJHM7kljYa8I6spP+i8zyQFAXMfHN8JA181PROy7Vkcx0JSIy1rInFHUC3QZRL+IudmrcEIwuEl1qktz5MzHjfq0OTMyDjUTTmZGYHPihmKLBus6ORfKm47SILB+sZFFkLGsYYd1mNsv374zu6x5w3LnVuDji9zYZ9nuEkVF0UIMuUsegPSMdoXdIEbOpJrTMbT587BBqHN7RzImQgP5aOLRynmHNR7EjfKb/DLxW5kqPik6Lfw4ZV7QHL1UJg+EMZrwneMa9e9vqELI7gPa1gXZnmREtZFx/eayEGpzULCOcJ1TRCw2940UD25XwTTbJKQxmdXj67Yh91OlRTVI5ZfbpmHR++kcANwCyxahR4S/1V1mzbIk/fDVqab07C45TBFS5E3Kny3/Rhdr3ud/Dc1Rlzp1La7+npR2BWgeiHhgscHCXUVSIA+7v/zpnVwmrLa9vVU2aO7bzNQKYj4tFvgXtU249ba8+NgIC2aZCYS4So9tiXEwMpmWZI8v16Sg9i3YF82najfyHxoHbjM6wUz2KE+gIQyIBlQuhD6cf/XNwcVz46zC/3VDvwsTnO+artGmT1CtYr8YAuo7YGzlUOn8vYEaY5VkikBUumQj0BMxd8G0q6Ei/+JHQK3x6dtYjwyE0ZIk1JxsLIcw7lGvR7l4/j3WBy6aY3kjrL1T22sR0H93RC39NJ9OrYqGr7LE3UMxGYF2DodQMqrUkiZLgPy2e+KsDbC8byxwzaOapDlAadj5kdPcE8tDRD6rTYdSBfS/frcyn9LnclK5ttVwM7sFjq6SseDvp2K/cl2PGd6juOM6ATxIPH/CDFGKnFtmS07kw1J8o0UADcNPwPeHuJP7ChZcg3ZZGXHCs/JRgbKFw3lmQnS+tGl/5ZyxdhIlhAfy8Fh7MfH26HopT4YxhAALKGVuK8z/4sbROxaCIu5RfHKxq4B0nFx8OzYN3AbgT+4g8iM3kusBpD3xSUOyKckgTsP4rw/Hv1RrHIYjTazcFADN2C8YZmGuOlePYQHhP3JUue2XxeG9ZmzKW2jhMc+wEQzIx7Cowy8XycN50n+wh3JrXUPzYtDwcotUo1uEGXjr4Szss/zH3NzlcDuTM/MPMitLxO14BtSKXxMdF8xu+nywTx19X1FCkTIemzC8SQUSNMRDivvTggdXxUy7L9zB2MB268t8nJIkVYuoBmzpYj0Gv/O1NaPJ4CR74yZhSh9C+BvCbLtOl3orKfbNqdGaGx3sYa8QIzSesZ7NrpQX5k/DAG2DUXrG9LdGNBos6L237mjg8N2ouZLqwwv+0LpIk3S/rJoO8DX8fH6F+cE0LGhb7/rKWdSAm0gwySsNb8sIJRFg3j8KD+qOhO2Z8BV67WFF0a8NJ6Z6sAgCejgFgjztd+5w0U0jIEGIZazcT8QbOSYB5D1Qa71DoifFll2tO5zOm1SHqooRwf/sFrfedpHcYQrdzARKU56+/bn4XWIWfQtxSaVp4/owCKiWRAJPSdJhv3OHYM48LfoGHu7mW2IG0wvfoS5jxmDwiH+j8f7/y7jQu+u4NjRzEE9qJ7457yxWZnLDHx6BPTwOmaJGyPCrH9vaLkyWGqB+Me8SXwx1thpMxNBKHz5p3YQZjHFAxOl1g1OS4CImkzAzasa2i6f69PrP9Jy2V3DcUJToF4jbxby/i5sgCUEegLi4oGLDa/E91nS435piOSUg1CuAIhxEB7rdSY3KIQFHPlVO0ICoZJsIHpG63jXjgazgaKLTZv3y/ILLHxQZgxW9dag9muCkSebTrr0YsyUL6EkRU6VuaoKSANB12ne+1ELPYJ1LR8vVOZRQUQ5k6Oo0mfV7Fft8OAlWVrvrlyAn9ph1KWk4zWQT61qcqgPy9Hxqfh1Ijnj1kLYenCDzKzWdmylrWw9C4MQjx4VybhZ7OjHeZ8V3L41dAP9habSEQvXbUWDgXqeK/yqHe9NG7G+iz6oTL9rxz2LcnIMNI0D+ezqp/wUL2f9D5pFwHIS/sB+UIYYpm5C31ugrlxnWxV7oauHkmcao+NZ2wN2Up9XJxuGhwp7RmWwbTHv3gGMewsC3Xe+BwNM/9U7kB03qCYkkef+ePpj2vjD0DCfC4GOnm7d9onz7SYR+tp1xUA1c0PoFEPVsW2c8R84SBiD42Vm8e+5xnQMks48UEpa//SOsECDj++Q+cjc/+gdobsWNJ1LfK6PI2AOF30XYZ9rEVJO4v+gJ5d+SVUhwmvyVwGAgUyMm1rX9USYBE5LlcGlBffMoVXjBgyjnM/E9/3dO7SaZ8wS70x+YShd5a/eIUJqdugo0Wbyx/Ufo7+59Fy380LlBX2SQXVI91KhpKARBs4CANVn6/eY7hpNH+4LqDw3hwxPi7c6yO3KW/dtNnXtdvaO3cc7M47mtT3I/O53Hemnd4xuHuj7r//4+o+XBKSkM3BL/s5NoqS2pYOoq3vzLgB0C64ioQPzbnSaGj8T4OuNZGnxsGLMQzaz8z2wykUJsxmgHq0e1Q6FLIClG9GuT8gKspz1MLlo/naHy0cXj5I7Hj267/VNViWlE/b3m8qqiHL8pwDA5MI0nUgYDR04cuTZ1AZL7I2AyXi67UEc9DrKMg3aEWXALqmsAdfdnzBOPGed6+SD+JkniKbK7s02o+mHJcHDR8wx1ta3bX3uoV5qrm7t0r3TU/0wDEN6AYvH7UxYhjP9nMhVg/aETTteBeL+XhV+WGOwvY6AAWEBGuh2A0dIBXUi4ecNMYrza07XS/1Ugj8siNnncoM97tyOhlh9NkNCEFc227sAkEbfF6hc7jOWbXs0IV05/+G7rdfcSjRu6RTYEzVK03OEd4LcXgyqRJ/3aKgPgo30jHr2gru2o9/9OP+V4BxQ65Rdl3qdF/DzujG2G3il4n4XAPy1SjgjY74lgc++E663Y0Z7ZPOXG93fAx26vW8d94hAd8UwiVFzUK/juRKaXxXMgc4gPwgzeUIyxJB7fL7/BTWzp7iHfcs+eHtxKGG/stvRgmGhPwWAjtD+UZMl8qfMbMGs9jT0gqTPgnhtV0nXhoBH7a+mQ+ga0vTsMRLqEpII2xJr11HW/YwzaUpoG9wsx/+A+uP6iRpLuppSiPfFxPCiFcTCyPbITwFg+sjnhcqyu4aPPCHzjVsQnrhOd9n0tmHE3Pi2olqAjsB4iVxSdHaaAdJeWkrt3WFcKAHKHshamVBFlo/r/+4gMYqa3qMFoWiO4Ped7HkGMPdTAJBMIch5Ds1RA1APzJ4Q7SNSQNOxJjSvYZ85EAInMskBnsSL4LZJFaxFxzhYyfhJctXECjSoE5YqeZ79Yh/Pf4vLvNMaLyOJDXiw3dHcO8YyUn4XAKqLAfXiGdbhTzfP7aJo75PVmFWO814Ip2sE9A27mqXjpyjkvqAspYifMhiH/Ncpz0MH9zoo2ZA7lxxRMz69/jThKfoliPnUYjbuF0I4Af1coBQfswBwtfWayeyrZTzquu1T6bkQkILY7Nor02pz8MRwjIS4CN8lPCYZdHszP4yjCKx8TgYpcDcRYpnUAn/u4+k/1GGkaeREE7VXbAh/khYBob3wiFiXnwLAWto+O3X4nSmka28DKSNX4cjNU5purmNSvXj0lHtbwHNYdjGkrDk1iRFfrBqsMEvpGPXBGIoRttWZN9o+ngBUcKE1h4u42bSkbBozpVP8Itid6kzuvYhYkOqF552rW+E1bfah+A4Mur9RAD0idX32kcZwz5gqeI1i9tWJuu7jl+MjaU0rs/lAu1ohkAn+t8+ufmrg0lmU3awVGJGhtNIkHj81ipWgbQZ06nWIXSCHJY5AjvfdhToONGg424O4mKG7dHXsFzPAO/oKzpFPpDFBL3KLvwS+mQUKG8YRz1IqNcDH+//L7GncJmojBFkeMjq6JFoIKGGtZOZA3z4negqeFAaE10wQrK+zrNsCF+uHtqm9NlqQ0cA4fGAbxjbdIgLljFgBMd9fgA96BScQDe5GLan3u9GP+z+w+lheAvILQTo/MQiiBzvYzGgvSxieVkIn9QcM/HZPbhIfGc8ERlPygrzJDPUGxqTqsO/M3lF7PWtoN5nAF03lr8B3WFH5cPxcdu/Nk85PL/+2LsX22vG5CvSNTjO3zUhLUvDJbIpLliKbcR0P8pQeiV5X3ASzaIG8MXd0+R7joAtoQAcCp6zRM/BlEh82/k58lpIXtsGpi0k7ee6P8z8fAzh0WwaDW+khkQv6pbUkLB/Orkytt2WWIo8FeqblJUnehkHqa9zMFxFS5GwhM3X6OODagXkT3+s/E1+eV8XpvSmDQWJD0vXp9U/5IXJ6v4RhoqQ1U7HNbtaXo7OIESPCFDz9NDN5j9w2IqoVoNJS/erR9N+DQ4GCUQTlvyY+uFuPvCMKQgBIzce933t2oWXgBddrT8PXVMlscSiPVUgD8M21aI8PDLvdlDgQuixAdLC19sjD1YJM23twCLQZlfwfiS/YKstMIo0UZF95DB/vf59rLDTuC0fMlv3RYkQ+LMHPLm9rEiL9RDuGfDeWWy4VHLVE1kPtF0GcnxHkI4lpx+bpbP/8r4nPn6FJ1qzQFvII4vPeH0S/cb1dK94YZUUJlfKWX6stLaCZg6YL2rBjqRybs+jngF74v6VM9BKYcbExfhHrEEOQ30OT/5T4nkOTOaGOCGdOjRHk8/3/+xqT9UjIBDhCFmto6uerSsGOI1qkLWD6VoFvp5lNy2EgOXIYERckABPu1boUA1otvGjza2jyHwofP0OTJLcJ+16W8XTEj/e/OWQokTgWUN2FXdq2mqPXd1sSogF3bBjpzzu1jGSV1G6X14b0b85Lq+iNZPkMSBqm3oQoRPqvha+foUlu/EnMIE3v4/xfKAD5gbwOGfAanJIY7vA1KTYSSC/29cxZzTGHuCCxUVLmjGsfLG7L1vtYSL2tBsqJ8A6Rg8rLPxQ+/xiaZGaTBAHnJjazf/z8vV5FfxVKlm2LEhSq6XTeyHulQ5e1m73MQ6wCY2C97tkwyoV2HjUdw8J4POSD81w5WQK33f9j4fvX0OR9MdowNiLXtCHWj/Of6znqZGw6J5YM+zFIIsE8SE62AiZdC8Q1z/aPNrY5xyEWSe0xOyKQyR747ll4Qc/XSy2XefV/bXxofx+aDGQcDaIiXfDP1//b67kIVbkuYWurZ2JidzI0rI2m/ZiDwGotuSBRDqrMwgBPZJYt1gTWwTpOihQJZEenl8ulTdn+pfHl+PehSQlW+Ec9s1f4fyEBcjbpm3fRSDPzsRi7FvvScCLxHdfbixcMAbmhgqMjZzYqeKU5H/CuhO9re0iQrjxXkKj2CO3cQhZR341P578PTVYEEfmFe0to9Z9ePMxGfxWJVw0dPOS1TMCGx/06dyR8sG9ZgJwtUV08E8qrzdoh4SHlnrn78EbPHnFAEH0zZqFS+CUdu5iNbxXEvw9NjqPQBnKvRPXy8f4PK8tOfOxZzVn8mY42/Wobl3IDMdExFWs0+PppJ1jJGfxmg1w63GWu3rz3INx+uVA5muXSMe3fjY+zCvYfhiY3jjhRoWFwZfXH8e+G6PaINSA5b3OmTdp5lwn1SwQt0dt1iqR1Fjnm3AdCZHg3SIdWmb7W2CamXw+or50hQ/KjbAEYZ0wOIP8wNImxf7d5U/cCpX18/nHZs95r0PDsAdn6zGKuczoBZronL9D8gsAOHeO8s0Ah/l0luYPceiPXPcRKpHPHYDOXf1cgZXo8jVBJR/IPQ5OCrvswqEDoNO3H+78LA9XeHvs1uAI1Z7WVeP9jju1Uv0f03PtVGfQjr1LUG0NDxj90ZHjHHPSG+ExgjMaBOKf16+lkZ3NU4j8PTTZ9LAwCX52akyAfllyCa9msBN74nmx0zoRsr3OgizptIjLX4zW3YgFlXF0IXPIMy5vc5Ht4Yd9Mb7mLUdN/bFB3SzeN7Ok/D03upYkAXmEs1R9f/mxiKNTAMYc/8b/rgwbt8w7PM5MdhN2MXjei2/Y68BCFy96Dw8NeunVzrM+acUK5OCrBjehogEd4jB+wWf4PQ5NtNQKDTX7te1MfZ8A5buiRUliWHUN9W/mrixefaAdPznRDm5cxI1cz6Acqmvs6O70mXxiHRxTb24K0JpxIfInd0ODB6DWCTJGJ/zw0yYPv8lxiBab7x/u/hhGXRD9dZk17VjYqglPkPIeb2dtlmY0wLKAhq9gNQbTL2L685/aF5KH2jEu4CJ9tpJxtncHG343DcoudvU/3b0OTraSa/LwyiQoIH/d/1uEjg8NwJyS0RpDLv0Ah0nswnhdWhBGmWVep2MJvZa0sqYonqotIJ7q/92Dncv0xzuLa6BWDI5rNvw9NUlOWGt0QE1m6j99/klpCHdBoxHyWeLK3SPNADTbbWXppVx9shHdRE8EMERzhfYJ5cQ8Xc+Ct7LMhYKuzH355I6ItTxjdC9WRqva3oUmiWJX3kG3WyxEUf7z+B/GozHnP8YHR9Z987/wqMG9AooEbXduTiV4oYFAPEcpx7avCg3a2rWVmtwHpz3buJ5pPQT1CgPsejIPdgnDk70OTSiMKvKgQDNaeno+n/3GV5jWxDVLRw+4XuoDrgXdWJu2FKQzUqYPZbkBwb++N57Jd3cx7M6x2tjoL+g4Yx/q1ht7DWZHozWYqYVfv0l+HJicKSmswbqWJoq9EuHjoj/t/C5RcL0iT3MzJRAzhdQPOcQ9allzajEcr5ZW1WAt/7FqlVD56JxE3+VGHgXERm4S5jr65yYztAiNL4lIu8i9Dk7sHVtbcZ8dR18isqOXp4/MfXAviEOxguLc/ZNzbFzF5s5TldU3bNsa1OFpYXTjD+F5whap3UesWRb7nDSYI74yHrTEWZnITUpoDwUtp+/Hn0CQQR6QWzhPT8NTdnJ2P28cB0JUYHoyv8GgzJ4HArsL4lLeTBsd7vBwUAbGaHh47O9Z+RqD2S+4zN9BrmhSWzHU8CHD2tWTKjuXoiCtDqH8ZmqQImQyNUuEPkfdNernGj+e/NxspbgDSgAip5gT21CBsRQMORx0bec1svYc6EsyR/0mN3u2Sbx+xQuw8QVyOjJpcNo9k8Oj9RqbgcR/gz6HJhVGJW+K1MTxrqO7dTsM+3v+XUyV864LO0JXvcwFUdcZsZcH1kmKaQX1BuOvm7RaezbT+MeP9GzDAQXsfyUv5k8qYGxTTurx0atEH8sfQZBZMST1yngkRD6JQUmfz+8fzX0xiuFKzo+kNxZ7rEGw/q+KQlJ4pIbDWW6uJRsLmCG/W5wt3aSYCa16UQ1YodEBw/Fcy0/eyDvN7aNJ4gUiXR1JusgTNiYxlEQRDYvp4BdSJsIGq6TZHwbOp9x2RrI1RhdZkMjdczNirZJxTkRvJPVy7RgKnZiq8MOmRHQPbowDcDk9QA5D6xzUocoRa35kTeFGREFoWPgilfkegQWUeTi314/n/aln03DeX0r5uO/puP9O5IlC3r3jSfRaHt5UaFhAdL+BO5PYYAN5XOt2KJrSX176G2Tp4IgzqraXRgxA7hsRS5xTtjpS5FwyBrmPkm4XRmfWx8dwV/fz9F0VsbUfCp2E9jwsXaAjyFsKoQkdf5nWFs9dZblrsq61GWXMg9FXptSIVek0bJss6y91HbrgBz3XtLvVEWIkag8k1WG4UHJrBofYCmzvefbbUqyVYTz+9fjIm+d3YHO64B0ZyamqiERiiHYU4iJsLeUHKxuQXKrFXEAkRobMTiYCp0hBJkNIRmPcEkzkvuad1gmIp9YFas2wYOusMc+G8DrkgOLIINcDASvWaPn7/abSBnIGQ0POYSTyQa53tDsK2DYjZpONeolPXeJpbi+gHstZzDoCtR0QXuOEWwOMohgAriZciRaO5s0hu1oZBX5vhXEawC1r5vdkZJdLMG4uSxNI/3v80YLUErKx3ndceX3vZN6EcHBK5ECL03TCrWe0G8a5Ak2Z9mKW2yf/nxVBFaq9tyNp2Ou9RyB4diL8E79Leck6+r1t3zPSdeuAq9rGKNRwIi2M/omofn//lGJSslGadN7W1lz9LX9EaUJ3RJywgc1oob1QNfJHqw5NcLSXq6JSS+2iEkux5g8H4xfPKXAljSy8XCcunWUfUu9qQ/oaNEtF6JmMiDCrHKCzf0X/c/7d57UWfcSiaeQeYW/W8shxxYOVhoDdYxLzd4H4Q/8H+pL5SrqXQL+bJe2iSaIXxzCKmZ/jDGhE9dwiYjvfdoPvVl4iKhD/60+n/zLaRdRJOHWh73GcXD/P6P3Rxqp6Ibe0s5aJ1olv3WcLz2m90/wahK/SAFCGraGba5y4yXezduT+HJpWcd0HhUoi0vkbDxL7rtr4RVWWtgqsHJf2dZM/LbAIbs2n4gYva/nH+l01zJuc2mVibdxYtJs4eFlntvoUzKKWtmUc5kax7Y9eBzNasx78PTebdO6Oirekcdt7w+oBugSKXzggB7WK1HbkpBL08g9e+zdzxh2Vf8DG2FR38nHDo6PfnfferMTH03UYjkd9ZWIOBcBWkcRQaXZfcc45/H5osW8IlKiYcoQaxQIMdRLxm88PSuUGH2Zlmc5QMvcssqIPePr/+M1nPHNSVFwg75zojaEVMrNedWwFST2SLyhFeR+maQY3LqWbfflkh/cvQ5EXl6hjxCG4Xtw70/DCvfsXgL6tBDt3ygQqWS+Vt94IBsRA+Xv/dV1micYYitQESE6XiPBgI0YZGirLO6ypjB7m9Ohp423eEfKTNnnetlyX9ZWhSZ7Dl2PoB5tzmZL8557T8zJWqy8N2njPAdg1EZ5mNaOc+Pj//8jPpiWifWURrkGdD4ygDyrkQwoOq1JWN9NdTyQG3hqzUnHzoDREyUcH8OTSpKPG9P09HFJVRMzSFDWbrY2OztlBvcANUgFlhg5ZXKKM+H8f/QK1041g0iGDwTEem2Z5wlQiLyYTjYe/jmsWwbB5cpFs5gmP7Mjbz4lUOfwxNNmYsuoryvMsAJ5sXpBGFBp5D0NbxNPhpPET3bgSy76Ej+Hj8l9CzDUh6Nee+D1uqCrJfqc/Bt+gbtFF0nMFtiXZOy0NfzPFgoId46NH84n4NTWIIDXMAFtcUUEV4u4bH2Ic74sD3Y1fBF4wqblwCmNY/mf+P1792gzpPCPWxM0Bmvh+DwtJSzybGZdvy9fMdFe/HbQWWW23ZnEMHhIfqNWYXKPwMTdbk1tlOaQO/jllY0HjQqBOl5tU9pzQKecRIGE+RPOSeMHyaj+d/HBMz9KXMEAjMW//2Qgk6f2QxkSJa2U8kK0t492nMkj3vc5jlSrj+gNRnpojIDAV+32lbUnonhhi8mgfGRxWeI692kZd92j6lP1d+cB+vc8+gP57/a7PeQffXS8NyxbXExc5rQJZJ8Hw+Xnjwc7g//VzV8GAsRBvo5PXMkgGpjLCO+zWvB+mdVwMXj9v8yV6jE+j453cLgETTGbVNB4jhFvhYZl84PCV8HgATOF/smYlwElDzMYaF4+6EV/7AbG3fg5iTimY/NJ79vLs6vfLMgQ+TX6PUlHYg+48d+03gO2ueOnDN1n+yHw7iHI1f1vnhc2rYjnF3XSRGh6N9HP+iFbt5qw3X1/ssYhgn1eiwTofO/j3Ub7n21vTUMCwK9ajH/7q74n6Wxk2LHoPE+wpZlVK0iaU04jYrIY+UfUB+dYdqsGN0nUPU+uD1UC7FWSj9eP/Xjo+gvdd6tT83EjDGV1hG3KO+bxsDjBu9t6+LM3oOi4GKgDAIf7AWrhDBYzioUqPqR7GiZx+bMOD2EwwCplSXVesa+PKEvbsEi513rSIvNLPe1o+P97++7kO+UWBbBXtPs5MEumPIbq9dlQO2K5V723ut57ze1c4LThEhgTOVgTyu3sdW7YLseXjpLCFDCuaZYrIuoOoIbGbW1+XB+CcOhNLBXCDXn87P7ePrZ3UsEM68t7iady0vFvTfM9ul+brx7U6w7eJYKJtjDYOO0+Jv9U0RRPCRc8oZomG3I/wjMHtjDcHIwPAltXVEV0NCAROlWoBB6c1aNrss2I/n+3j9CyhaJYextdjnd4DRwOGKSGIGaFRiMvn+PCT3xipjwLzmCG5r97OUX/fXkJXwq9D3vyN7RCtCEDyZIeLH/FMvvGf/A8OPYPg5lK0uXgddn4/Dn5nGQ+3MKz6Z7DPvgyuVBf01xutdpAZxnYeExHCmaicKcq85tbxGRMisKX46DOPoE7qflzlHbdzsk3gykqX5LT9zBpZyYUcieXZVs4FwYTtSDw8Cq+fj+PfEg5wXIMxBn1wmF/q5kwr/P40jxAfsbgnb7TDaZWWNvbSTZH5vknHltq2vIQAhx7JQXkgpPr5vtevIkS6uxLwIkdS2PUh5uxk3tFO0LU0CvQrhP97/9Dh5o2O2zhGZ36dxE4R83CMI3jUi+TLQkQuHbLVtI5f9VYnRyg677P1l/M6kzlaGzshiF02QFIOkzZgF92pBzGM3Br5aHwrkXT4LNL1nYvYKxBX98fVzCTJXUnMVS2cD7TbeCObnDSdzOHEfG3rxVFRblFKbW3fEAM0pSYuXOfg1eKWO3Fdq/doNI5Qhbk4relCSxNqUE+IJwUsQZ+Kywd5URYwsB8IBwfnH6z+zpXvpXlJ/qETdpT20BFKldV56w65jr5Kns8wHpSZEDrwEiSdpNzT4UxXLSr0c35SP7SZIpeZVqRtH4LscWxH7guFjcgjDzaaBijz6kouhHte/fh7+iTR92oUYnu1oorDOO6/88mxwQVrwtCWSWNRaFjt0rlE/hBOx9/cdDp7zeZnvazErxrN1NsIdW6upzNbohgzhRPWZYzS/xpza89DdKmSElUIjIX3e/2U+x3NhbWihuf/qRzNjXuce5pc4dTnzvLWVG+K4iN+Cz1XpeYeHQjtmCyJZkGk91kSnCz3K4hyCwTSR7YomoY6S3td8vkP9k9Izu8T3mmdd2H78/ptXZ2oGaFNJWFUOk5EiMUE1Rh5/cjQG1xJ7/OHc60Hkl+lsap93uFTwzuGW3XQ2PB3vL07BoCCNXPuk9fOrUqV0x/sOmGF8DMZpqMzNPolULppXbz4+/3iMlc+vvFm85sh757e3AG0sB0qye2dnfcl2finqXQ8X0eZzIT93+Oj3WJuJgebomB5Hl0awpWwhN46GVZzWfENu4RZm77OFOi5AbXElrsHoh5Sxf9z/01IGF3U/By6Wjzqv6GFC67zWuszMD0UjRxyDZyd5WKtE5f91h1NXuuSZx4pEKYyYMjHX0bUZiVa1iGFnV6zgUI6zsnGNveerz8iSzwsDzRZzlB8/f8K2lUDlZyIpqu2q56lzXNZU8uL0e94B6qtmM2f3iW8C0f7PHV4Qdzpe67wiAJXde7kYqmQjsxUYIc+GdOB9qSxuxnlXRkt2CI/ChFiUEjSWg3w8+41CKwSg6K7COIhpPY8tO7QIs1gJNRxsPS94bOrzjneVluX3HW6zXewgChngK1Pb07wse9WeAK8v0JTiVgCh+7srPDwN2MwIpK7AbyAen+Le5+jUh2VOcPleT//+FrzZ+Y5PdgtxUrYgoxN3SAFGM/vdgd89b/2PO/xgfmuSUs8Dd0Pfz+2ylHXCpuMZa6FqRZgTfPuJcc+pjtQUBIJLVizPC+DPKj/e//54a+HcfVGQeMFVuekTBpwvTdv83gPEwuGBPZ0LpNWwcP2+yuY954qQCB7OXnj6QhbLj/cX3tpLeKun00DwW5DyzkmZvtRZQl0WVKqm4p6QB5mP5//60UtxBckuAuG9gFDW23cb/7zD00FHXPSaV8LPi4HY4jn54w7PMlMes5flQVzok1lcnN95Pceo8Edq977M6cf11aLCTe5AGuKMdNSCtoR2A0R/vvyDDnrOK7LZzEIOxLpct5+s/LzD1ayF99nrNsvba5k2TP64yqbaUt9fcv1unWx8VUHPrxA8EQqiuct8prIhgrg7uhLBOJlfMdxn6XPejfnGQ5+H/7/kIAs+6lZCiX7mLLa5rhmgy5hf/yZmmeTVanDxL1fZ1I3Kd2EA+U8gvJqwSAwSM8nb+/6+AUlgmMjyddj5Fbv1uDHqzaTJ+7cIyM/3/3/lK1/5yle+8pWvfOUrX/nKV77yla985Stf+cpXvvKVr3zlK1/5yle+8pWvfOUrX/nKV77yla985Stf+cpXvvKVr3zlK1/5yle+8pWvfOUrX/nKV77yla985Stf+cpXvvKVr3zlK1/5yle+8pWvfOUrX/nKV77yla985Stf+cpXvvKVr3zlK1/5yle+8pWvfOUrX/nKV77yla985Stf+cpXvvKVr3zlK1/5yle+8hWA/wfdmhmZdymm9wAAMhNpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+Cjx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDQuMS1jMDM0IDQ2LjI3Mjk3NiwgU2F0IEphbiAyNyAyMDA3IDIyOjExOjQxICAgICAgICAiPgogICA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPgogICAgICA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIgogICAgICAgICAgICB4bWxuczp4YXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iPgogICAgICAgICA8eGFwOkNyZWF0b3JUb29sPkFkb2JlIEZpcmV3b3JrcyBDUzM8L3hhcDpDcmVhdG9yVG9vbD4KICAgICAgICAgPHhhcDpDcmVhdGVEYXRlPjIwMTEtMTAtMjZUMjE6NTI6MThaPC94YXA6Q3JlYXRlRGF0ZT4KICAgICAgICAgPHhhcDpNb2RpZnlEYXRlPjIwMTEtMTEtMTNUMDU6MDk6MTVaPC94YXA6TW9kaWZ5RGF0ZT4KICAgICAgPC9yZGY6RGVzY3JpcHRpb24+CiAgICAgIDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiCiAgICAgICAgICAgIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyI+CiAgICAgICAgIDxkYzpmb3JtYXQ+aW1hZ2UvcG5nPC9kYzpmb3JtYXQ+CiAgICAgIDwvcmRmOkRlc2NyaXB0aW9uPgogICA8L3JkZjpSREY+CjwveDp4bXBtZXRhPgogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgIAo8P3hwYWNrZXQgZW5kPSJ3Ij8+zWqGFQAACShJREFUWIWVmGusXFUVx39r73POzJy5M3fmPtrblj7p7btYGigGmojExISHQQ0miDFA4lc0SCBRNH4gRhNJ/aIfNAIxUkKIkMgjBBKMCHwQEGKhpbS39HXfve+5M3fmnr23H84+M7e1PDyTlbPPnDl7//da//Vf64zwBQ9jjCilAiDyFgIaUP4nFjDAMtACWtbaRGvtPmte59Lb8gUW137hGCgDFaDkrzMwrABRBxaAWWDeX7esteZyoD4XSJIkorXO+cV7gQFg9fMvLdz74bHm+hOnTP/QsOmeaxBYoJTDbF2n5wa36At7d+XOfOOW0uPAmLcpYN4Y0wyC4LIeuiwQ55wC8kA/sHF62tz5+F/mDz7zytKOTxpBMKsCEq1BCWjBiQAOcRAYQylpcWW0bG6/Kf/Rvd/rfmP1Kn0YOANMAksiYj8XiAcRew9se/ZvtR8/+seFr3xQj3QtDHGhQCCIFtAqDYxI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", $g = "data:image/png;base64,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", to = "data:image/png;base64,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", kr = "data:image/png;base64,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", kC = new zt({
-  image: new uA({
+const ng = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACIAAAAiCAYAAAA6RwvCAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAABBF0RVh0WE1MOmNvbS5hZG9iZS54bXAAPD94cGFja2V0IGJlZ2luPSIgICAiIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4KPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNC4xLWMwMzQgNDYuMjcyOTc2LCBTYXQgSmFuIDI3IDIwMDcgMjI6MTE6NDEgICAgICAgICI+CiAgIDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+CiAgICAgIDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiCiAgICAgICAgICAgIHhtbG5zOnhhcD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLyI+CiAgICAgICAgIDx4YXA6Q3JlYXRvclRvb2w+QWRvYmUgRmlyZXdvcmtzIENTMzwveGFwOkNyZWF0b3JUb29sPgogICAgICAgICA8eGFwOkNyZWF0ZURhdGU+MjAxMS0xMC0yNlQyMTo1MjoxOFo8L3hhcDpDcmVhdGVEYXRlPgogICAgICAgICA8eGFwOk1vZGlmeURhdGU+MjAxMS0xMC0yN1QxNzo0MjowN1o8L3hhcDpNb2RpZnlEYXRlPgogICAgICA8L3JkZjpEZXNjcmlwdGlvbj4KICAgICAgPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIKICAgICAgICAgICAgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIj4KICAgICAgICAgPGRjOmZvcm1hdD5pbWFnZS9wbmc8L2RjOmZvcm1hdD4KICAgICAgPC9yZGY6RGVzY3JpcHRpb24+CiAgIDwvcmRmOlJERj4KPC94OnhtcG1ldGE+CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgkVIwmwAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTM5jWRgMAAAAWdEVYdENyZWF0aW9uIFRpbWUAMTAvMjYvMTHjwOqVAAARQHByVld4nMWbB3wURdvAd6/u3V6/27sts/PMQQhFpEU6SlNBRXqTfgkkQOhFSigHIgIWkJqAIJ1QBCz0KkJoQYrSQaQjioBKC+XezWU5fH2/3+/L8fu+fWd3bubZKf95nnlmdjeX2/dk602qD9UnooRc5YjkKp9KyIrkZikfkazcSFaWcuZmpUZScyOpWcqZm6rkU3OTIpGk3EhSViQpVTlzk5IiSUm5VCRC5UaorAiVqpy5VFKESspND6UY03O6U0oYGHo3NCg0ODSj59BQRmhYaHhoaDofFsJiGIVfC78e/hnOwwW4CI1Ttve/AlehLClH6oTrhl8N1wu3CIcFKhqWiwVpWvrG9EcjmXC2nC/1Sd+dHgonh1PCpxQ5nN4pfHHk3qGzOlFUepiiPk5PC/cO9wn3DfcL59deGOqWXC95Saigp/fCY8Lvh0e9Xm94q3DBlXLd2qm5kmRpSrdw9/CEqNwneWQ4HH6hXul6FHVs5Gfh2eGbI6eFp0fLxoZqhE/KC6P5Oa9lhzN7ymofy5PN4anhCRlfFpSVXxNeG26UQf0jyBSO5R1UcjTdF/3c8o+a66j11AbqhCrtpvZQe6lzqnSRukRdjtU8Q52lfqJuqNJt6g/qTzW/ltpKbaO2U99SO9QrF6j71AMqL9b2OvUr9VtMYmgLbaU9dIHkpwM0r+YdtJN20W76ytOa/zZWjpZpTANdNlr7NJVEv0RXpCtFpR+panR1ugZdPCodoGrTdei69MNou3p0ffoN+k36aT+rqcZqfheVQzWiW9HUP0Kn6BVEJ9DF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zV6+JT3q/K+UUkoppZ5Tl9rnzXTvZS/51pTrIJewYX0bzb5r+vfUX7X2ebU/rDnUmslszXqN0v99bSO/80ff/EtrIayb9PNrKMs56kf84zG7v5Te6HqW1yytUb8m7mzNaVbmv4r9stz7I1/WPPKc9sIzuc6ebST3XjlnDZd7OSawd7MmvNs6y5nriXWP9WbWmvq6UoX3Ota9TCttV8f0GZBXXqMep8R6JfdJl73upTKfo+6XbG+j/s9aG7ZmP75rNPZXvNzHLegjrPOtCT9WL+yXY17/tyH3IRB7GXXMtcq0VabZ8xrZt/8TQZzR/ZH/R2U+R33+P8X/GX/2/pB24py9GY74M//JWBN+ar36nJd7Avh6VKf0QbdPXs/yyrDRPhP3sz9znXmPynyutvB/30cpn1CmPC8x1jF+MpbRnteGn1Ivwhg3+I8AG9O+EHNt938fc3KP8pj/+X8i8yj1+93/szKfq2P+z7kdO/R+knUt9fEpfYO/iMs8tlX4MbtnGLbk/TrnYcZw4mLntDV7nfgz9yiPlYN/a/EhbSdtyp7ZyP+jMp/zLsh+W9YpfUffzrpij9FYRdxMr+fX/dn7wZpwwpbqlWHUg7mk+zfn8tE3GM/350Z59TDaQN+LTBsTP/Oelbn3tUtoab1APb70v1JKKaWUUkoppZRSSl1NOxERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERGRO+Qfh5eOajemXSYAAAFTbWtCVPrOyv4Af1WJAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB4nO3W4WmDYBSGUQdxEQdxEBdxEAdxEQexvIELt6Yh/4oJ54FDm0/7601szlOSJEmSJEmSJEmSJEmSJEmSJEkf0XEc577vT+c5y7V397+6T/dvXddzHMdzmqbHz+wY/Sz31L11FsuyPF7HMAx/vod077JjlX2zYXatzfs9tX/VN7/+je5ftut7Vjnrn+V6nX37xtm/ul7T/ctzvu9f/9fneX7aP9fs/31l23ru1+/btv36zPfnv/2/r/oe1/er90Cu1Xf7nEXVnx3Xa5IkSZIkSZIk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b24gcmRmOmFib3V0PSIiCiAgICAgICAgICAgIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyI+CiAgICAgICAgIDxkYzpmb3JtYXQ+aW1hZ2UvcG5nPC9kYzpmb3JtYXQ+CiAgICAgIDwvcmRmOkRlc2NyaXB0aW9uPgogICA8L3JkZjpSREY+CjwveDp4bXBtZXRhPgogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgIAo8P3hwYWNrZXQgZW5kPSJ3Ij8+zWqGFQAACShJREFUWIWVmGusXFUVx39r73POzJy5M3fmPtrblj7p7btYGigGmojExISHQQ0miDFA4lc0SCBRNH4gRhNJ/aIfNAIxUkKIkMgjBBKMCHwQEGKhpbS39HXfve+5M3fmnr23H84+M7e1PDyTlbPPnDl7//da//Vf64zwBQ9jjCilAiDyFgIaUP4nFjDAMtACWtbaRGvtPmte59Lb8gUW137hGCgDFaDkrzMwrABRBxaAWWDeX7esteZyoD4XSJIkorXO+cV7gQFg9fMvLdz74bHm+hOnTP/QsOmeaxBYoJTDbF2n5wa36At7d+XOfOOW0uPAmLcpYN4Y0wyC4LIeuiwQ55wC8kA/sHF62tz5+F/mDz7zytKOTxpBMKsCEq1BCWjBiQAOcRAYQylpcWW0bG6/Kf/Rvd/rfmP1Kn0YOANMAksiYj8XiAcRew9se/ZvtR8/+seFr3xQj3QtDHGhQCCIFtAqDYxI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", ig = "data:image/png;base64,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", rg = "data:image/png;base64,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", Xr = "data:image/png;base64,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", zC = new Ut({
+  image: new dA({
     anchor: [0.5, 0.5],
     anchorXUnits: "fraction",
     anchorYUnits: "fraction",
-    src: qg
+    src: ng
   })
-}), NC = new zt({
-  image: new uA({
+}), FC = new Ut({
+  image: new dA({
     anchor: [0.5, 0.5],
     anchorXUnits: "fraction",
     anchorYUnits: "fraction",
-    src: $g
+    src: ig
   })
-}), GC = new zt({
-  image: new uA({
+}), UC = new Ut({
+  image: new dA({
     anchor: [0.5, 0.5],
     anchorXUnits: "fraction",
     anchorYUnits: "fraction",
-    src: to
+    src: rg
   })
-}), jC = new zt({
-  fill: new qi({
+}), WC = new Ut({
+  fill: new nr({
     color: [128, 128, 256, 0.2]
   }),
-  stroke: new Ji({
+  stroke: new Ar({
     color: [128, 128, 256, 1],
     width: 3
   })
-}), XC = new zt({
-  image: new uA({
+}), VC = new Ut({
+  image: new dA({
     anchor: [0.5, 1],
     anchorXUnits: "fraction",
     anchorYUnits: "fraction",
-    src: kr
+    src: Xr
   })
 });
-class de extends To {
+class we extends xg {
   fakeGps;
   fakeRadius;
   geolocation;
@@ -7234,49 +7554,49 @@ class de extends To {
   alwaysGpsOn;
   __ignore_first_move;
   constructor(t) {
-    t = Ft(t || {});
-    const e = new kn({
-      source: new Nn({
+    t = Wt(t || {});
+    const e = new Nn({
+      source: new Gn({
         wrapX: !1
       })
     });
     e.set("name", "gps");
-    const n = new kn({
-      source: new Nn({
+    const n = new Nn({
+      source: new Gn({
         wrapX: !1
       })
     });
     n.set("name", "marker");
-    const i = new kn({
-      source: new Nn({
+    const i = new Nn({
+      source: new Gn({
         wrapX: !1
       })
     });
     i.set("name", "feature");
-    const r = new kn({
-      source: new Nn({
+    const r = new Nn({
+      source: new Gn({
         wrapX: !1
       })
     });
     r.set("name", "envelope");
-    const s = de.spawnLayer(
+    const s = we.spawnLayer(
       null,
       t.source,
       t.target
-    ), o = new Po();
-    o.set("name", "overlay");
+    ), g = new Og();
+    g.set("name", "overlay");
     const a = {
       controls: t.controls ? t.controls : [],
       layers: [
         s,
-        o,
+        g,
         r,
         i,
         e,
         n
       ],
       target: t.div,
-      view: new og({
+      view: new Co({
         center: t.defaultCenter || [0, 0],
         zoom: t.defaultZoom || 2,
         rotation: t.defaultRotation || 0,
@@ -7308,18 +7628,18 @@ class de extends To {
     typeof n == "number" && Number.isFinite(n) && n > 4 ? t.setMinZoom(n - 4) : t.setMinZoom(-1 / 0);
   }
   static spawnLayer(t, e, n) {
-    return e instanceof ei || e instanceof Ai || !(t instanceof Si) ? (e instanceof ei ? t = new BC({
+    return e instanceof Ai || e instanceof ni || !(t instanceof Oi) ? (e instanceof Ai ? t = new XC({
       style: e.style,
       accessToken: e.accessToken,
       container: n,
       source: e
-    }) : e instanceof Ai ? t = new LC({
+    }) : e instanceof ni ? t = new ZC({
       style: e.style,
       container: n,
       source: e
-    }) : (t = new Si({
+    }) : (t = new Oi({
       source: e
-    }), de.applyWmtsZoomGate(t, e)), t.set("name", "base")) : (t.setSource(e), de.applyWmtsZoomGate(t, e)), t;
+    }), we.applyWmtsZoomGate(t, e)), t.set("name", "base")) : (t.setSource(e), we.applyWmtsZoomGate(t, e)), t;
   }
   getLayer(t = "base") {
     const e = (n) => {
@@ -7338,7 +7658,7 @@ class de extends To {
       return e.getSource();
   }
   setFeature(t, e, n) {
-    const i = this.getSource(n), r = new So(t);
+    const i = this.getSource(n), r = new Dg(t);
     return e && r.setStyle(e), i.addFeature(r), r;
   }
   removeFeature(t, e) {
@@ -7348,32 +7668,32 @@ class de extends To {
     this.getSource(t).clear();
   }
   setGPSPosition(t, e = void 0) {
-    const n = e == "sub" ? GC : e == "hide" ? NC : kC;
+    const n = e == "sub" ? UC : e == "hide" ? FC : zC;
     e != "sub" && this.resetFeature("gps"), t && (this.setFeature(
       {
-        geometry: new JA(t.xy)
+        geometry: new sn(t.xy)
       },
       n,
       "gps"
     ), e || this.setFeature(
       {
-        geometry: new Rr(t.xy, t.rad)
+        geometry: new Dr(t.xy, t.rad)
       },
-      jC,
+      WC,
       "gps"
     ));
   }
   setMarker(t, e, n, i) {
-    return i || (i = "marker"), e.geometry = new JA(t), n ? typeof n == "string" ? n = new zt({
-      image: new uA({
+    return i || (i = "marker"), e.geometry = new sn(t), n ? typeof n == "string" ? n = new Ut({
+      image: new dA({
         anchor: [0.5, 1],
         anchorXUnits: "fraction",
         anchorYUnits: "fraction",
         src: n
       })
-    }) : n instanceof zt || (n = new zt({
-      image: new uA(n)
-    })) : n = XC, this.setFeature(e, n, i);
+    }) : n instanceof Ut || (n = new Ut({
+      image: new dA(n)
+    })) : n = VC, this.setFeature(e, n, i);
   }
   resetMarker(t) {
     t || (t = "marker"), this.resetFeature(t);
@@ -7384,11 +7704,11 @@ class de extends To {
   setVector(t, e = "Line", n, i) {
     i || (i = "feature");
     const r = {};
-    n.stroke != null && (r.stroke = new Ji(n.stroke)), n.fill != null && (r.fill = new qi(n.fill));
-    const s = new zt(r), o = e === "Line" ? new $n(t) : new Le(t);
+    n.stroke != null && (r.stroke = new Ar(n.stroke)), n.fill != null && (r.fill = new nr(n.fill));
+    const s = new Ut(r), g = e === "Line" ? new ti(t) : new ke(t);
     return this.setFeature(
       {
-        geometry: o,
+        geometry: g,
         name: e
       },
       s,
@@ -7415,44 +7735,44 @@ class de extends To {
     let r;
     if (e != null || n != null) {
       const s = {};
-      e != null && (s.stroke = new Ji(e)), n != null && (s.fill = new qi(n)), r = new zt(s);
+      e != null && (s.stroke = new Ar(e)), n != null && (s.fill = new nr(n)), r = new Ut(s);
     }
     return this.setFeature(
       {
-        geometry: new Le([t])
+        geometry: new ke([t])
       },
       r,
       i
     );
   }
   exchangeSource(t = void 0) {
-    const e = this.getLayers(), n = e.item(0), i = de.spawnLayer(n, t, this.getTarget());
+    const e = this.getLayers(), n = e.item(0), i = we.spawnLayer(n, t, this.getTarget());
     i != n && e.setAt(0, i), t && t.setMap(this);
   }
   setLayer(t = void 0) {
     const e = this.getLayer("overlay").getLayers();
     if (e.clear(), t) {
-      const n = new Si({
+      const n = new Oi({
         source: t
       });
-      de.applyWmtsZoomGate(n, t), e.push(n);
+      we.applyWmtsZoomGate(n, t), e.push(n);
     }
   }
   setTransparency(t) {
     const e = (100 - t) / 100, n = this.getSource();
-    n instanceof mA || n instanceof Cr ? (this.getLayers().item(0).setOpacity(1), this.getLayers().item(1).setOpacity(e)) : this.getLayers().item(0).setOpacity(e);
+    n instanceof yA || n instanceof fr ? (this.getLayers().item(0).setOpacity(1), this.getLayers().item(1).setOpacity(e)) : this.getLayers().item(0).setOpacity(e);
   }
   setGPSMarker(t, e) {
     this.getLayers().item(0).getSource().setGPSMarker(t, e);
   }
 }
-const zA = {
+const QA = {
   /**
    * A true double click, with no dragging.
    * @event module:ol/MapBrowserEvent~MapBrowserEvent#dblclick
    * @api
    */
-  DBLCLICK: ye.DBLCLICK,
+  DBLCLICK: ve.DBLCLICK,
   /**
    * Triggered when a pointer is dragged.
    * @event module:ol/MapBrowserEvent~MapBrowserEvent#pointerdrag
@@ -7468,10 +7788,10 @@ const zA = {
   POINTERMOVE: "pointermove",
   POINTERDOWN: "pointerdown",
   POINTERUP: "pointerup"
-}, Ls = {
+}, Gs = {
   ACTIVE: "active"
 };
-class gn extends pA {
+class hn extends wA {
   /**
    * @param {InteractionOptions} [options] Options.
    */
@@ -7487,7 +7807,7 @@ class gn extends pA {
   getActive() {
     return (
       /** @type {boolean} */
-      this.get(Ls.ACTIVE)
+      this.get(Gs.ACTIVE)
     );
   }
   /**
@@ -7514,7 +7834,7 @@ class gn extends pA {
    * @api
    */
   setActive(t) {
-    this.set(Ls.ACTIVE, t);
+    this.set(Gs.ACTIVE, t);
   }
   /**
    * Remove the interaction from its current map and attach it to the new map.
@@ -7526,30 +7846,33 @@ class gn extends pA {
     this.map_ = t;
   }
 }
-function ZC(A, t, e) {
+function HC(A, t, e) {
   const n = A.getCenterInternal();
   if (n) {
     const i = [n[0] + t[0], n[1] + t[1]];
     A.animateInternal({
       duration: e !== void 0 ? e : 250,
-      easing: yC,
+      easing: RC,
       center: A.getConstrainedCenter(i)
     });
   }
 }
-function Nr(A, t, e, n) {
+function Zr(A, t, e, n) {
   const i = A.getZoom();
   if (i === void 0)
     return;
-  const r = A.getConstrainedZoom(i + t), s = A.getResolutionForZoom(r);
-  A.getAnimating() && A.cancelAnimations(), A.animate({
+  const r = A.getConstrainedZoom(i + t);
+  if (r === void 0)
+    return;
+  const s = A.getResolutionForZoom(r);
+  s !== void 0 && (A.getAnimating() && A.cancelAnimations(), A.animate({
     resolution: s,
     anchor: e,
     duration: n !== void 0 ? n : 250,
-    easing: Ci
-  });
+    easing: ci
+  }));
 }
-const _n = {
+const Wn = {
   /**
    * Triggered when an item is added to the collection.
    * @event module:ol/Collection.CollectionEvent#add
@@ -7562,10 +7885,10 @@ const _n = {
    * @api
    */
   REMOVE: "remove"
-}, ks = {
+}, js = {
   LENGTH: "length"
 };
-class Wn extends te {
+class Vn extends oe {
   /**
    * @param {import("./CollectionEventType.js").default} type Type.
    * @param {T} element Element.
@@ -7575,7 +7898,7 @@ class Wn extends te {
     super(t), this.element = e, this.index = n;
   }
 }
-class zC extends pA {
+class QC extends wA {
   /**
    * @param {Array<T>} [array] Array.
    * @param {Options} [options] Collection options.
@@ -7645,7 +7968,7 @@ class zC extends pA {
    * @api
    */
   getLength() {
-    return this.get(ks.LENGTH);
+    return this.get(js.LENGTH);
   }
   /**
    * Insert an element at the provided index.
@@ -7657,7 +7980,7 @@ class zC extends pA {
     if (t < 0 || t > this.getLength())
       throw new Error("Index out of bounds: " + t);
     this.unique_ && this.assertUnique_(e), this.array_.splice(t, 0, e), this.updateLength_(), this.dispatchEvent(
-      new Wn(_n.ADD, e, t)
+      new Vn(Wn.ADD, e, t)
     );
   }
   /**
@@ -7704,7 +8027,7 @@ class zC extends pA {
     const e = this.array_[t];
     return this.array_.splice(t, 1), this.updateLength_(), this.dispatchEvent(
       /** @type {CollectionEvent<T>} */
-      new Wn(_n.REMOVE, e, t)
+      new Vn(Wn.REMOVE, e, t)
     ), e;
   }
   /**
@@ -7725,17 +8048,17 @@ class zC extends pA {
     const i = this.array_[t];
     this.array_[t] = e, this.dispatchEvent(
       /** @type {CollectionEvent<T>} */
-      new Wn(_n.REMOVE, i, t)
+      new Vn(Wn.REMOVE, i, t)
     ), this.dispatchEvent(
       /** @type {CollectionEvent<T>} */
-      new Wn(_n.ADD, e, t)
+      new Vn(Wn.ADD, e, t)
     );
   }
   /**
    * @private
    */
   updateLength_() {
-    this.set(ks.LENGTH, this.array_.length);
+    this.set(js.LENGTH, this.array_.length);
   }
   /**
    * @private
@@ -7749,7 +8072,7 @@ class zC extends pA {
         throw new Error("Duplicate item added to a unique collection");
   }
 }
-class FC {
+class YC {
   /**
    * @param {number} decay Rate of decay (must be negative).
    * @param {number} minVelocity Minimum velocity (pixels/millisecond).
@@ -7803,7 +8126,7 @@ class FC {
     return this.angle_;
   }
 }
-class UC extends gn {
+class KC extends hn {
   /**
    * @param {Options} [options] Options.
    */
@@ -7819,19 +8142,19 @@ class UC extends gn {
    */
   handleEvent(t) {
     let e = !1;
-    if (t.type == zA.DBLCLICK) {
+    if (t.type == QA.DBLCLICK) {
       const n = (
         /** @type {MouseEvent} */
         t.originalEvent
-      ), i = t.map, r = t.coordinate, s = n.shiftKey ? -this.delta_ : this.delta_, o = i.getView();
-      Nr(o, s, r, this.duration_), n.preventDefault(), e = !0;
+      ), i = t.map, r = t.coordinate, s = n.shiftKey ? -this.delta_ : this.delta_, g = i.getView();
+      Zr(g, s, r, this.duration_), n.preventDefault(), e = !0;
     }
     return !e;
   }
 }
-const ke = typeof navigator < "u" && typeof navigator.userAgent < "u" ? navigator.userAgent.toLowerCase() : "", _C = ke.includes("safari") && !ke.includes("chrom");
-_C && (ke.includes("version/15.4") || /cpu (os|iphone os) 15_4 like mac os x/.test(ke));
-const WC = ke.includes("webkit") && !ke.includes("edge"), eo = ke.includes("macintosh");
+const Ne = typeof navigator < "u" && typeof navigator.userAgent < "u" ? navigator.userAgent.toLowerCase() : "", JC = Ne.includes("safari") && !Ne.includes("chrom");
+JC && (Ne.includes("version/15.4") || /cpu (os|iphone os) 15_4 like mac os x/.test(Ne));
+const qC = Ne.includes("webkit") && !Ne.includes("edge"), sg = Ne.includes("macintosh");
 typeof WorkerGlobalScope < "u" && typeof OffscreenCanvas < "u" && self instanceof WorkerGlobalScope;
 (function() {
   let A = !1;
@@ -7846,7 +8169,7 @@ typeof WorkerGlobalScope < "u" && typeof OffscreenCanvas < "u" && self instanceo
   }
   return A;
 })();
-function cr(A) {
+function dr(A) {
   const t = arguments;
   return function(e) {
     let n = !0;
@@ -7855,34 +8178,40 @@ function cr(A) {
     return n;
   };
 }
-const HC = function(A) {
+const $C = function(A) {
   const t = A.originalEvent;
   return t.altKey && !(t.metaKey || t.ctrlKey) && !t.shiftKey;
-}, VC = function(A) {
+}, tc = function(A) {
   const t = A.originalEvent;
   return t.altKey && !(t.metaKey || t.ctrlKey) && t.shiftKey;
-}, QC = function(A) {
-  const t = A.map.getTargetElement(), e = t.getRootNode(), n = A.map.getOwnerDocument().activeElement;
+}, ec = function(A) {
+  const t = A.map.getTargetElement();
+  if (!t)
+    return !1;
+  const e = t.getRootNode(), n = A.map.getOwnerDocument().activeElement;
   return e instanceof ShadowRoot ? e.host.contains(n) : t.contains(n);
-}, Ao = function(A) {
-  const t = A.map.getTargetElement(), e = t.getRootNode();
-  return (e instanceof ShadowRoot ? e.host : t).hasAttribute("tabindex") ? QC(A) : !0;
-}, YC = Go, no = function(A) {
+}, og = function(A) {
+  const t = A.map.getTargetElement();
+  if (!t)
+    return !0;
+  const e = t.getRootNode();
+  return (e instanceof ShadowRoot ? e.host : t).hasAttribute("tabindex") ? ec(A) : !0;
+}, Ac = zg, gg = function(A) {
   const t = A.originalEvent;
-  return "pointerId" in t && t.button == 0 && !(WC && eo && t.ctrlKey);
-}, io = function(A) {
+  return "pointerId" in t && t.button == 0 && !(qC && sg && t.ctrlKey);
+}, ag = function(A) {
   const t = (
     /** @type {KeyboardEvent|MouseEvent|TouchEvent} */
     A.originalEvent
   );
   return !t.altKey && !(t.metaKey || t.ctrlKey) && !t.shiftKey;
-}, KC = function(A) {
+}, nc = function(A) {
   const t = A.originalEvent;
-  return eo ? t.metaKey : t.ctrlKey;
-}, ro = function(A) {
+  return sg ? t.metaKey : t.ctrlKey;
+}, Ig = function(A) {
   const t = A.originalEvent;
   return !t.altKey && !(t.metaKey || t.ctrlKey) && t.shiftKey;
-}, so = function(A) {
+}, Cg = function(A) {
   const t = A.originalEvent, e = (
     /** @type {Element} */
     t.target.tagName
@@ -7894,11 +8223,11 @@ const HC = function(A) {
 }, hA = function(A) {
   const t = A.originalEvent;
   return "pointerId" in t && t.pointerType == "mouse";
-}, JC = function(A) {
+}, ic = function(A) {
   const t = A.originalEvent;
   return "pointerId" in t && t.isPrimary && t.button === 0;
 };
-class yA extends gn {
+class vA extends hn {
   /**
    * @param {Options} [options] Options.
    */
@@ -7947,16 +8276,16 @@ class yA extends gn {
       return !0;
     let e = !1;
     if (this.updateTrackedPointers_(t), this.handlingDownUpSequence) {
-      if (t.type == zA.POINTERDRAG)
+      if (t.type == QA.POINTERDRAG)
         this.handleDragEvent(t), t.originalEvent.preventDefault();
-      else if (t.type == zA.POINTERUP) {
+      else if (t.type == QA.POINTERUP) {
         const n = this.handleUpEvent(t);
         this.handlingDownUpSequence = n && this.targetPointers.length > 0;
       }
-    } else if (t.type == zA.POINTERDOWN) {
+    } else if (t.type == QA.POINTERDOWN) {
       const n = this.handleDownEvent(t);
       this.handlingDownUpSequence = n, e = this.stopDown(n);
-    } else t.type == zA.POINTERMOVE && this.handleMoveEvent(t);
+    } else t.type == QA.POINTERMOVE && this.handleMoveEvent(t);
     return !e;
   }
   /**
@@ -7992,23 +8321,23 @@ class yA extends gn {
     t.activePointers && (this.targetPointers = t.activePointers);
   }
 }
-function Gr(A) {
+function zr(A) {
   const t = A.length;
   let e = 0, n = 0;
   for (let i = 0; i < t; i++)
     e += A[i].clientX, n += A[i].clientY;
   return { clientX: e / t, clientY: n / t };
 }
-class qC extends yA {
+class rc extends vA {
   /**
    * @param {Options} [options] Options.
    */
   constructor(t) {
     super({
-      stopDown: ri
+      stopDown: si
     }), t = t || {}, this.kinetic_ = t.kinetic, this.lastCentroid = null, this.lastPointersCount_, this.panning_ = !1;
-    const e = t.condition ? t.condition : cr(io, JC);
-    this.condition_ = t.onFocusOnly ? cr(Ao, e) : e, this.noKinetic_ = !1;
+    const e = t.condition ? t.condition : dr(ag, ic);
+    this.condition_ = t.onFocusOnly ? dr(og, e) : e, this.noKinetic_ = !1;
   }
   /**
    * Handle pointer drag events.
@@ -8018,14 +8347,14 @@ class qC extends yA {
   handleDragEvent(t) {
     const e = t.map;
     this.panning_ || (this.panning_ = !0, e.getView().beginInteraction());
-    const n = this.targetPointers, i = e.getEventPixel(Gr(n));
+    const n = this.targetPointers, i = e.getEventPixel(zr(n));
     if (n.length == this.lastPointersCount_) {
       if (this.kinetic_ && this.kinetic_.update(i[0], i[1]), this.lastCentroid) {
         const r = [
           this.lastCentroid[0] - i[0],
           i[1] - this.lastCentroid[1]
-        ], o = t.map.getView();
-        ra(r, o.getResolution()), wr(r, o.getRotation()), o.adjustCenterInternal(r);
+        ], g = t.map.getView(), o = g.getResolution();
+        o !== void 0 && (ga(r, o), Rr(r, g.getRotation()), g.adjustCenterInternal(r));
       }
     } else this.kinetic_ && this.kinetic_.begin();
     this.lastCentroid = i, this.lastPointersCount_ = n.length, t.originalEvent.preventDefault();
@@ -8040,15 +8369,24 @@ class qC extends yA {
     const e = t.map, n = e.getView();
     if (this.targetPointers.length === 0) {
       if (!this.noKinetic_ && this.kinetic_ && this.kinetic_.end()) {
-        const i = this.kinetic_.getDistance(), r = this.kinetic_.getAngle(), s = n.getCenterInternal(), o = e.getPixelFromCoordinateInternal(s), g = e.getCoordinateFromPixelInternal([
-          o[0] - i * Math.cos(r),
-          o[1] - i * Math.sin(r)
-        ]);
-        n.animateInternal({
-          center: n.getConstrainedCenter(g),
-          duration: 500,
-          easing: Ci
-        });
+        const i = this.kinetic_.getDistance(), r = this.kinetic_.getAngle(), s = n.getCenterInternal();
+        if (s) {
+          const g = (
+            /** @type {import("../pixel.js").Pixel} */
+            e.getPixelFromCoordinateInternal(s)
+          ), o = e.getCoordinateFromPixelInternal([
+            g[0] - i * Math.cos(r),
+            g[1] - i * Math.sin(r)
+          ]);
+          n.animateInternal({
+            center: n.getConstrainedCenter(
+              /** @type {import("../coordinate.js").Coordinate} */
+              o
+            ),
+            duration: 500,
+            easing: ci
+          });
+        }
       }
       return this.panning_ && (this.panning_ = !1, n.endInteraction()), !1;
     }
@@ -8068,14 +8406,14 @@ class qC extends yA {
     return !1;
   }
 }
-class $C extends yA {
+class sc extends vA {
   /**
    * @param {Options} [options] Options.
    */
   constructor(t) {
     t = t || {}, super({
-      stopDown: ri
-    }), this.condition_ = t.condition ? t.condition : VC, this.lastAngle_ = void 0, this.duration_ = t.duration !== void 0 ? t.duration : 250;
+      stopDown: si
+    }), this.condition_ = t.condition ? t.condition : tc, this.lastAngle_ = void 0, this.duration_ = t.duration !== void 0 ? t.duration : 250;
   }
   /**
    * Handle pointer drag events.
@@ -8086,12 +8424,15 @@ class $C extends yA {
     if (!hA(t))
       return;
     const e = t.map, n = e.getView();
-    if (n.getConstraints().rotation === Lr)
+    if (n.getConstraints().rotation === _r)
       return;
-    const i = e.getSize(), r = t.pixel, s = Math.atan2(i[1] / 2 - r[1], r[0] - i[0] / 2);
+    const i = e.getSize();
+    if (!i)
+      return;
+    const r = t.pixel, s = Math.atan2(i[1] / 2 - r[1], r[0] - i[0] / 2);
     if (this.lastAngle_ !== void 0) {
-      const o = s - this.lastAngle_;
-      n.adjustRotationInternal(-o);
+      const g = s - this.lastAngle_;
+      n.adjustRotationInternal(-g);
     }
     this.lastAngle_ = s;
   }
@@ -8111,10 +8452,10 @@ class $C extends yA {
    * @override
    */
   handleDownEvent(t) {
-    return hA(t) && no(t) && this.condition_(t) ? (t.map.getView().beginInteraction(), this.lastAngle_ = void 0, !0) : !1;
+    return hA(t) && gg(t) && this.condition_(t) ? (t.map.getView().beginInteraction(), this.lastAngle_ = void 0, !0) : !1;
   }
 }
-class tc extends Ig {
+class oc extends lo {
   /**
    * @param {string} className CSS class name.
    */
@@ -8132,7 +8473,10 @@ class tc extends Ig {
    * @private
    */
   render_() {
-    const t = this.startPixel_, e = this.endPixel_, n = "px", i = this.element_.style;
+    const t = this.startPixel_, e = this.endPixel_;
+    if (!t || !e)
+      return;
+    const n = "px", i = this.element_.style;
     i.left = Math.min(t[0], e[0]) + n, i.top = Math.min(t[1], e[1]) + n, i.width = Math.abs(e[0] - t[0]) + n, i.height = Math.abs(e[1] - t[1]) + n;
   }
   /**
@@ -8140,11 +8484,15 @@ class tc extends Ig {
    */
   setMap(t) {
     if (this.map_) {
-      this.map_.getOverlayContainer().removeChild(this.element_);
-      const e = this.element_.style;
-      e.left = "inherit", e.top = "inherit", e.width = "inherit", e.height = "inherit";
+      const e = this.map_.getOverlayContainer();
+      e && e.removeChild(this.element_);
+      const n = this.element_.style;
+      n.left = "inherit", n.top = "inherit", n.width = "inherit", n.height = "inherit";
     }
-    this.map_ = t, this.map_ && this.map_.getOverlayContainer().appendChild(this.element_);
+    if (this.map_ = t, this.map_) {
+      const e = this.map_.getOverlayContainer();
+      e && e.appendChild(this.element_);
+    }
   }
   /**
    * @param {import("../pixel.js").Pixel} startPixel Start pixel.
@@ -8159,25 +8507,37 @@ class tc extends Ig {
   createOrUpdateGeometry() {
     if (!this.map_)
       return;
-    const t = this.startPixel_, e = this.endPixel_, i = [
+    const t = this.startPixel_, e = this.endPixel_;
+    if (!t || !e)
+      return;
+    const n = [
       t,
       [t[0], e[1]],
       e,
       [e[0], t[1]]
-    ].map(
-      this.map_.getCoordinateFromPixelInternal,
-      this.map_
+    ], i = this.map_, r = n.map(
+      (o) => i.getCoordinateFromPixelInternal(o)
+    ), s = r[0];
+    if (!s)
+      return;
+    r[4] = s.slice();
+    const g = (
+      /** @type {Array<import("../coordinate.js").Coordinate>} */
+      r
     );
-    i[4] = i[0].slice(), this.geometry_ ? this.geometry_.setCoordinates([i]) : this.geometry_ = new Le([i]);
+    this.geometry_ ? this.geometry_.setCoordinates([g]) : this.geometry_ = new ke([g]);
   }
   /**
    * @return {import("../geom/Polygon.js").default} Geometry.
    */
   getGeometry() {
-    return this.geometry_;
+    return (
+      /** @type {import("../geom/Polygon.js").default} */
+      this.geometry_
+    );
   }
 }
-const nA = {
+const sA = {
   /**
    * Triggered upon drag box start.
    * @event DragBoxEvent#boxstart
@@ -8203,22 +8563,22 @@ const nA = {
    */
   BOXCANCEL: "boxcancel"
 };
-class NA extends te {
+class zA extends oe {
   /**
    * @param {string} type The event type.
    * @param {import("../coordinate.js").Coordinate} coordinate The event coordinate.
-   * @param {import("../MapBrowserEvent.js").default} mapBrowserEvent Originating event.
+   * @param {import("../MapBrowserEvent.js").default|null} mapBrowserEvent Originating event.
    */
   constructor(t, e, n) {
     super(t), this.coordinate = e, this.mapBrowserEvent = n;
   }
 }
-class ec extends yA {
+class gc extends vA {
   /**
    * @param {Options} [options] Options.
    */
   constructor(t) {
-    super(), this.on, this.once, this.un, t = t ?? {}, this.box_ = new tc(t.className || "ol-dragbox"), this.minArea_ = t.minArea ?? 64, t.onBoxEnd && (this.onBoxEnd = t.onBoxEnd), this.startPixel_ = null, this.condition_ = t.condition ?? no, this.boxEndCondition_ = t.boxEndCondition ?? this.defaultBoxEndCondition;
+    super(), this.on, this.once, this.un, t = t ?? {}, this.box_ = new oc(t.className || "ol-dragbox"), this.minArea_ = t.minArea ?? 64, t.onBoxEnd && (this.onBoxEnd = t.onBoxEnd), this.startPixel_ = null, this.condition_ = t.condition ?? gg, this.boxEndCondition_ = t.boxEndCondition ?? this.defaultBoxEndCondition;
   }
   /**
    * The default condition for determining whether the boxend event
@@ -8248,8 +8608,8 @@ class ec extends yA {
    */
   handleDragEvent(t) {
     this.startPixel_ && (this.box_.setPixels(this.startPixel_, t.pixel), this.dispatchEvent(
-      new NA(
-        nA.BOXDRAG,
+      new zA(
+        sA.BOXDRAG,
         t.coordinate,
         t
       )
@@ -8270,8 +8630,8 @@ class ec extends yA {
       t.pixel
     );
     return e && this.onBoxEnd(t), this.dispatchEvent(
-      new NA(
-        e ? nA.BOXEND : nA.BOXCANCEL,
+      new zA(
+        e ? sA.BOXEND : sA.BOXCANCEL,
         t.coordinate,
         t
       )
@@ -8285,8 +8645,8 @@ class ec extends yA {
    */
   handleDownEvent(t) {
     return this.condition_(t) ? (this.startPixel_ = t.pixel, this.box_.setMap(t.map), this.box_.setPixels(this.startPixel_, this.startPixel_), this.dispatchEvent(
-      new NA(
-        nA.BOXSTART,
+      new zA(
+        sA.BOXSTART,
         t.coordinate,
         t
       )
@@ -8307,7 +8667,7 @@ class ec extends yA {
    */
   setActive(t) {
     t || (this.box_.setMap(null), this.startPixel_ && (this.dispatchEvent(
-      new NA(nA.BOXCANCEL, this.startPixel_, null)
+      new zA(sA.BOXCANCEL, this.startPixel_, null)
     ), this.startPixel_ = null)), super.setActive(t);
   }
   /**
@@ -8316,17 +8676,17 @@ class ec extends yA {
    */
   setMap(t) {
     this.getMap() && (this.box_.setMap(null), this.startPixel_ && (this.dispatchEvent(
-      new NA(nA.BOXCANCEL, this.startPixel_, null)
+      new zA(sA.BOXCANCEL, this.startPixel_, null)
     ), this.startPixel_ = null)), super.setMap(t);
   }
 }
-class Ac extends ec {
+class ac extends gc {
   /**
    * @param {Options} [options] Options.
    */
   constructor(t) {
     t = t || {};
-    const e = t.condition ? t.condition : ro;
+    const e = t.condition ? t.condition : Ig;
     super({
       condition: e,
       className: t.className || "ol-dragzoom",
@@ -8339,18 +8699,21 @@ class Ac extends ec {
    * @override
    */
   onBoxEnd(t) {
-    const n = (
-      /** @type {!import("../View.js").default} */
-      this.getMap().getView()
-    );
+    const e = this.getMap();
+    if (!e)
+      return;
+    const n = e.getView();
     let i = this.getGeometry();
     if (this.out_) {
-      const r = n.rotatedExtentForGeometry(i), s = n.getResolutionForExtentInternal(r), o = n.getResolution() / s;
+      const r = n.rotatedExtentForGeometry(i), s = n.getResolutionForExtentInternal(r), g = n.getResolution();
+      if (s === void 0 || g === void 0)
+        return;
+      const o = g / s;
       i = i.clone(), i.scale(o * o);
     }
     n.fitInternal(i, {
       duration: this.duration_,
-      easing: Ci
+      easing: ci
     });
   }
 }
@@ -8360,13 +8723,13 @@ const Te = {
   RIGHT: "ArrowRight",
   DOWN: "ArrowDown"
 };
-class nc extends gn {
+class Ic extends hn {
   /**
    * @param {Options} [options] Options.
    */
   constructor(t) {
     super(), t = t || {}, this.defaultCondition_ = function(e) {
-      return io(e) && so(e);
+      return ag(e) && Cg(e);
     }, this.condition_ = t.condition !== void 0 ? t.condition : this.defaultCondition_, this.duration_ = t.duration !== void 0 ? t.duration : 100, this.pixelDelta_ = t.pixelDelta !== void 0 ? t.pixelDelta : 128;
   }
   /**
@@ -8379,29 +8742,32 @@ class nc extends gn {
    */
   handleEvent(t) {
     let e = !1;
-    if (t.type == ye.KEYDOWN) {
+    if (t.type == ve.KEYDOWN) {
       const n = (
         /** @type {KeyboardEvent} */
         t.originalEvent
       ), i = n.key;
       if (this.condition_(t) && (i == Te.DOWN || i == Te.LEFT || i == Te.RIGHT || i == Te.UP)) {
-        const s = t.map.getView(), o = s.getResolution() * this.pixelDelta_;
-        let g = 0, a = 0;
-        i == Te.DOWN ? a = -o : i == Te.LEFT ? g = -o : i == Te.RIGHT ? g = o : a = o;
-        const C = [g, a];
-        wr(C, s.getRotation()), ZC(s, C, this.duration_), n.preventDefault(), e = !0;
+        const s = t.map.getView(), g = s.getResolution();
+        if (g === void 0)
+          return !0;
+        const o = g * this.pixelDelta_;
+        let a = 0, C = 0;
+        i == Te.DOWN ? C = -o : i == Te.LEFT ? a = -o : i == Te.RIGHT ? a = o : C = o;
+        const I = [a, C];
+        Rr(I, s.getRotation()), HC(s, I, this.duration_), n.preventDefault(), e = !0;
       }
     }
     return !e;
   }
 }
-class ic extends gn {
+class Cc extends hn {
   /**
    * @param {Options} [options] Options.
    */
   constructor(t) {
     super(), t = t || {}, this.condition_ = t.condition ? t.condition : function(e) {
-      return !KC(e) && so(e);
+      return !nc(e) && Cg(e);
     }, this.delta_ = t.delta ? t.delta : 1, this.duration_ = t.duration !== void 0 ? t.duration : 100;
   }
   /**
@@ -8414,21 +8780,21 @@ class ic extends gn {
    */
   handleEvent(t) {
     let e = !1;
-    if (t.type == ye.KEYDOWN || t.type == ye.KEYPRESS) {
+    if (t.type == ve.KEYDOWN || t.type == ve.KEYPRESS) {
       const n = (
         /** @type {KeyboardEvent} */
         t.originalEvent
       ), i = n.key;
       if (this.condition_(t) && (i === "+" || i === "-")) {
-        const r = t.map, s = i === "+" ? this.delta_ : -this.delta_, o = r.getView();
-        Nr(o, s, void 0, this.duration_), n.preventDefault(), e = !0;
+        const r = t.map, s = i === "+" ? this.delta_ : -this.delta_, g = r.getView();
+        Zr(g, s, void 0, this.duration_), n.preventDefault(), e = !0;
       }
     }
     return !e;
   }
 }
-const rc = 40, sc = 300, gc = 3;
-class oc extends gn {
+const cc = 40, lc = 300, uc = 3;
+class hc extends hn {
   /**
    * @param {Options} [options] Options.
    */
@@ -8437,25 +8803,8 @@ class oc extends gn {
       /** @type {import("./Interaction.js").InteractionOptions} */
       t
     ), this.totalDelta_ = 0, this.lastDelta_ = 0, this.maxDelta_ = t.maxDelta !== void 0 ? t.maxDelta : 1, this.duration_ = t.duration !== void 0 ? t.duration : 250, this.timeout_ = t.timeout !== void 0 ? t.timeout : 80, this.useAnchor_ = t.useAnchor !== void 0 ? t.useAnchor : !0, this.constrainResolution_ = t.constrainResolution !== void 0 ? t.constrainResolution : !1;
-    const e = t.condition ? t.condition : YC;
-    this.condition_ = t.onFocusOnly ? cr(Ao, e) : e, this.lastAnchor_ = null, this.startTime_ = void 0, this.timeoutId_, this.mode_ = void 0, this.trackpadEventGap_ = 400, this.trackpadTimeoutId_, this.deltaPerZoom_ = 300, this.ctrlKeyPressed_ = !1, this.ctrlKeyListenerKeys_ = [];
-  }
-  /**
-   * @param {import('../Map.js').default|null} map Map.
-   * @override
-   */
-  setMap(t) {
-    if (this.ctrlKeyListenerKeys_.forEach(IA), this.ctrlKeyListenerKeys_.length = 0, this.ctrlKeyPressed_ = !1, super.setMap(t), t) {
-      const e = t.getOwnerDocument();
-      this.ctrlKeyListenerKeys_.push(
-        pe(e, "keydown", (n) => {
-          n.key === "Control" && (this.ctrlKeyPressed_ = !0);
-        }),
-        pe(e, "keyup", (n) => {
-          n.key === "Control" && (this.ctrlKeyPressed_ = !1);
-        })
-      );
-    }
+    const e = t.condition ? t.condition : Ac;
+    this.condition_ = t.onFocusOnly ? dr(og, e) : e, this.lastAnchor_ = null, this.startTime_ = void 0, this.timeoutId_, this.mode_ = void 0, this.trackpadEventGap_ = 400, this.trackpadTimeoutId_, this.deltaPerZoom_ = 300;
   }
   /**
    * @private
@@ -8469,7 +8818,7 @@ class oc extends gn {
     e.endInteraction(
       this.constrainResolution_ || e.getConstrainResolution() ? 100 : void 0,
       n,
-      this.lastAnchor_ ? t.getCoordinateFromPixel(this.lastAnchor_) : null
+      this.lastAnchor_ ? t.getCoordinateFromPixel(this.lastAnchor_) : void 0
     );
   }
   /**
@@ -8480,40 +8829,40 @@ class oc extends gn {
    * @override
    */
   handleEvent(t) {
-    if (!this.condition_(t) || t.type !== ye.WHEEL)
+    if (!this.condition_(t) || t.type !== ve.WHEEL)
       return !0;
     const n = t.map, i = (
       /** @type {WheelEvent} */
       t.originalEvent
     );
     i.preventDefault();
-    const r = i.ctrlKey && !this.ctrlKeyPressed_;
-    i.ctrlKey || (this.ctrlKeyPressed_ = !1), this.useAnchor_ && (this.lastAnchor_ = t.pixel);
+    const r = i.ctrlKey && !t.ctrlKey;
+    this.useAnchor_ && (this.lastAnchor_ = t.pixel);
     let s = i.deltaY;
     switch (i.deltaMode) {
       case WheelEvent.DOM_DELTA_LINE:
-        s *= rc;
+        s *= cc;
         break;
       case WheelEvent.DOM_DELTA_PAGE:
-        s *= sc;
+        s *= lc;
         break;
     }
     if (s === 0)
       return !1;
     this.lastDelta_ = s;
-    const o = Date.now();
-    this.startTime_ === void 0 && (this.startTime_ = o), (!this.mode_ || o - this.startTime_ > this.trackpadEventGap_) && (this.mode_ = Math.abs(s) < 4 ? "trackpad" : "wheel");
-    const g = n.getView();
+    const g = Date.now();
+    this.startTime_ === void 0 && (this.startTime_ = g), (!this.mode_ || g - this.startTime_ > this.trackpadEventGap_) && (this.mode_ = Math.abs(s) < 4 ? "trackpad" : "wheel");
+    const o = n.getView();
     if (this.mode_ === "trackpad")
-      return this.trackpadTimeoutId_ ? clearTimeout(this.trackpadTimeoutId_) : (g.getAnimating() && g.cancelAnimations(), g.beginInteraction()), this.trackpadTimeoutId_ = setTimeout(
+      return this.trackpadTimeoutId_ ? clearTimeout(this.trackpadTimeoutId_) : (o.getAnimating() && o.cancelAnimations(), o.beginInteraction()), this.trackpadTimeoutId_ = setTimeout(
         this.endInteraction_.bind(this),
         this.timeout_
-      ), r && (s = s * gc), g.adjustZoom(
+      ), r && (s = s * uc), o.adjustZoom(
         -s / this.deltaPerZoom_,
-        this.lastAnchor_ ? n.getCoordinateFromPixel(this.lastAnchor_) : null
-      ), this.startTime_ = o, !1;
+        this.lastAnchor_ ? n.getCoordinateFromPixel(this.lastAnchor_) : void 0
+      ), this.startTime_ = g, !1;
     this.totalDelta_ += s;
-    const a = Math.max(this.timeout_ - (o - this.startTime_), 0);
+    const a = Math.max(this.timeout_ - (g - this.startTime_), 0);
     return clearTimeout(this.timeoutId_), this.timeoutId_ = setTimeout(
       this.handleWheelZoom_.bind(this, n),
       a
@@ -8526,15 +8875,15 @@ class oc extends gn {
   handleWheelZoom_(t) {
     const e = t.getView();
     e.getAnimating() && e.cancelAnimations();
-    let n = -jt(
+    let n = -Lt(
       this.totalDelta_,
       -this.maxDelta_ * this.deltaPerZoom_,
       this.maxDelta_ * this.deltaPerZoom_
     ) / this.deltaPerZoom_;
-    (e.getConstrainResolution() || this.constrainResolution_) && (n = n ? n > 0 ? 1 : -1 : 0), Nr(
+    (e.getConstrainResolution() || this.constrainResolution_) && (n = n ? n > 0 ? 1 : -1 : 0), Zr(
       e,
       n,
-      this.lastAnchor_ ? t.getCoordinateFromPixel(this.lastAnchor_) : null,
+      this.lastAnchor_ ? t.getCoordinateFromPixel(this.lastAnchor_) : void 0,
       this.duration_
     ), this.mode_ = void 0, this.totalDelta_ = 0, this.lastAnchor_ = null, this.startTime_ = void 0, this.timeoutId_ = void 0;
   }
@@ -8548,7 +8897,7 @@ class oc extends gn {
     this.useAnchor_ = t, t || (this.lastAnchor_ = null);
   }
 }
-class ac extends yA {
+class fc extends vA {
   /**
    * @param {Options} [options] Options.
    */
@@ -8558,7 +8907,7 @@ class ac extends yA {
       /** @type {import("./Pointer.js").Options} */
       t
     );
-    e.stopDown || (e.stopDown = ri), super(e), this.anchor_ = null, this.lastAngle_ = void 0, this.rotating_ = !1, this.rotationDelta_ = 0, this.threshold_ = t.threshold !== void 0 ? t.threshold : 0.3, this.duration_ = t.duration !== void 0 ? t.duration : 250;
+    e.stopDown || (e.stopDown = si), super(e), this.anchor_ = null, this.lastAngle_ = void 0, this.rotating_ = !1, this.rotationDelta_ = 0, this.threshold_ = t.threshold !== void 0 ? t.threshold : 0.3, this.duration_ = t.duration !== void 0 ? t.duration : 250;
   }
   /**
    * Handle pointer drag events.
@@ -8572,14 +8921,14 @@ class ac extends yA {
       i.clientX - n.clientX
     );
     if (this.lastAngle_ !== void 0) {
-      const g = r - this.lastAngle_;
-      this.rotationDelta_ += g, !this.rotating_ && Math.abs(this.rotationDelta_) > this.threshold_ && (this.rotating_ = !0), e = g;
+      const o = r - this.lastAngle_;
+      this.rotationDelta_ += o, !this.rotating_ && Math.abs(this.rotationDelta_) > this.threshold_ && (this.rotating_ = !0), e = o;
     }
     this.lastAngle_ = r;
-    const s = t.map, o = s.getView();
-    o.getConstraints().rotation !== Lr && (this.anchor_ = s.getCoordinateFromPixelInternal(
-      s.getEventPixel(Gr(this.targetPointers))
-    ), this.rotating_ && (s.render(), o.adjustRotationInternal(e, this.anchor_)));
+    const s = t.map, g = s.getView();
+    g.getConstraints().rotation !== _r && (this.anchor_ = s.getCoordinateFromPixelInternal(
+      s.getEventPixel(zr(this.targetPointers))
+    ) ?? null, this.rotating_ && (s.render(), g.adjustRotationInternal(e, this.anchor_ ?? void 0)));
   }
   /**
    * Handle pointer up events.
@@ -8604,7 +8953,7 @@ class ac extends yA {
     return !1;
   }
 }
-class Ic extends yA {
+class dc extends vA {
   /**
    * @param {Options} [options] Options.
    */
@@ -8614,7 +8963,7 @@ class Ic extends yA {
       /** @type {import("./Pointer.js").Options} */
       t
     );
-    e.stopDown || (e.stopDown = ri), super(e), this.anchor_ = null, this.duration_ = t.duration !== void 0 ? t.duration : 400, this.lastDistance_ = void 0, this.lastScaleDelta_ = 1;
+    e.stopDown || (e.stopDown = si), super(e), this.anchor_ = null, this.duration_ = t.duration !== void 0 ? t.duration : 400, this.lastDistance_ = void 0, this.lastScaleDelta_ = 1;
   }
   /**
    * Handle pointer drag events.
@@ -8623,12 +8972,12 @@ class Ic extends yA {
    */
   handleDragEvent(t) {
     let e = 1;
-    const n = this.targetPointers[0], i = this.targetPointers[1], r = n.clientX - i.clientX, s = n.clientY - i.clientY, o = Math.sqrt(r * r + s * s);
-    this.lastDistance_ !== void 0 && (e = this.lastDistance_ / o), this.lastDistance_ = o;
-    const g = t.map, a = g.getView();
-    e != 1 && (this.lastScaleDelta_ = e), this.anchor_ = g.getCoordinateFromPixelInternal(
-      g.getEventPixel(Gr(this.targetPointers))
-    ), g.render(), a.adjustResolutionInternal(e, this.anchor_);
+    const n = this.targetPointers[0], i = this.targetPointers[1], r = n.clientX - i.clientX, s = n.clientY - i.clientY, g = Math.sqrt(r * r + s * s);
+    this.lastDistance_ !== void 0 && (e = this.lastDistance_ / g), this.lastDistance_ = g;
+    const o = t.map, a = o.getView();
+    e != 1 && (this.lastScaleDelta_ = e), this.anchor_ = o.getCoordinateFromPixelInternal(
+      o.getEventPixel(zr(this.targetPointers))
+    ) ?? null, o.render(), a.adjustResolutionInternal(e, this.anchor_ ?? void 0);
   }
   /**
    * Handle pointer up events.
@@ -8657,40 +9006,40 @@ class Ic extends yA {
     return !1;
   }
 }
-function Ns(A) {
+function _s(A) {
   A = A || {};
-  const t = new zC(), e = new FC(-5e-3, 0.05, 100);
-  return (A.altShiftDragRotate === void 0 || A.altShiftDragRotate) && t.push(new $C()), (A.doubleClickZoom === void 0 || A.doubleClickZoom) && t.push(
-    new UC({
+  const t = new QC(), e = new YC(-5e-3, 0.05, 100);
+  return (A.altShiftDragRotate === void 0 || A.altShiftDragRotate) && t.push(new sc()), (A.doubleClickZoom === void 0 || A.doubleClickZoom) && t.push(
+    new KC({
       delta: A.zoomDelta,
       duration: A.zoomDuration
     })
   ), (A.dragPan === void 0 || A.dragPan) && t.push(
-    new qC({
+    new rc({
       onFocusOnly: A.onFocusOnly,
       kinetic: e
     })
-  ), (A.pinchRotate === void 0 || A.pinchRotate) && t.push(new ac()), (A.pinchZoom === void 0 || A.pinchZoom) && t.push(
-    new Ic({
+  ), (A.pinchRotate === void 0 || A.pinchRotate) && t.push(new fc()), (A.pinchZoom === void 0 || A.pinchZoom) && t.push(
+    new dc({
       duration: A.zoomDuration
     })
-  ), (A.keyboard === void 0 || A.keyboard) && (t.push(new nc()), t.push(
-    new ic({
+  ), (A.keyboard === void 0 || A.keyboard) && (t.push(new Ic()), t.push(
+    new Cc({
       delta: A.zoomDelta,
       duration: A.zoomDuration
     })
   )), (A.mouseWheelZoom === void 0 || A.mouseWheelZoom) && t.push(
-    new oc({
+    new hc({
       onFocusOnly: A.onFocusOnly,
       duration: A.zoomDuration
     })
   ), (A.shiftDragZoom === void 0 || A.shiftDragZoom) && t.push(
-    new Ac({
+    new ac({
       duration: A.zoomDuration
     })
   ), t;
 }
-class Cc extends yA {
+class mc extends vA {
   /**
    * @param {Options} [options] Options.
    */
@@ -8698,7 +9047,7 @@ class Cc extends yA {
     t = t || {}, super(
       /** @type {import("./Pointer.js").Options} */
       t
-    ), this.condition_ = t.condition ? t.condition : ro, this.lastAngle_ = void 0, this.lastMagnitude_ = void 0, this.lastScaleDelta_ = 0, this.duration_ = t.duration !== void 0 ? t.duration : 400;
+    ), this.condition_ = t.condition ? t.condition : Ig, this.lastAngle_ = void 0, this.lastMagnitude_ = void 0, this.lastScaleDelta_ = 0, this.duration_ = t.duration !== void 0 ? t.duration : 400;
   }
   /**
    * Handle pointer drag events.
@@ -8708,12 +9057,15 @@ class Cc extends yA {
   handleDragEvent(t) {
     if (!hA(t))
       return;
-    const e = t.map, n = e.getSize(), i = t.pixel, r = i[0] - n[0] / 2, s = n[1] / 2 - i[1], o = Math.atan2(s, r), g = Math.sqrt(r * r + s * s), a = e.getView();
+    const e = t.map, n = e.getSize();
+    if (!n)
+      return;
+    const i = t.pixel, r = i[0] - n[0] / 2, s = n[1] / 2 - i[1], g = Math.atan2(s, r), o = Math.sqrt(r * r + s * s), a = e.getView();
     if (this.lastAngle_ !== void 0) {
-      const C = this.lastAngle_ - o;
+      const C = this.lastAngle_ - g;
       a.adjustRotationInternal(C);
     }
-    this.lastAngle_ = o, this.lastMagnitude_ !== void 0 && a.adjustResolutionInternal(this.lastMagnitude_ / g), this.lastMagnitude_ !== void 0 && (this.lastScaleDelta_ = this.lastMagnitude_ / g), this.lastMagnitude_ = g;
+    this.lastAngle_ = g, this.lastMagnitude_ !== void 0 && a.adjustResolutionInternal(this.lastMagnitude_ / o), this.lastMagnitude_ !== void 0 && (this.lastScaleDelta_ = this.lastMagnitude_ / o), this.lastMagnitude_ = o;
   }
   /**
    * Handle pointer up events.
@@ -8737,21 +9089,21 @@ class Cc extends yA {
     return hA(t) && this.condition_(t) ? (t.map.getView().beginInteraction(), this.lastAngle_ = void 0, this.lastMagnitude_ = void 0, !0) : !1;
   }
 }
-function cc(A) {
-  return lc(A[0], A[1], A[2]);
+function pc(A) {
+  return yc(A[0], A[1], A[2]);
 }
-function lc(A, t, e) {
+function yc(A, t, e) {
   return (t << A) + e;
 }
-const hc = /\{z\}/g, uc = /\{x\}/g, fc = /\{y\}/g, dc = /\{-y\}/g;
-function mc(A, t, e, n, i) {
-  return A.replace(hc, t.toString()).replace(uc, e.toString()).replace(fc, n.toString()).replace(dc, function() {
+const wc = /\{z\}/g, vc = /\{x\}/g, bc = /\{y\}/g, Ec = /\{-y\}/g;
+function Mc(A, t, e, n, i) {
+  return A.replace(wc, t.toString()).replace(vc, e.toString()).replace(bc, n.toString()).replace(Ec, function() {
     throw new Error(
       "If the URL template has a {-y} placeholder, the grid extent must be known"
     );
   });
 }
-function pc(A, t) {
+function Rc(A, t) {
   return (
     /**
      * @param {import("./tilecoord.js").TileCoord} tileCoord Tile Coordinate.
@@ -8763,17 +9115,17 @@ function pc(A, t) {
       if (!e)
         return;
       const r = e[0];
-      return mc(A, r, e[1], e[2]);
+      return Mc(A, r, e[1], e[2]);
     })
   );
 }
-function Gs(A, t) {
+function Xs(A, t) {
   const e = A.length, n = new Array(e);
   for (let i = 0; i < e; ++i)
-    n[i] = pc(A[i]);
-  return yc(n);
+    n[i] = Rc(A[i]);
+  return Sc(n);
 }
-function yc(A) {
+function Sc(A) {
   return A.length === 1 ? A[0] : (
     /**
      * @param {import("./tilecoord.js").TileCoord} tileCoord Tile Coordinate.
@@ -8784,7 +9136,7 @@ function yc(A) {
     (function(t, e, n) {
       if (!t)
         return;
-      const i = cc(t), r = tr(i, A.length);
+      const i = pc(t), r = rr(i, A.length);
       return A[r](t, e, n);
     })
   );
@@ -8792,50 +9144,50 @@ function yc(A) {
 for (let A = 0; A < 9; A++) {
   const t = `ZOOM:${A}`, e = 256 * Math.pow(2, A);
   (function(n, i) {
-    const r = new Ro({
+    const r = new Pg({
       code: n,
       // The extent is used to determine zoom level 0. Recommended values for a
       // projection's validity extent can be found at https://epsg.io/.
       extent: [0, 0, i, i],
       units: "m"
     });
-    Ki(r), Qn(
+    er(r), Yn(
       "EPSG:3857",
       r,
       (s) => {
-        const o = (s[0] + W) * i / (2 * W), g = (-s[1] + W) * i / (2 * W);
-        return [o, g];
+        const g = (s[0] + V) * i / (2 * V), o = (-s[1] + V) * i / (2 * V);
+        return [g, o];
       },
       (s) => {
-        const o = s[0] * (2 * W) / i - W, g = -1 * (s[1] * (2 * W) / i - W);
-        return [o, g];
+        const g = s[0] * (2 * V) / i - V, o = -1 * (s[1] * (2 * V) / i - V);
+        return [g, o];
       }
     );
   })(t, e);
 }
-class go extends hC(ag) {
+class cg extends yC(co) {
   constructor(t = {}) {
-    t = Kg(t), t.wrapX = !1;
-    const e = Math.log2(t.width / Pe), n = Math.log2(t.height / Pe);
+    t = tg(t), t.wrapX = !1;
+    const e = Math.log2(t.width / xe), n = Math.log2(t.height / xe);
     t.maxZoom = Math.ceil(Math.max(e, n)), t.tileUrlFunction = t.tileUrlFunction || function(i) {
-      const r = i[0], s = i[1], o = i[2];
+      const r = i[0], s = i[1], g = i[2];
       return (
         // @ts-ignore
-        s * Pe * Math.pow(2, this.maxZoom - r) >= this.width || // @ts-ignore
-        o * Pe * Math.pow(2, this.maxZoom - r) >= this.height || s < 0 || o < 0 ? Zg : this._tileUrlFunction(i)
+        s * xe * Math.pow(2, this.maxZoom - r) >= this.width || // @ts-ignore
+        g * xe * Math.pow(2, this.maxZoom - r) >= this.height || s < 0 || g < 0 ? Uo : this._tileUrlFunction(i)
       );
-    }, super(t), t.mapID && (this.mapID = t.mapID), t.urls ? this._tileUrlFunction = Gs(t.urls) : t.url && (this._tileUrlFunction = Gs(Array.isArray(t.url) ? t.url : [t.url])), this.width = t.width, this.height = t.height, this.maxZoom = t.maxZoom, this._maxxy = Math.pow(2, this.maxZoom) * Pe, this.initialize(t);
+    }, super(t), t.mapID && (this.mapID = t.mapID), t.urls ? this._tileUrlFunction = Xs(t.urls) : t.url && (this._tileUrlFunction = Xs(Array.isArray(t.url) ? t.url : [t.url])), this.width = t.width, this.height = t.height, this.maxZoom = t.maxZoom, this._maxxy = Math.pow(2, this.maxZoom) * xe, this.initialize(t);
   }
 }
-class ni extends mA {
+class ii extends yA {
   static isBasemap_ = !1;
   constructor(t = {}) {
     super(Object.assign(t, { opaque: !1 }));
   }
 }
-const Yt = "https://weiwudi.example.com/api/";
-let Xi, iA;
-class wc {
+const Ae = "https://weiwudi.example.com/api/";
+let Fi, oA;
+class Tc {
   constructor() {
     this.listeners = {};
   }
@@ -8861,7 +9213,7 @@ class wc {
     return !t.defaultPrevented;
   }
 }
-class Zt extends wc {
+class Ft extends Tc {
   static async registerSW(t, e) {
     if (!("serviceWorker" in navigator))
       throw "Error: Service worker is not supported";
@@ -8871,7 +9223,7 @@ class Zt extends wc {
     } catch (i) {
       throw `Error: Service worker registration failed with ${i}`;
     }
-    return await Zt.waitForController(), await Zt.swCheck(), n;
+    return await Ft.waitForController(), await Ft.swCheck(), n;
   }
   static async waitForController() {
     return new Promise((t, e) => {
@@ -8891,42 +9243,42 @@ class Zt extends wc {
     });
   }
   static async swCheck() {
-    return iA !== void 0 ? iA : (Xi === void 0 && (Xi = new Promise((t, e) => {
-      fetch(`${Yt}ping`).then((n) => {
-        iA = !!n, t(iA);
+    return oA !== void 0 ? oA : (Fi === void 0 && (Fi = new Promise((t, e) => {
+      fetch(`${Ae}ping`).then((n) => {
+        oA = !!n, t(oA);
       }).catch((n) => {
-        iA = !1, t(iA);
+        oA = !1, t(oA);
       });
-    })), Xi);
+    })), Fi);
   }
   static async registerMap(t, e) {
-    if (!await Zt.swCheck()) throw "Weiwudi service worker is not implemented.";
+    if (!await Ft.swCheck()) throw "Weiwudi service worker is not implemented.";
     let n;
-    const i = ["type", "url", "width", "height", "tileSize", "minZoom", "maxZoom", "maxLng", "maxLat", "minLng", "minLat", "cacheTtl", "cacheMaxBytes"].reduce((s, o) => (typeof e[o] < "u" && (e[o] instanceof Array ? e[o].map((g) => {
-      s.append(o, g);
-    }) : s.append(o, String(e[o]))), s), new URLSearchParams());
+    const i = ["type", "url", "width", "height", "tileSize", "minZoom", "maxZoom", "maxLng", "maxLat", "minLng", "minLat", "cacheTtl", "cacheMaxBytes"].reduce((s, g) => (typeof e[g] < "u" && (e[g] instanceof Array ? e[g].map((o) => {
+      s.append(g, o);
+    }) : s.append(g, String(e[g]))), s), new URLSearchParams());
     i.append("mapID", t);
-    const r = new URL(`${Yt}add`);
+    const r = new URL(`${Ae}add`);
     if (r.search = i.toString(), n = await (await fetch(r.href)).text(), n.match(/^Error: /))
       throw n;
-    return new Zt(t, JSON.parse(n));
+    return new Ft(t, JSON.parse(n));
   }
   static async retrieveMap(t) {
-    if (!await Zt.swCheck()) throw "Weiwudi service worker is not implemented.";
+    if (!await Ft.swCheck()) throw "Weiwudi service worker is not implemented.";
     let e;
-    if (e = await (await fetch(`${Yt}info?mapID=${t}`)).text(), e.match(/^Error: /))
+    if (e = await (await fetch(`${Ae}info?mapID=${t}`)).text(), e.match(/^Error: /))
       throw e;
-    return console.log(e), new Zt(t, JSON.parse(e));
+    return console.log(e), new Ft(t, JSON.parse(e));
   }
   static async removeMap(t) {
-    if (!await Zt.swCheck()) throw "Weiwudi service worker is not implemented.";
+    if (!await Ft.swCheck()) throw "Weiwudi service worker is not implemented.";
     let e;
-    if (e = await (await fetch(`${Yt}delete?mapID=${t}`)).text(), e.match(/^Error: /))
+    if (e = await (await fetch(`${Ae}delete?mapID=${t}`)).text(), e.match(/^Error: /))
       throw e;
   }
   constructor(t, e) {
     if (super(), !t) throw "MapID is necessary.";
-    this.mapID = t, e && Object.assign(this, e), this.url = `${Yt}cache/${t}/{z}/{x}/{y}`, this.listener = (n) => {
+    this.mapID = t, e && Object.assign(this, e), this.url = `${Ae}cache/${t}/{z}/{x}/{y}`, this.listener = (n) => {
       n.data.mapID === t && this.dispatchEvent(new CustomEvent(n.data.type, { detail: n.data }));
     }, navigator.serviceWorker.addEventListener("message", this.listener);
   }
@@ -8938,48 +9290,48 @@ class Zt extends wc {
   }
   async stats() {
     let t;
-    if (this.checkAspect(), t = await (await fetch(`${Yt}stats?mapID=${this.mapID}`)).text(), typeof t == "string" && t.match(/^Error: /))
+    if (this.checkAspect(), t = await (await fetch(`${Ae}stats?mapID=${this.mapID}`)).text(), typeof t == "string" && t.match(/^Error: /))
       throw t;
     return JSON.parse(t);
   }
   async clean() {
     let t;
-    if (this.checkAspect(), t = await (await fetch(`${Yt}clean?mapID=${this.mapID}`)).text(), t.match(/^Error: /))
+    if (this.checkAspect(), t = await (await fetch(`${Ae}clean?mapID=${this.mapID}`)).text(), t.match(/^Error: /))
       throw t;
   }
   async fetchAll() {
     let t;
-    if (this.checkAspect(), t = await (await fetch(`${Yt}fetchAll?mapID=${this.mapID}`)).text(), t.match(/^Error: /))
+    if (this.checkAspect(), t = await (await fetch(`${Ae}fetchAll?mapID=${this.mapID}`)).text(), t.match(/^Error: /))
       throw t;
   }
   async remove() {
-    this.checkAspect(), this.mapID && await Zt.removeMap(this.mapID), this.release();
+    this.checkAspect(), this.mapID && await Ft.removeMap(this.mapID), this.release();
   }
   async cancel() {
     let t;
-    if (this.checkAspect(), t = await (await fetch(`${Yt}cancel?mapID=${this.mapID}`)).text(), t.match(/^Error: /))
+    if (this.checkAspect(), t = await (await fetch(`${Ae}cancel?mapID=${this.mapID}`)).text(), t.match(/^Error: /))
       throw t;
   }
 }
 function Hn(A, t, e) {
   const n = typeof A == "string" ? A : A.getCode(), i = typeof t == "string" ? t : t.getCode();
-  let r = Ri(A, t);
-  if (r == Ti && n != i) {
-    const s = Ri(A, "EPSG:3857"), o = Ri("EPSG:3857", t);
-    if (s == Ti && n != "EPSG:3857")
+  let r = xi(A, t);
+  if (r == Di && n != i) {
+    const s = xi(A, "EPSG:3857"), g = xi("EPSG:3857", t);
+    if (s == Di && n != "EPSG:3857")
       throw "Transform of Source projection is not defined.";
-    if (o == Ti && i != "EPSG:3857")
+    if (g == Di && i != "EPSG:3857")
       throw "Transform of Distination projection is not defined.";
     r = function(a) {
-      return Mt(Mt(a, A, "EPSG:3857"), "EPSG:3857", t);
-    }, Qn(A, t, r, function(a) {
-      return Mt(Mt(a, t, "EPSG:3857"), "EPSG:3857", A);
+      return Rt(Rt(a, A, "EPSG:3857"), "EPSG:3857", t);
+    }, Yn(A, t, r, function(a) {
+      return Rt(Rt(a, t, "EPSG:3857"), "EPSG:3857", A);
     });
   }
   if (e)
     return r(e);
 }
-const bc = [
+const Pc = [
   "title",
   "attr",
   "officialTitle",
@@ -9001,9 +9353,9 @@ const bc = [
   "homePosition",
   "mercZoom"
 ];
-async function vc(A) {
+async function xc(A) {
   const t = A;
-  if (bc.forEach((r) => {
+  if (Pc.forEach((r) => {
     t[r] = A[r];
   }), (A.imageExtention || A.imageExtension) && (t.imageExtension = A.imageExtension || A.imageExtention), !A.compiled)
     throw new Error(
@@ -9016,62 +9368,62 @@ async function vc(A) {
     importance: r.importance,
     bounds: r.bounds
   })));
-  const n = new Xg();
+  const n = new Fo();
   n.setMapData(e);
   const i = n.getLayerTransform(0);
   if (t.strictMode = i.strictMode, t.vertexMode = i.vertexMode, t.yaxisMode = i.yaxisMode, t.width = i.wh?.[0], t.height = i.wh?.[1], t.gcps = i.points, t.edges = i.edges, A.sub_maps) {
-    const r = A.sub_maps.map((s, o) => {
-      const g = {
+    const r = A.sub_maps.map((s, g) => {
+      const o = {
         importance: s.importance,
         priority: s.priority
       };
       if (s.compiled) {
-        const a = n.getLayerTransform(o + 1);
-        g.bounds = a?.bounds ?? s.bounds, g.gcps = a?.points, g.edges = a?.edges;
+        const a = n.getLayerTransform(g + 1);
+        o.bounds = a?.bounds ?? s.bounds, o.gcps = a?.points, o.edges = a?.edges;
       } else
-        g.bounds = s.bounds, g.gcps = s.gcps, g.edges = s.edges;
-      return g;
+        o.bounds = s.bounds, o.gcps = s.gcps, o.edges = s.edges;
+      return o;
     });
     t.sub_maps = r;
   }
   return [t, n];
 }
-function js(A, t, e) {
+function Zs(A, t, e) {
   return typeof A.merc2XyVisibleLayers != "function" ? null : A.merc2XyVisibleLayers(t).filter(([, n]) => e(n)).slice(0, 2).map(([n, i]) => [n, i]);
 }
-class ii extends go {
+class ri extends cg {
   mapTransform;
   constructor(t = {}) {
-    super(t), this.mapTransform = new Xg();
+    super(t), this.mapTransform = new Fo();
   }
   static async createAsync(t) {
-    const [e, n] = await vc(t);
+    const [e, n] = await xc(t);
     t = e;
-    const i = new ii(t);
+    const i = new ri(t);
     i.mapTransform = n;
-    const r = n.getLayerTransform(0), s = new VA({
+    const r = n.getLayerTransform(0), s = new en({
       code: `Illst:${i.mapID}`,
       extent: [0, 0, i.width, i.height],
       units: "m"
     });
-    return Ki(s), Qn(
+    return er(s), Yn(
       s,
       "EPSG:3857",
-      (o) => r.transform(o, !1),
-      (o) => r.transform(o, !0)
-    ), Hn("EPSG:4326", s), t.sub_maps && t.sub_maps.forEach((o, g) => {
-      const a = g + 1, C = `Illst:${i.mapID}#${a}`, I = n.getLayerTransform(a);
+      (g) => r.transform(g, !1),
+      (g) => r.transform(g, !0)
+    ), Hn("EPSG:4326", s), t.sub_maps && t.sub_maps.forEach((g, o) => {
+      const a = o + 1, C = `Illst:${i.mapID}#${a}`, I = n.getLayerTransform(a);
       if (!I) return;
-      const c = new VA({
+      const c = new en({
         code: C,
         extent: [I.xy[0], I.xy[1], I.wh[0], I.wh[1]],
         units: "m"
       });
-      Ki(c), Qn(
+      er(c), Yn(
         c,
         "EPSG:3857",
-        (h) => I.transform(h, !1, !0),
-        (h) => I.transform(h, !0, !0)
+        (u) => I.transform(u, !1, !0),
+        (u) => I.transform(u, !0, !0)
       ), Hn("EPSG:4326", c);
     }), i;
   }
@@ -9102,9 +9454,9 @@ class ii extends go {
   setupMapParameter(t) {
     const e = [this.width / 2, this.height / 2], n = this.mapTransform.xy2MercWithLayer(e);
     if (!n) return;
-    const [i, r] = n, s = this.mapTransform.getLayerTransform(i), o = this.mapTransform.getLayerTransform(0);
+    const [i, r] = n, s = this.mapTransform.getLayerTransform(i), g = this.mapTransform.getLayerTransform(0);
     if (!s) return;
-    const g = [
+    const o = [
       [e[0] - 150, e[1]],
       [e[0] + 150, e[1]],
       [e[0], e[1] - 150],
@@ -9114,14 +9466,14 @@ class ii extends go {
       [this.width, 0],
       [this.width, this.height],
       [0, this.height]
-    ], C = g.map((d) => s.transform(d, !1)), I = a.map(
-      (d) => o.transform(d, !1)
+    ], C = o.map((f) => s.transform(f, !1)), I = a.map(
+      (f) => g.transform(f, !1)
     ), c = Math.sqrt(
       Math.pow(C[0][0] - C[1][0], 2) + Math.pow(C[0][1] - C[1][1], 2)
-    ), h = Math.sqrt(
+    ), u = Math.sqrt(
       Math.pow(C[2][0] - C[3][0], 2) + Math.pow(C[2][1] - C[3][1], 2)
-    ), p = (c + h) / 2;
-    this.mercZoom || (this.mercZoom = Math.log(300 * (2 * W) / 256 / p) / Math.log(2) - 3), this.homePosition || (this.homePosition = fr(r)), this.envelope = _g([
+    ), d = (c + u) / 2;
+    this.mercZoom || (this.mercZoom = Math.log(300 * (2 * V) / 256 / d) / Math.log(2) - 3), this.homePosition || (this.homePosition = wr(r)), this.envelope = Qo([
       [
         I[0],
         I[1],
@@ -9136,20 +9488,20 @@ class ii extends go {
   // 1 位は中心＋周囲 4 点を同じ層で逆変換した 5 点、2 位は中心だけ。undefined（旧 hide 表現）を含まない 0〜2 件。
   // 持たない（@maplat/transform 1.0.x）なら従来経路（mercs2SysCoords）。
   mercs2SysCoordsAsync_multiLayer(t) {
-    const e = t[0], n = js(
+    const e = t[0], n = Zs(
       this.mapTransform,
       e[0],
       (r) => this.insideCheckXy(r)
     );
     if (n)
       return Promise.resolve(
-        n.map(([r, s], o) => {
-          if (o > 0)
+        n.map(([r, s], g) => {
+          if (g > 0)
             return [[this.xy2SysCoord(s)], t[1]];
-          const g = this.mapTransform.getLayerTransform(r);
+          const o = this.mapTransform.getLayerTransform(r);
           return [
             e.map(
-              (C, I) => I === 0 ? s : g.transform(C, !0, r > 0)
+              (C, I) => I === 0 ? s : o.transform(C, !0, r > 0)
             ).map((C) => this.xy2SysCoord(C)),
             t[1]
           ];
@@ -9170,7 +9522,7 @@ class ii extends go {
   // Transform が merc2XyVisibleLayers を持てば、紙外の本図を除いた表示候補の 1 位、無ければ undefined（MaplatCore#104）。
   // 持たない（@maplat/transform 1.0.x）なら従来経路。
   merc2XyAsync_ignoreBackground(t) {
-    const e = js(
+    const e = Zs(
       this.mapTransform,
       t,
       (n) => this.insideCheckXy(n)
@@ -9204,25 +9556,25 @@ class ii extends go {
     ]);
   }
 }
-var rt = typeof globalThis < "u" && globalThis || typeof self < "u" && self || // eslint-disable-next-line no-undef
-typeof globalThis < "u" && globalThis || {}, pt = {
-  searchParams: "URLSearchParams" in rt,
-  iterable: "Symbol" in rt && "iterator" in Symbol,
-  blob: "FileReader" in rt && "Blob" in rt && (function() {
+var st = typeof globalThis < "u" && globalThis || typeof self < "u" && self || // eslint-disable-next-line no-undef
+typeof globalThis < "u" && globalThis || {}, mt = {
+  searchParams: "URLSearchParams" in st,
+  iterable: "Symbol" in st && "iterator" in Symbol,
+  blob: "FileReader" in st && "Blob" in st && (function() {
     try {
       return new Blob(), !0;
     } catch {
       return !1;
     }
   })(),
-  formData: "FormData" in rt,
-  arrayBuffer: "ArrayBuffer" in rt
+  formData: "FormData" in st,
+  arrayBuffer: "ArrayBuffer" in st
 };
-function Ec(A) {
+function Dc(A) {
   return A && DataView.prototype.isPrototypeOf(A);
 }
-if (pt.arrayBuffer)
-  var Mc = [
+if (mt.arrayBuffer)
+  var Oc = [
     "[object Int8Array]",
     "[object Uint8Array]",
     "[object Uint8ClampedArray]",
@@ -9232,25 +9584,25 @@ if (pt.arrayBuffer)
     "[object Uint32Array]",
     "[object Float32Array]",
     "[object Float64Array]"
-  ], Rc = ArrayBuffer.isView || function(A) {
-    return A && Mc.indexOf(Object.prototype.toString.call(A)) > -1;
+  ], Bc = ArrayBuffer.isView || function(A) {
+    return A && Oc.indexOf(Object.prototype.toString.call(A)) > -1;
   };
-function wA(A) {
+function bA(A) {
   if (typeof A != "string" && (A = String(A)), /[^a-z0-9\-#$%&'*+.^_`|~!]/i.test(A) || A === "")
     throw new TypeError('Invalid character in header field name: "' + A + '"');
   return A.toLowerCase();
 }
-function jr(A) {
+function Fr(A) {
   return typeof A != "string" && (A = String(A)), A;
 }
-function Xr(A) {
+function Ur(A) {
   var t = {
     next: function() {
       var e = A.shift();
       return { done: e === void 0, value: e };
     }
   };
-  return pt.iterable && (t[Symbol.iterator] = function() {
+  return mt.iterable && (t[Symbol.iterator] = function() {
     return t;
   }), t;
 }
@@ -9266,21 +9618,21 @@ function tt(A) {
   }, this);
 }
 tt.prototype.append = function(A, t) {
-  A = wA(A), t = jr(t);
+  A = bA(A), t = Fr(t);
   var e = this.map[A];
   this.map[A] = e ? e + ", " + t : t;
 };
 tt.prototype.delete = function(A) {
-  delete this.map[wA(A)];
+  delete this.map[bA(A)];
 };
 tt.prototype.get = function(A) {
-  return A = wA(A), this.has(A) ? this.map[A] : null;
+  return A = bA(A), this.has(A) ? this.map[A] : null;
 };
 tt.prototype.has = function(A) {
-  return this.map.hasOwnProperty(wA(A));
+  return this.map.hasOwnProperty(bA(A));
 };
 tt.prototype.set = function(A, t) {
-  this.map[wA(A)] = jr(t);
+  this.map[bA(A)] = Fr(t);
 };
 tt.prototype.forEach = function(A, t) {
   for (var e in this.map)
@@ -9290,29 +9642,29 @@ tt.prototype.keys = function() {
   var A = [];
   return this.forEach(function(t, e) {
     A.push(e);
-  }), Xr(A);
+  }), Ur(A);
 };
 tt.prototype.values = function() {
   var A = [];
   return this.forEach(function(t) {
     A.push(t);
-  }), Xr(A);
+  }), Ur(A);
 };
 tt.prototype.entries = function() {
   var A = [];
   return this.forEach(function(t, e) {
     A.push([e, t]);
-  }), Xr(A);
+  }), Ur(A);
 };
-pt.iterable && (tt.prototype[Symbol.iterator] = tt.prototype.entries);
-function Zi(A) {
+mt.iterable && (tt.prototype[Symbol.iterator] = tt.prototype.entries);
+function Ui(A) {
   if (!A._noBody) {
     if (A.bodyUsed)
       return Promise.reject(new TypeError("Already read"));
     A.bodyUsed = !0;
   }
 }
-function oo(A) {
+function lg(A) {
   return new Promise(function(t, e) {
     A.onload = function() {
       t(A.result);
@@ -9321,30 +9673,30 @@ function oo(A) {
     };
   });
 }
-function Tc(A) {
-  var t = new FileReader(), e = oo(t);
+function Lc(A) {
+  var t = new FileReader(), e = lg(t);
   return t.readAsArrayBuffer(A), e;
 }
-function Sc(A) {
-  var t = new FileReader(), e = oo(t), n = /charset=([A-Za-z0-9_-]+)/.exec(A.type), i = n ? n[1] : "utf-8";
+function kc(A) {
+  var t = new FileReader(), e = lg(t), n = /charset=([A-Za-z0-9_-]+)/.exec(A.type), i = n ? n[1] : "utf-8";
   return t.readAsText(A, i), e;
 }
-function Pc(A) {
+function Nc(A) {
   for (var t = new Uint8Array(A), e = new Array(t.length), n = 0; n < t.length; n++)
     e[n] = String.fromCharCode(t[n]);
   return e.join("");
 }
-function Xs(A) {
+function zs(A) {
   if (A.slice)
     return A.slice(0);
   var t = new Uint8Array(A.byteLength);
   return t.set(new Uint8Array(A)), t.buffer;
 }
-function ao() {
+function ug() {
   return this.bodyUsed = !1, this._initBody = function(A) {
-    this.bodyUsed = this.bodyUsed, this._bodyInit = A, A ? typeof A == "string" ? this._bodyText = A : pt.blob && Blob.prototype.isPrototypeOf(A) ? this._bodyBlob = A : pt.formData && FormData.prototype.isPrototypeOf(A) ? this._bodyFormData = A : pt.searchParams && URLSearchParams.prototype.isPrototypeOf(A) ? this._bodyText = A.toString() : pt.arrayBuffer && pt.blob && Ec(A) ? (this._bodyArrayBuffer = Xs(A.buffer), this._bodyInit = new Blob([this._bodyArrayBuffer])) : pt.arrayBuffer && (ArrayBuffer.prototype.isPrototypeOf(A) || Rc(A)) ? this._bodyArrayBuffer = Xs(A) : this._bodyText = A = Object.prototype.toString.call(A) : (this._noBody = !0, this._bodyText = ""), this.headers.get("content-type") || (typeof A == "string" ? this.headers.set("content-type", "text/plain;charset=UTF-8") : this._bodyBlob && this._bodyBlob.type ? this.headers.set("content-type", this._bodyBlob.type) : pt.searchParams && URLSearchParams.prototype.isPrototypeOf(A) && this.headers.set("content-type", "application/x-www-form-urlencoded;charset=UTF-8"));
-  }, pt.blob && (this.blob = function() {
-    var A = Zi(this);
+    this.bodyUsed = this.bodyUsed, this._bodyInit = A, A ? typeof A == "string" ? this._bodyText = A : mt.blob && Blob.prototype.isPrototypeOf(A) ? this._bodyBlob = A : mt.formData && FormData.prototype.isPrototypeOf(A) ? this._bodyFormData = A : mt.searchParams && URLSearchParams.prototype.isPrototypeOf(A) ? this._bodyText = A.toString() : mt.arrayBuffer && mt.blob && Dc(A) ? (this._bodyArrayBuffer = zs(A.buffer), this._bodyInit = new Blob([this._bodyArrayBuffer])) : mt.arrayBuffer && (ArrayBuffer.prototype.isPrototypeOf(A) || Bc(A)) ? this._bodyArrayBuffer = zs(A) : this._bodyText = A = Object.prototype.toString.call(A) : (this._noBody = !0, this._bodyText = ""), this.headers.get("content-type") || (typeof A == "string" ? this.headers.set("content-type", "text/plain;charset=UTF-8") : this._bodyBlob && this._bodyBlob.type ? this.headers.set("content-type", this._bodyBlob.type) : mt.searchParams && URLSearchParams.prototype.isPrototypeOf(A) && this.headers.set("content-type", "application/x-www-form-urlencoded;charset=UTF-8"));
+  }, mt.blob && (this.blob = function() {
+    var A = Ui(this);
     if (A)
       return A;
     if (this._bodyBlob)
@@ -9356,7 +9708,7 @@ function ao() {
     return Promise.resolve(new Blob([this._bodyText]));
   }), this.arrayBuffer = function() {
     if (this._bodyArrayBuffer) {
-      var A = Zi(this);
+      var A = Ui(this);
       return A || (ArrayBuffer.isView(this._bodyArrayBuffer) ? Promise.resolve(
         this._bodyArrayBuffer.buffer.slice(
           this._bodyArrayBuffer.byteOffset,
@@ -9364,45 +9716,45 @@ function ao() {
         )
       ) : Promise.resolve(this._bodyArrayBuffer));
     } else {
-      if (pt.blob)
-        return this.blob().then(Tc);
+      if (mt.blob)
+        return this.blob().then(Lc);
       throw new Error("could not read as ArrayBuffer");
     }
   }, this.text = function() {
-    var A = Zi(this);
+    var A = Ui(this);
     if (A)
       return A;
     if (this._bodyBlob)
-      return Sc(this._bodyBlob);
+      return kc(this._bodyBlob);
     if (this._bodyArrayBuffer)
-      return Promise.resolve(Pc(this._bodyArrayBuffer));
+      return Promise.resolve(Nc(this._bodyArrayBuffer));
     if (this._bodyFormData)
       throw new Error("could not read FormData body as text");
     return Promise.resolve(this._bodyText);
-  }, pt.formData && (this.formData = function() {
-    return this.text().then(Oc);
+  }, mt.formData && (this.formData = function() {
+    return this.text().then(_c);
   }), this.json = function() {
     return this.text().then(JSON.parse);
   }, this;
 }
-var xc = ["CONNECT", "DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT", "TRACE"];
-function Dc(A) {
+var Gc = ["CONNECT", "DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT", "TRACE"];
+function jc(A) {
   var t = A.toUpperCase();
-  return xc.indexOf(t) > -1 ? t : A;
+  return Gc.indexOf(t) > -1 ? t : A;
 }
-function Ne(A, t) {
-  if (!(this instanceof Ne))
+function Ge(A, t) {
+  if (!(this instanceof Ge))
     throw new TypeError('Please use the "new" operator, this DOM object constructor cannot be called as a function.');
   t = t || {};
   var e = t.body;
-  if (A instanceof Ne) {
+  if (A instanceof Ge) {
     if (A.bodyUsed)
       throw new TypeError("Already read");
     this.url = A.url, this.credentials = A.credentials, t.headers || (this.headers = new tt(A.headers)), this.method = A.method, this.mode = A.mode, this.signal = A.signal, !e && A._bodyInit != null && (e = A._bodyInit, A.bodyUsed = !0);
   } else
     this.url = String(A);
-  if (this.credentials = t.credentials || this.credentials || "same-origin", (t.headers || !this.headers) && (this.headers = new tt(t.headers)), this.method = Dc(t.method || this.method || "GET"), this.mode = t.mode || this.mode || null, this.signal = t.signal || this.signal || (function() {
-    if ("AbortController" in rt) {
+  if (this.credentials = t.credentials || this.credentials || "same-origin", (t.headers || !this.headers) && (this.headers = new tt(t.headers)), this.method = jc(t.method || this.method || "GET"), this.mode = t.mode || this.mode || null, this.signal = t.signal || this.signal || (function() {
+    if ("AbortController" in st) {
       var r = new AbortController();
       return r.signal;
     }
@@ -9418,10 +9770,10 @@ function Ne(A, t) {
     }
   }
 }
-Ne.prototype.clone = function() {
-  return new Ne(this, { body: this._bodyInit });
+Ge.prototype.clone = function() {
+  return new Ge(this, { body: this._bodyInit });
 };
-function Oc(A) {
+function _c(A) {
   var t = new FormData();
   return A.trim().split("&").forEach(function(e) {
     if (e) {
@@ -9430,7 +9782,7 @@ function Oc(A) {
     }
   }), t;
 }
-function Bc(A) {
+function Xc(A) {
   var t = new tt(), e = A.replace(/\r?\n[\t ]+/g, " ");
   return e.split("\r").map(function(n) {
     return n.indexOf(`
@@ -9441,54 +9793,54 @@ function Bc(A) {
       var s = i.join(":").trim();
       try {
         t.append(r, s);
-      } catch (o) {
-        console.warn("Response " + o.message);
+      } catch (g) {
+        console.warn("Response " + g.message);
       }
     }
   }), t;
 }
-ao.call(Ne.prototype);
-function Ut(A, t) {
-  if (!(this instanceof Ut))
+ug.call(Ge.prototype);
+function Vt(A, t) {
+  if (!(this instanceof Vt))
     throw new TypeError('Please use the "new" operator, this DOM object constructor cannot be called as a function.');
   if (t || (t = {}), this.type = "default", this.status = t.status === void 0 ? 200 : t.status, this.status < 200 || this.status > 599)
     throw new RangeError("Failed to construct 'Response': The status provided (0) is outside the range [200, 599].");
   this.ok = this.status >= 200 && this.status < 300, this.statusText = t.statusText === void 0 ? "" : "" + t.statusText, this.headers = new tt(t.headers), this.url = t.url || "", this._initBody(A);
 }
-ao.call(Ut.prototype);
-Ut.prototype.clone = function() {
-  return new Ut(this._bodyInit, {
+ug.call(Vt.prototype);
+Vt.prototype.clone = function() {
+  return new Vt(this._bodyInit, {
     status: this.status,
     statusText: this.statusText,
     headers: new tt(this.headers),
     url: this.url
   });
 };
-Ut.error = function() {
-  var A = new Ut(null, { status: 200, statusText: "" });
+Vt.error = function() {
+  var A = new Vt(null, { status: 200, statusText: "" });
   return A.ok = !1, A.status = 0, A.type = "error", A;
 };
-var Lc = [301, 302, 303, 307, 308];
-Ut.redirect = function(A, t) {
-  if (Lc.indexOf(t) === -1)
+var Zc = [301, 302, 303, 307, 308];
+Vt.redirect = function(A, t) {
+  if (Zc.indexOf(t) === -1)
     throw new RangeError("Invalid status code");
-  return new Ut(null, { status: t, headers: { location: A } });
+  return new Vt(null, { status: t, headers: { location: A } });
 };
-var xe = rt.DOMException;
+var De = st.DOMException;
 try {
-  new xe();
+  new De();
 } catch {
-  xe = function(t, e) {
+  De = function(t, e) {
     this.message = t, this.name = e;
     var n = Error(t);
     this.stack = n.stack;
-  }, xe.prototype = Object.create(Error.prototype), xe.prototype.constructor = xe;
+  }, De.prototype = Object.create(Error.prototype), De.prototype.constructor = De;
 }
-function Io(A, t) {
+function hg(A, t) {
   return new Promise(function(e, n) {
-    var i = new Ne(A, t);
+    var i = new Ge(A, t);
     if (i.signal && i.signal.aborted)
-      return n(new xe("Aborted", "AbortError"));
+      return n(new De("Aborted", "AbortError"));
     var r = new XMLHttpRequest();
     function s() {
       r.abort();
@@ -9496,12 +9848,12 @@ function Io(A, t) {
     r.onload = function() {
       var a = {
         statusText: r.statusText,
-        headers: Bc(r.getAllResponseHeaders() || "")
+        headers: Xc(r.getAllResponseHeaders() || "")
       };
       i.url.indexOf("file://") === 0 && (r.status < 200 || r.status > 599) ? a.status = 200 : a.status = r.status, a.url = "responseURL" in r ? r.responseURL : a.headers.get("X-Request-URL");
       var C = "response" in r ? r.response : r.responseText;
       setTimeout(function() {
-        e(new Ut(C, a));
+        e(new Vt(C, a));
       }, 0);
     }, r.onerror = function() {
       setTimeout(function() {
@@ -9513,22 +9865,22 @@ function Io(A, t) {
       }, 0);
     }, r.onabort = function() {
       setTimeout(function() {
-        n(new xe("Aborted", "AbortError"));
+        n(new De("Aborted", "AbortError"));
       }, 0);
     };
-    function o(a) {
+    function g(a) {
       try {
-        return a === "" && rt.location.href ? rt.location.href : a;
+        return a === "" && st.location.href ? st.location.href : a;
       } catch {
         return a;
       }
     }
-    if (r.open(i.method, o(i.url), !0), i.credentials === "include" ? r.withCredentials = !0 : i.credentials === "omit" && (r.withCredentials = !1), "responseType" in r && (pt.blob ? r.responseType = "blob" : pt.arrayBuffer && (r.responseType = "arraybuffer")), t && typeof t.headers == "object" && !(t.headers instanceof tt || rt.Headers && t.headers instanceof rt.Headers)) {
-      var g = [];
+    if (r.open(i.method, g(i.url), !0), i.credentials === "include" ? r.withCredentials = !0 : i.credentials === "omit" && (r.withCredentials = !1), "responseType" in r && (mt.blob ? r.responseType = "blob" : mt.arrayBuffer && (r.responseType = "arraybuffer")), t && typeof t.headers == "object" && !(t.headers instanceof tt || st.Headers && t.headers instanceof st.Headers)) {
+      var o = [];
       Object.getOwnPropertyNames(t.headers).forEach(function(a) {
-        g.push(wA(a)), r.setRequestHeader(a, jr(t.headers[a]));
+        o.push(bA(a)), r.setRequestHeader(a, Fr(t.headers[a]));
       }), i.headers.forEach(function(a, C) {
-        g.indexOf(C) === -1 && r.setRequestHeader(C, a);
+        o.indexOf(C) === -1 && r.setRequestHeader(C, a);
       });
     } else
       i.headers.forEach(function(a, C) {
@@ -9539,9 +9891,9 @@ function Io(A, t) {
     }), r.send(typeof i._bodyInit > "u" ? null : i._bodyInit);
   });
 }
-Io.polyfill = !0;
-rt.fetch || (rt.fetch = Io, rt.Headers = tt, rt.Request = Ne, rt.Response = Ut);
-const Co = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU0AKgAAAAgAAgESAAMAAAABAAEAAIdpAAQAAAABAAAAJgAAAAAAAqACAAQAAAABAAAANKADAAQAAAABAAAANAAAAAD/4QkhaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLwA8P3hwYWNrZXQgYmVnaW49Iu+7vyIgaWQ9Ilc1TTBNcENlaGlIenJlU3pOVGN6a2M5ZCI/PiA8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIiB4OnhtcHRrPSJYTVAgQ29yZSA1LjQuMCI+IDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+IDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiLz4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8P3hwYWNrZXQgZW5kPSJ3Ij8+AP/tADhQaG90b3Nob3AgMy4wADhCSU0EBAAAAAAAADhCSU0EJQAAAAAAENQdjNmPALIE6YAJmOz4Qn7/4hskSUNDX1BST0ZJTEUAAQEAABsUYXBwbAIQAABtbnRyUkdCIFhZWiAH4AAKAB0AFAA0AAZhY3NwQVBQTAAAAABBUFBMAAAAAAAAAAAAAAAAAAAAAAAA9tYAAQAAAADTLWFwcGwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABFkZXNjAAABUAAAAGJkc2NtAAABtAAABBhjcHJ0AAAFzAAAACN3dHB0AAAF8AAAABRyWFlaAAAGBAAAABRnWFlaAAAGGAAAABRiWFlaAAAGLAAAABRyVFJDAAAGQAAACAxhYXJnAAAOTAAAACB2Y2d0AAAObAAABhJuZGluAAAUgAAABj5jaGFkAAAawAAAACxtbW9kAAAa7AAAAChiVFJDAAAGQAAACAxnVFJDAAAGQAAACAxhYWJnAAAOTAAAACBhYWdnAAAOTAAAACBkZXNjAAAAAAAAAAhEaXNwbGF5AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAbWx1YwAAAAAAAAAiAAAADGhySFIAAAAUAAABqGtvS1IAAAAMAAABvG5iTk8AAAASAAAByGlkAAAAAAASAAAB2mh1SFUAAAAUAAAB7GNzQ1oAAAAWAAACAGRhREsAAAAcAAACFnVrVUEAAAAcAAACMmFyAAAAAAAUAAACTml0SVQAAAAUAAACYnJvUk8AAAASAAACdm5sTkwAAAAWAAACiGhlSUwAAAAWAAACnmVzRVMAAAASAAACdmZpRkkAAAAQAAACtHpoVFcAAAAMAAACxHZpVk4AAAAOAAAC0HNrU0sAAAAWAAAC3npoQ04AAAAMAAACxHJ1UlUAAAAkAAAC9GZyRlIAAAAWAAADGG1zAAAAAAASAAADLmNhRVMAAAAYAAADQHRoVEgAAAAMAAADWGVzWEwAAAASAAACdmRlREUAAAAQAAADZGVuVVMAAAASAAADdHB0QlIAAAAYAAADhnBsUEwAAAASAAADnmVsR1IAAAAiAAADsHN2U0UAAAAQAAAD0nRyVFIAAAAUAAAD4mphSlAAAAAMAAAD9nB0UFQAAAAWAAAEAgBMAEMARAAgAHUAIABiAG8AagBpzuy37AAgAEwAQwBEAEYAYQByAGcAZQAtAEwAQwBEAEwAQwBEACAAVwBhAHIAbgBhAFMAegDtAG4AZQBzACAATABDAEQAQgBhAHIAZQB2AG4A/QAgAEwAQwBEAEwAQwBEAC0AZgBhAHIAdgBlAHMAawDmAHIAbQQaBD4EOwRMBD4EQAQ+BDIEOAQ5ACAATABDAEQgDwBMAEMARAAgBkUGRAZIBkYGKQBMAEMARAAgAGMAbwBsAG8AcgBpAEwAQwBEACAAYwBvAGwAbwByAEsAbABlAHUAcgBlAG4ALQBMAEMARCAPAEwAQwBEACAF5gXRBeIF1QXgBdkAVgDkAHIAaQAtAEwAQwBEX2mCcgAgAEwAQwBEAEwAQwBEACAATQDgAHUARgBhAHIAZQBiAG4A6QAgAEwAQwBEBCYEMgQ1BEIEPQQ+BDkAIAQWBBoALQQ0BDgEQQQ/BDsENQQ5AEwAQwBEACAAYwBvAHUAbABlAHUAcgBXAGEAcgBuAGEAIABMAEMARABMAEMARAAgAGUAbgAgAGMAbwBsAG8AcgBMAEMARAAgDioONQBGAGEAcgBiAC0ATABDAEQAQwBvAGwAbwByACAATABDAEQATABDAEQAIABDAG8AbABvAHIAaQBkAG8ASwBvAGwAbwByACAATABDAEQDiAOzA8cDwQPJA7wDtwAgA78DuAPMA70DtwAgAEwAQwBEAEYA5AByAGcALQBMAEMARABSAGUAbgBrAGwAaQAgAEwAQwBEMKsw6TD8AEwAQwBEAEwAQwBEACAAYQAgAEMAbwByAGUAc3RleHQAAAAAQ29weXJpZ2h0IEFwcGxlIEluYy4sIDIwMTYAAFhZWiAAAAAAAADzUgABAAAAARbPWFlaIAAAAAAAAGXoAAA8EAAACdBYWVogAAAAAAAAapMAAKrFAAAXilhZWiAAAAAAAAAmWwAAGSwAALHSY3VydgAAAAAAAAQAAAAABQAKAA8AFAAZAB4AIwAoAC0AMgA2ADsAQABFAEoATwBUAFkAXgBjAGgAbQByAHcAfACBAIYAiwCQAJUAmgCfAKMAqACtALIAtwC8AMEAxgDLANAA1QDbAOAA5QDrAPAA9gD7AQEBBwENARMBGQEfASUBKwEyATgBPgFFAUwBUgFZAWABZwFuAXUBfAGDAYsBkgGaAaEBqQGxAbkBwQHJAdEB2QHhAekB8gH6AgMCDAIUAh0CJgIvAjgCQQJLAlQCXQJnAnECegKEAo4CmAKiAqwCtgLBAssC1QLgAusC9QMAAwsDFgMhAy0DOANDA08DWgNmA3IDfgOKA5YDogOuA7oDxwPTA+AD7AP5BAYEEwQgBC0EOwRIBFUEYwRxBH4EjASaBKgEtgTEBNME4QTwBP4FDQUcBSsFOgVJBVgFZwV3BYYFlgWmBbUFxQXVBeUF9gYGBhYGJwY3BkgGWQZqBnsGjAadBq8GwAbRBuMG9QcHBxkH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", co = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU0AKgAAAAgAAgESAAMAAAABAAEAAIdpAAQAAAABAAAAJgAAAAAAAqACAAQAAAABAAAANKADAAQAAAABAAAANAAAAAD/4QkhaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLwA8P3hwYWNrZXQgYmVnaW49Iu+7vyIgaWQ9Ilc1TTBNcENlaGlIenJlU3pOVGN6a2M5ZCI/PiA8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIiB4OnhtcHRrPSJYTVAgQ29yZSA1LjQuMCI+IDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+IDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiLz4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8P3hwYWNrZXQgZW5kPSJ3Ij8+AP/tADhQaG90b3Nob3AgMy4wADhCSU0EBAAAAAAAADhCSU0EJQAAAAAAENQdjNmPALIE6YAJmOz4Qn7/4gKESUNDX1BST0ZJTEUAAQEAAAJ0YXBwbAQAAABtbnRyUkdCIFhZWiAH3AALAAwAEgA6ABdhY3NwQVBQTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA9tYAAQAAAADTLWFwcGxmSfnZPIV3n7QGSpkeOnQsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAtkZXNjAAABCAAAAGNkc2NtAAABbAAAACxjcHJ0AAABmAAAAC13dHB0AAAByAAAABRyWFlaAAAB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", lo = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QCARXhpZgAATU0AKgAAAAgABQESAAMAAAABAAEAAAEaAAUAAAABAAAASgEbAAUAAAABAAAAUgEoAAMAAAABAAIAAIdpAAQAAAABAAAAWgAAAAAAAABIAAAAAQAAAEgAAAABAAKgAgAEAAAAAQAAADSgAwAEAAAAAQAAADQAAAAA/+EJIWh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8APD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iWE1QIENvcmUgNS40LjAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIi8+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPD94cGFja2V0IGVuZD0idyI/PgD/7QA4UGhvdG9zaG9wIDMuMAA4QklNBAQAAAAAAAA4QklNBCUAAAAAABDUHYzZjwCyBOmACZjs+EJ+/+IbJElDQ19QUk9GSUxFAAEBAAAbFGFwcGwCEAAAbW50clJHQiBYWVogB+EABAAEABcABgAzYWNzcEFQUEwAAAAAQVBQTAAAAAAAAAAAAAAAAAAAAAAAAPbWAAEAAAAA0y1hcHBsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARZGVzYwAAAVAAAABiZHNjbQAAAbQAAAQYY3BydAAABcwAAAAjd3RwdAAABfAAAAAUclhZWgAABgQAAAAUZ1hZWgAABhgAAAAUYlhZWgAABiwAAAAUclRSQwAABkAAAAgMYWFyZwAADkwAAAAgdmNndAAADmwAAAYSbmRpbgAAFIAAAAY+Y2hhZAAAGsAAAAAsbW1vZAAAGuwAAAAoYlRSQwAABkAAAAgMZ1RSQwAABkAAAAgMYWFiZwAADkwAAAAgYWFnZwAADkwAAAAgZGVzYwAAAAAAAAAIRGlzcGxheQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAG1sdWMAAAAAAAAAIgAAAAxockhSAAAAFAAAAahrb0tSAAAADAAAAbxuYk5PAAAAEgAAAchpZAAAAAAAEgAAAdpodUhVAAAAFAAAAexjc0NaAAAAFgAAAgBkYURLAAAAHAAAAhZ1a1VBAAAAHAAAAjJhcgAAAAAAFAAAAk5pdElUAAAAFAAAAmJyb1JPAAAAEgAAAnZubE5MAAAAFgAAAohoZUlMAAAAFgAAAp5lc0VTAAAAEgAAAnZmaUZJAAAAEAAAArR6aFRXAAAADAAAAsR2aVZOAAAADgAAAtBza1NLAAAAFgAAAt56aENOAAAADAAAAsRydVJVAAAAJAAAAvRmckZSAAAAFgAAAxhtcwAAAAAAEgAAAy5jYUVTAAAAGAAAA0B0aFRIAAAADAAAA1hlc1hMAAAAEgAAAnZkZURFAAAAEAAAA2RlblVTAAAAEgAAA3RwdEJSAAAAGAAAA4ZwbFBMAAAAEgAAA55lbEdSAAAAIgAAA7BzdlNFAAAAEAAAA9J0clRSAAAAFAAAA+JqYUpQAAAADAAAA/ZwdFBUAAAAFgAABAIATABDAEQAIAB1ACAAYgBvAGoAac7st+wAIABMAEMARABGAGEAcgBnAGUALQBMAEMARABMAEMARAAgAFcAYQByAG4AYQBTAHoA7QBuAGUAcwAgAEwAQwBEAEIAYQByAGUAdgBuAP0AIABMAEMARABMAEMARAAtAGYAYQByAHYAZQBzAGsA5gByAG0EGgQ+BDsETAQ+BEAEPgQyBDgEOQAgAEwAQwBEIA8ATABDAEQAIAZFBkQGSAZGBikATABDAEQAIABjAG8AbABvAHIAaQBMAEMARAAgAGMAbwBsAG8AcgBLAGwAZQB1AHIAZQBuAC0ATABDAEQgDwBMAEMARAAgBeYF0QXiBdUF4AXZAFYA5AByAGkALQBMAEMARF9pgnIAIABMAEMARABMAEMARAAgAE0A4AB1AEYAYQByAGUAYgBuAP0AIABMAEMARAQmBDIENQRCBD0EPgQ5ACAEFgQaAC0ENAQ4BEEEPwQ7BDUEOQBMAEMARAAgAGMAbwB1AGwAZQB1AHIAVwBhAHIAbgBhACAATABDAEQATABDAEQAIABlAG4AIABjAG8AbABvAHIATABDAEQAIA4qDjUARgBhAHIAYgAtAEwAQwBEAEMAbwBsAG8AcgAgAEwAQwBEAEwAQwBEACAAQwBvAGwAbwByAGkAZABvAEsAbwBsAG8AcgAgAEwAQwBEA4gDswPHA8EDyQO8A7cAIAO/A7gDzAO9A7cAIABMAEMARABGAOQAcgBnAC0ATABDAEQAUgBlAG4AawBsAGkAIABMAEMARDCrMOkw/ABMAEMARABMAEMARAAgAGEAIABDAG8AcgBlAHN0ZXh0AAAAAENvcHlyaWdodCBBcHBsZSBJbmMuLCAyMDE3AABYWVogAAAAAAAA81IAAQAAAAEWz1hZWiAAAAAAAABl6AAAPBAAAAnQWFlaIAAAAAAAAGqTAACqxQAAF4pYWVogAAAAAAAAJlsAABksAACx0mN1cnYAAAAAAAAEAAAAAAUACgAPABQAGQAeACMAKAAtADIANgA7AEAARQBKAE8AVABZAF4AYwBoAG0AcgB3AHwAgQCGAIsAkACVAJoAnwCjAKgArQCyALcAvADBAMYAywDQANUA2wDgAOUA6wDwAPYA+wEBAQcBDQETARkBHwElASsBMgE4AT4BRQFMAVIBWQFgAWcBbgF1AXwBgwGLAZIBmgGhAakBsQG5AcEByQHRAdkB4QHpAfIB+gIDAgwCFAIdAiYCLwI4AkECSwJUAl0CZwJxAnoChAKOApgCogKsArYCwQLLAtUC4ALrAvUDAAMLAxYDIQMtAzgDQwNPA1oDZgNyA34DigOWA6IDrgO6A8cD0wPgA+wD+QQGBBMEIAQtBDsESARVBGMEcQR+BIwEmgSoBLYExATTBOEE8AT+BQ0FHAUrBToFSQVYBWcF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", kc = {
+hg.polyfill = !0;
+st.fetch || (st.fetch = hg, st.Headers = tt, st.Request = Ge, st.Response = Vt);
+const fg = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU0AKgAAAAgAAgESAAMAAAABAAEAAIdpAAQAAAABAAAAJgAAAAAAAqACAAQAAAABAAAANKADAAQAAAABAAAANAAAAAD/4QkhaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLwA8P3hwYWNrZXQgYmVnaW49Iu+7vyIgaWQ9Ilc1TTBNcENlaGlIenJlU3pOVGN6a2M5ZCI/PiA8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIiB4OnhtcHRrPSJYTVAgQ29yZSA1LjQuMCI+IDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+IDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiLz4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8P3hwYWNrZXQgZW5kPSJ3Ij8+AP/tADhQaG90b3Nob3AgMy4wADhCSU0EBAAAAAAAADhCSU0EJQAAAAAAENQdjNmPALIE6YAJmOz4Qn7/4hskSUNDX1BST0ZJTEUAAQEAABsUYXBwbAIQAABtbnRyUkdCIFhZWiAH4AAKAB0AFAA0AAZhY3NwQVBQTAAAAABBUFBMAAAAAAAAAAAAAAAAAAAAAAAA9tYAAQAAAADTLWFwcGwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABFkZXNjAAABUAAAAGJkc2NtAAABtAAABBhjcHJ0AAAFzAAAACN3dHB0AAAF8AAAABRyWFlaAAAGBAAAABRnWFlaAAAGGAAAABRiWFlaAAAGLAAAABRyVFJDAAAGQAAACAxhYXJnAAAOTAAAACB2Y2d0AAAObAAABhJuZGluAAAUgAAABj5jaGFkAAAawAAAACxtbW9kAAAa7AAAAChiVFJDAAAGQAAACAxnVFJDAAAGQAAACAxhYWJnAAAOTAAAACBhYWdnAAAOTAAAACBkZXNjAAAAAAAAAAhEaXNwbGF5AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAbWx1YwAAAAAAAAAiAAAADGhySFIAAAAUAAABqGtvS1IAAAAMAAABvG5iTk8AAAASAAAByGlkAAAAAAASAAAB2mh1SFUAAAAUAAAB7GNzQ1oAAAAWAAACAGRhREsAAAAcAAACFnVrVUEAAAAcAAACMmFyAAAAAAAUAAACTml0SVQAAAAUAAACYnJvUk8AAAASAAACdm5sTkwAAAAWAAACiGhlSUwAAAAWAAACnmVzRVMAAAASAAACdmZpRkkAAAAQAAACtHpoVFcAAAAMAAACxHZpVk4AAAAOAAAC0HNrU0sAAAAWAAAC3npoQ04AAAAMAAACxHJ1UlUAAAAkAAAC9GZyRlIAAAAWAAADGG1zAAAAAAASAAADLmNhRVMAAAAYAAADQHRoVEgAAAAMAAADWGVzWEwAAAASAAACdmRlREUAAAAQAAADZGVuVVMAAAASAAADdHB0QlIAAAAYAAADhnBsUEwAAAASAAADnmVsR1IAAAAiAAADsHN2U0UAAAAQAAAD0nRyVFIAAAAUAAAD4mphSlAAAAAMAAAD9nB0UFQAAAAWAAAEAgBMAEMARAAgAHUAIABiAG8AagBpzuy37AAgAEwAQwBEAEYAYQByAGcAZQAtAEwAQwBEAEwAQwBEACAAVwBhAHIAbgBhAFMAegDtAG4AZQBzACAATABDAEQAQgBhAHIAZQB2AG4A/QAgAEwAQwBEAEwAQwBEAC0AZgBhAHIAdgBlAHMAawDmAHIAbQQaBD4EOwRMBD4EQAQ+BDIEOAQ5ACAATABDAEQgDwBMAEMARAAgBkUGRAZIBkYGKQBMAEMARAAgAGMAbwBsAG8AcgBpAEwAQwBEACAAYwBvAGwAbwByAEsAbABlAHUAcgBlAG4ALQBMAEMARCAPAEwAQwBEACAF5gXRBeIF1QXgBdkAVgDkAHIAaQAtAEwAQwBEX2mCcgAgAEwAQwBEAEwAQwBEACAATQDgAHUARgBhAHIAZQBiAG4A6QAgAEwAQwBEBCYEMgQ1BEIEPQQ+BDkAIAQWBBoALQQ0BDgEQQQ/BDsENQQ5AEwAQwBEACAAYwBvAHUAbABlAHUAcgBXAGEAcgBuAGEAIABMAEMARABMAEMARAAgAGUAbgAgAGMAbwBsAG8AcgBMAEMARAAgDioONQBGAGEAcgBiAC0ATABDAEQAQwBvAGwAbwByACAATABDAEQATABDAEQAIABDAG8AbABvAHIAaQBkAG8ASwBvAGwAbwByACAATABDAEQDiAOzA8cDwQPJA7wDtwAgA78DuAPMA70DtwAgAEwAQwBEAEYA5AByAGcALQBMAEMARABSAGUAbgBrAGwAaQAgAEwAQwBEMKsw6TD8AEwAQwBEAEwAQwBEACAAYQAgAEMAbwByAGUAc3RleHQAAAAAQ29weXJpZ2h0IEFwcGxlIEluYy4sIDIwMTYAAFhZWiAAAAAAAADzUgABAAAAARbPWFlaIAAAAAAAAGXoAAA8EAAACdBYWVogAAAAAAAAapMAAKrFAAAXilhZWiAAAAAAAAAmWwAAGSwAALHSY3VydgAAAAAAAAQAAAAABQAKAA8AFAAZAB4AIwAoAC0AMgA2ADsAQABFAEoATwBUAFkAXgBjAGgAbQByAHcAfACBAIYAiwCQAJUAmgCfAKMAqACtALIAtwC8AMEAxgDLANAA1QDbAOAA5QDrAPAA9gD7AQEBBwENARMBGQEfASUBKwEyATgBPgFFAUwBUgFZAWABZwFuAXUBfAGDAYsBkgGaAaEBqQGxAbkBwQHJAdEB2QHhAekB8gH6AgMCDAIUAh0CJgIvAjgCQQJLAlQCXQJnAnECegKEAo4CmAKiAqwCtgLBAssC1QLgAusC9QMAAwsDFgMhAy0DOANDA08DWgNmA3IDfgOKA5YDogOuA7oDxwPTA+AD7AP5BAYEEwQgBC0EOwRIBFUEYwRxBH4EjASaBKgEtgTEBNME4QTwBP4FDQUcBSsFOgVJBVgFZwV3BYYFlgWmBbUFxQXVBeUF9gYGBhYGJwY3BkgGWQZqBnsGjAadBq8GwAbRBuMG9QcHBxkH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", dg = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU0AKgAAAAgAAgESAAMAAAABAAEAAIdpAAQAAAABAAAAJgAAAAAAAqACAAQAAAABAAAANKADAAQAAAABAAAANAAAAAD/4QkhaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLwA8P3hwYWNrZXQgYmVnaW49Iu+7vyIgaWQ9Ilc1TTBNcENlaGlIenJlU3pOVGN6a2M5ZCI/PiA8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIiB4OnhtcHRrPSJYTVAgQ29yZSA1LjQuMCI+IDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+IDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiLz4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8P3hwYWNrZXQgZW5kPSJ3Ij8+AP/tADhQaG90b3Nob3AgMy4wADhCSU0EBAAAAAAAADhCSU0EJQAAAAAAENQdjNmPALIE6YAJmOz4Qn7/4gKESUNDX1BST0ZJTEUAAQEAAAJ0YXBwbAQAAABtbnRyUkdCIFhZWiAH3AALAAwAEgA6ABdhY3NwQVBQTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA9tYAAQAAAADTLWFwcGxmSfnZPIV3n7QGSpkeOnQsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAtkZXNjAAABCAAAAGNkc2NtAAABbAAAACxjcHJ0AAABmAAAAC13dHB0AAAByAAAABRyWFlaAAAB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", mg = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QCARXhpZgAATU0AKgAAAAgABQESAAMAAAABAAEAAAEaAAUAAAABAAAASgEbAAUAAAABAAAAUgEoAAMAAAABAAIAAIdpAAQAAAABAAAAWgAAAAAAAABIAAAAAQAAAEgAAAABAAKgAgAEAAAAAQAAADSgAwAEAAAAAQAAADQAAAAA/+EJIWh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8APD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iWE1QIENvcmUgNS40LjAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIi8+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPD94cGFja2V0IGVuZD0idyI/PgD/7QA4UGhvdG9zaG9wIDMuMAA4QklNBAQAAAAAAAA4QklNBCUAAAAAABDUHYzZjwCyBOmACZjs+EJ+/+IbJElDQ19QUk9GSUxFAAEBAAAbFGFwcGwCEAAAbW50clJHQiBYWVogB+EABAAEABcABgAzYWNzcEFQUEwAAAAAQVBQTAAAAAAAAAAAAAAAAAAAAAAAAPbWAAEAAAAA0y1hcHBsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARZGVzYwAAAVAAAABiZHNjbQAAAbQAAAQYY3BydAAABcwAAAAjd3RwdAAABfAAAAAUclhZWgAABgQAAAAUZ1hZWgAABhgAAAAUYlhZWgAABiwAAAAUclRSQwAABkAAAAgMYWFyZwAADkwAAAAgdmNndAAADmwAAAYSbmRpbgAAFIAAAAY+Y2hhZAAAGsAAAAAsbW1vZAAAGuwAAAAoYlRSQwAABkAAAAgMZ1RSQwAABkAAAAgMYWFiZwAADkwAAAAgYWFnZwAADkwAAAAgZGVzYwAAAAAAAAAIRGlzcGxheQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAG1sdWMAAAAAAAAAIgAAAAxockhSAAAAFAAAAahrb0tSAAAADAAAAbxuYk5PAAAAEgAAAchpZAAAAAAAEgAAAdpodUhVAAAAFAAAAexjc0NaAAAAFgAAAgBkYURLAAAAHAAAAhZ1a1VBAAAAHAAAAjJhcgAAAAAAFAAAAk5pdElUAAAAFAAAAmJyb1JPAAAAEgAAAnZubE5MAAAAFgAAAohoZUlMAAAAFgAAAp5lc0VTAAAAEgAAAnZmaUZJAAAAEAAAArR6aFRXAAAADAAAAsR2aVZOAAAADgAAAtBza1NLAAAAFgAAAt56aENOAAAADAAAAsRydVJVAAAAJAAAAvRmckZSAAAAFgAAAxhtcwAAAAAAEgAAAy5jYUVTAAAAGAAAA0B0aFRIAAAADAAAA1hlc1hMAAAAEgAAAnZkZURFAAAAEAAAA2RlblVTAAAAEgAAA3RwdEJSAAAAGAAAA4ZwbFBMAAAAEgAAA55lbEdSAAAAIgAAA7BzdlNFAAAAEAAAA9J0clRSAAAAFAAAA+JqYUpQAAAADAAAA/ZwdFBUAAAAFgAABAIATABDAEQAIAB1ACAAYgBvAGoAac7st+wAIABMAEMARABGAGEAcgBnAGUALQBMAEMARABMAEMARAAgAFcAYQByAG4AYQBTAHoA7QBuAGUAcwAgAEwAQwBEAEIAYQByAGUAdgBuAP0AIABMAEMARABMAEMARAAtAGYAYQByAHYAZQBzAGsA5gByAG0EGgQ+BDsETAQ+BEAEPgQyBDgEOQAgAEwAQwBEIA8ATABDAEQAIAZFBkQGSAZGBikATABDAEQAIABjAG8AbABvAHIAaQBMAEMARAAgAGMAbwBsAG8AcgBLAGwAZQB1AHIAZQBuAC0ATABDAEQgDwBMAEMARAAgBeYF0QXiBdUF4AXZAFYA5AByAGkALQBMAEMARF9pgnIAIABMAEMARABMAEMARAAgAE0A4AB1AEYAYQByAGUAYgBuAP0AIABMAEMARAQmBDIENQRCBD0EPgQ5ACAEFgQaAC0ENAQ4BEEEPwQ7BDUEOQBMAEMARAAgAGMAbwB1AGwAZQB1AHIAVwBhAHIAbgBhACAATABDAEQATABDAEQAIABlAG4AIABjAG8AbABvAHIATABDAEQAIA4qDjUARgBhAHIAYgAtAEwAQwBEAEMAbwBsAG8AcgAgAEwAQwBEAEwAQwBEACAAQwBvAGwAbwByAGkAZABvAEsAbwBsAG8AcgAgAEwAQwBEA4gDswPHA8EDyQO8A7cAIAO/A7gDzAO9A7cAIABMAEMARABGAOQAcgBnAC0ATABDAEQAUgBlAG4AawBsAGkAIABMAEMARDCrMOkw/ABMAEMARABMAEMARAAgAGEAIABDAG8AcgBlAHN0ZXh0AAAAAENvcHlyaWdodCBBcHBsZSBJbmMuLCAyMDE3AABYWVogAAAAAAAA81IAAQAAAAEWz1hZWiAAAAAAAABl6AAAPBAAAAnQWFlaIAAAAAAAAGqTAACqxQAAF4pYWVogAAAAAAAAJlsAABksAACx0mN1cnYAAAAAAAAEAAAAAAUACgAPABQAGQAeACMAKAAtADIANgA7AEAARQBKAE8AVABZAF4AYwBoAG0AcgB3AHwAgQCGAIsAkACVAJoAnwCjAKgArQCyALcAvADBAMYAywDQANUA2wDgAOUA6wDwAPYA+wEBAQcBDQETARkBHwElASsBMgE4AT4BRQFMAVIBWQFgAWcBbgF1AXwBgwGLAZIBmgGhAakBsQG5AcEByQHRAdkB4QHpAfIB+gIDAgwCFAIdAiYCLwI4AkECSwJUAl0CZwJxAnoChAKOApgCogKsArYCwQLLAtUC4ALrAvUDAAMLAxYDIQMtAzgDQwNPA1oDZgNyA34DigOWA6IDrgO6A8cD0wPgA+wD+QQGBBMEIAQtBDsESARVBGMEcQR+BIwEmgSoBLYExATTBOEE8AT+BQ0FHAUrBToFSQVYBWcF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", zc = {
   osm: {
     mapID: "osm",
     title: {
@@ -9563,7 +9915,7 @@ const Co = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU0AK
     // maxZoom必須: 未指定だとWeiwudi(SWタイルキャッシュ)登録時にズーム上限0と
     // 解釈される環境があり、キャッシュ経由の全タイルが404になる (#78)
     maxZoom: 19,
-    thumbnail: Co,
+    thumbnail: fg,
     urls: [
       "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png",
       "https://b.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -9597,7 +9949,7 @@ const Co = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU0AK
     maptype: "base",
     url: "https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png",
     maxZoom: 18,
-    thumbnail: co
+    thumbnail: dg
   },
   gsi_ortho: {
     mapID: "gsi_ortho",
@@ -9626,46 +9978,46 @@ const Co = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU0AK
     maptype: "base",
     url: "https://cyberjapandata.gsi.go.jp/xyz/ort/{z}/{x}/{y}.jpg",
     maxZoom: 18,
-    thumbnail: lo
+    thumbnail: mg
   }
-}, Zs = (A) => (A || "").match(/^(?:base|overlay|google(?:_(?:roadmap|satellite|hybrid|terrain))?|mapbox|maplibre|osm)$/);
-async function Nc(A, t) {
-  typeof A == "string" && (A = { ...kc[A] }), A = Ft(Object.assign(A, t));
+}, Fs = (A) => (A || "").match(/^(?:base|overlay|google(?:_(?:roadmap|satellite|hybrid|terrain))?|mapbox|maplibre|osm)$/);
+async function Fc(A, t) {
+  typeof A == "string" && (A = { ...zc[A] }), A = Wt(Object.assign(A, t));
   const e = A.label || A.year;
-  if (e !== void 0 && (A.label = e), Zs(A.maptype)) {
-    const o = A.maptype === "base" ? mA : A.maptype === "overlay" ? ni : A.maptype === "mapbox" ? ei : A.maptype === "maplibre" ? Ai : Cr;
-    o.isBasemap() ? (A.homePosition = A.homePos, A.mercZoom = A.defZoom) : (A.homePosition || (A.homePosition = A.homePos), A.mercZoom || (A.mercZoom = A.defZoom)), delete A.homePos, delete A.defZoom, A.zoomRestriction && (A.maxZoom = A.maxZoom || A.mercMaxZoom, A.minZoom = A.minZoom || A.mercMinZoom), A.zoomRestriction = A.mercMaxZoom = A.mercMinZoom = void 0, A.imageExtension || (A.imageExtension = "jpg"), Ir(A.maptype) ? (delete A.url, delete A.urls) : A.mapID && !A.url && !A.urls && (A.url = A.tms ? `tiles/${A.mapID}/{z}/{x}/{-y}.${A.imageExtension}` : `tiles/${A.mapID}/{z}/{x}/{y}.${A.imageExtension}`), A.weiwudi = await zi(A), A.weiwudi && (A.url = A.weiwudi.url, delete A.urls);
-    const g = await o.createAsync(A);
-    return await g.initialWait, g;
+  if (e !== void 0 && (A.label = e), Fs(A.maptype)) {
+    const g = A.maptype === "base" ? yA : A.maptype === "overlay" ? ii : A.maptype === "mapbox" ? Ai : A.maptype === "maplibre" ? ni : fr;
+    g.isBasemap() ? (A.homePosition = A.homePos, A.mercZoom = A.defZoom) : (A.homePosition || (A.homePosition = A.homePos), A.mercZoom || (A.mercZoom = A.defZoom)), delete A.homePos, delete A.defZoom, A.zoomRestriction && (A.maxZoom = A.maxZoom || A.mercMaxZoom, A.minZoom = A.minZoom || A.mercMinZoom), A.zoomRestriction = A.mercMaxZoom = A.mercMinZoom = void 0, A.imageExtension || (A.imageExtension = "jpg"), hr(A.maptype) ? (delete A.url, delete A.urls) : A.mapID && !A.url && !A.urls && (A.url = A.tms ? `tiles/${A.mapID}/{z}/{x}/{-y}.${A.imageExtension}` : `tiles/${A.mapID}/{z}/{x}/{y}.${A.imageExtension}`), A.weiwudi = await Wi(A), A.weiwudi && (A.url = A.weiwudi.url, delete A.urls);
+    const o = await g.createAsync(A);
+    return await o.initialWait, o;
   } else if (A.noload)
-    return A.mercMaxZoom = A.mercMinZoom = void 0, new ii(A);
+    return A.mercMaxZoom = A.mercMinZoom = void 0, new ri(A);
   const n = A.settingFile || `maps/${A.mapID}.json`, i = await fetch(n);
   if (!i.ok)
     throw new Error("Fail to load map json");
   const r = await i.json();
-  if (A = Ft(Object.assign(r, A)), A.label = A.label || r.year, A.maptype || (A.maptype = "maplat"), Zs(A.maptype)) {
-    const o = A.maptype === "base" ? mA : A.maptype === "overlay" ? ni : A.maptype === "mapbox" ? ei : A.maptype === "maplibre" ? Ai : Cr;
-    o.isBasemap() ? (A.homePosition = A.homePos, A.mercZoom = A.defZoom) : (A.homePosition || (A.homePosition = A.homePos), A.mercZoom || (A.mercZoom = A.defZoom)), delete A.homePos, delete A.defZoom, A.zoomRestriction && (A.maxZoom = A.maxZoom || A.mercMaxZoom, A.minZoom = A.minZoom || A.mercMinZoom), A.zoomRestriction = A.mercMaxZoom = A.mercMinZoom = void 0, A.imageExtension || (A.imageExtension = "jpg"), Ir(A.maptype) ? (delete A.url, delete A.urls) : A.mapID && !A.url && !A.urls && (A.url = A.tms ? `tiles/${A.mapID}/{z}/{x}/{-y}.${A.imageExtension}` : `tiles/${A.mapID}/{z}/{x}/{y}.${A.imageExtension}`), A.weiwudi = await zi(A), A.weiwudi && (A.url = A.weiwudi.url, delete A.urls);
-    const g = await o.createAsync(A);
+  if (A = Wt(Object.assign(r, A)), A.label = A.label || r.year, A.maptype || (A.maptype = "maplat"), Fs(A.maptype)) {
+    const g = A.maptype === "base" ? yA : A.maptype === "overlay" ? ii : A.maptype === "mapbox" ? Ai : A.maptype === "maplibre" ? ni : fr;
+    g.isBasemap() ? (A.homePosition = A.homePos, A.mercZoom = A.defZoom) : (A.homePosition || (A.homePosition = A.homePos), A.mercZoom || (A.mercZoom = A.defZoom)), delete A.homePos, delete A.defZoom, A.zoomRestriction && (A.maxZoom = A.maxZoom || A.mercMaxZoom, A.minZoom = A.minZoom || A.mercMinZoom), A.zoomRestriction = A.mercMaxZoom = A.mercMinZoom = void 0, A.imageExtension || (A.imageExtension = "jpg"), hr(A.maptype) ? (delete A.url, delete A.urls) : A.mapID && !A.url && !A.urls && (A.url = A.tms ? `tiles/${A.mapID}/{z}/{x}/{-y}.${A.imageExtension}` : `tiles/${A.mapID}/{z}/{x}/{y}.${A.imageExtension}`), A.weiwudi = await Wi(A), A.weiwudi && (A.url = A.weiwudi.url, delete A.urls);
+    const o = await g.createAsync(A);
     try {
-      return await g.initialWait, g;
+      return await o.initialWait, o;
     } catch {
-      return g;
+      return o;
     }
   }
   if (delete A.homePos, delete A.defZoom, A.imageExtension || (A.imageExtension = "jpg"), A.mapID && !A.url && !A.urls && (A.url = `tiles/${A.mapID}/{z}/{x}/{y}.${A.imageExtension}`), !A.compiled || !A.compiled.wh)
     throw console.error(
       `[Maplat] Missing compiled.wh for mapID=${A.mapID}. Check map setting file: ${n}`
     ), new Error(`Map ${A.mapID} is missing compiled data.`);
-  A.width = A.width || A.compiled.wh[0], A.height = A.height || A.compiled.wh[1], A.weiwudi = await zi(A), A.weiwudi && (A.url = A.weiwudi.url, delete A.urls);
-  const s = await ii.createAsync(A);
-  return await s.initialWait, await new Promise((o) => {
-    s.setupMapParameter(() => o());
+  A.width = A.width || A.compiled.wh[0], A.height = A.height || A.compiled.wh[1], A.weiwudi = await Wi(A), A.weiwudi && (A.url = A.weiwudi.url, delete A.urls);
+  const s = await ri.createAsync(A);
+  return await s.initialWait, await new Promise((g) => {
+    s.setupMapParameter(() => g());
   }), s;
 }
-async function zi(A) {
+async function Wi(A) {
   const t = {};
-  if (A.maptype === "mapbox" || A.maptype === "maplibre" || A.maptype === "google" || !A.enableCache) return;
+  if (A.maptype === "mapbox" || A.maptype === "maplibre" || A.maptype === "google" || !A.enableCache || A.noCache === !0) return;
   A.maptype === "base" || A.maptype === "overlay" ? t.type = "wmts" : t.type = "xyz", t.url = A.urls ? A.urls : A.url, t.width = A.width, t.height = A.height, t.maxZoom = A.maxZoom, t.minZoom = A.minZoom, A.cacheTtl !== void 0 && (t.cacheTtl = A.cacheTtl);
   const e = A.envelopeLngLats;
   if (e) {
@@ -9679,49 +10031,49 @@ async function zi(A) {
   }
   let n;
   try {
-    n = await Zt.registerMap(A.mapID, t);
+    n = await Ft.registerMap(A.mapID, t);
   } catch {
   }
   return n;
 }
-function Fi(A, t) {
+function Vi(A, t) {
   return A + (Math.random() - 0.5) * t;
 }
-function lr(A, t) {
+function mr(A, t) {
   if (A instanceof Array)
-    return A.map((n) => lr(n, t));
+    return A.map((n) => mr(n, t));
   const e = Math.pow(10, t);
   return Math.round(A * e) / e;
 }
-var FA = { exports: {} }, Ui, zs;
-function ho() {
-  if (zs) return Ui;
-  zs = 1;
+var YA = { exports: {} }, Hi, Us;
+function pg() {
+  if (Us) return Hi;
+  Us = 1;
   var A = /<%=([\s\S]+?)%>/g;
-  return Ui = A, Ui;
+  return Hi = A, Hi;
 }
-var _i, Fs;
-function Gc() {
-  if (Fs) return _i;
-  Fs = 1;
-  var A = ho(), t = "[object Null]", e = "[object Symbol]", n = "[object Undefined]", i = /[&<>"']/g, r = RegExp(i.source), s = /<%-([\s\S]+?)%>/g, o = /<%([\s\S]+?)%>/g, g = {
+var Qi, Ws;
+function Uc() {
+  if (Ws) return Qi;
+  Ws = 1;
+  var A = pg(), t = "[object Null]", e = "[object Symbol]", n = "[object Undefined]", i = /[&<>"']/g, r = RegExp(i.source), s = /<%-([\s\S]+?)%>/g, g = /<%([\s\S]+?)%>/g, o = {
     "&": "&amp;",
     "<": "&lt;",
     ">": "&gt;",
     '"': "&quot;",
     "'": "&#39;"
   }, a = typeof globalThis == "object" && globalThis && globalThis.Object === Object && globalThis, C = typeof self == "object" && self && self.Object === Object && self, I = a || C || Function("return this")();
-  function c(O, q) {
-    for (var Dt = -1, Ae = O == null ? 0 : O.length, ne = Array(Ae); ++Dt < Ae; )
-      ne[Dt] = q(O[Dt], Dt, O);
-    return ne;
+  function c(L, et) {
+    for (var vt = -1, kt = L == null ? 0 : L.length, Ht = Array(kt); ++vt < kt; )
+      Ht[vt] = et(L[vt], vt, L);
+    return Ht;
   }
-  function h(O) {
-    return function(q) {
-      return O?.[q];
+  function u(L) {
+    return function(et) {
+      return L?.[et];
     };
   }
-  var p = h(g), d = Object.prototype, m = d.hasOwnProperty, f = d.toString, v = I.Symbol, M = v ? v.toStringTag : void 0, E = v ? v.prototype : void 0, R = E ? E.toString : void 0, P = {
+  var d = u(o), f = Object.prototype, m = f.hasOwnProperty, h = f.toString, w = I.Symbol, S = w ? w.toStringTag : void 0, E = w ? w.prototype : void 0, P = E ? E.toString : void 0, x = {
     /**
      * Used to detect `data` property values to be HTML-escaped.
      *
@@ -9735,7 +10087,7 @@ function Gc() {
      * @memberOf _.templateSettings
      * @type {RegExp}
      */
-    evaluate: o,
+    evaluate: g,
     /**
      * Used to detect `data` property values to inject.
      *
@@ -9763,421 +10115,421 @@ function Gc() {
        * @memberOf _.templateSettings.imports
        * @type {Function}
        */
-      _: { escape: xt }
+      _: { escape: ot }
     }
   };
-  function x(O) {
-    return O == null ? O === void 0 ? n : t : M && M in Object(O) ? N(O) : G(O);
+  function D(L) {
+    return L == null ? L === void 0 ? n : t : S && S in Object(L) ? k(L) : j(L);
   }
-  function D(O) {
-    if (typeof O == "string")
-      return O;
-    if (k(O))
-      return c(O, D) + "";
-    if (Z(O))
-      return R ? R.call(O) : "";
-    var q = O + "";
-    return q == "0" && 1 / O == -1 / 0 ? "-0" : q;
+  function B(L) {
+    if (typeof L == "string")
+      return L;
+    if (_(L))
+      return c(L, B) + "";
+    if (Z(L))
+      return P ? P.call(L) : "";
+    var et = L + "";
+    return et == "0" && 1 / L == -1 / 0 ? "-0" : et;
   }
-  function N(O) {
-    var q = m.call(O, M), Dt = O[M];
+  function k(L) {
+    var et = m.call(L, S), vt = L[S];
     try {
-      O[M] = void 0;
-      var Ae = !0;
+      L[S] = void 0;
+      var kt = !0;
     } catch {
     }
-    var ne = f.call(O);
-    return Ae && (q ? O[M] = Dt : delete O[M]), ne;
+    var Ht = h.call(L);
+    return kt && (et ? L[S] = vt : delete L[S]), Ht;
   }
-  function G(O) {
-    return f.call(O);
+  function j(L) {
+    return h.call(L);
   }
-  var k = Array.isArray;
-  function X(O) {
-    return O != null && typeof O == "object";
+  var _ = Array.isArray;
+  function X(L) {
+    return L != null && typeof L == "object";
   }
-  function Z(O) {
-    return typeof O == "symbol" || X(O) && x(O) == e;
+  function Z(L) {
+    return typeof L == "symbol" || X(L) && D(L) == e;
   }
-  function J(O) {
-    return O == null ? "" : D(O);
+  function Y(L) {
+    return L == null ? "" : B(L);
   }
-  function xt(O) {
-    return O = J(O), O && r.test(O) ? O.replace(i, p) : O;
+  function ot(L) {
+    return L = Y(L), L && r.test(L) ? L.replace(i, d) : L;
   }
-  return _i = P, _i;
+  return Qi = x, Qi;
 }
-FA.exports;
-var Us;
-function jc() {
-  return Us || (Us = 1, (function(A, t) {
-    var e = ho(), n = Gc(), i = "Invalid `variable` option passed into `_.template`", r = "Invalid `imports` option passed into `_.template`", s = 800, o = 16, g = 9007199254740991, a = "[object Arguments]", C = "[object Array]", I = "[object AsyncFunction]", c = "[object Boolean]", h = "[object Date]", p = "[object DOMException]", d = "[object Error]", m = "[object Function]", f = "[object GeneratorFunction]", v = "[object Map]", M = "[object Number]", E = "[object Null]", R = "[object Object]", P = "[object Proxy]", x = "[object RegExp]", D = "[object Set]", N = "[object String]", G = "[object Symbol]", k = "[object Undefined]", X = "[object WeakMap]", Z = "[object ArrayBuffer]", J = "[object DataView]", xt = "[object Float32Array]", O = "[object Float64Array]", q = "[object Int8Array]", Dt = "[object Int16Array]", Ae = "[object Int32Array]", ne = "[object Uint8Array]", on = "[object Uint8ClampedArray]", Q = "[object Uint16Array]", ci = "[object Uint32Array]", li = /\b__p \+= '';/g, hi = /\b(__p \+=) '' \+/g, ui = /(__e\(.*?\)|\b__t\)) \+\n'';/g, fi = /[\\^$.*+?()[\]{}|]/g, an = /[()=,{}\[\]\/\s]/, In = /\$\{([^\\}]*(?:\\.[^\\}]*)*)\}/g, di = /^\[object .+?Constructor\]$/, Cn = /^(?:0|[1-9]\d*)$/, U = /($^)/, bA = /['\n\r\u2028\u2029\\]/g, L = {};
-    L[xt] = L[O] = L[q] = L[Dt] = L[Ae] = L[ne] = L[on] = L[Q] = L[ci] = !0, L[a] = L[C] = L[Z] = L[c] = L[J] = L[h] = L[d] = L[m] = L[v] = L[M] = L[R] = L[x] = L[D] = L[N] = L[X] = !1;
-    var vA = {
+YA.exports;
+var Vs;
+function Wc() {
+  return Vs || (Vs = 1, (function(A, t) {
+    var e = pg(), n = Uc(), i = "Invalid `variable` option passed into `_.template`", r = "Invalid `imports` option passed into `_.template`", s = 800, g = 16, o = 9007199254740991, a = "[object Arguments]", C = "[object Array]", I = "[object AsyncFunction]", c = "[object Boolean]", u = "[object Date]", d = "[object DOMException]", f = "[object Error]", m = "[object Function]", h = "[object GeneratorFunction]", w = "[object Map]", S = "[object Number]", E = "[object Null]", P = "[object Object]", x = "[object Proxy]", D = "[object RegExp]", B = "[object Set]", k = "[object String]", j = "[object Symbol]", _ = "[object Undefined]", X = "[object WeakMap]", Z = "[object ArrayBuffer]", Y = "[object DataView]", ot = "[object Float32Array]", L = "[object Float64Array]", et = "[object Int8Array]", vt = "[object Int16Array]", kt = "[object Int32Array]", Ht = "[object Uint8Array]", fn = "[object Uint8ClampedArray]", li = "[object Uint16Array]", ui = "[object Uint32Array]", Q = /\b__p \+= '';/g, hi = /\b(__p \+=) '' \+/g, fi = /(__e\(.*?\)|\b__t\)) \+\n'';/g, di = /[\\^$.*+?()[\]{}|]/g, dn = /[()=,{}\[\]\/\s]/, mi = /\$\{([^\\}]*(?:\\.[^\\}]*)*)\}/g, pi = /^\[object .+?Constructor\]$/, mn = /^(?:0|[1-9]\d*)$/, je = /($^)/, pn = /['\n\r\u2028\u2029\\]/g, N = {};
+    N[ot] = N[L] = N[et] = N[vt] = N[kt] = N[Ht] = N[fn] = N[li] = N[ui] = !0, N[a] = N[C] = N[Z] = N[c] = N[Y] = N[u] = N[f] = N[m] = N[w] = N[S] = N[P] = N[D] = N[B] = N[k] = N[X] = !1;
+    var EA = {
       "\\": "\\",
       "'": "'",
       "\n": "n",
       "\r": "r",
       "\u2028": "u2028",
       "\u2029": "u2029"
-    }, Y = typeof globalThis == "object" && globalThis && globalThis.Object === Object && globalThis, we = typeof self == "object" && self && self.Object === Object && self, Ge = Y || we || Function("return this")(), Ot = t && !t.nodeType && t, ie = Ot && !0 && A && !A.nodeType && A, je = ie && ie.exports === Ot, Xe = je && Y.process, EA = (function() {
+    }, H = typeof globalThis == "object" && globalThis && globalThis.Object === Object && globalThis, MA = typeof self == "object" && self && self.Object === Object && self, pt = H || MA || Function("return this")(), ae = t && !t.nodeType && t, Ie = ae && !0 && A && !A.nodeType && A, Dt = Ie && Ie.exports === ae, _e = Dt && H.process, Xe = (function() {
       try {
-        var l = ie && ie.require && ie.require("util").types;
-        return l || Xe && Xe.binding && Xe.binding("util");
+        var p = Ie && Ie.require && Ie.require("util").types;
+        return p || _e && _e.binding && _e.binding("util");
       } catch {
       }
-    })(), Bt = EA && EA.isTypedArray;
-    function Lt(l, y, b) {
-      switch (b.length) {
+    })(), RA = Xe && Xe.isTypedArray;
+    function SA(p, b, T) {
+      switch (T.length) {
         case 0:
-          return l.call(y);
+          return p.call(b);
         case 1:
-          return l.call(y, b[0]);
+          return p.call(b, T[0]);
         case 2:
-          return l.call(y, b[0], b[1]);
+          return p.call(b, T[0], T[1]);
         case 3:
-          return l.call(y, b[0], b[1], b[2]);
+          return p.call(b, T[0], T[1], T[2]);
       }
-      return l.apply(y, b);
+      return p.apply(b, T);
     }
-    function _t(l, y) {
-      for (var b = -1, S = l == null ? 0 : l.length; ++b < S && y(l[b], b, l) !== !1; )
+    function Nt(p, b) {
+      for (var T = -1, v = p == null ? 0 : p.length; ++T < v && b(p[T], T, p) !== !1; )
         ;
+      return p;
+    }
+    function Gt(p, b) {
+      for (var T = -1, v = p == null ? 0 : p.length, l = Array(v); ++T < v; )
+        l[T] = b(p[T], T, p);
       return l;
     }
-    function Ze(l, y) {
-      for (var b = -1, S = l == null ? 0 : l.length, B = Array(S); ++b < S; )
-        B[b] = y(l[b], b, l);
-      return B;
+    function Qt(p, b) {
+      for (var T = -1, v = Array(p); ++T < p; )
+        v[T] = b(T);
+      return v;
     }
-    function ze(l, y) {
-      for (var b = -1, S = Array(l); ++b < l; )
-        S[b] = y(b);
-      return S;
-    }
-    function Fe(l) {
-      return function(y) {
-        return l(y);
+    function TA(p) {
+      return function(b) {
+        return p(b);
       };
     }
-    function MA(l, y) {
-      return Ze(y, function(b) {
-        return l[b];
+    function Ze(p, b) {
+      return Gt(b, function(T) {
+        return p[T];
       });
     }
-    function re(l) {
-      return "\\" + vA[l];
+    function ze(p) {
+      return "\\" + EA[p];
     }
-    function Ue(l, y) {
-      return l?.[y];
+    function PA(p, b) {
+      return p?.[b];
     }
-    function be(l, y) {
-      return function(b) {
-        return l(y(b));
+    function Yt(p, b) {
+      return function(T) {
+        return p(b(T));
       };
     }
-    var cn = Function.prototype, se = Object.prototype, _e = Ge["__core-js_shared__"], ge = cn.toString, lt = se.hasOwnProperty, Wt = (function() {
-      var l = /[^.]+$/.exec(_e && _e.keys && _e.keys.IE_PROTO || "");
-      return l ? "Symbol(src)_1." + l : "";
-    })(), bt = se.toString, RA = ge.call(Object), ln = RegExp(
-      "^" + ge.call(lt).replace(fi, "\\$&").replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$"
-    ), TA = je ? Ge.Buffer : void 0, oe = Ge.Symbol, hn = be(Object.getPrototypeOf, Object), We = se.propertyIsEnumerable, Rt = oe ? oe.toStringTag : void 0, ht = (function() {
+    var Fe = Function.prototype, jt = Object.prototype, Ue = pt["__core-js_shared__"], be = Fe.toString, bt = jt.hasOwnProperty, We = (function() {
+      var p = /[^.]+$/.exec(Ue && Ue.keys && Ue.keys.IE_PROTO || "");
+      return p ? "Symbol(src)_1." + p : "";
+    })(), Ve = jt.toString, Ce = be.call(Object), ce = RegExp(
+      "^" + be.call(bt).replace(di, "\\$&").replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$"
+    ), xA = Dt ? pt.Buffer : void 0, Ee = pt.Symbol, yn = Yt(Object.getPrototypeOf, Object), wn = jt.propertyIsEnumerable, _t = Ee ? Ee.toStringTag : void 0, Kt = (function() {
       try {
-        var l = yi(Object, "defineProperty");
-        return l({}, "", {}), l;
+        var p = Sn(Object, "defineProperty");
+        return p({}, "", {}), p;
       } catch {
       }
-    })(), ae = TA ? TA.isBuffer : void 0, SA = be(Object.keys, Object), He = Math.max, mi = Date.now, PA = oe ? oe.prototype : void 0, Ve = PA ? PA.toString : void 0;
-    function un(l, y) {
-      var b = Ee(l), S = !b && DA(l), B = !b && !S && Me(l), j = !b && !S && !B && Pn(l), V = b || S || B || j, z = V ? ze(l.length, String) : [], yt = z.length;
-      for (var H in l)
-        lt.call(l, H) && !(V && // Safari 9 has enumerable `arguments.length` in strict mode.
-        (H == "length" || // Node.js 0.10 has enumerable non-index properties on buffers.
-        B && (H == "offset" || H == "parent") || // PhantomJS 2 has enumerable non-index properties on typed arrays.
-        j && (H == "buffer" || H == "byteLength" || H == "byteOffset") || // Skip index properties.
-        vn(H, yt))) && z.push(H);
-      return z;
+    })(), He = xA ? xA.isBuffer : void 0, St = Yt(Object.keys, Object), Jt = Math.max, DA = Date.now, Qe = Ee ? Ee.prototype : void 0, vn = Qe ? Qe.toString : void 0;
+    function bn(p, b) {
+      var T = NA(p), v = !T && Mi(p), l = !T && !v && qe(p), y = !T && !v && !l && Si(p), M = T || v || l || y, R = M ? Qt(p.length, String) : [], O = R.length;
+      for (var G in p)
+        bt.call(p, G) && !(M && // Safari 9 has enumerable `arguments.length` in strict mode.
+        (G == "length" || // Node.js 0.10 has enumerable non-index properties on buffers.
+        l && (G == "offset" || G == "parent") || // PhantomJS 2 has enumerable non-index properties on typed arrays.
+        y && (G == "buffer" || G == "byteLength" || G == "byteOffset") || // Skip index properties.
+        Tn(G, O))) && R.push(G);
+      return R;
     }
-    function xA(l, y, b) {
-      var S = l[y];
-      (!(lt.call(l, y) && Ce(S, b)) || b === void 0 && !(y in l)) && fn(l, y, b);
+    function OA(p, b, T) {
+      var v = p[b];
+      (!(bt.call(p, b) && Je(v, T)) || T === void 0 && !(b in p)) && BA(p, b, T);
     }
-    function fn(l, y, b) {
-      y == "__proto__" && ht ? ht(l, y, {
+    function BA(p, b, T) {
+      b == "__proto__" && Kt ? Kt(p, b, {
         configurable: !0,
         enumerable: !0,
-        value: b,
+        value: T,
         writable: !0
-      }) : l[y] = b;
+      }) : p[b] = T;
     }
-    function Tt(l) {
-      return l == null ? l === void 0 ? k : E : Rt && Rt in Object(l) ? wi(l) : bi(l);
+    function Xt(p) {
+      return p == null ? p === void 0 ? _ : E : _t && _t in Object(p) ? vi(p) : xn(p);
     }
-    function dn(l) {
-      return Qt(l) && Tt(l) == a;
+    function En(p) {
+      return nt(p) && Xt(p) == a;
     }
-    function pi(l) {
-      if (!Ke(l) || Ye(l))
+    function Me(p) {
+      if (!te(p) || bi(p))
         return !1;
-      var y = Rn(l) ? ln : di;
-      return y.test(Mn(l));
+      var b = Re(p) ? ce : pi;
+      return b.test(Ke(p));
     }
-    function K(l) {
-      return Qt(l) && Tn(l.length) && !!L[Tt(l)];
+    function yi(p) {
+      return nt(p) && $t(p.length) && !!N[Xt(p)];
     }
-    function Ie(l) {
-      if (!Ht(l))
-        return SA(l);
-      var y = [];
-      for (var b in Object(l))
-        lt.call(l, b) && b != "constructor" && y.push(b);
-      return y;
-    }
-    function mn(l, y) {
-      return vi(ve(l, y, u), l + "");
-    }
-    var pn = ht ? function(l, y) {
-      return ht(l, "toString", {
-        configurable: !0,
-        enumerable: !1,
-        value: T(y),
-        writable: !0
-      });
-    } : u;
-    function Qe(l) {
-      if (typeof l == "string")
-        return l;
-      if (Ee(l))
-        return Ze(l, Qe) + "";
-      if (Ei(l))
-        return Ve ? Ve.call(l) : "";
-      var y = l + "";
-      return y == "0" && 1 / l == -1 / 0 ? "-0" : y;
-    }
-    function yn(l, y, b, S) {
-      var B = !b;
-      b || (b = {});
-      for (var j = -1, V = y.length; ++j < V; ) {
-        var z = y[j], yt = S ? S(b[z], l[z], z, b, l) : void 0;
-        yt === void 0 && (yt = l[z]), B ? fn(b, z, yt) : xA(b, z, yt);
-      }
+    function wi(p) {
+      if (!Zt(p))
+        return St(p);
+      var b = [];
+      for (var T in Object(p))
+        bt.call(p, T) && T != "constructor" && b.push(T);
       return b;
     }
-    function wn(l) {
-      return mn(function(y, b) {
-        var S = -1, B = b.length, j = B > 1 ? b[B - 1] : void 0, V = B > 2 ? b[2] : void 0;
-        for (j = l.length > 3 && typeof j == "function" ? (B--, j) : void 0, V && kt(b[0], b[1], V) && (j = B < 3 ? void 0 : j, B = 1), y = Object(y); ++S < B; ) {
-          var z = b[S];
-          z && l(y, z, S, j);
+    function K(p, b) {
+      return qt(Ye(p, b, Ln), p + "");
+    }
+    var le = Kt ? function(p, b) {
+      return Kt(p, "toString", {
+        configurable: !0,
+        enumerable: !1,
+        value: Bn(b),
+        writable: !0
+      });
+    } : Ln;
+    function Mn(p) {
+      if (typeof p == "string")
+        return p;
+      if (NA(p))
+        return Gt(p, Mn) + "";
+      if (tA(p))
+        return vn ? vn.call(p) : "";
+      var b = p + "";
+      return b == "0" && 1 / p == -1 / 0 ? "-0" : b;
+    }
+    function Rn(p, b, T, v) {
+      var l = !T;
+      T || (T = {});
+      for (var y = -1, M = b.length; ++y < M; ) {
+        var R = b[y], O = v ? v(T[R], p[R], R, T, p) : void 0;
+        O === void 0 && (O = p[R]), l ? BA(T, R, O) : OA(T, R, O);
+      }
+      return T;
+    }
+    function LA(p) {
+      return K(function(b, T) {
+        var v = -1, l = T.length, y = l > 1 ? T[l - 1] : void 0, M = l > 2 ? T[2] : void 0;
+        for (y = p.length > 3 && typeof y == "function" ? (l--, y) : void 0, M && Pn(T[0], T[1], M) && (y = l < 3 ? void 0 : y, l = 1), b = Object(b); ++v < l; ) {
+          var R = T[v];
+          R && p(b, R, v, y);
         }
-        return y;
+        return b;
       });
     }
-    function bn(l, y, b, S) {
-      return l === void 0 || Ce(l, se[b]) && !lt.call(S, b) ? y : l;
+    function kA(p, b, T, v) {
+      return p === void 0 || Je(p, jt[T]) && !bt.call(v, T) ? b : p;
     }
-    function yi(l, y) {
-      var b = Ue(l, y);
-      return pi(b) ? b : void 0;
+    function Sn(p, b) {
+      var T = PA(p, b);
+      return Me(T) ? T : void 0;
     }
-    function wi(l) {
-      var y = lt.call(l, Rt), b = l[Rt];
+    function vi(p) {
+      var b = bt.call(p, _t), T = p[_t];
       try {
-        l[Rt] = void 0;
-        var S = !0;
+        p[_t] = void 0;
+        var v = !0;
       } catch {
       }
-      var B = bt.call(l);
-      return S && (y ? l[Rt] = b : delete l[Rt]), B;
+      var l = Ve.call(p);
+      return v && (b ? p[_t] = T : delete p[_t]), l;
     }
-    function vn(l, y) {
-      var b = typeof l;
-      return y = y ?? g, !!y && (b == "number" || b != "symbol" && Cn.test(l)) && l > -1 && l % 1 == 0 && l < y;
+    function Tn(p, b) {
+      var T = typeof p;
+      return b = b ?? o, !!b && (T == "number" || T != "symbol" && mn.test(p)) && p > -1 && p % 1 == 0 && p < b;
     }
-    function kt(l, y, b) {
-      if (!Ke(b))
+    function Pn(p, b, T) {
+      if (!te(T))
         return !1;
-      var S = typeof y;
-      return (S == "number" ? Vt(b) && vn(y, b.length) : S == "string" && y in b) ? Ce(b[y], l) : !1;
+      var v = typeof b;
+      return (v == "number" ? GA(T) && Tn(b, T.length) : v == "string" && b in T) ? Je(T[b], p) : !1;
     }
-    function Ye(l) {
-      return !!Wt && Wt in l;
+    function bi(p) {
+      return !!We && We in p;
     }
-    function Ht(l) {
-      var y = l && l.constructor, b = typeof y == "function" && y.prototype || se;
-      return l === b;
+    function Zt(p) {
+      var b = p && p.constructor, T = typeof b == "function" && b.prototype || jt;
+      return p === T;
     }
-    function bi(l) {
-      return bt.call(l);
+    function xn(p) {
+      return Ve.call(p);
     }
-    function ve(l, y, b) {
-      return y = He(y === void 0 ? l.length - 1 : y, 0), function() {
-        for (var S = arguments, B = -1, j = He(S.length - y, 0), V = Array(j); ++B < j; )
-          V[B] = S[y + B];
-        B = -1;
-        for (var z = Array(y + 1); ++B < y; )
-          z[B] = S[B];
-        return z[y] = b(V), Lt(l, this, z);
+    function Ye(p, b, T) {
+      return b = Jt(b === void 0 ? p.length - 1 : b, 0), function() {
+        for (var v = arguments, l = -1, y = Jt(v.length - b, 0), M = Array(y); ++l < y; )
+          M[l] = v[b + l];
+        l = -1;
+        for (var R = Array(b + 1); ++l < b; )
+          R[l] = v[l];
+        return R[b] = T(M), SA(p, this, R);
       };
     }
-    var vi = En(pn);
-    function En(l) {
-      var y = 0, b = 0;
+    var qt = Ei(le);
+    function Ei(p) {
+      var b = 0, T = 0;
       return function() {
-        var S = mi(), B = o - (S - b);
-        if (b = S, B > 0) {
-          if (++y >= s)
+        var v = DA(), l = g - (v - T);
+        if (T = v, l > 0) {
+          if (++b >= s)
             return arguments[0];
         } else
-          y = 0;
-        return l.apply(void 0, arguments);
+          b = 0;
+        return p.apply(void 0, arguments);
       };
     }
-    function Mn(l) {
-      if (l != null) {
+    function Ke(p) {
+      if (p != null) {
         try {
-          return ge.call(l);
+          return be.call(p);
         } catch {
         }
         try {
-          return l + "";
+          return p + "";
         } catch {
         }
       }
       return "";
     }
-    function Ce(l, y) {
-      return l === y || l !== l && y !== y;
+    function Je(p, b) {
+      return p === b || p !== p && b !== b;
     }
-    var DA = dn(/* @__PURE__ */ (function() {
+    var Mi = En(/* @__PURE__ */ (function() {
       return arguments;
-    })()) ? dn : function(l) {
-      return Qt(l) && lt.call(l, "callee") && !We.call(l, "callee");
-    }, Ee = Array.isArray;
-    function Vt(l) {
-      return l != null && Tn(l.length) && !Rn(l);
+    })()) ? En : function(p) {
+      return nt(p) && bt.call(p, "callee") && !wn.call(p, "callee");
+    }, NA = Array.isArray;
+    function GA(p) {
+      return p != null && $t(p.length) && !Re(p);
     }
-    var Me = ae || w;
-    function vt(l) {
-      if (!Qt(l))
+    var qe = He || Pi;
+    function $e(p) {
+      if (!nt(p))
         return !1;
-      var y = Tt(l);
-      return y == d || y == p || typeof l.message == "string" && typeof l.name == "string" && !Sn(l);
+      var b = Xt(p);
+      return b == f || b == d || typeof p.message == "string" && typeof p.name == "string" && !Ri(p);
     }
-    function Rn(l) {
-      if (!Ke(l))
+    function Re(p) {
+      if (!te(p))
         return !1;
-      var y = Tt(l);
-      return y == m || y == f || y == I || y == P;
+      var b = Xt(p);
+      return b == m || b == h || b == I || b == x;
     }
-    function Tn(l) {
-      return typeof l == "number" && l > -1 && l % 1 == 0 && l <= g;
+    function $t(p) {
+      return typeof p == "number" && p > -1 && p % 1 == 0 && p <= o;
     }
-    function Ke(l) {
-      var y = typeof l;
-      return l != null && (y == "object" || y == "function");
+    function te(p) {
+      var b = typeof p;
+      return p != null && (b == "object" || b == "function");
     }
-    function Qt(l) {
-      return l != null && typeof l == "object";
+    function nt(p) {
+      return p != null && typeof p == "object";
     }
-    function Sn(l) {
-      if (!Qt(l) || Tt(l) != R)
+    function Ri(p) {
+      if (!nt(p) || Xt(p) != P)
         return !1;
-      var y = hn(l);
-      if (y === null)
+      var b = yn(p);
+      if (b === null)
         return !0;
-      var b = lt.call(y, "constructor") && y.constructor;
-      return typeof b == "function" && b instanceof b && ge.call(b) == RA;
+      var T = bt.call(b, "constructor") && b.constructor;
+      return typeof T == "function" && T instanceof T && be.call(T) == Ce;
     }
-    function Ei(l) {
-      return typeof l == "symbol" || Qt(l) && Tt(l) == G;
+    function tA(p) {
+      return typeof p == "symbol" || nt(p) && Xt(p) == j;
     }
-    var Pn = Bt ? Fe(Bt) : K;
-    function Mi(l) {
-      return l == null ? "" : Qe(l);
+    var Si = RA ? TA(RA) : yi;
+    function Dn(p) {
+      return p == null ? "" : Mn(p);
     }
-    var xn = wn(function(l, y, b, S) {
-      yn(y, OA(y), l, S);
+    var ee = LA(function(p, b, T, v) {
+      Rn(b, jA(b), p, v);
     });
-    function OA(l) {
-      return Vt(l) ? un(l) : Ie(l);
+    function jA(p) {
+      return GA(p) ? bn(p) : wi(p);
     }
-    function Je(l, y, b) {
-      var S = n.imports._.templateSettings || n;
-      b && kt(l, y, b) && (y = void 0), l = Mi(l), y = xn({}, y, S, bn);
-      var B = xn({}, y.imports, S.imports, bn), j = OA(B), V = MA(B, j);
-      _t(j, function(Bn) {
-        if (an.test(Bn))
+    function On(p, b, T) {
+      var v = n.imports._.templateSettings || n;
+      T && Pn(p, b, T) && (b = void 0), p = Dn(p), b = ee({}, b, v, kA);
+      var l = ee({}, b.imports, v.imports, kA), y = jA(l), M = Ze(l, y);
+      Nt(y, function(J) {
+        if (dn.test(J))
           throw new Error(r);
       });
-      var z, yt, H = 0, Zr = y.interpolate || U, wt = "__p += '", vo = RegExp(
-        (y.escape || U).source + "|" + Zr.source + "|" + (Zr === e ? In : U).source + "|" + (y.evaluate || U).source + "|$",
+      var R, O, G = 0, z = b.interpolate || je, F = "__p += '", yt = RegExp(
+        (b.escape || je).source + "|" + z.source + "|" + (z === e ? mi : je).source + "|" + (b.evaluate || je).source + "|$",
         "g"
-      ), Eo = lt.call(y, "sourceURL") ? "//# sourceURL=" + (y.sourceURL + "").replace(/\s/g, " ") + `
+      ), lt = bt.call(b, "sourceURL") ? "//# sourceURL=" + (b.sourceURL + "").replace(/\s/g, " ") + `
 ` : "";
-      l.replace(vo, function(Bn, zr, Ln, Mo, Fr, Ur) {
-        return Ln || (Ln = Mo), wt += l.slice(H, Ur).replace(bA, re), zr && (z = !0, wt += `' +
-__e(` + zr + `) +
-'`), Fr && (yt = !0, wt += `';
-` + Fr + `;
-__p += '`), Ln && (wt += `' +
-((__t = (` + Ln + `)) == null ? '' : __t) +
-'`), H = Ur + Bn.length, Bn;
-      }), wt += `';
+      p.replace(yt, function(J, _A, kn, Tg, Wr, Vr) {
+        return kn || (kn = Tg), F += p.slice(G, Vr).replace(pn, ze), _A && (R = !0, F += `' +
+__e(` + _A + `) +
+'`), Wr && (O = !0, F += `';
+` + Wr + `;
+__p += '`), kn && (F += `' +
+((__t = (` + kn + `)) == null ? '' : __t) +
+'`), G = Vr + J.length, J;
+      }), F += `';
 `;
-      var Dn = lt.call(y, "variable") && y.variable;
-      if (!Dn)
-        wt = `with (obj) {
-` + wt + `
+      var Ot = bt.call(b, "variable") && b.variable;
+      if (!Ot)
+        F = `with (obj) {
+` + F + `
 }
 `;
-      else if (an.test(Dn))
+      else if (dn.test(Ot))
         throw new Error(i);
-      wt = (yt ? wt.replace(li, "") : wt).replace(hi, "$1").replace(ui, "$1;"), wt = "function(" + (Dn || "obj") + `) {
-` + (Dn ? "" : `obj || (obj = {});
-`) + "var __t, __p = ''" + (z ? ", __e = _.escape" : "") + (yt ? `, __j = Array.prototype.join;
+      F = (O ? F.replace(Q, "") : F).replace(hi, "$1").replace(fi, "$1;"), F = "function(" + (Ot || "obj") + `) {
+` + (Ot ? "" : `obj || (obj = {});
+`) + "var __t, __p = ''" + (R ? ", __e = _.escape" : "") + (O ? `, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
 ` : `;
-`) + wt + `return __p
+`) + F + `return __p
 }`;
-      var On = BA(function() {
-        return Function(j, Eo + "return " + wt).apply(void 0, V);
+      var ue = Ti(function() {
+        return Function(y, lt + "return " + F).apply(void 0, M);
       });
-      if (On.source = wt, vt(On))
-        throw On;
-      return On;
+      if (ue.source = F, $e(ue))
+        throw ue;
+      return ue;
     }
-    var BA = mn(function(l, y) {
+    var Ti = K(function(p, b) {
       try {
-        return Lt(l, void 0, y);
-      } catch (b) {
-        return vt(b) ? b : new Error(b);
+        return SA(p, void 0, b);
+      } catch (T) {
+        return $e(T) ? T : new Error(T);
       }
     });
-    function T(l) {
+    function Bn(p) {
       return function() {
-        return l;
+        return p;
       };
     }
-    function u(l) {
-      return l;
+    function Ln(p) {
+      return p;
     }
-    function w() {
+    function Pi() {
       return !1;
     }
-    A.exports = Je;
-  })(FA, FA.exports)), FA.exports;
+    A.exports = On;
+  })(YA, YA.exports)), YA.exports;
 }
-var Xc = jc();
-const uo = /* @__PURE__ */ cC(Xc);
-function _s(A, ...t) {
-  const e = Ft(Object.assign({}, A));
+var Vc = Wc();
+const yg = /* @__PURE__ */ mC(Vc);
+function Hs(A, ...t) {
+  const e = Wt(Object.assign({}, A));
   if (e.icon) return e;
   const n = t.reduce((i, r) => {
     if (i) return i;
     const s = r.iconTemplate;
     if (s)
-      return JSON.parse(uo(s)(e));
+      return JSON.parse(yg(s)(e));
     if (r.icon)
       return {
         icon: r.icon,
@@ -10186,15 +10538,15 @@ function _s(A, ...t) {
   }, void 0);
   return n && (e.icon = n.icon, e.selectedIcon = n.selectedIcon), e;
 }
-function Ws(A, ...t) {
-  return A = Ft(A), A.html ? A : t.reduce((e, n) => {
+function Qs(A, ...t) {
+  return A = Wt(A), A.html ? A : t.reduce((e, n) => {
     if (e) return e;
     const i = n.poiTemplate;
     if (i)
-      return A.html = uo(i)(A), A.poiStyle = A.poiStyle || n.poiStyle, A;
+      return A.html = yg(i)(A), A.poiStyle = A.poiStyle || n.poiStyle, A;
   }, void 0) || A;
 }
-const nt = {
+const it = {
   ACCURACY: "accuracy",
   ALTITUDE: "altitude",
   ALTITUDE_ACCURACY: "altitudeAccuracy",
@@ -10203,22 +10555,22 @@ const nt = {
   SPEED: "speed",
   TRACKING: "tracking",
   TRACKING_OPTIONS: "trackingOptions"
-}, Zc = {
+}, Hc = {
   ERROR: "error"
 };
-class zc extends te {
+class Qc extends oe {
   code;
   message;
   constructor(t) {
-    super(Zc.ERROR), this.code = t.code, this.message = t.message;
+    super(Hc.ERROR), this.code = t.code, this.message = t.message;
   }
 }
-class Fc extends pA {
+class Yc extends wA {
   task_id_;
   timer_base_ = !1;
   home_position_ = !1;
   constructor(t) {
-    super(), t = t || {}, this.timer_base_ = t.timerBase !== void 0 ? t.timerBase : !1, this.task_id_ = void 0, this.home_position_ = t.homePosition !== void 0 ? t.homePosition : !1, this.addChangeListener(nt.TRACKING, this.handleTrackingChanged_), t.trackingOptions !== void 0 ? this.setTrackingOptions(t.trackingOptions) : this.setTrackingOptions({
+    super(), t = t || {}, this.timer_base_ = t.timerBase !== void 0 ? t.timerBase : !1, this.task_id_ = void 0, this.home_position_ = t.homePosition !== void 0 ? t.homePosition : !1, this.addChangeListener(it.TRACKING, this.handleTrackingChanged_), t.trackingOptions !== void 0 ? this.setTrackingOptions(t.trackingOptions) : this.setTrackingOptions({
       enableHighAccuracy: !0,
       timeout: 5e3,
       maximumAge: 1e3
@@ -10242,24 +10594,24 @@ class Fc extends pA {
   }
   timerPositionChange_() {
     const t = {
-      longitude: Fi(this.home_position_[0], 0.05),
-      latitude: Fi(this.home_position_[1], 0.05),
-      accuracy: Fi(15, 10)
+      longitude: Vi(this.home_position_[0], 0.05),
+      latitude: Vi(this.home_position_[1], 0.05),
+      accuracy: Vi(15, 10)
     };
     this.positionChange_({ coords: t });
   }
   positionChange_(t) {
     const e = t.coords;
-    this.set(nt.ACCURACY, e.accuracy), this.set(
-      nt.ALTITUDE,
+    this.set(it.ACCURACY, e.accuracy), this.set(
+      it.ALTITUDE,
       e.altitude === null ? void 0 : e.altitude
     ), this.set(
-      nt.ALTITUDE_ACCURACY,
+      it.ALTITUDE_ACCURACY,
       e.altitudeAccuracy === null ? void 0 : e.altitudeAccuracy
     ), this.set(
-      nt.HEADING,
-      e.heading === null ? void 0 : cA(e.heading)
-    ), this.set(nt.POSITION, [e.longitude, e.latitude]), this.set(nt.SPEED, e.speed === null ? void 0 : e.speed), this.changed();
+      it.HEADING,
+      e.heading === null ? void 0 : lA(e.heading)
+    ), this.set(it.POSITION, [e.longitude, e.latitude]), this.set(it.SPEED, e.speed === null ? void 0 : e.speed), this.changed();
   }
   timerPositionError_() {
     const t = Math.floor(Math.random() * 3) + 1, e = {
@@ -10269,223 +10621,855 @@ class Fc extends pA {
     this.positionError_(e);
   }
   positionError_(t) {
-    const e = new zc(t);
+    const e = new Qc(t);
     this.dispatchEvent(e);
   }
   getAccuracy() {
-    return this.get(nt.ACCURACY);
+    return this.get(it.ACCURACY);
   }
   getAltitude() {
-    return this.get(nt.ALTITUDE);
+    return this.get(it.ALTITUDE);
   }
   getAltitudeAccuracy() {
-    return this.get(nt.ALTITUDE_ACCURACY);
+    return this.get(it.ALTITUDE_ACCURACY);
   }
   getHeading() {
-    return this.get(nt.HEADING);
+    return this.get(it.HEADING);
   }
   getPosition() {
-    return this.get(nt.POSITION);
+    return this.get(it.POSITION);
   }
   getSpeed() {
-    return this.get(nt.SPEED);
+    return this.get(it.SPEED);
   }
   getTracking() {
-    return this.get(nt.TRACKING);
+    return this.get(it.TRACKING);
   }
   getTrackingOptions() {
-    return this.get(nt.TRACKING_OPTIONS);
+    return this.get(it.TRACKING_OPTIONS);
   }
   setTracking(t) {
-    this.set(nt.TRACKING, t);
+    this.set(it.TRACKING, t);
   }
   setTrackingOptions(t) {
-    this.set(nt.TRACKING_OPTIONS, t);
+    this.set(it.TRACKING_OPTIONS, t);
   }
 }
-const fo = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyBpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNSBXaW5kb3dzIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjcyNTIxMjZFMDJBMTExRTBCOTNGRTVBRkM1QzM1Qjc5IiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjcyNTIxMjZGMDJBMTExRTBCOTNGRTVBRkM1QzM1Qjc5Ij4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6NzI1MjEyNkMwMkExMTFFMEI5M0ZFNUFGQzVDMzVCNzkiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6NzI1MjEyNkQwMkExMTFFMEI5M0ZFNUFGQzVDMzVCNzkiLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz4RaveOAAAB1UlEQVR42qzUTyikcRzH8d+OsUNbSOTvgW2LREqjHKSk9FjZxAGXlXJQDsqNokRzcebiRC5mT8tllBE7LlzYKBHFJpKMkD+7hvH+6ftMT4M0Y3/1uswzz+d5nu/3+/t9CAaD6n8uu/L5lHK5XroWjwI4kYWP8GMdv3H47A6nk8CDA6U8nvBLX/Ed+TjDEe7lAS24wE+M4zR0180NgXa7NSgOvajHKvqwZglMxBfUoBmVlv/wTXxU0O1WuoqIgQvLaIJDfn9NISbhRd7Tb4ahbJa3a0QthjCFv2/UfwNduJKv0jUOBSajDb8wE0FTdf1GUAzDGliOdExEMSleedsGxJiBZdiVC5GuABbxGZm2p1lUKg1/dOOjnGf9IglIsUkxY3H+jg1yIc136MBb6WjqOwLNe6904AP2kSuDG80qkW15YjZlCdkojSLsEyqwiWMzcAVbaJV6RrK+IQc/dB3NwGuMohAdEYQVoROz8FkHW68FCW1Hv4zS68eeUnWyS/YwLL1Q9rA/jsn4dEtd5mRo9WlzJ03Tda6S7TaPQWmIPCkQCH+6Ww5RfR5WowmX+IckOca2MYBp2SmW8zCb5hpGeKjuWA8yZEulSbP8sqN2JPjZif0owACin4C7wCjG6AAAAABJRU5ErkJggg==", mo = "data:image/png;base64,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";
-function Hs(A, t) {
+const wg = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyBpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNSBXaW5kb3dzIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjcyNTIxMjZFMDJBMTExRTBCOTNGRTVBRkM1QzM1Qjc5IiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjcyNTIxMjZGMDJBMTExRTBCOTNGRTVBRkM1QzM1Qjc5Ij4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6NzI1MjEyNkMwMkExMTFFMEI5M0ZFNUFGQzVDMzVCNzkiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6NzI1MjEyNkQwMkExMTFFMEI5M0ZFNUFGQzVDMzVCNzkiLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz4RaveOAAAB1UlEQVR42qzUTyikcRzH8d+OsUNbSOTvgW2LREqjHKSk9FjZxAGXlXJQDsqNokRzcebiRC5mT8tllBE7LlzYKBHFJpKMkD+7hvH+6ftMT4M0Y3/1uswzz+d5nu/3+/t9CAaD6n8uu/L5lHK5XroWjwI4kYWP8GMdv3H47A6nk8CDA6U8nvBLX/Ed+TjDEe7lAS24wE+M4zR0180NgXa7NSgOvajHKvqwZglMxBfUoBmVlv/wTXxU0O1WuoqIgQvLaIJDfn9NISbhRd7Tb4ahbJa3a0QthjCFv2/UfwNduJKv0jUOBSajDb8wE0FTdf1GUAzDGliOdExEMSleedsGxJiBZdiVC5GuABbxGZm2p1lUKg1/dOOjnGf9IglIsUkxY3H+jg1yIc136MBb6WjqOwLNe6904AP2kSuDG80qkW15YjZlCdkojSLsEyqwiWMzcAVbaJV6RrK+IQc/dB3NwGuMohAdEYQVoROz8FkHW68FCW1Hv4zS68eeUnWyS/YwLL1Q9rA/jsn4dEtd5mRo9WlzJ03Tda6S7TaPQWmIPCkQCH+6Ww5RfR5WowmX+IckOca2MYBp2SmW8zCb5hpGeKjuWA8yZEulSbP8sqN2JPjZif0owACin4C7wCjG6AAAAABJRU5ErkJggg==", vg = "data:image/png;base64,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";
+function Ys(A, t) {
   (t == null || t > A.length) && (t = A.length);
   for (var e = 0, n = Array(t); e < t; e++) n[e] = A[e];
   return n;
 }
-function Uc(A) {
+function Kc(A) {
   if (Array.isArray(A)) return A;
 }
-function _c(A, t) {
+function Jc(A, t) {
   var e = A == null ? null : typeof Symbol < "u" && A[Symbol.iterator] || A["@@iterator"];
   if (e != null) {
-    var n, i, r, s, o = [], g = !0, a = !1;
+    var n, i, r, s, g = [], o = !0, a = !1;
     try {
-      if (r = (e = e.call(A)).next, t !== 0) for (; !(g = (n = r.call(e)).done) && (o.push(n.value), o.length !== t); g = !0) ;
+      if (r = (e = e.call(A)).next, t !== 0) for (; !(o = (n = r.call(e)).done) && (g.push(n.value), g.length !== t); o = !0) ;
     } catch (C) {
       a = !0, i = C;
     } finally {
       try {
-        if (!g && e.return != null && (s = e.return(), Object(s) !== s)) return;
+        if (!o && e.return != null && (s = e.return(), Object(s) !== s)) return;
       } finally {
         if (a) throw i;
       }
     }
-    return o;
+    return g;
   }
 }
-function Wc() {
+function qc() {
   throw new TypeError(`Invalid attempt to destructure non-iterable instance.
 In order to be iterable, non-array objects must have a [Symbol.iterator]() method.`);
 }
-function Hc(A, t) {
-  return Uc(A) || _c(A, t) || Vc(A, t) || Wc();
+function $c(A, t) {
+  return Kc(A) || Jc(A, t) || tl(A, t) || qc();
 }
-function Vc(A, t) {
+function tl(A, t) {
   if (A) {
-    if (typeof A == "string") return Hs(A, t);
+    if (typeof A == "string") return Ys(A, t);
     var e = {}.toString.call(A).slice(8, -1);
-    return e === "Object" && A.constructor && (e = A.constructor.name), e === "Map" || e === "Set" ? Array.from(A) : e === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(e) ? Hs(A, t) : void 0;
+    return e === "Object" && A.constructor && (e = A.constructor.name), e === "Map" || e === "Set" ? Array.from(A) : e === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(e) ? Ys(A, t) : void 0;
   }
 }
-const po = Object.entries, Vs = Object.setPrototypeOf, Qc = Object.isFrozen, Yc = Object.getPrototypeOf, Kc = Object.getOwnPropertyDescriptor;
-let st = Object.freeze, gt = Object.seal, oA = Object.create, yo = typeof Reflect < "u" && Reflect, hr = yo.apply, ur = yo.construct;
-st || (st = function(t) {
+const bg = Object.entries, Ks = Object.setPrototypeOf, el = Object.isFrozen, Al = Object.getPrototypeOf, nl = Object.getOwnPropertyDescriptor;
+let $ = Object.freeze, At = Object.seal, aA = Object.create, Eg = typeof Reflect < "u" && Reflect, pr = Eg.apply, yr = Eg.construct;
+$ || ($ = function(t) {
   return t;
 });
-gt || (gt = function(t) {
+At || (At = function(t) {
   return t;
 });
-hr || (hr = function(t, e) {
-  for (var n = arguments.length, i = new Array(n > 2 ? n - 2 : 0), r = 2; r < n; r++)
-    i[r - 2] = arguments[r];
+pr || (pr = function(t, e) {
+  for (var n = arguments.length, i = new Array(n > 2 ? n - 2 : 0), r = 2; r < n; r++) i[r - 2] = arguments[r];
   return t.apply(e, i);
 });
-ur || (ur = function(t) {
-  for (var e = arguments.length, n = new Array(e > 1 ? e - 1 : 0), i = 1; i < e; i++)
-    n[i - 1] = arguments[i];
+yr || (yr = function(t) {
+  for (var e = arguments.length, n = new Array(e > 1 ? e - 1 : 0), i = 1; i < e; i++) n[i - 1] = arguments[i];
   return new t(...n);
 });
-const rA = $(Array.prototype.forEach), Jc = $(Array.prototype.lastIndexOf), Qs = $(Array.prototype.pop), sA = $(Array.prototype.push), qc = $(Array.prototype.splice), me = Array.isArray, UA = $(String.prototype.toLowerCase), Wi = $(String.prototype.toString), Ys = $(String.prototype.match), GA = $(String.prototype.replace), Ks = $(String.prototype.indexOf), $c = $(String.prototype.trim), tl = $(Number.prototype.toString), el = $(Boolean.prototype.toString), Js = typeof BigInt > "u" ? null : $(BigInt.prototype.toString), qs = typeof Symbol > "u" ? null : $(Symbol.prototype.toString), At = $(Object.prototype.hasOwnProperty), jA = $(Object.prototype.toString), et = $(RegExp.prototype.test), Se = Al(TypeError);
-function $(A) {
+const Pe = q(Array.prototype.forEach), il = q(Array.prototype.lastIndexOf), Js = q(Array.prototype.pop), FA = q(Array.prototype.push), rl = q(Array.prototype.splice), fA = Array.isArray, KA = q(String.prototype.toLowerCase), Yi = q(String.prototype.toString), qs = q(String.prototype.match), UA = q(String.prototype.replace), $s = q(String.prototype.indexOf), sl = q(String.prototype.trim), ol = q(Number.prototype.toString), gl = q(Boolean.prototype.toString), to = typeof BigInt > "u" ? null : q(BigInt.prototype.toString), eo = typeof Symbol > "u" ? null : q(Symbol.prototype.toString), wt = q(Object.prototype.hasOwnProperty), WA = q(Object.prototype.toString), ct = q(RegExp.prototype.test), de = al(TypeError);
+function q(A) {
   return function(t) {
     t instanceof RegExp && (t.lastIndex = 0);
-    for (var e = arguments.length, n = new Array(e > 1 ? e - 1 : 0), i = 1; i < e; i++)
-      n[i - 1] = arguments[i];
-    return hr(A, t, n);
+    for (var e = arguments.length, n = new Array(e > 1 ? e - 1 : 0), i = 1; i < e; i++) n[i - 1] = arguments[i];
+    return pr(A, t, n);
   };
 }
-function Al(A) {
+function al(A) {
   return function() {
-    for (var t = arguments.length, e = new Array(t), n = 0; n < t; n++)
-      e[n] = arguments[n];
-    return ur(A, e);
+    for (var t = arguments.length, e = new Array(t), n = 0; n < t; n++) e[n] = arguments[n];
+    return yr(A, e);
   };
 }
-function F(A, t) {
-  let e = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : UA;
-  if (Vs && Vs(A, null), !me(t))
-    return A;
+function U(A, t) {
+  let e = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : KA;
+  if (Ks && Ks(A, null), !fA(t)) return A;
   let n = t.length;
   for (; n--; ) {
     let i = t[n];
     if (typeof i == "string") {
       const r = e(i);
-      r !== i && (Qc(t) || (t[n] = r), i = r);
+      r !== i && (el(t) || (t[n] = r), i = r);
     }
     A[i] = !0;
   }
   return A;
 }
-function nl(A) {
-  for (let t = 0; t < A.length; t++)
-    At(A, t) || (A[t] = null);
+function Il(A) {
+  for (let t = 0; t < A.length; t++) wt(A, t) || (A[t] = null);
   return A;
 }
-function ct(A) {
-  const t = oA(null);
-  for (const n of po(A)) {
-    var e = Hc(n, 2);
+function Mt(A) {
+  const t = aA(null);
+  for (const n of bg(A)) {
+    var e = $c(n, 2);
     const i = e[0], r = e[1];
-    At(A, i) && (me(r) ? t[i] = nl(r) : r && typeof r == "object" && r.constructor === Object ? t[i] = ct(r) : t[i] = r);
+    wt(A, i) && (fA(r) ? t[i] = Il(r) : r && typeof r == "object" && r.constructor === Object ? t[i] = Mt(r) : t[i] = r);
   }
   return t;
 }
-function il(A) {
+function Cl(A) {
   switch (typeof A) {
     case "string":
       return A;
     case "number":
-      return tl(A);
+      return ol(A);
     case "boolean":
-      return el(A);
+      return gl(A);
     case "bigint":
-      return Js ? Js(A) : "0";
+      return to ? to(A) : "0";
     case "symbol":
-      return qs ? qs(A) : "Symbol()";
+      return eo ? eo(A) : "Symbol()";
     case "undefined":
-      return jA(A);
+      return WA(A);
     case "function":
     case "object": {
-      if (A === null)
-        return jA(A);
-      const t = A, e = Gt(t, "toString");
+      if (A === null) return WA(A);
+      const t = A, e = Tt(t, "toString");
       if (typeof e == "function") {
         const n = e(t);
-        return typeof n == "string" ? n : jA(n);
+        return typeof n == "string" ? n : WA(n);
       }
-      return jA(A);
+      return WA(A);
     }
     default:
-      return jA(A);
+      return WA(A);
   }
 }
-function Gt(A, t) {
+function Tt(A, t) {
   for (; A !== null; ) {
-    const n = Kc(A, t);
+    const n = nl(A, t);
     if (n) {
-      if (n.get)
-        return $(n.get);
-      if (typeof n.value == "function")
-        return $(n.value);
+      if (n.get) return q(n.get);
+      if (typeof n.value == "function") return q(n.value);
     }
-    A = Yc(A);
+    A = Al(A);
   }
   function e() {
     return null;
   }
   return e;
 }
-function rl(A) {
+function cl(A) {
   try {
-    return et(A, ""), !0;
+    return ct(A, ""), !0;
   } catch {
     return !1;
   }
 }
-const $s = st(["a", "abbr", "acronym", "address", "area", "article", "aside", "audio", "b", "bdi", "bdo", "big", "blink", "blockquote", "body", "br", "button", "canvas", "caption", "center", "cite", "code", "col", "colgroup", "content", "data", "datalist", "dd", "decorator", "del", "details", "dfn", "dialog", "dir", "div", "dl", "dt", "element", "em", "fieldset", "figcaption", "figure", "font", "footer", "form", "h1", "h2", "h3", "h4", "h5", "h6", "head", "header", "hgroup", "hr", "html", "i", "img", "input", "ins", "kbd", "label", "legend", "li", "main", "map", "mark", "marquee", "menu", "menuitem", "meter", "nav", "nobr", "ol", "optgroup", "option", "output", "p", "picture", "pre", "progress", "q", "rp", "rt", "ruby", "s", "samp", "search", "section", "select", "shadow", "slot", "small", "source", "spacer", "span", "strike", "strong", "style", "sub", "summary", "sup", "table", "tbody", "td", "template", "textarea", "tfoot", "th", "thead", "time", "tr", "track", "tt", "u", "ul", "var", "video", "wbr"]), Hi = st(["svg", "a", "altglyph", "altglyphdef", "altglyphitem", "animatecolor", "animatemotion", "animatetransform", "circle", "clippath", "defs", "desc", "ellipse", "enterkeyhint", "exportparts", "filter", "font", "g", "glyph", "glyphref", "hkern", "image", "inputmode", "line", "lineargradient", "marker", "mask", "metadata", "mpath", "part", "path", "pattern", "polygon", "polyline", "radialgradient", "rect", "stop", "style", "switch", "symbol", "text", "textpath", "title", "tref", "tspan", "view", "vkern"]), Vi = st(["feBlend", "feColorMatrix", "feComponentTransfer", "feComposite", "feConvolveMatrix", "feDiffuseLighting", "feDisplacementMap", "feDistantLight", "feDropShadow", "feFlood", "feFuncA", "feFuncB", "feFuncG", "feFuncR", "feGaussianBlur", "feImage", "feMerge", "feMergeNode", "feMorphology", "feOffset", "fePointLight", "feSpecularLighting", "feSpotLight", "feTile", "feTurbulence"]), sl = st(["animate", "color-profile", "cursor", "discard", "font-face", "font-face-format", "font-face-name", "font-face-src", "font-face-uri", "foreignobject", "hatch", "hatchpath", "mesh", "meshgradient", "meshpatch", "meshrow", "missing-glyph", "script", "set", "solidcolor", "unknown", "use"]), Qi = st(["math", "menclose", "merror", "mfenced", "mfrac", "mglyph", "mi", "mlabeledtr", "mmultiscripts", "mn", "mo", "mover", "mpadded", "mphantom", "mroot", "mrow", "ms", "mspace", "msqrt", "mstyle", "msub", "msup", "msubsup", "mtable", "mtd", "mtext", "mtr", "munder", "munderover", "mprescripts"]), gl = st(["maction", "maligngroup", "malignmark", "mlongdiv", "mscarries", "mscarry", "msgroup", "mstack", "msline", "msrow", "semantics", "annotation", "annotation-xml", "mprescripts", "none"]), tg = st(["#text"]), eg = st(["accept", "action", "align", "alt", "autocapitalize", "autocomplete", "autopictureinpicture", "autoplay", "background", "bgcolor", "border", "capture", "cellpadding", "cellspacing", "checked", "cite", "class", "clear", "color", "cols", "colspan", "command", "commandfor", "controls", "controlslist", "coords", "crossorigin", "datetime", "decoding", "default", "dir", "disabled", "disablepictureinpicture", "disableremoteplayback", "download", "draggable", "enctype", "enterkeyhint", "exportparts", "face", "for", "headers", "height", "hidden", "high", "href", "hreflang", "id", "inert", "inputmode", "integrity", "ismap", "kind", "label", "lang", "list", "loading", "loop", "low", "max", "maxlength", "media", "method", "min", "minlength", "multiple", "muted", "name", "nonce", "noshade", "novalidate", "nowrap", "open", "optimum", "part", "pattern", "placeholder", "playsinline", "popover", "popovertarget", "popovertargetaction", "poster", "preload", "pubdate", "radiogroup", "readonly", "rel", "required", "rev", "reversed", "role", "rows", "rowspan", "spellcheck", "scope", "selected", "shape", "size", "sizes", "slot", "span", "srclang", "start", "src", "srcset", "step", "style", "summary", "tabindex", "title", "translate", "type", "usemap", "valign", "value", "width", "wrap", "xmlns"]), Yi = st(["accent-height", "accumulate", "additive", "alignment-baseline", "amplitude", "ascent", "attributename", "attributetype", "azimuth", "basefrequency", "baseline-shift", "begin", "bias", "by", "class", "clip", "clippathunits", "clip-path", "clip-rule", "color", "color-interpolation", "color-interpolation-filters", "color-profile", "color-rendering", "cx", "cy", "d", "dx", "dy", "diffuseconstant", "direction", "display", "divisor", "dominant-baseline", "dur", "edgemode", "elevation", "end", "exponent", "fill", "fill-opacity", "fill-rule", "filter", "filterunits", "flood-color", "flood-opacity", "font-family", "font-size", "font-size-adjust", "font-stretch", "font-style", "font-variant", "font-weight", "fx", "fy", "g1", "g2", "glyph-name", "glyphref", "gradientunits", "gradienttransform", "height", "href", "id", "image-rendering", "in", "in2", "intercept", "k", "k1", "k2", "k3", "k4", "kerning", "keypoints", "keysplines", "keytimes", "lang", "lengthadjust", "letter-spacing", "kernelmatrix", "kernelunitlength", "lighting-color", "local", "marker-end", "marker-mid", "marker-start", "markerheight", "markerunits", "markerwidth", "maskcontentunits", "maskunits", "max", "mask", "mask-type", "media", "method", "mode", "min", "name", "numoctaves", "offset", "operator", "opacity", "order", "orient", "orientation", "origin", "overflow", "paint-order", "path", "pathlength", "patterncontentunits", "patterntransform", "patternunits", "points", "preservealpha", "preserveaspectratio", "primitiveunits", "r", "rx", "ry", "radius", "refx", "refy", "repeatcount", "repeatdur", "restart", "result", "rotate", "scale", "seed", "shape-rendering", "slope", "specularconstant", "specularexponent", "spreadmethod", "startoffset", "stddeviation", "stitchtiles", "stop-color", "stop-opacity", "stroke-dasharray", "stroke-dashoffset", "stroke-linecap", "stroke-linejoin", "stroke-miterlimit", "stroke-opacity", "stroke", "stroke-width", "style", "surfacescale", "systemlanguage", "tabindex", "tablevalues", "targetx", "targety", "transform", "transform-origin", "text-anchor", "text-decoration", "text-orientation", "text-rendering", "textlength", "type", "u1", "u2", "unicode", "values", "viewbox", "visibility", "version", "vert-adv-y", "vert-origin-x", "vert-origin-y", "width", "word-spacing", "wrap", "writing-mode", "xchannelselector", "ychannelselector", "x", "x1", "x2", "xmlns", "y", "y1", "y2", "z", "zoomandpan"]), Ag = st(["accent", "accentunder", "align", "bevelled", "close", "columnalign", "columnlines", "columnspacing", "columnspan", "denomalign", "depth", "dir", "display", "displaystyle", "encoding", "fence", "frame", "height", "href", "id", "largeop", "length", "linethickness", "lquote", "lspace", "mathbackground", "mathcolor", "mathsize", "mathvariant", "maxsize", "minsize", "movablelimits", "notation", "numalign", "open", "rowalign", "rowlines", "rowspacing", "rowspan", "rspace", "rquote", "scriptlevel", "scriptminsize", "scriptsizemultiplier", "selection", "separator", "separators", "stretchy", "subscriptshift", "supscriptshift", "symmetric", "voffset", "width", "xmlns"]), Vn = st(["xlink:href", "xml:id", "xlink:title", "xml:space", "xmlns:xlink"]), ol = gt(/{{[\w\W]*|^[\w\W]*}}/g), al = gt(/<%[\w\W]*|^[\w\W]*%>/g), Il = gt(/\${[\w\W]*/g), Cl = gt(/^data-[\-\w.\u00B7-\uFFFF]+$/), cl = gt(/^aria-[\-\w]+$/), ng = gt(
-  /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp|matrix):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i
-  // eslint-disable-line no-useless-escape
-), ll = gt(/^(?:\w+script|data):/i), hl = gt(
-  /[\u0000-\u0020\u00A0\u1680\u180E\u2000-\u2029\u205F\u3000]/g
-  // eslint-disable-line no-control-regex
-), ul = gt(/^html$/i), fl = gt(/^[a-z][.\w]*(-[.\w]+)+$/i), ig = gt(/<[/\w!]/g), rg = gt(/<[/\w]/g), dl = gt(/<\/no(script|embed|frames)/i), ml = gt(/\/>/i), Et = {
+const Ao = $([
+  "a",
+  "abbr",
+  "acronym",
+  "address",
+  "area",
+  "article",
+  "aside",
+  "audio",
+  "b",
+  "bdi",
+  "bdo",
+  "big",
+  "blink",
+  "blockquote",
+  "body",
+  "br",
+  "button",
+  "canvas",
+  "caption",
+  "center",
+  "cite",
+  "code",
+  "col",
+  "colgroup",
+  "content",
+  "data",
+  "datalist",
+  "dd",
+  "decorator",
+  "del",
+  "details",
+  "dfn",
+  "dialog",
+  "dir",
+  "div",
+  "dl",
+  "dt",
+  "element",
+  "em",
+  "fieldset",
+  "figcaption",
+  "figure",
+  "font",
+  "footer",
+  "form",
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6",
+  "head",
+  "header",
+  "hgroup",
+  "hr",
+  "html",
+  "i",
+  "img",
+  "input",
+  "ins",
+  "kbd",
+  "label",
+  "legend",
+  "li",
+  "main",
+  "map",
+  "mark",
+  "marquee",
+  "menu",
+  "menuitem",
+  "meter",
+  "nav",
+  "nobr",
+  "ol",
+  "optgroup",
+  "option",
+  "output",
+  "p",
+  "picture",
+  "pre",
+  "progress",
+  "q",
+  "rp",
+  "rt",
+  "ruby",
+  "s",
+  "samp",
+  "search",
+  "section",
+  "select",
+  "shadow",
+  "slot",
+  "small",
+  "source",
+  "spacer",
+  "span",
+  "strike",
+  "strong",
+  "style",
+  "sub",
+  "summary",
+  "sup",
+  "table",
+  "tbody",
+  "td",
+  "template",
+  "textarea",
+  "tfoot",
+  "th",
+  "thead",
+  "time",
+  "tr",
+  "track",
+  "tt",
+  "u",
+  "ul",
+  "var",
+  "video",
+  "wbr"
+]), Ki = $([
+  "svg",
+  "a",
+  "altglyph",
+  "altglyphdef",
+  "altglyphitem",
+  "animatecolor",
+  "animatemotion",
+  "animatetransform",
+  "circle",
+  "clippath",
+  "defs",
+  "desc",
+  "ellipse",
+  "enterkeyhint",
+  "exportparts",
+  "filter",
+  "font",
+  "g",
+  "glyph",
+  "glyphref",
+  "hkern",
+  "image",
+  "inputmode",
+  "line",
+  "lineargradient",
+  "marker",
+  "mask",
+  "metadata",
+  "mpath",
+  "part",
+  "path",
+  "pattern",
+  "polygon",
+  "polyline",
+  "radialgradient",
+  "rect",
+  "stop",
+  "style",
+  "switch",
+  "symbol",
+  "text",
+  "textpath",
+  "title",
+  "tref",
+  "tspan",
+  "view",
+  "vkern"
+]), Ji = $([
+  "feBlend",
+  "feColorMatrix",
+  "feComponentTransfer",
+  "feComposite",
+  "feConvolveMatrix",
+  "feDiffuseLighting",
+  "feDisplacementMap",
+  "feDistantLight",
+  "feDropShadow",
+  "feFlood",
+  "feFuncA",
+  "feFuncB",
+  "feFuncG",
+  "feFuncR",
+  "feGaussianBlur",
+  "feImage",
+  "feMerge",
+  "feMergeNode",
+  "feMorphology",
+  "feOffset",
+  "fePointLight",
+  "feSpecularLighting",
+  "feSpotLight",
+  "feTile",
+  "feTurbulence"
+]), ll = $([
+  "animate",
+  "color-profile",
+  "cursor",
+  "discard",
+  "font-face",
+  "font-face-format",
+  "font-face-name",
+  "font-face-src",
+  "font-face-uri",
+  "foreignobject",
+  "hatch",
+  "hatchpath",
+  "mesh",
+  "meshgradient",
+  "meshpatch",
+  "meshrow",
+  "missing-glyph",
+  "script",
+  "set",
+  "solidcolor",
+  "unknown",
+  "use"
+]), qi = $([
+  "math",
+  "menclose",
+  "merror",
+  "mfenced",
+  "mfrac",
+  "mglyph",
+  "mi",
+  "mlabeledtr",
+  "mmultiscripts",
+  "mn",
+  "mo",
+  "mover",
+  "mpadded",
+  "mphantom",
+  "mroot",
+  "mrow",
+  "ms",
+  "mspace",
+  "msqrt",
+  "mstyle",
+  "msub",
+  "msup",
+  "msubsup",
+  "mtable",
+  "mtd",
+  "mtext",
+  "mtr",
+  "munder",
+  "munderover",
+  "mprescripts"
+]), ul = $([
+  "maction",
+  "maligngroup",
+  "malignmark",
+  "mlongdiv",
+  "mscarries",
+  "mscarry",
+  "msgroup",
+  "mstack",
+  "msline",
+  "msrow",
+  "semantics",
+  "annotation",
+  "annotation-xml",
+  "mprescripts",
+  "none"
+]), no = $(["#text"]), io = $([
+  "accept",
+  "action",
+  "align",
+  "alt",
+  "autocapitalize",
+  "autocomplete",
+  "autopictureinpicture",
+  "autoplay",
+  "background",
+  "bgcolor",
+  "border",
+  "capture",
+  "cellpadding",
+  "cellspacing",
+  "checked",
+  "cite",
+  "class",
+  "clear",
+  "color",
+  "cols",
+  "colspan",
+  "command",
+  "commandfor",
+  "controls",
+  "controlslist",
+  "coords",
+  "crossorigin",
+  "datetime",
+  "decoding",
+  "default",
+  "dir",
+  "disabled",
+  "disablepictureinpicture",
+  "disableremoteplayback",
+  "download",
+  "draggable",
+  "enctype",
+  "enterkeyhint",
+  "exportparts",
+  "face",
+  "for",
+  "headers",
+  "height",
+  "hidden",
+  "high",
+  "href",
+  "hreflang",
+  "id",
+  "inert",
+  "inputmode",
+  "integrity",
+  "ismap",
+  "kind",
+  "label",
+  "lang",
+  "list",
+  "loading",
+  "loop",
+  "low",
+  "max",
+  "maxlength",
+  "media",
+  "method",
+  "min",
+  "minlength",
+  "multiple",
+  "muted",
+  "name",
+  "nonce",
+  "noshade",
+  "novalidate",
+  "nowrap",
+  "open",
+  "optimum",
+  "part",
+  "pattern",
+  "placeholder",
+  "playsinline",
+  "popover",
+  "popovertarget",
+  "popovertargetaction",
+  "poster",
+  "preload",
+  "pubdate",
+  "radiogroup",
+  "readonly",
+  "rel",
+  "required",
+  "rev",
+  "reversed",
+  "role",
+  "rows",
+  "rowspan",
+  "spellcheck",
+  "scope",
+  "selected",
+  "shape",
+  "size",
+  "sizes",
+  "slot",
+  "span",
+  "srclang",
+  "start",
+  "src",
+  "srcset",
+  "step",
+  "style",
+  "summary",
+  "tabindex",
+  "title",
+  "translate",
+  "type",
+  "usemap",
+  "valign",
+  "value",
+  "width",
+  "wrap",
+  "xmlns"
+]), $i = $([
+  "accent-height",
+  "accumulate",
+  "additive",
+  "alignment-baseline",
+  "amplitude",
+  "ascent",
+  "attributename",
+  "attributetype",
+  "azimuth",
+  "basefrequency",
+  "baseline-shift",
+  "begin",
+  "bias",
+  "by",
+  "class",
+  "clip",
+  "clippathunits",
+  "clip-path",
+  "clip-rule",
+  "color",
+  "color-interpolation",
+  "color-interpolation-filters",
+  "color-profile",
+  "color-rendering",
+  "cx",
+  "cy",
+  "d",
+  "dx",
+  "dy",
+  "diffuseconstant",
+  "direction",
+  "display",
+  "divisor",
+  "dominant-baseline",
+  "dur",
+  "edgemode",
+  "elevation",
+  "end",
+  "exponent",
+  "fill",
+  "fill-opacity",
+  "fill-rule",
+  "filter",
+  "filterunits",
+  "flood-color",
+  "flood-opacity",
+  "font-family",
+  "font-size",
+  "font-size-adjust",
+  "font-stretch",
+  "font-style",
+  "font-variant",
+  "font-weight",
+  "fx",
+  "fy",
+  "g1",
+  "g2",
+  "glyph-name",
+  "glyphref",
+  "gradientunits",
+  "gradienttransform",
+  "height",
+  "href",
+  "id",
+  "image-rendering",
+  "in",
+  "in2",
+  "intercept",
+  "k",
+  "k1",
+  "k2",
+  "k3",
+  "k4",
+  "kerning",
+  "keypoints",
+  "keysplines",
+  "keytimes",
+  "lang",
+  "lengthadjust",
+  "letter-spacing",
+  "kernelmatrix",
+  "kernelunitlength",
+  "lighting-color",
+  "local",
+  "marker-end",
+  "marker-mid",
+  "marker-start",
+  "markerheight",
+  "markerunits",
+  "markerwidth",
+  "maskcontentunits",
+  "maskunits",
+  "max",
+  "mask",
+  "mask-type",
+  "media",
+  "method",
+  "mode",
+  "min",
+  "name",
+  "numoctaves",
+  "offset",
+  "operator",
+  "opacity",
+  "order",
+  "orient",
+  "orientation",
+  "origin",
+  "overflow",
+  "paint-order",
+  "path",
+  "pathlength",
+  "patterncontentunits",
+  "patterntransform",
+  "patternunits",
+  "pointer-events",
+  "points",
+  "preservealpha",
+  "preserveaspectratio",
+  "primitiveunits",
+  "r",
+  "rx",
+  "ry",
+  "radius",
+  "refx",
+  "refy",
+  "repeatcount",
+  "repeatdur",
+  "restart",
+  "result",
+  "rotate",
+  "scale",
+  "seed",
+  "shape-rendering",
+  "slope",
+  "specularconstant",
+  "specularexponent",
+  "spreadmethod",
+  "startoffset",
+  "stddeviation",
+  "stitchtiles",
+  "stop-color",
+  "stop-opacity",
+  "stroke-dasharray",
+  "stroke-dashoffset",
+  "stroke-linecap",
+  "stroke-linejoin",
+  "stroke-miterlimit",
+  "stroke-opacity",
+  "stroke",
+  "stroke-width",
+  "style",
+  "surfacescale",
+  "systemlanguage",
+  "tabindex",
+  "tablevalues",
+  "targetx",
+  "targety",
+  "transform",
+  "transform-origin",
+  "text-anchor",
+  "text-decoration",
+  "text-orientation",
+  "text-rendering",
+  "textlength",
+  "type",
+  "u1",
+  "u2",
+  "unicode",
+  "values",
+  "vector-effect",
+  "viewbox",
+  "visibility",
+  "version",
+  "vert-adv-y",
+  "vert-origin-x",
+  "vert-origin-y",
+  "width",
+  "word-spacing",
+  "wrap",
+  "writing-mode",
+  "xchannelselector",
+  "ychannelselector",
+  "x",
+  "x1",
+  "x2",
+  "xmlns",
+  "y",
+  "y1",
+  "y2",
+  "z",
+  "zoomandpan"
+]), ro = $([
+  "accent",
+  "accentunder",
+  "align",
+  "bevelled",
+  "close",
+  "columnalign",
+  "columnlines",
+  "columnspacing",
+  "columnspan",
+  "denomalign",
+  "depth",
+  "dir",
+  "display",
+  "displaystyle",
+  "encoding",
+  "fence",
+  "frame",
+  "height",
+  "href",
+  "id",
+  "largeop",
+  "length",
+  "linethickness",
+  "lquote",
+  "lspace",
+  "mathbackground",
+  "mathcolor",
+  "mathsize",
+  "mathvariant",
+  "maxsize",
+  "minsize",
+  "movablelimits",
+  "notation",
+  "numalign",
+  "open",
+  "rowalign",
+  "rowlines",
+  "rowspacing",
+  "rowspan",
+  "rspace",
+  "rquote",
+  "scriptlevel",
+  "scriptminsize",
+  "scriptsizemultiplier",
+  "selection",
+  "separator",
+  "separators",
+  "stretchy",
+  "subscriptshift",
+  "supscriptshift",
+  "symmetric",
+  "voffset",
+  "width",
+  "xmlns"
+]), Qn = $([
+  "xlink:href",
+  "xml:id",
+  "xlink:title",
+  "xml:space",
+  "xmlns:xlink"
+]), hl = At(/{{[\w\W]*|^[\w\W]*}}/g), fl = At(/<%[\w\W]*|^[\w\W]*%>/g), dl = At(/\${[\w\W]*/g), ml = At(/^data-[\-\w.\u00B7-\uFFFF]+$/), pl = At(/^aria-[\-\w]+$/), so = At(/^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp|matrix):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i), yl = At(/^(?:\w+script|data):/i), wl = At(/[\u0000-\u0020\u00A0\u1680\u180E\u2000-\u2029\u205F\u3000]/g), vl = At(/^html$/i), bl = At(/^[a-z][.\w]*(-[.\w]+)+$/i), oo = At(/<[/\w!]/g), go = At(/<[/\w]/g), El = At(/<\/no(script|embed|frames)/i), Ml = At(/\/>/i), Et = {
   element: 1,
   attribute: 2,
   text: 3,
   cdataSection: 4,
   entityReference: 5,
-  // Deprecated
   entityNode: 6,
-  // Deprecated
   processingInstruction: 7,
   comment: 8,
   document: 9,
   documentType: 10,
   documentFragment: 11,
   notation: 12
-  // Deprecated
-}, pl = function() {
+}, Mg = [
+  "style",
+  "script",
+  "xmp",
+  "iframe",
+  "noembed",
+  "noframes",
+  "plaintext",
+  "noscript"
+], Rl = $(U({}, Mg)), Sl = (function() {
+  const A = {};
+  return Pe(Mg, (t) => {
+    A[t] = At(new RegExp("</" + t + "(?=[\\t\\n\\f\\r />])", "i"));
+  }), $(A);
+})(), Tl = function() {
   return typeof window > "u" ? null : window;
-}, yl = function(t, e) {
-  if (typeof t != "object" || typeof t.createPolicy != "function")
-    return null;
+}, Pl = function(t, e) {
+  if (typeof t != "object" || typeof t.createPolicy != "function") return null;
   let n = null;
   const i = "data-tt-policy-suffix";
   e && e.hasAttribute(i) && (n = e.getAttribute(i));
@@ -10502,7 +11486,7 @@ const $s = st(["a", "abbr", "acronym", "address", "area", "article", "aside", "a
   } catch {
     return console.warn("TrustedTypes policy " + r + " could not be created."), null;
   }
-}, sg = function() {
+}, ao = function() {
   return {
     afterSanitizeAttributes: [],
     afterSanitizeElements: [],
@@ -10514,53 +11498,70 @@ const $s = st(["a", "abbr", "acronym", "address", "area", "article", "aside", "a
     uponSanitizeElement: [],
     uponSanitizeShadowNode: []
   };
-}, he = function(t, e, n, i) {
-  return At(t, e) && me(t[e]) ? F(i.base ? ct(i.base) : {}, t[e], i.transform) : n;
+}, me = function(t, e, n, i) {
+  return wt(t, e) && fA(t[e]) ? U(i.base ? Mt(i.base) : {}, t[e], i.transform) : n;
+}, tr = function(t, e, n) {
+  const i = wt(t, e) ? t[e] : void 0;
+  return i && typeof i == "object" ? Mt(i) : n();
 };
-function wo() {
-  let A = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : pl();
-  const t = (T) => wo(T);
-  if (t.version = "3.4.13", t.removed = [], !A || !A.document || A.document.nodeType !== Et.document || !A.Element)
+function Rg() {
+  let A = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : Tl();
+  const t = (v) => Rg(v);
+  if (t.version = "3.4.16", t.removed = [], !A || !A.document || A.document.nodeType !== Et.document || !A.Element)
     return t.isSupported = !1, t;
   let e = A.document;
   const n = e, i = n.currentScript;
   A.DocumentFragment;
-  const r = A.HTMLTemplateElement, s = A.Node, o = A.Element, g = A.NodeFilter, a = A.NamedNodeMap;
-  a === void 0 && (A.NamedNodeMap || A.MozNamedAttrMap), A.HTMLFormElement;
-  const C = A.DOMParser, I = A.trustedTypes, c = o.prototype, h = Gt(c, "cloneNode"), p = Gt(c, "remove"), d = Gt(c, "nextSibling"), m = Gt(c, "childNodes"), f = Gt(c, "parentNode"), v = Gt(c, "shadowRoot"), M = Gt(c, "attributes"), E = s && s.prototype ? Gt(s.prototype, "nodeType") : null, R = s && s.prototype ? Gt(s.prototype, "nodeName") : null, P = s && s.prototype ? Gt(s.prototype, "ownerDocument") : null;
+  const r = A.HTMLTemplateElement, s = A.Node, g = A.Element, o = A.NodeFilter;
+  A.NamedNodeMap === void 0 && (A.NamedNodeMap || A.MozNamedAttrMap), A.HTMLFormElement;
+  const a = A.DOMParser, C = A.trustedTypes, I = g.prototype, c = Tt(I, "cloneNode"), u = Tt(I, "remove"), d = Tt(I, "removeAttributeNode"), f = Tt(I, "nextSibling"), m = Tt(I, "childNodes"), h = Tt(I, "parentNode"), w = Tt(I, "shadowRoot"), S = Tt(I, "attributes"), E = s && s.prototype ? Tt(s.prototype, "nodeType") : null, P = s && s.prototype ? Tt(s.prototype, "nodeName") : null, x = s && s.prototype ? Tt(s.prototype, "ownerDocument") : null, D = function(l) {
+    return E ? E(l) : l.nodeType;
+  }, B = function(l) {
+    return P ? P(l) : l.nodeName;
+  };
   if (typeof r == "function") {
-    const T = e.createElement("template");
-    T.content && T.content.ownerDocument && (e = T.content.ownerDocument);
+    const v = e.createElement("template");
+    v.content && v.content.ownerDocument && (e = v.content.ownerDocument);
   }
-  let x, D = "", N, G = !1, k = 0;
-  const X = function() {
-    if (k > 0)
-      throw Se('A configured TRUSTED_TYPES_POLICY callback (createHTML or createScriptURL) must not call DOMPurify.sanitize, as that causes infinite recursion. Do not pass a policy whose callbacks wrap DOMPurify as TRUSTED_TYPES_POLICY; see the "DOMPurify and Trusted Types" section of the README.');
-  }, Z = function(u) {
-    X(), k++;
+  let k, j = "", _, X = !1, Z = 0;
+  const Y = function() {
+    if (Z > 0) throw de('A configured TRUSTED_TYPES_POLICY callback (createHTML or createScriptURL) must not call DOMPurify.sanitize, as that causes infinite recursion. Do not pass a policy whose callbacks wrap DOMPurify as TRUSTED_TYPES_POLICY; see the "DOMPurify and Trusted Types" section of the README.');
+  }, ot = function(l) {
+    Y(), Z++;
     try {
-      return x.createHTML(u);
+      return k.createHTML(l);
     } finally {
-      k--;
+      Z--;
     }
-  }, J = function(u) {
-    X(), k++;
+  }, L = function(l) {
+    Y(), Z++;
     try {
-      return x.createScriptURL(u);
+      return k.createScriptURL(l);
     } finally {
-      k--;
+      Z--;
     }
-  }, xt = function() {
-    return G || (N = yl(I, i), G = !0), N;
-  }, O = e, q = O.implementation, Dt = O.createNodeIterator, Ae = O.createDocumentFragment, ne = O.getElementsByTagName, on = n.importNode;
-  let Q = sg();
-  t.isSupported = typeof po == "function" && typeof f == "function" && q && q.createHTMLDocument !== void 0;
-  const ci = ol, li = al, hi = Il, ui = Cl, fi = cl, an = ll, In = hl, di = fl;
-  let Cn = ng, U = null;
-  const bA = F({}, [...$s, ...Hi, ...Vi, ...Qi, ...tg]);
-  let L = null;
-  const vA = F({}, [...eg, ...Yi, ...Ag, ...Vn]);
-  let Y = Object.seal(oA(null, {
+  }, et = function() {
+    return X || (_ = Pl(C, i), X = !0), _;
+  }, vt = e, kt = vt.implementation, Ht = vt.createNodeIterator, fn = vt.createDocumentFragment, li = vt.getElementsByTagName, ui = n.importNode;
+  let Q = ao();
+  t.isSupported = typeof bg == "function" && typeof h == "function" && kt && kt.createHTMLDocument !== void 0;
+  const hi = hl, fi = fl, di = dl, dn = ml, mi = pl, pi = yl, mn = wl, je = bl;
+  let pn = so, N = null;
+  const EA = U({}, [
+    ...Ao,
+    ...Ki,
+    ...Ji,
+    ...qi,
+    ...no
+  ]);
+  let H = null;
+  const MA = U({}, [
+    ...io,
+    ...$i,
+    ...ro,
+    ...Qn
+  ]);
+  let pt = Object.seal(aA(null, {
     tagNameCheck: {
       writable: !0,
       configurable: !1,
@@ -10579,8 +11580,8 @@ function wo() {
       enumerable: !0,
       value: !1
     }
-  })), we = null, Ge = null;
-  const Ot = Object.seal(oA(null, {
+  })), ae = null, Ie = null;
+  const Dt = Object.seal(aA(null, {
     tagCheck: {
       writable: !0,
       configurable: !1,
@@ -10594,10 +11595,10 @@ function wo() {
       value: null
     }
   }));
-  let ie = !0, je = !0, Xe = !1, EA = !0, Bt = !1, Lt = !0, _t = !1, Ze = !1, ze = null, Fe = null, MA = !1, re = !1, Ue = !1, be = !1, cn = !0, se = !1;
-  const _e = "user-content-";
-  let ge = !0, lt = !1, Wt = {}, bt = null;
-  const RA = F({}, [
+  let _e = !0, Xe = !0, RA = !1, SA = !0, Nt = !1, Gt = !0, Qt = !1, TA = !1, Ze = null, ze = null, PA = !1, Yt = !1, Fe = !1, jt = !1, Ue = !0, be = !1;
+  const bt = "user-content-";
+  let We = !0, Ve = !1, Ce = {}, ce = null;
+  const xA = U({}, [
     "annotation-xml",
     "audio",
     "colgroup",
@@ -10616,15 +11617,6 @@ function wo() {
     "noscript",
     "plaintext",
     "script",
-    // <selectedcontent> mirrors the selected <option>'s subtree, cloned by
-    // the UA (customizable <select>) — including any on* handlers — and the
-    // engine re-mirrors synchronously whenever a removal changes which
-    // option/selectedcontent is current, even inside DOMPurify's inert
-    // DOMParser document. Hoisting its children on removal re-inserts a fresh
-    // mirror target ahead of the walk, which the engine refills, looping
-    // forever (DoS) and amplifying output. Dropping its content on removal
-    // (rather than hoisting) breaks that cascade; the content is a duplicate
-    // of the option, which is sanitized on its own. See campaign-3 F1/F6.
     "selectedcontent",
     "style",
     "svg",
@@ -10634,619 +11626,590 @@ function wo() {
     "video",
     "xmp"
   ]);
-  let ln = null;
-  const TA = F({}, ["audio", "video", "img", "source", "image", "track"]);
-  let oe = null;
-  const hn = F({}, ["alt", "class", "for", "id", "label", "name", "pattern", "placeholder", "role", "summary", "title", "value", "style", "xmlns"]), We = "http://www.w3.org/1998/Math/MathML", Rt = "http://www.w3.org/2000/svg", ht = "http://www.w3.org/1999/xhtml";
-  let ae = ht, SA = !1, He = null;
-  const mi = F({}, [We, Rt, ht], Wi), PA = st(["mi", "mo", "mn", "ms", "mtext"]);
-  let Ve = F({}, PA);
-  const un = st(["annotation-xml"]);
-  let xA = F({}, un);
-  const fn = F({}, ["title", "style", "font", "a", "script"]);
-  let Tt = null;
-  const dn = ["application/xhtml+xml", "text/html"], pi = "text/html";
-  let K = null, Ie = null;
-  const mn = e.createElement("form"), pn = function(u) {
-    return u instanceof RegExp || u instanceof Function;
-  }, Qe = function() {
-    let u = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : {};
-    if (Ie && Ie === u)
-      return;
-    (!u || typeof u != "object") && (u = {}), u = ct(u), Tt = // eslint-disable-next-line unicorn/prefer-includes
-    dn.indexOf(u.PARSER_MEDIA_TYPE) === -1 ? pi : u.PARSER_MEDIA_TYPE, K = Tt === "application/xhtml+xml" ? Wi : UA, U = he(u, "ALLOWED_TAGS", bA, {
-      transform: K
-    }), L = he(u, "ALLOWED_ATTR", vA, {
-      transform: K
-    }), He = he(u, "ALLOWED_NAMESPACES", mi, {
-      transform: Wi
-    }), oe = he(u, "ADD_URI_SAFE_ATTR", hn, {
+  let Ee = null;
+  const yn = U({}, [
+    "audio",
+    "video",
+    "img",
+    "source",
+    "image",
+    "track"
+  ]);
+  let wn = null;
+  const _t = U({}, [
+    "alt",
+    "class",
+    "for",
+    "id",
+    "label",
+    "name",
+    "pattern",
+    "placeholder",
+    "role",
+    "summary",
+    "title",
+    "value",
+    "style",
+    "xmlns"
+  ]), Kt = "http://www.w3.org/1998/Math/MathML", He = "http://www.w3.org/2000/svg", St = "http://www.w3.org/1999/xhtml";
+  let Jt = St, DA = !1, Qe = null;
+  const vn = U({}, [
+    Kt,
+    He,
+    St
+  ], Yi), bn = $([
+    "mi",
+    "mo",
+    "mn",
+    "ms",
+    "mtext"
+  ]);
+  let OA = U({}, bn);
+  const BA = $(["annotation-xml"]);
+  let Xt = U({}, BA);
+  const En = U({}, [
+    "title",
+    "style",
+    "font",
+    "a",
+    "script"
+  ]);
+  let Me = null;
+  const yi = ["application/xhtml+xml", "text/html"], wi = "text/html";
+  let K = null, le = null;
+  const Mn = e.createElement("form"), Rn = function(l) {
+    return l instanceof RegExp || l instanceof Function;
+  }, LA = function() {
+    let l = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : {};
+    if (le && le === l) return;
+    (!l || typeof l != "object") && (l = {}), l = Mt(l), Me = yi.indexOf(l.PARSER_MEDIA_TYPE) === -1 ? wi : l.PARSER_MEDIA_TYPE, K = Me === "application/xhtml+xml" ? Yi : KA, N = me(l, "ALLOWED_TAGS", EA, { transform: K }), H = me(l, "ALLOWED_ATTR", MA, { transform: K }), Qe = me(l, "ALLOWED_NAMESPACES", vn, { transform: Yi }), wn = me(l, "ADD_URI_SAFE_ATTR", _t, {
       transform: K,
-      base: hn
-    }), ln = he(u, "ADD_DATA_URI_TAGS", TA, {
+      base: _t
+    }), Ee = me(l, "ADD_DATA_URI_TAGS", yn, {
       transform: K,
-      base: TA
-    }), bt = he(u, "FORBID_CONTENTS", RA, {
-      transform: K
-    }), we = he(u, "FORBID_TAGS", ct({}), {
-      transform: K
-    }), Ge = he(u, "FORBID_ATTR", ct({}), {
-      transform: K
-    }), Wt = At(u, "USE_PROFILES") ? u.USE_PROFILES && typeof u.USE_PROFILES == "object" ? ct(u.USE_PROFILES) : u.USE_PROFILES : !1, ie = u.ALLOW_ARIA_ATTR !== !1, je = u.ALLOW_DATA_ATTR !== !1, Xe = u.ALLOW_UNKNOWN_PROTOCOLS || !1, EA = u.ALLOW_SELF_CLOSE_IN_ATTR !== !1, Bt = u.SAFE_FOR_TEMPLATES || !1, Lt = u.SAFE_FOR_XML !== !1, _t = u.WHOLE_DOCUMENT || !1, re = u.RETURN_DOM || !1, Ue = u.RETURN_DOM_FRAGMENT || !1, be = u.RETURN_TRUSTED_TYPE || !1, MA = u.FORCE_BODY || !1, cn = u.SANITIZE_DOM !== !1, se = u.SANITIZE_NAMED_PROPS || !1, ge = u.KEEP_CONTENT !== !1, lt = u.IN_PLACE || !1, Cn = rl(u.ALLOWED_URI_REGEXP) ? u.ALLOWED_URI_REGEXP : ng, ae = typeof u.NAMESPACE == "string" ? u.NAMESPACE : ht, Ve = At(u, "MATHML_TEXT_INTEGRATION_POINTS") && u.MATHML_TEXT_INTEGRATION_POINTS && typeof u.MATHML_TEXT_INTEGRATION_POINTS == "object" ? ct(u.MATHML_TEXT_INTEGRATION_POINTS) : F({}, PA), xA = At(u, "HTML_INTEGRATION_POINTS") && u.HTML_INTEGRATION_POINTS && typeof u.HTML_INTEGRATION_POINTS == "object" ? ct(u.HTML_INTEGRATION_POINTS) : F({}, un);
-    const w = At(u, "CUSTOM_ELEMENT_HANDLING") && u.CUSTOM_ELEMENT_HANDLING && typeof u.CUSTOM_ELEMENT_HANDLING == "object" ? ct(u.CUSTOM_ELEMENT_HANDLING) : oA(null);
-    if (Y = oA(null), At(w, "tagNameCheck") && pn(w.tagNameCheck) && (Y.tagNameCheck = w.tagNameCheck), At(w, "attributeNameCheck") && pn(w.attributeNameCheck) && (Y.attributeNameCheck = w.attributeNameCheck), At(w, "allowCustomizedBuiltInElements") && typeof w.allowCustomizedBuiltInElements == "boolean" && (Y.allowCustomizedBuiltInElements = w.allowCustomizedBuiltInElements), gt(Y), Bt && (je = !1), Ue && (re = !0), Wt && (U = F({}, tg), L = oA(null), Wt.html === !0 && (F(U, $s), F(L, eg)), Wt.svg === !0 && (F(U, Hi), F(L, Yi), F(L, Vn)), Wt.svgFilters === !0 && (F(U, Vi), F(L, Yi), F(L, Vn)), Wt.mathMl === !0 && (F(U, Qi), F(L, Ag), F(L, Vn))), Ot.tagCheck = null, Ot.attributeCheck = null, At(u, "ADD_TAGS") && (typeof u.ADD_TAGS == "function" ? Ot.tagCheck = u.ADD_TAGS : me(u.ADD_TAGS) && (U === bA && (U = ct(U)), F(U, u.ADD_TAGS, K))), At(u, "ADD_ATTR") && (typeof u.ADD_ATTR == "function" ? Ot.attributeCheck = u.ADD_ATTR : me(u.ADD_ATTR) && (L === vA && (L = ct(L)), F(L, u.ADD_ATTR, K))), At(u, "ADD_URI_SAFE_ATTR") && me(u.ADD_URI_SAFE_ATTR) && F(oe, u.ADD_URI_SAFE_ATTR, K), At(u, "FORBID_CONTENTS") && me(u.FORBID_CONTENTS) && (bt === RA && (bt = ct(bt)), F(bt, u.FORBID_CONTENTS, K)), At(u, "ADD_FORBID_CONTENTS") && me(u.ADD_FORBID_CONTENTS) && (bt === RA && (bt = ct(bt)), F(bt, u.ADD_FORBID_CONTENTS, K)), ge && (U["#text"] = !0), _t && F(U, ["html", "head", "body"]), U.table && (F(U, ["tbody"]), delete we.tbody), u.TRUSTED_TYPES_POLICY) {
-      if (typeof u.TRUSTED_TYPES_POLICY.createHTML != "function")
-        throw Se('TRUSTED_TYPES_POLICY configuration option must provide a "createHTML" hook.');
-      if (typeof u.TRUSTED_TYPES_POLICY.createScriptURL != "function")
-        throw Se('TRUSTED_TYPES_POLICY configuration option must provide a "createScriptURL" hook.');
-      const l = x;
-      x = u.TRUSTED_TYPES_POLICY;
+      base: yn
+    }), ce = me(l, "FORBID_CONTENTS", xA, { transform: K }), ae = me(l, "FORBID_TAGS", Mt({}), { transform: K }), Ie = me(l, "FORBID_ATTR", Mt({}), { transform: K }), Ce = wt(l, "USE_PROFILES") ? l.USE_PROFILES && typeof l.USE_PROFILES == "object" ? Mt(l.USE_PROFILES) : l.USE_PROFILES : !1, _e = l.ALLOW_ARIA_ATTR !== !1, Xe = l.ALLOW_DATA_ATTR !== !1, RA = l.ALLOW_UNKNOWN_PROTOCOLS || !1, SA = l.ALLOW_SELF_CLOSE_IN_ATTR !== !1, Nt = l.SAFE_FOR_TEMPLATES || !1, Gt = l.SAFE_FOR_XML !== !1, Qt = l.WHOLE_DOCUMENT || !1, Yt = l.RETURN_DOM || !1, Fe = l.RETURN_DOM_FRAGMENT || !1, jt = l.RETURN_TRUSTED_TYPE || !1, PA = l.FORCE_BODY || !1, Ue = l.SANITIZE_DOM !== !1, be = l.SANITIZE_NAMED_PROPS || !1, We = l.KEEP_CONTENT !== !1, Ve = l.IN_PLACE || !1, pn = cl(l.ALLOWED_URI_REGEXP) ? l.ALLOWED_URI_REGEXP : so, Jt = typeof l.NAMESPACE == "string" ? l.NAMESPACE : St, OA = tr(l, "MATHML_TEXT_INTEGRATION_POINTS", () => U({}, bn)), Xt = tr(l, "HTML_INTEGRATION_POINTS", () => U({}, BA));
+    const y = tr(l, "CUSTOM_ELEMENT_HANDLING", () => aA(null));
+    if (pt = aA(null), wt(y, "tagNameCheck") && Rn(y.tagNameCheck) && (pt.tagNameCheck = y.tagNameCheck), wt(y, "attributeNameCheck") && Rn(y.attributeNameCheck) && (pt.attributeNameCheck = y.attributeNameCheck), wt(y, "allowCustomizedBuiltInElements") && typeof y.allowCustomizedBuiltInElements == "boolean" && (pt.allowCustomizedBuiltInElements = y.allowCustomizedBuiltInElements), At(pt), Nt && (Xe = !1), Fe && (Yt = !0), Ce && (N = U({}, no), H = aA(null), Ce.html === !0 && (U(N, Ao), U(H, io)), Ce.svg === !0 && (U(N, Ki), U(H, $i), U(H, Qn)), Ce.svgFilters === !0 && (U(N, Ji), U(H, $i), U(H, Qn)), Ce.mathMl === !0 && (U(N, qi), U(H, ro), U(H, Qn))), Dt.tagCheck = null, Dt.attributeCheck = null, wt(l, "ADD_TAGS") && (typeof l.ADD_TAGS == "function" ? Dt.tagCheck = l.ADD_TAGS : fA(l.ADD_TAGS) && (N === EA && (N = Mt(N)), U(N, l.ADD_TAGS, K))), wt(l, "ADD_ATTR") && (typeof l.ADD_ATTR == "function" ? Dt.attributeCheck = l.ADD_ATTR : fA(l.ADD_ATTR) && (H === MA && (H = Mt(H)), U(H, l.ADD_ATTR, K))), wt(l, "ADD_FORBID_CONTENTS") && fA(l.ADD_FORBID_CONTENTS) && (ce === xA && (ce = Mt(ce)), U(ce, l.ADD_FORBID_CONTENTS, K)), We && (N["#text"] = !0), Qt && U(N, [
+      "html",
+      "head",
+      "body"
+    ]), N.table && (U(N, ["tbody"]), delete ae.tbody), l.TRUSTED_TYPES_POLICY) {
+      if (typeof l.TRUSTED_TYPES_POLICY.createHTML != "function") throw de('TRUSTED_TYPES_POLICY configuration option must provide a "createHTML" hook.');
+      if (typeof l.TRUSTED_TYPES_POLICY.createScriptURL != "function") throw de('TRUSTED_TYPES_POLICY configuration option must provide a "createScriptURL" hook.');
+      const M = k;
+      k = l.TRUSTED_TYPES_POLICY;
       try {
-        D = Z("");
-      } catch (y) {
-        throw x = l, y;
+        j = ot("");
+      } catch (R) {
+        throw k = M, R;
       }
-    } else u.TRUSTED_TYPES_POLICY === null ? (x = void 0, D = "") : (x === void 0 && (x = xt()), x && typeof D == "string" && (D = Z("")));
-    st && st(u), Ie = u;
-  }, yn = F({}, [...Hi, ...Vi, ...sl]), wn = F({}, [...Qi, ...gl]), bn = function(u, w, l) {
-    return w.namespaceURI === ht ? u === "svg" : w.namespaceURI === We ? u === "svg" && (l === "annotation-xml" || Ve[l]) : !!yn[u];
-  }, yi = function(u, w, l) {
-    return w.namespaceURI === ht ? u === "math" : w.namespaceURI === Rt ? u === "math" && xA[l] : !!wn[u];
-  }, wi = function(u, w, l) {
-    return w.namespaceURI === Rt && !xA[l] || w.namespaceURI === We && !Ve[l] ? !1 : !wn[u] && (fn[u] || !yn[u]);
-  }, vn = function(u) {
-    let w = f(u);
-    (!w || !w.tagName) && (w = {
-      namespaceURI: ae,
+    } else l.TRUSTED_TYPES_POLICY === null ? (k = void 0, j = "") : (k === void 0 && (k = et()), k && typeof j == "string" && (j = ot("")));
+    $ && $(l), le = l;
+  }, kA = U({}, [
+    ...Ki,
+    ...Ji,
+    ...ll
+  ]), Sn = U({}, [...qi, ...ul]), vi = function(l, y, M) {
+    return y.namespaceURI === St ? l === "svg" : y.namespaceURI === Kt ? l === "svg" && (M === "annotation-xml" || OA[M]) : !!kA[l];
+  }, Tn = function(l, y, M) {
+    return y.namespaceURI === St ? l === "math" : y.namespaceURI === He ? l === "math" && Xt[M] : !!Sn[l];
+  }, Pn = function(l, y, M) {
+    return y.namespaceURI === He && !Xt[M] || y.namespaceURI === Kt && !OA[M] ? !1 : !Sn[l] && (En[l] || !kA[l]);
+  }, bi = function(l) {
+    let y = h(l);
+    (!y || !y.tagName) && (y = {
+      namespaceURI: Jt,
       tagName: "template"
     });
-    const l = UA(u.tagName), y = UA(w.tagName);
-    return He[u.namespaceURI] ? u.namespaceURI === Rt ? bn(l, w, y) : u.namespaceURI === We ? yi(l, w, y) : u.namespaceURI === ht ? wi(l, w, y) : !!(Tt === "application/xhtml+xml" && He[u.namespaceURI]) : !1;
-  }, kt = function(u) {
-    sA(t.removed, {
-      element: u
+    const M = KA(l.tagName), R = KA(y.tagName);
+    return Qe[l.namespaceURI] ? l.namespaceURI === He ? vi(M, y, R) : l.namespaceURI === Kt ? Tn(M, y, R) : l.namespaceURI === St ? Pn(M, y, R) : !!(Me === "application/xhtml+xml" && Qe[l.namespaceURI]) : !1;
+  }, Zt = function(l) {
+    FA(t.removed, { element: l });
+    try {
+      h(l).removeChild(l);
+    } catch {
+      if (u(l), !h(l)) throw de("a node selected for removal could not be detached from its tree and cannot be safely returned; refusing to sanitize in place");
+    }
+  }, xn = function(l, y, M) {
+    try {
+      d(l, y);
+    } catch {
+      try {
+        l.removeAttribute(M);
+      } catch {
+      }
+    }
+  }, Ye = function(l) {
+    Ke(l);
+    const y = m(l);
+    if (y) {
+      const R = [];
+      Pe(y, (O) => {
+        FA(R, O);
+      }), Pe(R, (O) => {
+        try {
+          u(O);
+        } catch {
+        }
+      });
+    }
+    const M = S(l);
+    if (M) for (let R = M.length - 1; R >= 0; --R) {
+      const O = M[R], G = O && O.name;
+      typeof G == "string" && xn(l, O, G);
+    }
+  }, qt = function(l, y, M) {
+    if (!M) try {
+      M = y.getAttributeNode(l);
+    } catch {
+      M = null;
+    }
+    FA(t.removed, {
+      attribute: M || null,
+      from: y
     });
     try {
-      f(u).removeChild(u);
+      M ? d(y, M) : y.removeAttribute(l);
     } catch {
-      if (p(u), !f(u))
-        throw Se("a node selected for removal could not be detached from its tree and cannot be safely returned; refusing to sanitize in place");
-    }
-  }, Ye = function(u) {
-    ve(u);
-    const w = m(u);
-    if (w) {
-      const y = [];
-      rA(w, (b) => {
-        sA(y, b);
-      }), rA(y, (b) => {
-        try {
-          p(b);
-        } catch {
-        }
-      });
-    }
-    const l = M(u);
-    if (l)
-      for (let y = l.length - 1; y >= 0; --y) {
-        const b = l[y], S = b && b.name;
-        if (typeof S == "string")
-          try {
-            u.removeAttribute(S);
-          } catch {
-          }
+      try {
+        y.removeAttribute(l);
+      } catch {
       }
-  }, Ht = function(u, w) {
-    try {
-      sA(t.removed, {
-        attribute: w.getAttributeNode(u),
-        from: w
-      });
-    } catch {
-      sA(t.removed, {
-        attribute: null,
-        from: w
-      });
     }
-    if (w.removeAttribute(u), u === "is")
-      if (re || Ue)
-        try {
-          kt(w);
-        } catch {
-        }
-      else
-        try {
-          w.setAttribute(u, "");
-        } catch {
-        }
-  }, bi = function(u) {
-    const w = M(u);
-    if (w)
-      for (let l = w.length - 1; l >= 0; --l) {
-        const y = w[l], b = y && y.name;
-        if (!(typeof b != "string" || L[K(b)]))
-          try {
-            u.removeAttribute(b);
-          } catch {
-          }
+    if (l === "is")
+      if (Yt || Fe) try {
+        Zt(y);
+      } catch {
       }
-  }, ve = function(u) {
-    const w = [u];
-    for (; w.length > 0; ) {
-      const l = w.pop();
-      (E ? E(l) : l.nodeType) === Et.element && bi(l);
-      const b = m(l);
-      if (b)
-        for (let S = b.length - 1; S >= 0; --S)
-          w.push(b[S]);
+      else try {
+        y.setAttribute(l, "");
+      } catch {
+      }
+  }, Ei = function(l) {
+    const y = S(l);
+    if (y)
+      for (let M = y.length - 1; M >= 0; --M) {
+        const R = y[M], O = R && R.name;
+        typeof O != "string" || H[K(O)] || xn(l, R, O);
+      }
+  }, Ke = function(l) {
+    const y = [l];
+    for (; y.length > 0; ) {
+      const M = y.pop();
+      D(M) === Et.element && Ei(M);
+      const R = m(M);
+      if (R) for (let O = R.length - 1; O >= 0; --O) y.push(R[O]);
     }
-  }, vi = function(u) {
-    if (!Lt)
-      return;
-    const w = [u];
-    for (; w.length > 0; ) {
-      const l = w.pop(), y = E ? E(l) : l.nodeType;
-      if (y === Et.processingInstruction || y === Et.comment && et(rg, l.data)) {
+  }, Je = function(l, y) {
+    return Gt ? l === "patchsrc" ? !0 : l === "for" && y !== "label" && y !== "output" : !1;
+  }, Mi = function(l) {
+    if (!Gt) return;
+    const y = [l];
+    for (; y.length > 0; ) {
+      const M = y.pop(), R = D(M);
+      if (R === Et.processingInstruction || R === Et.comment && ct(go, M.data)) {
         try {
-          p(l);
+          u(M);
         } catch {
         }
         continue;
       }
-      if (y === Et.element) {
-        const S = l, B = K(R ? R(l) : l.nodeName);
+      if (R === Et.element) {
+        const G = M, z = K(B(M));
         try {
-          S.hasAttribute && S.hasAttribute("patchsrc") && S.removeAttribute("patchsrc"), S.hasAttribute && S.hasAttribute("for") && B !== "label" && B !== "output" && S.removeAttribute("for");
+          G.hasAttribute && G.hasAttribute("patchsrc") && G.removeAttribute("patchsrc"), G.hasAttribute && G.hasAttribute("for") && Je("for", z) && G.removeAttribute("for");
         } catch {
         }
       }
-      const b = m(l);
-      if (b)
-        for (let S = b.length - 1; S >= 0; --S)
-          w.push(b[S]);
+      const O = m(M);
+      if (O) for (let G = O.length - 1; G >= 0; --G) y.push(O[G]);
     }
-  }, En = function(u) {
-    let w = null, l = null;
-    if (MA)
-      u = "<remove></remove>" + u;
+  }, NA = function(l) {
+    let y = null, M = null;
+    if (PA) l = "<remove></remove>" + l;
     else {
-      const S = Ys(u, /^[\r\n\t ]+/);
-      l = S && S[0];
+      const G = qs(l, /^[\r\n\t ]+/);
+      M = G && G[0];
     }
-    Tt === "application/xhtml+xml" && ae === ht && (u = '<html xmlns="http://www.w3.org/1999/xhtml"><head></head><body>' + u + "</body></html>");
-    const y = x ? Z(u) : u;
-    if (ae === ht)
+    Me === "application/xhtml+xml" && Jt === St && (l = '<html xmlns="http://www.w3.org/1999/xhtml"><head></head><body>' + l + "</body></html>");
+    const R = k ? ot(l) : l;
+    if (Jt === St) try {
+      y = new a().parseFromString(R, Me);
+    } catch {
+    }
+    if (!y || !y.documentElement) {
+      y = kt.createDocument(Jt, "template", null);
       try {
-        w = new C().parseFromString(y, Tt);
+        y.documentElement.innerHTML = DA ? j : R;
       } catch {
       }
-    if (!w || !w.documentElement) {
-      w = q.createDocument(ae, "template", null);
-      try {
-        w.documentElement.innerHTML = SA ? D : y;
-      } catch {
-      }
     }
-    const b = w.body || w.documentElement;
-    return u && l && b.insertBefore(e.createTextNode(l), b.childNodes[0] || null), ae === ht ? ne.call(w, _t ? "html" : "body")[0] : _t ? w.documentElement : b;
-  }, Mn = function(u) {
-    const w = P ? P(u) : u.ownerDocument;
-    return Dt.call(
-      w || u,
-      u,
-      // eslint-disable-next-line no-bitwise
-      g.SHOW_ELEMENT | g.SHOW_COMMENT | g.SHOW_TEXT | g.SHOW_PROCESSING_INSTRUCTION | g.SHOW_CDATA_SECTION,
-      null
-    );
-  }, Ce = function(u) {
-    return u = GA(u, ci, " "), u = GA(u, li, " "), u = GA(u, hi, " "), u;
-  }, DA = function(u) {
-    var w;
-    u.normalize();
-    const l = P ? P(u) : u.ownerDocument, y = Dt.call(
-      l || u,
-      u,
-      // eslint-disable-next-line no-bitwise
-      g.SHOW_TEXT | g.SHOW_COMMENT | g.SHOW_CDATA_SECTION | g.SHOW_PROCESSING_INSTRUCTION,
-      null
-    );
-    let b = y.nextNode();
-    for (; b; )
-      b.data = Ce(b.data), b = y.nextNode();
-    const S = (w = u.querySelectorAll) === null || w === void 0 ? void 0 : w.call(u, "template");
-    S && rA(S, (B) => {
-      Vt(B.content) && DA(B.content);
+    const O = y.body || y.documentElement;
+    return l && M && O.insertBefore(e.createTextNode(M), O.childNodes[0] || null), Jt === St ? li.call(y, Qt ? "html" : "body")[0] : Qt ? y.documentElement : O;
+  }, GA = function(l) {
+    const y = x ? x(l) : l.ownerDocument;
+    return Ht.call(y || l, l, o.SHOW_ELEMENT | o.SHOW_COMMENT | o.SHOW_TEXT | o.SHOW_PROCESSING_INSTRUCTION | o.SHOW_CDATA_SECTION, null);
+  }, qe = function(l) {
+    return l = UA(l, hi, " "), l = UA(l, fi, " "), l = UA(l, di, " "), l;
+  }, $e = function(l) {
+    var y;
+    l.normalize();
+    const M = x ? x(l) : l.ownerDocument, R = Ht.call(M || l, l, o.SHOW_TEXT | o.SHOW_COMMENT | o.SHOW_CDATA_SECTION | o.SHOW_PROCESSING_INSTRUCTION, null);
+    let O = R.nextNode();
+    for (; O; )
+      O.data = qe(O.data), O = R.nextNode();
+    const G = (y = l.querySelectorAll) === null || y === void 0 ? void 0 : y.call(l, "template");
+    G && Pe(G, (z) => {
+      $t(z.content) && $e(z.content);
     });
-  }, Ee = function(u) {
-    const w = R ? R(u) : null;
-    return typeof w != "string" || K(w) !== "form" ? !1 : typeof u.nodeName != "string" || typeof u.textContent != "string" || typeof u.removeChild != "function" || // Realm-safe NamedNodeMap detection: equality against the cached
-    // prototype getter. Clobbered .attributes (e.g. <input name="attributes">)
-    // makes the direct read diverge from the cached read; a clean form
-    // (same-realm OR foreign-realm) has both reads pointing at the same
-    // canonical NamedNodeMap.
-    u.attributes !== M(u) || typeof u.removeAttribute != "function" || typeof u.setAttribute != "function" || typeof u.namespaceURI != "string" || typeof u.insertBefore != "function" || typeof u.hasChildNodes != "function" || // NodeType clobbering probe. Cached Node.prototype.nodeType getter
-    // returns the integer 1 for any Element regardless of realm; direct
-    // read on a clobbered form (e.g. <input name="nodeType">) returns
-    // the named child element. Cheap addition — nodeType is read from
-    // an internal slot, no serialization cost — and removes a residual
-    // clobbering surface used by several mXSS / PI / comment branches
-    // in _sanitizeElements that compare currentNode.nodeType directly.
-    u.nodeType !== E(u) || // HTMLFormElement has [LegacyOverrideBuiltIns]: a descendant named
-    // "childNodes" shadows the prototype getter. Direct reads of
-    // form.childNodes from a clobbered form return the named child
-    // instead of the real NodeList, so any walk that reads it directly
-    // skips the form's real children. Compare the direct read to the
-    // cached Node.prototype getter — when the form's named-property
-    // getter intercepts the read, the two values differ and we flag
-    // the form. This catches every clobbering child type (input,
-    // select, etc.) regardless of whether the named child happens to
-    // carry a numeric .length, which a typeof-based probe would miss
-    // (e.g. HTMLSelectElement.length is a defined unsigned-long).
-    u.childNodes !== m(u);
-  }, Vt = function(u) {
-    if (!E || typeof u != "object" || u === null)
-      return !1;
+  }, Re = function(l) {
+    const y = P ? P(l) : null;
+    return typeof y != "string" || K(y) !== "form" ? !1 : typeof l.nodeName != "string" || typeof l.textContent != "string" || typeof l.removeChild != "function" || l.attributes !== S(l) || typeof l.removeAttribute != "function" || typeof l.removeAttributeNode != "function" || typeof l.getAttributeNode != "function" || typeof l.setAttribute != "function" || typeof l.namespaceURI != "string" || typeof l.insertBefore != "function" || typeof l.hasChildNodes != "function" || l.nodeType !== E(l) || l.childNodes !== m(l);
+  }, $t = function(l) {
+    if (!E || typeof l != "object" || l === null) return !1;
     try {
-      return E(u) === Et.documentFragment;
+      return E(l) === Et.documentFragment;
     } catch {
       return !1;
     }
-  }, Me = function(u) {
-    if (!E || typeof u != "object" || u === null)
-      return !1;
+  }, te = function(l) {
+    if (!E || typeof l != "object" || l === null) return !1;
     try {
-      return typeof E(u) == "number";
+      return typeof E(l) == "number";
     } catch {
       return !1;
     }
   };
-  function vt(T, u, w) {
-    T.length !== 0 && rA(T, (l) => {
-      l.call(t, u, w, Ie);
+  function nt(v, l, y) {
+    v.length !== 0 && Pe(v, (M) => {
+      M.call(t, l, y, le);
     });
   }
-  const Rn = function(u, w) {
-    return !!(Lt && u.hasChildNodes() && !Me(u.firstElementChild) && et(ig, u.textContent) && et(ig, u.innerHTML) || Lt && u.namespaceURI === ht && w === "style" && Me(u.firstElementChild) || u.nodeType === Et.processingInstruction || Lt && u.nodeType === Et.comment && et(rg, u.data));
-  }, Tn = function(u, w, l) {
-    if (!we[w] && Pn(w) && (Y.tagNameCheck instanceof RegExp && et(Y.tagNameCheck, w) || Y.tagNameCheck instanceof Function && Y.tagNameCheck(w)))
-      return !1;
-    if (ge && !bt[w]) {
-      const y = f(u), b = m(u);
-      if (b && y) {
-        const S = b.length;
-        for (let B = S - 1; B >= 0; --B) {
-          const j = u === l ? h(b[B], !0) : b[B];
-          y.insertBefore(j, d(u));
+  const Ri = function(l, y) {
+    return !!(Gt && l.hasChildNodes() && !te(l.firstElementChild) && ct(oo, l.textContent) && ct(oo, l.innerHTML) || Gt && l.namespaceURI === St && Rl[y] && (te(l.firstElementChild) || typeof l.textContent == "string" && ct(Sl[y], l.textContent)) || l.nodeType === Et.processingInstruction || Gt && l.nodeType === Et.comment && ct(go, l.data));
+  }, tA = function(l, y) {
+    if (l instanceof RegExp) return ct(l, y);
+    if (l instanceof Function) {
+      for (var M = arguments.length, R = new Array(M > 2 ? M - 2 : 0), O = 2; O < M; O++) R[O - 2] = arguments[O];
+      return !!l(y, ...R);
+    }
+    return !1;
+  }, Si = function(l, y, M) {
+    if (!ae[y] && Bn(y) && tA(pt.tagNameCheck, y)) return !1;
+    if (We && !ce[y]) {
+      const R = h(l), O = m(l);
+      if (O && R) {
+        const G = O.length;
+        for (let z = G - 1; z >= 0; --z) {
+          const F = l === M ? c(O[z], !0) : O[z];
+          R.insertBefore(F, f(l));
         }
       }
     }
-    return kt(u), !0;
-  }, Ke = function(u, w, l, y) {
-    return u.length === 0 ? w : w === l || w === y ? ct(w) : w;
-  }, Qt = function(u, w) {
-    if (vt(Q.beforeSanitizeElements, u, null), u !== w && f(u) === null)
-      return lt && ve(u), !0;
-    if (Ee(u))
-      return kt(u), !0;
-    const l = K(R ? R(u) : u.nodeName);
-    if (U = Ke(Q.uponSanitizeElement, U, bA, ze), vt(Q.uponSanitizeElement, u, {
-      tagName: l,
-      allowedTags: U
-    }), u !== w && f(u) === null)
-      return lt && ve(u), !0;
-    if (Rn(u, l))
-      return kt(u), !0;
-    if (we[l] || !(Ot.tagCheck instanceof Function && Ot.tagCheck(l)) && !U[l]) {
-      const b = Tn(u, l, w);
-      return b === !1 && vt(Q.afterSanitizeElements, u, null), b;
+    return Zt(l), !0;
+  }, Dn = function(l, y, M, R) {
+    return l.length === 0 ? y : y === M || y === R ? Mt(y) : y;
+  }, ee = function(l, y) {
+    return l === y || h(l) !== null ? !1 : (Ve && Ke(l), !0);
+  }, jA = function(l, y) {
+    if (nt(Q.beforeSanitizeElements, l, null), ee(l, y)) return !0;
+    if (Re(l))
+      return Zt(l), !0;
+    const M = K(B(l));
+    if (N = Dn(Q.uponSanitizeElement, N, EA, Ze), nt(Q.uponSanitizeElement, l, {
+      tagName: M,
+      allowedTags: N
+    }), ee(l, y)) return !0;
+    if (Ri(l, M))
+      return Zt(l), !0;
+    if (ae[M] || !(Dt.tagCheck instanceof Function && Dt.tagCheck(M)) && !N[M]) {
+      const R = Si(l, M, y);
+      return R === !1 && (nt(Q.afterSanitizeElements, l, null), ee(l, y)) ? !0 : R;
     }
-    if ((E ? E(u) : u.nodeType) === Et.element && !vn(u) || (l === "noscript" || l === "noembed" || l === "noframes") && et(dl, u.innerHTML))
-      return kt(u), !0;
-    if (Bt && u.nodeType === Et.text) {
-      const b = Ce(u.textContent);
-      u.textContent !== b && (sA(t.removed, {
-        element: u.cloneNode()
-      }), u.textContent = b);
+    if (D(l) === Et.element && !bi(l) || (M === "noscript" || M === "noembed" || M === "noframes") && ct(El, l.innerHTML))
+      return Zt(l), !0;
+    if (Nt && l.nodeType === Et.text) {
+      const R = qe(l.textContent);
+      l.textContent !== R && (FA(t.removed, { element: l.cloneNode() }), l.textContent = R);
     }
-    return vt(Q.afterSanitizeElements, u, null), !1;
-  }, Sn = function(u, w, l) {
-    if (Ge[w] || Lt && w === "patchsrc" || Lt && w === "for" && u !== "label" && u !== "output" || cn && (w === "id" || w === "name") && (l in e || l in mn))
-      return !1;
-    const y = L[w] || Ot.attributeCheck instanceof Function && Ot.attributeCheck(w, u);
-    if (!(je && et(ui, w))) {
-      if (!(ie && et(fi, w))) {
-        if (y) {
-          if (!oe[w]) {
-            if (!et(Cn, GA(l, In, ""))) {
-              if (!((w === "src" || w === "xlink:href" || w === "href") && u !== "script" && Ks(l, "data:") === 0 && ln[u])) {
-                if (!(Xe && !et(an, GA(l, In, "")))) {
-                  if (l)
-                    return !1;
-                }
-              }
-            }
-          }
-        } else if (
-          // First condition does a very basic check if a) it's basically a valid custom element tagname AND
-          // b) if the tagName passes whatever the user has configured for CUSTOM_ELEMENT_HANDLING.tagNameCheck
-          // and c) if the attribute name passes whatever the user has configured for CUSTOM_ELEMENT_HANDLING.attributeNameCheck
-          !(Pn(u) && (Y.tagNameCheck instanceof RegExp && et(Y.tagNameCheck, u) || Y.tagNameCheck instanceof Function && Y.tagNameCheck(u)) && (Y.attributeNameCheck instanceof RegExp && et(Y.attributeNameCheck, w) || Y.attributeNameCheck instanceof Function && Y.attributeNameCheck(w, u)) || // Alternative, second condition checks if it's an `is`-attribute, AND
-          // the value passes whatever the user has configured for CUSTOM_ELEMENT_HANDLING.tagNameCheck
-          w === "is" && Y.allowCustomizedBuiltInElements && (Y.tagNameCheck instanceof RegExp && et(Y.tagNameCheck, l) || Y.tagNameCheck instanceof Function && Y.tagNameCheck(l)))
-        ) return !1;
-      }
+    return nt(Q.afterSanitizeElements, l, null), ee(l, y);
+  }, On = function(l, y, M) {
+    if (Ie[y] || Je(y, l) || Ue && (y === "id" || y === "name") && (M in e || M in Mn)) return !1;
+    const R = H[y] || Dt.attributeCheck instanceof Function && Dt.attributeCheck(y, l);
+    return Xe && ct(dn, y) || _e && ct(mi, y) ? !0 : R ? wn[y] || ct(pn, UA(M, mn, "")) || (y === "src" || y === "xlink:href" || y === "href") && l !== "script" && $s(M, "data:") === 0 && Ee[l] || RA && !ct(pi, UA(M, mn, "")) ? !0 : !M : Bn(l) && tA(pt.tagNameCheck, l) && tA(pt.attributeNameCheck, y, l) || y === "is" && pt.allowCustomizedBuiltInElements && tA(pt.tagNameCheck, M);
+  }, Ti = U({}, [
+    "annotation-xml",
+    "color-profile",
+    "font-face",
+    "font-face-format",
+    "font-face-name",
+    "font-face-src",
+    "font-face-uri",
+    "missing-glyph"
+  ]), Bn = function(l) {
+    return !Ti[KA(l)] && ct(je, l);
+  }, Ln = function(l, y, M, R) {
+    if (k && typeof C == "object" && typeof C.getAttributeType == "function" && !M) switch (C.getAttributeType(l, y)) {
+      case "TrustedHTML":
+        return ot(R);
+      case "TrustedScriptURL":
+        return L(R);
     }
-    return !0;
-  }, Ei = F({}, ["annotation-xml", "color-profile", "font-face", "font-face-format", "font-face-name", "font-face-src", "font-face-uri", "missing-glyph"]), Pn = function(u) {
-    return !Ei[UA(u)] && et(di, u);
-  }, Mi = function(u, w, l, y) {
-    if (x && typeof I == "object" && typeof I.getAttributeType == "function" && !l)
-      switch (I.getAttributeType(u, w)) {
-        case "TrustedHTML":
-          return Z(y);
-        case "TrustedScriptURL":
-          return J(y);
-      }
-    return y;
-  }, xn = function(u, w, l, y) {
+    return R;
+  }, Pi = function(l, y, M, R) {
     try {
-      l ? u.setAttributeNS(l, w, y) : u.setAttribute(w, y), Ee(u) ? kt(u) : Qs(t.removed);
+      return M ? l.setAttributeNS(M, y, R) : l.setAttribute(y, R), Re(l) ? (Zt(l), !1) : !0;
     } catch {
-      Ht(w, u);
+      return qt(y, l), !1;
     }
-  }, OA = function(u) {
-    vt(Q.beforeSanitizeAttributes, u, null);
-    const w = u.attributes;
-    if (!w || Ee(u))
-      return;
-    L = Ke(Q.uponSanitizeAttribute, L, vA, Fe);
-    const l = {
+  }, p = function(l, y) {
+    if (nt(Q.beforeSanitizeAttributes, l, null), ee(l, y)) return;
+    const M = l.attributes;
+    if (!M || Re(l)) return;
+    H = Dn(Q.uponSanitizeAttribute, H, MA, ze);
+    const R = {
       attrName: "",
       attrValue: "",
       keepAttr: !0,
-      allowedAttributes: L,
+      allowedAttributes: H,
       forceKeepAttr: void 0
     };
-    let y = w.length;
-    const b = K(u.nodeName);
-    for (; y--; ) {
-      const S = w[y], B = S.name, j = S.namespaceURI, V = S.value, z = K(B), yt = V;
-      let H = B === "value" ? yt : $c(yt);
-      if (l.attrName = z, l.attrValue = H, l.keepAttr = !0, l.forceKeepAttr = void 0, vt(Q.uponSanitizeAttribute, u, l), H = l.attrValue, se && (z === "id" || z === "name") && Ks(H, _e) !== 0 && (Ht(B, u), H = _e + H), Lt && et(/((--!?|])>)|<\/(style|script|title|xmp|textarea|noscript|iframe|noembed|noframes)/i, H)) {
-        Ht(B, u);
+    let O = M.length;
+    const G = K(l.nodeName);
+    for (; O--; ) {
+      const z = M[O], F = z.name, yt = z.namespaceURI, lt = z.value, Ot = K(F), ue = lt;
+      let J = F === "value" ? ue : sl(ue), _A = !1;
+      if (R.attrName = Ot, R.attrValue = J, R.keepAttr = !0, R.forceKeepAttr = void 0, nt(Q.uponSanitizeAttribute, l, R), J = R.attrValue, be && (Ot === "id" || Ot === "name") && $s(J, bt) !== 0 && (qt(F, l, z), J = bt + J, _A = !0), Gt && ct(/((--!?|])>)|<\/(style|script|title|xmp|textarea|noscript|iframe|noembed|noframes)/i, J)) {
+        qt(F, l, z);
         continue;
       }
-      if (z === "attributename" && Ys(H, "href")) {
-        Ht(B, u);
+      if (Ot === "attributename" && qs(J, "href")) {
+        qt(F, l, z);
         continue;
       }
-      if (!l.forceKeepAttr) {
-        if (!l.keepAttr) {
-          Ht(B, u);
+      if (!R.forceKeepAttr) {
+        if (!R.keepAttr) {
+          qt(F, l, z);
           continue;
         }
-        if (!EA && et(ml, H)) {
-          Ht(B, u);
+        if (!SA && ct(Ml, J)) {
+          qt(F, l, z);
           continue;
         }
-        if (Bt && (H = Ce(H)), !Sn(b, z, H)) {
-          Ht(B, u);
+        if (Nt && (J = qe(J)), !On(G, Ot, J)) {
+          qt(F, l, z);
           continue;
         }
-        H = Mi(b, z, j, H), H !== yt && xn(u, B, j, H);
+        J = Ln(G, Ot, yt, J), J !== ue && Pi(l, F, yt, J) && _A && Js(t.removed);
       }
     }
-    vt(Q.afterSanitizeAttributes, u, null);
-  }, Je = function(u) {
-    let w = null;
-    const l = Mn(u);
-    for (vt(Q.beforeSanitizeShadowDOM, u, null); w = l.nextNode(); )
-      if (vt(Q.uponSanitizeShadowNode, w, null), Qt(w, u), OA(w), Vt(w.content) && Je(w.content), (E ? E(w) : w.nodeType) === Et.element) {
-        const b = v(w);
-        Vt(b) && (BA(b), Je(b));
+    nt(Q.afterSanitizeAttributes, l, null), ee(l, y);
+  }, b = function(l) {
+    let y = null;
+    const M = GA(l);
+    for (nt(Q.beforeSanitizeShadowDOM, l, null); y = M.nextNode(); )
+      if (nt(Q.uponSanitizeShadowNode, y, null), jA(y, l), p(y, l), $t(y.content) && b(y.content), D(y) === Et.element) {
+        const R = w(y);
+        $t(R) && (T(R), b(R));
       }
-    vt(Q.afterSanitizeShadowDOM, u, null);
-  }, BA = function(u) {
-    const w = [{
-      node: u,
+    nt(Q.afterSanitizeShadowDOM, l, null);
+  }, T = function(l) {
+    const y = [{
+      node: l,
       shadow: null
     }];
-    for (; w.length > 0; ) {
-      const l = w.pop();
-      if (l.shadow) {
-        Je(l.shadow);
+    for (; y.length > 0; ) {
+      const M = y.pop();
+      if (M.shadow) {
+        b(M.shadow);
         continue;
       }
-      const y = l.node, S = (E ? E(y) : y.nodeType) === Et.element, B = m(y);
-      if (B)
-        for (let j = B.length - 1; j >= 0; --j)
-          w.push({
-            node: B[j],
-            shadow: null
-          });
-      if (S) {
-        const j = R ? R(y) : null;
-        if (typeof j == "string" && K(j) === "template") {
-          const V = y.content;
-          Vt(V) && w.push({
-            node: V,
+      const R = M.node, O = D(R) === Et.element, G = m(R);
+      if (G) for (let z = G.length - 1; z >= 0; --z) y.push({
+        node: G[z],
+        shadow: null
+      });
+      if (O) {
+        const z = P ? P(R) : null;
+        if (typeof z == "string" && K(z) === "template") {
+          const F = R.content;
+          $t(F) && y.push({
+            node: F,
             shadow: null
           });
         }
       }
-      if (S) {
-        const j = v(y);
-        Vt(j) && w.push({
+      if (O) {
+        const z = w(R);
+        $t(z) && y.push({
           node: null,
-          shadow: j
+          shadow: z
         }, {
-          node: j,
+          node: z,
           shadow: null
         });
       }
     }
   };
-  return t.sanitize = function(T) {
-    let u = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {}, w = null, l = null, y = null, b = null;
-    if (SA = !T, SA && (T = "<!-->"), typeof T != "string" && !Me(T) && (T = il(T), typeof T != "string"))
-      throw Se("dirty is not a string, aborting");
-    if (!t.isSupported)
-      return T;
-    Ze ? (U = ze, L = Fe) : Qe(u), (Q.uponSanitizeElement.length > 0 || Q.uponSanitizeAttribute.length > 0) && (U = ct(U)), Q.uponSanitizeAttribute.length > 0 && (L = ct(L)), t.removed = [];
-    const S = lt && typeof T != "string" && Me(T);
-    if (S) {
-      vi(T);
-      const V = R ? R(T) : T.nodeName;
-      if (typeof V == "string") {
-        const z = K(V);
-        if (!U[z] || we[z])
-          throw Ye(T), Se("root node is forbidden and cannot be sanitized in-place");
+  return t.sanitize = function(v) {
+    let l = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {}, y = null, M = null, R = null, O = null;
+    if (DA = !v, DA && (v = "<!-->"), typeof v != "string" && !te(v) && (v = Cl(v), typeof v != "string"))
+      throw de("dirty is not a string, aborting");
+    if (!t.isSupported) return v;
+    TA ? (N = Ze, H = ze) : LA(l), (Q.uponSanitizeElement.length > 0 || Q.uponSanitizeAttribute.length > 0) && (N = Mt(N)), Q.uponSanitizeAttribute.length > 0 && (H = Mt(H)), t.removed = [];
+    const G = Ve && typeof v != "string" && te(v);
+    if (G) {
+      Mi(v);
+      const yt = B(v);
+      if (typeof yt == "string") {
+        const lt = K(yt);
+        if (!N[lt] || ae[lt])
+          throw Ye(v), de("root node is forbidden and cannot be sanitized in-place");
       }
-      if (Ee(T))
-        throw Ye(T), Se("root node is clobbered and cannot be sanitized in-place");
+      if (Re(v))
+        throw Ye(v), de("root node is clobbered and cannot be sanitized in-place");
       try {
-        BA(T);
-      } catch (z) {
-        throw Ye(T), z;
+        T(v);
+      } catch (lt) {
+        throw Ye(v), lt;
       }
-    } else if (Me(T))
-      w = En("<!---->"), l = w.ownerDocument.importNode(T, !0), l.nodeType === Et.element && l.nodeName === "BODY" || l.nodeName === "HTML" ? w = l : w.appendChild(l), BA(l);
+    } else if (te(v))
+      y = NA("<!---->"), M = y.ownerDocument.importNode(v, !0), M.nodeType === Et.element && M.nodeName === "BODY" || M.nodeName === "HTML" ? y = M : y.appendChild(M), T(y);
     else {
-      if (!re && !Bt && !_t && // eslint-disable-next-line unicorn/prefer-includes
-      T.indexOf("<") === -1)
-        return x && be ? Z(T) : T;
-      if (w = En(T), !w)
-        return re ? null : be ? D : "";
+      if (!Yt && !Nt && !Qt && v.indexOf("<") === -1) return k && jt ? ot(v) : v;
+      if (y = NA(v), !y) return Yt ? null : jt ? j : "";
     }
-    w && MA && kt(w.firstChild);
-    const B = S ? T : w;
+    y && PA && Zt(y.firstChild);
+    const z = G ? v : y;
     try {
-      const V = Mn(B);
-      for (; y = V.nextNode(); )
-        Qt(y, B), OA(y), Vt(y.content) && Je(y.content);
-    } catch (V) {
-      throw S && (Ye(T), rA(t.removed, (z) => {
-        z.element && ve(z.element);
-      })), V;
+      const yt = GA(z);
+      for (; R = yt.nextNode(); )
+        jA(R, z), p(R, z), $t(R.content) && b(R.content);
+    } catch (yt) {
+      throw G && (Ye(v), Pe(t.removed, (lt) => {
+        lt.element && Ke(lt.element);
+      })), yt;
     }
-    if (S)
-      return rA(t.removed, (V) => {
-        V.element && ve(V.element);
-      }), Bt && DA(T), T;
-    if (re) {
-      if (Bt && DA(w), Ue)
-        for (b = Ae.call(w.ownerDocument); w.firstChild; )
-          b.appendChild(w.firstChild);
-      else
-        b = w;
-      return (L.shadowroot || L.shadowrootmode) && (b = on.call(n, b, !0)), b;
+    if (G) {
+      let yt = !1;
+      if (Pe(t.removed, (lt) => {
+        lt.element && (lt.element === v && (yt = !0), Ke(lt.element));
+      }), yt) throw de("a node selected for removal could not be safely returned; refusing to sanitize in place");
+      return Nt && $e(v), v;
     }
-    let j = _t ? w.outerHTML : w.innerHTML;
-    return _t && U["!doctype"] && w.ownerDocument && w.ownerDocument.doctype && w.ownerDocument.doctype.name && et(ul, w.ownerDocument.doctype.name) && (j = "<!DOCTYPE " + w.ownerDocument.doctype.name + `>
-` + j), Bt && (j = Ce(j)), x && be ? Z(j) : j;
+    if (Yt) {
+      if (Nt && $e(y), Fe)
+        for (O = fn.call(y.ownerDocument); y.firstChild; ) O.appendChild(y.firstChild);
+      else O = y;
+      return (H.shadowroot || H.shadowrootmode) && (O = ui.call(n, O, !0)), O;
+    }
+    let F = Qt ? y.outerHTML : y.innerHTML;
+    return Qt && N["!doctype"] && y.ownerDocument && y.ownerDocument.doctype && y.ownerDocument.doctype.name && ct(vl, y.ownerDocument.doctype.name) && (F = "<!DOCTYPE " + y.ownerDocument.doctype.name + `>
+` + F), Nt && (F = qe(F)), k && jt ? ot(F) : F;
   }, t.setConfig = function() {
-    let T = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : {};
-    Qe(T), Ze = !0, ze = U, Fe = L;
+    let v = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : {};
+    LA(v), TA = !0, Ze = N, ze = H;
   }, t.clearConfig = function() {
-    Ie = null, Ze = !1, ze = null, Fe = null, x = N, D = "";
-  }, t.isValidAttribute = function(T, u, w) {
-    Ie || Qe({});
-    const l = K(T), y = K(u);
-    return Sn(l, y, w);
-  }, t.addHook = function(T, u) {
-    typeof u == "function" && At(Q, T) && sA(Q[T], u);
-  }, t.removeHook = function(T, u) {
-    if (At(Q, T)) {
-      if (u !== void 0) {
-        const w = Jc(Q[T], u);
-        return w === -1 ? void 0 : qc(Q[T], w, 1)[0];
+    le = null, TA = !1, Ze = null, ze = null, k = _, j = "";
+  }, t.isValidAttribute = function(v, l, y) {
+    le || LA({});
+    const M = K(v), R = K(l);
+    return On(M, R, y);
+  }, t.addHook = function(v, l) {
+    typeof l == "function" && wt(Q, v) && FA(Q[v], l);
+  }, t.removeHook = function(v, l) {
+    if (wt(Q, v)) {
+      if (l !== void 0) {
+        const y = il(Q[v], l);
+        return y === -1 ? void 0 : rl(Q[v], y, 1)[0];
       }
-      return Qs(Q[T]);
+      return Js(Q[v]);
     }
-  }, t.removeHooks = function(T) {
-    At(Q, T) && (Q[T] = []);
+  }, t.removeHooks = function(v) {
+    wt(Q, v) && (Q[v] = []);
   }, t.removeAllHooks = function() {
-    Q = sg();
+    Q = ao();
   }, t;
 }
-var wl = wo();
-const bl = ["b", "strong", "i", "em", "u", "s", "br", "p", "span", "div", "ul", "ol", "li", "a", "img", "small", "sub", "sup", "code", "pre", "table", "thead", "tbody", "tr", "th", "td"], vl = ["href", "src", "alt", "title", "class", "target", "rel", "width", "height"], El = { values: ["target", "rel", "width", "height"] }, Ml = ["script", "style", "iframe", "object", "embed", "form", "input", "textarea", "link", "meta", "base"], Rl = ["srcdoc", "style", "formaction", "xlink:href"], Tl = { valueAttributes: ["image-url", "image-type", "thumbnail-url", "caption", "material-url", "camera-position", "camera-target", "show-texture"], booleanAttributes: ["fit-to-container", "debug-mode"], urlAttributes: ["image-url", "thumbnail-url", "material-url"], textAttributes: { values: ["caption"] } }, ee = {
-  tags: bl,
-  attributes: vl,
-  uriSafeAttributes: El,
-  forbidTags: Ml,
-  forbidAttributes: Rl,
-  slide: Tl
-}, Sl = ee.tags, Pl = ee.attributes, xl = /^(?:https?|mailto|tel|data):/i, Dl = ee.uriSafeAttributes.values, Ol = ee.forbidTags, Bl = ee.forbidAttributes, Ll = /^data:image\/(png|jpeg|gif|webp|avif);/i, gg = (A) => !!A && /^\s*data:/i.test(A);
-function kl(A) {
+var xl = Rg();
+const Dl = ["b", "strong", "i", "em", "u", "s", "br", "p", "span", "div", "ul", "ol", "li", "a", "img", "small", "sub", "sup", "code", "pre", "table", "thead", "tbody", "tr", "th", "td"], Ol = ["href", "src", "alt", "title", "class", "target", "rel", "width", "height"], Bl = { values: ["target", "rel", "width", "height"] }, Ll = ["script", "style", "iframe", "object", "embed", "form", "input", "textarea", "link", "meta", "base"], kl = ["srcdoc", "style", "formaction", "xlink:href"], Nl = { valueAttributes: ["image-url", "image-type", "thumbnail-url", "caption", "material-url", "camera-position", "camera-target", "show-texture"], booleanAttributes: ["fit-to-container", "debug-mode"], urlAttributes: ["image-url", "thumbnail-url", "material-url"], textAttributes: { values: ["caption"] } }, ge = {
+  tags: Dl,
+  attributes: Ol,
+  uriSafeAttributes: Bl,
+  forbidTags: Ll,
+  forbidAttributes: kl,
+  slide: Nl
+}, Gl = ge.tags, jl = ge.attributes, _l = /^(?:https?|mailto|tel|data):/i, Xl = ge.uriSafeAttributes.values, Zl = ge.forbidTags, zl = ge.forbidAttributes, Fl = /^data:image\/(png|jpeg|gif|webp|avif);/i, Io = (A) => !!A && /^\s*data:/i.test(A);
+function Ul(A) {
   if (A.tagName === "A" && A.getAttribute("target") === "_blank" && A.setAttribute("rel", "noopener noreferrer"), A.tagName === "IMG") {
     const e = A.getAttribute("src");
-    gg(e) && !Ll.test(e.trim()) && A.removeAttribute("src"), A.hasAttribute("srcset") && A.removeAttribute("srcset");
+    Io(e) && !Fl.test(e.trim()) && A.removeAttribute("src"), A.hasAttribute("srcset") && A.removeAttribute("srcset");
   } else
     for (const e of ["src", "href", "xlink:href"])
-      gg(A.getAttribute(e)) && A.removeAttribute(e);
+      Io(A.getAttribute(e)) && A.removeAttribute(e);
 }
-let XA;
-function bo() {
-  if (XA) return XA;
+let VA;
+function Sg() {
+  if (VA) return VA;
   const A = globalThis.window;
   if (!A)
     throw new Error(
       "sanitizeHtml: window の無い環境では使用できません（DOMPurify の初期化に必要）"
     );
-  return XA = wl(A), XA.addHook("afterSanitizeAttributes", kl), XA;
+  return VA = xl(A), VA.addHook("afterSanitizeAttributes", Ul), VA;
 }
-function Ah(A) {
-  return A == null ? "" : bo().sanitize(String(A), {
-    ALLOWED_TAGS: Sl,
-    ALLOWED_ATTR: Pl,
-    ALLOWED_URI_REGEXP: xl,
-    ADD_URI_SAFE_ATTR: Dl,
-    FORBID_TAGS: Ol,
-    FORBID_ATTR: Bl,
+function Cu(A) {
+  return A == null ? "" : Sg().sanitize(String(A), {
+    ALLOWED_TAGS: Gl,
+    ALLOWED_ATTR: jl,
+    ALLOWED_URI_REGEXP: _l,
+    ADD_URI_SAFE_ATTR: Xl,
+    FORBID_TAGS: Zl,
+    FORBID_ATTR: zl,
     ALLOW_DATA_ATTR: !1,
     // 禁止タグを落としても中身のテキストは残す（実データの可読性を保つ）
     KEEP_CONTENT: !0
   });
 }
-function Nl(A) {
+function Wl(A) {
   return A == null ? "" : String(A).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
-function Gl(A) {
+function Vl(A) {
   if (A == null) return "";
-  const t = bo().sanitize(String(A), {
+  const t = Sg().sanitize(String(A), {
     ALLOWED_TAGS: [],
     ALLOWED_ATTR: [],
     KEEP_CONTENT: !0
   }), e = globalThis.window.document.createElement("div");
   return e.innerHTML = t, e.textContent || "";
 }
-const jl = new Set(ee.slide.valueAttributes), Xl = new Set(ee.slide.booleanAttributes), Zl = new Set(ee.slide.textAttributes.values), zl = new Set(ee.slide.urlAttributes), Fl = (A) => /^(?:https?:)?\/\/|^\/|^[^:]*$/i.test(A.trim()), Ul = /["'`<>\s]/;
-function nh(A) {
+const Hl = new Set(ge.slide.valueAttributes), Ql = new Set(ge.slide.booleanAttributes), Yl = new Set(ge.slide.textAttributes.values), Kl = new Set(ge.slide.urlAttributes), Jl = (A) => /^(?:https?:)?\/\/|^\/|^[^:]*$/i.test(A.trim()), ql = /["'`<>\s]/;
+function cu(A) {
   const t = [];
   for (const [e, n] of Object.entries(A || {})) {
     const i = String(e).toLowerCase();
-    if (Xl.has(i)) {
+    if (Ql.has(i)) {
       n && t.push(i);
       continue;
     }
-    if (!jl.has(i) || n == null) continue;
+    if (!Hl.has(i) || n == null) continue;
     let r = String(n);
-    zl.has(i) && (!Fl(r) || Ul.test(r)) || (Zl.has(i) && (r = Gl(r)), t.push(`${i}="${Nl(r)}"`));
+    Kl.has(i) && (!Jl(r) || ql.test(r)) || (Yl.has(i) && (r = Vl(r)), t.push(`${i}="${Wl(r)}"`));
   }
   return t.join(" ");
 }
-const _l = {
-  osm: Co,
-  gsi: co,
-  gsi_ortho: lo,
-  redcircle: fo,
-  defaultpin_selected: mo,
-  defaultpin: kr,
-  bluedot: qg,
-  bluedot_transparent: $g,
-  bluedot_small: to
-}, Wl = {
+const $l = {
+  osm: fg,
+  gsi: dg,
+  gsi_ortho: mg,
+  redcircle: wg,
+  defaultpin_selected: vg,
+  defaultpin: Xr,
+  bluedot: ng,
+  bluedot_transparent: ig,
+  bluedot_small: rg
+}, tu = {
   "setting-loaded": "onSettingLoaded",
   "appdata-ready": "onAppdataReady",
   "ui-configure": "onUiConfigure",
@@ -11255,19 +12218,19 @@ const _l = {
   "core-ready": "onCoreReady",
   "ui-ready": "onUiReady"
 };
-class Hl extends te {
+class eu extends oe {
   detail;
   constructor(t) {
     super("gps_error"), this.detail = t;
   }
 }
-class ZA extends te {
+class HA extends oe {
   detail;
   constructor(t) {
     super("gps_result"), this.detail = t;
   }
 }
-class Vl extends te {
+class Au extends oe {
   constructor() {
     super("gps_request");
   }
@@ -11277,8 +12240,8 @@ function gA(A, t) {
     `MaplatCore: POI layer "${A}" not found (${t}). Pass namespaceID (e.g. "<mapID>#<layerId>" for map-derived layers), not the layer-local id.`
   );
 }
-let Ql = 0;
-class tn extends ug {
+let nu = 0;
+class an extends po {
   // Static method declaration
   static createObject;
   translateUI = !1;
@@ -11297,7 +12260,6 @@ class tn extends ug {
   currentPosition;
   startFrom = "";
   from;
-  vectors = [];
   mapObject;
   mapboxMap;
   maplibreMap;
@@ -11315,6 +12277,7 @@ class tn extends ug {
   firstGpsRequest_ = !1;
   initialGpsMove_ = !1;
   __backMapMoving = !1;
+  __backMapErrorWarned = !1;
   __selectedMarker;
   // oct26-m2-t1: 可視化時の自己修復（issue #101）で使うリソース参照。
   __resizeObserver = null;
@@ -11329,6 +12292,11 @@ class tn extends ug {
   __redrawMarkerBlock = !1;
   __redrawMarkerThrottle = [];
   __transparency;
+  // nov26-m4-t5: 線・面の登録簿と連番。Object.create(MaplatApp.prototype) の殻でも
+  // 動くよう初期化子に頼らず遅延で作る（__vectorStore・連番は undefined を 0 とみなす）。
+  __vectors;
+  __vectorSeq;
+  __vectorDrawSeq;
   lastClickEvent;
   // ---- 起動時だけ効くキー（U2: 起動後は変更不可）----
   // 公開面は getter のみ（TypeScript 上は readonly）。実行時は lockStartupFields() が
@@ -11421,21 +12389,21 @@ class tn extends ug {
     if (r == null) return n;
     if (!(!this.__settingFileKeys || this.__settingFileKeys.has(e))) return r;
     this.__featureKeyWarned || (this.__featureKeyWarned = /* @__PURE__ */ new Set());
-    const o = !this.__featureKeyWarned.has(e);
-    return this.__featureKeyWarned.add(e), this.__elementMode ? (o && console.warn(
+    const g = !this.__featureKeyWarned.has(e);
+    return this.__featureKeyWarned.add(e), this.__elementMode ? (g && console.warn(
       `<maplat-app>: the setting file key "${e}" is a presentation (feature) setting and is ignored; give it as an attribute or property of the element instead.`
-    ), n) : (o && console.warn(
+    ), n) : (g && console.warn(
       `MaplatApp: reading the feature key "${e}" from the setting file is deprecated and will be removed in the next major version; pass it in appOption (or as an attribute of <maplat-app>) instead.`
     ), r);
   }
   // Maplat App Class
   constructor(t) {
-    super(), t = Ft(t), this.__appid = t.appid || "sample", this.__elementMode = t.__maplatElementMode === !0;
+    super(), t = Wt(t), this.__appid = t.appid || "sample", this.__elementMode = t.__maplatElementMode === !0;
     const e = t.mapboxgl || (typeof window < "u" ? window.mapboxgl : void 0);
     e && t.mapboxToken && (e.accessToken = t.mapboxToken), t.googleApiKey && (this.__googleApiKey = t.googleApiKey);
     const n = t.div;
-    n && typeof n == "object" && n.nodeType === 1 ? (this.__mapDivDocument = n, this.__mapDiv = n.id || `maplat_app_${++Ql}`) : (this.__mapDiv = n || "map_div", this.__mapDivDocument = document.querySelector(`#${this.__mapDiv}`)), this.mapDivDocument.classList.add("maplat"), this.logger = new Oo(
-      t.debug ? _A.ALL : _A.INFO
+    n && typeof n == "object" && n.nodeType === 1 ? (this.__mapDivDocument = n, this.__mapDiv = n.id || `maplat_app_${++nu}`) : (this.__mapDiv = n || "map_div", this.__mapDivDocument = document.querySelector(`#${this.__mapDiv}`)), this.mapDivDocument.classList.add("maplat"), this.logger = new kg(
+      t.debug ? JA.ALL : JA.INFO
     ), this.__enableCache = t.enableCache || !1, this.icon = t.icon, this.selectedIcon = t.selectedIcon, this.translateUI = t.translateUI, this.__uiHooks = t.uiHooks;
     const i = t.setting;
     if (t.restore)
@@ -11458,8 +12426,8 @@ class tn extends ug {
         if (Array.isArray(I))
           for (const c of I) {
             if (typeof c != "string" || c in this.__initialRestore) continue;
-            const h = localStorage.getItem(c);
-            h !== null && (this.__initialRestore[c] = h);
+            const u = localStorage.getItem(c);
+            u !== null && (this.__initialRestore[c] = u);
           }
       }
     }
@@ -11471,18 +12439,18 @@ class tn extends ug {
         I !== void 0 && (a[C] = I);
       this.__initialRestore = a;
     }
-    [...LA(`<img id="center_circle" class="prevent-default maplat-center-marker" alt=""
+    [...XA(`<img id="center_circle" class="prevent-default maplat-center-marker" alt=""
             style="position:absolute;top:50%;left:50%;margin-top:-10px;
-            margin-left:-10px;" src="${fo}">`)].reverse().forEach((a) => {
+            margin-left:-10px;" src="${wg}">`)].reverse().forEach((a) => {
       this.mapDivDocument.insertBefore(
         a,
         this.mapDivDocument.firstChild
       );
     });
-    const o = "maplat-core-style";
-    if (!document.getElementById(o)) {
+    const g = "maplat-core-style";
+    if (!document.getElementById(g)) {
       const a = document.createElement("style");
-      a.id = o, a.innerHTML = `
+      a.id = g, a.innerHTML = `
         .maplat * {
           -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
         }
@@ -11508,16 +12476,16 @@ class tn extends ug {
   }
   async runLifecyclePhase(t, e) {
     this.logger?.debug?.(`lifecycle:${t}`);
-    const n = this.buildLifecycleContext(t, e), i = Wl[t], r = this.uiHooks?.[i];
+    const n = this.buildLifecycleContext(t, e), i = tu[t], r = this.uiHooks?.[i];
     if (r)
       try {
         const s = await r(n);
         this.lifecycleHookResults[t] = s, n.uiHookResult = s, n.uiHookResults = { ...this.lifecycleHookResults };
       } catch (s) {
-        throw this.logger?.debug?.(`lifecycle:error:${t}`), this.dispatchEvent(new ot("lifecycle:error", { phaseId: t, error: s })), s;
+        throw this.logger?.debug?.(`lifecycle:error:${t}`), this.dispatchEvent(new gt("lifecycle:error", { phaseId: t, error: s })), s;
       }
     return this.dispatchEvent(
-      new ot(`lifecycle:${t}`, n)
+      new gt(`lifecycle:${t}`, n)
     ), n;
   }
   // Async initializers 1: Load application setting
@@ -11541,50 +12509,50 @@ class tn extends ug {
       // Pass maplibre map instance
     };
     return e.forEach((r) => {
-      n.push(Nc(r, i));
+      n.push(Fc(r, i));
     }), Promise.all(n);
   }
   // Async initializers 2: Handle application setting
   async handleSetting(t, e) {
-    await this.runLifecyclePhase("setting-loaded", t), this.appData = Ft(t), this.__settingFileKeys = new Set(Object.keys(this.appData || {})), await this.runLifecyclePhase("appdata-ready"), await this.runLifecyclePhase("ui-configure");
+    await this.runLifecyclePhase("setting-loaded", t), this.appData = Wt(t), this.__settingFileKeys = new Set(Object.keys(this.appData || {})), await this.runLifecyclePhase("appdata-ready"), await this.runLifecyclePhase("ui-configure");
     const n = await this.prepareMap(e);
     await this.runLifecyclePhase("ui-dom-ready");
-    const i = await Fg(this.appData.pois || [], this);
+    const i = await Vo(this.appData.pois || [], this);
     await this.handlePois(i, n), this.initGeolocation(e);
   }
   // Async Initializers 2.5: For geolocation settings
   initGeolocation(t) {
     this.__alwaysGpsOn = t.alwaysGpsOn || !1;
-    const e = this.geolocation = new Fc({
+    const e = this.geolocation = new Yc({
       timerBase: t.fake,
       homePosition: this.appData.homePosition
     });
     this.alwaysGpsOn ? (e.setTracking(!0), this.gpsEnabled_ = !0, this.initialGpsMove_ = !0) : (e.setTracking(!1), this.gpsEnabled_ = !1), e.on("change", () => {
       (async () => {
-        const n = this.mapObject, i = n.getLayer("overlay").getLayers().item(0), r = n.getLayers().item(0), s = i ? i.getSource() : r.getSource(), o = e.getPosition(), g = e.getAccuracy();
-        if (!o || !g) return;
+        const n = this.mapObject, i = n.getLayer("overlay").getLayers().item(0), r = n.getLayers().item(0), s = i ? i.getSource() : r.getSource(), g = e.getPosition(), o = e.getAccuracy();
+        if (!g || !o) return;
         let a = !this.moveTo_ && !this.firstGpsRequest_;
         this.alwaysGpsOn && (a = !this.initialGpsMove_);
-        const C = await s.setGPSMarkerAsync({ lnglat: o, acc: g }, a);
+        const C = await s.setGPSMarkerAsync({ lnglat: g, acc: o }, a);
         this.moveTo_ = !1, this.firstGpsRequest_ = !1, this.initialGpsMove_ = !1, C || (this.alwaysGpsOn || this.handleGPS(!1, !0), s.setGPSMarker());
         const I = this.alwaysGpsOn ? "gps_out_hide" : "gps_out";
-        this.dispatchEvent(new ZA(C ? { lnglat: o, acc: g } : { error: I }));
+        this.dispatchEvent(new HA(C ? { lnglat: g, acc: o } : { error: I }));
       })();
     }), e.on("error", (n) => {
       const i = n.code;
       if (i === 3) return;
       e.setTracking(!1), this.gpsEnabled_ = !1;
-      const r = this.mapObject, s = r.getLayer("overlay").getLayers().item(0), o = r.getLayers().item(0);
-      (s ? s.getSource() : o.getSource()).setGPSMarker(), this.dispatchEvent(new Hl(i === 1 ? "user_gps_deny" : i === 2 ? "gps_miss" : "gps_timeout")), this.dispatchEvent(new ZA({ error: "gps_off" }));
+      const r = this.mapObject, s = r.getLayer("overlay").getLayers().item(0), g = r.getLayers().item(0);
+      (s ? s.getSource() : g.getSource()).setGPSMarker(), this.dispatchEvent(new eu(i === 1 ? "user_gps_deny" : i === 2 ? "gps_miss" : "gps_timeout")), this.dispatchEvent(new HA({ error: "gps_off" }));
     }), this.addEventListener("mapChanged", () => {
       (async () => {
         if (e.getTracking()) {
-          const n = this.mapObject, i = n.getLayer("overlay").getLayers().item(0), r = n.getLayers().item(0), s = i ? i.getSource() : r.getSource(), o = e.getPosition(), g = e.getAccuracy();
-          if (!o || !g) return;
-          const a = await s.setGPSMarkerAsync({ lnglat: o, acc: g }, !0);
+          const n = this.mapObject, i = n.getLayer("overlay").getLayers().item(0), r = n.getLayers().item(0), s = i ? i.getSource() : r.getSource(), g = e.getPosition(), o = e.getAccuracy();
+          if (!g || !o) return;
+          const a = await s.setGPSMarkerAsync({ lnglat: g, acc: o }, !0);
           a || (this.alwaysGpsOn || this.handleGPS(!1, !0), s.setGPSMarker());
           const C = this.alwaysGpsOn ? "gps_out_hide" : "gps_out";
-          this.dispatchEvent(new ZA(a ? { lnglat: o, acc: g } : { error: C }));
+          this.dispatchEvent(new HA(a ? { lnglat: g, acc: o } : { error: C }));
         }
       })();
     });
@@ -11594,18 +12562,18 @@ class tn extends ug {
     if (this.geolocation) {
       if (t)
         if (!this.alwaysGpsOn)
-          this.firstGpsRequest_ = !0, this.geolocation.setTracking(!0), this.gpsEnabled_ = !0, this.dispatchEvent(new Vl());
+          this.firstGpsRequest_ = !0, this.geolocation.setTracking(!0), this.gpsEnabled_ = !0, this.dispatchEvent(new Au());
         else {
           const n = this.geolocation.getPosition(), i = this.geolocation.getAccuracy();
           if (n && i) {
-            const r = this.mapObject, s = r.getLayer("overlay").getLayers().item(0), o = r.getLayers().item(0), g = s ? s.getSource() : o.getSource();
-            (async () => await g.setGPSMarkerAsync({ lnglat: n, acc: i }, !1) || (g.setGPSMarker(), this.dispatchEvent(new ZA({ error: "gps_out" }))))();
+            const r = this.mapObject, s = r.getLayer("overlay").getLayers().item(0), g = r.getLayers().item(0), o = s ? s.getSource() : g.getSource();
+            (async () => await o.setGPSMarkerAsync({ lnglat: n, acc: i }, !1) || (o.setGPSMarker(), this.dispatchEvent(new HA({ error: "gps_out" }))))();
           }
         }
       else if (!this.alwaysGpsOn) {
         this.geolocation.setTracking(!1), this.gpsEnabled_ = !1;
         const n = this.mapObject, i = n.getLayer("overlay").getLayers().item(0), r = n.getLayers().item(0);
-        (i ? i.getSource() : r.getSource()).setGPSMarker(), e || this.dispatchEvent(new ZA({ error: "gps_off" }));
+        (i ? i.getSource() : r.getSource()).setGPSMarker(), e || this.dispatchEvent(new HA({ error: "gps_off" }));
       }
     }
   }
@@ -11614,25 +12582,25 @@ class tn extends ug {
   }
   // Async initializers 5: Prepare map base elements and objects
   async prepareMap(t) {
-    t = Ft(t), this.mercBuffer = null;
+    t = Wt(t), this.mercBuffer = null;
     const e = this.appData.homePosition, n = this.appData.defaultZoom, i = this.appData.zoomRestriction, r = this.appData.minZoom, s = this.appData.maxZoom;
     this.appName = this.appData.appName;
-    const o = t.fake && !this.__elementMode ? this.appData.fakeGps : !1, g = t.fake && !this.__elementMode ? this.appData.fakeRadius : !1;
+    const g = t.fake && !this.__elementMode ? this.appData.fakeGps : !1, o = t.fake && !this.__elementMode ? this.appData.fakeRadius : !1;
     this.__noRotate = this.__featureOption(t, "noRotate", !1), this.poiTemplate = t.poiTemplate ?? this.appData.poiTemplate ?? !1, this.poiStyle = t.poiStyle ?? this.appData.poiStyle ?? !1, this.iconTemplate = t.iconTemplate ?? this.appData.iconTemplate ?? !1, this.currentPosition = null, this.__init = !0;
     const a = `${this.mapDiv}_front`;
-    let C = LA(
+    let C = XA(
       `<div id="${a}" class="map" style="top:0; left:0; right:0; bottom:0; position:absolute;"></div>`
     )[0];
-    this.mapDivDocument.insertBefore(C, this.mapDivDocument.firstChild), this.__fakeGps = o, this.__fakeRadius = g, this.homePosition = e, this.mapObject = new de({
+    this.mapDivDocument.insertBefore(C, this.mapDivDocument.firstChild), this.__fakeGps = g, this.__fakeRadius = o, this.homePosition = e, this.mapObject = new we({
       div: a,
       controls: this.__featureOption(t, "controls", []),
-      interactions: this.noRotate ? Ns({ altShiftDragRotate: !1, pinchRotate: !1 }) : Ns().extend([
-        new Cc({
-          condition: HC
+      interactions: this.noRotate ? _s({ altShiftDragRotate: !1, pinchRotate: !1 }) : _s().extend([
+        new mc({
+          condition: $C
         })
       ]),
-      fakeGps: o,
-      fakeRadius: g,
+      fakeGps: g,
+      fakeRadius: o,
       homePosition: e,
       northUp: this.__featureOption(t, "northUp", !1),
       tapDuration: this.__featureOption(t, "tapDuration", 3e3),
@@ -11641,27 +12609,27 @@ class tn extends ug {
       alwaysGpsOn: t.alwaysGpsOn || !1
     });
     let I;
-    this.overlay && (I = `${this.mapDiv}_back`, C = LA(
+    this.overlay && (I = `${this.mapDiv}_back`, C = XA(
       `<div id="${I}" class="map" style="top:0; left:0; right:0; bottom:0; position:absolute;"></div>`
     )[0], this.mapDivDocument.insertBefore(
       C,
       this.mapDivDocument.firstChild
-    ), this.backMap = new de({
+    ), this.backMap = new we({
       off_control: !0,
       div: I
     }));
     const c = t.mapboxgl || (typeof window < "u" ? window.mapboxgl : void 0);
     if (c) {
-      const p = `${this.mapDiv}_mapbox`;
-      C = LA(
-        `<div id="${p}" class="map" style="top:0; left:0; right:0; bottom:0; position:absolute;visibility:hidden;"></div>`
+      const d = `${this.mapDiv}_mapbox`;
+      C = XA(
+        `<div id="${d}" class="map" style="top:0; left:0; right:0; bottom:0; position:absolute;visibility:hidden;"></div>`
       )[0], this.mapDivDocument.insertBefore(
         C,
         this.mapDivDocument.firstChild
       ), this.mapboxMap = new c.Map({
         attributionControl: !1,
         boxZoom: !1,
-        container: p,
+        container: d,
         doubleClickZoom: !1,
         dragPan: !1,
         dragRotate: !1,
@@ -11676,18 +12644,18 @@ class tn extends ug {
       });
     }
     this.registerSelfHeal();
-    const h = t.maplibregl || (typeof window < "u" ? window.maplibregl : void 0);
-    if (h) {
-      const p = `${this.mapDiv}_maplibre`;
-      C = LA(
-        `<div id="${p}" class="map" style="top:0; left:0; right:0; bottom:0; position:absolute;visibility:hidden;"></div>`
+    const u = t.maplibregl || (typeof window < "u" ? window.maplibregl : void 0);
+    if (u) {
+      const d = `${this.mapDiv}_maplibre`;
+      C = XA(
+        `<div id="${d}" class="map" style="top:0; left:0; right:0; bottom:0; position:absolute;visibility:hidden;"></div>`
       )[0], this.mapDivDocument.insertBefore(
         C,
         this.mapDivDocument.firstChild
-      ), this.maplibreMap = new h.Map({
+      ), this.maplibreMap = new u.Map({
         attributionControl: !1,
         boxZoom: !1,
-        container: p,
+        container: d,
         doubleClickZoom: !1,
         dragPan: !1,
         dragRotate: !1,
@@ -11722,7 +12690,7 @@ class tn extends ug {
   async handleSources(t) {
     const e = [];
     if (this.cacheHash = {}, t.forEach((n) => {
-      n.setMap(this.mapObject), Bo(n, {
+      n.setMap(this.mapObject), Ng(n, {
         mapboxMap: this.mapboxMap,
         maplibreMap: this.maplibreMap,
         warn: (r, ...s) => {
@@ -11732,7 +12700,7 @@ class tn extends ug {
     }), this.mercSrc = e.reduce((n, i) => {
       if (n) return n;
       if (i.isBasemap()) return i;
-    }, null), this.dispatchEvent(new ot("sourceLoaded", t)), e.length === 0) {
+    }, null), this.dispatchEvent(new gt("sourceLoaded", t)), e.length === 0) {
       this.logger?.warn ? this.logger.warn("No usable sources; skipping map initialization handlers") : console.warn("No usable sources; skipping map initialization handlers"), await this.runLifecyclePhase("core-ready"), await this.runLifecyclePhase("ui-ready");
       return;
     }
@@ -11742,7 +12710,7 @@ class tn extends ug {
   async setInitialMap(t) {
     const e = this.initialRestore.mapID || this.startFrom || t[t.length - 1].mapID;
     this.from = t.reduce(
-      (n, i) => n ? !(n instanceof go) && i.mapID != e ? i : n : i.mapID != e ? i : n,
+      (n, i) => n ? !(n instanceof cg) && i.mapID != e ? i : n : i.mapID != e ? i : n,
       void 0
     ), await this.changeMap(e, this.initialRestore);
   }
@@ -11754,14 +12722,14 @@ class tn extends ug {
       if (t.target.forEachFeatureAtPixel(t.pixel, (n) => {
         this.logger.debug(t.pixel), n.get("datum") && e.push(n.get("datum"));
       }), e.length > 0)
-        this.dispatchEvent(new ot("clickMarker", e[0])), this.dispatchEvent(new ot("clickMarkers", e));
+        this.dispatchEvent(new gt("clickMarker", e[0])), this.dispatchEvent(new gt("clickMarkers", e));
       else {
         const n = t.coordinate;
-        this.dispatchEvent(new ot("clickMapXy", n)), this.from.sysCoord2MercAsync(n).then((i) => {
-          this.dispatchEvent(new ot("clickMapMerc", i));
-          const r = Mt(i, "EPSG:3857", "EPSG:4326");
+        this.dispatchEvent(new gt("clickMapXy", n)), this.from.sysCoord2MercAsync(n).then((i) => {
+          this.dispatchEvent(new gt("clickMapMerc", i));
+          const r = Rt(i, "EPSG:3857", "EPSG:4326");
           this.dispatchEvent(
-            new ot("clickMap", {
+            new gt("clickMap", {
               longitude: r[0],
               latitude: r[1]
             })
@@ -11774,10 +12742,10 @@ class tn extends ug {
   setPointerEvents() {
     let t, e = !1, n = !1;
     const i = {}, r = (s) => {
-      this.dispatchEvent(new ot("pointerMoveOnMapXy", s)), this.from.sysCoord2MercAsync(s).then((o) => {
-        if (this.dispatchEvent(new ot("pointerMoveOnMapMerc", o)), t) {
-          const g = t;
-          t = !1, r(g);
+      this.dispatchEvent(new gt("pointerMoveOnMapXy", s)), this.from.sysCoord2MercAsync(s).then((g) => {
+        if (this.dispatchEvent(new gt("pointerMoveOnMapMerc", g)), t) {
+          const o = t;
+          t = !1, r(o);
         } else
           e = !1;
       });
@@ -11819,13 +12787,13 @@ class tn extends ug {
     const t = (n) => {
       const i = n.target.getEventPixel(n.originalEvent), r = n.target.hasFeatureAtPixel(i), s = n.target.getTarget();
       if (r) {
-        const o = n.target.forEachFeatureAtPixel(
+        const g = n.target.forEachFeatureAtPixel(
           n.pixel,
-          (g) => {
-            if (g.get("datum")) return g;
+          (o) => {
+            if (o.get("datum")) return o;
           }
         );
-        this.mapDivDocument.querySelector(`#${s}`).style.cursor = o ? "pointer" : "";
+        this.mapDivDocument.querySelector(`#${s}`).style.cursor = g ? "pointer" : "";
         return;
       }
       this.mapDivDocument.querySelector(`#${s}`).style.cursor = "";
@@ -11850,16 +12818,27 @@ class tn extends ug {
         return;
       }
       const n = this.backMap.getSource();
-      n && (this.__backMapMoving = !0, this.logger.debug("Backmap moving started"), this.convertParametersFromCurrent(n, (i) => {
-        if (!i) {
-          this.__backMapMoving = !1;
-          return;
-        }
-        const r = this.backMap.getView();
-        r.setCenter(i[0]), r.setZoom(i[1]), r.setRotation(this.noRotate ? 0 : i[2]), this.logger.debug("Backmap moving ended"), this.__backMapMoving = !1;
-      }));
+      if (n) {
+        this.__backMapMoving = !0, this.logger.debug("Backmap moving started");
+        const i = (r) => {
+          this.__backMapMoving = !1, this.__reportBackMapError(r);
+        };
+        this.__convertFromCurrent(n, (r) => {
+          if (!r) {
+            this.__backMapMoving = !1;
+            return;
+          }
+          const s = this.backMap.getView();
+          s.setCenter(r[0]), s.setZoom(r[1]), s.setRotation(this.noRotate ? 0 : r[2]), this.logger.debug("Backmap moving ended"), this.__backMapMoving = !1;
+        }, i);
+      }
     };
     this.mapObject.on("postrender", t);
+  }
+  // nov26-m4-t1（#108）: 変換が恒常的に失敗する地図では postrender ごとに失敗するので、
+  // warn は最初の 1 回だけにし、以降は debug に落とす。
+  __reportBackMapError(t) {
+    this.__backMapErrorWarned ? this.logger.debug("Backmap follow skipped: coordinate conversion failed", t) : (this.__backMapErrorWarned = !0, this.logger.warn("Backmap follow skipped: coordinate conversion failed", t));
   }
   // Async initializer 16: Handle back map's behavior
   raiseChangeViewpoint() {
@@ -11869,20 +12848,20 @@ class tn extends ug {
         this.__schedulePendingView();
         return;
       }
-      const e = this.mapObject.getView(), n = e.getCenter(), i = e.getDecimalZoom(), r = Gn(e.getRotation() * 180 / Math.PI), s = await this.from.viewpoint2MercsAsync(), o = await this.mercSrc.mercs2ViewpointAsync(s);
-      if (this.mobileMapMoveBuffer && this.mobileMapMoveBuffer[0][0] == o[0][0] && this.mobileMapMoveBuffer[0][1] == o[0][1] && this.mobileMapMoveBuffer[1] == o[1] && this.mobileMapMoveBuffer[2] == o[2]) return;
-      this.mobileMapMoveBuffer = o;
-      const g = Mt(o[0], "EPSG:3857", "EPSG:4326"), a = Gn(o[2] * 180 / Math.PI);
+      const e = this.mapObject.getView(), n = e.getCenter(), i = e.getDecimalZoom(), r = jn(e.getRotation() * 180 / Math.PI), s = await this.from.viewpoint2MercsAsync(), g = await this.mercSrc.mercs2ViewpointAsync(s);
+      if (this.mobileMapMoveBuffer && this.mobileMapMoveBuffer[0][0] == g[0][0] && this.mobileMapMoveBuffer[0][1] == g[0][1] && this.mobileMapMoveBuffer[1] == g[1] && this.mobileMapMoveBuffer[2] == g[2]) return;
+      this.mobileMapMoveBuffer = g;
+      const o = Rt(g[0], "EPSG:3857", "EPSG:4326"), a = jn(g[2] * 180 / Math.PI);
       this.dispatchEvent(
-        new ot("changeViewpoint", {
+        new gt("changeViewpoint", {
           x: n[0],
           y: n[1],
-          longitude: g[0],
-          latitude: g[1],
-          mercator_x: o[0][0],
-          mercator_y: o[0][1],
+          longitude: o[0],
+          latitude: o[1],
+          mercator_x: g[0][0],
+          mercator_y: g[0][1],
           zoom: i,
-          mercZoom: o[1],
+          mercZoom: g[1],
           direction: a,
           rotation: r
         })
@@ -11899,33 +12878,33 @@ class tn extends ug {
   // 現在の地図回転角を度数で返す (入力側restore.position.rotationと同じ単位系, #61)
   getRotation() {
     const t = this.mapObject?.getView();
-    return t ? Gn(t.getRotation() * 180 / Math.PI) : 0;
+    return t ? jn(t.getRotation() * 180 / Math.PI) : 0;
   }
   // 現在の実世界方位角を度数で返す。TIN地図では歪み補正込みの非同期計算になるためPromiseを返す (#61)
   async getDirection() {
     if (!this.from || !this.mercSrc) return this.getRotation();
     const t = await this.from.viewpoint2MercsAsync(), e = await this.mercSrc.mercs2ViewpointAsync(t);
-    return Gn(e[2] * 180 / Math.PI);
+    return jn(e[2] * 180 / Math.PI);
   }
   currentMapInfo() {
-    return _r(this.from);
+    return Hr(this.from);
   }
   mapInfo(t) {
-    return _r(this.cacheHash[t]);
+    return Hr(this.cacheHash[t]);
   }
   async clientPointToLngLat(t, e) {
     if (!this.from || !this.mapObject) return;
     const i = this.mapObject.getViewport().getBoundingClientRect(), r = [t - i.left, e - i.top], s = this.mapObject.getCoordinateFromPixel(r);
     if (!s) return;
-    const o = await this.from.sysCoord2MercAsync(s), g = Mt(o, "EPSG:3857", "EPSG:4326");
+    const g = await this.from.sysCoord2MercAsync(s), o = Rt(g, "EPSG:3857", "EPSG:4326");
     return {
-      longitude: g[0],
-      latitude: g[1]
+      longitude: o[0],
+      latitude: o[1]
     };
   }
   async lngLatToClientPoint(t, e) {
     if (!this.from || !this.mapObject) return;
-    const n = Mt([t, e], "EPSG:4326", "EPSG:3857"), i = await this.from.merc2SysCoordAsync(n), r = this.mapObject.getPixelFromCoordinate(i);
+    const n = Rt([t, e], "EPSG:4326", "EPSG:3857"), i = await this.from.merc2SysCoordAsync(n), r = this.mapObject.getPixelFromCoordinate(i);
     if (!r) return;
     const s = this.mapObject.getViewport().getBoundingClientRect();
     return {
@@ -11938,7 +12917,7 @@ class tn extends ug {
     const e = t.lnglat || [
       t.lng || t.longitude,
       t.lat || t.latitude
-    ], n = t.x, i = t.y, r = t.coordinates, s = this.from, o = t.icon ? this.__selectedMarker == t.namespaceID && t.selectedIcon ? t.selectedIcon : t.icon : this.__selectedMarker == t.namespaceID ? mo : kr;
+    ], n = t.x, i = t.y, r = t.coordinates, s = this.from, g = t.icon ? this.__selectedMarker == t.namespaceID && t.selectedIcon ? t.selectedIcon : t.icon : this.__selectedMarker == t.namespaceID ? vg : Xr;
     return (r ? (function() {
       return s.merc2SysCoordAsync_ignoreBackground(
         r
@@ -11946,12 +12925,12 @@ class tn extends ug {
     })() : n && i ? new Promise((a) => {
       a(s.xy2SysCoord([n, i]));
     }) : (function() {
-      const a = Mt(e, "EPSG:4326", "EPSG:3857");
+      const a = Rt(e, "EPSG:4326", "EPSG:3857");
       return s.merc2SysCoordAsync_ignoreBackground(
         a
       );
     })()).then((a) => {
-      a && s.insideCheckSysCoord(a) && this.mapObject.setMarker(a, { datum: t }, o);
+      a && s.insideCheckSysCoord(a) && this.mapObject.setMarker(a, { datum: t }, g);
     });
   }
   resetMarker() {
@@ -11963,29 +12942,71 @@ class tn extends ug {
     }), this.setVector(t);
   }
   setVector(t) {
+    this.__projectVector(t).then((e) => {
+      this.mapObject.setVector(e, t.type, t.style);
+    });
+  }
+  // nov26-m4-t5: data の座標（coordinates はメルカトル・lnglats は経緯度）を今の地図の座標へ変換する
+  __projectVector(t) {
     this.logger.debug(t);
     let e;
     const n = (i, r = !1) => Promise.all(
-      i.map((s) => Array.isArray(s[0]) ? n(s, r) : (r && (s = Mt(s, "EPSG:4326", "EPSG:3857")), this.from.merc2SysCoordAsync(s)))
+      i.map((s) => Array.isArray(s[0]) ? n(s, r) : (r && (s = Rt(s, "EPSG:4326", "EPSG:3857")), this.from.merc2SysCoordAsync(s)))
     );
-    t.coordinates ? e = n(t.coordinates) : e = n(t.lnglats, !0), e.then((i) => {
-      this.mapObject.setVector(i, t.type, t.style);
+    return t.coordinates ? e = n(t.coordinates) : e = n(t.lnglats, !0), e;
+  }
+  __vectorStore() {
+    return this.__vectors || (this.__vectors = /* @__PURE__ */ new Map()), this.__vectors;
+  }
+  __nextVectorDrawToken() {
+    return this.__vectorDrawSeq = (this.__vectorDrawSeq || 0) + 1, this.__vectorDrawSeq;
+  }
+  // nov26-m4-t5: 登録簿の 1 件を描く。変換の解決までに消された・置き換えられた・
+  // 描き直しが始まった（世代が進んだ）場合は描かない。
+  __drawVectorEntry(t) {
+    const e = this.__nextVectorDrawToken();
+    t.drawToken = e, t.feature = void 0, this.__projectVector(t.data).then((n) => {
+      this.__vectorStore().get(t.id) !== t || t.drawToken !== e || (t.feature = this.mapObject.setVector(
+        n,
+        t.data.type,
+        t.data.style
+      ));
     });
+  }
+  __addEntry(t, e) {
+    const n = this.__vectorStore();
+    let i;
+    if (t != null)
+      i = String(t);
+    else
+      do
+        this.__vectorSeq = (this.__vectorSeq || 0) + 1, i = `vector_${this.__vectorSeq}`;
+      while (n.has(i));
+    n.has(i) && this.removeVector(i);
+    const r = {
+      id: i,
+      data: e,
+      kind: e.type === void 0 || e.type === "Line" ? "Line" : "Polygon",
+      drawToken: 0
+    };
+    return n.set(i, r), this.__drawVectorEntry(r), i;
+  }
+  // addLine／addVector で登録した線・面の data（写し）の配列。読み取り専用。
+  get vectors() {
+    return Array.from(this.__vectorStore().values()).map((t) => t.data);
   }
   resetLine() {
     this.resetVector();
   }
   resetVector() {
-    this.mapObject.resetVector();
+    this.mapObject.resetVector(), this.__vectorStore().forEach((t) => {
+      t.feature = void 0, t.drawToken = this.__nextVectorDrawToken();
+    });
   }
   redrawMarkers(t = void 0) {
     if (t || (t = this.from), this.__redrawMarkerBlock) {
-      this.__redrawMarkerThrottle || (this.__redrawMarkerThrottle = []);
-      const n = this.__redrawMarkerThrottle;
-      if (n.length == 0 || n[n.length - 1] !== t) {
-        n.push(t);
-        return;
-      }
+      this.__redrawMarkerThrottle = [t];
+      return;
     }
     this.__redrawMarkerBlock = !0;
     const e = (n) => {
@@ -11993,21 +13014,21 @@ class tn extends ug {
       this.resetMarker();
       let r;
       if (!this.stateBuffer.hideMarker) {
-        for (const o of Object.keys(this.pois)) {
-          const g = this.pois[o];
-          if (!g.hide)
-            for (const a of g.pois) {
-              const C = _s(a, g, this);
-              Ws(C, g, this), this.__selectedMarker == C.namespaceID ? r = C : i.push(this.setMarker(C));
+        for (const g of Object.keys(this.pois)) {
+          const o = this.pois[g];
+          if (!o.hide)
+            for (const a of o.pois) {
+              const C = Hs(a, o, this);
+              Qs(C, o, this), this.__selectedMarker == C.namespaceID ? r = C : i.push(this.setMarker(C));
             }
         }
         if (n.pois)
-          for (const o of Object.keys(n.pois)) {
-            const g = n.pois[o];
-            if (!g.hide)
-              for (const a of g.pois) {
-                const C = _s(a, g, n, this);
-                Ws(C, g, n, this), this.__selectedMarker == C.namespaceID ? r = C : i.push(this.setMarker(C));
+          for (const g of Object.keys(n.pois)) {
+            const o = n.pois[g];
+            if (!o.hide)
+              for (const a of o.pois) {
+                const C = Hs(a, o, n, this);
+                Qs(C, o, n, this), this.__selectedMarker == C.namespaceID ? r = C : i.push(this.setMarker(C));
               }
           }
       }
@@ -12046,7 +13067,7 @@ class tn extends ug {
   updateMarker(t, e, n) {
     const i = this.getMarker(t);
     if (i) {
-      if (e = qA(e || {}), n) {
+      if (e = on(e || {}), n) {
         for (const r of Object.keys(i))
           r !== "id" && r !== "namespaceID" && delete i[r];
         Object.assign(i, e);
@@ -12064,7 +13085,7 @@ class tn extends ug {
         return this.dispatchPoiNumber(), this.redrawMarkers(), r;
       }
     } else if (this.pois[e])
-      return this.pois[e].pois.push(qA(t)), Dr(this.pois, e, {
+      return this.pois[e].pois.push(on(t)), Nr(this.pois, e, {
         name: this.appName
       }), this.dispatchPoiNumber(), this.redrawMarkers(), t.namespaceID;
   }
@@ -12104,7 +13125,7 @@ class tn extends ug {
   }
   dispatchPoiNumber() {
     this.dispatchEvent(
-      new ot(
+      new gt(
         "poi_number",
         this.listPoiLayers(!1, !0).reduce(
           (t, e) => t + e.pois.length,
@@ -12153,7 +13174,7 @@ class tn extends ug {
   addPoiLayer(t, e) {
     if (t !== "main" && !this.pois[t])
       if (!t.includes("#"))
-        this.pois[t] = ue(e || [], t, {
+        this.pois[t] = pe(e || [], t, {
           name: this.appName
         }), this.redrawMarkers();
       else {
@@ -12186,17 +13207,39 @@ class tn extends ug {
         }), this.dispatchPoiNumber(), this.redrawMarkers();
       }
   }
+  // nov26-m4-t5（#91）: 線を足して id を返す。data.id を与えればその id、無ければ自動の id。
+  // 呼び手の data は変えず、写しに setLine と同じ正規化（type・stroke → style）をする。
   addLine(t) {
-    this.vectors.push(t), this.setLine(t);
+    const e = { ...t, type: "Line" };
+    return !e.style && e.stroke && (e.style = {
+      stroke: e.stroke
+    }), delete e.id, this.__addEntry(t.id, e);
   }
+  // nov26-m4-t5（#91）: 線・面を足して id を返す（data.type が "Line" なら線、それ以外は面）
   addVector(t) {
-    this.vectors.push(t), this.setVector(t);
+    const e = { ...t };
+    return delete e.id, this.__addEntry(t.id, e);
   }
-  clearLine() {
-    this.vectors = [], this.resetLine();
+  // nov26-m4-t5（#91）: id の 1 件だけを消す。消したら true、無ければ false
+  removeVector(t) {
+    const e = this.__vectorStore(), n = e.get(t);
+    return n ? (e.delete(t), n.feature && (this.mapObject.removeFeature(n.feature, "feature"), n.feature = void 0), !0) : !1;
   }
-  clearVector() {
-    this.vectors = [], this.resetVector();
+  // removeVector の別名（種類で絞らない）
+  removeLine(t) {
+    return this.removeVector(t);
+  }
+  // 引数なしは線も面も全部消す（従来どおり）。filter.type で線だけ・面だけを消す
+  clearLine(t) {
+    this.clearVector(t);
+  }
+  clearVector(t) {
+    const e = t?.type;
+    if (!e) {
+      this.__vectorStore().clear(), this.resetVector();
+      return;
+    }
+    Array.from(this.__vectorStore().values()).filter((n) => n.kind === e).forEach((n) => this.removeVector(n.id));
   }
   setGPSMarker(t) {
     this.currentPosition = t, this.from.setGPSMarker(t, !0);
@@ -12206,49 +13249,47 @@ class tn extends ug {
     const n = this.mercSrc, i = this.cacheHash[t];
     return i ? (this.changeMapSeq || (this.changeMapSeq = Promise.resolve()), this.changeMapSeq = this.changeMapSeq.then(
       () => new Promise((r, s) => {
-        const o = () => this.convertParametersFromCurrent(i, (g) => {
+        const g = () => this.convertParametersFromCurrent(i, (o) => {
           const a = this.from, C = this.__captureViewState();
           let I = null, c = null;
-          const h = e.backgroundID ? this.cacheHash[e.backgroundID] : void 0;
-          if (this.backMap && (I = this.backMap.getSource(), i.isWmts() ? this.backMap.exchangeSource() : (h ? (c = h, this.backMap.exchangeSource(c)) : I ? c = I : (c = n, this.from.isWmts() && (c = this.from instanceof ni ? (
+          const u = e.backgroundID ? this.cacheHash[e.backgroundID] : void 0;
+          if (this.backMap && (I = this.backMap.getSource(), i.isWmts() ? this.backMap.exchangeSource() : (u ? (c = u, this.backMap.exchangeSource(c)) : I ? c = I : (c = n, this.from.isWmts() && (c = this.from instanceof ii ? (
             // If current foreground is a TMS overlay, use the current
             // basemap as new background. On initial load no foreground
             // source is set yet, so fall back to the default basemap
             // (mercSrc) to avoid a null background source.
             this.mapObject.getSource() || n
-          ) : this.from), c && this.backMap.exchangeSource(c)), c && this.requestUpdateState({ backgroundID: c.mapID }))), i instanceof ni) {
-            if (this.mapObject.setLayer(i), h)
-              this.mapObject.exchangeSource(h);
+          ) : this.from), c && this.backMap.exchangeSource(c)), c && this.requestUpdateState({ backgroundID: c.mapID }))), i instanceof ii) {
+            if (this.mapObject.setLayer(i), u)
+              this.mapObject.exchangeSource(u);
             else if (!this.from.isWmts()) {
-              const f = I || n;
-              this.mapObject.exchangeSource(f);
+              const h = I || n;
+              this.mapObject.exchangeSource(h);
             }
             const m = this.mapObject.getSource();
             m && this.requestUpdateState({ backgroundID: m.mapID });
           } else
             this.mapObject.setLayer(), this.mapObject.exchangeSource(i);
-          const p = {
+          const d = {
             mapID: i.mapID
           };
-          i.isBasemap() && (p.backgroundID = "____delete____"), this.requestUpdateState(p), this.from = i, this.dispatchPoiNumber();
-          const d = this.mapObject.getView();
-          this.appData.zoomRestriction && (d.setMaxZoom(i.maxZoom), d.setMinZoom(i.minZoom || 0)), g && i.insideCheckSysCoord(g[0]) ? (d.setCenter(g[0]), d.setZoom(g[1]), d.setRotation(this.noRotate ? 0 : g[2])) : !this.__init && !g && !this.__hasMapSize() && a ? this.__pendingView ? this.__pendingView.positionMapID !== i.mapID && (delete this.__pendingView.position, delete this.__pendingView.positionMapID) : this.__pendingView = { from: a, state: C } : this.__init ? g || this.__hasMapSize() && this.goHome(i) : (this.dispatchEvent(new ot("outOfMap", {})), this.goHome(i)), i.setGPSMarker(this.currentPosition, !0), e.hideLayer && (e.hideLayer.split(",").map((f) => {
-            const v = this.getPoiLayer(f);
-            v && (v.hide = !0);
-          }), this.requestUpdateState({ hideLayer: e.hideLayer })), e.hideMarker ? this.hideAllMarkers() : this.redrawMarkers(), this.resetVector(), this.vectors.forEach((m) => {
-            this.setVector(m);
-          }), this.dispatchEvent(
-            new ot("mapChanged", this.getMapMeta(i.mapID))
+          i.isBasemap() && (d.backgroundID = "____delete____"), this.requestUpdateState(d), this.from = i, this.dispatchPoiNumber();
+          const f = this.mapObject.getView();
+          this.appData.zoomRestriction && (f.setMaxZoom(i.maxZoom), f.setMinZoom(i.minZoom || 0)), o && i.insideCheckSysCoord(o[0]) ? (f.setCenter(o[0]), f.setZoom(o[1]), f.setRotation(this.noRotate ? 0 : o[2])) : !this.__init && !o && !this.__hasMapSize() && a ? this.__pendingView ? this.__pendingView.positionMapID !== i.mapID && (delete this.__pendingView.position, delete this.__pendingView.positionMapID) : this.__pendingView = { from: a, state: C } : this.__init ? o || this.__hasMapSize() && this.goHome(i) : (this.dispatchEvent(new gt("outOfMap", {})), this.goHome(i)), i.setGPSMarker(this.currentPosition, !0), e.hideLayer && (e.hideLayer.split(",").map((h) => {
+            const w = this.getPoiLayer(h);
+            w && (w.hide = !0);
+          }), this.requestUpdateState({ hideLayer: e.hideLayer })), e.hideMarker ? this.hideAllMarkers() : this.redrawMarkers(), this.resetVector(), this.__vectorStore().forEach((m) => this.__drawVectorEntry(m)), this.dispatchEvent(
+            new gt("mapChanged", this.getMapMeta(i.mapID))
           ), this.mapObject.updateSize(), this.mapObject.render(), e.position && (this.__hasMapSize() ? (this.__init = !1, i.setViewpoint(e.position)) : this.__pendingView && (this.__pendingView.position = e.position, this.__pendingView.positionMapID = i.mapID)), this.setTransparency(
             e.transparency !== void 0 && e.transparency !== null ? e.transparency : this.getTransparency()
           ), this.__init ? this.__hasMapSize() && (this.__init = !1, this.goHome(i)) : this.backMap && c && this.convertParametersFromCurrent(c, (m) => {
             if (!m)
               return;
-            const f = this.backMap.getView();
-            f.setCenter(m[0]), f.setZoom(m[1]), f.setRotation(this.noRotate ? 0 : m[2]), this.backMap.updateSize(), this.backMap.render();
+            const h = this.backMap.getView();
+            h.setCenter(m[0]), h.setZoom(m[1]), h.setRotation(this.noRotate ? 0 : m[2]), this.backMap.updateSize(), this.backMap.render();
           }), r(void 0);
         });
-        this.__pendingView ? this.__applyPendingView().then(o) : o();
+        this.__pendingView ? this.__applyPendingView().then(g) : g();
       })
     )) : (this.logger.warn(`changeMap: mapID "${t}" not found in cacheHash`), Promise.resolve());
   }
@@ -12264,7 +13305,7 @@ class tn extends ug {
       n(t);
     }
     this.timer && clearTimeout(this.timer), this.timer = setTimeout(() => {
-      this.timer = void 0, this.dispatchEvent(new ot("updateState", this.stateBuffer));
+      this.timer = void 0, this.dispatchEvent(new gt("updateState", this.stateBuffer));
     }, 50);
   }
   setTransparency(t) {
@@ -12320,8 +13361,8 @@ class tn extends ug {
       let r = !1;
       const s = () => {
         r || (r = !0, this.__pendingView === t && (this.__pendingView = null), t.position && t.positionMapID === n.mapID && n.setViewpoint(t.position), e.updateSize(), e.render(), i());
-      }, o = (g) => {
-        r || (this.logger.warn(`changeMap: pending viewpoint conversion failed: ${g}`), this.goHome(n), s());
+      }, g = (o) => {
+        r || (this.logger.warn(`changeMap: pending viewpoint conversion failed: ${o}`), this.goHome(n), s());
       };
       if (!t.state) {
         this.goHome(n), s();
@@ -12332,14 +13373,14 @@ class tn extends ug {
           t.from,
           t.state,
           n,
-          (g) => {
+          (o) => {
             const a = e.getView();
-            g && n.insideCheckSysCoord(g[0]) ? (a.setCenter(g[0]), a.setZoom(g[1]), a.setRotation(this.noRotate ? 0 : g[2])) : (this.dispatchEvent(new ot("outOfMap", {})), this.goHome(n)), s();
+            o && n.insideCheckSysCoord(o[0]) ? (a.setCenter(o[0]), a.setZoom(o[1]), a.setRotation(this.noRotate ? 0 : o[2])) : (this.dispatchEvent(new gt("outOfMap", {})), this.goHome(n)), s();
           },
-          o
+          g
         );
-      } catch (g) {
-        o(g);
+      } catch (o) {
+        g(o);
       }
     });
   }
@@ -12350,7 +13391,7 @@ class tn extends ug {
     if (!t) return;
     const e = this.__captureRawViewState(t), { center: n, zoom: i, decimalZoom: r, rotation: s } = e;
     if (!(!n || ![n[0], n[1], i, r, s].every(
-      (o) => Number.isFinite(o)
+      (g) => Number.isFinite(g)
     )))
       return { center: [n[0], n[1]], zoom: i, decimalZoom: r, rotation: s };
   }
@@ -12383,7 +13424,7 @@ class tn extends ug {
   getMapMeta(t) {
     let e;
     if (t ? e = this.cacheHash[t] : e = this.from, !!e)
-      return WA.reduce(
+      return $A.reduce(
         (n, i) => (n[i] = e.get(i), n),
         {
           mapID: e.mapID,
@@ -12419,17 +13460,35 @@ class tn extends ug {
     t ? e = this.cacheHash[t] : e = this.from, e && await e.cancelTileCacheAsync();
   }
   convertParametersFromCurrent(t, e) {
-    const n = this.mapObject.getView();
-    if (n && !this.__hasMapSize()) {
-      e && e();
-      return;
+    this.__convertFromCurrent(t, e);
+  }
+  // nov26-m4-t1（#108）: convertParametersFromCurrent の本体。公開の型を変えずに
+  // onError の口を得るために private へ移した。onError を渡したときだけ、同期例外も
+  // 非同期の失敗（__convertParameters の onError）も投げずに onError へ渡す。
+  // onError が無いときは今までと同じ（例外をそのまま投げる）。
+  __convertFromCurrent(t, e, n) {
+    try {
+      const i = this.mapObject.getView();
+      if (i && !this.__hasMapSize()) {
+        e && e();
+        return;
+      }
+      if (!this.from) {
+        e && e();
+        return;
+      }
+      const r = this.__captureRawViewState(i);
+      this.__convertParameters(
+        this.from,
+        r,
+        t,
+        e,
+        n
+      );
+    } catch (i) {
+      if (n) n(i);
+      else throw i;
     }
-    if (!this.from) {
-      e && e();
-      return;
-    }
-    const i = this.__captureRawViewState(n);
-    this.__convertParameters(this.from, i, t, e);
   }
   // oct26-m2-t1-ff: 変換核。切替前の地図 fromSrc と、そのときの視点 state（地図の
   // 座標系の値）から、行き先 to の視点を求めて callback(size) を呼ぶ。中身は切り出し前の
@@ -12443,47 +13502,47 @@ class tn extends ug {
       e.decimalZoom,
       e.rotation
     ]);
-    const o = lr(
+    const g = mr(
       [e.center, e.zoom, e.rotation],
       10
     );
     if (this.mercBuffer && this.mercBuffer.mercs && this.mercBuffer.buffer[t.mapID]) {
-      const g = this.mercBuffer.buffer[t.mapID];
-      g[0][0] == o[0][0] && g[0][1] == o[0][1] && g[1] == o[1] && g[2] == o[2] ? (this.logger.debug(g), this.logger.debug(o), this.logger.debug("From: Use buffer"), s = new Promise((a, C) => {
+      const o = this.mercBuffer.buffer[t.mapID];
+      o[0][0] == g[0][0] && o[0][1] == g[0][1] && o[1] == g[1] && o[2] == g[2] ? (this.logger.debug(o), this.logger.debug(g), this.logger.debug("From: Use buffer"), s = new Promise((a, C) => {
         a(this.mercBuffer.mercs);
       })) : (this.mercBuffer = {
         buffer: {}
-      }, this.mercBuffer.buffer[t.mapID] = o);
+      }, this.mercBuffer.buffer[t.mapID] = g);
     } else
       this.mercBuffer = {
         buffer: {}
-      }, this.mercBuffer.buffer[t.mapID] = o;
+      }, this.mercBuffer.buffer[t.mapID] = g;
     this.logger.debug(
-      `From: Center: ${o[0]} Zoom: ${o[1]} Rotation: ${o[2]}`
-    ), this.logger.debug(`From: ${t.mapID}`), s.then((g) => {
-      this.mercBuffer.mercs = g, this.logger.debug(`Mercs: ${g}`);
-      let a = n.mercs2ViewpointAsync(g);
+      `From: Center: ${g[0]} Zoom: ${g[1]} Rotation: ${g[2]}`
+    ), this.logger.debug(`From: ${t.mapID}`), s.then((o) => {
+      this.mercBuffer.mercs = o, this.logger.debug(`Mercs: ${o}`);
+      let a = n.mercs2ViewpointAsync(o);
       const C = n.mapID;
       this.mercBuffer.buffer[C] && (this.logger.debug("To: Use buffer"), a = new Promise((I, c) => {
         I(this.mercBuffer.buffer[C]);
       })), a.then((I) => {
         this.logger.debug(
           `To: Center: ${I[0]} Zoom: ${I[1]} Rotation: ${I[2]}`
-        ), this.logger.debug(`To: ${n.mapID}`), this.mercBuffer.buffer[n.mapID] = lr(I, 10), i(I);
+        ), this.logger.debug(`To: ${n.mapID}`), this.mercBuffer.buffer[n.mapID] = mr(I, 10), i(I);
       }).catch((I) => {
         if (r) r(I);
         else throw I;
       });
-    }).catch((g) => {
-      if (r) r(g);
-      else throw g;
+    }).catch((o) => {
+      if (r) r(o);
+      else throw o;
     });
   }
   remove() {
     typeof document < "u" && document.removeEventListener("visibilitychange", this.__visibilityHandler), this.__resizeObserver && (this.__resizeObserver.disconnect(), this.__resizeObserver = null), this.mapboxMap && this.mapboxMap.remove(), this.mapDivDocument.innerHTML = "", this.mapDivDocument.classList.remove("maplat");
   }
 }
-const Yl = [
+const iu = [
   "appid",
   "mapDiv",
   "mapDivDocument",
@@ -12499,8 +13558,8 @@ const Yl = [
   "fakeRadius"
 ];
 (function() {
-  const t = tn.prototype;
-  for (const e of Yl) {
+  const t = an.prototype;
+  for (const e of iu) {
     const n = Object.getOwnPropertyDescriptor(t, e);
     if (!n?.get) throw new Error(`MaplatApp: missing getter for startup field "${e}"`);
     const i = `__${e}`;
@@ -12520,9 +13579,9 @@ const Yl = [
     });
   }
 })();
-tn.createObject = function(A) {
+an.createObject = function(A) {
   return new Promise((t) => {
-    const e = new tn(A);
+    const e = new an(A);
     e.waitReady.then(() => {
       t(e);
     });
@@ -12530,24 +13589,24 @@ tn.createObject = function(A) {
 };
 if (typeof window < "u") {
   const A = {
-    createObject: tn.createObject
+    createObject: an.createObject
   };
-  window.Maplat = A, window.MaplatApp = tn, window.assets = _l;
+  window.Maplat = A, window.MaplatApp = an, window.assets = $l;
 }
 export {
-  ot as CustomEvent,
-  Hl as GPSErrorEvent,
-  Vl as GPSRequestEvent,
-  ZA as GPSResultEvent,
-  Yl as MAPLAT_APP_STARTUP_FIELDS,
-  tn as MaplatApp,
-  de as MaplatMap,
-  _l as assets,
-  nh as buildSlideAttrs,
-  LA as createElement,
-  Nl as escapeAttr,
-  Nc as mapSourceFactory,
-  Ah as sanitizeHtml,
-  Gl as toPlainText
+  gt as CustomEvent,
+  eu as GPSErrorEvent,
+  Au as GPSRequestEvent,
+  HA as GPSResultEvent,
+  iu as MAPLAT_APP_STARTUP_FIELDS,
+  an as MaplatApp,
+  we as MaplatMap,
+  $l as assets,
+  cu as buildSlideAttrs,
+  XA as createElement,
+  Wl as escapeAttr,
+  Fc as mapSourceFactory,
+  Cu as sanitizeHtml,
+  Vl as toPlainText
 };
 //# sourceMappingURL=maplat_core.js.map

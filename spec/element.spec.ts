@@ -134,7 +134,7 @@ describe("<maplat-app> 公開面の一覧（src/index.ts との突き合わせ�
       "redrawMarkers", "dispatchPoiNumber",
       "remove"
     ];
-    expect(all.length).toBe(68);
+    expect(all.length).toBe(70); // nov26-m4-t5（#91）で removeVector・removeLine が増えた
     expect(all.filter(n => !internal.includes(n))).toEqual([...MAPLAT_APP_METHODS]);
     for (const name of MAPLAT_APP_METHODS) {
       expect(typeof (MaplatApp.prototype as any)[name]).toBe("function");
