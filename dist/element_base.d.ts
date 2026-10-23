@@ -59,6 +59,9 @@ export declare abstract class MaplatAppElementBase extends BaseElement {
     protected isImplementationReady(): boolean;
     protected requireImplementation(name: string): LayerAImplementation;
     protected readKey(prop: string): unknown;
+    protected implementationKeyValue(_prop: string, _impl: LayerAImplementation): {
+        value: unknown;
+    } | undefined;
     protected markPending(prop: string): void;
     protected dispatchLayerAEvent(type: string, detail: unknown): void;
     protected reflectState(prop: string, read: () => unknown): void;

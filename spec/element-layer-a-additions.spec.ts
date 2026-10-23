@@ -45,6 +45,9 @@ class FakeCore extends EventTarget {
   remove = vi.fn();
   getGPSEnabled = vi.fn(() => false);
   getMapCacheEnable = vi.fn(() => false);
+  // 実装の内部面（設計 v2 段階 3）
+  setCenterMarker = vi.fn();
+  applyRuntimeOptions = vi.fn();
   mapObject: any = {
     updateSize: vi.fn(),
     setTarget: vi.fn(),
@@ -54,6 +57,19 @@ class FakeCore extends EventTarget {
     getSize: () => [400, 300],
     getCoordinateFromPixel: (px: number[]) => [15700000 + px[0] * 10, 4830000 - px[1] * 10]
   };
+  // 実装の内部面（設計 v2 段階 2）。要素は 4 隅の作り方と undefined/null の意味づけだけを持つ
+  viewportSize = vi.fn(() => {
+    const size = this.mapObject?.getSize?.();
+    return size && size[0] > 0 && size[1] > 0 ? (size as [number, number]) : undefined;
+  });
+  pixelToMerc = vi.fn(async (pixel: readonly [number, number]) => {
+    const map = this.mapObject;
+    const from = this.from;
+    if (!map || !from) return undefined;
+    const xy = map.getCoordinateFromPixel(pixel);
+    if (!xy) return undefined;
+    return from.sysCoord2MercAsync(xy);
+  });
   cacheHash: any = {
     old: {
       mapID: "old",

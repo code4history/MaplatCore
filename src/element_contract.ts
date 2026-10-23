@@ -303,6 +303,48 @@ export function attributeToPropName(attr: string): string {
   return attr.replace(/-([a-z0-9])/g, (_m, c: string) => c.toUpperCase());
 }
 
+/**
+ * ライフサイクルの hook の名前（7 つ。LIFECYCLE_PHASES と 1 対 1）。
+ * 写しを作るときに名前で引くための表（プロトタイプ上の hook も拾う。Minor 1）。
+ */
+const UI_HOOK_NAMES = [
+  "onSettingLoaded",
+  "onAppdataReady",
+  "onUiConfigure",
+  "onCoreDomReady",
+  "onUiDomReady",
+  "onCoreReady",
+  "onUiReady"
+] as const;
+
+/**
+ * 要素の経路の uiHooks に、`context.core` と `context.mapDivDocument` を要素に差し替えた写しを返す
+ * （仕様 §3.2。設計 v2 C2-10）。元の hook オブジェクトは書き換えない（旧クラスの経路は `core: MaplatApp` のまま）。
+ * hook は名前の表を回して `hooks[name]` で引く（クラスのインスタンスや `Object.create` で作った
+ * オブジェクトのプロトタイプ上の hook も落とさない。Minor 1）。表に無いキーは今までどおり写す。
+ */
+export function wrapUiHooksForElement<H extends Record<string, any>>(
+  hooks: H,
+  element: HTMLElement
+): Record<string, any> {
+  const wrapped: Record<string, any> = {};
+  const names = [...UI_HOOK_NAMES, ...Object.keys(hooks)];
+  for (const name of names) {
+    if (name in wrapped) continue;
+    const fn = hooks[name];
+    wrapped[name] =
+      typeof fn === "function"
+        ? (context: any) =>
+            (fn as (this: unknown, ...args: any[]) => unknown).call(hooks, {
+              ...context,
+              core: element,
+              mapDivDocument: element
+            })
+        : fn;
+  }
+  return wrapped;
+}
+
 /** 属性の文字列 → 値（§6.2.2）。undefined は「未指定」。不正な値は warn を呼んで未指定にする。 */
 export function parseAttributeValue(
   def: Pick<AttrDef, "attr" | "kind">,

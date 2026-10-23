@@ -12,7 +12,6 @@ export declare class MaplatAppElement extends MaplatAppElementBase implements Ma
     readonly version: string;
     get app(): CoreApp | null;
     listMaps(): MapListItem[];
-    get currentMapId(): string | null;
     getMapEnvelope(mapID: string): LngLat[] | null;
     getViewExtent(): LngLat[] | null;
     setEnvelopes(items: EnvelopeSpec[]): void;
@@ -20,11 +19,13 @@ export declare class MaplatAppElement extends MaplatAppElementBase implements Ma
     zoomBy(delta: number): void;
     protected createCore(option: Record<string, any>): CoreApp;
     protected features(): Readonly<Record<string, boolean>>;
+    protected implementationKeyValue(prop: string, impl: LayerAImplementation): {
+        value: unknown;
+    } | undefined;
     protected createImplementation(config: ElementStartupConfig): LayerAImplementation;
     protected onImplementationCreated(_impl: LayerAImplementation): void;
     protected onImplementationReady(impl: LayerAImplementation): void;
     protected onImplementationDetached(_impl: LayerAImplementation): void;
-    protected disposeImplementation(impl: LayerAImplementation): void;
     protected onImplementationEvent(type: string, _detail: unknown, impl: LayerAImplementation): void;
     protected onResize(impl: LayerAImplementation): void;
     protected convertEventDetail(type: string, detail: any, impl: LayerAImplementation): unknown;

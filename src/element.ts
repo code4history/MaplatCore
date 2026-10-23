@@ -12,9 +12,9 @@
 //
 // 正本の仕様: NayutaProducts/docs/superpowers/specs/2026-10-10-maplat-web-components-interface.md
 //   §3（層 A の公開面）・§6（設定経路）・§10.1（人間の決定 U1・U2・U3・U5）
-// assets は本体の入口から読む（要素の束に画像を二重に入れない。本体の束は外部化されている）
-import { MaplatApp, assets } from "./index";
-import { Logger, LOGGER_LEVEL } from "./logger";
+// 既定のピンの画像と投影の変換は本体の入口から読む（要素の束に画像・OL を二重に入れない。
+// 本体の束は外部化されている。設計 v2 A1・A2）
+import { MaplatApp, defaultPinIcon, mercToLngLat, type ElementImplementationInternals } from "./index";
 import {
   MaplatAppElementBase,
   defineMaplatAppElementOnce,
@@ -64,16 +64,6 @@ export type MaplatViewpoint = Viewpoint;
 /** @deprecated 共通の型 MapListItem（@maplat/core/common）を使う。 */
 export type MaplatMapListItem = MapListItem;
 
-// EPSG:3857 → 経緯度（OpenLayers の toLonLat と同じ式。ol/proj を読むと要素の入口に OL の
-// 投影のコードが二重に入るので、球面メルカトルの逆変換だけをここに置く）
-const EARTH_RADIUS = 6378137;
-function toLonLat(merc: readonly number[]): [number, number] {
-  let lon = ((merc[0] / EARTH_RADIUS) * 180) / Math.PI;
-  const lat = ((2 * Math.atan(Math.exp(merc[1] / EARTH_RADIUS)) - Math.PI / 2) * 180) / Math.PI;
-  if (lon < -180 || lon > 180) lon = ((((lon + 180) % 360) + 360) % 360) - 180;
-  return [lon, lat];
-}
-
 const isFiniteXY = (c: unknown): c is [number, number] =>
   Array.isArray(c) && Number.isFinite(c[0]) && Number.isFinite(c[1]);
 
@@ -89,8 +79,9 @@ export class MaplatAppElement extends MaplatAppElementBase implements MaplatAppE
   // 画面の 4 隅の経緯度（changeViewpoint のたびに非同期で求めて控える。getViewExtent は同期）
   #viewExtent: LngLat[] | null = null;
   #viewExtentSeq = 0;
-  #defaultCenterMarkerSrc: string | null = null;
   #unhookMove: (() => void) | null = null;
+  // 互換モード（旧クラス MaplatApp の読み方・警告に合わせる）。appOption.__maplatCompat = true のときだけ
+  #compat = false;
 
   /**
    * 内部の MaplatApp。
@@ -118,11 +109,6 @@ export class MaplatAppElement extends MaplatAppElementBase implements MaplatAppE
     }));
   }
 
-  /** 表示中の地図の mapID（前面の source の mapID）。 */
-  get currentMapId(): string | null {
-    return ((this.currentImplementation() as any)?.from?.mapID as string | undefined) ?? null;
-  }
-
   /** 地図の範囲（経緯度の多角形。最後の頂点は最初の頂点を繰り返さない）。範囲を持たない地図は null。 */
   getMapEnvelope(mapID: string): LngLat[] | null {
     const source = (this.currentImplementation() as any)?.cacheHash?.[mapID];
@@ -134,7 +120,7 @@ export class MaplatAppElement extends MaplatAppElementBase implements MaplatAppE
       if (f[0] === l[0] && f[1] === l[1]) coords.pop();
     }
     return coords.map(merc => {
-      const [longitude, latitude] = toLonLat(merc);
+      const [longitude, latitude] = mercToLngLat(merc);
       return { longitude, latitude };
     });
   }
@@ -155,7 +141,7 @@ export class MaplatAppElement extends MaplatAppElementBase implements MaplatAppE
 
   /** 既定のピンの画像（POI にも祖先にも icon が無いマーカーに地図が描く画像。Core の parts/defaultpin*.png）。 */
   getDefaultPinIcon(selected = false): string {
-    return selected ? assets.defaultpin_selected : assets.defaultpin;
+    return defaultPinIcon(selected);
   }
 
   /** 現在の地図の zoom を delta だけ変える。 */
@@ -182,6 +168,41 @@ export class MaplatAppElement extends MaplatAppElementBase implements MaplatAppE
     return CORE_FEATURES;
   }
 
+  /**
+   * 互換モードでは、要素の機能系キーの getter が Core の実際の値（設定ファイルから読んだ値を含む）を返す。
+   * 通常モードは undefined（基底の既定）を返し、今までどおり属性・起動時の値を返す（挙動を変えない）。
+   * 旧クラス互換層の <maplat-ui> は this.#app?.northUp を読むので、地図とコンパスを食い違わせない。
+   * Core 固有の読み口はここに置く（element_base.ts は Core-Pro と共有する土台なので、口だけを置く）。
+   */
+  protected implementationKeyValue(
+    prop: string,
+    impl: LayerAImplementation
+  ): { value: unknown } | undefined {
+    if (!this.#compat) return undefined;
+    const app = impl as any;
+    let value: unknown;
+    switch (prop) {
+      case "northUp":
+        value = app.mapObject?.northUp;
+        break;
+      case "homeMarginPixels":
+        value = app.mapObject?.homeMarginPixels;
+        break;
+      case "tapDuration":
+        value = app.mapObject?.tapDuration;
+        break;
+      case "tapUIVanish":
+        value = app.mapObject?.tapUIVanish;
+        break;
+      case "noRotate":
+        value = app.noRotate;
+        break;
+      default:
+        return undefined;
+    }
+    return value === undefined ? undefined : { value };
+  }
+
   /** MaplatApp に渡す appOption を組む（§6.1: 個別のキー ＞ appOption ＞ 設定ファイル ＞ 既定値）。 */
   protected createImplementation(config: ElementStartupConfig): LayerAImplementation {
     const option: Record<string, any> = { ...config.appOption };
@@ -190,8 +211,12 @@ export class MaplatAppElement extends MaplatAppElementBase implements MaplatAppE
       if (key) option[key] = value;
     }
     option.div = config.element;
+    // 旧クラス互換層（MaplatUi）は appOption.__maplatCompat = true を渡す。そのときだけ旧クラスと同じ
+    // 読み方（設定ファイルの機能系キー・fakeGps/fakeRadius）へ戻す（設計 v2 C1(a)）。
+    // __maplatCompat は互換層だけが使う内部キーで公開面ではない。MaplatApp は知らないキーとして無視する。
+    this.#compat = config.appOption?.__maplatCompat === true;
     // U1 追補: 要素の経路では設定ファイルの機能系キーを読まない（§3.8 A7・A11 も要素の経路だけ）
-    option.__maplatElementMode = true;
+    option.__maplatElementMode = config.appOption?.__maplatCompat !== true;
     if (config.setting !== undefined) option.setting = config.setting;
     // map-id・transparency は restore より強い（§6.1）。restore を与えると localStorage を
     // 読まなくなるので、Core が復元値を決めた後に上書きする口（__restoreOverride）で渡す
@@ -203,7 +228,6 @@ export class MaplatAppElement extends MaplatAppElementBase implements MaplatAppE
   }
 
   protected onImplementationCreated(_impl: LayerAImplementation): void {
-    this.#defaultCenterMarkerSrc = null;
     this.#viewExtent = null;
   }
 
@@ -220,37 +244,22 @@ export class MaplatAppElement extends MaplatAppElementBase implements MaplatAppE
     this.#viewExtentSeq++;
   }
 
-  protected disposeImplementation(impl: LayerAImplementation): void {
-    const app = impl as any;
-    // OL の Map を target から外して内部の ResizeObserver・リスナを解放する
-    app.mapObject?.setTarget?.(undefined);
-    app.backMap?.setTarget?.(undefined);
-    app.maplibreMap?.remove?.();
-    app.remove();
-  }
-
   protected onImplementationEvent(type: string, _detail: unknown, impl: LayerAImplementation): void {
-    if (type === "changeViewpoint") void this.#updateViewExtent(impl as unknown as CoreApp);
+    if (type === "changeViewpoint") void this.#updateViewExtent(impl);
     // 枠線は今の地図の座標で描くので、地図を切り替えたら描き直す（旧 UI の updateEnvelope と同じ契機）
     if (type === "mapChanged" && this.#envelopes.length > 0) void this.#drawEnvelopes();
   }
 
   protected onResize(impl: LayerAImplementation): void {
     // OL の Map も自分の target を ResizeObserver で見ているが、要素の箱の変化を確実に拾うため
-    // 要素側でも updateSize を呼ぶ（二重に呼んでも害はない）
-    const app = impl as any;
-    app.mapObject?.updateSize?.();
-    app.backMap?.updateSize?.();
+    // 要素側でも updateSize を呼ぶ（二重に呼んでも害はない）。前面・背面の知識は Core が持つ（A10）
+    (impl as unknown as ElementImplementationInternals).updateSize?.();
   }
 
   protected convertEventDetail(type: string, detail: any, impl: LayerAImplementation): unknown {
     if (type === "sourceLoaded" && Array.isArray(detail)) {
-      // §3.8 A2: source の配列でなく { mapID, usable }[]（GL 未ロード等で落とした source を含む）
-      const hash = (impl as any).cacheHash || {};
-      return detail.map((source: any) => ({
-        mapID: source?.mapID ?? null,
-        usable: !!(source && hash[source.mapID] === source)
-      }));
+      // §3.8 A2: source の配列でなく { mapID, usable }[]。usable の判定は実装が持つ（A6・C2-1 の詰め替えだけ）
+      return (impl as unknown as ElementImplementationInternals).sourceLoadedDetail(detail);
     }
     return super.convertEventDetail(type, detail, impl);
   }
@@ -260,62 +269,50 @@ export class MaplatAppElement extends MaplatAppElementBase implements MaplatAppE
     pending: ReadonlySet<string>,
     resolve: RuntimeValueResolver
   ): void {
-    const app = impl as any;
-    const map = app.mapObject;
-    if (pending.has("northUp") && map) map.northUp = resolve("northUp", "northUp", false);
-    if (pending.has("homeMarginPixels") && map) {
-      map.homeMarginPixels = resolve("homeMarginPixels", "homeMarginPixels", 50);
-    }
-    if (pending.has("debug")) {
-      app.logger = new Logger(resolve("debug", "debug", false) ? LOGGER_LEVEL.ALL : LOGGER_LEVEL.INFO);
-    }
-    let redraw = false;
-    for (const prop of ["icon", "selectedIcon"]) {
+    // 自分が知っているキーだけを集めて 1 回渡す。undefined は「与えられていない」として
+    // Core が既定／設定ファイルの値を埋める（A4・N1。Core に appOption の控えは置かない）
+    const values: Record<string, unknown> = {};
+    for (const prop of [
+      "northUp",
+      "homeMarginPixels",
+      "debug",
+      "icon",
+      "selectedIcon",
+      "poiTemplate",
+      "poiStyle",
+      "iconTemplate"
+    ] as const) {
       if (!pending.has(prop)) continue;
-      app[prop] = resolve(prop, prop, undefined);
-      redraw = true;
+      const optionKey = OPTION_KEY_BY_PROP.get(prop);
+      values[optionKey ?? prop] = resolve(prop, optionKey, undefined);
     }
-    for (const prop of ["poiTemplate", "poiStyle", "iconTemplate"]) {
-      if (!pending.has(prop)) continue;
-      // テンプレート類はコンテンツ側（U1 追補）: プロパティ ＞ appOption ＞ 設定ファイル ＞ false
-      app[prop] = resolve(prop, prop, app.appData?.[prop] ?? false);
-      redraw = true;
+    if (Object.keys(values).length > 0) {
+      (impl as unknown as ElementImplementationInternals).applyRuntimeOptions(values);
     }
-    if (redraw && app.from) app.redrawMarkers?.();
   }
 
   /** 中心の目印（U5）。既定で表示。no-center-marker で消し、center-marker-src で画像を差し替える。 */
   protected applyDomKeys(): void {
-    const img = this.querySelector<HTMLImageElement>(":scope > .maplat-center-marker");
-    if (!img) return;
-    if (this.#defaultCenterMarkerSrc == null) this.#defaultCenterMarkerSrc = img.getAttribute("src") || "";
-    const hidden = this.readKey("noCenterMarker") === true;
-    img.hidden = hidden;
-    img.style.display = hidden ? "none" : "";
-    const src = this.readKey("centerMarkerSrc") as string | undefined;
-    if (src) {
-      img.setAttribute("src", src);
-      // 大きさの違う画像でも中心に置く（既定の画像は 20px 角を margin -10px で寄せている）
-      img.style.margin = "0";
-      img.style.transform = "translate(-50%, -50%)";
-      img.classList.add("maplat-center-marker--custom");
-    } else {
-      img.setAttribute("src", this.#defaultCenterMarkerSrc);
-      img.style.margin = "-10px 0 0 -10px";
-      img.style.transform = "";
-      img.classList.remove("maplat-center-marker--custom");
-    }
+    // 表現は Core が当てる（A3）。作成前（実装が無い）は何もしない（今も img が無くて何もしないのと同じ）
+    const impl = this.currentImplementation();
+    if (!impl) return;
+    (impl as unknown as ElementImplementationInternals).setCenterMarker({
+      hidden: this.readKey("noCenterMarker") === true,
+      src: (this.readKey("centerMarkerSrc") as string | undefined) ?? null
+    });
   }
 
   // ---- 内部 ----
 
-  /** 画面の 4 隅を今の地図の座標 → merc → 経緯度にして控える。 */
-  async #updateViewExtent(app: CoreApp) {
+  /**
+   * 画面の 4 隅を今の地図の座標 → merc → 経緯度にして控える。
+   * 4 隅の作り方・大きさの点検・undefined（据え置き）/null（消す）の意味づけはここに残す（A7・Minor 1）。
+   */
+  async #updateViewExtent(impl: LayerAImplementation) {
     const seq = ++this.#viewExtentSeq;
-    const map = (app as any).mapObject;
-    const from = (app as any).from;
-    const size = map?.getSize?.();
-    if (!map || !from || !size || !(size[0] > 0 && size[1] > 0)) return;
+    const internals = impl as unknown as ElementImplementationInternals;
+    const size = internals.viewportSize();
+    if (!size) return;
     const pixels: [number, number][] = [
       [0, 0],
       [size[0], 0],
@@ -323,16 +320,16 @@ export class MaplatAppElement extends MaplatAppElementBase implements MaplatAppE
       [0, size[1]]
     ];
     try {
-      const sysCoords = pixels.map(px => map.getCoordinateFromPixel(px));
-      if (!sysCoords.every(isFiniteXY)) return;
-      const mercs: unknown[] = await Promise.all(sysCoords.map((c: number[]) => from.sysCoord2MercAsync(c)));
+      const mercs = await Promise.all(pixels.map(px => internals.pixelToMerc(px)));
       if (seq !== this.#viewExtentSeq) return;
+      // 前提（地図・from・pixel → 座標）が無い = undefined は、今の控えを変えない
+      if (mercs.some(merc => merc === undefined)) return;
       if (!mercs.every(isFiniteXY)) {
         this.#viewExtent = null;
         return;
       }
       this.#viewExtent = (mercs as [number, number][]).map(merc => {
-        const [longitude, latitude] = toLonLat(merc);
+        const [longitude, latitude] = mercToLngLat(merc);
         return { longitude, latitude };
       });
     } catch (_e) {

@@ -3,6 +3,20 @@
 // このファイルは @maplat/core/common から読まれる）。
 import { META_KEYS } from "./meta_keys";
 
+/**
+ * 同じキーでは 1 回だけ警告する関数を作る（U2・U3 の「キーごとに 1 回」）。
+ * 旧クラスの起動時キーのロック・設定ファイルの機能系キーの警告と、要素の warnOnce が共有する
+ * （設計 v2 A19。警告の文面と経路は各呼び出し側が持つ）。
+ */
+export function createOnceWarner(): (key: string, message: string) => void {
+  const warned = new Set<string>();
+  return (key, message) => {
+    if (warned.has(key)) return;
+    warned.add(key);
+    console.warn(message);
+  };
+}
+
 export function createElement(domStr: string) {
   const context = document;
   const fragment = context.createDocumentFragment();

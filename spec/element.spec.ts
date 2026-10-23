@@ -11,6 +11,7 @@ import {
   defineMaplatAppElement
 } from "../src/element";
 import { MaplatApp, CustomEvent as CoreEvent, GPSRequestEvent } from "../src/index";
+import { LIFECYCLE_PHASES } from "../src/element_contract";
 
 // 1 拍（マイクロタスク）と、その後に続く Promise の連鎖を流し切る
 const tick = () => new Promise(r => setTimeout(r, 0));
@@ -30,6 +31,18 @@ class FakeCore extends EventTarget {
   getGPSEnabled = vi.fn(() => false);
   redrawMarkers = vi.fn();
   clientPointToLngLat = vi.fn(async () => undefined);
+  // 実装の内部面（設計 v2 段階 2・3。要素はこれらへ委譲する）
+  sourceLoadedDetail = vi.fn((sources: unknown) =>
+    (Array.isArray(sources) ? sources : []).map((source: any) => ({
+      mapID: source?.mapID ?? null,
+      usable: !!(source && this.cacheHash?.[source.mapID] === source)
+    }))
+  );
+  pixelToMerc = vi.fn(async (_pixel: readonly [number, number]) => undefined);
+  viewportSize = vi.fn(() => undefined as [number, number] | undefined);
+  updateSize = vi.fn();
+  setCenterMarker = vi.fn();
+  applyRuntimeOptions = vi.fn();
   mapObject: any = { updateSize: vi.fn(), setTarget: vi.fn(), northUp: false, homeMarginPixels: 50 };
   cacheHash: any = undefined;
   from: any = undefined;
@@ -50,7 +63,9 @@ class FakeCore extends EventTarget {
     });
   }
   currentMapInfo() {
-    return { mapID: this.currentMap };
+    // 本物の MaplatApp と同じく、表示中の地図（from）があればその mapID
+    // （A8: 要素の currentMapId の上書きを消したので、土台はこの口だけを見る）
+    return { mapID: this.from?.mapID ?? this.currentMap };
   }
 }
 
@@ -105,14 +120,27 @@ describe("<maplat-app> 登録", () => {
   });
 });
 
+// 旧クラスの内部用メソッド（委譲の表の外）。段階 2・3 で足した @internal の 6 名を含む。
+const INTERNAL_METHODS = [
+  "settingLoader", "sourcesLoader", "handleSetting", "initGeolocation", "prepareMap",
+  "handlePois", "handleSources", "setInitialMap", "setMapClick", "setPointerEvents",
+  "setMapOnOff", "setMouseCursor", "setBackMapBehavior", "raiseChangeViewpoint",
+  "convertParametersFromCurrent",
+  "setMarker", "resetMarker", "setLine", "setVector", "resetLine", "resetVector",
+  "redrawMarkers", "dispatchPoiNumber",
+  "remove",
+  // 設計 v2 で要素が使う内部面（段階 2・3）
+  "sourceLoadedDetail", "pixelToMerc", "viewportSize", "updateSize",
+  "setCenterMarker", "applyRuntimeOptions"
+];
+
 describe("<maplat-app> 公開面の一覧（src/index.ts との突き合わせ）", () => {
   it("出し直すイベントは MaplatApp が dispatch する全種と一致する", () => {
     const src = readFileSync(resolve(__dirname, "../src/index.ts"), "utf-8");
     const found = new Set<string>();
     for (const m of src.matchAll(/new CustomEvent\(\s*"([^"]+)"/g)) found.add(m[1]);
-    // lifecycle:${phaseId} は LifecyclePhaseId の全値
-    const phases = src.match(/type LifecyclePhaseId =([^;]+);/)![1];
-    for (const m of phases.matchAll(/"([^"]+)"/g)) found.add(`lifecycle:${m[1]}`);
+    // lifecycle:${phaseId} は LIFECYCLE_PHASES の全値（段階の正本。A18L で 1 か所にした）
+    for (const phase of LIFECYCLE_PHASES) found.add(`lifecycle:${phase}`);
     // GPS 系は BaseEvent の派生クラスの super("...")
     for (const m of src.matchAll(/extends BaseEvent \{[\s\S]*?super\("([^"]+)"\)/g)) found.add(m[1]);
     expect([...found].sort()).toEqual([...MAPLAT_APP_EVENTS].sort());
@@ -125,22 +153,33 @@ describe("<maplat-app> 公開面の一覧（src/index.ts との突き合わせ�
       if (m[1] || m[3] === "constructor") continue;
       all.push(m[3]);
     }
-    const internal = [
-      "settingLoader", "sourcesLoader", "handleSetting", "initGeolocation", "prepareMap",
-      "handlePois", "handleSources", "setInitialMap", "setMapClick", "setPointerEvents",
-      "setMapOnOff", "setMouseCursor", "setBackMapBehavior", "raiseChangeViewpoint",
-      "convertParametersFromCurrent",
-      "setMarker", "resetMarker", "setLine", "setVector", "resetLine", "resetVector",
-      "redrawMarkers", "dispatchPoiNumber",
-      "remove"
-    ];
-    expect(all.length).toBe(70); // nov26-m4-t5（#91）で removeVector・removeLine が増えた
+    const internal = INTERNAL_METHODS;
+    expect(all.length).toBe(76); // nov26-m4-t5（#91）の 2 個＋段階 2・3 の内部面 6 個
     expect(all.filter(n => !internal.includes(n))).toEqual([...MAPLAT_APP_METHODS]);
     for (const name of MAPLAT_APP_METHODS) {
       expect(typeof (MaplatApp.prototype as any)[name]).toBe("function");
       // HTMLElement の既存のメンバを潰さない
       expect(name in HTMLElement.prototype).toBe(false);
     }
+  });
+
+  it("@internal を付けたメソッド ⊆ 内部用の一覧で、内部用の一覧 ∩ MAPLAT_APP_METHODS = ∅（m4）", () => {
+    const src = readFileSync(resolve(__dirname, "../src/index.ts"), "utf-8");
+    // ブロックコメントは「中に */ を含まない」単位で切り、その直後のメソッド宣言だけを見る
+    const marked: string[] = [];
+    for (const block of src.matchAll(/\/\*\*(?:(?!\*\/)[\s\S])*?\*\//g)) {
+      if (!block[0].includes("@internal")) continue;
+      const rest = src.slice((block.index ?? 0) + block[0].length);
+      const decl = rest.match(/^\s*\n\s*(?:async\s+)?([A-Za-z_$][\w$]*)\s*\(/);
+      if (decl) marked.push(decl[1]);
+    }
+    // 6 つの @internal メソッド（フィールドの @internal は「(」が続かないので入らない）
+    expect(marked.sort()).toEqual([
+      "applyRuntimeOptions", "pixelToMerc", "setCenterMarker",
+      "sourceLoadedDetail", "updateSize", "viewportSize"
+    ]);
+    for (const name of marked) expect(INTERNAL_METHODS).toContain(name);
+    expect(INTERNAL_METHODS.filter(n => (MAPLAT_APP_METHODS as readonly string[]).includes(n))).toEqual([]);
   });
 });
 
@@ -583,7 +622,7 @@ describe("<maplat-app> 設定のキー（§6）", () => {
     warn.mockRestore();
   });
 
-  it("(ii) のキーは ready 後に地図へ反映し、外したら appOption ＞ 既定値に戻る", async () => {
+  it("(ii) のキーは ready 後に実装へ値を渡し、外したら appOption ＞ 既定値（undefined）に戻る", async () => {
     const el = document.createElement(env.tag) as MaplatAppElement;
     el.setAttribute("app-id", "a");
     el.appOption = { homeMarginPixels: 30 };
@@ -593,38 +632,40 @@ describe("<maplat-app> 設定のキー（§6）", () => {
     el.northUp = true;
     el.homeMarginPixels = 0;
     await tick();
-    expect(core.mapObject.northUp).toBe(false); // ready 前は保留
+    expect(core.applyRuntimeOptions).not.toHaveBeenCalled(); // ready 前は保留
     core.resolveReady();
     await el.ready;
     await tick();
-    expect(core.mapObject.northUp).toBe(true);
-    expect(core.mapObject.homeMarginPixels).toBe(0);
+    expect(core.applyRuntimeOptions).toHaveBeenLastCalledWith({ northUp: true, homeMarginPixels: 0 });
     el.removeAttribute("north-up");
     el.removeAttribute("home-margin-pixels");
     await tick();
-    expect(core.mapObject.northUp).toBe(false);
-    expect(core.mapObject.homeMarginPixels).toBe(30);
+    // appOption の 30 は要素の resolve が渡す。northUp はどこにも無いので undefined を渡し、
+    // 既定（false）を埋めるのは Core（N1。Core に appOption の控えは置かない）
+    expect(core.applyRuntimeOptions).toHaveBeenLastCalledWith({
+      northUp: undefined,
+      homeMarginPixels: 30
+    });
   });
 
-  it("テンプレート類・icon の変更はマーカーを描き直す。外したら設定ファイルの値に戻る", async () => {
+  it("テンプレート類・icon の変更は実装へ値を渡す。外したら undefined（設定ファイルの値を Core が埋める）", async () => {
     const el = document.createElement(env.tag) as MaplatAppElement;
     el.setAttribute("app-id", "a");
     document.body.appendChild(el);
     await tick();
     const core = env.created[0];
-    core.appData = { poiTemplate: "<i>file</i>" };
-    core.from = { mapID: "m" };
     core.resolveReady();
     await el.ready;
     el.poiTemplate = "<b>prop</b>";
     el.icon = "pin.png";
     await tick();
-    expect(core.poiTemplate).toBe("<b>prop</b>");
-    expect((core as any).icon).toBe("pin.png");
-    expect(core.redrawMarkers).toHaveBeenCalledTimes(1);
+    expect(core.applyRuntimeOptions).toHaveBeenLastCalledWith({
+      icon: "pin.png",
+      poiTemplate: "<b>prop</b>"
+    });
     el.poiTemplate = undefined;
     await tick();
-    expect(core.poiTemplate).toBe("<i>file</i>");
+    expect(core.applyRuntimeOptions).toHaveBeenLastCalledWith({ poiTemplate: undefined });
   });
 
   it("使えない map-id は警告して切り替えない", async () => {
@@ -654,26 +695,22 @@ describe("<maplat-app> 中心の目印（U5）", () => {
     env = defineTestElement();
   });
 
-  it("既定で表示。no-center-marker で消し、center-marker-src で画像を差し替え、外すと戻る", async () => {
+  it("読んだキーを setCenterMarker へ渡す（DOM の効果は実物のテストが持つ。Minor 5）", async () => {
     const el = document.createElement(env.tag) as MaplatAppElement;
     el.setAttribute("app-id", "a");
     el.setAttribute("no-center-marker", "");
     document.body.appendChild(el);
     await tick();
-    const img = el.querySelector(".maplat-center-marker") as HTMLImageElement;
-    expect(img).not.toBeNull();
-    expect(img.hidden).toBe(true); // 作成直後（ready 前）から効く
+    const core = env.created[0];
+    expect(core.setCenterMarker).toHaveBeenLastCalledWith({ hidden: true, src: null });
     el.noCenterMarker = false;
-    expect(img.hidden).toBe(false);
+    expect(core.setCenterMarker).toHaveBeenLastCalledWith({ hidden: false, src: null });
     el.centerMarkerSrc = "cross.svg";
-    expect(img.getAttribute("src")).toBe("cross.svg");
-    expect(img.classList.contains("maplat-center-marker--custom")).toBe(true);
-    expect(img.style.transform).toBe("translate(-50%, -50%)");
+    expect(core.setCenterMarker).toHaveBeenLastCalledWith({ hidden: false, src: "cross.svg" });
     el.removeAttribute("center-marker-src");
-    expect(img.getAttribute("src")).toBe("default.png");
-    expect(img.classList.contains("maplat-center-marker--custom")).toBe(false);
+    expect(core.setCenterMarker).toHaveBeenLastCalledWith({ hidden: false, src: null });
     el.removeAttribute("no-center-marker");
-    expect(img.hidden).toBe(false);
+    expect(core.setCenterMarker).toHaveBeenLastCalledWith({ hidden: false, src: null });
   });
 });
 
@@ -721,6 +758,8 @@ describe("<maplat-app> 状態の読み取り・新設メソッド・イベント
       { mapID: "a", usable: true },
       { mapID: "b", usable: false }
     ]);
+    // 判定は実装の内部面（sourceLoadedDetail）が持ち、要素は詰め替えない（A6）
+    expect(core.sourceLoadedDetail).toHaveBeenCalledWith([a, b]);
   });
 
   it("viewpoint・currentMapId・state・supports・implementation・version", async () => {

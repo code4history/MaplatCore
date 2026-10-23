@@ -4,10 +4,12 @@
 // Pro 固有キーの警告（U3）、44 の委譲メソッド、状態の読み取りを持つ。地図の中身（旧クラスの
 // MaplatApp 相当）は派生クラスが createImplementation() で差す（Core: src/element.ts）。
 //
-// **このファイルは element_contract.ts 以外を import しない**（OpenLayers 等を引き込まない。
+// **このファイルは element_contract.ts と、common の中で OpenLayers を引かないモジュール
+// （functions.ts。A19 の createOnceWarner）以外を import しない**（OpenLayers 等を引き込まない。
 // spec/common-entry.spec.ts が機械的に確かめる）。
 //
 // 正本の仕様: NayutaProducts/docs/superpowers/specs/2026-10-10-maplat-web-components-interface.md §3・§6
+import { createOnceWarner } from "./functions";
 import {
   APP_OPTION_ALIASES,
   ELEMENT_ATTRIBUTES,
@@ -22,6 +24,7 @@ import {
   formatAttributeValue,
   parseAttributeValue,
   unsupportedKeyMessage,
+  wrapUiHooksForElement,
   type AttrDef,
   type DisplayMode,
   type EnvelopeSpec,
@@ -154,7 +157,8 @@ export abstract class MaplatAppElementBase extends BaseElement {
   #props = new Map<string, unknown>();
   // 起動した後の、起動時だけ効くキーの値（U2: 読み取りはこの値を返す）
   #startupValues: Map<string, unknown> | null = null;
-  #warned = new Set<string>();
+  // 警告はキーごとに 1 回（A19: 旧クラスと同じ createOnceWarner を使う）
+  #warner = createOnceWarner();
   // 反映待ちの (ii) キー（同じ拍の変更・ready 前の変更をまとめる）
   #pending = new Set<string>();
   #needsCreate = false;
@@ -450,6 +454,18 @@ export abstract class MaplatAppElementBase extends BaseElement {
   }
 
   /**
+   * 実装が実際に使っているキーの値（任意）。`{ value }` を返すと #readKey はその値を返す。
+   * 既定は undefined（実装から値を受け取らない＝今までどおり属性・起動時の値を返す）。
+   * 設定ファイル等から実装が読んだ値と要素の見せかけの値が食い違う実装だけが上書きする（Core の互換モード）。
+   */
+  protected implementationKeyValue(
+    _prop: string,
+    _impl: LayerAImplementation
+  ): { value: unknown } | undefined {
+    return undefined;
+  }
+
+  /**
    * キーを「反映待ち」に積む（ready 後に applyRuntimeChanges へ渡る）。作成時の材料で渡せないキーを
    * 準備の完了後に当てたいとき、onImplementationReady から呼ぶ（そこで積んだ分は ready の解決の直後に反映する）。
    */
@@ -485,11 +501,9 @@ export abstract class MaplatAppElementBase extends BaseElement {
     });
   }
 
-  /** 同じ鍵では 1 回だけ警告する。 */
+  /** 同じ鍵では 1 回だけ警告する（名前は公開の基底クラスのメソッドなので残す。A19）。 */
   protected warnOnce(key: string, message: string) {
-    if (this.#warned.has(key)) return;
-    this.#warned.add(key);
-    console.warn(message);
+    this.#warner(key, message);
   }
 
   // ---- 内部 ----
@@ -566,6 +580,11 @@ export abstract class MaplatAppElementBase extends BaseElement {
   }
 
   #readKey(prop: string): unknown {
+    // 実装が「実際に使っている値」を返せるなら、それを優先する（任意。実装が持たなければ今までどおり）
+    if (this.#impl && this.#isReady) {
+      const actual = this.implementationKeyValue(prop, this.#impl);
+      if (actual) return actual.value;
+    }
     if (this.#startupValues && this.#startupValues.has(prop)) return this.#startupValues.get(prop);
     return this.#currentValue(prop);
   }
@@ -667,6 +686,15 @@ export abstract class MaplatAppElementBase extends BaseElement {
       if (def.feature && !this.supports(def.feature)) continue;
       const v = this.#props.get(def.prop);
       if (v !== undefined) values[def.prop] = v;
+    }
+    // C2-10: 要素経路の uiHooks は context.core / context.mapDivDocument を要素にする（仕様 §3.2）。
+    // プロパティ（values.uiHooks）と移行用の appOption プロパティの中の uiHooks の両方を包む（Minor 4）。
+    // フックのオブジェクトは書き換えず、写しを渡す（旧クラスの経路は変わらない。C5）
+    if (values.uiHooks) {
+      values.uiHooks = wrapUiHooksForElement(values.uiHooks as Record<string, any>, this);
+    }
+    if (appOption.uiHooks) {
+      appOption.uiHooks = wrapUiHooksForElement(appOption.uiHooks as Record<string, any>, this);
     }
     // 設定ファイルの場所: setting ＞ app-src ＞ apps/${appId}.json（§6.1）
     let setting: unknown = values.setting ?? appOption.setting;

@@ -10,6 +10,8 @@ import { Coordinate } from 'ol/coordinate';
 import { default as BaseEvent } from 'ol/events/Event';
 import { assets } from './assets';
 export { sanitizeHtml, escapeAttr, toPlainText, buildSlideAttrs } from './sanitize';
+export declare function mercToLngLat(merc: readonly number[]): [number, number];
+export declare function defaultPinIcon(selected?: boolean): string;
 interface AppData {
     sources: string[];
     lang?: string;
@@ -72,7 +74,21 @@ export type VectorType = "Line" | "Polygon";
 export interface VectorFilter {
     type?: VectorType;
 }
-export declare class MaplatApp extends EventTarget {
+export interface ElementImplementationInternals {
+    sourceLoadedDetail(sources: unknown): {
+        mapID: string | null;
+        usable: boolean;
+    }[];
+    pixelToMerc(pixel: readonly [number, number]): Promise<number[] | undefined>;
+    viewportSize(): [number, number] | undefined;
+    updateSize(): void;
+    setCenterMarker(next: {
+        hidden?: boolean;
+        src?: string | null;
+    }): void;
+    applyRuntimeOptions(values: Record<string, unknown>): void;
+}
+export declare class MaplatApp extends EventTarget implements ElementImplementationInternals {
     static createObject: (option: any) => Promise<MaplatApp>;
     translateUI: boolean;
     stateBuffer: Restore;
@@ -112,6 +128,7 @@ export declare class MaplatApp extends EventTarget {
     private __visibilityHandler;
     private __pendingView;
     private __pendingViewScheduled;
+    private __centerMarkerImg?;
     private lifecycleHookResults;
     private __init;
     private __redrawMarkerBlock;
@@ -122,7 +139,7 @@ export declare class MaplatApp extends EventTarget {
     private __vectorDrawSeq?;
     lastClickEvent: any;
     protected __startupLocked: boolean;
-    protected __startupWarned?: Set<string>;
+    protected __startupWarner?: (key: string, message: string) => void;
     private __appid;
     private __mapDiv;
     private __mapDivDocument;
@@ -138,7 +155,7 @@ export declare class MaplatApp extends EventTarget {
     private __fakeRadius?;
     private __elementMode;
     private __settingFileKeys?;
-    private __featureKeyWarned?;
+    private __featureKeyWarner?;
     get appid(): string;
     get mapDiv(): string;
     get mapDivDocument(): HTMLElement | null;
@@ -154,6 +171,11 @@ export declare class MaplatApp extends EventTarget {
     private get uiHooks();
     private __featureOption;
     constructor(appOption: any);
+    setCenterMarker(next: {
+        hidden?: boolean;
+        src?: string | null;
+    }): void;
+    applyRuntimeOptions(values: Record<string, unknown>): void;
     private buildLifecycleContext;
     private runLifecyclePhase;
     settingLoader(setting: any): Promise<any>;
@@ -170,6 +192,10 @@ export declare class MaplatApp extends EventTarget {
         mercMaxZoom: number | undefined;
     }>;
     handlePois(pois: any, mapReturnValue: any): Promise<void>;
+    sourceLoadedDetail(sources: unknown): {
+        mapID: string | null;
+        usable: boolean;
+    }[];
     handleSources(sources: any): Promise<void>;
     setInitialMap(cache: MaplatSource[]): Promise<void>;
     setMapClick(): void;
@@ -183,6 +209,9 @@ export declare class MaplatApp extends EventTarget {
     getDirection(): Promise<number>;
     currentMapInfo(): any;
     mapInfo(mapID: string): any;
+    pixelToMerc(pixel: readonly [number, number]): Promise<number[] | undefined>;
+    viewportSize(): [number, number] | undefined;
+    updateSize(): void;
     clientPointToLngLat(clientX: number, clientY: number): Promise<{
         longitude: number;
         latitude: number;

@@ -54,6 +54,7 @@ export declare const ELEMENT_STARTUP_KEYS: readonly string[];
 export declare const APP_OPTION_ALIASES: Readonly<Record<string, string>>;
 export declare function propToAttributeName(prop: string): string;
 export declare function attributeToPropName(attr: string): string;
+export declare function wrapUiHooksForElement<H extends Record<string, any>>(hooks: H, element: HTMLElement): Record<string, any>;
 export declare function parseAttributeValue(def: Pick<AttrDef, "attr" | "kind">, raw: string | null, warn?: (message: string) => void, tagName?: string): unknown;
 export declare function formatAttributeValue(def: Pick<AttrDef, "kind">, value: unknown): string | null;
 export declare function unsupportedKeyMessage(key: {
