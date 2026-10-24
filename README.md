@@ -67,6 +67,32 @@ MaplatApp.createObject(option).then((app) => {
 });
 ```
 
+### Custom Element `<maplat-app>`
+
+The same map is also available as a Custom Element. Import
+`@maplat/core/element` once (it registers the tag) and write the tag; the
+element is the map container, and the `MaplatApp` methods and events are on the
+element.
+
+```typescript
+import 'ol/ol.css';
+import '@maplat/core/element';
+```
+
+```html
+<maplat-app app-id="morioka"></maplat-app>
+<script type="module">
+  const el = document.querySelector('maplat-app');
+  await el.ready;
+  el.addEventListener('mapChanged', (e) => console.log(e.detail.mapID));
+</script>
+```
+
+See [`docs/api/maplat-app.md`](docs/api/maplat-app.md) for the attributes,
+properties, methods and events, the shared base `@maplat/core/common` and the
+conformance tests `@maplat/core/conformance`. The `MaplatApp` class stays
+available in 1.x and closes in the next major version (2.0).
+
 ### CDN (jsDelivr)
 
 For usage directly in the browser without a bundler, you must load OpenLayers

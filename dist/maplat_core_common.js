@@ -1843,9 +1843,9 @@ const we = [
   "onUiReady"
 ];
 function nC(I, C) {
-  const g = {}, t = [...we, ...Object.keys(I)];
+  const g = {}, t = /* @__PURE__ */ new Set([...we, ...Object.keys(I)]);
   for (const n of t) {
-    if (n in g) continue;
+    if (n === "__proto__") continue;
     const a = I[n];
     g[n] = typeof a == "function" ? (l) => a.call(I, {
       ...l,

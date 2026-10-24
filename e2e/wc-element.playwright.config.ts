@@ -8,6 +8,7 @@ const rootDir = resolve(configDir, '..'); // = <MaplatCore>
 // <maplat-app> の確認ページ（demo/element.html）と層 A の適合テスト（e2e/wc-conformance.html）の config。
 // e2e/oct26-m2-t4.playwright.config.ts と同じく vite バイナリを直接起動する（入れ子 pnpm を避ける）。
 // port は 5198（5175 の通常 e2e・人間用の 5196 と分ける）。終われば Playwright が止める。
+// CI では playwright-ci.config.ts（testDir e2e・testIgnore 無し）が同じ 2 つの spec を port 5175 の下で拾う（R-C4 で実測して通した）。
 const PORT = 5198;
 export default defineConfig({
   testDir: configDir,

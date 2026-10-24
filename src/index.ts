@@ -6,7 +6,8 @@ import {
   createOnceWarner,
   normalizeDegree,
   createMapInfo,
-  normalizeArg
+  normalizeArg,
+  warnMaplatAppDeprecated
 } from "./functions";
 import EventTarget from "ol/events/Target";
 import { transform, toLonLat } from "ol/proj";
@@ -234,8 +235,23 @@ export interface ElementImplementationInternals {
   applyRuntimeOptions(values: Record<string, unknown>): void;
 }
 
+/**
+ * 旧 API のアプリ本体（OpenLayers の地図・POI・GPS 等を持つクラス）。
+ *
+ * @deprecated `MaplatApp` クラスは非推奨です。代わりに `<maplat-app>` 要素
+ *   （`@maplat/core/element`）を使ってください。1.x では従来どおり使えますが、
+ *   このクラスは 2.0 で閉じます（2.0 で削除します）。移行の対応表は
+ *   `docs/api/maplat-app.md`（日本語は `docs/api/maplat-app.ja.md`）。
+ */
 export class MaplatApp extends EventTarget implements ElementImplementationInternals {
   // Static method declaration
+  /**
+   * 旧 API の生成口（`new MaplatApp(option)` のあと `waitReady` を待つ）。
+   *
+   * @deprecated `MaplatApp` クラスは非推奨です。代わりに `<maplat-app>` 要素
+   *   （`@maplat/core/element`）を使ってください。1.x では従来どおり使えますが、
+   *   この口は 2.0 で閉じます（2.0 で削除します）。
+   */
   static createObject: (option: any) => Promise<MaplatApp>;
 
   translateUI = false;
@@ -411,6 +427,15 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
   constructor(appOption: any) {
     super();
     appOption = normalizeArg(appOption);
+    // release-policy §9.1 手順 1: 旧 API（クラス）の非推奨を、同一プロセスで 1 回だけ告知する
+    // （重複の排除は src/functions.ts の warnMaplatAppDeprecated がモジュール水準で持つ。
+    //   インスタンスごとではないので、旧クラスを 2 つ作っても警告は 1 回）。
+    // 要素（<maplat-app>）は内部でこのクラスを作るが、その経路では警告しない。見分けは
+    // option の内部キー "__maplatElementMode" の**有無**（in）で行い、値では行わない。
+    // 根拠: src/element.ts の createImplementation は、通常モードで true・旧 UI API の互換層
+    // （MaplatUI。<maplat-app> を経由する）の互換モードで false を、必ずこのキーに入れて作る。
+    // ∴ 値で見分けると、互換モード（false）だけ「要素の経路なのに警告する」ことになる。
+    if (!(appOption && "__maplatElementMode" in appOption)) warnMaplatAppDeprecated();
     this.__appid = appOption.appid || "sample";
     // 要素（<maplat-app>）の経路: 設定ファイルの機能系キーを読まない（U1 追補）
     this.__elementMode = appOption.__maplatElementMode === true;

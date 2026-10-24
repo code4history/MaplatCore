@@ -13,6 +13,10 @@ ADR-0012 は Maplat の文書群を2層に分けます:
 
 - [`maplat-core.ja.md`](maplat-core.ja.md) — `MaplatApp` クラスのシグネチャ
   （地図状態・座標系・マーカー・ライン/ベクター・POI レイヤー・GPS・イベント）
+- [`maplat-app.ja.md`](maplat-app.ja.md) — Custom Element `<maplat-app>`
+  （`@maplat/core/element`: 属性とプロパティ・状態・委譲するメソッドと要素固有のメソッド・
+  イベント・`uiHooks`）、共通の土台 `@maplat/core/common`、適合テスト
+  `@maplat/core/conformance`、`MaplatApp` クラス（次のメジャー版 2.0 で閉じる）との関係
 
 ## README との関係
 

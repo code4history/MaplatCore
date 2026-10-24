@@ -1,7 +1,7 @@
 // <maplat-app> の殻（実装に依らない基底クラス）。@maplat/core/common から公開する。
 //
 // 属性・プロパティの表、作成と破棄、イベントの出し直し、起動時キーの変更不可（U2）、
-// Pro 固有キーの警告（U3）、44 の委譲メソッド、状態の読み取りを持つ。地図の中身（旧クラスの
+// Pro 固有キーの警告（U3）、46 の委譲メソッド、状態の読み取りを持つ。地図の中身（旧クラスの
 // MaplatApp 相当）は派生クラスが createImplementation() で差す（Core: src/element.ts）。
 //
 // **このファイルは element_contract.ts と、common の中で OpenLayers を引かないモジュール
@@ -38,7 +38,7 @@ import {
 } from "./element_contract";
 
 /**
- * 層 A の中身（旧クラス MaplatApp と同じ形）に求める最小の面。44 の委譲メソッドは同名で持つ。
+ * 層 A の中身（旧クラス MaplatApp と同じ形）に求める最小の面。46 の委譲メソッドは同名で持つ。
  * Core の MaplatApp・有償版の MaplatApp・模擬の層 A（src/conformance/mock-layer-a.ts）が満たす。
  */
 export interface LayerAImplementation {
@@ -251,7 +251,7 @@ export abstract class MaplatAppElementBase extends BaseElement {
         }
       });
     }
-    // 44 の委譲メソッド（§3.4.1）
+    // 46 の委譲メソッド（§3.4.1＋#91）
     for (const name of MAPLAT_APP_METHODS) {
       Object.defineProperty(proto, name, {
         configurable: true,
@@ -901,7 +901,7 @@ export interface MaplatAppElementProSettings {
   displayMode: DisplayMode | undefined;
 }
 
-// 設定のキーのアクセサと 44 の委譲メソッドの型（実体は上の static ブロックで prototype に置く）
+// 設定のキーのアクセサと 46 の委譲メソッドの型（実体は上の static ブロックで prototype に置く）
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export interface MaplatAppElementBase
   extends MaplatAppDelegatedMethods,

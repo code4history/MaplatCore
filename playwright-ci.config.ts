@@ -28,7 +28,7 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'pnpm --ignore-workspace run dev',
+    command: 'pnpm run dev',
     url: 'http://localhost:5175',
     reuseExistingServer: true,
   },

@@ -349,7 +349,7 @@ export class MockLayerAApp extends EventTarget implements LayerAImplementation {
     return { longitude, latitude };
   }
 
-  // ---- 旧クラスと同じ 44 のメソッド ----
+  // ---- 旧クラスと同じ 46 のメソッド ----
 
   handleGPS(enable: boolean, avoidEventForOff?: boolean) {
     this.#gps = !!enable;
@@ -362,7 +362,8 @@ export class MockLayerAApp extends EventTarget implements LayerAImplementation {
   getRotation() {
     return this.#rotation;
   }
-  getDirection() {
+  // 本物（Core・Pro）と同じく async（契約の型 Promise<number> に揃える）
+  async getDirection(): Promise<number> {
     return this.#direction;
   }
   currentMapInfo() {

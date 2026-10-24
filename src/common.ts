@@ -10,10 +10,13 @@
 //
 // 正本の仕様: NayutaProducts/docs/superpowers/specs/2026-10-10-maplat-web-components-interface.md §5.3
 
-// ---- 補助関数（§5.3。@maplat/core からも従来どおり import できる）----
+// ---- 補助関数（§5.3）----
+// @maplat/core からも従来どおり import できるもの: sanitizeHtml・escapeAttr・toPlainText・buildSlideAttrs・createElement・assets
 export { sanitizeHtml, escapeAttr, toPlainText, buildSlideAttrs } from "./sanitize";
-export { createElement, normalizeArg } from "./functions";
+export { createElement } from "./functions";
 export { assets } from "./assets";
+// common だけが export するもの（@maplat/core の入口には無い）: normalizeArg・META_KEYS・META_KEYS_OPTION
+export { normalizeArg } from "./functions";
 export { META_KEYS, META_KEYS_OPTION } from "./meta_keys";
 
 // ---- 層 A・層 B の名前の表と型（§3・§4・§3.6）----

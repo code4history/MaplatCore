@@ -3,8 +3,11 @@
 //   U1 追補 設定ファイルの機能系キーは読み続けるが「メジャー版で廃止」を警告する（要素の経路では読まない）
 //   §6.1    appOption.x || appData.x || 既定値 の false / 0 負けを undefined 判定へ直す
 // 地図の実体は jsdom で作れる範囲（sources を空にして初期化を最後まで流す）で確かめる。
-import { describe, it, expect, vi, beforeAll, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from "vitest";
 import { MaplatApp, MAPLAT_APP_STARTUP_FIELDS } from "../src/index";
+// 「1 回だけ」の記憶をテストの間で初期化する口（公開面ではない。@internal）
+import { resetMaplatAppDeprecationWarning } from "../src/functions";
+import "../src/element"; // 副作用で <maplat-app> を登録する（要素の経路の検査に使う）
 
 beforeAll(() => {
   // OL の Map は ResizeObserver を使う（jsdom には無い）
@@ -86,7 +89,9 @@ describe("MaplatApp: 起動時だけ効くフィールドは起動後に変更�
       app[name] = "changed again";
     }
     for (const name of MAPLAT_APP_STARTUP_FIELDS) expect(app[name]).toBe(before[name]);
-    expect(warn).toHaveBeenCalledTimes(MAPLAT_APP_STARTUP_FIELDS.length);
+    // クラス自体の非推奨の告知（1 回だけ）が混ざらないよう、起動時に固まる項目の警告だけを数える
+    const fixed = warn.mock.calls.filter(c => String(c[0]).includes("is fixed at startup"));
+    expect(fixed.length).toBe(MAPLAT_APP_STARTUP_FIELDS.length);
     for (const name of MAPLAT_APP_STARTUP_FIELDS) {
       expect(warn.mock.calls.some(c => String(c[0]).includes(`"${name}" is fixed at startup`))).toBe(true);
     }
@@ -100,7 +105,7 @@ describe("MaplatApp: 起動時だけ効くフィールドは起動後に変更�
     b.appid = "y";
     expect(a.appid).toBe("a");
     expect(b.appid).toBe("b");
-    expect(warn).toHaveBeenCalledTimes(2);
+    expect(warn.mock.calls.filter(c => String(c[0]).includes("is fixed at startup")).length).toBe(2);
   });
 
   it("Core 自身の起動中の書き込み（prepareMap の noRotate・initGeolocation の alwaysGpsOn）は効く", async () => {
@@ -138,7 +143,11 @@ describe("MaplatApp: 設定ファイルの機能系キー（U1 追補）と unde
     expect(app.mapObject.tapDuration).toBe(1000);
     expect(app.mapObject.tapUIVanish).toBe(true);
     expect(app.mapObject.homeMarginPixels).toBe(10);
-    const deprecations = warn.mock.calls.map(c => String(c[0])).filter(m => m.includes("deprecated"));
+    // クラス自体の非推奨の告知（release-policy §9.1）も "deprecated" を含むので、
+    // 設定ファイルの機能系キーの警告だけを「reading the feature key」で数える
+    const deprecations = warn.mock.calls
+      .map(c => String(c[0]))
+      .filter(m => m.includes("reading the feature key"));
     for (const key of FEATURE_KEYS_IN_CORE) {
       expect(deprecations.filter(m => m.includes(`"${key}"`)).length).toBe(1);
     }
@@ -148,7 +157,7 @@ describe("MaplatApp: 設定ファイルの機能系キー（U1 追補）と unde
   it("appOption で与えたキーは設定ファイルを読まないので警告しない", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     await boot({ northUp: true }, { northUp: false });
-    expect(warn.mock.calls.some(c => String(c[0]).includes("deprecated"))).toBe(false);
+    expect(warn.mock.calls.some(c => String(c[0]).includes("reading the feature key"))).toBe(false);
   });
 
   it("テンプレート類はコンテンツ側として今までどおり設定ファイルから読み、警告しない", async () => {
@@ -160,7 +169,7 @@ describe("MaplatApp: 設定ファイルの機能系キー（U1 追補）と unde
     expect(app.poiTemplate).toBe("<b>${name}</b>");
     expect(app.poiStyle).toBe("s");
     expect(app.iconTemplate).toBe("<i></i>");
-    expect(warn.mock.calls.some(c => String(c[0]).includes("deprecated"))).toBe(false);
+    expect(warn.mock.calls.some(c => String(c[0]).includes("reading the feature key"))).toBe(false);
   });
 
   it("false / 0 は与えられた値として設定ファイル・既定値に負けない", async () => {
@@ -233,5 +242,74 @@ describe("MaplatApp: 設定ファイルの機能系キー（U1 追補）と unde
     expect(img).not.toBeNull();
     expect(img.classList.contains("maplat-center-marker")).toBe(true);
     expect(img.hidden).toBe(false);
+  });
+});
+
+// release-policy §9.1 手順 1 の 2 点目「実行時に 1 回だけ警告を出す」の検査。
+//   文言は英語（人間の決定）。粒度は**同一プロセスで 1 回**（インスタンスごとではない）。
+//   要素（<maplat-app>）の経路は内部で MaplatApp を作るので警告しない。旧 UI API の互換層
+//   （MaplatUI）も <maplat-app> を経由するので同じ。見分けは option の内部キー
+//   "__maplatElementMode" の有無（値ではない。src/index.ts のコンストラクタを参照）。
+describe("MaplatApp の非推奨の告知（release-policy §9.1 手順 1）", () => {
+  const DEPRECATION_MESSAGE =
+    "MaplatApp: the MaplatApp class is deprecated and will be removed in 2.0. " +
+    "Use the <maplat-app> element (@maplat/core/element) instead.";
+
+  // どのテストも「まだ 1 度も警告していない」状態から始める（記憶はモジュール水準なので明示的に戻す）
+  beforeEach(() => {
+    resetMaplatAppDeprecationWarning();
+  });
+
+  afterEach(() => {
+    document.querySelectorAll("maplat-app").forEach(el => el.remove());
+    resetMaplatAppDeprecationWarning();
+  });
+
+  const said = (warn: { mock: { calls: unknown[][] } }) =>
+    warn.mock.calls.map(c => String(c[0])).filter(m => m === DEPRECATION_MESSAGE);
+
+  it("直接 new すると 1 回だけ警告する。2 つ作っても 1 回（同一プロセスで重複させない）", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    await boot({}, {});
+    await boot({}, {});
+    expect(said(warn)).toEqual([DEPRECATION_MESSAGE]);
+  });
+
+  it("要素の経路（通常モード）では警告しない。内部で実物の MaplatApp を作っている", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const el: any = document.createElement("maplat-app");
+    el.appOption = { setting: { sources: [] } };
+    document.body.appendChild(el);
+    await el.ready;
+    expect(el.app).toBeInstanceOf(MaplatApp); // 警告しない理由が「作っていないから」ではないこと
+    expect(said(warn)).toEqual([]);
+  });
+
+  it("要素の経路（旧 UI API の互換層＝互換モード。__maplatElementMode は false）でも警告しない", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const el: any = document.createElement("maplat-app");
+    el.appOption = { setting: { sources: [] }, __maplatCompat: true };
+    document.body.appendChild(el);
+    await el.ready;
+    expect(el.app).toBeInstanceOf(MaplatApp);
+    expect(said(warn)).toEqual([]);
+  });
+
+  it("要素の経路は「1 回だけ」の記憶を使わない（要素の後に直接 new すると 1 回出る）", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const el: any = document.createElement("maplat-app");
+    el.appOption = { setting: { sources: [] } };
+    document.body.appendChild(el);
+    await el.ready;
+    expect(said(warn)).toEqual([]);
+    await boot({}, {});
+    expect(said(warn)).toEqual([DEPRECATION_MESSAGE]);
+  });
+
+  it("MaplatApp.createObject から作っても 1 回だけ警告する", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const app = await MaplatApp.createObject({ div: makeDiv(), setting: { sources: [] } });
+    expect(app).toBeInstanceOf(MaplatApp);
+    expect(said(warn)).toEqual([DEPRECATION_MESSAGE]);
   });
 });

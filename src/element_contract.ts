@@ -77,7 +77,7 @@ export type LifecyclePhaseId = (typeof LIFECYCLE_PHASES)[number];
 // メソッド名（§3.4）
 // ---------------------------------------------------------------------------
 
-/** 旧クラスから引き継ぐ公開メソッド（44 個。§3.4.1）。要素は実装の同名メソッドへ委譲する。 */
+/** 旧クラスから引き継ぐ公開メソッド（46 個。§3.4.1 の 44 個＋#91 の removeVector・removeLine）。要素は実装の同名メソッドへ委譲する。 */
 export const MAPLAT_APP_METHODS = [
   "handleGPS",
   "getGPSEnabled",
@@ -328,9 +328,12 @@ export function wrapUiHooksForElement<H extends Record<string, any>>(
   element: HTMLElement
 ): Record<string, any> {
   const wrapped: Record<string, any> = {};
-  const names = [...UI_HOOK_NAMES, ...Object.keys(hooks)];
+  // 重複は Set で除く（`name in wrapped` は Object.prototype までたどるので、
+  // constructor・toString のような名前の自作キーが落ちる。Info 1）
+  const names = new Set<string>([...UI_HOOK_NAMES, ...Object.keys(hooks)]);
   for (const name of names) {
-    if (name in wrapped) continue;
+    // "__proto__" は写しのプロトタイプを差し替えてしまうので写さない（I-c1）
+    if (name === "__proto__") continue;
     const fn = hooks[name];
     wrapped[name] =
       typeof fn === "function"
@@ -736,12 +739,13 @@ export interface MaplatAppElementState {
 
 type AnyFn = (...args: any[]) => any;
 
-/** 旧クラスから引き継ぐ 44 のメソッド（§3.4.1）。型を揃えたもの以外は実装の戻り値のまま。 */
+/** 旧クラスから引き継ぐ 46 のメソッド（§3.4.1＋#91）。型を揃えたもの以外は実装の戻り値のまま。 */
 export interface MaplatAppDelegatedMethods {
   handleGPS: (enable: boolean, avoidEventForOff?: boolean) => any;
   getGPSEnabled: () => boolean;
   getRotation: () => number;
-  getDirection: () => number;
+  /** 実世界の方位（度）。旧クラス（Core・Pro とも）が async なので Promise */
+  getDirection: () => Promise<number>;
   currentMapInfo: () => any;
   mapInfo: (mapID: string) => any;
   clientPointToLngLat: (clientX: number, clientY: number) => Promise<LngLat | null>;

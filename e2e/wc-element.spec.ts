@@ -5,7 +5,9 @@
 //   - 中心の目印の属性（U5）・起動時キーの変更不可（U2）
 //   - updateState の transparency・地図の切替で透過度を保つ（§3.8 A4）
 //   - 枠線と範囲（setEnvelopes・getMapEnvelope・getViewExtent）・Pro 固有の属性の警告（U3）
-// 実行: node_modules/.bin/playwright test --config=e2e/wc-element.playwright.config.ts
+// 実行: node_modules/.bin/playwright test --config=e2e/wc-element.playwright.config.ts（単独・port 5198）
+// CI（pnpm run test:e2e:ci＝playwright-ci.config.ts・port 5175 の dev サーバー）でも拾われる。vite の root はリポジトリ直下なので
+// /demo/element.html と /e2e/wc-conformance.html はどちらの dev サーバーでも同じ経路で出る（baseURL 相対の goto）。
 // スクリーンショットの保存先は環境変数 WC_SHOTS（無ければ test-results/wc-shots）。
 import { test, expect } from '@playwright/test';
 import { resolve } from 'path';

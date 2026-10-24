@@ -124,6 +124,9 @@ export default defineConfig({
       exclude: ["spec", "node_modules"],
       rollupTypes: false,
       tsconfigPath: "./tsconfig.json",
+      // tsconfig の removeComments は JS 向け。型定義には JSDoc（@deprecated など）を残し、
+      // 利用者のエディタに非推奨の告知が届くようにする（release-policy §9.1 手順 1）
+      compilerOptions: { removeComments: false },
       logLevel: "silent",
       insertTypesEntry: true,
       staticImport: true

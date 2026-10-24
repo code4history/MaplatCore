@@ -173,6 +173,8 @@ export class MaplatAppElement extends MaplatAppElementBase implements MaplatAppE
    * 通常モードは undefined（基底の既定）を返し、今までどおり属性・起動時の値を返す（挙動を変えない）。
    * 旧クラス互換層の <maplat-ui> は this.#app?.northUp を読むので、地図とコンパスを食い違わせない。
    * Core 固有の読み口はここに置く（element_base.ts は Core-Pro と共有する土台なので、口だけを置く）。
+   * 対象は <maplat-app> の属性・プロパティの表にある機能系キー（northUp・homeMarginPixels・noRotate）だけ。
+   * tapDuration・tapUIVanish は <maplat-ui> の属性（§3.8 A11）で、互換層が appData から移すのでここには無い。
    */
   protected implementationKeyValue(
     prop: string,
@@ -187,12 +189,6 @@ export class MaplatAppElement extends MaplatAppElementBase implements MaplatAppE
         break;
       case "homeMarginPixels":
         value = app.mapObject?.homeMarginPixels;
-        break;
-      case "tapDuration":
-        value = app.mapObject?.tapDuration;
-        break;
-      case "tapUIVanish":
-        value = app.mapObject?.tapUIVanish;
         break;
       case "noRotate":
         value = app.noRotate;

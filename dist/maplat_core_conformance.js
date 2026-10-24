@@ -49,7 +49,7 @@ async function I(p, t, a) {
     await v(20);
   }
 }
-function V(p, t, a) {
+function C(p, t, a) {
   return new Promise((i, l) => {
     const h = setTimeout(() => l(new _(`timeout: ${a}`)), t);
     p.then(
@@ -63,7 +63,7 @@ function V(p, t, a) {
   });
 }
 function k(p, t, a, i) {
-  return V(
+  return C(
     new Promise((l) => {
       const h = (y) => {
         i && !i(y) || (p.removeEventListener(t, h), l(y));
@@ -74,7 +74,7 @@ function k(p, t, a, i) {
     `event "${t}"`
   );
 }
-function R() {
+function x() {
   const p = console.warn, t = [];
   return console.warn = (...a) => {
     t.push(a.map((i) => String(i)).join(" "));
@@ -132,7 +132,7 @@ function oe(p) {
   });
   const P = z.filter((r) => r.kind === "boolean"), T = z.filter((r) => r.kind === "number"), D = z.filter((r) => r.kind === "string");
   u("A-同期", '真偽の属性: ""・"true"・属性名＝true、"false"＝false、不正値は警告して未指定', async (r) => {
-    const e = r.mount({ bare: !0, connect: !1 }), o = R();
+    const e = r.mount({ bare: !0, connect: !1 }), o = x();
     try {
       for (const n of P) {
         const c = () => e[n.prop];
@@ -146,7 +146,7 @@ function oe(p) {
       o.restore();
     }
   }), u("A-同期", '数の属性: "" は未指定、数でない値は警告して未指定', async (r) => {
-    const e = r.mount({ bare: !0, connect: !1 }), o = R();
+    const e = r.mount({ bare: !0, connect: !1 }), o = x();
     try {
       for (const n of T) {
         e.setAttribute(n.attr, "12"), s(e[n.prop], 12, `${n.attr}="12"`), e.setAttribute(n.attr, "0"), s(e[n.prop], 0, `${n.attr}="0"`), e.setAttribute(n.attr, ""), s(e[n.prop], void 0, `${n.attr}=""`);
@@ -189,7 +189,7 @@ function oe(p) {
   }), u("A-起動後", "起動時キーの属性の起動後の変更は警告して無視し、作り直さない", async (r) => {
     const e = await r.mountReady(), o = e.ready, n = e.appId, c = [];
     e.addEventListener("lifecycle:setting-loaded", (w) => c.push(w));
-    const f = R();
+    const f = x();
     try {
       e.setAttribute("app-id", "conformance-other-app"), e.setAttribute("app-id", "conformance-other-app-2"), await v(300), s(f.messages.length, 1, "warnings for app-id");
     } finally {
@@ -197,7 +197,7 @@ function oe(p) {
     }
     s(e.appId, n, "appId after the change"), m(e.ready === o, "ready was replaced"), s(c.length, 0, "the map was recreated (lifecycle:setting-loaded)"), m(e.currentMapId !== null, "currentMapId is null after the ignored change");
   }), u("A-起動後", "起動時キーのプロパティの起動後の代入は警告して無視し、起動時の値を返す", async (r) => {
-    const e = await r.mountReady(), o = e.restore, n = R();
+    const e = await r.mountReady(), o = e.restore, n = x();
     try {
       e.restore = { mapID: "conformance-no-such-map" }, e.restore = { mapID: "conformance-no-such-map-2" }, s(n.messages.length, 1, "warnings for restore");
     } finally {
@@ -291,11 +291,18 @@ function oe(p) {
   }), u("A-メソッド", "getViewpoint・viewpoint の形（changeViewpoint の後）", async (r) => {
     const e = await r.mountReady(), o = await I(() => e.getViewpoint(), i, "a viewpoint");
     m(j(o), `getViewpoint() shape: ${JSON.stringify(o)}`), s(e.viewpoint, o, "viewpoint property equals getViewpoint()"), m(e.viewpoint !== e.viewpoint, "viewpoint must return a copy");
+  }), u("A-メソッド", "getRotation は数、getDirection は Promise で数が返る", async (r) => {
+    const e = await r.mountReady();
+    m(typeof e.getRotation() == "number", "getRotation() must return a number");
+    const o = e.getDirection();
+    m(typeof o?.then == "function", "getDirection() must return a Promise (thenable)");
+    const n = await o;
+    m(typeof n == "number" && Number.isFinite(n), `getDirection() must resolve to a number: ${n}`);
   }), u("A-メソッド", "clientPointToLngLat・lngLatToClientPoint は Promise でオブジェクトか null（§3.8 A1）", async (r) => {
     const e = await r.mountReady();
     await I(() => e.getViewpoint(), i, "a viewpoint");
     const o = e.getBoundingClientRect(), n = o.left + o.width / 2, c = o.top + o.height / 2, f = e.clientPointToLngLat(n, c);
-    m(f instanceof Promise, "clientPointToLngLat() does not return a Promise");
+    m(typeof f?.then == "function", "clientPointToLngLat() does not return a Promise (thenable)");
     const w = await f;
     if (m(w === null || O(w), `clientPointToLngLat() result: ${JSON.stringify(w)}`), l) {
       m(w !== null, "clientPointToLngLat(center) is null");
@@ -392,8 +399,8 @@ function oe(p) {
     e.clearVector({ type: "Line" }), s(e.removeVector(o), !1, "clearVector({ type: 'Line' }) removed the first line"), s(e.removeVector(n), !1, "clearVector({ type: 'Line' }) removed the second line"), s(e.removeVector(c), !0, "clearVector({ type: 'Line' }) kept the first polygon"), s(e.removeVector(f), !0, "clearVector({ type: 'Line' }) kept the second polygon");
     const w = e.addLine(L()), M = e.addVector(A());
     e.clearVector(), s(e.removeVector(w), !1, "clearVector() removed the line"), s(e.removeVector(M), !1, "clearVector() removed the polygon");
-    const E = e.addLine(L()), x = e.addVector(A());
-    e.clearLine(), s(e.removeVector(E), !1, "clearLine() removed the line"), s(e.removeVector(x), !1, "clearLine() removed the polygon"), e.clearLine({ type: "Polygon" });
+    const E = e.addLine(L()), R = e.addVector(A());
+    e.clearLine(), s(e.removeVector(E), !1, "clearLine() removed the line"), s(e.removeVector(R), !1, "clearLine() removed the polygon"), e.clearLine({ type: "Polygon" });
   }), u("A-イベント", "lifecycle の 7 段階が旧と同順で出て、detail は phaseId と appData だけ", async (r) => {
     const e = he.map((c) => `lifecycle:${c}`), o = await r.mountReady({ record: e }), n = r.recorded(o).filter((c) => c.type.startsWith("lifecycle:") && c.type !== "lifecycle:error");
     s(
@@ -429,20 +436,20 @@ function oe(p) {
     const o = e.getBoundingClientRect(), n = o.left + o.width / 2, c = o.top + o.height / 2, f = await e.clientPointToLngLat(n, c);
     m(f, "clientPointToLngLat(center) is null"), e.addMarker({ lnglat: [f.longitude, f.latitude], name: "conformance-click" }, "main");
     const w = [];
-    let M, E, x, N = !1;
+    let M, E, R, N = !1;
     const K = (S) => {
       w.push("clickMarker"), M = S.detail, N = !0, queueMicrotask(() => {
         N = !1;
       });
     }, W = (S) => {
-      w.push("clickMarkers"), E = S.detail, x === void 0 && (x = N);
+      w.push("clickMarkers"), E = S.detail, R === void 0 && (R = N);
     };
     e.addEventListener("clickMarker", K), e.addEventListener("clickMarkers", W), r.onCleanup(() => {
       e.removeEventListener("clickMarker", K), e.removeEventListener("clickMarkers", W);
     });
     for (let S = 0; S < 15 && w.length === 0; S++)
       be(n, c - 12), await v(400);
-    await v(100), s(w.slice(0, 2), ["clickMarker", "clickMarkers"], "event order of a marker click"), s(x, !0, "clickMarkers was dispatched in the same task as clickMarker (synchronously right after it)"), m(B(M), `clickMarker detail: ${JSON.stringify(M)}`), m(Array.isArray(E) && E.length >= 1 && E.every(B), `clickMarkers detail: ${JSON.stringify(E)}`), s(E[0].namespaceID, M.namespaceID, "clickMarkers[0] equals clickMarker"), m(
+    await v(100), s(w.slice(0, 2), ["clickMarker", "clickMarkers"], "event order of a marker click"), s(R, !0, "clickMarkers was dispatched in the same task as clickMarker (synchronously right after it)"), m(B(M), `clickMarker detail: ${JSON.stringify(M)}`), m(Array.isArray(E) && E.length >= 1 && E.every(B), `clickMarkers detail: ${JSON.stringify(E)}`), s(E[0].namespaceID, M.namespaceID, "clickMarkers[0] equals clickMarker"), m(
       E.some((S) => S.name === "conformance-click"),
       "clickMarkers lacks the clicked marker"
     );
@@ -458,7 +465,7 @@ function oe(p) {
   }), u("A-機能", "未対応の Pro 固有の属性・プロパティはキーごとに 1 回警告して無視する（U3）", async (r) => {
     const e = Me.filter((o) => o.feature && !document.createElement(t).supports(o.feature));
     for (const o of e) {
-      const n = r.mount({ bare: !0, connect: !1 }), c = R();
+      const n = r.mount({ bare: !0, connect: !1 }), c = x();
       try {
         n.setAttribute(o.attr, "map-warp"), n.setAttribute(o.attr, "maplat"), n[o.prop] = "map-warp";
         const f = c.messages.filter((w) => w.includes(o.attr) || w.includes(o.prop));
@@ -483,19 +490,19 @@ function oe(p) {
     } catch (f) {
       c = f;
     }
-    m(X(c), "methods still work after removal"), s(e.currentMapId, null, "currentMapId after removal"), n.appendChild(e), await v(0), m(e.ready !== o, "ready was not replaced"), await V(e.ready, i, "ready after re-append"), m(e.currentMapId !== null, "currentMapId after re-append");
+    m(X(c), "methods still work after removal"), s(e.currentMapId, null, "currentMapId after removal"), n.appendChild(e), await v(0), m(e.ready !== o, "ready was not replaced"), await C(e.ready, i, "ready after re-append"), m(e.currentMapId !== null, "currentMapId after re-append");
   }), u("A-破棄", "付け直しても今の地図のまま（古い map-id から作り直さない）", async (r) => {
     const e = await r.mountReady({ attributes: { "map-id": a.initialMapId } });
     await e.changeMap(a.otherMapId), await I(() => e.currentMapId === a.otherMapId, i, "map switched by changeMap()");
     const o = e.parentElement;
-    e.remove(), await v(50), o.appendChild(e), await V(e.ready, i, "ready after re-append"), s(e.currentMapId, a.otherMapId, "currentMapId after re-append"), s(e.getAttribute("map-id"), a.otherMapId, "map-id attribute after re-append");
+    e.remove(), await v(50), o.appendChild(e), await C(e.ready, i, "ready after re-append"), s(e.currentMapId, a.otherMapId, "currentMapId after re-append"), s(e.getAttribute("map-id"), a.otherMapId, "map-id attribute after re-append");
   }), u("A-破棄", "破棄が決まった時点で ready が新しい Promise に替わり、付け直した直後も前の Promise を返さない", async (r) => {
     const e = await r.mountReady(), o = e.ready, n = e.parentElement;
     e.remove(), await v(0);
     const c = e.ready;
     m(c !== o, "ready was not replaced when the element was disposed");
     const f = /* @__PURE__ */ Symbol("pending"), w = await Promise.race([c.then(() => "resolved", () => "rejected"), v(20).then(() => f)]);
-    s(w === f ? "pending" : w, "pending", "the new ready before re-append"), n.appendChild(e), m(e.ready === c, "ready was replaced again on re-append"), await V(e.ready, i, "ready after re-append"), m(e.appData !== null, "appData is null after the new ready resolved"), m(e.currentMapId !== null, "currentMapId is null after the new ready resolved");
+    s(w === f ? "pending" : w, "pending", "the new ready before re-append"), n.appendChild(e), m(e.ready === c, "ready was replaced again on re-append"), await C(e.ready, i, "ready after re-append"), m(e.appData !== null, "appData is null after the new ready resolved"), m(e.currentMapId !== null, "currentMapId is null after the new ready resolved");
   }), u("A-優先", "restoreSession の localStorage から restoreExtensionKeys も読む（期限内のみ）", async (r) => {
     let e = await r.mountReady();
     const o = await I(() => e.getViewpoint(), i, "a viewpoint");
@@ -553,7 +560,7 @@ class Le {
   }
   async mountReady(t = {}) {
     const a = this.mount(t);
-    return await V(a.ready, this.timeout, "ready"), a;
+    return await C(a.ready, this.timeout, "ready"), a;
   }
   recorded(t) {
     return this.#t.get(t) || [];
@@ -567,7 +574,7 @@ class Le {
     this.#i = [];
   }
 }
-function Ve(p, t) {
+function Ce(p, t) {
   const a = oe(p), i = [...new Set(a.map((l) => l.group))];
   t.describe(`layer A conformance (${p.implementation})`, () => {
     for (const l of i)
@@ -577,7 +584,7 @@ function Ve(p, t) {
       });
   });
 }
-async function $e(p, t) {
+async function Ve(p, t) {
   const a = [];
   for (const i of oe(p)) {
     const l = Date.now();
@@ -597,13 +604,13 @@ async function $e(p, t) {
   }
   return a;
 }
-const $ = 20037508342789244e-9, C = (p, t) => [
-  p * $ / 180,
-  Math.log(Math.tan((90 + t) * Math.PI / 360)) / (Math.PI / 180) * ($ / 180)
+const V = 20037508342789244e-9, $ = (p, t) => [
+  p * V / 180,
+  Math.log(Math.tan((90 + t) * Math.PI / 360)) / (Math.PI / 180) * (V / 180)
 ], q = (p, t) => [
-  p / $ * 180,
-  180 / Math.PI * (2 * Math.atan(Math.exp(t / $ * 180 * Math.PI / 180)) - Math.PI / 2)
-], H = (p) => 2 * $ / (256 * Math.pow(2, p)), Ee = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
+  p / V * 180,
+  180 / Math.PI * (2 * Math.atan(Math.exp(t / V * 180 * Math.PI / 180)) - Math.PI / 2)
+], H = (p) => 2 * V / (256 * Math.pow(2, p)), Ee = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" fill="#cfd8e3"/></svg>'
 )}`, ke = [24, 36], ie = (p) => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
   `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="36" viewBox="0 0 24 36"><path d="M12 35C12 35 1 20 1 12A11 11 0 0 1 23 12C23 20 12 35 12 35Z" fill="${p ? "#d32f2f" : "#2e7d32"}" stroke="#fff" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="#fff"/></svg>`
@@ -756,7 +763,7 @@ class Te extends EventTarget {
     const l = H(this.#a), h = this.#e[0] + (t - i.width / 2) * l, y = this.#e[1] - (a - i.height / 2) * l, [d, g] = q(h, y);
     return { longitude: d, latitude: g };
   }
-  // ---- 旧クラスと同じ 44 のメソッド ----
+  // ---- 旧クラスと同じ 46 のメソッド ----
   handleGPS(t, a) {
     this.#f = !!t, t ? this.#o("gps_request", void 0) : a || this.#o("gps_result", { error: "gps_off" });
   }
@@ -766,7 +773,8 @@ class Te extends EventTarget {
   getRotation() {
     return this.#r;
   }
-  getDirection() {
+  // 本物（Core・Pro）と同じく async（契約の型 Promise<number> に揃える）
+  async getDirection() {
     return this.#m;
   }
   currentMapInfo() {
@@ -783,7 +791,7 @@ class Te extends EventTarget {
   async lngLatToClientPoint(t, a) {
     const i = this.#u();
     if (!i || !this.#t) return;
-    const [l, h] = C(t, a), y = H(this.#a);
+    const [l, h] = $(t, a), y = H(this.#a);
     return {
       x: i.left + i.width / 2 + (l - this.#e[0]) / y,
       y: i.top + i.height / 2 - (h - this.#e[1]) / y
@@ -917,7 +925,7 @@ class Te extends EventTarget {
     const l = !this.#t;
     this.#t = i;
     const h = i.homePosition ?? this.appData?.homePosition ?? [139.7, 35.7];
-    if (l && (this.#e = C(h[0], h[1]), this.#a = i.defaultZoom ?? this.appData?.defaultZoom ?? 14), a.position && typeof a.position.x == "number" && typeof a.position.y == "number" && (this.#e = [a.position.x, a.position.y], typeof a.position.zoom == "number" && a.position.zoom > 0 && (this.#a = a.position.zoom)), this.requestUpdateState({ mapID: i.mapID }), this.#o("mapChanged", this.getMapMeta(i.mapID)), this.setTransparency(a.transparency ?? this.getTransparency()), a.hideLayer) {
+    if (l && (this.#e = $(h[0], h[1]), this.#a = i.defaultZoom ?? this.appData?.defaultZoom ?? 14), a.position && typeof a.position.x == "number" && typeof a.position.y == "number" && (this.#e = [a.position.x, a.position.y], typeof a.position.zoom == "number" && a.position.zoom > 0 && (this.#a = a.position.zoom)), this.requestUpdateState({ mapID: i.mapID }), this.#o("mapChanged", this.getMapMeta(i.mapID)), this.setTransparency(a.transparency ?? this.getTransparency()), a.hideLayer) {
       for (const y of a.hideLayer.split(",")) {
         const d = this.#n.get(y);
         d && (d.hide = !0);
@@ -948,13 +956,13 @@ class Te extends EventTarget {
     return this.#M ?? 0;
   }
   setViewpoint(t) {
-    typeof t.longitude == "number" && typeof t.latitude == "number" && (this.#e = C(t.longitude, t.latitude));
+    typeof t.longitude == "number" && typeof t.latitude == "number" && (this.#e = $(t.longitude, t.latitude));
     const a = t.mercZoom ?? t.zoom;
     typeof a == "number" && (this.#a = a), typeof t.rotation == "number" && (this.#r = t.rotation), typeof t.direction == "number" && (this.#m = t.direction), this.#l();
   }
   goHome() {
     const t = this.#t?.homePosition ?? this.appData?.homePosition;
-    t && (this.#e = C(t[0], t[1])), this.#a = this.#t?.defaultZoom ?? this.appData?.defaultZoom ?? this.#a, this.#l();
+    t && (this.#e = $(t[0], t[1])), this.#a = this.#t?.defaultZoom ?? this.appData?.defaultZoom ?? this.#a, this.#l();
   }
   resetRotation() {
     this.#r = 0, this.#l();
@@ -1007,7 +1015,7 @@ class Te extends EventTarget {
           for (const T of P.pois) {
             const D = T.lnglat;
             if (!Array.isArray(D) || !Number.isFinite(D[0]) || !Number.isFinite(D[1])) continue;
-            const [L, A] = C(D[0], D[1]), r = i.left + i.width / 2 + (L - this.#e[0]) / l, e = i.top + i.height / 2 - (A - this.#e[1]) / l, o = t - r, n = a - e;
+            const [L, A] = $(D[0], D[1]), r = i.left + i.width / 2 + (L - this.#e[0]) / l, e = i.top + i.height / 2 - (A - this.#e[1]) / l, o = t - r, n = a - e;
             Math.abs(o) <= ke[0] / 2 && n <= 0 && n >= -36 && y.push(T);
           }
     }
@@ -1064,7 +1072,7 @@ const ce = /* @__PURE__ */ new WeakMap();
 function te(p) {
   return ce.get(p)?.() ?? null;
 }
-function xe(p = {}) {
+function Re(p = {}) {
   const t = p.implementation ?? "core", a = p.version ?? "0.0.0-mock", i = Object.freeze({
     ...ne(t),
     ...Object.fromEntries(
@@ -1181,17 +1189,17 @@ function Oe(p = ae, t = {}) {
   const a = typeof customElements < "u" ? customElements.get(p) : void 0;
   if (a)
     return Y(a, p, "the mock layer A"), a;
-  const i = xe(t);
+  const i = Re(t);
   return Y(i, p, "the mock layer A"), i;
 }
 export {
   _ as ConformanceError,
   Te as MockLayerAApp,
   oe as createLayerAConformanceCases,
-  xe as createMockMaplatAppClass,
+  Re as createMockMaplatAppClass,
   Oe as defineMockMaplatApp,
   te as getMockLayerAController,
-  Ve as runLayerAConformance,
-  $e as runLayerAConformanceInPage
+  Ce as runLayerAConformance,
+  Ve as runLayerAConformanceInPage
 };
 //# sourceMappingURL=maplat_core_conformance.js.map

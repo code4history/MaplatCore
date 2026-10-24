@@ -311,15 +311,120 @@ describe("互換モード（__maplatCompat。旧クラス互換層のための�
 });
 
 describe("中心の目印は ready 前（Minor 2）", () => {
-  it("no-center-marker は await el.ready を待たずに img へ当たる", async () => {
+  it("no-center-marker は ready が決着する前に img へ当たる", async () => {
     const el = document.createElement("maplat-app") as any;
     el.setAttribute("app-id", "a");
     el.appOption = { setting: { sources: [] } };
     el.setAttribute("no-center-marker", "");
     document.body.appendChild(el);
-    await tick(); // ready は待たず、1 拍だけ待つ
-    const img = el.querySelector("img.maplat-center-marker") as HTMLImageElement;
+    let settled = false;
+    el.ready.then(
+      () => {
+        settled = true;
+      },
+      () => {
+        settled = true;
+      }
+    );
+    // setTimeout を待たず、マイクロタスクだけを上限付きで回して img が出るのを待つ
+    // （要素の作成は接続の拍のマイクロタスク 2 つ先。ready は fetch 等を挟むので、ここでは決着しない）
+    let img: HTMLImageElement | null = null;
+    for (let i = 0; i < 20 && !img; i++) {
+      await Promise.resolve();
+      img = el.querySelector("img.maplat-center-marker");
+    }
     expect(img).not.toBeNull();
-    expect(img.hidden).toBe(true);
+    expect(settled).toBe(false);
+    expect(img!.hidden).toBe(true);
+    await el.ready;
+    expect(settled).toBe(true);
+  });
+});
+
+describe("互換モードの機能系キーと属性（Minor 3）", () => {
+  it("設定ファイルの northUp: true を属性 north-up=\"false\" で打ち消し、Core の実値と getter が一致する", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const el = document.createElement("maplat-app") as any;
+    el.setAttribute("app-id", "a");
+    el.setAttribute("north-up", "false");
+    el.appOption = { setting: { sources: [] }, __maplatCompat: true };
+    el.setting = { sources: [], northUp: true };
+    document.body.appendChild(el);
+    // 作る前の getter は属性の値
+    expect(el.northUp).toBe(false);
+    // 作った後・ready 前（img が出た時点）でも属性の値（実装の値は ready までは読まない。I-c2）
+    let img: HTMLImageElement | null = null;
+    for (let i = 0; i < 20 && !img; i++) {
+      await Promise.resolve();
+      img = el.querySelector("img.maplat-center-marker");
+    }
+    expect(img).not.toBeNull();
+    expect(el.app).not.toBeNull();
+    expect(el.northUp).toBe(false);
+    await el.ready;
+    const app = el.app as MaplatApp;
+    expect(app.mapObject.northUp).toBe(false);
+    expect(el.northUp).toBe(false);
+  });
+
+  it("互換モードの実値の読み口は northUp・homeMarginPixels・noRotate だけ（tapDuration・tapUIVanish は <maplat-ui> のキー。Minor 1）", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const el = await bootElement(e => {
+      e.appOption = { setting: { sources: [] }, __maplatCompat: true };
+      e.setting = { sources: [], northUp: true, homeMarginPixels: 70, tapDuration: 1234, tapUIVanish: true };
+    });
+    const app = el.app as MaplatApp;
+    // 旧クラスは読む（互換モード）
+    expect(app.mapObject.tapDuration).toBe(1234);
+    expect(app.mapObject.tapUIVanish).toBe(true);
+    // 要素の読み口には無い（要素の属性・プロパティの表に無いキー）
+    const read = (prop: string) => el.implementationKeyValue(prop, app);
+    expect(read("northUp")).toEqual({ value: true });
+    expect(read("homeMarginPixels")).toEqual({ value: 70 });
+    expect(read("noRotate")).toEqual({ value: false });
+    expect(read("tapDuration")).toBeUndefined();
+    expect(read("tapUIVanish")).toBeUndefined();
+    expect(el.tapDuration).toBeUndefined();
+    expect(el.tapUIVanish).toBeUndefined();
+  });
+});
+
+describe("uiHooks の写しは Object.prototype の名前の自作キーも落とさない（Info 1）", () => {
+  it("constructor・toString という名前のキーも写され、hook の context.core は要素", async () => {
+    const seen: any[] = [];
+    const hooks: Record<string, any> = {
+      onUiReady: (context: any) => seen.push(context),
+      constructor: "mine",
+      toString: () => "custom"
+    };
+    const el = await bootElement(e => {
+      e.uiHooks = hooks;
+    });
+    expect(seen).toHaveLength(1);
+    expect(seen[0].core).toBe(el);
+    // 写しは MaplatApp の uiHooks に渡る（元のオブジェクトではなく、自作キーを保った写し）
+    const passed = (el.app as any).uiHooks as Record<string, any>;
+    expect(passed).not.toBe(hooks);
+    expect(Object.prototype.hasOwnProperty.call(passed, "constructor")).toBe(true);
+    expect(passed.constructor).toBe("mine");
+    expect(Object.prototype.hasOwnProperty.call(passed, "toString")).toBe(true);
+    expect(typeof passed.toString).toBe("function");
+    expect((passed.toString as () => string).call(passed)).toBe("custom");
+    expect(Object.keys(passed)).toEqual(expect.arrayContaining(["onUiReady", "constructor", "toString"]));
+    expect(Object.keys(passed).filter(k => k === "onUiReady")).toHaveLength(1);
+  });
+
+  it("自前のキー __proto__ は写さず、写しのプロトタイプを差し替えない（I-c1）", async () => {
+    const seen: any[] = [];
+    const hooks: Record<string, any> = { onUiReady: (context: any) => seen.push(context) };
+    Object.defineProperty(hooks, "__proto__", { value: { injected: true }, enumerable: true, configurable: true });
+    const el = await bootElement(e => {
+      e.uiHooks = hooks;
+    });
+    expect(seen).toHaveLength(1);
+    const passed = (el.app as any).uiHooks as Record<string, any>;
+    expect(Object.getPrototypeOf(passed)).toBe(Object.prototype);
+    expect((passed as any).injected).toBeUndefined();
+    expect(Object.keys(passed)).not.toContain("__proto__");
   });
 });

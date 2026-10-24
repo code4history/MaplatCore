@@ -654,6 +654,15 @@ export function createLayerAConformanceCases(options: LayerAConformanceOptions):
     assert(el.viewpoint !== el.viewpoint, "viewpoint must return a copy");
   });
 
+  add("A-メソッド", "getRotation は数、getDirection は Promise で数が返る", async ctx => {
+    const el = await ctx.mountReady();
+    assert(typeof el.getRotation() === "number", "getRotation() must return a number");
+    const pending = el.getDirection();
+    assert(typeof pending?.then === "function", "getDirection() must return a Promise (thenable)");
+    const direction = await pending;
+    assert(typeof direction === "number" && Number.isFinite(direction), `getDirection() must resolve to a number: ${direction}`);
+  });
+
   add("A-メソッド", "clientPointToLngLat・lngLatToClientPoint は Promise でオブジェクトか null（§3.8 A1）", async ctx => {
     const el = await ctx.mountReady();
     await waitFor(() => el.getViewpoint(), timeout, "a viewpoint");
@@ -661,7 +670,7 @@ export function createLayerAConformanceCases(options: LayerAConformanceOptions):
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
     const p = el.clientPointToLngLat(cx, cy);
-    assert(p instanceof Promise, "clientPointToLngLat() does not return a Promise");
+    assert(typeof p?.then === "function", "clientPointToLngLat() does not return a Promise (thenable)");
     const ll = await p;
     assert(ll === null || isLngLat(ll), `clientPointToLngLat() result: ${JSON.stringify(ll)}`);
     if (layout) {
