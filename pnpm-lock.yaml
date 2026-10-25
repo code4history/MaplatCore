@@ -16,8 +16,8 @@ importers:
   .:
     dependencies:
       '@c4h/weiwudi':
-        specifier: ^1.1.0
-        version: 1.1.0(workbox-routing@7.4.1)
+        specifier: ^1.1.1-rc.1
+        version: 1.1.1-rc.1(workbox-routing@7.4.1)
       '@maplat/transform':
         specifier: ^1.1.0
         version: 1.1.0
@@ -25,8 +25,8 @@ importers:
         specifier: ^7.4.0
         version: 7.4.0
       dompurify:
-        specifier: ^3.4.16
-        version: 3.4.16
+        specifier: ^3.4.17
+        version: 3.4.17
       lodash.template:
         specifier: ^4.18.1
         version: 4.18.1
@@ -136,8 +136,8 @@ packages:
     resolution: {integrity: sha512-0GEz8qJWokkUVYQYRukmkSHIFNoBH8QTreeHrAFbvz1XFYc3Y+puhMs8PQ5x8GNugiC2l5jvDBXKLbBIByeSBw==}
     hasBin: true
 
-  '@c4h/weiwudi@1.1.0':
-    resolution: {integrity: sha512-7sMmBQ+1hyLqvTYZvaoZZEY7Ce+HZinmTtEaDY7mhfnyEnkBtkPTaKleXEbLLyLuIyFUeVb0vXHibO0Kd4aaFw==}
+  '@c4h/weiwudi@1.1.1-rc.1':
+    resolution: {integrity: sha512-vKmUytM+w8seuDGTkPcsrEIP7mktj1RMJTiR+xCx3GrMDExZqGdO40xbhst+sVqiNJvaM/uFHWijHkDVUZPb0A==}
     engines: {node: '>=20.0.0', pnpm: '>=9.0.0'}
     peerDependencies:
       workbox-routing: ^7.4.0
@@ -1227,8 +1227,8 @@ packages:
   deep-is@0.1.4:
     resolution: {integrity: sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ==}
 
-  dompurify@3.4.16:
-    resolution: {integrity: sha512-sqo+pNp3qRhCIpbgRi1y8Tgk27Bo2Ry7w0dC1NBeNTdZChWjz9Xb/KOoZbRP/R6pQZ80Qw8YhXw13hWWBbMRnQ==}
+  dompurify@3.4.17:
+    resolution: {integrity: sha512-B/pSlYVHQ58kqISD/yDjuJ1yfzI34m1gF4lAod2bwSRhiN4K5Cl3H8Af7hqB2PmTL911tdEudnnXn5FnhRoz0w==}
 
   earcut@2.2.4:
     resolution: {integrity: sha512-/pjZsA1b4RPHbeWZQn66SWS8nZZWLQQ23oE3Eam7aroEFGEvwKAsJfZ9ytiEMycfzXWpca4FA9QIOehf7PocBQ==}
@@ -2039,7 +2039,7 @@ snapshots:
     dependencies:
       css-tree: 3.2.1
 
-  '@c4h/weiwudi@1.1.0(workbox-routing@7.4.1)':
+  '@c4h/weiwudi@1.1.1-rc.1(workbox-routing@7.4.1)':
     dependencies:
       workbox-routing: 7.4.1
 
@@ -3787,7 +3787,7 @@ snapshots:
 
   deep-is@0.1.4: {}
 
-  dompurify@3.4.16:
+  dompurify@3.4.17:
     optionalDependencies:
       '@types/trusted-types': 2.0.7
 

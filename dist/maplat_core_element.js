@@ -2,7 +2,7 @@ import { mercToLngLat as u, defaultPinIcon as f, MaplatApp as d } from "./maplat
 import { defineMaplatAppElementOnce as v, MaplatAppElementBase as y } from "./maplat_core_common.js";
 import { featuresOf as A, ELEMENT_ATTRIBUTES as T, ELEMENT_PROPERTIES as _, MAPLAT_APP_TAG as I } from "./maplat_core_common.js";
 import { ELEMENT_ATTRIBUTES as L, ELEMENT_OWN_EVENTS as x, ELEMENT_OWN_METHODS as C, ELEMENT_PROPERTIES as N, ELEMENT_STARTUP_KEYS as k, LAYER_A_PRO_ATTRIBUTES as j, MAPLAT_APP_EVENTS as B, MAPLAT_APP_METHODS as z, MAPLAT_APP_TAG as K } from "./maplat_core_common.js";
-const M = "1.1.0", O = Object.freeze(A("core")), c = (l) => Array.isArray(l) && Number.isFinite(l[0]) && Number.isFinite(l[1]);
+const M = "1.2.0-rc.1", O = Object.freeze(A("core")), c = (l) => Array.isArray(l) && Number.isFinite(l[0]) && Number.isFinite(l[1]);
 class P extends y {
   /** 実装の種別。有償版は "core-pro"。 */
   implementation = "core";

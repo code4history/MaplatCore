@@ -36,7 +36,7 @@ MaplatCore は Apache License 2.0（バージョン 0.13.2 以降）のオープ
 ## クイックスタート
 
 <!-- release-pinned:start -->
-> **現在のリリース: `1.1.0`**。このブロックは本リポジトリで唯一
+> **現在のリリース: `1.2.0-rc.1`**。このブロックは本リポジトリで唯一
 > リリース版数を持つ場所です（ADR-0012）。ブロックの外はすべて 1.0 正式版を前提に
 > 書かれています。
 > npm: [`@maplat/core`](https://www.npmjs.com/package/@maplat/core)
@@ -102,7 +102,7 @@ OpenLayers を読み込む必要があります。
 <script src="https://cdn.jsdelivr.net/npm/ol@10/dist/ol.js"></script>
 
 <!-- MaplatCore -->
-<script src="https://cdn.jsdelivr.net/npm/@maplat/core@1.1.0/dist/maplat_core.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@maplat/core@1.2.0-rc.1/dist/maplat_core.umd.js"></script>
 
 <div id="map_div"></div>
 <script>
