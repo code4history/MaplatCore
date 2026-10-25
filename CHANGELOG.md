@@ -2,7 +2,7 @@
 
 このプロジェクトの主な変更を記録します。版数は [Semantic Versioning](https://semver.org/) に従います。
 
-## [Unreleased]
+## [1.2.0-rc.1] - 2026-10-26
 
 ### Fixed
 - 設定ファイル・オプションの 8 キーで `false`／`0` が効くようになった（#116）
