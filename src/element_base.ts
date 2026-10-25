@@ -1,14 +1,14 @@
 // <maplat-app> の殻（実装に依らない基底クラス）。@maplat/core/common から公開する。
 //
-// 属性・プロパティの表、作成と破棄、イベントの出し直し、起動時キーの変更不可（U2）、
-// Pro 固有キーの警告（U3）、46 の委譲メソッド、状態の読み取りを持つ。地図の中身（旧クラスの
+// 属性・プロパティの表、作成と破棄、イベントの出し直し、起動時キーの変更不可、
+// Pro 固有キーの警告、46 の委譲メソッド、状態の読み取りを持つ。地図の中身（旧クラスの
 // MaplatApp 相当）は派生クラスが createImplementation() で差す（Core: src/element.ts）。
 //
 // **このファイルは element_contract.ts と、common の中で OpenLayers を引かないモジュール
-// （functions.ts。A19 の createOnceWarner）以外を import しない**（OpenLayers 等を引き込まない。
+// （functions.ts の createOnceWarner）以外を import しない**（OpenLayers 等を引き込まない。
 // spec/common-entry.spec.ts が機械的に確かめる）。
 //
-// 正本の仕様: NayutaProducts/docs/superpowers/specs/2026-10-10-maplat-web-components-interface.md §3・§6
+// 公開 API は docs/api/maplat-app.md を参照。
 import { createOnceWarner } from "./functions";
 import {
   APP_OPTION_ALIASES,
@@ -49,7 +49,7 @@ export interface LayerAImplementation {
   [member: string]: any;
 }
 
-/** createImplementation() に渡す起動時の材料（§6.1 の優先順位を解いた後の値）。 */
+/** createImplementation() に渡す起動時の材料（優先順位を解いた後の値）。 */
 export interface ElementStartupConfig {
   /** 与えられたキーの値（属性・プロパティのみの両方。undefined のキーは載せない） */
   values: Record<string, unknown>;
@@ -64,7 +64,7 @@ export interface ElementStartupConfig {
   element: HTMLElement;
 }
 
-/** (ii) のキーを反映するときに、§6.1 の順（プロパティ／属性 ＞ appOption ＞ fallback）で値を引く。 */
+/** (ii) のキーを反映するときに、プロパティ／属性 ＞ appOption ＞ fallback の順で値を引く。 */
 export type RuntimeValueResolver = (prop: string, optionKey: string | undefined, fallback: unknown) => unknown;
 
 interface Deferred {
@@ -90,7 +90,7 @@ function deferred(): Deferred {
   return d;
 }
 
-// 要素の既定の箱（§3.1）。:where() で詳細度 0 にし、利用側の CSS が常に勝つようにする。
+// 要素の既定の箱。:where() で詳細度 0 にし、利用側の CSS が常に勝つようにする。
 const STYLE_ID = "maplat-app-element-style";
 const STYLE_TEXT = ":where(maplat-app){display:block;position:relative;overflow:hidden;height:400px;}";
 
@@ -123,15 +123,15 @@ const ALL_PROPS: readonly PropDef[] = [...ELEMENT_PROPERTIES, ...LAYER_A_PRO_PRO
 const ATTR_BY_NAME = new Map(ALL_ATTRS.map(d => [d.attr, d]));
 const ATTR_BY_PROP = new Map(ALL_ATTRS.map(d => [d.prop, d]));
 const STARTUP_KEYS = new Set(ELEMENT_STARTUP_KEYS);
-// §3.8 A1: 変換できないときは undefined でなく null
+// 変換できないときは undefined でなく null
 const NULLISH_RESULT_METHODS = new Set<string>(["clientPointToLngLat", "lngLatToClientPoint"]);
 
 /**
  * <maplat-app> の基底クラス。派生クラスは次を与える:
  *   - `implementation` / `version`（読み取り専用の値）
  *   - `createImplementation(config)`: 中身（LayerAImplementation）を作る
- *   - `listMaps` / `setEnvelopes` / `getMapEnvelope` / `getViewExtent` / `zoomBy`（§3.4.2）
- *   - `features()`: supports() の表（§3.6）
+ *   - `listMaps` / `setEnvelopes` / `getMapEnvelope` / `getViewExtent` / `zoomBy`
+ *   - `features()`: supports() の表
  *   - 必要なら各 hook（applyRuntimeChanges・convertEventDetail・disposeImplementation・
  *     canDisposeDuringStartup 等）と道具（markPending・readKey・dispatchLayerAEvent 等）
  */
@@ -145,7 +145,7 @@ export abstract class MaplatAppElementBase extends BaseElement {
   static readonly ownEvents = ELEMENT_OWN_EVENTS;
   static readonly methods = MAPLAT_APP_METHODS;
 
-  /** 実装の種別（§3.6）。 */
+  /** 実装の種別。 */
   abstract readonly implementation: string;
   /** 実装の版（semver）。 */
   abstract readonly version: string;
@@ -155,9 +155,9 @@ export abstract class MaplatAppElementBase extends BaseElement {
   #isReady = false;
   // プロパティのみのキーの値
   #props = new Map<string, unknown>();
-  // 起動した後の、起動時だけ効くキーの値（U2: 読み取りはこの値を返す）
+  // 起動した後の、起動時だけ効くキーの値（読み取りはこの値を返す）
   #startupValues: Map<string, unknown> | null = null;
-  // 警告はキーごとに 1 回（A19: 旧クラスと同じ createOnceWarner を使う）
+  // 警告はキーごとに 1 回（旧クラスと同じ createOnceWarner を使う）
   #warner = createOnceWarner();
   // 反映待ちの (ii) キー（同じ拍の変更・ready 前の変更をまとめる）
   #pending = new Set<string>();
@@ -251,7 +251,7 @@ export abstract class MaplatAppElementBase extends BaseElement {
         }
       });
     }
-    // 46 の委譲メソッド（§3.4.1＋#91）
+    // 46 の委譲メソッド（旧クラスから引き継ぐ 44 個＋#91 の 2 個）
     for (const name of MAPLAT_APP_METHODS) {
       Object.defineProperty(proto, name, {
         configurable: true,
@@ -262,11 +262,11 @@ export abstract class MaplatAppElementBase extends BaseElement {
           const call = () => {
             const result = impl[name](...args);
             if (name === "handleGPS") this.#checkGpsEnabled();
-            // §6.2.3: メソッドで変えた透過度も属性へ書き戻す（描画 1 回にまとめる）
+            // メソッドで変えた透過度も属性へ書き戻す（描画 1 回にまとめる）
             if (name === "setTransparency") this.#reflectTransparency();
             return this.convertMethodResult(name, result);
           };
-          // §3.4.1: 作成中なら ready を待ってから実行する
+          // 作成中なら ready を待ってから実行する
           if (!this.#isReady) return this.#ready.promise.then(call);
           return call();
         }
@@ -274,7 +274,7 @@ export abstract class MaplatAppElementBase extends BaseElement {
     }
   }
 
-  // ---- 状態の読み取り（§3.3）----
+  // ---- 状態の読み取り ----
 
   /**
    * 地図の準備完了で解決する。要素を置き直したときだけ新しい Promise になる: DOM から外して破棄が
@@ -322,14 +322,14 @@ export abstract class MaplatAppElementBase extends BaseElement {
     return this.#impl ? !!this.#impl.getGPSEnabled() : false;
   }
 
-  // ---- 自前のメソッド（§3.4.2）----
+  // ---- 自前のメソッド ----
 
   /** 現在の視点。地図の準備前は null。 */
   getViewpoint(): Viewpoint | null {
     return this.viewpoint;
   }
 
-  /** 機能の問い合わせ（§3.6）。未知の名前は false。地図の準備前でも答える。 */
+  /** 機能の問い合わせ。未知の名前は false。地図の準備前でも答える。 */
   supports(feature: string): boolean {
     return this.features()[feature] === true;
   }
@@ -344,7 +344,7 @@ export abstract class MaplatAppElementBase extends BaseElement {
 
   // ---- 派生クラスが差す hook ----
 
-  /** supports() の表（§3.6）。 */
+  /** supports() の表。 */
   protected abstract features(): Readonly<Record<string, boolean>>;
 
   /** 中身を作る。投げたら ready が reject される。 */
@@ -396,7 +396,7 @@ export abstract class MaplatAppElementBase extends BaseElement {
 
   /**
    * 起動後の (ii) のキーの変更を中身へ反映する。map-id・transparency は基底が先に当てる。
-   * resolve は §6.1 の順（プロパティ／属性 ＞ appOption ＞ fallback）で値を引く。
+   * resolve はプロパティ／属性 ＞ appOption ＞ fallback の順で値を引く。
    */
   protected applyRuntimeChanges(
     _impl: LayerAImplementation,
@@ -406,7 +406,7 @@ export abstract class MaplatAppElementBase extends BaseElement {
     // 既定では何もしない
   }
 
-  /** 中身の detail → 要素のイベントの detail（§3.5）。派生クラスは super を呼んでから足す。 */
+  /** 中身の detail → 要素のイベントの detail。派生クラスは super を呼んでから足す。 */
   protected convertEventDetail(type: string, detail: any, _impl: LayerAImplementation): unknown {
     if (type === "lifecycle:error") {
       return { phaseId: detail?.phaseId, error: detail?.error };
@@ -418,7 +418,7 @@ export abstract class MaplatAppElementBase extends BaseElement {
     return detail;
   }
 
-  /** 委譲メソッドの戻り値の調整（§3.8 A1: undefined → null）。 */
+  /** 委譲メソッドの戻り値の調整（undefined → null）。 */
   protected convertMethodResult(name: string, result: unknown): unknown {
     if (NULLISH_RESULT_METHODS.has(name)) {
       return Promise.resolve(result).then(v => (v === undefined ? null : v));
@@ -443,7 +443,7 @@ export abstract class MaplatAppElementBase extends BaseElement {
     return this.#isReady;
   }
 
-  /** 中身が無ければ「まだ作っていない」の例外を投げる（§3.4.1）。 */
+  /** 中身が無ければ「まだ作っていない」の例外を投げる。 */
   protected requireImplementation(name: string): LayerAImplementation {
     return this.#requireImpl(name);
   }
@@ -474,14 +474,14 @@ export abstract class MaplatAppElementBase extends BaseElement {
     this.#scheduleFlush();
   }
 
-  /** 要素から DOM の CustomEvent を出す（§3.5: bubbles・composed なし・cancelable なし）。 */
+  /** 要素から DOM の CustomEvent を出す（bubbles・composed なし・cancelable なし）。 */
   protected dispatchLayerAEvent(type: string, detail: unknown) {
     this.dispatchEvent(new CustomEvent(type, { bubbles: true, composed: false, cancelable: false, detail }));
   }
 
   /**
    * 内部の操作（UI・メソッド・状態 URL の復元・中身自身の切り替え）で変わった状態を属性へ書き戻す
-   * （§3.3・§6.2.3。対象は AttrDef.state を持つキー: map-id・transparency・Pro の display-mode）。
+   * （対象は AttrDef.state を持つキー: map-id・transparency・Pro の display-mode）。
    * 書き戻しは属性の変更として扱わない（attributeChangedCallback が何もしない＝二重に処理しない）。
    * state が "frame" のキーは描画 1 回につき 1 回にまとめ、書く時点で read() から値を読む（最後の値が残る）。
    * 利用者の変更が反映待ちのキー・値が無い（undefined）・既に同じ値のときは書かない。
@@ -501,7 +501,7 @@ export abstract class MaplatAppElementBase extends BaseElement {
     });
   }
 
-  /** 同じ鍵では 1 回だけ警告する（名前は公開の基底クラスのメソッドなので残す。A19）。 */
+  /** 同じ鍵では 1 回だけ警告する（名前は公開の基底クラスのメソッドなので残す）。 */
   protected warnOnce(key: string, message: string) {
     this.#warner(key, message);
   }
@@ -562,14 +562,14 @@ export abstract class MaplatAppElementBase extends BaseElement {
     return impl;
   }
 
-  /** Pro 固有キー（U3）: 対応していれば true。していなければキーごとに 1 回警告して false。 */
+  /** Pro 固有キー: 対応していれば true。していなければキーごとに 1 回警告して false。 */
   #checkFeatureKey(def: AttrDef | PropDef, via: "attribute" | "property"): boolean {
     if (!def.feature || this.supports(def.feature)) return true;
     this.warnOnce(`unsupported:${def.prop}`, unsupportedKeyMessage(def as { attr?: string; prop: string }, via));
     return false;
   }
 
-  /** 起動後の起動時キーへの書き込みなら警告して true を返す（U2）。 */
+  /** 起動後の起動時キーへの書き込みなら警告して true を返す。 */
   #rejectStartupWrite(prop: string, what: string): boolean {
     if (!this.#startupValues || !STARTUP_KEYS.has(prop)) return false;
     this.warnOnce(
@@ -662,7 +662,7 @@ export abstract class MaplatAppElementBase extends BaseElement {
     if (this.#impl && this.#isReady) this.#applyPending();
   }
 
-  /** 起動時の材料を組む（§6.1 の優先順位: 個別のキー ＞ appOption ＞ 設定ファイル ＞ 既定値）。 */
+  /** 起動時の材料を組む（優先順位: 個別のキー ＞ appOption ＞ 設定ファイル ＞ 既定値）。 */
   #buildConfig(): ElementStartupConfig {
     const base = (this.#props.get("appOption") as Record<string, any> | undefined) || {};
     const appOption: Record<string, any> = { ...base };
@@ -687,16 +687,16 @@ export abstract class MaplatAppElementBase extends BaseElement {
       const v = this.#props.get(def.prop);
       if (v !== undefined) values[def.prop] = v;
     }
-    // C2-10: 要素経路の uiHooks は context.core / context.mapDivDocument を要素にする（仕様 §3.2）。
-    // プロパティ（values.uiHooks）と移行用の appOption プロパティの中の uiHooks の両方を包む（Minor 4）。
-    // フックのオブジェクトは書き換えず、写しを渡す（旧クラスの経路は変わらない。C5）
+    // 要素経路の uiHooks は context.core / context.mapDivDocument を要素にする。
+    // プロパティ（values.uiHooks）と移行用の appOption プロパティの中の uiHooks の両方を包む。
+    // フックのオブジェクトは書き換えず、写しを渡す（旧クラスの経路は変わらない）
     if (values.uiHooks) {
       values.uiHooks = wrapUiHooksForElement(values.uiHooks as Record<string, any>, this);
     }
     if (appOption.uiHooks) {
       appOption.uiHooks = wrapUiHooksForElement(appOption.uiHooks as Record<string, any>, this);
     }
-    // 設定ファイルの場所: setting ＞ app-src ＞ apps/${appId}.json（§6.1）
+    // 設定ファイルの場所: setting ＞ app-src ＞ apps/${appId}.json
     let setting: unknown = values.setting ?? appOption.setting;
     const appSrc = values.appSrc as string | undefined;
     if (!setting && appSrc) {
@@ -714,7 +714,7 @@ export abstract class MaplatAppElementBase extends BaseElement {
     const ready = this.#ready;
     // 作成時点の値は材料に織り込むので、溜めていた変更は捨てる
     this.#pending.clear();
-    // U2: ここから起動時のキーは変更不可。読み取りは起動時の値を返す
+    // ここから起動時のキーは変更不可。読み取りは起動時の値を返す
     const snapshot = new Map<string, unknown>();
     for (const key of ELEMENT_STARTUP_KEYS) snapshot.set(key, this.#currentValue(key));
     this.#startupValues = snapshot;
@@ -779,7 +779,7 @@ export abstract class MaplatAppElementBase extends BaseElement {
         const maps = this.listMaps();
         if (maps.length > 0 && !maps.some(m => m.mapID === mapId)) {
           console.warn(`<${MAPLAT_APP_TAG}>: map-id "${mapId}" is not a usable map of this app; ignored.`);
-          // 属性は今の地図へ戻す（el.mapId は表示中の地図を返す。§3.3）
+          // 属性は今の地図へ戻す（el.mapId は表示中の地図を返す）
           if (current) this.reflectState("mapId", () => current);
         } else {
           void impl.changeMap(mapId);
@@ -813,12 +813,12 @@ export abstract class MaplatAppElementBase extends BaseElement {
       const listener = (evt: any) => {
         const raw = evt && "detail" in evt ? evt.detail : null;
         if (type === "changeViewpoint" && raw) this.#lastViewpoint = { ...raw };
-        // §6.2.3: 地図が替わったら map-id へ書き戻す（要素の mapChanged のリスナが el.mapId で新しい地図を読めるよう先に）
+        // 地図が替わったら map-id へ書き戻す（要素の mapChanged のリスナが el.mapId で新しい地図を読めるよう先に）
         if (type === "mapChanged") {
           const mapID = (raw as { mapID?: unknown } | null)?.mapID;
           this.reflectState("mapId", () => (typeof mapID === "string" && mapID !== "" ? mapID : this.currentMapId));
         }
-        // Pro 固有の表示モード（supports("display-mode") の実装だけが modechange を出す。U3）
+        // Pro 固有の表示モード（supports("display-mode") の実装だけが modechange を出す）
         if (type === "modechange") {
           const mode = (raw as { mode?: unknown } | null)?.mode;
           this.reflectState("displayMode", () => (typeof mode === "string" ? mode : undefined));
@@ -851,11 +851,11 @@ export abstract class MaplatAppElementBase extends BaseElement {
   }
 
   #teardown() {
-    // 描画待ちの書き戻しは今の中身の値で済ませる（付け直したときに古い属性から作り直さない。§3.3）
+    // 描画待ちの書き戻しは今の中身の値で済ませる（付け直したときに古い属性から作り直さない）
     this.#flushFrameReflections();
     this.#generation++;
     this.#needsCreate = false;
-    // §3.3: 破棄が決まった時点で ready を新しい Promise にする（置き直した直後に前の解決済みの Promise を
+    // 破棄が決まった時点で ready を新しい Promise にする（置き直した直後に前の解決済みの Promise を
     // 返さない）。まだ決着していない ready（作成の途中で外された）はそのまま次の作成で解決させる
     if (this.#ready.settled) this.#ready = deferred();
     this.#isReady = false;
@@ -896,7 +896,7 @@ export abstract class MaplatAppElementBase extends BaseElement {
   }
 }
 
-/** Pro 固有のキー（U3）。対応しない実装では常に undefined（代入は警告して無視）。 */
+/** Pro 固有のキー。対応しない実装では常に undefined（代入は警告して無視）。 */
 export interface MaplatAppElementProSettings {
   displayMode: DisplayMode | undefined;
 }
@@ -909,7 +909,7 @@ export interface MaplatAppElementBase
     MaplatAppElementProSettings {}
 
 /**
- * 要素を登録する（二重登録は何もしない。別の実装が登録済みなら警告して上書きしない。§3.1）。
+ * 要素を登録する（二重登録は何もしない。別の実装が登録済みなら警告して上書きしない）。
  * @returns 登録したら true
  */
 export function defineMaplatAppElementOnce(

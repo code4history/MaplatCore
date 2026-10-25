@@ -29,7 +29,7 @@ export interface LayerAConformanceOptions {
     timeout?: number;
 }
 export interface ConformanceCase {
-    /** 仕様 §8.2 の群（A-形・A-同期 …） */
+    /** 群の名前（A-形・A-同期 …） */
     group: string;
     name: string;
     run(): Promise<void>;

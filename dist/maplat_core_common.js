@@ -1802,7 +1802,7 @@ const nI = [
   { attr: "debug", prop: "debug", kind: "boolean", option: "debug" },
   { attr: "icon", prop: "icon", kind: "string", option: "icon" },
   { attr: "selected-icon", prop: "selectedIcon", kind: "string", option: "selectedIcon" },
-  // U5: 中心の目印（既定で表示。消す・画像を差し替える口）
+  // 中心の目印（既定で表示。消す・画像を差し替える口）
   { attr: "no-center-marker", prop: "noCenterMarker", kind: "boolean", dom: !0 },
   { attr: "center-marker-src", prop: "centerMarkerSrc", kind: "string", dom: !0 }
 ], mC = [
@@ -1895,7 +1895,7 @@ const _e = [
   { attr: "enable-poi-html-no-scroll", prop: "enablePoiHtmlNoScroll", kind: "boolean" },
   { attr: "presentation-mode", prop: "presentationMode", kind: "boolean" },
   { attr: "state-url", prop: "stateUrl", kind: "boolean", startup: !0 },
-  // "" と "true" は true（既定のパス）・"false" は false・それ以外は URL（§6.2.2）
+  // "" と "true" は true（既定のパス）・"false" は false・それ以外は URL
   { attr: "pwa-manifest", prop: "pwaManifest", kind: "boolean-or-string", startup: !0 },
   { attr: "pwa-worker", prop: "pwaWorker", kind: "string", startup: !0 },
   { attr: "pwa-scope", prop: "pwaScope", kind: "string", startup: !0 },
@@ -1992,9 +1992,9 @@ const NA = class NA extends ze {
     M(this, U, !1);
     // プロパティのみのキーの値
     M(this, Z, /* @__PURE__ */ new Map());
-    // 起動した後の、起動時だけ効くキーの値（U2: 読み取りはこの値を返す）
+    // 起動した後の、起動時だけ効くキーの値（読み取りはこの値を返す）
     M(this, K, null);
-    // 警告はキーごとに 1 回（A19: 旧クラスと同じ createOnceWarner を使う）
+    // 警告はキーごとに 1 回（旧クラスと同じ createOnceWarner を使う）
     M(this, mg, ie());
     // 反映待ちの (ii) キー（同じ拍の変更・ready 前の変更をまとめる）
     M(this, Y, /* @__PURE__ */ new Set());
@@ -2033,7 +2033,7 @@ const NA = class NA extends ze {
     const a = Ge.get(g);
     a && (a.feature && !p(this, c, JA).call(this, a, "attribute") || p(this, c, pg).call(this, a.prop, `attribute "${g}"`));
   }
-  // ---- 状態の読み取り（§3.3）----
+  // ---- 状態の読み取り ----
   /**
    * 地図の準備完了で解決する。要素を置き直したときだけ新しい Promise になる: DOM から外して破棄が
    * 決まった時点（外した拍の後のマイクロタスク）で、前の Promise が決着していれば新しい Promise に替わる
@@ -2073,12 +2073,12 @@ const NA = class NA extends ze {
   get gpsEnabled() {
     return s(this, w) ? !!s(this, w).getGPSEnabled() : !1;
   }
-  // ---- 自前のメソッド（§3.4.2）----
+  // ---- 自前のメソッド ----
   /** 現在の視点。地図の準備前は null。 */
   getViewpoint() {
     return this.viewpoint;
   }
-  /** 機能の問い合わせ（§3.6）。未知の名前は false。地図の準備前でも答える。 */
+  /** 機能の問い合わせ。未知の名前は false。地図の準備前でも答える。 */
   supports(g) {
     return this.features()[g] === !0;
   }
@@ -2114,15 +2114,15 @@ const NA = class NA extends ze {
   }
   /**
    * 起動後の (ii) のキーの変更を中身へ反映する。map-id・transparency は基底が先に当てる。
-   * resolve は §6.1 の順（プロパティ／属性 ＞ appOption ＞ fallback）で値を引く。
+   * resolve はプロパティ／属性 ＞ appOption ＞ fallback の順で値を引く。
    */
   applyRuntimeChanges(g, t, n) {
   }
-  /** 中身の detail → 要素のイベントの detail（§3.5）。派生クラスは super を呼んでから足す。 */
+  /** 中身の detail → 要素のイベントの detail。派生クラスは super を呼んでから足す。 */
   convertEventDetail(g, t, n) {
     return g === "lifecycle:error" ? { phaseId: t?.phaseId, error: t?.error } : g.startsWith("lifecycle:") ? { phaseId: t?.phaseId, appData: t?.appData ?? null } : t;
   }
-  /** 委譲メソッドの戻り値の調整（§3.8 A1: undefined → null）。 */
+  /** 委譲メソッドの戻り値の調整（undefined → null）。 */
   convertMethodResult(g, t) {
     return Qe.has(g) ? Promise.resolve(t).then((n) => n === void 0 ? null : n) : t;
   }
@@ -2139,7 +2139,7 @@ const NA = class NA extends ze {
   isImplementationReady() {
     return s(this, U);
   }
-  /** 中身が無ければ「まだ作っていない」の例外を投げる（§3.4.1）。 */
+  /** 中身が無ければ「まだ作っていない」の例外を投げる。 */
   requireImplementation(g) {
     return p(this, c, CI).call(this, g);
   }
@@ -2161,13 +2161,13 @@ const NA = class NA extends ze {
   markPending(g) {
     s(this, Y).add(g), p(this, c, KA).call(this);
   }
-  /** 要素から DOM の CustomEvent を出す（§3.5: bubbles・composed なし・cancelable なし）。 */
+  /** 要素から DOM の CustomEvent を出す（bubbles・composed なし・cancelable なし）。 */
   dispatchLayerAEvent(g, t) {
     this.dispatchEvent(new CustomEvent(g, { bubbles: !0, composed: !1, cancelable: !1, detail: t }));
   }
   /**
    * 内部の操作（UI・メソッド・状態 URL の復元・中身自身の切り替え）で変わった状態を属性へ書き戻す
-   * （§3.3・§6.2.3。対象は AttrDef.state を持つキー: map-id・transparency・Pro の display-mode）。
+   * （対象は AttrDef.state を持つキー: map-id・transparency・Pro の display-mode）。
    * 書き戻しは属性の変更として扱わない（attributeChangedCallback が何もしない＝二重に処理しない）。
    * state が "frame" のキーは描画 1 回につき 1 回にまとめ、書く時点で read() から値を読む（最後の値が残る）。
    * 利用者の変更が反映待ちのキー・値が無い（undefined）・既に同じ値のときは書かない。
@@ -2184,7 +2184,7 @@ const NA = class NA extends ze {
       }));
     }
   }
-  /** 同じ鍵では 1 回だけ警告する（名前は公開の基底クラスのメソッドなので残す。A19）。 */
+  /** 同じ鍵では 1 回だけ警告する（名前は公開の基底クラスのメソッドなので残す）。 */
   warnOnce(g, t) {
     s(this, mg).call(this, g, t);
   }
@@ -2229,10 +2229,10 @@ II = function() {
       "InvalidStateError"
     );
   return t;
-}, /** Pro 固有キー（U3）: 対応していれば true。していなければキーごとに 1 回警告して false。 */
+}, /** Pro 固有キー: 対応していれば true。していなければキーごとに 1 回警告して false。 */
 JA = function(g, t) {
   return !g.feature || this.supports(g.feature) ? !0 : (this.warnOnce(`unsupported:${g.prop}`, Te(g, t)), !1);
-}, /** 起動後の起動時キーへの書き込みなら警告して true を返す（U2）。 */
+}, /** 起動後の起動時キーへの書き込みなら警告して true を返す。 */
 fg = function(g, t) {
   return !s(this, K) || !Kg.has(g) ? !1 : (this.warnOnce(
     `startup:${g}`,
@@ -2288,7 +2288,7 @@ fg = function(g, t) {
       }
     s(this, w) && s(this, U) && p(this, c, eI).call(this);
   }
-}, /** 起動時の材料を組む（§6.1 の優先順位: 個別のキー ＞ appOption ＞ 設定ファイル ＞ 既定値）。 */
+}, /** 起動時の材料を組む（優先順位: 個別のキー ＞ appOption ＞ 設定ファイル ＞ 既定値）。 */
 yC = function() {
   const t = { ...s(this, Z).get("appOption") || {} };
   for (const [u, E] of Object.entries(ye))

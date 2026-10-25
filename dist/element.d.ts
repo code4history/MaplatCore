@@ -10,13 +10,13 @@ export type MaplatViewpoint = Viewpoint;
 export type MaplatMapListItem = MapListItem;
 export declare class MaplatAppElement extends MaplatAppElementBase implements MaplatAppElementContract {
     #private;
-    /** 実装の種別（§3.6）。有償版は "core-pro"。 */
+    /** 実装の種別。有償版は "core-pro"。 */
     readonly implementation: "core";
     /** 実装の版（@maplat/core の版）。 */
     readonly version: string;
     /**
      * 内部の MaplatApp。
-     * @internal 移行期の逃げ道（§9.3）。層 A の公開面に含めない。メジャー版で消す。
+     * @internal 移行期の逃げ道。層 A の公開面に含めない。メジャー版で消す。
      */
     get app(): CoreApp | null;
     /** 使える地図の一覧（設定ファイルの sources の順）。地図の準備前は []。 */
@@ -46,12 +46,12 @@ export declare class MaplatAppElement extends MaplatAppElementBase implements Ma
      * 旧クラス互換層の <maplat-ui> は this.#app?.northUp を読むので、地図とコンパスを食い違わせない。
      * Core 固有の読み口はここに置く（element_base.ts は Core-Pro と共有する土台なので、口だけを置く）。
      * 対象は <maplat-app> の属性・プロパティの表にある機能系キー（northUp・homeMarginPixels・noRotate）だけ。
-     * tapDuration・tapUIVanish は <maplat-ui> の属性（§3.8 A11）で、互換層が appData から移すのでここには無い。
+     * tapDuration・tapUIVanish は <maplat-ui> の属性で、互換層が appData から移すのでここには無い。
      */
     protected implementationKeyValue(prop: string, impl: LayerAImplementation): {
         value: unknown;
     } | undefined;
-    /** MaplatApp に渡す appOption を組む（§6.1: 個別のキー ＞ appOption ＞ 設定ファイル ＞ 既定値）。 */
+    /** MaplatApp に渡す appOption を組む（個別のキー ＞ appOption ＞ 設定ファイル ＞ 既定値）。 */
     protected createImplementation(config: ElementStartupConfig): LayerAImplementation;
     protected onImplementationCreated(_impl: LayerAImplementation): void;
     protected onImplementationReady(impl: LayerAImplementation): void;
@@ -60,7 +60,7 @@ export declare class MaplatAppElement extends MaplatAppElementBase implements Ma
     protected onResize(impl: LayerAImplementation): void;
     protected convertEventDetail(type: string, detail: any, impl: LayerAImplementation): unknown;
     protected applyRuntimeChanges(impl: LayerAImplementation, pending: ReadonlySet<string>, resolve: RuntimeValueResolver): void;
-    /** 中心の目印（U5）。既定で表示。no-center-marker で消し、center-marker-src で画像を差し替える。 */
+    /** 中心の目印。既定で表示。no-center-marker で消し、center-marker-src で画像を差し替える。 */
     protected applyDomKeys(): void;
 }
 /** <maplat-app> を登録する（二重登録は何もしない。別実装が登録済みなら警告して上書きしない）。 */

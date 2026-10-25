@@ -17,7 +17,7 @@
     main { display: grid; grid-template-columns: minmax(0, 1fr) 340px; height: calc(100vh - 42px); }
     /* 要素の既定の高さ（400px）をページの CSS で上書きする（:where なので常にこちらが勝つ） */
     maplat-app { height: 100%; }
-    /* U5: 中心の目印は class で表現を差し替えられる */
+    /* 中心の目印は class で表現を差し替えられる */
     maplat-app.demo-ring .maplat-center-marker { filter: hue-rotate(200deg) drop-shadow(0 0 2px #000); }
     aside { border-left: 1px solid var(--line); padding: 8px 12px; overflow-y: auto; }
     section { border-top: 1px solid #eef0f4; padding: 8px 0; }

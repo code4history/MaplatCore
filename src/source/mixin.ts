@@ -192,7 +192,7 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
       if (!this.weiwudi) return {};
       try {
         const stats = await this.weiwudi.stats();
-        // §3.8 A10: 全タイル数 total を含める。Weiwudi の stats は登録時に total が分かった
+        // 全タイル数 total を含める。Weiwudi の stats は登録時に total が分かった
         // ときだけ載せるので、無ければ Weiwudi のインスタンスの totalTile（旧 UI が直接読んでいた値）で補う
         const totalTile = (this.weiwudi as any).totalTile;
         if (stats && typeof stats === "object" && stats.total == null && typeof totalTile === "number") {

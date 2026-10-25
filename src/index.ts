@@ -37,19 +37,19 @@ import BaseEvent from "ol/events/Event";
 export { sanitizeHtml, escapeAttr, toPlainText, buildSlideAttrs } from "./sanitize";
 
 /** EPSG:3857 → 経緯度。経度は ±180 に巻き戻す（ol の toLonLat と同じ規則）。
- *  <maplat-app> の getMapEnvelope・getViewExtent が使う（旧クラスは transform のまま。設計 v2 A1）。 */
+ *  <maplat-app> の getMapEnvelope・getViewExtent が使う（旧クラスは transform のまま）。 */
 export function mercToLngLat(merc: readonly number[]): [number, number] {
   const ll = toLonLat(merc as Coordinate);
   return [ll[0]!, ll[1]!];
 }
 
-/** 既定のピンの画像（POI にも祖先にも icon が無いマーカーに地図が描く画像）。設計 v2 A2。 */
+/** 既定のピンの画像（POI にも祖先にも icon が無いマーカーに地図が描く画像）。 */
 export function defaultPinIcon(selected = false): string {
   return selected ? assets.defaultpin_selected : assets.defaultpin;
 }
 
 /**
- * 起動時と起動後で共有する機能系キーの既定値（prepareMap と applyRuntimeOptions が読む。A4）。
+ * 起動時と起動後で共有する機能系キーの既定値（prepareMap と applyRuntimeOptions が読む）。
  * export しない（公開面を増やさない）。`controls` は起動時だけの値なので表に入れない（共有インスタンス回避）。
  */
 const RUNTIME_DEFAULTS = {
@@ -61,7 +61,7 @@ const RUNTIME_DEFAULTS = {
   debug: false
 } as const;
 
-/** テンプレート類（コンテンツ側・U1 追補）の既定: 設定ファイルの値、無ければ false（A4）。 */
+/** テンプレート類（コンテンツ側）の既定: 設定ファイルの値、無ければ false。 */
 function contentOption(appData: any, key: "poiTemplate" | "poiStyle" | "iconTemplate"): unknown {
   return appData?.[key] ?? false;
 }
@@ -121,7 +121,7 @@ interface PendingView {
   positionMapID?: string;
 }
 
-// A18L: ライフサイクルの段階の正本は element_contract.ts の LIFECYCLE_PHASES
+// ライフサイクルの段階の正本は element_contract.ts の LIFECYCLE_PHASES
 // （型だけの import。element_contract.ts は何も import しないので依存は増えない）
 import type { LifecyclePhaseId } from "./element_contract";
 
@@ -216,22 +216,22 @@ interface VectorEntry {
 }
 
 /**
- * <maplat-app> が Core の実装にだけ求める内部面（設計 v2 §6.0）。
- * 公開面ではない（仕様 §9.1 の表・公開文書には載せない）。要素は `as any` でなくこの型で受ける。
+ * <maplat-app> が Core の実装にだけ求める内部面。
+ * 公開面ではない（公開文書には載せない）。要素は `as any` でなくこの型で受ける。
  * @internal
  */
 export interface ElementImplementationInternals {
-  /** sourceLoaded の { mapID, usable }[] の材料（cacheHash の同一性）。A6。 */
+  /** sourceLoaded の { mapID, usable }[] の材料（cacheHash の同一性）。 */
   sourceLoadedDetail(sources: unknown): { mapID: string | null; usable: boolean }[];
-  /** pixel → 地図の座標 → merc の連鎖（旧 clientPointToLngLat と同じ・点検なし）。A7。 */
+  /** pixel → 地図の座標 → merc の連鎖（旧 clientPointToLngLat と同じ・点検なし）。 */
   pixelToMerc(pixel: readonly [number, number]): Promise<number[] | undefined>;
-  /** 表示領域の大きさ（pixel）。地図が無い・寸法が 0 以下なら undefined。Minor 1。 */
+  /** 表示領域の大きさ（pixel）。地図が無い・寸法が 0 以下なら undefined。 */
   viewportSize(): [number, number] | undefined;
-  /** 前面と背面の地図の大きさを測り直す。A10。 */
+  /** 前面と背面の地図の大きさを測り直す。 */
   updateSize(): void;
-  /** 中心の目印（U5）の表現を当てる。A3。 */
+  /** 中心の目印の表現を当てる。 */
   setCenterMarker(next: { hidden?: boolean; src?: string | null }): void;
-  /** 起動後の機能系キー・テンプレート・icon を当てる（undefined は既定／設定ファイル）。A4。 */
+  /** 起動後の機能系キー・テンプレート・icon を当てる（undefined は既定／設定ファイル）。 */
   applyRuntimeOptions(values: Record<string, unknown>): void;
 }
 
@@ -297,7 +297,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
   // oct26-m2-t1-ff: 非表示中の changeMap で保留した視点確定と、その適用の予約状態。
   private __pendingView: PendingView | null = null;
   private __pendingViewScheduled = false;
-  // A3: 中心の目印の img（setCenterMarker が表現を当てる）
+  // 中心の目印の img（setCenterMarker が表現を当てる）
   private __centerMarkerImg?: HTMLImageElement;
   private lifecycleHookResults: Partial<Record<LifecyclePhaseId, any>> = {};
   private __init = true;
@@ -312,7 +312,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
 
   lastClickEvent: any;
 
-  // ---- 起動時だけ効くキー（U2: 起動後は変更不可）----
+  // ---- 起動時だけ効くキー（起動後は変更不可） ----
   // 公開面は getter のみ（TypeScript 上は readonly）。実行時は lockStartupFields() が
   // 警告して無視する setter を足す（strict mode の代入で例外にしないため）。
   // Core 自身の書き込みは下の __ で始まる保管場所へ行う。
@@ -334,7 +334,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
   private __uiHooks?: UiHooks;
   private __fakeGps: any = false;
   private __fakeRadius?: number;
-  // U1 追補: 設定ファイルの機能系キーの扱い
+  // 設定ファイルの機能系キーの扱い
   private __elementMode = false;
   private __settingFileKeys?: Set<string>;
   private __featureKeyWarner?: (key: string, message: string) => void;
@@ -393,7 +393,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
   }
 
   /**
-   * 機能系キー（U1 追補）を appOption ＞ 設定ファイル ＞ 既定値 の順で決める。
+   * 機能系キーを appOption ＞ 設定ファイル ＞ 既定値 の順で決める。
    * 「与えられたか」は undefined / null で判定する（false・0 は与えられた値）。
    * 要素の経路（<maplat-app>）では設定ファイルの値を読まない。旧クラスの経路では読むが、
    * メジャー版で廃止する旨を 1 回警告する。
@@ -405,7 +405,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     if (fromSetting == null) return defaultValue;
     const fromFile = !this.__settingFileKeys || this.__settingFileKeys.has(key);
     if (!fromFile) return fromSetting as T;
-    // A19: キーごと・インスタンスごとに 1 回だけ警告するしくみは createOnceWarner に置く
+    // キーごと・インスタンスごとに 1 回だけ警告するしくみは createOnceWarner に置く
     if (!this.__featureKeyWarner) this.__featureKeyWarner = createOnceWarner();
     if (this.__elementMode) {
       this.__featureKeyWarner(
@@ -427,7 +427,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
   constructor(appOption: any) {
     super();
     appOption = normalizeArg(appOption);
-    // release-policy §9.1 手順 1: 旧 API（クラス）の非推奨を、同一プロセスで 1 回だけ告知する
+    // 旧 API（クラス）の非推奨を、同一プロセスで 1 回だけ告知する
     // （重複の排除は src/functions.ts の warnMaplatAppDeprecated がモジュール水準で持つ。
     //   インスタンスごとではないので、旧クラスを 2 つ作っても警告は 1 回）。
     // 要素（<maplat-app>）は内部でこのクラスを作るが、その経路では警告しない。見分けは
@@ -437,7 +437,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     // ∴ 値で見分けると、互換モード（false）だけ「要素の経路なのに警告する」ことになる。
     if (!(appOption && "__maplatElementMode" in appOption)) warnMaplatAppDeprecated();
     this.__appid = appOption.appid || "sample";
-    // 要素（<maplat-app>）の経路: 設定ファイルの機能系キーを読まない（U1 追補）
+    // 要素（<maplat-app>）の経路: 設定ファイルの機能系キーを読まない
     this.__elementMode = appOption.__maplatElementMode === true;
     // Mapbox GL JS support
     const mapboxgl = appOption.mapboxgl || (typeof window !== 'undefined' ? (window as any).mapboxgl : undefined);
@@ -502,7 +502,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
         );
         this.initialRestore.hideLayer =
           localStorage.getItem("hideLayer") || undefined;
-        // restoreExtensionKeys（§5.2・§6.3）: 層 B の拡張キー（showBorder 等）も同じ期限で読む。
+        // restoreExtensionKeys: 層 B の拡張キー（showBorder 等）も同じ期限で読む。
         // 値は localStorage の文字列のまま（型は書いた側が知っている）。無いキーは載せない。
         const extensionKeys = appOption.restoreExtensionKeys;
         if (Array.isArray(extensionKeys)) {
@@ -514,7 +514,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
         }
       }
     }
-    // <maplat-app> の map-id・transparency（§6.1: 属性 ＞ restore ＞ localStorage）。
+    // <maplat-app> の map-id・transparency（属性 ＞ restore ＞ localStorage）。
     // restore として渡すと localStorage の読み込みが止まるので、読んだ後に上書きする。
     // 地図を差し替えたときは、別の地図の座標系の position を捨てる。
     const restoreOverride = appOption.__restoreOverride as Restore | undefined;
@@ -532,13 +532,13 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
       this.__initialRestore = merged;
     }
     // Add UI HTML Element
-    // 中心の目印（U5）。id は旧来の CSS・UI のため残し、class maplat-center-marker を
+    // 中心の目印。id は旧来の CSS・UI のため残し、class maplat-center-marker を
     // 表現の差し替え口として足す（<maplat-app> の no-center-marker / center-marker-src も使う）
     const newElems =
       createElement(`<img id="center_circle" class="prevent-default maplat-center-marker" alt=""
             style="position:absolute;top:50%;left:50%;margin-top:-10px;
             margin-left:-10px;" src="${assets.redcircle}">`);
-    // A3: 表現を当て直す口（setCenterMarker）のために、作った img を控える
+    // 表現を当て直す口（setCenterMarker）のために、作った img を控える
     this.__centerMarkerImg = newElems[0] as HTMLImageElement;
     [...newElems].reverse().forEach(elem => {
       this.mapDivDocument!.insertBefore(
@@ -566,7 +566,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
         evt.preventDefault();
       });
     });
-    // 「与えられたか」は undefined で判定（§6.1）。overlay: undefined を渡しても既定の true
+    // 「与えられたか」は undefined で判定。overlay: undefined を渡しても既定の true
     this.__overlay = appOption.overlay ?? true;
     if (this.overlay) {
       this.mapDivDocument!.classList.add("with-opacity");
@@ -575,12 +575,12 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
       const x = await this.settingLoader(setting);
       return this.handleSetting(x, appOption);
     })();
-    // U2: ここから先、起動時だけ効くキーへの外からの代入は警告して無視する
+    // ここから先、起動時だけ効くキーへの外からの代入は警告して無視する
     this.__startupLocked = true;
   }
 
   /**
-   * @internal 中心の目印（U5）の表現を当てる（A3）。既定の画像は Core が持つ assets.redcircle で、
+   * @internal 中心の目印の表現を当てる。既定の画像は Core が持つ assets.redcircle で、
    * 要素は「既定 src の控え」を持たない。
    */
   setCenterMarker(next: { hidden?: boolean; src?: string | null }): void {
@@ -604,7 +604,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
   }
 
   /**
-   * @internal 起動後の機能系キー・テンプレート・icon を当てる（A4）。
+   * @internal 起動後の機能系キー・テンプレート・icon を当てる。
    * `undefined` は「与えられていない」＝ Core の既定（RUNTIME_DEFAULTS）／設定ファイルの値。
    * キーの有無は `in` で見る（`{ northUp: undefined }` は「外された」を意味する）。
    */
@@ -882,13 +882,13 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     const mercMinZoom = this.appData!.minZoom;
     const mercMaxZoom = this.appData!.maxZoom;
     this.appName = this.appData!.appName;
-    // §3.8 A7: 設定ファイルの fakeGps / fakeRadius は Core では保存するだけで使っていない。
+    // 設定ファイルの fakeGps / fakeRadius は Core では保存するだけで使っていない。
     // 要素の経路では読まない（旧クラスは 1.x の間は従来どおり保存する）
     const fakeGps = appOption.fake && !this.__elementMode ? this.appData!.fakeGps : false;
     const fakeRadius = appOption.fake && !this.__elementMode ? this.appData!.fakeRadius : false;
-    // §6.1: 「与えられたか」は undefined で判定（false・0 が既定値に負けないように）。
-    // 機能系キー（noRotate 等）は __featureOption、テンプレート類はコンテンツ側（U1 追補）
-    // A4: 既定値の正本は起動時と起動後で共有する RUNTIME_DEFAULTS
+    // 「与えられたか」は undefined で判定（false・0 が既定値に負けないように）。
+    // 機能系キー（noRotate 等）は __featureOption、テンプレート類はコンテンツ側
+    // 既定値の正本は起動時と起動後で共有する RUNTIME_DEFAULTS
     this.__noRotate = this.__featureOption(appOption, "noRotate", RUNTIME_DEFAULTS.noRotate);
     this.poiTemplate = (appOption.poiTemplate ?? contentOption(this.appData, "poiTemplate")) as any;
     this.poiStyle = (appOption.poiStyle ?? contentOption(this.appData, "poiStyle")) as any;
@@ -1026,7 +1026,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
   }
 
   /**
-   * @internal sourceLoaded の材料（A6）。「GL 未ロード等で落とした source は usable: false」の
+   * @internal sourceLoaded の材料。「GL 未ロード等で落とした source は usable: false」の
    * 判断は keep を決めている側（cacheHash の同一性）に 1 つだけ置く。Set は持たない。
    */
   sourceLoadedDetail(sources: unknown): { mapID: string | null; usable: boolean }[] {
@@ -1082,7 +1082,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     await this.setInitialMap(cache);
     this.setMapClick();
     this.setPointerEvents();
-    // §3.8 A11: 操作ボタンの自動非表示（.ol-control への fade）は層 B の責務。要素では動かさない
+    // 操作ボタンの自動非表示（.ol-control への fade）は層 B の責務。要素では動かさない
     if (!this.__elementMode) this.setMapOnOff();
     this.setMouseCursor();
     this.setBackMapBehavior();
@@ -1421,7 +1421,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
   mapInfo(mapID: string) {
     return createMapInfo(this.cacheHash[mapID]);
   }
-  /** @internal 要素の viewExtent（A7）。pixel → 地図の座標 → merc を旧の連鎖のまま返す。 */
+  /** @internal 要素の viewExtent。pixel → 地図の座標 → merc を旧の連鎖のまま返す。 */
   async pixelToMerc(pixel: readonly [number, number]): Promise<number[] | undefined> {
     const map = this.mapObject;
     const from = this.from;
@@ -1431,13 +1431,13 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     const merc = await (from as MaplatSource).sysCoord2MercAsync(xy);
     return merc as number[];
   }
-  /** @internal 表示領域の大きさ（A7・Minor 1）。4 隅の作り方は要素が持つ。 */
+  /** @internal 表示領域の大きさ。4 隅の作り方は要素が持つ。 */
   viewportSize(): [number, number] | undefined {
     const size = this.mapObject?.getSize?.();
     if (!size || !(size[0] > 0 && size[1] > 0)) return undefined;
     return [size[0], size[1]];
   }
-  /** @internal 前面と背面の地図の大きさを測り直す（A10）。 */
+  /** @internal 前面と背面の地図の大きさを測り直す。 */
   updateSize(): void {
     this.mapObject?.updateSize?.();
     this.backMap?.updateSize?.();
@@ -1447,7 +1447,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     const viewport = this.mapObject.getViewport();
     const rect = viewport.getBoundingClientRect();
     const pixel: [number, number] = [clientX - rect.left, clientY - rect.top];
-    // N3: pixel → 座標 → merc の連鎖は pixelToMerc に 1 つだけ置く（戻り値は旧のまま undefined）
+    // pixel → 座標 → merc の連鎖は pixelToMerc に 1 つだけ置く（戻り値は旧のまま undefined）
     const merc = await this.pixelToMerc(pixel);
     if (!merc) return undefined;
     const lnglat = transform(merc, "EPSG:3857", "EPSG:4326");
@@ -2171,7 +2171,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
                 to.setViewpoint(restore!.position);
               }
             }
-            // §3.8 A4: 透過度はアプリの状態として保ち、地図を切り替えても同じ値を当て直す
+            // 透過度はアプリの状態として保ち、地図を切り替えても同じ値を当て直す
             // （OL の層は切替で作り直される・NowMap と古地図で当てる層が違うので、毎回当てる）。
             // restore で与えた値は 0 も有効（旧は 0 を「与えていない」扱いにしていた）。
             // 起動時にも当てるので、state（updateState の detail）に transparency が必ず載る。
@@ -2644,7 +2644,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
       this.__resizeObserver.disconnect();
       this.__resizeObserver = null;
     }
-    // A9: 今まで要素の経路だけが塞いでいた漏れを旧クラスでも塞ぐ（設計 v2 §8 U-B で許容）。
+    // 今まで要素の経路だけが塞いでいた漏れを旧クラスでも塞ぐ。
     // OL の Map を target から外して内部の ResizeObserver・リスナを解放し、MapLibre の地図も消す。
     this.mapObject?.setTarget?.(undefined);
     this.backMap?.setTarget?.(undefined);
@@ -2657,7 +2657,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
   }
 }
 /**
- * 起動時だけ効くキー（U2）に対応する MaplatApp の公開フィールド。起動後（コンストラクタの
+ * 起動時だけ効くキーに対応する MaplatApp の公開フィールド。起動後（コンストラクタの
  * 完了後）に外から代入されたら警告して無視する（キーごと・インスタンスごとに 1 回）。
  * 読み取りは従来どおり。Core 自身は __<name> の保管場所へ書く。
  */
@@ -2693,7 +2693,7 @@ export const MAPLAT_APP_STARTUP_FIELDS = [
           this[backing] = value;
           return;
         }
-        // A19: キーごと・インスタンスごとに 1 回だけ警告するしくみは createOnceWarner に置く
+        // キーごと・インスタンスごとに 1 回だけ警告するしくみは createOnceWarner に置く
         if (!this.__startupWarner) this.__startupWarner = createOnceWarner();
         this.__startupWarner(
           name,

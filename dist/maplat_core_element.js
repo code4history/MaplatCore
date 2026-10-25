@@ -4,7 +4,7 @@ import { featuresOf as A, ELEMENT_ATTRIBUTES as T, ELEMENT_PROPERTIES as _, MAPL
 import { ELEMENT_ATTRIBUTES as L, ELEMENT_OWN_EVENTS as x, ELEMENT_OWN_METHODS as C, ELEMENT_PROPERTIES as N, ELEMENT_STARTUP_KEYS as k, LAYER_A_PRO_ATTRIBUTES as j, MAPLAT_APP_EVENTS as B, MAPLAT_APP_METHODS as z, MAPLAT_APP_TAG as K } from "./maplat_core_common.js";
 const M = "1.1.0", O = Object.freeze(A("core")), c = (l) => Array.isArray(l) && Number.isFinite(l[0]) && Number.isFinite(l[1]);
 class P extends y {
-  /** 実装の種別（§3.6）。有償版は "core-pro"。 */
+  /** 実装の種別。有償版は "core-pro"。 */
   implementation = "core";
   /** 実装の版（@maplat/core の版）。 */
   version = M;
@@ -19,12 +19,12 @@ class P extends y {
   #a = !1;
   /**
    * 内部の MaplatApp。
-   * @internal 移行期の逃げ道（§9.3）。層 A の公開面に含めない。メジャー版で消す。
+   * @internal 移行期の逃げ道。層 A の公開面に含めない。メジャー版で消す。
    */
   get app() {
     return this.currentImplementation();
   }
-  // ---- 新設メソッド（§3.4.2）----
+  // ---- 新設メソッド ----
   /** 使える地図の一覧（設定ファイルの sources の順）。地図の準備前は []。 */
   listMaps() {
     const e = this.currentImplementation();
@@ -92,7 +92,7 @@ class P extends y {
    * 旧クラス互換層の <maplat-ui> は this.#app?.northUp を読むので、地図とコンパスを食い違わせない。
    * Core 固有の読み口はここに置く（element_base.ts は Core-Pro と共有する土台なので、口だけを置く）。
    * 対象は <maplat-app> の属性・プロパティの表にある機能系キー（northUp・homeMarginPixels・noRotate）だけ。
-   * tapDuration・tapUIVanish は <maplat-ui> の属性（§3.8 A11）で、互換層が appData から移すのでここには無い。
+   * tapDuration・tapUIVanish は <maplat-ui> の属性で、互換層が appData から移すのでここには無い。
    */
   implementationKeyValue(e, n) {
     if (!this.#a) return;
@@ -113,7 +113,7 @@ class P extends y {
     }
     return i === void 0 ? void 0 : { value: i };
   }
-  /** MaplatApp に渡す appOption を組む（§6.1: 個別のキー ＞ appOption ＞ 設定ファイル ＞ 既定値）。 */
+  /** MaplatApp に渡す appOption を組む（個別のキー ＞ appOption ＞ 設定ファイル ＞ 既定値）。 */
   createImplementation(e) {
     const n = { ...e.appOption };
     for (const [i, a] of Object.entries(e.values)) {
@@ -160,7 +160,7 @@ class P extends y {
     }
     Object.keys(i).length > 0 && e.applyRuntimeOptions(i);
   }
-  /** 中心の目印（U5）。既定で表示。no-center-marker で消し、center-marker-src で画像を差し替える。 */
+  /** 中心の目印。既定で表示。no-center-marker で消し、center-marker-src で画像を差し替える。 */
   applyDomKeys() {
     const e = this.currentImplementation();
     e && e.setCenterMarker({
@@ -171,7 +171,7 @@ class P extends y {
   // ---- 内部 ----
   /**
    * 画面の 4 隅を今の地図の座標 → merc → 経緯度にして控える。
-   * 4 隅の作り方・大きさの点検・undefined（据え置き）/null（消す）の意味づけはここに残す（A7・Minor 1）。
+   * 4 隅の作り方・大きさの点検・undefined（据え置き）/null（消す）の意味づけはここに残す。
    */
   async #s(e) {
     const n = ++this.#n, t = e, i = t.viewportSize();
@@ -197,7 +197,7 @@ class P extends y {
       n === this.#n && (this.#e = null);
     }
   }
-  /** setEnvelopes の指定を今の地図に描く（旧 UI の updateEnvelope と同じ規則。§3.7）。 */
+  /** setEnvelopes の指定を今の地図に描く（旧 UI の updateEnvelope と同じ規則）。 */
   async #o() {
     const e = ++this.#i, n = this.currentImplementation();
     if (!n || !this.isImplementationReady()) return;
@@ -241,7 +241,7 @@ class P extends y {
       }
     }
   }
-  /** moveStart / moveEnd（§3.5。止まって 150 ms 後に moveEnd）。 */
+  /** moveStart / moveEnd（止まって 150 ms 後に moveEnd）。 */
   #l(e) {
     const n = e.mapObject;
     if (!n?.on) return;

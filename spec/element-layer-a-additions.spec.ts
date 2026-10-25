@@ -1,10 +1,10 @@
-// <maplat-app>（src/element.ts）の今回の追加分の検査（仕様 §3.4.2・§3.8・§5.2・§10.1 U3）:
+// <maplat-app>（src/element.ts）の今回の追加分の検査:
 //   - setEnvelopes / getMapEnvelope / getViewExtent と supports("envelopes")
-//   - Pro 固有の属性・プロパティ（display-mode）はキーごとに 1 回警告して無視（U3）
+//   - Pro 固有の属性・プロパティ（display-mode）はキーごとに 1 回警告して無視
 //   - restoreExtensionKeys の配線（要素 → MaplatApp → localStorage）
-//   - §3.8 の Core 側の是正のうち jsdom で確かめられるもの（A7・A10）
+//   - Core 側の是正のうち jsdom で確かめられるもの
 // 地図の実体（OL）は jsdom で動かさず、MaplatApp の代わりに FakeCore を createCore で差し込む。
-// 透過度の当て直し（A4）・状態の transparency は実ブラウザの適合テスト（e2e/wc-conformance.spec.ts）で見る。
+// 透過度の当て直し・状態の transparency は実ブラウザの適合テスト（e2e/wc-conformance.spec.ts）で見る。
 import { describe, it, expect, vi, beforeEach, beforeAll, afterEach } from "vitest";
 import EventTarget from "ol/events/Target";
 import { toLonLat } from "ol/proj";
@@ -45,7 +45,7 @@ class FakeCore extends EventTarget {
   remove = vi.fn();
   getGPSEnabled = vi.fn(() => false);
   getMapCacheEnable = vi.fn(() => false);
-  // 実装の内部面（設計 v2 段階 3）
+  // 実装の内部面（要素が起動後に使うもの）
   setCenterMarker = vi.fn();
   applyRuntimeOptions = vi.fn();
   mapObject: any = {
@@ -57,7 +57,7 @@ class FakeCore extends EventTarget {
     getSize: () => [400, 300],
     getCoordinateFromPixel: (px: number[]) => [15700000 + px[0] * 10, 4830000 - px[1] * 10]
   };
-  // 実装の内部面（設計 v2 段階 2）。要素は 4 隅の作り方と undefined/null の意味づけだけを持つ
+  // 実装の内部面（要素は 4 隅の作り方と undefined/null の意味づけだけを持つ）
   viewportSize = vi.fn(() => {
     const size = this.mapObject?.getSize?.();
     return size && size[0] > 0 && size[1] > 0 ? (size as [number, number]) : undefined;
@@ -125,7 +125,7 @@ async function boot(env: ReturnType<typeof defineTestElement>, setup?: (el: any)
   return { el, core };
 }
 
-describe("<maplat-app> 枠線と範囲（§3.4.2）", () => {
+describe("<maplat-app> 枠線と範囲", () => {
   let env: ReturnType<typeof defineTestElement>;
   beforeEach(() => {
     env = defineTestElement();
@@ -231,7 +231,7 @@ describe("<maplat-app> 枠線と範囲（§3.4.2）", () => {
   });
 });
 
-describe("<maplat-app> Pro 固有の属性・プロパティ（U3）", () => {
+describe("<maplat-app> Pro 固有の属性・プロパティ", () => {
   let env: ReturnType<typeof defineTestElement>;
   beforeEach(() => {
     env = defineTestElement();
@@ -286,7 +286,7 @@ describe("<maplat-app> Pro 固有の属性・プロパティ（U3）", () => {
   });
 });
 
-describe("restoreExtensionKeys（§5.2）", () => {
+describe("restoreExtensionKeys", () => {
   let env: ReturnType<typeof defineTestElement>;
   beforeEach(() => {
     env = defineTestElement();
@@ -338,8 +338,8 @@ describe("restoreExtensionKeys（§5.2）", () => {
   });
 });
 
-describe("§3.8 の Core 側の是正（jsdom で確かめられるもの）", () => {
-  it("A7: 要素の経路では設定ファイルの fakeGps / fakeRadius を読まない（旧クラスは従来どおり）", async () => {
+describe("Core 側の是正（jsdom で確かめられるもの）", () => {
+  it("要素の経路では設定ファイルの fakeGps / fakeRadius を読まない（旧クラスは従来どおり）", async () => {
     const setting = { sources: [], fakeGps: [141, 39], fakeRadius: 5 };
     const mk = async (extra: Record<string, unknown>) => {
       const div = document.createElement("div");
@@ -356,7 +356,7 @@ describe("§3.8 の Core 側の是正（jsdom で確かめられるもの）", (
     expect(element.fakeRadius).toBe(false);
   });
 
-  it("A10: タイルキャッシュの統計に total を含める（Weiwudi の stats に無ければ totalTile で補う）", async () => {
+  it("タイルキャッシュの統計に total を含める（Weiwudi の stats に無ければ totalTile で補う）", async () => {
     const stats = (NowMap.prototype as any).getTileCacheStatsAsync;
     await expect(stats.call({ weiwudi: { stats: async () => ({ size: 1, count: 2 }), totalTile: 10 } })).resolves.toEqual({
       size: 1,

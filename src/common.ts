@@ -1,4 +1,4 @@
-// @maplat/core/common: 層 A（<maplat-app>）・層 B（<maplat-ui>）の実装が共通に使う部分（仕様 §5.3・U8）。
+// @maplat/core/common: 層 A（<maplat-app>）・層 B（<maplat-ui>）の実装が共通に使う部分。
 //
 //   import { sanitizeHtml, MAPLAT_APP_EVENTS, MaplatAppElementBase } from "@maplat/core/common";
 //   import type { MaplatAppElement, Viewpoint } from "@maplat/core/common";
@@ -8,9 +8,9 @@
 // import を、scripts/verify-common-bundle.mjs がビルド後の dist/maplat_core_common.js を確かめる）。
 // 副作用も持たない（要素を登録しない）。要素の登録は "@maplat/core/element" 等の入口が行う。
 //
-// 正本の仕様: NayutaProducts/docs/superpowers/specs/2026-10-10-maplat-web-components-interface.md §5.3
+// 公開 API は docs/api/maplat-core.md を参照。
 
-// ---- 補助関数（§5.3）----
+// ---- 補助関数 ----
 // @maplat/core からも従来どおり import できるもの: sanitizeHtml・escapeAttr・toPlainText・buildSlideAttrs・createElement・assets
 export { sanitizeHtml, escapeAttr, toPlainText, buildSlideAttrs } from "./sanitize";
 export { createElement } from "./functions";
@@ -19,7 +19,7 @@ export { assets } from "./assets";
 export { normalizeArg } from "./functions";
 export { META_KEYS, META_KEYS_OPTION } from "./meta_keys";
 
-// ---- 層 A・層 B の名前の表と型（§3・§4・§3.6）----
+// ---- 層 A・層 B の名前の表と型 ----
 export {
   MAPLAT_APP_TAG,
   MAPLAT_UI_TAG,

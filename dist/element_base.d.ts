@@ -10,7 +10,7 @@ export interface LayerAImplementation {
     getGPSEnabled(): boolean;
     [member: string]: any;
 }
-/** createImplementation() に渡す起動時の材料（§6.1 の優先順位を解いた後の値）。 */
+/** createImplementation() に渡す起動時の材料（優先順位を解いた後の値）。 */
 export interface ElementStartupConfig {
     /** 与えられたキーの値（属性・プロパティのみの両方。undefined のキーは載せない） */
     values: Record<string, unknown>;
@@ -24,7 +24,7 @@ export interface ElementStartupConfig {
     /** 地図の入れ物（要素そのもの） */
     element: HTMLElement;
 }
-/** (ii) のキーを反映するときに、§6.1 の順（プロパティ／属性 ＞ appOption ＞ fallback）で値を引く。 */
+/** (ii) のキーを反映するときに、プロパティ／属性 ＞ appOption ＞ fallback の順で値を引く。 */
 export type RuntimeValueResolver = (prop: string, optionKey: string | undefined, fallback: unknown) => unknown;
 /** 既定の箱の CSS を文書へ一度だけ入れる。 */
 export declare function injectMaplatAppStyle(doc: Document): void;
@@ -33,8 +33,8 @@ declare const BaseElement: typeof HTMLElement;
  * <maplat-app> の基底クラス。派生クラスは次を与える:
  *   - `implementation` / `version`（読み取り専用の値）
  *   - `createImplementation(config)`: 中身（LayerAImplementation）を作る
- *   - `listMaps` / `setEnvelopes` / `getMapEnvelope` / `getViewExtent` / `zoomBy`（§3.4.2）
- *   - `features()`: supports() の表（§3.6）
+ *   - `listMaps` / `setEnvelopes` / `getMapEnvelope` / `getViewExtent` / `zoomBy`
+ *   - `features()`: supports() の表
  *   - 必要なら各 hook（applyRuntimeChanges・convertEventDetail・disposeImplementation・
  *     canDisposeDuringStartup 等）と道具（markPending・readKey・dispatchLayerAEvent 等）
  */
@@ -44,7 +44,7 @@ export declare abstract class MaplatAppElementBase extends BaseElement {
     static readonly events: readonly ["lifecycle:setting-loaded", "lifecycle:appdata-ready", "lifecycle:ui-configure", "lifecycle:core-dom-ready", "lifecycle:ui-dom-ready", "lifecycle:core-ready", "lifecycle:ui-ready", "lifecycle:error", "sourceLoaded", "mapChanged", "changeViewpoint", "updateState", "outOfMap", "poi_number", "clickMarker", "clickMarkers", "clickMap", "clickMapXy", "clickMapMerc", "pointerMoveOnMapXy", "pointerMoveOnMapMerc", "gps_request", "gps_result", "gps_error"];
     static readonly ownEvents: readonly ["gpsEnabledChanged", "moveStart", "moveEnd"];
     static readonly methods: readonly ["handleGPS", "getGPSEnabled", "getRotation", "getDirection", "currentMapInfo", "mapInfo", "clientPointToLngLat", "lngLatToClientPoint", "selectMarker", "unselectMarker", "getMarker", "updateMarker", "addMarker", "removeMarker", "clearMarker", "showAllMarkers", "hideAllMarkers", "listPoiLayers", "showPoiLayer", "hidePoiLayer", "getPoiLayer", "addPoiLayer", "removePoiLayer", "addLine", "addVector", "removeVector", "removeLine", "clearLine", "clearVector", "setGPSMarker", "changeMap", "requestUpdateState", "setTransparency", "getTransparency", "setViewpoint", "goHome", "resetRotation", "resetDirection", "resetCirculation", "getMapMeta", "getMapCacheEnable", "getMapTileCacheStatsAsync", "getMapTileCacheSizeAsync", "clearMapTileCacheAsync", "fetchAllMapTileCacheAsync", "cancelMapTileCacheAsync"];
-    /** 実装の種別（§3.6）。 */
+    /** 実装の種別。 */
     abstract readonly implementation: string;
     /** 実装の版（semver）。 */
     abstract readonly version: string;
@@ -71,7 +71,7 @@ export declare abstract class MaplatAppElementBase extends BaseElement {
     get gpsEnabled(): boolean;
     /** 現在の視点。地図の準備前は null。 */
     getViewpoint(): Viewpoint | null;
-    /** 機能の問い合わせ（§3.6）。未知の名前は false。地図の準備前でも答える。 */
+    /** 機能の問い合わせ。未知の名前は false。地図の準備前でも答える。 */
     supports(feature: string): boolean;
     abstract listMaps(): MapListItem[];
     abstract setEnvelopes(items: EnvelopeSpec[]): void;
@@ -80,7 +80,7 @@ export declare abstract class MaplatAppElementBase extends BaseElement {
     abstract zoomBy(delta: number): void;
     /** 既定のピンの画像（実装確認 6。地図の準備前でも答える）。selected なら選択中の画像。 */
     abstract getDefaultPinIcon(selected?: boolean): string;
-    /** supports() の表（§3.6）。 */
+    /** supports() の表。 */
     protected abstract features(): Readonly<Record<string, boolean>>;
     /** 中身を作る。投げたら ready が reject される。 */
     protected abstract createImplementation(config: ElementStartupConfig): LayerAImplementation;
@@ -106,12 +106,12 @@ export declare abstract class MaplatAppElementBase extends BaseElement {
     protected applyDomKeys(): void;
     /**
      * 起動後の (ii) のキーの変更を中身へ反映する。map-id・transparency は基底が先に当てる。
-     * resolve は §6.1 の順（プロパティ／属性 ＞ appOption ＞ fallback）で値を引く。
+     * resolve はプロパティ／属性 ＞ appOption ＞ fallback の順で値を引く。
      */
     protected applyRuntimeChanges(_impl: LayerAImplementation, _pending: ReadonlySet<string>, _resolve: RuntimeValueResolver): void;
-    /** 中身の detail → 要素のイベントの detail（§3.5）。派生クラスは super を呼んでから足す。 */
+    /** 中身の detail → 要素のイベントの detail。派生クラスは super を呼んでから足す。 */
     protected convertEventDetail(type: string, detail: any, _impl: LayerAImplementation): unknown;
-    /** 委譲メソッドの戻り値の調整（§3.8 A1: undefined → null）。 */
+    /** 委譲メソッドの戻り値の調整（undefined → null）。 */
     protected convertMethodResult(name: string, result: unknown): unknown;
     /** 中身が出し直す対象のイベント名。既定は MAPLAT_APP_EVENTS。 */
     protected forwardedEvents(): readonly string[];
@@ -119,7 +119,7 @@ export declare abstract class MaplatAppElementBase extends BaseElement {
     protected currentImplementation(): LayerAImplementation | null;
     /** 中身の準備が済んでいるか。 */
     protected isImplementationReady(): boolean;
-    /** 中身が無ければ「まだ作っていない」の例外を投げる（§3.4.1）。 */
+    /** 中身が無ければ「まだ作っていない」の例外を投げる。 */
     protected requireImplementation(name: string): LayerAImplementation;
     /** キーの現在値（起動時キーは起動後なら起動時の値）。 */
     protected readKey(prop: string): unknown;
@@ -136,27 +136,27 @@ export declare abstract class MaplatAppElementBase extends BaseElement {
      * 準備の完了後に当てたいとき、onImplementationReady から呼ぶ（そこで積んだ分は ready の解決の直後に反映する）。
      */
     protected markPending(prop: string): void;
-    /** 要素から DOM の CustomEvent を出す（§3.5: bubbles・composed なし・cancelable なし）。 */
+    /** 要素から DOM の CustomEvent を出す（bubbles・composed なし・cancelable なし）。 */
     protected dispatchLayerAEvent(type: string, detail: unknown): void;
     /**
      * 内部の操作（UI・メソッド・状態 URL の復元・中身自身の切り替え）で変わった状態を属性へ書き戻す
-     * （§3.3・§6.2.3。対象は AttrDef.state を持つキー: map-id・transparency・Pro の display-mode）。
+     * （対象は AttrDef.state を持つキー: map-id・transparency・Pro の display-mode）。
      * 書き戻しは属性の変更として扱わない（attributeChangedCallback が何もしない＝二重に処理しない）。
      * state が "frame" のキーは描画 1 回につき 1 回にまとめ、書く時点で read() から値を読む（最後の値が残る）。
      * 利用者の変更が反映待ちのキー・値が無い（undefined）・既に同じ値のときは書かない。
      */
     protected reflectState(prop: string, read: () => unknown): void;
-    /** 同じ鍵では 1 回だけ警告する（名前は公開の基底クラスのメソッドなので残す。A19）。 */
+    /** 同じ鍵では 1 回だけ警告する（名前は公開の基底クラスのメソッドなので残す）。 */
     protected warnOnce(key: string, message: string): void;
 }
-/** Pro 固有のキー（U3）。対応しない実装では常に undefined（代入は警告して無視）。 */
+/** Pro 固有のキー。対応しない実装では常に undefined（代入は警告して無視）。 */
 export interface MaplatAppElementProSettings {
     displayMode: DisplayMode | undefined;
 }
 export interface MaplatAppElementBase extends MaplatAppDelegatedMethods, MaplatAppElementSettings, MaplatAppElementProSettings {
 }
 /**
- * 要素を登録する（二重登録は何もしない。別の実装が登録済みなら警告して上書きしない。§3.1）。
+ * 要素を登録する（二重登録は何もしない。別の実装が登録済みなら警告して上書きしない）。
  * @returns 登録したら true
  */
 export declare function defineMaplatAppElementOnce(ctor: CustomElementConstructor, tagName?: string, label?: string): boolean;

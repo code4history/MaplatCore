@@ -11,9 +11,9 @@ import { default as BaseEvent } from 'ol/events/Event';
 import { assets } from './assets';
 export { sanitizeHtml, escapeAttr, toPlainText, buildSlideAttrs } from './sanitize';
 /** EPSG:3857 → 経緯度。経度は ±180 に巻き戻す（ol の toLonLat と同じ規則）。
- *  <maplat-app> の getMapEnvelope・getViewExtent が使う（旧クラスは transform のまま。設計 v2 A1）。 */
+ *  <maplat-app> の getMapEnvelope・getViewExtent が使う（旧クラスは transform のまま）。 */
 export declare function mercToLngLat(merc: readonly number[]): [number, number];
-/** 既定のピンの画像（POI にも祖先にも icon が無いマーカーに地図が描く画像）。設計 v2 A2。 */
+/** 既定のピンの画像（POI にも祖先にも icon が無いマーカーに地図が描く画像）。 */
 export declare function defaultPinIcon(selected?: boolean): string;
 interface AppData {
     sources: string[];
@@ -78,28 +78,28 @@ export interface VectorFilter {
     type?: VectorType;
 }
 /**
- * <maplat-app> が Core の実装にだけ求める内部面（設計 v2 §6.0）。
- * 公開面ではない（仕様 §9.1 の表・公開文書には載せない）。要素は `as any` でなくこの型で受ける。
+ * <maplat-app> が Core の実装にだけ求める内部面。
+ * 公開面ではない（公開文書には載せない）。要素は `as any` でなくこの型で受ける。
  * @internal
  */
 export interface ElementImplementationInternals {
-    /** sourceLoaded の { mapID, usable }[] の材料（cacheHash の同一性）。A6。 */
+    /** sourceLoaded の { mapID, usable }[] の材料（cacheHash の同一性）。 */
     sourceLoadedDetail(sources: unknown): {
         mapID: string | null;
         usable: boolean;
     }[];
-    /** pixel → 地図の座標 → merc の連鎖（旧 clientPointToLngLat と同じ・点検なし）。A7。 */
+    /** pixel → 地図の座標 → merc の連鎖（旧 clientPointToLngLat と同じ・点検なし）。 */
     pixelToMerc(pixel: readonly [number, number]): Promise<number[] | undefined>;
-    /** 表示領域の大きさ（pixel）。地図が無い・寸法が 0 以下なら undefined。Minor 1。 */
+    /** 表示領域の大きさ（pixel）。地図が無い・寸法が 0 以下なら undefined。 */
     viewportSize(): [number, number] | undefined;
-    /** 前面と背面の地図の大きさを測り直す。A10。 */
+    /** 前面と背面の地図の大きさを測り直す。 */
     updateSize(): void;
-    /** 中心の目印（U5）の表現を当てる。A3。 */
+    /** 中心の目印の表現を当てる。 */
     setCenterMarker(next: {
         hidden?: boolean;
         src?: string | null;
     }): void;
-    /** 起動後の機能系キー・テンプレート・icon を当てる（undefined は既定／設定ファイル）。A4。 */
+    /** 起動後の機能系キー・テンプレート・icon を当てる（undefined は既定／設定ファイル）。 */
     applyRuntimeOptions(values: Record<string, unknown>): void;
 }
 /**
@@ -214,7 +214,7 @@ export declare class MaplatApp extends EventTarget implements ElementImplementat
     /** 起動時の hook（appOption.uiHooks）。起動後は変更不可。 */
     private get uiHooks();
     /**
-     * 機能系キー（U1 追補）を appOption ＞ 設定ファイル ＞ 既定値 の順で決める。
+     * 機能系キーを appOption ＞ 設定ファイル ＞ 既定値 の順で決める。
      * 「与えられたか」は undefined / null で判定する（false・0 は与えられた値）。
      * 要素の経路（<maplat-app>）では設定ファイルの値を読まない。旧クラスの経路では読むが、
      * メジャー版で廃止する旨を 1 回警告する。
@@ -222,7 +222,7 @@ export declare class MaplatApp extends EventTarget implements ElementImplementat
     private __featureOption;
     constructor(appOption: any);
     /**
-     * @internal 中心の目印（U5）の表現を当てる（A3）。既定の画像は Core が持つ assets.redcircle で、
+     * @internal 中心の目印の表現を当てる。既定の画像は Core が持つ assets.redcircle で、
      * 要素は「既定 src の控え」を持たない。
      */
     setCenterMarker(next: {
@@ -230,7 +230,7 @@ export declare class MaplatApp extends EventTarget implements ElementImplementat
         src?: string | null;
     }): void;
     /**
-     * @internal 起動後の機能系キー・テンプレート・icon を当てる（A4）。
+     * @internal 起動後の機能系キー・テンプレート・icon を当てる。
      * `undefined` は「与えられていない」＝ Core の既定（RUNTIME_DEFAULTS）／設定ファイルの値。
      * キーの有無は `in` で見る（`{ northUp: undefined }` は「外された」を意味する）。
      */
@@ -252,7 +252,7 @@ export declare class MaplatApp extends EventTarget implements ElementImplementat
     }>;
     handlePois(pois: any, mapReturnValue: any): Promise<void>;
     /**
-     * @internal sourceLoaded の材料（A6）。「GL 未ロード等で落とした source は usable: false」の
+     * @internal sourceLoaded の材料。「GL 未ロード等で落とした source は usable: false」の
      * 判断は keep を決めている側（cacheHash の同一性）に 1 つだけ置く。Set は持たない。
      */
     sourceLoadedDetail(sources: unknown): {
@@ -272,11 +272,11 @@ export declare class MaplatApp extends EventTarget implements ElementImplementat
     getDirection(): Promise<number>;
     currentMapInfo(): any;
     mapInfo(mapID: string): any;
-    /** @internal 要素の viewExtent（A7）。pixel → 地図の座標 → merc を旧の連鎖のまま返す。 */
+    /** @internal 要素の viewExtent。pixel → 地図の座標 → merc を旧の連鎖のまま返す。 */
     pixelToMerc(pixel: readonly [number, number]): Promise<number[] | undefined>;
-    /** @internal 表示領域の大きさ（A7・Minor 1）。4 隅の作り方は要素が持つ。 */
+    /** @internal 表示領域の大きさ。4 隅の作り方は要素が持つ。 */
     viewportSize(): [number, number] | undefined;
-    /** @internal 前面と背面の地図の大きさを測り直す（A10）。 */
+    /** @internal 前面と背面の地図の大きさを測り直す。 */
     updateSize(): void;
     clientPointToLngLat(clientX: number, clientY: number): Promise<{
         longitude: number;
@@ -351,7 +351,7 @@ export declare class MaplatApp extends EventTarget implements ElementImplementat
     remove(): void;
 }
 /**
- * 起動時だけ効くキー（U2）に対応する MaplatApp の公開フィールド。起動後（コンストラクタの
+ * 起動時だけ効くキーに対応する MaplatApp の公開フィールド。起動後（コンストラクタの
  * 完了後）に外から代入されたら警告して無視する（キーごと・インスタンスごとに 1 回）。
  * 読み取りは従来どおり。Core 自身は __<name> の保管場所へ書く。
  */

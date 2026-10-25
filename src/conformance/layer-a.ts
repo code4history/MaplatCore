@@ -1,4 +1,4 @@
-// 層 A（<maplat-app>）の共通の面の適合テスト群（仕様 §8.2・U7）。@maplat/core/conformance から公開する。
+// 層 A（<maplat-app>）の共通の面の適合テスト群。@maplat/core/conformance から公開する。
 //
 // 層 A の**公開面だけ**（属性・プロパティ・メソッド・イベント）を使い、実装の中身には触れない。
 // 試験の道具（vitest・Playwright 等）に依らない形で書き、実装のリポジトリは「自分の要素を登録する
@@ -68,7 +68,7 @@ export interface LayerAConformanceOptions {
 }
 
 export interface ConformanceCase {
-  /** 仕様 §8.2 の群（A-形・A-同期 …） */
+  /** 群の名前（A-形・A-同期 …） */
   group: string;
   name: string;
   run(): Promise<void>;
@@ -453,7 +453,7 @@ export function createLayerAConformanceCases(options: LayerAConformanceOptions):
 
   add("A-起動後", "起動した地図が map-id へ書き戻され、map-id の変更で地図が切り替わる", async ctx => {
     const el = await ctx.mountReady();
-    // §3.3・§6.2.3: 属性を与えていなくても、表示中の地図が map-id に載る（el.mapId は表示中の地図）
+    // 属性を与えていなくても、表示中の地図が map-id に載る（el.mapId は表示中の地図）
     await waitFor(() => el.getAttribute("map-id") === fx.initialMapId, timeout, `map-id="${fx.initialMapId}" after startup`);
     same(el.mapId, fx.initialMapId, "mapId after startup");
     const changed = nextEvent(el, "mapChanged", timeout, e => e.detail?.mapID === fx.otherMapId);
@@ -733,7 +733,7 @@ export function createLayerAConformanceCases(options: LayerAConformanceOptions):
     same(typeof el.getMapCacheEnable(fx.initialMapId), "boolean", "getMapCacheEnable()");
   });
 
-  // §3.8 A10: 統計には全タイル数 total を含める。キャッシュを持つ地図があるときだけ見る
+  // 統計には全タイル数 total を含める。キャッシュを持つ地図があるときだけ見る
   // （Core は enable-cache 無しで起動すると Weiwudi を持たず、getMapCacheEnable も統計も空になる。
   //  固定データの地図がキャッシュを持たない実装では、この検査は省く）
   add("A-メソッド", "キャッシュを持つ地図の統計には全タイル数 total が数で載る（§3.8 A10）", async ctx => {
@@ -1086,7 +1086,7 @@ export function createLayerAConformanceCases(options: LayerAConformanceOptions):
     assert(el.currentMapId !== null, "currentMapId is null after the new ready resolved");
   });
 
-  // ---- restoreExtensionKeys（§5.2）----
+  // ---- restoreExtensionKeys ----
   add("A-優先", "restoreSession の localStorage から restoreExtensionKeys も読む（期限内のみ）", async ctx => {
     let probe: El | null = await ctx.mountReady();
     const vp = await waitFor(() => probe!.getViewpoint(), timeout, "a viewpoint");

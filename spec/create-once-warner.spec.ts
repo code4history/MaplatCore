@@ -1,6 +1,6 @@
 // createOnceWarner（src/functions.ts）の検査。
-// 旧クラスの起動時キーのロック（U2）と設定ファイルの機能系キーの警告（U1 追補）、
-// 要素の warnOnce（U2・U3）が共有する「キーごとに 1 回だけ警告する」しくみ。
+// 旧クラスの起動時キーのロックと設定ファイルの機能系キーの警告、
+// 要素の warnOnce が共有する「キーごとに 1 回だけ警告する」しくみ。
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { createOnceWarner } from "../src/functions";
 

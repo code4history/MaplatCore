@@ -12323,7 +12323,7 @@ class Cn extends Eo {
   // oct26-m2-t1-ff: 非表示中の changeMap で保留した視点確定と、その適用の予約状態。
   __pendingView = null;
   __pendingViewScheduled = !1;
-  // A3: 中心の目印の img（setCenterMarker が表現を当てる）
+  // 中心の目印の img（setCenterMarker が表現を当てる）
   __centerMarkerImg;
   lifecycleHookResults = {};
   __init = !0;
@@ -12336,7 +12336,7 @@ class Cn extends Eo {
   __vectorSeq;
   __vectorDrawSeq;
   lastClickEvent;
-  // ---- 起動時だけ効くキー（U2: 起動後は変更不可）----
+  // ---- 起動時だけ効くキー（起動後は変更不可） ----
   // 公開面は getter のみ（TypeScript 上は readonly）。実行時は lockStartupFields() が
   // 警告して無視する setter を足す（strict mode の代入で例外にしないため）。
   // Core 自身の書き込みは下の __ で始まる保管場所へ行う。
@@ -12358,7 +12358,7 @@ class Cn extends Eo {
   __uiHooks;
   __fakeGps = !1;
   __fakeRadius;
-  // U1 追補: 設定ファイルの機能系キーの扱い
+  // 設定ファイルの機能系キーの扱い
   __elementMode = !1;
   __settingFileKeys;
   __featureKeyWarner;
@@ -12415,7 +12415,7 @@ class Cn extends Eo {
     return this.__uiHooks;
   }
   /**
-   * 機能系キー（U1 追補）を appOption ＞ 設定ファイル ＞ 既定値 の順で決める。
+   * 機能系キーを appOption ＞ 設定ファイル ＞ 既定値 の順で決める。
    * 「与えられたか」は undefined / null で判定する（false・0 は与えられた値）。
    * 要素の経路（<maplat-app>）では設定ファイルの値を読まない。旧クラスの経路では読むが、
    * メジャー版で廃止する旨を 1 回警告する。
@@ -12503,7 +12503,7 @@ class Cn extends Eo {
     })(), this.__startupLocked = !0;
   }
   /**
-   * @internal 中心の目印（U5）の表現を当てる（A3）。既定の画像は Core が持つ assets.redcircle で、
+   * @internal 中心の目印の表現を当てる。既定の画像は Core が持つ assets.redcircle で、
    * 要素は「既定 src の控え」を持たない。
    */
   setCenterMarker(t) {
@@ -12513,7 +12513,7 @@ class Cn extends Eo {
     e.hidden = n, e.style.display = n ? "none" : "", t.src ? (e.setAttribute("src", t.src), e.style.margin = "0", e.style.transform = "translate(-50%, -50%)", e.classList.add("maplat-center-marker--custom")) : (e.setAttribute("src", In.redcircle), e.style.margin = "-10px 0 0 -10px", e.style.transform = "", e.classList.remove("maplat-center-marker--custom"));
   }
   /**
-   * @internal 起動後の機能系キー・テンプレート・icon を当てる（A4）。
+   * @internal 起動後の機能系キー・テンプレート・icon を当てる。
    * `undefined` は「与えられていない」＝ Core の既定（RUNTIME_DEFAULTS）／設定ファイルの値。
    * キーの有無は `in` で見る（`{ northUp: undefined }` は「外された」を意味する）。
    */
@@ -12751,7 +12751,7 @@ class Cn extends Eo {
     return this.handleSources(n);
   }
   /**
-   * @internal sourceLoaded の材料（A6）。「GL 未ロード等で落とした source は usable: false」の
+   * @internal sourceLoaded の材料。「GL 未ロード等で落とした source は usable: false」の
    * 判断は keep を決めている側（cacheHash の同一性）に 1 つだけ置く。Set は持たない。
    */
   sourceLoadedDetail(t) {
@@ -12966,20 +12966,20 @@ class Cn extends Eo {
   mapInfo(t) {
     return Jr(this.cacheHash[t]);
   }
-  /** @internal 要素の viewExtent（A7）。pixel → 地図の座標 → merc を旧の連鎖のまま返す。 */
+  /** @internal 要素の viewExtent。pixel → 地図の座標 → merc を旧の連鎖のまま返す。 */
   async pixelToMerc(t) {
     const e = this.mapObject, n = this.from;
     if (!e || !n) return;
     const i = e.getCoordinateFromPixel(t);
     return i ? await n.sysCoord2MercAsync(i) : void 0;
   }
-  /** @internal 表示領域の大きさ（A7・Minor 1）。4 隅の作り方は要素が持つ。 */
+  /** @internal 表示領域の大きさ。4 隅の作り方は要素が持つ。 */
   viewportSize() {
     const t = this.mapObject?.getSize?.();
     if (!(!t || !(t[0] > 0 && t[1] > 0)))
       return [t[0], t[1]];
   }
-  /** @internal 前面と背面の地図の大きさを測り直す（A10）。 */
+  /** @internal 前面と背面の地図の大きさを測り直す。 */
   updateSize() {
     this.mapObject?.updateSize?.(), this.backMap?.updateSize?.();
   }

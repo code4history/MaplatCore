@@ -1,7 +1,7 @@
-// 旧クラス MaplatApp の不具合修正（Web Components 仕様 §10.1 の人間の決定）:
-//   U2      起動時だけ効くキーのフィールドは、起動後に外から代入されたら警告して無視する
-//   U1 追補 設定ファイルの機能系キーは読み続けるが「メジャー版で廃止」を警告する（要素の経路では読まない）
-//   §6.1    appOption.x || appData.x || 既定値 の false / 0 負けを undefined 判定へ直す
+// 旧クラス MaplatApp の不具合修正（人間の決定に基づく）:
+//   起動時だけ効くキーのフィールドは、起動後に外から代入されたら警告して無視する
+//   設定ファイルの機能系キーは読み続けるが「メジャー版で廃止」を警告する（要素の経路では読まない）
+//   appOption.x || appData.x || 既定値 の false / 0 負けを undefined 判定へ直す
 // 地図の実体は jsdom で作れる範囲（sources を空にして初期化を最後まで流す）で確かめる。
 import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from "vitest";
 import { MaplatApp, MAPLAT_APP_STARTUP_FIELDS } from "../src/index";
@@ -39,7 +39,7 @@ async function boot(appOption: Record<string, any>, setting: Record<string, any>
 
 const FEATURE_KEYS_IN_CORE = ["noRotate", "northUp", "tapDuration", "tapUIVanish", "homeMarginPixels", "controls"];
 
-describe("MaplatApp: 起動時だけ効くフィールドは起動後に変更不可（U2）", () => {
+describe("MaplatApp: 起動時だけ効くフィールドは起動後に変更不可", () => {
   it("一覧は 13 個で、どれも getter を持つ", () => {
     expect([...MAPLAT_APP_STARTUP_FIELDS]).toEqual([
       "appid", "mapDiv", "mapDivDocument", "enableCache", "noRotate", "alwaysGpsOn", "overlay",
@@ -131,7 +131,7 @@ describe("MaplatApp: 起動時だけ効くフィールドは起動後に変更�
   });
 });
 
-describe("MaplatApp: 設定ファイルの機能系キー（U1 追補）と undefined 判定（§6.1）", () => {
+describe("MaplatApp: 設定ファイルの機能系キーと undefined 判定", () => {
   it("設定ファイルの機能系キーは読み続け、キーごとに 1 回「メジャー版で廃止」を警告する", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const app = await boot(
@@ -143,7 +143,7 @@ describe("MaplatApp: 設定ファイルの機能系キー（U1 追補）と unde
     expect(app.mapObject.tapDuration).toBe(1000);
     expect(app.mapObject.tapUIVanish).toBe(true);
     expect(app.mapObject.homeMarginPixels).toBe(10);
-    // クラス自体の非推奨の告知（release-policy §9.1）も "deprecated" を含むので、
+    // クラス自体の非推奨の告知も "deprecated" を含むので、
     // 設定ファイルの機能系キーの警告だけを「reading the feature key」で数える
     const deprecations = warn.mock.calls
       .map(c => String(c[0]))
@@ -236,7 +236,7 @@ describe("MaplatApp: 設定ファイルの機能系キー（U1 追補）と unde
     expect(same.initialRestore.position).toEqual(restore.position);
   });
 
-  it("中心の目印は既定で表示し、class maplat-center-marker を持つ（U5）", async () => {
+  it("中心の目印は既定で表示し、class maplat-center-marker を持つ", async () => {
     const app = await boot({}, {});
     const img = app.mapDivDocument!.querySelector("#center_circle") as HTMLImageElement;
     expect(img).not.toBeNull();
@@ -245,12 +245,12 @@ describe("MaplatApp: 設定ファイルの機能系キー（U1 追補）と unde
   });
 });
 
-// release-policy §9.1 手順 1 の 2 点目「実行時に 1 回だけ警告を出す」の検査。
+// 非推奨の告知の 2 点目「実行時に 1 回だけ警告を出す」の検査。
 //   文言は英語（人間の決定）。粒度は**同一プロセスで 1 回**（インスタンスごとではない）。
 //   要素（<maplat-app>）の経路は内部で MaplatApp を作るので警告しない。旧 UI API の互換層
 //   （MaplatUI）も <maplat-app> を経由するので同じ。見分けは option の内部キー
 //   "__maplatElementMode" の有無（値ではない。src/index.ts のコンストラクタを参照）。
-describe("MaplatApp の非推奨の告知（release-policy §9.1 手順 1）", () => {
+describe("MaplatApp の非推奨の告知（実行時に 1 回だけ警告を出す）", () => {
   const DEPRECATION_MESSAGE =
     "MaplatApp: the MaplatApp class is deprecated and will be removed in 2.0. " +
     "Use the <maplat-app> element (@maplat/core/element) instead.";

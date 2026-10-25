@@ -1,4 +1,4 @@
-// 模擬の層 A（地図を描かない <maplat-app>）。@maplat/core/conformance から公開する（仕様 §8.3・U7）。
+// 模擬の層 A（地図を描かない <maplat-app>）。@maplat/core/conformance から公開する。
 //
 // 用途:
 //   - 層 B（<maplat-ui>・UI-Pro）を、層 A の**公開面だけ**の上で動かす（B-公開面だけ・B-出し分け）
@@ -545,7 +545,7 @@ export class MockLayerAApp extends EventTarget implements LayerAImplementation {
     }
     this.requestUpdateState({ mapID: to.mapID });
     this.#emit("mapChanged", this.getMapMeta(to.mapID));
-    // §3.8 A4: 透過度は地図を切り替えても保つ（restore の 0 も有効）
+    // 透過度は地図を切り替えても保つ（restore の 0 も有効）
     this.setTransparency(restore.transparency ?? this.getTransparency());
     // 本物の Core と同じく、restore の hideLayer（カンマ区切りのレイヤー ID）を当てる
     if (restore.hideLayer) {
@@ -631,7 +631,7 @@ export class MockLayerAApp extends EventTarget implements LayerAImplementation {
     // 本物の Core と同じく、キャッシュを持たない地図は {}（source.getTileCacheStatsAsync が {} を返す）
     if (!this.getMapCacheEnable(mapID)) return {};
     const source = mapID ? this.#find(mapID) : this.#current;
-    // §3.8 A10: 本物の Core は Weiwudi の stats に total が無ければインスタンスの totalTile で補う。
+    // 本物の Core は Weiwudi の stats に total が無ければインスタンスの totalTile で補う。
     // 模擬は Weiwudi を持たないので、設定の tileCacheTotal を total として返す。数が無ければ
     // 本物で total が分からないとき（total を載せない）と同じ形にする。
     const total = source?.tileCacheTotal;
@@ -911,13 +911,13 @@ export function createMockMaplatAppClass(options: MockLayerAOptions = {}): Custo
   }
 
   if (displayMode) {
-    // Pro 固有のメソッド（§3.4.3）は supports("display-mode") が真のときだけ定義する
+    // Pro 固有のメソッドは supports("display-mode") が真のときだけ定義する
     Object.defineProperties(MockMaplatAppElement.prototype, {
       setDisplayMode: {
         configurable: true,
         writable: true,
         value(this: MockMaplatAppElement, mode: DisplayMode) {
-          // 切り替えた表示モードは modechange を受けた基底が display-mode 属性へ書き戻す（§6.2.3）
+          // 切り替えた表示モードは modechange を受けた基底が display-mode 属性へ書き戻す
           const app = getMockLayerAController(this);
           if (!app) {
             throw new DOMException("<maplat-app>.setDisplayMode(): the map is not created yet.", "InvalidStateError");

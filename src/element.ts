@@ -8,12 +8,11 @@
 //
 // 実装に依らない殻（属性・プロパティの表・作成と破棄・イベントの出し直し・起動時キーの変更不可）は
 // src/element_base.ts の MaplatAppElementBase（@maplat/core/common から公開）にあり、このファイルは
-// 中身の MaplatApp（OpenLayers）を差すことと、地図に依る新設 API（§3.4.2）だけを持つ。
+// 中身の MaplatApp（OpenLayers）を差すことと、地図に依る新設 API だけを持つ。
 //
-// 正本の仕様: NayutaProducts/docs/superpowers/specs/2026-10-10-maplat-web-components-interface.md
-//   §3（層 A の公開面）・§6（設定経路）・§10.1（人間の決定 U1・U2・U3・U5）
+// 公開 API は docs/api/maplat-app.md を参照。
 // 既定のピンの画像と投影の変換は本体の入口から読む（要素の束に画像・OL を二重に入れない。
-// 本体の束は外部化されている。設計 v2 A1・A2）
+// 本体の束は外部化されている）
 import { MaplatApp, defaultPinIcon, mercToLngLat, type ElementImplementationInternals } from "./index";
 import {
   MaplatAppElementBase,
@@ -54,7 +53,7 @@ declare const __MAPLAT_CORE_VERSION__: string | undefined;
 const PACKAGE_VERSION: string =
   typeof __MAPLAT_CORE_VERSION__ !== "undefined" ? __MAPLAT_CORE_VERSION__ : "0.0.0-dev";
 
-/** supports() の機能表（§3.6 の Core の列）。 */
+/** supports() の機能表（Core の列）。 */
 const CORE_FEATURES: Readonly<Record<string, boolean>> = Object.freeze(featuresOf("core"));
 
 type CoreApp = MaplatApp;
@@ -68,7 +67,7 @@ const isFiniteXY = (c: unknown): c is [number, number] =>
   Array.isArray(c) && Number.isFinite(c[0]) && Number.isFinite(c[1]);
 
 export class MaplatAppElement extends MaplatAppElementBase implements MaplatAppElementContract {
-  /** 実装の種別（§3.6）。有償版は "core-pro"。 */
+  /** 実装の種別。有償版は "core-pro"。 */
   readonly implementation = "core" as const;
   /** 実装の版（@maplat/core の版）。 */
   readonly version: string = PACKAGE_VERSION;
@@ -85,13 +84,13 @@ export class MaplatAppElement extends MaplatAppElementBase implements MaplatAppE
 
   /**
    * 内部の MaplatApp。
-   * @internal 移行期の逃げ道（§9.3）。層 A の公開面に含めない。メジャー版で消す。
+   * @internal 移行期の逃げ道。層 A の公開面に含めない。メジャー版で消す。
    */
   get app(): CoreApp | null {
     return this.currentImplementation() as CoreApp | null;
   }
 
-  // ---- 新設メソッド（§3.4.2）----
+  // ---- 新設メソッド ----
 
   /** 使える地図の一覧（設定ファイルの sources の順）。地図の準備前は []。 */
   listMaps(): MapListItem[] {
@@ -174,7 +173,7 @@ export class MaplatAppElement extends MaplatAppElementBase implements MaplatAppE
    * 旧クラス互換層の <maplat-ui> は this.#app?.northUp を読むので、地図とコンパスを食い違わせない。
    * Core 固有の読み口はここに置く（element_base.ts は Core-Pro と共有する土台なので、口だけを置く）。
    * 対象は <maplat-app> の属性・プロパティの表にある機能系キー（northUp・homeMarginPixels・noRotate）だけ。
-   * tapDuration・tapUIVanish は <maplat-ui> の属性（§3.8 A11）で、互換層が appData から移すのでここには無い。
+   * tapDuration・tapUIVanish は <maplat-ui> の属性で、互換層が appData から移すのでここには無い。
    */
   protected implementationKeyValue(
     prop: string,
@@ -199,7 +198,7 @@ export class MaplatAppElement extends MaplatAppElementBase implements MaplatAppE
     return value === undefined ? undefined : { value };
   }
 
-  /** MaplatApp に渡す appOption を組む（§6.1: 個別のキー ＞ appOption ＞ 設定ファイル ＞ 既定値）。 */
+  /** MaplatApp に渡す appOption を組む（個別のキー ＞ appOption ＞ 設定ファイル ＞ 既定値）。 */
   protected createImplementation(config: ElementStartupConfig): LayerAImplementation {
     const option: Record<string, any> = { ...config.appOption };
     for (const [prop, value] of Object.entries(config.values)) {
@@ -208,13 +207,13 @@ export class MaplatAppElement extends MaplatAppElementBase implements MaplatAppE
     }
     option.div = config.element;
     // 旧クラス互換層（MaplatUi）は appOption.__maplatCompat = true を渡す。そのときだけ旧クラスと同じ
-    // 読み方（設定ファイルの機能系キー・fakeGps/fakeRadius）へ戻す（設計 v2 C1(a)）。
+    // 読み方（設定ファイルの機能系キー・fakeGps/fakeRadius）へ戻す。
     // __maplatCompat は互換層だけが使う内部キーで公開面ではない。MaplatApp は知らないキーとして無視する。
     this.#compat = config.appOption?.__maplatCompat === true;
-    // U1 追補: 要素の経路では設定ファイルの機能系キーを読まない（§3.8 A7・A11 も要素の経路だけ）
+    // 要素の経路では設定ファイルの機能系キーを読まない（関連する修正も要素の経路だけ）
     option.__maplatElementMode = config.appOption?.__maplatCompat !== true;
     if (config.setting !== undefined) option.setting = config.setting;
-    // map-id・transparency は restore より強い（§6.1）。restore を与えると localStorage を
+    // map-id・transparency は restore より強い。restore を与えると localStorage を
     // 読まなくなるので、Core が復元値を決めた後に上書きする口（__restoreOverride）で渡す
     const override: Record<string, any> = {};
     if (config.values.mapId !== undefined) override.mapID = config.values.mapId;
@@ -248,13 +247,13 @@ export class MaplatAppElement extends MaplatAppElementBase implements MaplatAppE
 
   protected onResize(impl: LayerAImplementation): void {
     // OL の Map も自分の target を ResizeObserver で見ているが、要素の箱の変化を確実に拾うため
-    // 要素側でも updateSize を呼ぶ（二重に呼んでも害はない）。前面・背面の知識は Core が持つ（A10）
+    // 要素側でも updateSize を呼ぶ（二重に呼んでも害はない）。前面・背面の知識は Core が持つ
     (impl as unknown as ElementImplementationInternals).updateSize?.();
   }
 
   protected convertEventDetail(type: string, detail: any, impl: LayerAImplementation): unknown {
     if (type === "sourceLoaded" && Array.isArray(detail)) {
-      // §3.8 A2: source の配列でなく { mapID, usable }[]。usable の判定は実装が持つ（A6・C2-1 の詰め替えだけ）
+      // source の配列でなく { mapID, usable }[]。usable の判定は実装が持つ（詰め替えだけ）
       return (impl as unknown as ElementImplementationInternals).sourceLoadedDetail(detail);
     }
     return super.convertEventDetail(type, detail, impl);
@@ -266,7 +265,7 @@ export class MaplatAppElement extends MaplatAppElementBase implements MaplatAppE
     resolve: RuntimeValueResolver
   ): void {
     // 自分が知っているキーだけを集めて 1 回渡す。undefined は「与えられていない」として
-    // Core が既定／設定ファイルの値を埋める（A4・N1。Core に appOption の控えは置かない）
+    // Core が既定／設定ファイルの値を埋める（Core に appOption の控えは置かない）
     const values: Record<string, unknown> = {};
     for (const prop of [
       "northUp",
@@ -287,9 +286,9 @@ export class MaplatAppElement extends MaplatAppElementBase implements MaplatAppE
     }
   }
 
-  /** 中心の目印（U5）。既定で表示。no-center-marker で消し、center-marker-src で画像を差し替える。 */
+  /** 中心の目印。既定で表示。no-center-marker で消し、center-marker-src で画像を差し替える。 */
   protected applyDomKeys(): void {
-    // 表現は Core が当てる（A3）。作成前（実装が無い）は何もしない（今も img が無くて何もしないのと同じ）
+    // 表現は Core が当てる。作成前（実装が無い）は何もしない（今も img が無くて何もしないのと同じ）
     const impl = this.currentImplementation();
     if (!impl) return;
     (impl as unknown as ElementImplementationInternals).setCenterMarker({
@@ -302,7 +301,7 @@ export class MaplatAppElement extends MaplatAppElementBase implements MaplatAppE
 
   /**
    * 画面の 4 隅を今の地図の座標 → merc → 経緯度にして控える。
-   * 4 隅の作り方・大きさの点検・undefined（据え置き）/null（消す）の意味づけはここに残す（A7・Minor 1）。
+   * 4 隅の作り方・大きさの点検・undefined（据え置き）/null（消す）の意味づけはここに残す。
    */
   async #updateViewExtent(impl: LayerAImplementation) {
     const seq = ++this.#viewExtentSeq;
@@ -333,7 +332,7 @@ export class MaplatAppElement extends MaplatAppElementBase implements MaplatAppE
     }
   }
 
-  /** setEnvelopes の指定を今の地図に描く（旧 UI の updateEnvelope と同じ規則。§3.7）。 */
+  /** setEnvelopes の指定を今の地図に描く（旧 UI の updateEnvelope と同じ規則）。 */
   async #drawEnvelopes() {
     const seq = ++this.#envelopeSeq;
     const app = this.currentImplementation() as any;
@@ -385,7 +384,7 @@ export class MaplatAppElement extends MaplatAppElementBase implements MaplatAppE
     }
   }
 
-  /** moveStart / moveEnd（§3.5。止まって 150 ms 後に moveEnd）。 */
+  /** moveStart / moveEnd（止まって 150 ms 後に moveEnd）。 */
   #hookMoveEvents(app: CoreApp) {
     const map = (app as any).mapObject;
     if (!map?.on) return;

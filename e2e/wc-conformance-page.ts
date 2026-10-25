@@ -46,7 +46,7 @@ const fixture: LayerAFixture =
                   [141.17, 39.71],
                   [141.13, 39.71]
                 ],
-                // タイルキャッシュを持つ地図（§3.8 A10 の total の検査を、模擬の固定データでも通す）
+                // タイルキャッシュを持つ地図（total の検査を、模擬の固定データでも通す）
                 cacheEnable: true,
                 tileCacheTotal: 48
               },

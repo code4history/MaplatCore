@@ -23,7 +23,7 @@ describe("mercToLngLat", () => {
     const [lon, lat] = mercToLngLat(merc);
     expect(lon).toBeCloseTo(-170, 9);
     expect(lat).toBeCloseTo(0, 9);
-    // 巻き戻さない transform は 190 を返す（この 2 つを取り違えないことの固定。設計 v2 Minor 2）
+    // 巻き戻さない transform は 190 を返す（この 2 つを取り違えないことの固定）
     expect(transform(merc, "EPSG:3857", "EPSG:4326")[0]).toBeCloseTo(190, 9);
   });
 

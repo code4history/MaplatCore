@@ -4,9 +4,9 @@
 import { META_KEYS } from "./meta_keys";
 
 /**
- * 同じキーでは 1 回だけ警告する関数を作る（U2・U3 の「キーごとに 1 回」）。
+ * 同じキーでは 1 回だけ警告する関数を作る（「キーごとに 1 回」）。
  * 旧クラスの起動時キーのロック・設定ファイルの機能系キーの警告と、要素の warnOnce が共有する
- * （設計 v2 A19。警告の文面と経路は各呼び出し側が持つ）。
+ * （警告の文面と経路は各呼び出し側が持つ）。
  */
 export function createOnceWarner(): (key: string, message: string) => void {
   const warned = new Set<string>();
@@ -17,7 +17,7 @@ export function createOnceWarner(): (key: string, message: string) => void {
   };
 }
 
-// 旧クラス MaplatApp の非推奨の告知（release-policy §9.1 手順 1 の「実行時に 1 回だけ警告」）。
+// 旧クラス MaplatApp の非推奨の告知（実行時に 1 回だけ警告する）。
 // 粒度は「同一プロセスで 1 回」なので、createOnceWarner（呼び出し側ごとに 1 回）ではなく、
 // このモジュールの水準で覚える。要素（<maplat-app>）の経路は内部で MaplatApp を作るため、
 // 警告するかどうかは src/index.ts のコンストラクタが option の内部キー "__maplatElementMode" の
@@ -29,7 +29,7 @@ const MAPLAT_APP_DEPRECATION_MESSAGE =
   "Use the <maplat-app> element (@maplat/core/element) instead.";
 
 /**
- * 旧クラス MaplatApp の非推奨を、同一プロセスで 1 回だけ警告する（release-policy §9.1 手順 1）。
+ * 旧クラス MaplatApp の非推奨を、同一プロセスで 1 回だけ警告する。
  * 呼ぶのは旧クラスのコンストラクタだけ（要素の経路は呼ばない。src/index.ts を参照）。
  */
 export function warnMaplatAppDeprecated(): void {

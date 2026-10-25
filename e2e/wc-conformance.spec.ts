@@ -1,4 +1,4 @@
-// 層 A の適合テスト群（src/conformance/layer-a.ts）を実ブラウザで流す（仕様 §8.1・§8.2）。
+// 層 A の適合テスト群（src/conformance/layer-a.ts）を実ブラウザで流す。
 //   - 実物の Core の要素（OpenLayers で地図を描く）
 //   - 模擬の層 A（地図を描かない。公開面を満たすことの確認）
 // 実行: node_modules/.bin/playwright test --config=e2e/wc-element.playwright.config.ts（単独・port 5198）

@@ -1,7 +1,7 @@
-// MaplatApp が要素（<maplat-app>）にだけ見せる内部面（設計 v2 §6.5・§6.6・§6.9・N3）の検査。
+// MaplatApp が要素（<maplat-app>）にだけ見せる内部面の検査。
 //   sourceLoadedDetail: sourceLoaded の { mapID, usable }[] の材料（cacheHash の同一性）
 //   pixelToMerc:        pixel → 地図の座標 → merc の連鎖（旧 clientPointToLngLat と同じ・点検なし）
-//   viewportSize:       表示領域の大きさ（Minor 1。4 隅の作り方と undefined/null の意味づけは要素に残す）
+//   viewportSize:       表示領域の大きさ（4 隅の作り方と undefined/null の意味づけは要素に残す）
 //   updateSize:         前面と背面の地図の大きさを測り直す
 // 地図の実体（OL）は jsdom で作らず、メソッドの連鎖だけを検査する（実物は wc-legacy の boot を使う）。
 import { describe, it, expect, vi, beforeAll, afterEach } from "vitest";
@@ -27,7 +27,7 @@ function stub(fields: Record<string, any> = {}): any {
   return Object.assign(Object.create(MaplatApp.prototype), fields);
 }
 
-describe("sourceLoadedDetail（A6）", () => {
+describe("sourceLoadedDetail", () => {
   it("[] と null・配列でない値は空配列", () => {
     const app = stub({ cacheHash: {} });
     expect(app.sourceLoadedDetail([])).toEqual([]);
@@ -83,7 +83,7 @@ describe("sourceLoadedDetail（A6）", () => {
   });
 });
 
-describe("pixelToMerc（A7・M6）", () => {
+describe("pixelToMerc", () => {
   it("地図か from が無ければ undefined（点検しない・旧の連鎖のまま）", async () => {
     expect(await stub().pixelToMerc([1, 2])).toBeUndefined();
     const from = { sysCoord2MercAsync: vi.fn() };
@@ -121,7 +121,7 @@ describe("pixelToMerc（A7・M6）", () => {
   });
 });
 
-describe("viewportSize（A7・Minor 1）", () => {
+describe("viewportSize", () => {
   it("地図が無ければ undefined", () => {
     expect(stub().viewportSize()).toBeUndefined();
   });
@@ -137,7 +137,7 @@ describe("viewportSize（A7・Minor 1）", () => {
   });
 });
 
-describe("updateSize（A10）", () => {
+describe("updateSize", () => {
   it("前面と背面の両方を測り直す", () => {
     const front = { updateSize: vi.fn() };
     const back = { updateSize: vi.fn() };
@@ -154,7 +154,7 @@ describe("updateSize（A10）", () => {
   });
 });
 
-describe("clientPointToLngLat の連鎖（N3）", () => {
+describe("clientPointToLngLat の連鎖", () => {
   const viewport = { getBoundingClientRect: () => ({ left: 10, top: 20 }) };
 
   it("rect で pixel を出し、pixelToMerc → transform の順で同じ値を返す", async () => {
@@ -171,7 +171,7 @@ describe("clientPointToLngLat の連鎖（N3）", () => {
     expect(result.latitude).toBeCloseTo(lnglat[1], 9);
   });
 
-  it("pixelToMerc が undefined なら undefined（旧クラスの戻り値を変えない。M6）", async () => {
+  it("pixelToMerc が undefined なら undefined（旧クラスの戻り値を変えない）", async () => {
     const app = stub({
       from: {},
       mapObject: { getViewport: () => viewport },

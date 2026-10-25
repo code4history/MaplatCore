@@ -6,7 +6,7 @@ export declare const MAPLAT_UI_TAG = "maplat-ui";
  */
 export declare const MAPLAT_APP_EVENTS: readonly ["lifecycle:setting-loaded", "lifecycle:appdata-ready", "lifecycle:ui-configure", "lifecycle:core-dom-ready", "lifecycle:ui-dom-ready", "lifecycle:core-ready", "lifecycle:ui-ready", "lifecycle:error", "sourceLoaded", "mapChanged", "changeViewpoint", "updateState", "outOfMap", "poi_number", "clickMarker", "clickMarkers", "clickMap", "clickMapXy", "clickMapMerc", "pointerMoveOnMapXy", "pointerMoveOnMapMerc", "gps_request", "gps_result", "gps_error"];
 export type MaplatAppEventName = (typeof MAPLAT_APP_EVENTS)[number];
-/** 層 A の要素が新設するイベント（§3.5）。 */
+/** 層 A の要素が新設するイベント。 */
 export declare const ELEMENT_OWN_EVENTS: readonly ["gpsEnabledChanged", "moveStart", "moveEnd"];
 export type ElementOwnEventName = (typeof ELEMENT_OWN_EVENTS)[number];
 /** 層 A のうち Pro 固有のイベント（supports() が真のときだけ出る）。 */
@@ -17,16 +17,16 @@ export declare const LAYER_A_PRO_EVENTS: readonly [{
     readonly event: "viewchange";
     readonly feature: "display-mode";
 }];
-/** ライフサイクルの段階（旧と同順。§2.7）。 */
+/** ライフサイクルの段階（旧と同順）。 */
 export declare const LIFECYCLE_PHASES: readonly ["setting-loaded", "appdata-ready", "ui-configure", "core-dom-ready", "ui-dom-ready", "core-ready", "ui-ready"];
 export type LifecyclePhaseId = (typeof LIFECYCLE_PHASES)[number];
-/** 旧クラスから引き継ぐ公開メソッド（46 個。§3.4.1 の 44 個＋#91 の removeVector・removeLine）。要素は実装の同名メソッドへ委譲する。 */
+/** 旧クラスから引き継ぐ公開メソッド（46 個。旧クラスが持つ 44 個＋#91 の removeVector・removeLine）。要素は実装の同名メソッドへ委譲する。 */
 export declare const MAPLAT_APP_METHODS: readonly ["handleGPS", "getGPSEnabled", "getRotation", "getDirection", "currentMapInfo", "mapInfo", "clientPointToLngLat", "lngLatToClientPoint", "selectMarker", "unselectMarker", "getMarker", "updateMarker", "addMarker", "removeMarker", "clearMarker", "showAllMarkers", "hideAllMarkers", "listPoiLayers", "showPoiLayer", "hidePoiLayer", "getPoiLayer", "addPoiLayer", "removePoiLayer", "addLine", "addVector", "removeVector", "removeLine", "clearLine", "clearVector", "setGPSMarker", "changeMap", "requestUpdateState", "setTransparency", "getTransparency", "setViewpoint", "goHome", "resetRotation", "resetDirection", "resetCirculation", "getMapMeta", "getMapCacheEnable", "getMapTileCacheStatsAsync", "getMapTileCacheSizeAsync", "clearMapTileCacheAsync", "fetchAllMapTileCacheAsync", "cancelMapTileCacheAsync"];
 export type MaplatAppMethodName = (typeof MAPLAT_APP_METHODS)[number];
-/** 層 A で新設したメソッド（§3.4.2）。 */
+/** 層 A で新設したメソッド。 */
 export declare const ELEMENT_OWN_METHODS: readonly ["getViewpoint", "listMaps", "supports", "setEnvelopes", "getMapEnvelope", "getViewExtent", "zoomBy", "getDefaultPinIcon"];
 export type ElementOwnMethodName = (typeof ELEMENT_OWN_METHODS)[number];
-/** Pro 固有のメソッド（§3.4.3）。対応する機能が supports() で偽なら要素に**定義しない**。 */
+/** Pro 固有のメソッド。対応する機能が supports() で偽なら要素に**定義しない**。 */
 export declare const LAYER_A_PRO_METHODS: readonly [{
     readonly method: "setDisplayMode";
     readonly feature: "display-mode";
@@ -34,16 +34,16 @@ export declare const LAYER_A_PRO_METHODS: readonly [{
     readonly method: "getDisplayMode";
     readonly feature: "display-mode";
 }];
-/** 層 A の状態の読み取り（読み取り専用プロパティ。§3.3）。 */
+/** 層 A の状態の読み取り（読み取り専用プロパティ）。 */
 export declare const LAYER_A_STATE_PROPERTIES: readonly ["ready", "implementation", "version", "appData", "initialRestore", "state", "currentMapId", "viewpoint", "gpsEnabled"];
 export type LayerAImplementationName = "core" | "core-pro";
-/** 機能名の表（§3.6）。足すときは仕様の表と適合テスト（src/conformance）も更新する。 */
+/** 機能名の表。足すときはこの表と適合テスト（src/conformance）も更新する。 */
 export declare const LAYER_A_FEATURES: Readonly<Record<string, Readonly<Record<LayerAImplementationName, boolean>>>>;
 export declare const LAYER_A_FEATURE_NAMES: string[];
 /** 実装名から機能表の 1 列を取り出す（未知の実装名は全部 false）。 */
 export declare function featuresOf(implementation: string): Record<string, boolean>;
 /**
- * 属性の値の種類（§6.2.2）。"boolean-or-string" は真偽と文字列の両方を取るキー（pwa-manifest:
+ * 属性の値の種類。"boolean-or-string" は真偽と文字列の両方を取るキー（pwa-manifest:
  * ""・"true"・属性名＝true／"false"＝false／それ以外は文字列のまま）。
  */
 export type AttrKind = "string" | "number" | "boolean" | "boolean-or-string";
@@ -54,16 +54,16 @@ export interface AttrDef {
     /** プロパティ名（camelCase） */
     prop: string;
     kind: AttrKind;
-    /** 起動時だけ効く（起動後は変更不可・警告して無視。§6.5 (i)・(i')・U2） */
+    /** 起動時だけ効く（起動後は変更不可・警告して無視） */
     startup?: boolean;
     /** 旧 appOption のキー名（移行用の口 appOption と、実装への受け渡しに使う） */
     option?: string;
-    /** 地図の準備を待たずに DOM だけで当てるキー（中心の目印。U5） */
+    /** 地図の準備を待たずに DOM だけで当てるキー（中心の目印） */
     dom?: boolean;
-    /** Pro 固有のキー: この機能が supports() で偽の実装は警告して無視する（U3） */
+    /** Pro 固有のキー: この機能が supports() で偽の実装は警告して無視する */
     feature?: string;
     /**
-     * 内部の操作（UI・メソッド・状態 URL の復元）で変わる状態のキー（§3.3・§6.2.3。2026-10-11 改訂）。
+     * 内部の操作（UI・メソッド・状態 URL の復元）で変わる状態のキー（2026-10-11 改訂）。
      * 実装は変化のたびに属性へ書き戻す（"change"）。連続して変わるものは描画 1 回につき 1 回にまとめる（"frame"）。
      * 書き戻しは属性の変更として扱わない（二重に処理しない）。
      */
@@ -76,38 +76,38 @@ export interface PropDef {
     option?: string;
     feature?: string;
 }
-/** 層 A の属性と同期するキー（§3.2・§6.3。U5 の中心の目印を含む）。 */
+/** 層 A の属性と同期するキー（中心の目印を含む）。 */
 export declare const ELEMENT_ATTRIBUTES: readonly AttrDef[];
-/** 層 A のプロパティのみのキー（§3.2）。 */
+/** 層 A のプロパティのみのキー。 */
 export declare const ELEMENT_PROPERTIES: readonly PropDef[];
 /**
- * 層 A の Pro 固有の属性（U3）。要素は全実装でこの属性を観測し、対応する機能を持たない実装
+ * 層 A の Pro 固有の属性。要素は全実装でこの属性を観測し、対応する機能を持たない実装
  * （Core 等）は**キーごとに 1 回**警告して無視する。警告文に実装の名を出さない。
- * 仕様の §10.1 U3 に挙がっているのは display-mode だけ（足すときは仕様と一緒に更新する）。
+ * ここに挙がっているのは display-mode だけ（足すときはこの表と一緒に更新する）。
  */
 export declare const LAYER_A_PRO_ATTRIBUTES: readonly AttrDef[];
 /** 層 A の Pro 固有のプロパティのみのキー（現時点では無し）。 */
 export declare const LAYER_A_PRO_PROPERTIES: readonly PropDef[];
 /** 起動時だけ効くキーのプロパティ名（属性・プロパティのみの両方）。 */
 export declare const ELEMENT_STARTUP_KEYS: readonly string[];
-/** 旧 appOption の名前 → 要素のプロパティ名（§9.2）。appOption に新しい名前で書かれていたら旧名へ寄せる。 */
+/** 旧 appOption の名前 → 要素のプロパティ名。appOption に新しい名前で書かれていたら旧名へ寄せる。 */
 export declare const APP_OPTION_ALIASES: Readonly<Record<string, string>>;
-/** プロパティ名 → 属性名（§6.2.1。大文字の前で区切り、略語は 1 語として扱う）。 */
+/** プロパティ名 → 属性名（大文字の前で区切り、略語は 1 語として扱う）。 */
 export declare function propToAttributeName(prop: string): string;
-/** 属性名 → プロパティ名（§6.2.1）。 */
+/** 属性名 → プロパティ名。 */
 export declare function attributeToPropName(attr: string): string;
 /**
  * 要素の経路の uiHooks に、`context.core` と `context.mapDivDocument` を要素に差し替えた写しを返す
- * （仕様 §3.2。設計 v2 C2-10）。元の hook オブジェクトは書き換えない（旧クラスの経路は `core: MaplatApp` のまま）。
+ * 元の hook オブジェクトは書き換えない（旧クラスの経路は `core: MaplatApp` のまま）。
  * hook は名前の表を回して `hooks[name]` で引く（クラスのインスタンスや `Object.create` で作った
- * オブジェクトのプロトタイプ上の hook も落とさない。Minor 1）。表に無いキーは今までどおり写す。
+ * オブジェクトのプロトタイプ上の hook も落とさない）。表に無いキーは今までどおり写す。
  */
 export declare function wrapUiHooksForElement<H extends Record<string, any>>(hooks: H, element: HTMLElement): Record<string, any>;
-/** 属性の文字列 → 値（§6.2.2）。undefined は「未指定」。不正な値は warn を呼んで未指定にする。 */
+/** 属性の文字列 → 値。undefined は「未指定」。不正な値は warn を呼んで未指定にする。 */
 export declare function parseAttributeValue(def: Pick<AttrDef, "attr" | "kind">, raw: string | null, warn?: (message: string) => void, tagName?: string): unknown;
-/** 値 → 属性の文字列（§6.2.2。null は属性を外す）。 */
+/** 値 → 属性の文字列（null は属性を外す）。 */
 export declare function formatAttributeValue(def: Pick<AttrDef, "kind">, value: unknown): string | null;
-/** 未対応の Pro 固有キーの警告文（U3。実装の名を出さない）。 */
+/** 未対応の Pro 固有キーの警告文（実装の名を出さない）。 */
 export declare function unsupportedKeyMessage(key: {
     attr?: string;
     prop: string;
@@ -116,7 +116,7 @@ export declare function unsupportedKeyMessage(key: {
 export declare const MAPLAT_UI_ATTRIBUTES: readonly AttrDef[];
 /** 層 B が出すイベント（層 A のイベントは子から泡立って通る）。 */
 export declare const MAPLAT_UI_EVENTS: readonly ["uiReady"];
-/** 層 B の公開メソッド（§4.4）。 */
+/** 層 B の公開メソッド。 */
 export declare const MAPLAT_UI_METHODS: readonly ["translateText", "t", "setShowBorder", "setHideMarker", "openMarker", "mapsAt", "getShareUrl", "showToast"];
 export type LngLat = {
     longitude: number;
@@ -125,7 +125,7 @@ export type LngLat = {
 export type Localized = string | Record<string, string>;
 /** changeViewpoint の detail・viewpoint プロパティ・getViewpoint() の戻り値。 */
 export interface Viewpoint {
-    /** 地図の座標（不透明な値。§1 sysCoord） */
+    /** 地図の座標（不透明な値。sysCoord） */
     x: number;
     y: number;
     longitude: number;
@@ -215,12 +215,12 @@ export interface LifecycleErrorDetail {
     phaseId: LifecyclePhaseId;
     error: unknown;
 }
-/** sourceLoaded の detail の要素（§3.8 A2）。 */
+/** sourceLoaded の detail の要素。 */
 export interface SourceLoadedItem {
     mapID: string | null;
     usable: boolean;
 }
-/** getMapTileCacheStatsAsync の戻り値（§3.8 A10: total を含める）。 */
+/** getMapTileCacheStatsAsync の戻り値（total を含める）。 */
 export interface TileCacheStats {
     size?: number;
     count?: number;
@@ -316,7 +316,7 @@ export type GpsResultDetail = {
     error: "gps_off" | "gps_out" | "gps_out_hide";
 };
 export type GpsErrorDetail = "user_gps_deny" | "gps_miss" | "gps_timeout";
-/** イベント名 → detail の型（§3.5）。 */
+/** イベント名 → detail の型。 */
 export interface MaplatAppEventDetailMap {
     "lifecycle:setting-loaded": LifecycleDetail;
     "lifecycle:appdata-ready": LifecycleDetail;
@@ -389,7 +389,7 @@ export interface MaplatAppElementSettings {
     poiStyle: string | undefined;
     iconTemplate: string | undefined;
 }
-/** 層 A の状態の読み取り（§3.3）。 */
+/** 層 A の状態の読み取り。 */
 export interface MaplatAppElementState {
     readonly ready: Promise<void>;
     readonly implementation: string;
@@ -402,7 +402,7 @@ export interface MaplatAppElementState {
     readonly gpsEnabled: boolean;
 }
 type AnyFn = (...args: any[]) => any;
-/** 旧クラスから引き継ぐ 46 のメソッド（§3.4.1＋#91）。型を揃えたもの以外は実装の戻り値のまま。 */
+/** 旧クラスから引き継ぐ 46 のメソッド（旧クラスの 44 個＋#91 の 2 個）。型を揃えたもの以外は実装の戻り値のまま。 */
 export interface MaplatAppDelegatedMethods {
     handleGPS: (enable: boolean, avoidEventForOff?: boolean) => any;
     getGPSEnabled: () => boolean;
@@ -457,7 +457,7 @@ export interface MaplatAppDelegatedMethods {
     fetchAllMapTileCacheAsync: (mapID: string | undefined, callback: (type: TileCacheProgressType, detail: TileCacheProgress) => void) => Promise<void>;
     cancelMapTileCacheAsync: (mapID?: string) => Promise<void>;
 }
-/** 層 A で新設したメソッド（§3.4.2）。 */
+/** 層 A で新設したメソッド。 */
 export interface MaplatAppOwnMethods {
     getViewpoint(): Viewpoint | null;
     listMaps(): MapListItem[];
@@ -472,7 +472,7 @@ export interface MaplatAppOwnMethods {
      */
     getDefaultPinIcon(selected?: boolean): string;
 }
-/** Pro 固有のメソッド（§3.4.3）。supports("display-mode") が真の実装だけが持つ。 */
+/** Pro 固有のメソッド。supports("display-mode") が真の実装だけが持つ。 */
 export interface MaplatAppProMethods {
     setDisplayMode(mode: DisplayMode): Promise<void>;
     getDisplayMode(): DisplayMode | null;

@@ -1,7 +1,7 @@
-// @maplat/core/conformance: 層 A の共通の面の適合テスト群と、模擬の層 A（仕様 §8・U7）。
+// @maplat/core/conformance: 層 A の共通の面の適合テスト群と、模擬の層 A。
 //
 // 公開してよい中身だけを置く（層 A の公開面だけを触る。実装の中身は含まない）。
-// Pro 固有機能の試験は Pro のリポジトリに置く（U7）。
+// Pro 固有機能の試験は Pro のリポジトリに置く。
 // 依存は ../element_contract・../element_base だけ（OpenLayers 等を引き込まない。副作用も無い）。
 export {
   createLayerAConformanceCases,

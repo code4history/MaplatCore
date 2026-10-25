@@ -1,4 +1,4 @@
-// @maplat/core/common・@maplat/core/conformance の入口（仕様 §5.3・U8・U7）の機械検査。
+// @maplat/core/common・@maplat/core/conformance の入口の機械検査。
 //   1. 入口からたどれる import の連鎖（src の相対 import を再帰でたどる）に、OpenLayers・Weiwudi・
 //      @maplat/transform・turf を入れない。外部のパッケージは DOMPurify だけ
 //   2. 公開物の一覧（common の export）と、@maplat/core からの従来の export が壊れていないこと
@@ -87,7 +87,7 @@ describe("@maplat/core/common の入口が OpenLayers 等を引き込まない",
 });
 
 describe("@maplat/core/common の公開物", () => {
-  it("補助関数（§5.3）", () => {
+  it("補助関数", () => {
     for (const name of ["sanitizeHtml", "escapeAttr", "toPlainText", "buildSlideAttrs", "createElement", "normalizeArg"]) {
       expect(typeof (common as any)[name], name).toBe("function");
     }
@@ -114,7 +114,7 @@ describe("@maplat/core/common の公開物", () => {
     expect(common.propToAttributeName("tapUiVanish")).toBe("tap-ui-vanish");
     expect(common.propToAttributeName("homeMarginPixels")).toBe("home-margin-pixels");
     expect(common.attributeToPropName("selected-icon")).toBe("selectedIcon");
-    // 属性の表は名前の機械的な変換（§6.2.1）に従う
+    // 属性の表は名前の機械的な変換に従う
     for (const def of [...common.ELEMENT_ATTRIBUTES, ...common.LAYER_A_PRO_ATTRIBUTES, ...common.MAPLAT_UI_ATTRIBUTES]) {
       expect(common.propToAttributeName(def.prop), def.prop).toBe(def.attr);
     }

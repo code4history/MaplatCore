@@ -49,7 +49,7 @@ $("clear-marker").addEventListener("click", () => el.clearMarker());
 $("go-home").addEventListener("click", () => el.goHome());
 $("zoom-in").addEventListener("click", () => el.zoomBy(1));
 
-// ---- 枠線と範囲（§3.4.2） ----
+// ---- 枠線と範囲 ----
 const COLORS = ["#e6194b", "#3cb44b", "#4363d8", "#f58231", "#911eb4"];
 $("envelopes").addEventListener("click", () => {
   const maps = el.listMaps().filter(m => m.hasEnvelope);
@@ -75,7 +75,7 @@ $("extent").addEventListener("click", () => {
     : "null";
 });
 
-// ---- Pro 固有の属性（U3） ----
+// ---- Pro 固有の属性 ----
 $("display-mode").addEventListener("click", () => {
   el.setAttribute("display-mode", "map-warp"); // Core は「ignored unsupported attribute "display-mode"」を 1 回だけ出す
   $("display-mode-read").textContent = String((el as unknown as { displayMode?: string }).displayMode);
@@ -83,7 +83,7 @@ $("display-mode").addEventListener("click", () => {
 });
 $("supports-dm").textContent = String(el.supports("display-mode"));
 
-// ---- 中心の目印（U5） ----
+// ---- 中心の目印 ----
 $("toggle-center").addEventListener("click", () => {
   el.noCenterMarker = !el.noCenterMarker;
   write(`noCenterMarker = ${el.noCenterMarker}`);
@@ -99,7 +99,7 @@ $("swap-center").addEventListener("click", () => {
 });
 $("class-center").addEventListener("click", () => el.classList.toggle("demo-ring"));
 
-// ---- 起動時だけ効くキー（U2） ----
+// ---- 起動時だけ効くキー ----
 $("change-app-id").addEventListener("click", () => {
   el.setAttribute("app-id", "nara"); // console.warn が 1 回出て無視される
   $("app-id-read").textContent = String(el.appId);

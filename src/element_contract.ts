@@ -1,12 +1,11 @@
 // 層 A（<maplat-app>）・層 B（<maplat-ui>）の共通の取り決め（名前の表と型）。
 //
 // @maplat/core/common から公開する。実装（OpenLayers 版の Core・有償版）にも、層 B（UI・UI-Pro）にも、
-// ページの TypeScript にも共通の 1 つの表として置く（仕様 §5.3・§8.4）。
+// ページの TypeScript にも共通の 1 つの表として置く。
 // **このファイルは何も import しない**（common の入口からたどれる連鎖に OpenLayers・Weiwudi・
 // @maplat/transform・turf を入れないため。spec/common-entry.spec.ts が機械的に確かめる）。
 //
-// 正本の仕様: NayutaProducts/docs/superpowers/specs/2026-10-10-maplat-web-components-interface.md
-//   §3（層 A）・§4（層 B）・§6（設定経路）・§10.1（人間の決定）
+// 公開 API は docs/api/maplat-app.md を参照。
 
 // ---------------------------------------------------------------------------
 // タグ名
@@ -16,7 +15,7 @@ export const MAPLAT_APP_TAG = "maplat-app";
 export const MAPLAT_UI_TAG = "maplat-ui";
 
 // ---------------------------------------------------------------------------
-// イベント名（§3.5）
+// イベント名
 // ---------------------------------------------------------------------------
 
 /**
@@ -51,7 +50,7 @@ export const MAPLAT_APP_EVENTS = [
 ] as const;
 export type MaplatAppEventName = (typeof MAPLAT_APP_EVENTS)[number];
 
-/** 層 A の要素が新設するイベント（§3.5）。 */
+/** 層 A の要素が新設するイベント。 */
 export const ELEMENT_OWN_EVENTS = ["gpsEnabledChanged", "moveStart", "moveEnd"] as const;
 export type ElementOwnEventName = (typeof ELEMENT_OWN_EVENTS)[number];
 
@@ -61,7 +60,7 @@ export const LAYER_A_PRO_EVENTS = [
   { event: "viewchange", feature: "display-mode" }
 ] as const;
 
-/** ライフサイクルの段階（旧と同順。§2.7）。 */
+/** ライフサイクルの段階（旧と同順）。 */
 export const LIFECYCLE_PHASES = [
   "setting-loaded",
   "appdata-ready",
@@ -74,10 +73,10 @@ export const LIFECYCLE_PHASES = [
 export type LifecyclePhaseId = (typeof LIFECYCLE_PHASES)[number];
 
 // ---------------------------------------------------------------------------
-// メソッド名（§3.4）
+// メソッド名
 // ---------------------------------------------------------------------------
 
-/** 旧クラスから引き継ぐ公開メソッド（46 個。§3.4.1 の 44 個＋#91 の removeVector・removeLine）。要素は実装の同名メソッドへ委譲する。 */
+/** 旧クラスから引き継ぐ公開メソッド（46 個。旧クラスが持つ 44 個＋#91 の removeVector・removeLine）。要素は実装の同名メソッドへ委譲する。 */
 export const MAPLAT_APP_METHODS = [
   "handleGPS",
   "getGPSEnabled",
@@ -129,7 +128,7 @@ export const MAPLAT_APP_METHODS = [
 ] as const;
 export type MaplatAppMethodName = (typeof MAPLAT_APP_METHODS)[number];
 
-/** 層 A で新設したメソッド（§3.4.2）。 */
+/** 層 A で新設したメソッド。 */
 export const ELEMENT_OWN_METHODS = [
   "getViewpoint",
   "listMaps",
@@ -142,13 +141,13 @@ export const ELEMENT_OWN_METHODS = [
 ] as const;
 export type ElementOwnMethodName = (typeof ELEMENT_OWN_METHODS)[number];
 
-/** Pro 固有のメソッド（§3.4.3）。対応する機能が supports() で偽なら要素に**定義しない**。 */
+/** Pro 固有のメソッド。対応する機能が supports() で偽なら要素に**定義しない**。 */
 export const LAYER_A_PRO_METHODS = [
   { method: "setDisplayMode", feature: "display-mode" },
   { method: "getDisplayMode", feature: "display-mode" }
 ] as const;
 
-/** 層 A の状態の読み取り（読み取り専用プロパティ。§3.3）。 */
+/** 層 A の状態の読み取り（読み取り専用プロパティ）。 */
 export const LAYER_A_STATE_PROPERTIES = [
   "ready",
   "implementation",
@@ -162,12 +161,12 @@ export const LAYER_A_STATE_PROPERTIES = [
 ] as const;
 
 // ---------------------------------------------------------------------------
-// 機能名（§3.6）
+// 機能名
 // ---------------------------------------------------------------------------
 
 export type LayerAImplementationName = "core" | "core-pro";
 
-/** 機能名の表（§3.6）。足すときは仕様の表と適合テスト（src/conformance）も更新する。 */
+/** 機能名の表。足すときはこの表と適合テスト（src/conformance）も更新する。 */
 export const LAYER_A_FEATURES: Readonly<Record<string, Readonly<Record<LayerAImplementationName, boolean>>>> = {
   "display-mode": { core: false, "core-pro": true },
   "display-mode:map-warp": { core: false, "core-pro": true },
@@ -188,11 +187,11 @@ export function featuresOf(implementation: string): Record<string, boolean> {
 }
 
 // ---------------------------------------------------------------------------
-// 属性・プロパティの表（§3.2・§6.2・§6.3）
+// 属性・プロパティの表
 // ---------------------------------------------------------------------------
 
 /**
- * 属性の値の種類（§6.2.2）。"boolean-or-string" は真偽と文字列の両方を取るキー（pwa-manifest:
+ * 属性の値の種類。"boolean-or-string" は真偽と文字列の両方を取るキー（pwa-manifest:
  * ""・"true"・属性名＝true／"false"＝false／それ以外は文字列のまま）。
  */
 export type AttrKind = "string" | "number" | "boolean" | "boolean-or-string";
@@ -204,16 +203,16 @@ export interface AttrDef {
   /** プロパティ名（camelCase） */
   prop: string;
   kind: AttrKind;
-  /** 起動時だけ効く（起動後は変更不可・警告して無視。§6.5 (i)・(i')・U2） */
+  /** 起動時だけ効く（起動後は変更不可・警告して無視） */
   startup?: boolean;
   /** 旧 appOption のキー名（移行用の口 appOption と、実装への受け渡しに使う） */
   option?: string;
-  /** 地図の準備を待たずに DOM だけで当てるキー（中心の目印。U5） */
+  /** 地図の準備を待たずに DOM だけで当てるキー（中心の目印） */
   dom?: boolean;
-  /** Pro 固有のキー: この機能が supports() で偽の実装は警告して無視する（U3） */
+  /** Pro 固有のキー: この機能が supports() で偽の実装は警告して無視する */
   feature?: string;
   /**
-   * 内部の操作（UI・メソッド・状態 URL の復元）で変わる状態のキー（§3.3・§6.2.3。2026-10-11 改訂）。
+   * 内部の操作（UI・メソッド・状態 URL の復元）で変わる状態のキー（2026-10-11 改訂）。
    * 実装は変化のたびに属性へ書き戻す（"change"）。連続して変わるものは描画 1 回につき 1 回にまとめる（"frame"）。
    * 書き戻しは属性の変更として扱わない（二重に処理しない）。
    */
@@ -228,7 +227,7 @@ export interface PropDef {
   feature?: string;
 }
 
-/** 層 A の属性と同期するキー（§3.2・§6.3。U5 の中心の目印を含む）。 */
+/** 層 A の属性と同期するキー（中心の目印を含む）。 */
 export const ELEMENT_ATTRIBUTES: readonly AttrDef[] = [
   { attr: "app-id", prop: "appId", kind: "string", startup: true, option: "appid" },
   { attr: "app-src", prop: "appSrc", kind: "string", startup: true },
@@ -245,12 +244,12 @@ export const ELEMENT_ATTRIBUTES: readonly AttrDef[] = [
   { attr: "debug", prop: "debug", kind: "boolean", option: "debug" },
   { attr: "icon", prop: "icon", kind: "string", option: "icon" },
   { attr: "selected-icon", prop: "selectedIcon", kind: "string", option: "selectedIcon" },
-  // U5: 中心の目印（既定で表示。消す・画像を差し替える口）
+  // 中心の目印（既定で表示。消す・画像を差し替える口）
   { attr: "no-center-marker", prop: "noCenterMarker", kind: "boolean", dom: true },
   { attr: "center-marker-src", prop: "centerMarkerSrc", kind: "string", dom: true }
 ];
 
-/** 層 A のプロパティのみのキー（§3.2）。 */
+/** 層 A のプロパティのみのキー。 */
 export const ELEMENT_PROPERTIES: readonly PropDef[] = [
   { prop: "setting", startup: true, option: "setting" },
   { prop: "restore", startup: true, option: "restore" },
@@ -267,9 +266,9 @@ export const ELEMENT_PROPERTIES: readonly PropDef[] = [
 ];
 
 /**
- * 層 A の Pro 固有の属性（U3）。要素は全実装でこの属性を観測し、対応する機能を持たない実装
+ * 層 A の Pro 固有の属性。要素は全実装でこの属性を観測し、対応する機能を持たない実装
  * （Core 等）は**キーごとに 1 回**警告して無視する。警告文に実装の名を出さない。
- * 仕様の §10.1 U3 に挙がっているのは display-mode だけ（足すときは仕様と一緒に更新する）。
+ * ここに挙がっているのは display-mode だけ（足すときはこの表と一緒に更新する）。
  */
 export const LAYER_A_PRO_ATTRIBUTES: readonly AttrDef[] = [
   { attr: "display-mode", prop: "displayMode", kind: "string", feature: "display-mode", state: "change" }
@@ -284,13 +283,13 @@ export const ELEMENT_STARTUP_KEYS: readonly string[] = [
   ...ELEMENT_PROPERTIES.filter(d => d.startup).map(d => d.prop)
 ];
 
-/** 旧 appOption の名前 → 要素のプロパティ名（§9.2）。appOption に新しい名前で書かれていたら旧名へ寄せる。 */
+/** 旧 appOption の名前 → 要素のプロパティ名。appOption に新しい名前で書かれていたら旧名へ寄せる。 */
 export const APP_OPTION_ALIASES: Readonly<Record<string, string>> = {
   appId: "appid",
   tapUiVanish: "tapUIVanish"
 };
 
-/** プロパティ名 → 属性名（§6.2.1。大文字の前で区切り、略語は 1 語として扱う）。 */
+/** プロパティ名 → 属性名（大文字の前で区切り、略語は 1 語として扱う）。 */
 export function propToAttributeName(prop: string): string {
   return prop
     .replace(/([A-Z]+)([A-Z][a-z])/g, "$1-$2")
@@ -298,14 +297,14 @@ export function propToAttributeName(prop: string): string {
     .toLowerCase();
 }
 
-/** 属性名 → プロパティ名（§6.2.1）。 */
+/** 属性名 → プロパティ名。 */
 export function attributeToPropName(attr: string): string {
   return attr.replace(/-([a-z0-9])/g, (_m, c: string) => c.toUpperCase());
 }
 
 /**
  * ライフサイクルの hook の名前（7 つ。LIFECYCLE_PHASES と 1 対 1）。
- * 写しを作るときに名前で引くための表（プロトタイプ上の hook も拾う。Minor 1）。
+ * 写しを作るときに名前で引くための表（プロトタイプ上の hook も拾う）。
  */
 const UI_HOOK_NAMES = [
   "onSettingLoaded",
@@ -319,9 +318,9 @@ const UI_HOOK_NAMES = [
 
 /**
  * 要素の経路の uiHooks に、`context.core` と `context.mapDivDocument` を要素に差し替えた写しを返す
- * （仕様 §3.2。設計 v2 C2-10）。元の hook オブジェクトは書き換えない（旧クラスの経路は `core: MaplatApp` のまま）。
+ * 元の hook オブジェクトは書き換えない（旧クラスの経路は `core: MaplatApp` のまま）。
  * hook は名前の表を回して `hooks[name]` で引く（クラスのインスタンスや `Object.create` で作った
- * オブジェクトのプロトタイプ上の hook も落とさない。Minor 1）。表に無いキーは今までどおり写す。
+ * オブジェクトのプロトタイプ上の hook も落とさない）。表に無いキーは今までどおり写す。
  */
 export function wrapUiHooksForElement<H extends Record<string, any>>(
   hooks: H,
@@ -348,7 +347,7 @@ export function wrapUiHooksForElement<H extends Record<string, any>>(
   return wrapped;
 }
 
-/** 属性の文字列 → 値（§6.2.2）。undefined は「未指定」。不正な値は warn を呼んで未指定にする。 */
+/** 属性の文字列 → 値。undefined は「未指定」。不正な値は warn を呼んで未指定にする。 */
 export function parseAttributeValue(
   def: Pick<AttrDef, "attr" | "kind">,
   raw: string | null,
@@ -382,7 +381,7 @@ export function parseAttributeValue(
   }
 }
 
-/** 値 → 属性の文字列（§6.2.2。null は属性を外す）。 */
+/** 値 → 属性の文字列（null は属性を外す）。 */
 export function formatAttributeValue(def: Pick<AttrDef, "kind">, value: unknown): string | null {
   if (value == null) return null;
   if (def.kind === "boolean") return value ? "" : "false";
@@ -390,7 +389,7 @@ export function formatAttributeValue(def: Pick<AttrDef, "kind">, value: unknown)
   return String(value);
 }
 
-/** 未対応の Pro 固有キーの警告文（U3。実装の名を出さない）。 */
+/** 未対応の Pro 固有キーの警告文（実装の名を出さない）。 */
 export function unsupportedKeyMessage(
   key: { attr?: string; prop: string },
   via: "attribute" | "property",
@@ -402,7 +401,7 @@ export function unsupportedKeyMessage(
 }
 
 // ---------------------------------------------------------------------------
-// 層 B（<maplat-ui>）の名前の表（§4.2・§4.5・§6.4）
+// 層 B（<maplat-ui>）の名前の表
 // ---------------------------------------------------------------------------
 
 /** 層 B が自分で持つ属性（層 A へ流すキーは ELEMENT_ATTRIBUTES）。 */
@@ -415,7 +414,7 @@ export const MAPLAT_UI_ATTRIBUTES: readonly AttrDef[] = [
   { attr: "enable-poi-html-no-scroll", prop: "enablePoiHtmlNoScroll", kind: "boolean" },
   { attr: "presentation-mode", prop: "presentationMode", kind: "boolean" },
   { attr: "state-url", prop: "stateUrl", kind: "boolean", startup: true },
-  // "" と "true" は true（既定のパス）・"false" は false・それ以外は URL（§6.2.2）
+  // "" と "true" は true（既定のパス）・"false" は false・それ以外は URL
   { attr: "pwa-manifest", prop: "pwaManifest", kind: "boolean-or-string", startup: true },
   { attr: "pwa-worker", prop: "pwaWorker", kind: "string", startup: true },
   { attr: "pwa-scope", prop: "pwaScope", kind: "string", startup: true },
@@ -428,7 +427,7 @@ export const MAPLAT_UI_ATTRIBUTES: readonly AttrDef[] = [
 /** 層 B が出すイベント（層 A のイベントは子から泡立って通る）。 */
 export const MAPLAT_UI_EVENTS = ["uiReady"] as const;
 
-/** 層 B の公開メソッド（§4.4）。 */
+/** 層 B の公開メソッド。 */
 export const MAPLAT_UI_METHODS = [
   "translateText",
   "t",
@@ -441,7 +440,7 @@ export const MAPLAT_UI_METHODS = [
 ] as const;
 
 // ---------------------------------------------------------------------------
-// 型（§3.5）
+// 型
 // ---------------------------------------------------------------------------
 
 export type LngLat = { longitude: number; latitude: number };
@@ -449,7 +448,7 @@ export type Localized = string | Record<string, string>;
 
 /** changeViewpoint の detail・viewpoint プロパティ・getViewpoint() の戻り値。 */
 export interface Viewpoint {
-  /** 地図の座標（不透明な値。§1 sysCoord） */
+  /** 地図の座標（不透明な値。sysCoord） */
   x: number;
   y: number;
   longitude: number;
@@ -547,13 +546,13 @@ export interface LifecycleErrorDetail {
   error: unknown;
 }
 
-/** sourceLoaded の detail の要素（§3.8 A2）。 */
+/** sourceLoaded の detail の要素。 */
 export interface SourceLoadedItem {
   mapID: string | null;
   usable: boolean;
 }
 
-/** getMapTileCacheStatsAsync の戻り値（§3.8 A10: total を含める）。 */
+/** getMapTileCacheStatsAsync の戻り値（total を含める）。 */
 export interface TileCacheStats {
   size?: number;
   count?: number;
@@ -650,7 +649,7 @@ export type GpsResultDetail =
   | { error: "gps_off" | "gps_out" | "gps_out_hide" };
 export type GpsErrorDetail = "user_gps_deny" | "gps_miss" | "gps_timeout";
 
-/** イベント名 → detail の型（§3.5）。 */
+/** イベント名 → detail の型。 */
 export interface MaplatAppEventDetailMap {
   "lifecycle:setting-loaded": LifecycleDetail;
   "lifecycle:appdata-ready": LifecycleDetail;
@@ -688,7 +687,7 @@ export type MaplatAppEvent<K extends keyof MaplatAppEventDetailMap> = CustomEven
 export type DisplayMode = "maplat" | "map-warp";
 
 // ---------------------------------------------------------------------------
-// 層 A の公開面（§3）
+// 層 A の公開面
 // ---------------------------------------------------------------------------
 
 /** 層 A の要素の設定のキー（属性と同期するもの・プロパティのみのもの）。 */
@@ -724,7 +723,7 @@ export interface MaplatAppElementSettings {
   iconTemplate: string | undefined;
 }
 
-/** 層 A の状態の読み取り（§3.3）。 */
+/** 層 A の状態の読み取り。 */
 export interface MaplatAppElementState {
   readonly ready: Promise<void>;
   readonly implementation: string;
@@ -739,7 +738,7 @@ export interface MaplatAppElementState {
 
 type AnyFn = (...args: any[]) => any;
 
-/** 旧クラスから引き継ぐ 46 のメソッド（§3.4.1＋#91）。型を揃えたもの以外は実装の戻り値のまま。 */
+/** 旧クラスから引き継ぐ 46 のメソッド（旧クラスの 44 個＋#91 の 2 個）。型を揃えたもの以外は実装の戻り値のまま。 */
 export interface MaplatAppDelegatedMethods {
   handleGPS: (enable: boolean, avoidEventForOff?: boolean) => any;
   getGPSEnabled: () => boolean;
@@ -795,7 +794,7 @@ export interface MaplatAppDelegatedMethods {
   cancelMapTileCacheAsync: (mapID?: string) => Promise<void>;
 }
 
-/** 層 A で新設したメソッド（§3.4.2）。 */
+/** 層 A で新設したメソッド。 */
 export interface MaplatAppOwnMethods {
   getViewpoint(): Viewpoint | null;
   listMaps(): MapListItem[];
@@ -811,7 +810,7 @@ export interface MaplatAppOwnMethods {
   getDefaultPinIcon(selected?: boolean): string;
 }
 
-/** Pro 固有のメソッド（§3.4.3）。supports("display-mode") が真の実装だけが持つ。 */
+/** Pro 固有のメソッド。supports("display-mode") が真の実装だけが持つ。 */
 export interface MaplatAppProMethods {
   setDisplayMode(mode: DisplayMode): Promise<void>;
   getDisplayMode(): DisplayMode | null;
@@ -826,7 +825,7 @@ export interface MaplatAppElement
     MaplatAppOwnMethods {}
 
 // ---------------------------------------------------------------------------
-// 層 B の公開面（§4）
+// 層 B の公開面
 // ---------------------------------------------------------------------------
 
 /**
@@ -870,7 +869,7 @@ export interface MaplatUiElement extends HTMLElement {
 }
 
 // ---------------------------------------------------------------------------
-// 型ガード（適合テストの detail の検査に使う。§8.2 A-イベント）
+// 型ガード（適合テストの detail の検査に使う）
 // ---------------------------------------------------------------------------
 
 const isNum = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);

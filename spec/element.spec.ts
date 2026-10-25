@@ -31,7 +31,7 @@ class FakeCore extends EventTarget {
   getGPSEnabled = vi.fn(() => false);
   redrawMarkers = vi.fn();
   clientPointToLngLat = vi.fn(async () => undefined);
-  // 実装の内部面（設計 v2 段階 2・3。要素はこれらへ委譲する）
+  // 実装の内部面（要素はこれらへ委譲する）
   sourceLoadedDetail = vi.fn((sources: unknown) =>
     (Array.isArray(sources) ? sources : []).map((source: any) => ({
       mapID: source?.mapID ?? null,
@@ -64,7 +64,7 @@ class FakeCore extends EventTarget {
   }
   currentMapInfo() {
     // 本物の MaplatApp と同じく、表示中の地図（from）があればその mapID
-    // （A8: 要素の currentMapId の上書きを消したので、土台はこの口だけを見る）
+    // （要素の currentMapId の上書きを消したので、土台はこの口だけを見る）
     return { mapID: this.from?.mapID ?? this.currentMap };
   }
 }
@@ -111,7 +111,7 @@ describe("<maplat-app> 登録", () => {
     warn.mockRestore();
   });
 
-  it("observedAttributes は §3.2 の属性と中心の目印の 2 つ（U5）と Pro 固有の display-mode（U3: 警告して無視するため観測する）", () => {
+  it("observedAttributes は属性と中心の目印の 2 つと Pro 固有の display-mode（警告して無視するため観測する）", () => {
     expect(MaplatAppElement.observedAttributes).toEqual([
       "app-id", "app-src", "map-id", "transparency", "no-rotate", "north-up", "home-margin-pixels",
       "always-gps-on", "fake", "enable-cache", "restore-session", "overlay", "debug", "icon",
@@ -129,7 +129,7 @@ const INTERNAL_METHODS = [
   "setMarker", "resetMarker", "setLine", "setVector", "resetLine", "resetVector",
   "redrawMarkers", "dispatchPoiNumber",
   "remove",
-  // 設計 v2 で要素が使う内部面（段階 2・3）
+  // 要素が使う内部面（要素はこれらへ委譲する）
   "sourceLoadedDetail", "pixelToMerc", "viewportSize", "updateSize",
   "setCenterMarker", "applyRuntimeOptions"
 ];
@@ -139,7 +139,7 @@ describe("<maplat-app> 公開面の一覧（src/index.ts との突き合わせ�
     const src = readFileSync(resolve(__dirname, "../src/index.ts"), "utf-8");
     const found = new Set<string>();
     for (const m of src.matchAll(/new CustomEvent\(\s*"([^"]+)"/g)) found.add(m[1]);
-    // lifecycle:${phaseId} は LIFECYCLE_PHASES の全値（段階の正本。A18L で 1 か所にした）
+    // lifecycle:${phaseId} は LIFECYCLE_PHASES の全値（段階の正本。1 か所にまとめた）
     for (const phase of LIFECYCLE_PHASES) found.add(`lifecycle:${phase}`);
     // GPS 系は BaseEvent の派生クラスの super("...")
     for (const m of src.matchAll(/extends BaseEvent \{[\s\S]*?super\("([^"]+)"\)/g)) found.add(m[1]);
@@ -203,7 +203,7 @@ describe("<maplat-app> 作成と属性", () => {
     expect(opt.div).toBe(el);
     expect(opt.appid).toBe("morioka");
     expect(opt.setting).toEqual({ sources: [] });
-    // map-id・transparency は restore より強いが、restore には混ぜず上書きの口で渡す（§6.1）
+    // map-id・transparency は restore より強いが、restore には混ぜず上書きの口で渡す
     expect(opt.restore).toEqual({ hideMarker: 1 });
     expect(opt.__restoreOverride).toEqual({ mapID: "morioka_ndl", transparency: 30 });
     expect(opt.__maplatElementMode).toBe(true);
@@ -270,7 +270,7 @@ describe("<maplat-app> 作成と属性", () => {
     expect(core.changeMap).toHaveBeenCalledTimes(1);
   });
 
-  it("起動後の app-id の変更は警告して無視する（作り直さない。U2）", async () => {
+  it("起動後の app-id の変更は警告して無視する（作り直さない）", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const el = document.createElement(env.tag) as MaplatAppElement;
     el.setAttribute("app-id", "a");
@@ -414,7 +414,7 @@ describe("<maplat-app> イベントの出し直しとメソッドの委譲", () 
     expect(seen).toEqual([
       { type: "mapChanged", detail: { mapID: "m1" }, bubbles: true, target: el },
       { type: "gps_request", detail: null, bubbles: true, target: el },
-      // lifecycle の detail から内部の core・mapDivDocument を落とす（§3.5）
+      // lifecycle の detail から内部の core・mapDivDocument を落とす
       { type: "lifecycle:core-ready", detail: { phaseId: "core-ready", appData: null }, bubbles: true, target: el }
     ]);
     // 破棄後は出し直さない
@@ -481,7 +481,7 @@ describe("MaplatApp の div に HTMLElement を渡す", () => {
   });
 });
 
-describe("<maplat-app> 設定のキー（§6）", () => {
+describe("<maplat-app> 設定のキー", () => {
   let env: ReturnType<typeof defineTestElement>;
   beforeEach(() => {
     env = defineTestElement();
@@ -489,7 +489,7 @@ describe("<maplat-app> 設定のキー（§6）", () => {
   const warnings = (warn: { mock: { calls: unknown[][] } }): string[] =>
     warn.mock.calls.map(c => String(c[0]));
 
-  it("属性・プロパティ・appOption を §6.1 の優先順位で MaplatApp の option にまとめる", async () => {
+  it("属性・プロパティ・appOption を優先順位どおり MaplatApp の option にまとめる", async () => {
     const el = document.createElement(env.tag) as MaplatAppElement;
     el.appOption = { appId: "fromOption", noRotate: true, enableCache: true, tapUiVanish: true, debug: true };
     el.setAttribute("no-rotate", "false"); // 属性 ＞ appOption（false も与えられた値）
@@ -519,7 +519,7 @@ describe("<maplat-app> 設定のキー（§6）", () => {
     expect("restoreSession" in opt).toBe(false);
   });
 
-  it("真偽属性は値で解釈する。無い＝未指定、不正な値は警告して未指定（§6.2.2）", () => {
+  it("真偽属性は値で解釈する。無い＝未指定、不正な値は警告して未指定", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const el = document.createElement(env.tag) as MaplatAppElement;
     expect(el.northUp).toBeUndefined();
@@ -564,7 +564,7 @@ describe("<maplat-app> 設定のキー（§6）", () => {
     expect(env.created[0].option.setting).toEqual({ sources: [] });
   });
 
-  it("起動時だけ効くキーは起動後に変更不可: 属性もプロパティも警告して無視、読み取りは起動時の値（U2）", async () => {
+  it("起動時だけ効くキーは起動後に変更不可: 属性もプロパティも警告して無視、読み取りは起動時の値", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const hooks = { onUiReady: () => undefined };
     const el = document.createElement(env.tag) as MaplatAppElement;
@@ -641,7 +641,7 @@ describe("<maplat-app> 設定のキー（§6）", () => {
     el.removeAttribute("home-margin-pixels");
     await tick();
     // appOption の 30 は要素の resolve が渡す。northUp はどこにも無いので undefined を渡し、
-    // 既定（false）を埋めるのは Core（N1。Core に appOption の控えは置かない）
+    // 既定（false）を埋めるのは Core（Core に appOption の控えは置かない）
     expect(core.applyRuntimeOptions).toHaveBeenLastCalledWith({
       northUp: undefined,
       homeMarginPixels: 30
@@ -689,13 +689,13 @@ describe("<maplat-app> 設定のキー（§6）", () => {
   });
 });
 
-describe("<maplat-app> 中心の目印（U5）", () => {
+describe("<maplat-app> 中心の目印", () => {
   let env: ReturnType<typeof defineTestElement>;
   beforeEach(() => {
     env = defineTestElement();
   });
 
-  it("読んだキーを setCenterMarker へ渡す（DOM の効果は実物のテストが持つ。Minor 5）", async () => {
+  it("読んだキーを setCenterMarker へ渡す（DOM の効果は実物のテストが持つ）", async () => {
     const el = document.createElement(env.tag) as MaplatAppElement;
     el.setAttribute("app-id", "a");
     el.setAttribute("no-center-marker", "");
@@ -714,7 +714,7 @@ describe("<maplat-app> 中心の目印（U5）", () => {
   });
 });
 
-describe("<maplat-app> 状態の読み取り・新設メソッド・イベントの変換（§3.3〜§3.6）", () => {
+describe("<maplat-app> 状態の読み取り・新設メソッド・イベントの変換", () => {
   let env: ReturnType<typeof defineTestElement>;
   beforeEach(() => {
     env = defineTestElement();
@@ -732,7 +732,7 @@ describe("<maplat-app> 状態の読み取り・新設メソッド・イベント
     await expect(result).resolves.toBe("main#1");
   });
 
-  it("clientPointToLngLat は変換できないとき null（§3.8 A1）", async () => {
+  it("clientPointToLngLat は変換できないとき null", async () => {
     const el = document.createElement(env.tag) as MaplatAppElement;
     el.setAttribute("app-id", "a");
     document.body.appendChild(el);
@@ -742,7 +742,7 @@ describe("<maplat-app> 状態の読み取り・新設メソッド・イベント
     await expect(el.clientPointToLngLat(1, 2)).resolves.toBeNull();
   });
 
-  it("sourceLoaded の detail は { mapID, usable }[]（§3.8 A2）", async () => {
+  it("sourceLoaded の detail は { mapID, usable }[]", async () => {
     const el = document.createElement(env.tag) as MaplatAppElement;
     el.setAttribute("app-id", "a");
     document.body.appendChild(el);
@@ -758,7 +758,7 @@ describe("<maplat-app> 状態の読み取り・新設メソッド・イベント
       { mapID: "a", usable: true },
       { mapID: "b", usable: false }
     ]);
-    // 判定は実装の内部面（sourceLoadedDetail）が持ち、要素は詰め替えない（A6）
+    // 判定は実装の内部面（sourceLoadedDetail）が持ち、要素は詰め替えない
     expect(core.sourceLoadedDetail).toHaveBeenCalledWith([a, b]);
   });
 

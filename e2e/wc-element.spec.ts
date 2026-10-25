@@ -2,9 +2,9 @@
 //   - タグだけで地図が出る（OL の canvas が要素の中に描かれる）
 //   - 属性 map-id の変更で地図が切り替わる（mapChanged を addEventListener で受ける）
 //   - 要素のメソッド addMarker が効く
-//   - 中心の目印の属性（U5）・起動時キーの変更不可（U2）
-//   - updateState の transparency・地図の切替で透過度を保つ（§3.8 A4）
-//   - 枠線と範囲（setEnvelopes・getMapEnvelope・getViewExtent）・Pro 固有の属性の警告（U3）
+//   - 中心の目印の属性・起動時キーの変更不可
+//   - updateState の transparency・地図の切替で透過度を保つ
+//   - 枠線と範囲（setEnvelopes・getMapEnvelope・getViewExtent）・Pro 固有の属性の警告
 // 実行: node_modules/.bin/playwright test --config=e2e/wc-element.playwright.config.ts（単独・port 5198）
 // CI（pnpm run test:e2e:ci＝playwright-ci.config.ts・port 5175 の dev サーバー）でも拾われる。vite の root はリポジトリ直下なので
 // /demo/element.html と /e2e/wc-conformance.html はどちらの dev サーバーでも同じ経路で出る（baseURL 相対の goto）。
@@ -55,7 +55,7 @@ test('<maplat-app> の確認ページ', async ({ page }) => {
   await page.waitForTimeout(800);
   await page.screenshot({ path: `${SHOTS}/03-add-marker.png` });
 
-  // 4. 中心の目印（U5）: 既定で表示 → no-center-marker で消える
+  // 4. 中心の目印: 既定で表示 → no-center-marker で消える
   const marker = page.locator('maplat-app .maplat-center-marker');
   await expect(marker).toBeVisible();
   await page.getByTestId('toggle-center').click();
@@ -63,7 +63,7 @@ test('<maplat-app> の確認ページ', async ({ page }) => {
   await page.getByTestId('toggle-center').click();
   await expect(marker).toBeVisible();
 
-  // 5. 起動時キー（U2）: app-id の変更は警告して無視（作り直さない）
+  // 5. 起動時キー: app-id の変更は警告して無視（作り直さない）
   const canvasBefore = await page.evaluate(() => document.querySelector('maplat-app canvas'));
   await page.getByTestId('change-app-id').click();
   await expect(page.getByTestId('app-id-read')).toHaveText('morioka');
@@ -74,12 +74,12 @@ test('<maplat-app> の確認ページ', async ({ page }) => {
   expect(canvasBefore).not.toBeUndefined();
   await expect(page.getByTestId('current')).toHaveText('morioka');
 
-  // 6. updateState の detail に transparency が載る（起動時から。§3.8 A4 の是正で undefined にならない）
+  // 6. updateState の detail に transparency が載る（起動時から。是正で undefined にならない）
   const log = page.getByTestId('log');
   await expect(log).toContainText('updateState: mapID=morioka transparency=0');
   expect(await log.textContent()).not.toContain('transparency=undefined');
 
-  // 7. 透過度を地図の切替で保つ（§3.8 A4）
+  // 7. 透過度を地図の切替で保つ
   await page.evaluate(() => {
     const el = document.querySelector('maplat-app') as any;
     el.transparency = 40;
@@ -113,7 +113,7 @@ test('<maplat-app> の確認ページ', async ({ page }) => {
   });
   expect(drawn).toBeGreaterThan(0);
 
-  // 9. Pro 固有の属性（U3）: 警告して無視（1 回だけ・Pro の名を出さない）
+  // 9. Pro 固有の属性: 警告して無視（1 回だけ・Pro の名を出さない）
   await page.getByTestId('display-mode').click();
   await page.getByTestId('display-mode').click();
   await expect(page.getByTestId('display-mode-read')).toHaveText('undefined');

@@ -1,8 +1,8 @@
-// 要素（<maplat-app>）と**実物の** MaplatApp を組み合わせた検査（設計 v2 段階 3）。
-//   A3: 中心の目印の DOM の効果（FakeCore のテストから移す。Minor 5）
-//   A4: 起動後に外したときに appOption の値へ戻る（N1。Core に控えを足さずに成り立つこと）
-//   A9: remove() の後始末（前面・背面の target・MapLibre の地図）
-//   C2-10: uiHooks の context.core / context.mapDivDocument（要素経路は要素・旧クラス経路は MaplatApp）
+// 要素（<maplat-app>）と**実物の** MaplatApp を組み合わせた検査。
+//   中心の目印の DOM の効果（FakeCore のテストから移す）
+//   起動後に外したときに appOption の値へ戻る（Core に控えを足さずに成り立つこと）
+//   remove() の後始末（前面・背面の target・MapLibre の地図）
+//   uiHooks の context.core / context.mapDivDocument（要素経路は要素・旧クラス経路は MaplatApp）
 // 地図の実体（OL）は sources を空にして jsdom で起動する（spec/wc-legacy-startup-feature-keys.spec.ts の boot と同じ作り方）。
 import { describe, it, expect, vi, beforeAll, afterEach } from "vitest";
 import { MaplatApp, assets } from "../src/index";
@@ -49,7 +49,7 @@ async function bootElement(setup: (el: any) => void = () => undefined) {
   return el;
 }
 
-describe("A3: 中心の目印は実物の Core が当てる", () => {
+describe("中心の目印は実物の Core が当てる", () => {
   it("既定で表示・no-center-marker で消え・center-marker-src で差し替え・外すと戻る", async () => {
     const el = await bootElement(e => e.setAttribute("no-center-marker", ""));
     const img = el.querySelector("img.maplat-center-marker") as HTMLImageElement;
@@ -98,22 +98,22 @@ describe("A3: 中心の目印は実物の Core が当てる", () => {
   });
 });
 
-describe("A4: 起動後の反映（Core の applyRuntimeOptions）", () => {
-  it("undefined は既定に戻る（起動時の属性値 true に戻らない。N1 のテスト 1）", async () => {
+describe("起動後の反映（Core の applyRuntimeOptions）", () => {
+  it("undefined は既定に戻る（起動時の属性値 true に戻らない。テスト 1）", async () => {
     const app = await bootApp({ __maplatElementMode: true, northUp: true });
     expect(app.mapObject.northUp).toBe(true);
     app.applyRuntimeOptions({ northUp: undefined });
     expect(app.mapObject.northUp).toBe(false);
   });
 
-  it("undefined は設定ファイルのテンプレート値に戻る（N1 のテスト 2）", async () => {
+  it("undefined は設定ファイルのテンプレート値に戻る（テスト 2）", async () => {
     const app = await bootApp({ __maplatElementMode: true }, { poiTemplate: "<i>file</i>" });
     app.poiTemplate = "<b>prop</b>";
     app.applyRuntimeOptions({ poiTemplate: undefined });
     expect(app.poiTemplate).toBe("<i>file</i>");
   });
 
-  it("homeMarginPixels の undefined は RUNTIME_DEFAULTS の 50（N1 により 30 ではない）", async () => {
+  it("homeMarginPixels の undefined は RUNTIME_DEFAULTS の 50（30 ではない）", async () => {
     const app = await bootApp({ __maplatElementMode: true, homeMarginPixels: 30 });
     expect(app.mapObject.homeMarginPixels).toBe(30);
     app.applyRuntimeOptions({ homeMarginPixels: undefined });
@@ -135,7 +135,7 @@ describe("A4: 起動後の反映（Core の applyRuntimeOptions）", () => {
     expect(app.redrawMarkers).toHaveBeenCalledTimes(1); // icon・テンプレートが来なければ描き直さない
   });
 
-  it("要素で外すと appOption の 30 に戻る（実物。N1 の「要素と実 MaplatApp」）", async () => {
+  it("要素で外すと appOption の 30 に戻る（実物。「要素と実 MaplatApp」）", async () => {
     const el = await bootElement(e => {
       e.appOption = { setting: { sources: [] }, homeMarginPixels: 30 };
     });
@@ -150,7 +150,7 @@ describe("A4: 起動後の反映（Core の applyRuntimeOptions）", () => {
   });
 });
 
-describe("A9: remove() の後始末", () => {
+describe("remove() の後始末", () => {
   it("前面・背面の target を外し、MapLibre の地図も消す", async () => {
     const app = await bootApp({});
     const front = app.mapObject;
@@ -189,13 +189,13 @@ describe("A9: remove() の後始末", () => {
   });
 });
 
-describe("C2-10: uiHooks の context.core は要素（仕様 §3.2）", () => {
+describe("uiHooks の context.core は要素", () => {
   it("要素の uiHooks プロパティ: core も mapDivDocument も要素・元の hook は書き換えない・this は元のオブジェクト", async () => {
     const seen: any[] = [];
     const thisMatches: boolean[] = [];
     const hooks = {
       onUiReady(context: any) {
-        // 写しを渡しても、フックの this は元のオブジェクト（設計 §6.12 の fn.call(hooks, …)）
+        // 写しを渡しても、フックの this は元のオブジェクト（fn.call(hooks, …) で呼ぶため）
         thisMatches.push((this as any) === hooks);
         seen.push(context);
         return "ok";
@@ -214,7 +214,7 @@ describe("C2-10: uiHooks の context.core は要素（仕様 §3.2）", () => {
     expect(hooks.onUiReady).toBe(originalHook); // 写しを渡しても元の関数はそのまま
   });
 
-  it("appOption プロパティの中の uiHooks も包む（Minor 4）", async () => {
+  it("appOption プロパティの中の uiHooks も包む", async () => {
     const seen: any[] = [];
     const hooks = { onUiReady: (context: any) => seen.push(context) };
     const el = await bootElement(e => {
@@ -225,7 +225,7 @@ describe("C2-10: uiHooks の context.core は要素（仕様 §3.2）", () => {
     expect(seen[0].mapDivDocument).toBe(el);
   });
 
-  it("旧クラスの経路は context.core が MaplatApp のまま（C5）", async () => {
+  it("旧クラスの経路は context.core が MaplatApp のまま", async () => {
     const seen: any[] = [];
     const hooks = { onUiReady: (context: any) => seen.push(context) };
     const app = await bootApp({ uiHooks: hooks });
@@ -234,7 +234,7 @@ describe("C2-10: uiHooks の context.core は要素（仕様 §3.2）", () => {
     expect(seen[0].mapDivDocument).toBe(app.mapDivDocument);
   });
 
-  it("クラスのインスタンスの hook（プロトタイプ上のもの）も呼ばれる（Minor 1）", async () => {
+  it("クラスのインスタンスの hook（プロトタイプ上のもの）も呼ばれる", async () => {
     class Hooks {
       seen: any[] = [];
       onUiReady(context: any) {
@@ -310,7 +310,7 @@ describe("互換モード（__maplatCompat。旧クラス互換層のための�
   });
 });
 
-describe("中心の目印は ready 前（Minor 2）", () => {
+describe("中心の目印は ready 前", () => {
   it("no-center-marker は ready が決着する前に img へ当たる", async () => {
     const el = document.createElement("maplat-app") as any;
     el.setAttribute("app-id", "a");
@@ -341,7 +341,7 @@ describe("中心の目印は ready 前（Minor 2）", () => {
   });
 });
 
-describe("互換モードの機能系キーと属性（Minor 3）", () => {
+describe("互換モードの機能系キーと属性", () => {
   it("設定ファイルの northUp: true を属性 north-up=\"false\" で打ち消し、Core の実値と getter が一致する", async () => {
     vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const el = document.createElement("maplat-app") as any;
@@ -367,7 +367,7 @@ describe("互換モードの機能系キーと属性（Minor 3）", () => {
     expect(el.northUp).toBe(false);
   });
 
-  it("互換モードの実値の読み口は northUp・homeMarginPixels・noRotate だけ（tapDuration・tapUIVanish は <maplat-ui> のキー。Minor 1）", async () => {
+  it("互換モードの実値の読み口は northUp・homeMarginPixels・noRotate だけ（tapDuration・tapUIVanish は <maplat-ui> のキー）", async () => {
     vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const el = await bootElement(e => {
       e.appOption = { setting: { sources: [] }, __maplatCompat: true };

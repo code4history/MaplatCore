@@ -1,8 +1,8 @@
-// 旧クラス MaplatApp の公開面（C5: 壊さない）の機械検査。
+// 旧クラス MaplatApp の公開面（壊さない）の機械検査。
 // 期待値は段階 0（HEAD 54f5721）で `Object.getOwnPropertyNames(MaplatApp.prototype)` を
-// 出力した一覧に、設計 v2 で足す @internal のメソッドを段階ごとに足したもの。
+// 出力した一覧に、要素のために足した @internal のメソッドを足したもの。
 // モジュールの export は段階 0 の一覧に mercToLngLat・defaultPinIcon の 2 個を足したもの
-// （設計 v2 n3。実装後の状態を写すと自己参照になるので、段階 0 の実測を基準にする）。
+// （実装後の状態を写すと自己参照になるので、着手前の実測を基準にする）。
 import { describe, it, expect } from "vitest";
 import * as core from "../src/index";
 import { MaplatApp } from "../src/index";
@@ -39,16 +39,16 @@ const EXPORTS_AT_HEAD = [
   "createElement", "escapeAttr", "mapSourceFactory", "sanitizeHtml", "toPlainText"
 ].sort();
 
-/** 設計 v2 で `src/index.ts` に足すモジュール関数（§9.2）。 */
+/** `src/index.ts` に足したモジュール関数。 */
 const ADDED_EXPORTS = ["defaultPinIcon", "mercToLngLat"];
 
-/** 段階 2 で足す `@internal` メソッド（§9.1。Minor 1 により viewExtentMercsAsync ではなく viewportSize）。 */
+/** 段階 2 で足す `@internal` メソッド（viewExtentMercsAsync ではなく viewportSize）。 */
 const ADDED_METHODS_PHASE2 = ["sourceLoadedDetail", "pixelToMerc", "viewportSize", "updateSize"];
 
-/** 段階 3 で足す `@internal` メソッド（§9.1）。 */
+/** 段階 3 で足す `@internal` メソッド。 */
 const ADDED_METHODS_PHASE3 = ["setCenterMarker", "applyRuntimeOptions"];
 
-describe("MaplatApp の公開面（C5）", () => {
+describe("MaplatApp の公開面", () => {
   it("prototype の一覧は段階 0 ＋ @internal 6 個と完全一致する", () => {
     const expected = [
       ...PROTOTYPE_AT_HEAD,

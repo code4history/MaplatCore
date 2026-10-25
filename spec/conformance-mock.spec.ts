@@ -1,5 +1,5 @@
 // 模擬の層 A（src/conformance/mock-layer-a.ts）に、層 A の適合テスト群（src/conformance/layer-a.ts）を流す。
-// 模擬が層 A の公開面を満たすことと、群が公開面だけで書けていることの確認（仕様 §8・U7）。
+// 模擬が層 A の公開面を満たすことと、群が公開面だけで書けていることの確認。
 // 実物の Core の要素には実ブラウザで同じ群を流す（e2e/wc-conformance.spec.ts）。
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
@@ -27,7 +27,7 @@ const SETTING = {
         [141.1, 39.75]
       ],
       meta: { title: "古地図", license: "CC BY" },
-      // タイルキャッシュを持つ地図（§3.8 A10 の total の検査を、模擬の固定データでも通す）
+      // タイルキャッシュを持つ地図（total の検査を、模擬の固定データでも通す）
       cacheEnable: true,
       tileCacheTotal: 48
     },
@@ -98,7 +98,7 @@ describe("模擬の層 A: 公開面以外を持たない", () => {
     el.addEventListener("modechange", () => (attrAtEvent = el.getAttribute("display-mode")), { once: true });
     await el.setDisplayMode("maplat");
     expect(el.getDisplayMode()).toBe("maplat");
-    // 内部の操作で変わった表示モードは display-mode へ書き戻す（§6.2.3）。modechange のリスナから新しい値が読める
+    // 内部の操作で変わった表示モードは display-mode へ書き戻す。modechange のリスナから新しい値が読める
     expect(el.getAttribute("display-mode")).toBe("maplat");
     expect(el.displayMode).toBe("maplat");
     expect(attrAtEvent).toBe("maplat");
@@ -211,10 +211,10 @@ describe("模擬の層 A: 線・面の登録簿（nov26-m4-t5・#91）", () => {
   });
 });
 
-// CORE-MOCK-FIX-1023: 模擬を本物の Core に揃えた 2 件（タイルキャッシュの統計の total・
+// 模擬を本物の Core に揃えた 2 件（タイルキャッシュの統計の total・
 // restoreSession の hideMarker）の中身を、模擬の設定を直接与えて確かめる。適合テスト群は
 // 公開面だけを使うので値までは見られない（total が数であること・initialRestore に載ることだけを見る）。
-describe("模擬の層 A: タイルキャッシュの統計の total（§3.8 A10・CORE-MOCK-FIX-1023）", () => {
+describe("模擬の層 A: タイルキャッシュの統計の total", () => {
   it("設定の tileCacheTotal を total として返し、総数が分からない地図は total を載せず、キャッシュを持たない地図は {}", async () => {
     defineMockMaplatApp("maplat-app");
     const el = document.createElement("maplat-app") as any;
@@ -237,7 +237,7 @@ describe("模擬の層 A: タイルキャッシュの統計の total（§3.8 A10
   });
 });
 
-describe("模擬の層 A: restoreSession の読み取り（CORE-MOCK-FIX-1023）", () => {
+describe("模擬の層 A: restoreSession の読み取り", () => {
   const KEYS = ["epoch", "mapID", "sourceID", "x", "y", "zoom", "rotation", "transparency", "hideMarker", "hideLayer", "backgroundID", "backID"];
   let saved: Array<[string, string | null]> = [];
   beforeEach(() => {
@@ -298,7 +298,7 @@ describe("模擬の層 A: restoreSession の読み取り（CORE-MOCK-FIX-1023）
 });
 
 describe("適合テスト群の形", () => {
-  it("群の名前は仕様 §8.2 の群で、名前は重ならない", () => {
+  it("群の名前は決められた一覧のとおりで、名前は重ならない", () => {
     const cases = createLayerAConformanceCases({
       implementation: "core",
       register: () => undefined,
@@ -308,7 +308,7 @@ describe("適合テスト群の形", () => {
       new Set(["A-形", "A-同期", "A-優先", "A-起動後", "A-メソッド", "A-互換", "A-ベクター", "A-イベント", "A-機能", "A-破棄"])
     );
     expect(new Set(cases.map(c => c.name)).size).toBe(cases.length);
-    // 件数の下限（nov26-m4-t5・#91 の A-ベクター 6 件・CORE-MOCK-FIX-1023 の 2 件を含む）。
+    // 件数の下限（nov26-m4-t5・#91 の A-ベクター 6 件と、模擬の修正 2 件を含む）。
     // layout の 2 件を足すと e2e の下限 53
     expect(cases.length).toBeGreaterThanOrEqual(51);
     // 実ブラウザ（layout）でだけ足す群がある
