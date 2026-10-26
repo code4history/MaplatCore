@@ -5,6 +5,14 @@ import { Size } from 'ol/size';
 import { default as __DTS_DEFAULT_0__ } from '@c4h/weiwudi';
 import { MaplatMap } from '..';
 import { Feature, Polygon } from 'geojson';
+/**
+ * maptype と layers から Google Maps Tile API の { mapType, layerTypes } を導出する純粋関数。
+ * 単体テストの対象として export する（constructor 内インラインでは ol/source/Google が
+ * createSession_() → fetch を発火するためテスト不能）。
+ *
+ * mapType は正規表現派生にしない。google_hybrid を RegExp.$1 で切ると "hybrid" になり、
+ * Tile API が知らない値になる（マイルストーン設計 §1.2 / §2.1、m6-t4 §4.7）。
+ */
 export declare function deriveGoogleTileOptions(maptype: string | undefined, layers: string[] | undefined): {
     mapType: string;
     layerTypes: string[];

@@ -6,6 +6,12 @@
 > For the conceptual guide see the
 > [Wiki API-Reference](https://github.com/code4history/MaplatCore/wiki/API-Reference).
 
+> **Deprecated.** The `MaplatApp` class is deprecated and closes in the next major
+> version (2.0). New code should use the `<maplat-app>` element instead; see
+> [`maplat-app.md`](maplat-app.md) for its signatures and the migration table
+> from the class. This document describes the 1.x class, which keeps working
+> until 2.0.
+
 All methods below are on the `MaplatApp` instance returned by
 `MaplatApp.createObject(option)`.
 

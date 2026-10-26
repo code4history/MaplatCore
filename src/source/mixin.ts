@@ -27,6 +27,7 @@ import {
 } from "@turf/turf";
 import type { Feature, Polygon, GeoJsonProperties } from "geojson";
 import { View as mlView } from "../view_ex";
+import { META_KEYS, META_KEYS_OPTION } from "../meta_keys";
 
 //type SourceConstructor<T> = new (...args: any[]) => T;
 type SourceConstructor<T = object> = new (...args: any[]) => T;
@@ -190,7 +191,14 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
     async getTileCacheStatsAsync() {
       if (!this.weiwudi) return {};
       try {
-        return await this.weiwudi.stats();
+        const stats = await this.weiwudi.stats();
+        // 全タイル数 total を含める。Weiwudi の stats は登録時に total が分かった
+        // ときだけ載せるので、無ければ Weiwudi のインスタンスの totalTile（旧 UI が直接読んでいた値）で補う
+        const totalTile = (this.weiwudi as any).totalTile;
+        if (stats && typeof stats === "object" && stats.total == null && typeof totalTile === "number") {
+          return { ...stats, total: totalTile };
+        }
+        return stats;
       } catch (_e) {
         return {};
       }
@@ -819,41 +827,10 @@ export function setCustomFunctionMaplat<TBase extends SourceConstructor>(Base: T
   return Mixin;
 }
 
-export const META_KEYS = [
-  "title",
-  "officialTitle",
-  "author",
-  "createdAt",
-  "era",
-  "contributor",
-  "mapper",
-  "license",
-  "dataLicense",
-  // m6-t2: ライセンスの自由記述欄。META_KEYS_OPTION と lockstep (同じ index) で足す。
-  "licenseNote",
-  "dataLicenseNote",
-  "attr",
-  "dataAttr",
-  "reference",
-  "description"
-];
-export const META_KEYS_OPTION = [
-  "title",
-  "official_title",
-  "author",
-  "created_at",
-  "era",
-  "contributor",
-  "mapper",
-  "license",
-  "data_license",
-  "license_note",
-  "data_license_note",
-  "attr",
-  "data_attr",
-  "reference",
-  "description"
-];
+
+// META_KEYS / META_KEYS_OPTION の正本は src/meta_keys.ts（@maplat/core/common の分割で移した）。
+// 従来の import 元（"./source/mixin"）を壊さないよう、ここから再 export する。
+export { META_KEYS, META_KEYS_OPTION };
 
 // m6-t6 hotfix → m6-t9 (§3.1 AC2): provider（google/mapbox/maplibre）は Maplat 同梱タイルの
 // テンプレート url を持たない。自動補完はもちろん、data.url に手動値が残っていた場合でも

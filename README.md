@@ -36,7 +36,7 @@ MaplatCore is open-source under the Apache License 2.0 (from version 0.13.2).
 ## Quick Start
 
 <!-- release-pinned:start -->
-> **Current release: `1.1.0`**. This block is the only place in
+> **Current release: `1.2.0-rc.1`**. This block is the only place in
 > this repository that carries a release version (ADR-0012); everything outside it is
 > written against the 1.0 release.
 > npm: [`@maplat/core`](https://www.npmjs.com/package/@maplat/core)
@@ -67,6 +67,32 @@ MaplatApp.createObject(option).then((app) => {
 });
 ```
 
+### Custom Element `<maplat-app>`
+
+The same map is also available as a Custom Element. Import
+`@maplat/core/element` once (it registers the tag) and write the tag; the
+element is the map container, and the `MaplatApp` methods and events are on the
+element.
+
+```typescript
+import 'ol/ol.css';
+import '@maplat/core/element';
+```
+
+```html
+<maplat-app app-id="morioka"></maplat-app>
+<script type="module">
+  const el = document.querySelector('maplat-app');
+  await el.ready;
+  el.addEventListener('mapChanged', (e) => console.log(e.detail.mapID));
+</script>
+```
+
+See [`docs/api/maplat-app.md`](docs/api/maplat-app.md) for the attributes,
+properties, methods and events, the shared base `@maplat/core/common` and the
+conformance tests `@maplat/core/conformance`. The `MaplatApp` class stays
+available in 1.x and closes in the next major version (2.0).
+
 ### CDN (jsDelivr)
 
 For usage directly in the browser without a bundler, you must load OpenLayers
@@ -78,7 +104,7 @@ before loading MaplatCore.
 <script src="https://cdn.jsdelivr.net/npm/ol@10/dist/ol.js"></script>
 
 <!-- MaplatCore -->
-<script src="https://cdn.jsdelivr.net/npm/@maplat/core@1.1.0/dist/maplat_core.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@maplat/core@1.2.0-rc.1/dist/maplat_core.umd.js"></script>
 
 <div id="map_div"></div>
 <script>

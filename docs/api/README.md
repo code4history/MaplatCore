@@ -16,6 +16,12 @@ here for the canonical list.
 
 - [`maplat-core.md`](maplat-core.md) — `MaplatApp` class signatures
   (map state, coordinates, markers, lines/vectors, POI layers, GPS, events)
+- [`maplat-app.md`](maplat-app.md) — `<maplat-app>` Custom Element
+  (`@maplat/core/element`: attributes and properties, state, delegated and
+  element-specific methods, events, `uiHooks`), the shared base
+  `@maplat/core/common` and the conformance tests `@maplat/core/conformance`,
+  and the relationship to the `MaplatApp` class (which closes in the next
+  major version (2.0))
 
 ## Relationship to README
 

@@ -1,5 +1,51 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { META_KEYS } from "./source/mixin";
+// META_KEYS は依存の無い src/meta_keys.ts から読む（source/mixin.ts 経由だと OpenLayers を引き込む。
+// このファイルは @maplat/core/common から読まれる）。
+import { META_KEYS } from "./meta_keys";
+
+/**
+ * 同じキーでは 1 回だけ警告する関数を作る（「キーごとに 1 回」）。
+ * 旧クラスの起動時キーのロック・設定ファイルの機能系キーの警告と、要素の warnOnce が共有する
+ * （警告の文面と経路は各呼び出し側が持つ）。
+ */
+export function createOnceWarner(): (key: string, message: string) => void {
+  const warned = new Set<string>();
+  return (key, message) => {
+    if (warned.has(key)) return;
+    warned.add(key);
+    console.warn(message);
+  };
+}
+
+// 旧クラス MaplatApp の非推奨の告知（実行時に 1 回だけ警告する）。
+// 粒度は「同一プロセスで 1 回」なので、createOnceWarner（呼び出し側ごとに 1 回）ではなく、
+// このモジュールの水準で覚える。要素（<maplat-app>）の経路は内部で MaplatApp を作るため、
+// 警告するかどうかは src/index.ts のコンストラクタが option の内部キー "__maplatElementMode" の
+// 有無で見分ける（ここでは経路を見分けない。文言だけを持つ）。
+let maplatAppDeprecationWarned = false;
+
+const MAPLAT_APP_DEPRECATION_MESSAGE =
+  "MaplatApp: the MaplatApp class is deprecated and will be removed in 2.0. " +
+  "Use the <maplat-app> element (@maplat/core/element) instead.";
+
+/**
+ * 旧クラス MaplatApp の非推奨を、同一プロセスで 1 回だけ警告する。
+ * 呼ぶのは旧クラスのコンストラクタだけ（要素の経路は呼ばない。src/index.ts を参照）。
+ */
+export function warnMaplatAppDeprecated(): void {
+  if (maplatAppDeprecationWarned) return;
+  maplatAppDeprecationWarned = true;
+  console.warn(MAPLAT_APP_DEPRECATION_MESSAGE);
+}
+
+/**
+ * 「1 回だけ」の記憶を戻す（テストの間の初期化用）。
+ * warnMaplatAppDeprecated の付属品で、公開面ではない（@maplat/core の入口からは出さない）。
+ * @internal
+ */
+export function resetMaplatAppDeprecationWarning(): void {
+  maplatAppDeprecationWarned = false;
+}
 
 export function createElement(domStr: string) {
   const context = document;

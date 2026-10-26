@@ -36,7 +36,7 @@ MaplatCore は Apache License 2.0（バージョン 0.13.2 以降）のオープ
 ## クイックスタート
 
 <!-- release-pinned:start -->
-> **現在のリリース: `1.1.0`**。このブロックは本リポジトリで唯一
+> **現在のリリース: `1.2.0-rc.1`**。このブロックは本リポジトリで唯一
 > リリース版数を持つ場所です（ADR-0012）。ブロックの外はすべて 1.0 正式版を前提に
 > 書かれています。
 > npm: [`@maplat/core`](https://www.npmjs.com/package/@maplat/core)
@@ -67,6 +67,30 @@ MaplatApp.createObject(option).then((app) => {
 });
 ```
 
+### Custom Element `<maplat-app>`
+
+同じ地図を Custom Element としても使えます。`@maplat/core/element` を一度 import
+（タグを登録します）してタグを書けば、要素そのものが地図の入れ物になり、`MaplatApp` の
+メソッドとイベントは要素の上にあります。
+
+```typescript
+import 'ol/ol.css';
+import '@maplat/core/element';
+```
+
+```html
+<maplat-app app-id="morioka"></maplat-app>
+<script type="module">
+  const el = document.querySelector('maplat-app');
+  await el.ready;
+  el.addEventListener('mapChanged', (e) => console.log(e.detail.mapID));
+</script>
+```
+
+属性・プロパティ・メソッド・イベント、共通の土台 `@maplat/core/common`、適合テスト
+`@maplat/core/conformance` は [`docs/api/maplat-app.ja.md`](docs/api/maplat-app.ja.md)
+を参照してください。`MaplatApp` クラスは 1.x の間そのまま使え、次のメジャー版（2.0）で閉じます。
+
 ### CDN（jsDelivr）
 
 ブラウザでバンドラーを使わずに直接利用する場合は、MaplatCore より先に
@@ -78,7 +102,7 @@ OpenLayers を読み込む必要があります。
 <script src="https://cdn.jsdelivr.net/npm/ol@10/dist/ol.js"></script>
 
 <!-- MaplatCore -->
-<script src="https://cdn.jsdelivr.net/npm/@maplat/core@1.1.0/dist/maplat_core.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@maplat/core@1.2.0-rc.1/dist/maplat_core.umd.js"></script>
 
 <div id="map_div"></div>
 <script>

@@ -5,6 +5,11 @@
 > 記載しています。
 > 概念解説は [Wiki API-Reference](https://github.com/code4history/MaplatCore/wiki/API-Reference) を参照してください。
 
+> **非推奨。** `MaplatApp` クラスは非推奨で、次のメジャー版（2.0）で閉じます。
+> 新しいコードは `<maplat-app>` 要素を使ってください。シグネチャとクラスからの
+> 移行の対応表は [`maplat-app.ja.md`](maplat-app.ja.md) にあります。この文書は
+> 1.x のクラス（2.0 までは従来どおり使えます）を記すものです。
+
 以下のメソッドはすべて `MaplatApp.createObject(option)` が返す
 `MaplatApp` インスタンス上で呼び出します。
 
