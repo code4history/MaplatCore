@@ -2,7 +2,7 @@ import Quyuan from "@c4h/quyuan/template";
 import { normalizeArg } from "./functions";
 
 // poiTemplate・iconTemplate は Nunjucks の記法（Quyuan の @c4h/quyuan/template）で評価する。
-// lodash.template の記法（<% %>・<%= %>・<%- %>・${ }）は 1.3.0 から評価しない（#93）。
+// 1.2 までの旧い記法（<% %>・<%= %>・<%- %>・${ }）は 1.3.0 から評価しない（#93）。
 // Nunjucks はサンドボックスではない: テンプレートの文字列そのものを第三者が書ける構成では、
 // 引き続きページの権限でコードが動きうる（CHANGELOG の Security を参照）。
 
@@ -30,7 +30,7 @@ function head(src: string): string {
 }
 
 /**
- * lodash.template の記法で書かれたテンプレートかどうか。
+ * 1.2 までの旧い記法（<% %>・${ }）で書かれたテンプレートかどうか。
  * raw・verbatim の中を除いた文字列に <%…%> または ${…} があれば旧い記法とみなす。
  * @internal
  */
