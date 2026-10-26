@@ -125,6 +125,13 @@ describe("警告はページで 1 回（鍵ごと）", () => {
     const message = String(warn.mock.calls[0][0]);
     expect(message).toMatch(/^MaplatApp: a poiTemplate\/iconTemplate failed to render and was ignored: [^\n]+\. First template: "\{% if %\}"\.$/);
   });
+
+  it("Nunjucks の複数行の例外は 1 行にまとめて理由まで入れる", () => {
+    createHtmlFromTemplate({}, { poiTemplate: "<b>{{ name }</b>" });
+    const message = String(warn.mock.calls[0][0]);
+    expect(message).not.toContain("\n");
+    expect(message).toMatch(/\[Line 1, Column \d+\] expected variable end\. First template:/);
+  });
 });
 
 describe("評価できないテンプレートは無いものとみなして次の段へ", () => {

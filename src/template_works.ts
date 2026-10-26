@@ -59,8 +59,13 @@ function warnRenderError(src: string, e: unknown): void {
   if (renderErrorWarned) return;
   renderErrorWarned = true;
   const raw = e instanceof Error ? e.message : String(e);
-  const firstLine = raw.split("\n")[0];
-  console.warn(`MaplatApp: a poiTemplate/iconTemplate failed to render and was ignored: ${firstLine}. First template: "${head(src)}".`);
+  // Nunjucks の例外は「(unknown path) [Line 1, Column 6]」と理由が別の行に分かれるので、1 行にまとめる
+  const reason = raw
+    .split("\n")
+    .map(line => line.trim())
+    .filter(line => line)
+    .join(" ");
+  console.warn(`MaplatApp: a poiTemplate/iconTemplate failed to render and was ignored: ${reason}. First template: "${head(src)}".`);
 }
 
 /**
