@@ -323,6 +323,58 @@ MaplatCore-Pro also fires `modechange` and `viewchange`; MaplatCore does not.
 (`this` inside a hook is still your object), so the same object can be given to
 the class path, where `context.core` stays a `MaplatApp`.
 
+## POI template syntax
+
+`poiTemplate` and `iconTemplate` (given to `<maplat-app>`, to `MaplatApp`, in the
+setting file, or on a POI layer) are evaluated with [Nunjucks](https://mozilla.github.io/nunjucks/templating.html)
+through Quyuan's `@c4h/quyuan/template` since **@maplat/core 1.3.0**. Until 1.2 they were
+evaluated with lodash.template; that syntax is **no longer evaluated** (see
+"Detection of the old syntax" below). The POI's properties are the template variables.
+
+| lodash.template (up to 1.2) | Nunjucks (from 1.3) | Notes |
+|---|---|---|
+| `<%= name %>` (not escaped) | `{{ name \| safe }}` | `{{ name }}` HTML-escapes in 1.3. Use `\| safe` only when you want to output HTML (`sanitizeHtml` on the UI side still applies) |
+| `<%- name %>` (HTML-escaped) | `{{ name }}` | |
+| `${name}` (ES interpolation; lodash evaluated this by default too) | `{{ name }}` | |
+| `<% if (a) { %>…<% } else { %>…<% } %>` | `{% if a %}…{% else %}…{% endif %}` | |
+| `<% list.forEach(x => { %>…<%= x %>…<% }) %>` | `{% for x in list %}…{{ x }}…{% endfor %}` | |
+| `!a` / `a && b` / `a \|\| b` | `not a` / `a and b` / `a or b` | |
+| `typeof a === "string"` | `a is string` | `is number` and `is defined` also work |
+| `name.ja` | `name.ja` (same) | A missing key is an empty string |
+| `<% var x = …; %>` | `{% set x = … %}` | |
+| `"icon": "<%= url %>"` in `iconTemplate` | `"icon": {{ url \| dump \| safe }}` | **`iconTemplate` produces JSON, so use `dump` + `safe`.** `"{{ url }}"` breaks URLs that contain `&`, `"` or `<` |
+| Arbitrary JavaScript | Write it with filters (`dump`, `lower`, `replace`, …) | JavaScript cannot be written |
+| Outputting `<%`, `%>` or `${`…`}` literally | Wrap it in `{% raw %}…{% endraw %}` | Otherwise it hits the detection below and is not evaluated |
+| (new) A slider in the POI info window | `<qy-swiper><qy-swiper-slide image-url="{{ … }}" image-type="image" caption="{{ … }}"></qy-swiper-slide></qy-swiper>` | From 1.3. Only the attributes allowed by `sanitizeHtml` remain |
+
+### Detection of the old syntax
+
+Each template string is checked before it is evaluated:
+
+```text
+S   = the template with the contents of {% raw %}…{% endraw %} and {% verbatim %}…{% endverbatim %} removed
+old = S matches /<%[\s\S]*?%>/  (<% %>, <%= %>, <%- %>)
+   or S matches /\$\{[^}]*\}/   (${ })
+```
+
+- A template in the old syntax is **not evaluated** (neither by Nunjucks nor by lodash).
+  It is treated as if it were absent: a `poiTemplate` moves on to the next level (the
+  layer, the map, the app; that level's `poiStyle` is not used either), and an
+  `iconTemplate` falls back to the `icon` of the same level, or to the next level.
+- The page gets **one** `console.warn` that names the first such template (its first 80 characters).
+- A template that fails to render (a syntax error, or an `iconTemplate` whose output is
+  not a JSON object) is treated the same way, with a separate single `console.warn`.
+  Rendering of the map does not stop.
+- To output `<%` or `${` literally, wrap the part in `{% raw %}…{% endraw %}`
+  (for example `{% raw %}<p>${price}</p>{% endraw %}`).
+- One case is not detected: an old template that contained no lodash syntax but wrote
+  `{{ }}` or `{% %}` as literal text is now evaluated by Nunjucks.
+
+**Nunjucks is not a sandbox.** Values (a POI's name, description and so on) cannot
+inject code through `{{ }}`, but a template string written by an untrusted party can
+still run code with the page's privileges. Do not use templates from untrusted POI or
+map data.
+
 ## `@maplat/core/common` — the shared base for other implementations
 
 `@maplat/core/common` (`dist/maplat_core_common.js`) holds everything that
