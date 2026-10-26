@@ -119,7 +119,7 @@ describe("警告はページで 1 回（鍵ごと）", () => {
     expect(message).not.toContain("Y");
   });
 
-  it("評価の例外の警告はメッセージの 1 行目だけを含む", () => {
+  it("評価の例外の警告は改行を含まない 1 行の文面になる", () => {
     createHtmlFromTemplate({}, { poiTemplate: "{% if %}" });
     expect(warn).toHaveBeenCalledTimes(1);
     const message = String(warn.mock.calls[0][0]);

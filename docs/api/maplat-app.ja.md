@@ -307,7 +307,7 @@ MaplatCore-Pro は `modechange`・`viewchange` も出しますが、MaplatCore �
 | `name.ja` | `name.ja`（同じ） | 無いキーは空文字 |
 | `<% var x = …; %>` | `{% set x = … %}` | |
 | `iconTemplate` の `"icon": "<%= url %>"` | `"icon": {{ url \| dump \| safe }}` | **`iconTemplate` は JSON を作る ∴ `dump`＋`safe` を勧める**。`"{{ url }}"` は `&`・`"`・`<` を含む URL を壊す |
-| 任意の JS | フィルタ（`dump`・`lower`・`replace` など）で書く | JS は書けない |
+| 任意の JS | フィルタ（`dump`・`lower`・`replace` など）で書く | JS は記法に無い。ただし Nunjucks はサンドボックスではなく抜け道がある ∴ 信頼できないテンプレートを評価しない（下の注意） |
 | `<%`・`%>`・`${`…`}` を文字として出したい | `{% raw %}…{% endraw %}` で囲む | 囲まないと下の検出に当たり評価されない |
 | （新規）POI の情報窓でスライダー | `<qy-swiper><qy-swiper-slide image-url="{{ … }}" image-type="image" caption="{{ … }}"></qy-swiper-slide></qy-swiper>` | 1.3 から。`sanitizeHtml` が許す属性だけ残る |
 

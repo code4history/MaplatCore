@@ -664,6 +664,8 @@ async function main(): Promise<void> {
       resetTemplateWarnings();
       templateWarnings.replaceChildren();
       templateCurrent.textContent = `今のテンプレート（${preset.label}）: ${preset.template}`;
+      // 先にテンプレートを替える（層・POI の追加で起きる描き直しが、前のプリセットで評価して警告を出さないように）
+      app.poiTemplate = preset.template;
       if (preset.id === "safe" && !app.getPoiLayer(TEMPLATE_LAYER)) {
         // 名前に <b> を含む POI（{{ name }} では文字のまま、{{ name | safe }} では太字になる）
         app.addPoiLayer(TEMPLATE_LAYER, { name: "記法の例" });
@@ -671,7 +673,6 @@ async function main(): Promise<void> {
         app.addMarker({ name: "<b>太字</b>の名前", desc: "名前に <b> を含む POI", lnglat: [lng, lat + 0.002] }, TEMPLATE_LAYER);
       }
       detailBox.textContent = "";
-      app.poiTemplate = preset.template;
       app.redrawMarkers();
       if (!templateWarnings.childElementCount) templateWarnings.textContent = "テンプレートの警告: なし";
     };

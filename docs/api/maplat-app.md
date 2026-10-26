@@ -343,7 +343,7 @@ evaluated with lodash.template; that syntax is **no longer evaluated** (see
 | `name.ja` | `name.ja` (same) | A missing key is an empty string |
 | `<% var x = …; %>` | `{% set x = … %}` | |
 | `"icon": "<%= url %>"` in `iconTemplate` | `"icon": {{ url \| dump \| safe }}` | **`iconTemplate` produces JSON, so use `dump` + `safe`.** `"{{ url }}"` breaks URLs that contain `&`, `"` or `<` |
-| Arbitrary JavaScript | Write it with filters (`dump`, `lower`, `replace`, …) | JavaScript cannot be written |
+| Arbitrary JavaScript | Write it with filters (`dump`, `lower`, `replace`, …) | JavaScript is not part of the syntax. Nunjucks is not a sandbox, though: there are ways around this, so do not evaluate untrusted templates (see the note below) |
 | Outputting `<%`, `%>` or `${`…`}` literally | Wrap it in `{% raw %}…{% endraw %}` | Otherwise it hits the detection below and is not evaluated |
 | (new) A slider in the POI info window | `<qy-swiper><qy-swiper-slide image-url="{{ … }}" image-type="image" caption="{{ … }}"></qy-swiper-slide></qy-swiper>` | From 1.3. Only the attributes allowed by `sanitizeHtml` remain |
 
