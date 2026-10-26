@@ -1,0 +1,71 @@
+{
+  "title": "Legacy (lodash.template) syntax is not evaluated",
+  "cases": [
+    {
+      "title": "Basic test written in the lodash.template syntax",
+      "data": {
+        "a": "b",
+        "b": "c"
+      },
+      "ancestors": [
+        {
+          "poiTemplate": "<div class=\"<%= b %>\"><%= a %></div>",
+          "poiStyle": "abc"
+        },
+        {
+          "iconTemplate": "{\n  \"icon\": \"<%= a %>\",\n  \"selectedIcon\": \"<%= b %>\"\n}"
+        },
+        {
+          "icon": "d",
+          "selectedIcon": "e",
+          "poiTemplate": "<p></p>",
+          "poiStyle": "def"
+        }
+      ],
+      "expectIcon": {
+        "a": "b",
+        "b": "c",
+        "icon": "d",
+        "selectedIcon": "e"
+      },
+      "expectPoi": {
+        "a": "b",
+        "b": "c",
+        "html": "<p></p>",
+        "poiStyle": "def"
+      }
+    },
+    {
+      "title": "Logic test written in the lodash.template syntax",
+      "data": {
+        "boolean": true
+      },
+      "ancestors": [
+        {
+          "iconTemplate": "{\n  \"icon\": \"<% if (boolean) { %>true<% } else { %>false<% } %>\",\n  \"selectedIcon\": \"<% [0,1,2].map((x)=>{ %><%= x %><% }) %>\"\n}",
+          "icon": "f",
+          "selectedIcon": "g",
+          "poiStyle": "abc"
+        },
+        {
+          "icon": "d",
+          "selectedIcon": "e",
+          "poiTemplate": "<%= !boolean %>",
+          "poiStyle": "def"
+        },
+        {
+          "poiTemplate": "<%= boolean %>",
+          "poiStyle": "ghi"
+        }
+      ],
+      "expectIcon": {
+        "boolean": true,
+        "icon": "f",
+        "selectedIcon": "g"
+      },
+      "expectPoi": {
+        "boolean": true
+      }
+    }
+  ]
+}

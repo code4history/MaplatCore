@@ -6,11 +6,11 @@
   },
   "ancestors": [
     {
-      "poiTemplate": "<div class=\"<%= b %>\"><%= a %></div>",
+      "poiTemplate": "<div class=\"{{ b }}\">{{ a }}</div>",
       "poiStyle": "abc"
     },
     {
-      "iconTemplate": "{\n  \"icon\": \"<%= a %>\",\n  \"selectedIcon\": \"<%= b %>\"\n}"
+      "iconTemplate": "{\n  \"icon\": {{ a | dump | safe }},\n  \"selectedIcon\": {{ b | dump | safe }}\n}"
     },
     {
       "icon": "d",

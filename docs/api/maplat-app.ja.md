@@ -288,6 +288,54 @@ MaplatCore-Pro は `modechange`・`viewchange` も出しますが、MaplatCore �
 ではありません）。hook オブジェクトは書き換えません（hook の中の `this` は元のオブジェクト）
 ので、同じオブジェクトをクラスの経路に渡せば、そちらでは `context.core` は `MaplatApp` のままです。
 
+## POI テンプレートの記法
+
+`poiTemplate`・`iconTemplate`（`<maplat-app>`・`MaplatApp`・設定ファイル・POI の層に与えるもの）は、
+**@maplat/core 1.3.0** から Quyuan の `@c4h/quyuan/template` を通して
+[Nunjucks](https://mozilla.github.io/nunjucks/templating.html) で評価します。1.2 までは lodash.template で
+評価していました。その記法は**評価しません**（下の「旧い記法の検出」）。テンプレートの変数は POI の属性です。
+
+| lodash.template（1.2 まで） | Nunjucks（1.3 から） | 注意 |
+|---|---|---|
+| `<%= name %>`（エスケープなし） | `{{ name \| safe }}` | 1.3 の `{{ name }}` は HTML エスケープする。HTML を出したいときだけ `\| safe`（UI 側の `sanitizeHtml` は従来どおり掛かる） |
+| `<%- name %>`（HTML エスケープ） | `{{ name }}` | |
+| `${name}`（ES の埋め込み。lodash は既定でこれも評価していた） | `{{ name }}` | |
+| `<% if (a) { %>…<% } else { %>…<% } %>` | `{% if a %}…{% else %}…{% endif %}` | |
+| `<% list.forEach(x => { %>…<%= x %>…<% }) %>` | `{% for x in list %}…{{ x }}…{% endfor %}` | |
+| `!a`・`a && b`・`a \|\| b` | `not a`・`a and b`・`a or b` | |
+| `typeof a === "string"` | `a is string` | `is number`・`is defined` も使える |
+| `name.ja` | `name.ja`（同じ） | 無いキーは空文字 |
+| `<% var x = …; %>` | `{% set x = … %}` | |
+| `iconTemplate` の `"icon": "<%= url %>"` | `"icon": {{ url \| dump \| safe }}` | **`iconTemplate` は JSON を作る ∴ `dump`＋`safe` を勧める**。`"{{ url }}"` は `&`・`"`・`<` を含む URL を壊す |
+| 任意の JS | フィルタ（`dump`・`lower`・`replace` など）で書く | JS は記法に無い。ただし Nunjucks はサンドボックスではなく抜け道がある ∴ 信頼できないテンプレートを評価しない（下の注意） |
+| `<%`・`%>`・`${`…`}` を文字として出したい | `{% raw %}…{% endraw %}` で囲む | 囲まないと下の検出に当たり評価されない |
+| （新規）POI の情報窓でスライダー | `<qy-swiper><qy-swiper-slide image-url="{{ … }}" image-type="image" caption="{{ … }}"></qy-swiper-slide></qy-swiper>` | 1.3 から。`sanitizeHtml` が許す属性だけ残る |
+
+### 旧い記法の検出
+
+テンプレートの文字列ごとに、評価の前に次を判定します。
+
+```text
+S      = テンプレートの文字列から {% raw %}…{% endraw %}・{% verbatim %}…{% endverbatim %} の中身を取り除いたもの
+旧い記法 = S に /<%[\s\S]*?%>/ が当たる（<% %>・<%= %>・<%- %>）
+         または S に /\$\{[^}]*\}/ が当たる（${ }）
+```
+
+- 旧い記法のテンプレートは**評価しません**（Nunjucks にも lodash にも渡しません）。そのテンプレートは
+  無いものとして扱います: `poiTemplate` なら次の段（層・地図・アプリ）へ進み（その段の `poiStyle` も使いません）、
+  `iconTemplate` なら同じ段の `icon` を使うか、無ければ次の段へ進みます。
+- ページで **1 回だけ** `console.warn` で、最初に見つかったテンプレート（先頭 80 文字）を知らせます。
+- 評価できないテンプレート（記法の誤り、出力が JSON のオブジェクトにならない `iconTemplate`）も同じ扱いで、
+  別の文面の `console.warn` を 1 回だけ出します。地図の描画は止まりません。
+- `<%`・`${` を文字として出したいときは、その部分を `{% raw %}…{% endraw %}` で囲みます
+  （例: `{% raw %}<p>${price}</p>{% endraw %}`）。
+- 検出に当たらないまま表示が変わる場合が 1 つだけあります: lodash の記法を含まず、`{{ }}`・`{% %}` を
+  文字として書いていた旧いテンプレートは、1.3 から Nunjucks として評価されます。
+
+**Nunjucks はサンドボックスではありません。** 値（POI の名前・説明など）から `{{ }}` を通してコードを
+注入することはできませんが、テンプレートの文字列そのものを第三者が書ける構成では、引き続きページの権限で
+コードが動きえます。信頼できない POI・地図のデータのテンプレートは使わないでください。
+
 ## `@maplat/core/common` — 別の実装のための共通の土台
 
 `@maplat/core/common`（`dist/maplat_core_common.js`）は地図エンジンに依らない部分を集めた

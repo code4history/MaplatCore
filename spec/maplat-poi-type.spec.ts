@@ -54,8 +54,8 @@ describe("MaplatPoi（clickMarker の detail の型）", () => {
     const cluster = layers.main;
     // 祖先（レイヤー → アプリ）のテンプレート: POI 自身の icon・html が無ければ補われる
     const app = {
-      iconTemplate: '{"icon":"img/<%= id %>.png","selectedIcon":"img/<%= id %>_s.png"}',
-      poiTemplate: "<h1><%= typeof name === 'string' ? name : name.ja %></h1>",
+      iconTemplate: '{"icon":"img/{{ id }}.png","selectedIcon":"img/{{ id }}_s.png"}',
+      poiTemplate: "<h1>{{ name if name is string else name.ja }}</h1>",
       poiStyle: "h1 { color: red; }"
     };
     const details: MaplatPoi[] = cluster.pois.map((poi: any) =>

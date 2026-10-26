@@ -20,6 +20,17 @@
 - `MaplatApp` クラスの API（`new MaplatApp(appOption)`・`createObject`・`waitReady`・`mapObject`・`appOption.div` など）。1.x では従来どおり使えるが、削除予定のメジャー **2.0**（次のメジャー版）で閉じ、`<maplat-app>` だけになる。移行の対応表は `docs/api/maplat-app.md`
   - 型定義の JSDoc に `@deprecated` を付けた。また、利用者がこのクラスを直接作ると（`new MaplatApp`・`createObject`）、同じページの中で 1 回だけ `console.warn` で告知する。`<maplat-app>` が中で作る分と、旧 UI API（`@maplat/ui` の `MaplatUi`）から使う分では告知しない
 
+### Removed
+- POI の `poiTemplate`・`iconTemplate` を lodash.template で評価するのをやめ、Nunjucks の記法（Quyuan の `@c4h/quyuan/template`）で評価するようにした。依存 `lodash.template` を外した（#93）
+  - 理由: lodash.template はテンプレートの中身を JavaScript としてそのまま実行するため、地図データや POI データに書かれたテンプレートからページの権限でコードが動いた。利用がほとんど無いため、予告の期間を置かずに外した
+  - 旧い記法の検出: テンプレート（`{% raw %}…{% endraw %}`・`{% verbatim %}…{% endverbatim %}` の中を除く）に `<%`…`%>` または `${`…`}` があれば旧い記法とみなし、評価せずにそのテンプレートは無いものとして扱い、ページで 1 回だけ `console.warn` で知らせる。`<%`・`${` を文字として出したいときは `{% raw %}…{% endraw %}` で囲む
+  - 書き換え: `<%- name %>` → `{{ name }}`、`<%= html %>` → `{{ html | safe }}`、`${name}` → `{{ name }}`、`<% if (a) { %>…<% } %>` → `{% if a %}…{% endif %}`、`<% list.forEach(x => { %>…<% }) %>` → `{% for x in list %}…{% endfor %}`。`iconTemplate` は JSON を作るので、文字列の値は `"icon": {{ url | dump | safe }}` と書く（`"{{ url }}"` は `&` などを HTML の形に置き換える）。対応表は `docs/api/maplat-app.md` を参照
+  - `{{ }}` は既定で HTML エスケープする（lodash の `<%= %>` はしなかった）。テンプレートの誤りや存在しない値で地図の描画が止まらなくなった（存在しない値は空文字）
+  - 検出に当たらないまま表示が変わる場合が 1 つだけある: lodash の記法を含まず、`{{ }}`・`{% %}` を文字として書いていたテンプレートは、1.3 から Nunjucks として評価される
+
+### Security
+- 上記により、`poiTemplate`・`iconTemplate` の値（POI の名前・説明など）からの注入は起きにくくなった。ただし **Nunjucks もサンドボックスではない**: テンプレートの文字列そのものを第三者が書ける構成（第三者の POI JSON・地図 JSON を読む構成）では、引き続きページの権限でコードが動きうる。そのような構成では、信頼できないデータのテンプレートを使わないこと
+
 ## [1.2.0-rc.1] - 2026-10-26
 
 ### Fixed

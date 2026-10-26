@@ -4,6 +4,9 @@
 // 地域内コンテンツ切り替え UI（地図セレクタ・POI・線・面・視点・透過・GPS）・出典表示。
 // Core 本体（公開ライブラリ）の公開 API だけを使う（Pro 専用 API・Core 専用 export を import しない）。
 import { MaplatApp, sanitizeHtml } from "../src/index.ts"; // 開発時。build:demo でバンドル
+// テンプレートの警告（ページで 1 回）の記憶を戻す。公開面ではないが、記法のプリセットを切り替えるたびに
+// 警告を出し直して見せるため、デモの中だけで使う（製品の挙動は変えない）
+import { resetTemplateWarnings } from "../src/template_works";
 import { REGION_IDS, REGION_META } from "./regions";
 import type { AppSetting, DemoOps, LineItem, LineKind, MapLineItem, MapPoi, Poi, RegionContent, RegionId, VectorItem } from "./regions";
 
@@ -64,20 +67,56 @@ const ERA_ICONS = {
   unknown: dotPin("#6b7280", "#fff")
 };
 // iconTemplate は POI の属性を受けて {"icon": …} の JSON を返す（Core の createIconSet が JSON.parse する）。
-// start が無い POI は「年代なし」。アイコンの文字列は JSON.stringify で埋めてから、テンプレートでも JSON.stringify して出す
+// 記法は Nunjucks（@maplat/core 1.3 から）。start が無い POI は「年代なし」。
+// アイコンの文字列は JSON.stringify で Nunjucks の文字列リテラルとして埋め、出力では dump | safe で JSON の文字列にする
 const ERA_ICON_TEMPLATE =
-  `<% var eraIcon = typeof start === "number" ? (start < 1600 ? ${JSON.stringify(ERA_ICONS.early)} : ` +
-  `start < 1868 ? ${JSON.stringify(ERA_ICONS.edo)} : ${JSON.stringify(ERA_ICONS.modern)}) : ${JSON.stringify(ERA_ICONS.unknown)}; %>` +
-  `{"icon":<%= JSON.stringify(eraIcon) %>}`;
-// poiTemplate（Issue #37 の 4）: clickMarker の detail.html の元。値は <%- %> で escape し、表示の前に sanitizeHtml を通す
+  `{% if start is number %}{% if start < 1600 %}{% set eraIcon = ${JSON.stringify(ERA_ICONS.early)} %}` +
+  `{% elif start < 1868 %}{% set eraIcon = ${JSON.stringify(ERA_ICONS.edo)} %}` +
+  `{% else %}{% set eraIcon = ${JSON.stringify(ERA_ICONS.modern)} %}{% endif %}` +
+  `{% else %}{% set eraIcon = ${JSON.stringify(ERA_ICONS.unknown)} %}{% endif %}` +
+  `{"icon": {{ eraIcon | dump | safe }}}`;
+// poiTemplate（Issue #37 の 4）: clickMarker の detail.html の元。{{ }} は HTML エスケープし、表示の前に sanitizeHtml を通す
 const POI_TEMPLATE =
-  '<div class="demo-poi-html"><strong><%- typeof name === "string" ? name : (name && (name.ja || name.en)) || "" %></strong>' +
-  '<% if (typeof desc === "string" && desc) { %><p><%- desc %></p><% } %></div>';
+  '<div class="demo-poi-html"><strong>{{ name if name is string else (name.ja or name.en or "") }}</strong>' +
+  '{% if desc is string and desc %}<p>{{ desc }}</p>{% endif %}</div>';
+
+// poiTemplate の記法のプリセット（新しい記法・旧い記法・書き誤り・| safe の有無）。
+// 旧い記法（lodash.template）は 1.3 から評価されず、ページで 1 回だけ console.warn が出る
+const TEMPLATE_PRESETS: { id: string; label: string; template: string }[] = [
+  { id: "nunjucks", label: "(a) 新しい記法", template: POI_TEMPLATE },
+  {
+    id: "legacy",
+    label: "(b) 旧い記法",
+    template:
+      '<div class="demo-poi-html"><strong><%- typeof name === "string" ? name : (name && (name.ja || name.en)) || "" %></strong>' +
+      '<% if (typeof desc === "string" && desc) { %><p><%- desc %></p><% } %></div>'
+  },
+  { id: "broken", label: "(c) 書き誤り", template: '<div class="demo-poi-html"><strong>{{ name }</strong></div>' },
+  {
+    id: "safe",
+    label: "(d) | safe の有無",
+    template:
+      '<div class="demo-poi-html"><p>{{ "{{ name }}" }}: {{ name if name is string else name.ja }}</p>' +
+      '<p>{{ "{{ name | safe }}" }}: {{ (name if name is string else name.ja) | safe }}</p></div>'
+  }
+];
+const TEMPLATE_LAYER = "template_demo";
 
 // ベースマップ（gsi / osm）の表示名。地図の id 自体は app 設定の sources（bare string）から得る。
 const BASEMAP_LABEL: Record<string, string> = {
   gsi: "地理院地図",
   osm: "OpenStreetMap"
+};
+
+// テンプレートの警告（Core の console.warn）を、デモの「テンプレートの警告」欄へ写す（デモだけの処理）
+let templateWarningSink: ((message: string) => void) | undefined;
+const originalWarn = console.warn.bind(console);
+console.warn = (...args: unknown[]): void => {
+  originalWarn(...args);
+  const first = args[0];
+  if (typeof first === "string" && first.startsWith("MaplatApp: ") && first.includes("poiTemplate/iconTemplate")) {
+    templateWarningSink?.(first);
+  }
 };
 
 /** URL の ?region= を REGION_IDS で検証する。無い・未知なら先頭 */
@@ -615,6 +654,48 @@ async function main(): Promise<void> {
     eraNote.className = "demo-note";
     eraNote.textContent = "年代（start）の色: 1599 年以前 赤・1600〜1867 年 緑・1868 年以降 青・年代なし 灰";
     poiSec.sec.appendChild(eraNote);
+    // ---- poiTemplate の記法のプリセット（Nunjucks と旧い記法の対比）----
+    // 切り替えるたびに警告の記憶を戻し（デモだけの処理）、警告の欄を空にしてから描き直す
+    const templateRow = poiSec.row();
+    const templateLabel = document.createElement("span");
+    templateLabel.textContent = "poiTemplate の記法: ";
+    templateRow.appendChild(templateLabel);
+    const applyTemplatePreset = (preset: (typeof TEMPLATE_PRESETS)[number]): void => {
+      resetTemplateWarnings();
+      templateWarnings.replaceChildren();
+      templateCurrent.textContent = `今のテンプレート（${preset.label}）: ${preset.template}`;
+      // 先にテンプレートを替える（層・POI の追加で起きる描き直しが、前のプリセットで評価して警告を出さないように）
+      app.poiTemplate = preset.template;
+      if (preset.id === "safe" && !app.getPoiLayer(TEMPLATE_LAYER)) {
+        // 名前に <b> を含む POI（{{ name }} では文字のまま、{{ name | safe }} では太字になる）
+        app.addPoiLayer(TEMPLATE_LAYER, { name: "記法の例" });
+        const [lng, lat] = homeLngLat();
+        app.addMarker({ name: "<b>太字</b>の名前", desc: "名前に <b> を含む POI", lnglat: [lng, lat + 0.002] }, TEMPLATE_LAYER);
+      }
+      detailBox.textContent = "";
+      app.redrawMarkers();
+      if (!templateWarnings.childElementCount) templateWarnings.textContent = "テンプレートの警告: なし";
+    };
+    for (const preset of TEMPLATE_PRESETS) {
+      const btn = makeButton(preset.label, () => { applyTemplatePreset(preset); });
+      btn.dataset.templatePreset = preset.id;
+      templateRow.appendChild(btn);
+    }
+    const templateCurrent = document.createElement("p");
+    templateCurrent.className = "demo-note";
+    templateCurrent.id = "template-current";
+    templateCurrent.textContent = `今のテンプレート（${TEMPLATE_PRESETS[0].label}）: ${POI_TEMPLATE}`;
+    const templateWarnings = document.createElement("div");
+    templateWarnings.className = "demo-note demo-template-warnings";
+    templateWarnings.id = "template-warnings";
+    templateWarnings.textContent = "テンプレートの警告: なし";
+    templateWarningSink = (message) => {
+      if (templateWarnings.textContent === "テンプレートの警告: なし") templateWarnings.replaceChildren();
+      const line = document.createElement("p");
+      line.textContent = `テンプレートの警告: ${message}`;
+      templateWarnings.appendChild(line);
+    };
+    poiSec.sec.append(templateCurrent, templateWarnings);
     // clickMarkers の件数と、poiTemplate から作られた detail.html（sanitizeHtml を通したものだけ）
     const hitsLine = document.createElement("p");
     hitsLine.className = "demo-poi-hits";
