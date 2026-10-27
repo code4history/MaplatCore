@@ -336,6 +336,35 @@ S      = テンプレートの文字列から {% raw %}…{% endraw %}・{% verb
 注入することはできませんが、テンプレートの文字列そのものを第三者が書ける構成では、引き続きページの権限で
 コードが動きえます。信頼できない POI・地図のデータのテンプレートは使わないでください。
 
+### 情報窓のスライダー
+
+**@maplat/core 1.3.0** から、`sanitizeHtml` がテンプレートの出力で 2 つの要素を残すので、
+`poiTemplate` でマルチメディアのスライダー（[Quyuan](https://github.com/code4history/Quyuan)）を出せる:
+
+```html
+<qy-swiper has-thumb>
+  {% for m in media %}
+  <qy-swiper-slide image-url="{{ m.url }}" image-type="image" caption="{{ m.caption }}"></qy-swiper-slide>
+  {% endfor %}
+</qy-swiper>
+```
+
+| 要素 | 残る属性 | 値の検査 |
+|---|---|---|
+| `<qy-swiper>` | `has-thumb`・`autoplay` | 真偽値: 値は捨てる（`has-thumb=""`） |
+| `<qy-swiper-slide>` | `image-url`・`thumbnail-url`・`material-url` | URL: 相対パス・`/…`・`//…`・`http(s):` だけ。値に引用符・バッククォート・`<`・`>`・空白があれば落とす |
+| | `caption` | テキストにする（値の中の HTML を取り除く） |
+| | `image-type`・`camera-position`・`camera-target`・`show-texture` | そのまま残す |
+| | `fit-to-container`・`debug-mode` | 真偽値: 値は捨てる |
+
+- POI の `media` と同じ検査である。この 2 つの要素の上のほかの属性（`class`・`style`・`on*` など）は
+  落とし、これらの属性名をほかの要素には残さない。
+- **テンプレートの真偽値の属性は、値によらず「あれば真」**: `fit-to-container="false"` も真になる
+  （HTML と要素の読み方に合わせた）。POI の `media` では、真偽値の鍵は値が truthy のときだけ書き出す。
+- `cc-swiper`・`cc-swiper-slide`・`qy-viewer`・`cc-viewer` は使えない（要素は落ち、中の文字は残る）。
+  `qy-swiper`・`qy-swiper-slide` を使うこと。
+- スライダーの表示には、要素を登録する **@maplat/ui 1.3 以降**が要る。@maplat/core 自身は登録しない。
+
 ## `@maplat/core/common` — 別の実装のための共通の土台
 
 `@maplat/core/common`（`dist/maplat_core_common.js`）は地図エンジンに依らない部分を集めた
