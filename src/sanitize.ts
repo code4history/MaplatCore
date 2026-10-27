@@ -88,7 +88,68 @@ function getPurifier() {
   }
   purifier = createDOMPurify(win as unknown as Window & typeof globalThis);
   purifier.addHook("afterSanitizeAttributes", afterSanitizeAttributes as never);
+  purifier.addHook("uponSanitizeAttribute", uponSanitizeAttribute as never);
   return purifier;
+}
+
+let textPurifier: ReturnType<typeof createDOMPurify> | undefined;
+
+/**
+ * toPlainText 専用の、hook を付けない別の実体。
+ *
+ * なぜ分けるか: sanitizeHtml の hook（uponSanitizeAttribute）の中から toPlainText を呼ぶ。
+ * 同じ実体の sanitize を hook の中で呼ぶと、DOMPurify の設定（ALLOWED_TAGS など）が
+ * 内側の呼び出しの値に書き換わり、外側の残りの要素（後ろの <p>・<b> など）が落ちる。
+ */
+function getTextPurifier() {
+  if (textPurifier) return textPurifier;
+  const win = (globalThis as unknown as { window?: Window }).window;
+  if (!win) {
+    throw new Error(
+      "sanitizeHtml: window の無い環境では使用できません（DOMPurify の初期化に必要）"
+    );
+  }
+  textPurifier = createDOMPurify(win as unknown as Window & typeof globalThis);
+  return textPurifier;
+}
+
+interface AttrHookEvent {
+  attrName: string;
+  attrValue: string;
+  keepAttr: boolean;
+  forceKeepAttr?: boolean;
+}
+
+/**
+ * テンプレートの出力に書かれた <qy-swiper>・<qy-swiper-slide> の属性を、POI の media と
+ * 同じ選別（名前の許可表・URL の検査・テキスト化）で残す。ほかの要素には何もしない。
+ *
+ * forceKeepAttr を立てると DOMPurify は hookEvent.attrValue の書き換えを反映しないため、
+ * 値を変えるときはここで node.setAttribute してから立てる。attrValue は書き換えない
+ * （DOMPurify の危険な値の判定〔`-->`・`</style` など〕は元の値で走り、属性ごと落とす）。
+ */
+function uponSanitizeAttribute(node: Element, data: AttrHookEvent): void {
+  const tag = node.nodeName.toLowerCase();
+  const name = data.attrName;
+  if (tag === "qy-swiper-slide") {
+    // テンプレートの真偽値の属性は「あれば真」（HTML と hasAttribute の読みに合わせる）
+    const value = SLIDE_BOOLEAN_ATTRS.has(name) ? "" : slideAttrValue(name, data.attrValue);
+    if (value === null) {
+      data.keepAttr = false;
+      return;
+    }
+    node.setAttribute(name, value);
+    data.forceKeepAttr = true;
+    return;
+  }
+  if (tag === "qy-swiper") {
+    if (SWIPER_BOOLEAN_ATTRS.has(name)) {
+      node.setAttribute(name, "");
+      data.forceKeepAttr = true;
+    } else {
+      data.keepAttr = false;
+    }
+  }
 }
 
 /** リモート POI 由来の HTML を無害化する。S1 / S5 の sink で使う。 */
@@ -131,7 +192,7 @@ export function escapeAttr(value: string): string {
  */
 export function toPlainText(value: string): string {
   if (value === undefined || value === null) return "";
-  const stripped = getPurifier().sanitize(String(value), {
+  const stripped = getTextPurifier().sanitize(String(value), {
     ALLOWED_TAGS: [],
     ALLOWED_ATTR: [],
     KEEP_CONTENT: true
@@ -150,6 +211,9 @@ const SLIDE_VALUE_ATTRS = new Set(ALLOWLIST.slide.valueAttributes);
 
 /** cc-swiper-slide に渡してよい**真偽値属性**（同上 hasAttribute より）。 */
 const SLIDE_BOOLEAN_ATTRS = new Set(ALLOWLIST.slide.booleanAttributes);
+
+/** qy-swiper に残してよい**真偽値属性**（データ正本の swiper.booleanAttributes）。 */
+const SWIPER_BOOLEAN_ATTRS = new Set(ALLOWLIST.swiper.booleanAttributes);
 
 /**
  * テキストとして扱う属性。受け手が自分の HTML へ補間するため、
@@ -191,6 +255,25 @@ const isSafeUrl = (v: string): boolean => /^(?:https?:)?\/\/|^\/|^[^:]*$/i.test(
 const URL_ATTR_FORBIDDEN = /["'`<>\s]/;
 
 /**
+ * slide の属性 1 つ分の判定。null＝落とす・""＝名前だけ・文字列＝値。
+ * media の経路（buildSlideAttrs）とテンプレートの経路（uponSanitizeAttribute）が共有する。
+ * 真偽値の属性は値が truthy のときだけ名前を出す（media の経路の読み）。
+ */
+function slideAttrValue(name: string, val: unknown): string | null {
+  if (SLIDE_BOOLEAN_ATTRS.has(name)) return val ? "" : null;
+  if (!SLIDE_VALUE_ATTRS.has(name)) return null; // allowlist 外はすべて破棄
+  if (val === undefined || val === null) return null;
+
+  let str = String(val);
+  if (SLIDE_URL_ATTRS.has(name)) {
+    if (!isSafeUrl(str)) return null; // javascript: 等を落とす
+    if (URL_ATTR_FORBIDDEN.test(str)) return null; // 往復で構文を破る文字を断つ（上記）
+  }
+  if (SLIDE_TEXT_ATTRS.has(name)) str = toPlainText(str); // 往復対策
+  return str;
+}
+
+/**
  * mediaObj から cc-swiper-slide の属性文字列を組み立てる（S2）。
  *
  * **属性名も POI 由来である**ため、値のエスケープだけでは防げない（設計書 §2.3）。
@@ -202,22 +285,10 @@ export function buildSlideAttrs(media: Record<string, unknown>): string {
   const parts: string[] = [];
   for (const [key, val] of Object.entries(media || {})) {
     const name = String(key).toLowerCase();
-
-    if (SLIDE_BOOLEAN_ATTRS.has(name)) {
-      // 真偽値属性は truthy のときだけ属性名を出す（値は出さない）
-      if (val) parts.push(name);
-      continue;
-    }
-    if (!SLIDE_VALUE_ATTRS.has(name)) continue; // allowlist 外はすべて破棄
-    if (val === undefined || val === null) continue;
-
-    let str = String(val);
-    if (SLIDE_URL_ATTRS.has(name)) {
-      if (!isSafeUrl(str)) continue; // javascript: 等を落とす
-      if (URL_ATTR_FORBIDDEN.test(str)) continue; // 往復で構文を破る文字を断つ（下記）
-    }
-    if (SLIDE_TEXT_ATTRS.has(name)) str = toPlainText(str); // 往復対策
-    parts.push(`${name}="${escapeAttr(str)}"`);
+    const str = slideAttrValue(name, val);
+    if (str === null) continue;
+    // 真偽値属性は属性名だけを出す（値は出さない）
+    parts.push(SLIDE_BOOLEAN_ATTRS.has(name) ? name : `${name}="${escapeAttr(str)}"`);
   }
   return parts.join(" ");
 }

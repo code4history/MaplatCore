@@ -8,6 +8,7 @@ import {
   MUST_BE_NEUTRALIZED, MUST_BE_PRESERVED, TARGET_BLANK,
   MEDIA_ATTR_ATTACKS, MEDIA_ATTR_PRESERVED, ATTR_ROUNDTRIP_ATTACKS
 } from "./fixtures/xss-payloads";
+import * as qyPayloads from "./fixtures/xss-payloads";
 
 describe("sanitizeHtml — 攻撃ペイロードの無害化（AC5a / AC5c 異常系）", () => {
   it.each(MUST_BE_NEUTRALIZED)("$name が無害化される", ({ input, mustNotContain }) => {
@@ -171,5 +172,149 @@ describe("buildSlideAttrs — URL 属性の危険文字を拒否する（m1-t9 D
   it("URL 属性以外（caption）は空白を含んでも従来どおり通る", () => {
     const out = buildSlideAttrs({ caption: "六百遠忌 報恩塔" });
     expect(out).toContain("caption=");
+  });
+});
+
+// テンプレートの出力に書かれた <qy-swiper>・<qy-swiper-slide> を、POI の media と同じ選別で残す。
+const { QY_SLIDE_URL_REJECTED, QY_FORBIDDEN_ATTRS, QY_UNSUPPORTED_ELEMENTS, QY_SLIDE_PARITY_MEDIA } = qyPayloads;
+const parseOne = (html: string): Element => {
+  const host = document.createElement("div");
+  host.innerHTML = html;
+  return host.firstElementChild!;
+};
+const attrMap = (el: Element): Record<string, string> =>
+  Object.fromEntries(Array.from(el.attributes).map(a => [a.name, a.value]).sort());
+const SLIDE_BOOLEAN = new Set(["fit-to-container", "debug-mode"]);
+
+describe("sanitizeHtml — qy-swiper / qy-swiper-slide を残す", () => {
+  it.each(["img/a.jpg", "/t.jpg", "//cdn.example/x.jpg", "https://e.example/a.jpg"])(
+    "image-url=%s が残る", url => {
+      const el = parseOne(sanitizeHtml(`<qy-swiper-slide image-url="${url}"></qy-swiper-slide>`));
+      expect(el.tagName.toLowerCase()).toBe("qy-swiper-slide");
+      expect(el.getAttribute("image-url")).toBe(url);
+    });
+
+  it("値の属性が残り、真偽値の属性は値 \"\" で残る", () => {
+    const el = parseOne(sanitizeHtml(
+      `<qy-swiper-slide image-type="image" caption="寺" camera-position="0,0,1" camera-target="0,0,0" ` +
+      `show-texture="true" fit-to-container="false" debug-mode="yes"></qy-swiper-slide>`
+    ));
+    expect(attrMap(el)).toEqual({
+      "camera-position": "0,0,1", "camera-target": "0,0,0", caption: "寺",
+      "debug-mode": "", "fit-to-container": "", "image-type": "image", "show-texture": "true"
+    });
+  });
+
+  it("qy-swiper の has-thumb・autoplay が値 \"\" で残り、中の slide も残る", () => {
+    const el = parseOne(sanitizeHtml(
+      `<qy-swiper has-thumb="yes" autoplay><qy-swiper-slide image-url="a.jpg"></qy-swiper-slide></qy-swiper>`
+    ));
+    expect(el.tagName.toLowerCase()).toBe("qy-swiper");
+    expect(attrMap(el)).toEqual({ autoplay: "", "has-thumb": "" });
+    expect(el.firstElementChild!.getAttribute("image-url")).toBe("a.jpg");
+  });
+});
+
+describe("sanitizeHtml — qy-* で落ちるもの", () => {
+  const URL_ATTRS = ["image-url", "thumbnail-url", "material-url"];
+  for (const attr of URL_ATTRS) {
+    it.each(QY_SLIDE_URL_REJECTED)(`${attr}=%s が落ちる`, bad => {
+      const el = parseOne(sanitizeHtml(
+        `<qy-swiper-slide image-type="image" ${attr}="${escapeAttr(bad)}"></qy-swiper-slide>`
+      ));
+      expect(el.hasAttribute(attr)).toBe(false);
+      expect(el.getAttribute("image-type")).toBe("image");
+    });
+  }
+
+  it.each(QY_FORBIDDEN_ATTRS)("qy-swiper・qy-swiper-slide の %s が落ちる", attr => {
+    const out = sanitizeHtml(
+      `<qy-swiper ${attr}="v"><qy-swiper-slide ${attr}="v" image-url="a.jpg"></qy-swiper-slide></qy-swiper>`
+    );
+    const el = parseOne(out);
+    expect(el.hasAttribute(attr)).toBe(false);
+    expect(el.firstElementChild!.hasAttribute(attr)).toBe(false);
+    expect(el.firstElementChild!.getAttribute("image-url")).toBe("a.jpg");
+  });
+
+  it("qy-swiper の image-url が落ちる", () => {
+    const el = parseOne(sanitizeHtml(`<qy-swiper image-url="a.jpg"></qy-swiper>`));
+    expect(el.hasAttribute("image-url")).toBe(false);
+  });
+
+  it.each(["div", "span", "a", "img"])("%s の上の image-url・caption・has-thumb が落ちる", tag => {
+    const out = sanitizeHtml(`<${tag} image-url="a.jpg" caption="c" has-thumb>t</${tag}>`);
+    expect(out).not.toContain("image-url");
+    expect(out).not.toContain("caption");
+    expect(out).not.toContain("has-thumb");
+  });
+
+  it.each(QY_UNSUPPORTED_ELEMENTS)("要素 %s は落ち、中の文字は残る", tag => {
+    const out = sanitizeHtml(`<${tag} image-url="a.jpg">中身</${tag}>`);
+    expect(out).not.toContain(`<${tag}`);
+    expect(out).toContain("中身");
+  });
+
+  it("mXSS の形の caption（エンティティで書いたもの）は属性ごと落ち、ほかの属性は残る", () => {
+    for (const cap of [
+      "--&gt;&lt;/qy-swiper-slide&gt;&lt;img src=x onerror=1&gt;",
+      "x&lt;/style&gt;&lt;img src=x onerror=1&gt;"
+    ]) {
+      const out = sanitizeHtml(
+        `<qy-swiper-slide image-type="image" image-url="a.jpg" caption="${cap}"></qy-swiper-slide>`
+      );
+      const el = parseOne(out);
+      expect(el.hasAttribute("caption")).toBe(false);
+      expect(el.getAttribute("image-type")).toBe("image");
+      expect(el.getAttribute("image-url")).toBe("a.jpg");
+      expect(out).not.toContain("<img");
+    }
+  });
+
+  it("属性に生で閉じタグと img を書いても出力に <img が無い", () => {
+    const out = sanitizeHtml(`<qy-swiper-slide caption="</qy-swiper-slide><img src=x onerror=1>"></qy-swiper-slide>`);
+    expect(out).not.toContain("<img");
+    expect(parseOne(out).getAttribute("caption")).toBe("");
+  });
+});
+
+describe("sanitizeHtml — qy-swiper-slide の caption のテキスト化", () => {
+  it("エンティティで書いた HTML がテキストになる", () => {
+    expect(sanitizeHtml(`<qy-swiper-slide caption="&lt;i&gt;x&lt;/i&gt;"></qy-swiper-slide>`))
+      .toBe(`<qy-swiper-slide caption="x"></qy-swiper-slide>`);
+  });
+
+  it("属性の中の生の < がテキストになる", () => {
+    expect(sanitizeHtml(`<qy-swiper-slide caption="<b>寺</b>"></qy-swiper-slide>`))
+      .toBe(`<qy-swiper-slide caption="寺"></qy-swiper-slide>`);
+  });
+});
+
+describe("sanitizeHtml — caption のテキスト化が外側の sanitize に再入しない", () => {
+  it("slide の後ろの通常のタグと属性が残り、続く呼び出しの結果も変わらない", () => {
+    expect(sanitizeHtml(
+      `<qy-swiper-slide caption="&lt;i&gt;x&lt;/i&gt;"></qy-swiper-slide><p title="t"><b>bold</b></p>`
+    )).toBe(`<qy-swiper-slide caption="x"></qy-swiper-slide><p title="t"><b>bold</b></p>`);
+    expect(sanitizeHtml(`<p title="t"><b>x</b><script>1</script></p>`)).toBe(`<p title="t"><b>x</b></p>`);
+  });
+});
+
+describe("qy-swiper-slide — media の経路とテンプレートの経路の属性が一致する", () => {
+  const templateAttrs = (media: Record<string, unknown>): string =>
+    Object.entries(media).map(([k, v]) => {
+      if (SLIDE_BOOLEAN.has(k)) return v ? k : "";
+      return `${k}="${escapeAttr(String(v))}"`;
+    }).filter(Boolean).join(" ");
+
+  it.each(QY_SLIDE_PARITY_MEDIA.map((media, i) => ({ i, media })))("media #$i", ({ media }) => {
+    const viaMedia = parseOne(`<qy-swiper-slide ${buildSlideAttrs(media)}></qy-swiper-slide>`);
+    const viaTemplate = parseOne(sanitizeHtml(`<qy-swiper-slide ${templateAttrs(media)}></qy-swiper-slide>`));
+    expect(attrMap(viaTemplate)).toEqual(attrMap(viaMedia));
+  });
+
+  it("引用符と & を含む caption が同じ値に戻る", () => {
+    const values = QY_SLIDE_PARITY_MEDIA.slice(-3).map(m =>
+      parseOne(sanitizeHtml(`<qy-swiper-slide ${templateAttrs(m)}></qy-swiper-slide>`)).getAttribute("caption"));
+    expect(values).toEqual([`A "B" & C`, "it's &", "x < y"]);
   });
 });
