@@ -375,6 +375,37 @@ inject code through `{{ }}`, but a template string written by an untrusted party
 still run code with the page's privileges. Do not use templates from untrusted POI or
 map data.
 
+### Sliders in the info window
+
+From **@maplat/core 1.3.0**, `sanitizeHtml` keeps two elements in the template output, so
+a `poiTemplate` can show a media slider ([Quyuan](https://github.com/code4history/Quyuan)):
+
+```html
+<qy-swiper has-thumb>
+  {% for m in media %}
+  <qy-swiper-slide image-url="{{ m.url }}" image-type="image" caption="{{ m.caption }}"></qy-swiper-slide>
+  {% endfor %}
+</qy-swiper>
+```
+
+| Element | Attributes that remain | Checks on the value |
+|---|---|---|
+| `<qy-swiper>` | `has-thumb`, `autoplay` | Boolean: the value is dropped (`has-thumb=""`) |
+| `<qy-swiper-slide>` | `image-url`, `thumbnail-url`, `material-url` | URL: relative paths, `/…`, `//…` and `http(s):` only. Dropped if the value contains a quote, a backquote, `<`, `>` or whitespace |
+| | `caption` | Turned into plain text (HTML in the value is removed) |
+| | `image-type`, `camera-position`, `camera-target`, `show-texture` | Kept as they are |
+| | `fit-to-container`, `debug-mode` | Boolean: the value is dropped |
+
+- These are the same checks as a POI's `media`. Any other attribute on these two elements
+  (`class`, `style`, `on*`, …) is removed, and these attribute names are not kept on other elements.
+- **A boolean attribute in a template is true when it is present**, whatever its value:
+  `fit-to-container="false"` is still true (this is how HTML and the element read it).
+  In a POI's `media`, a boolean key is written only when its value is truthy.
+- `cc-swiper`, `cc-swiper-slide`, `qy-viewer` and `cc-viewer` are not allowed (the elements
+  are removed; their text stays). Use `qy-swiper` and `qy-swiper-slide`.
+- Showing the slider needs **@maplat/ui 1.3 or later**, which registers the elements.
+  @maplat/core itself does not register them.
+
 ## `@maplat/core/common` — the shared base for other implementations
 
 `@maplat/core/common` (`dist/maplat_core_common.js`) holds everything that

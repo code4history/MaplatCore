@@ -102,6 +102,22 @@ const TEMPLATE_PRESETS: { id: string; label: string; template: string }[] = [
 ];
 const TEMPLATE_LAYER = "template_demo";
 
+// sanitizeHtml の入出力のプリセット（許される qy-swiper と、危険な属性）。
+// (a) 相対 URL・caption に <i>・has-thumb が残る（caption はテキストになる）。
+// (b) javascript: の URL・onerror・style・<cc-swiper>・<div image-url> だけが消える
+const SANITIZE_PRESETS = [
+  {
+    id: "qy-allowed",
+    label: "許される qy-swiper",
+    html: '<qy-swiper has-thumb><qy-swiper-slide image-url="img/a.jpg" image-type="image" caption="&lt;i&gt;六百遠忌&lt;/i&gt;報恩塔" fit-to-container></qy-swiper-slide></qy-swiper>'
+  },
+  {
+    id: "qy-dangerous",
+    label: "危険な属性",
+    html: '<qy-swiper style="color:red" onclick="alert(1)"><qy-swiper-slide image-url="javascript:alert(1)" image-type="image" onerror="alert(1)" caption="c"></qy-swiper-slide></qy-swiper><cc-swiper><cc-swiper-slide image-url="a.jpg">cc-swiper の中の文字</cc-swiper-slide></cc-swiper><div image-url="a.jpg">div の中の文字</div>'
+  }
+] as const;
+
 // ベースマップ（gsi / osm）の表示名。地図の id 自体は app 設定の sources（bare string）から得る。
 const BASEMAP_LABEL: Record<string, string> = {
   gsi: "地理院地図",
@@ -989,6 +1005,38 @@ async function main(): Promise<void> {
   lifeNote.textContent = "?restoreSession=1 を付けて読み込むと restoreSession 付きで作り、1 時間以内に保存した地図・視点・透過度に戻ります";
   lifeSec.sec.appendChild(lifeNote);
   mountSection(lifeSec, fixedArea);
+  // ---- sanitizeHtml の入出力（テンプレートの出力の <qy-swiper>・<qy-swiper-slide>）----
+  // Core のデモは qy-* を登録しないので、スライダーの見た目ではなく、残る属性と消える属性を文字列で見せる
+  const sanitizeSec = makeSection("sanitizeHtml の入出力");
+  const sanitizeInput = document.createElement("textarea");
+  sanitizeInput.id = "sanitize-input";
+  sanitizeInput.rows = 6;
+  sanitizeInput.style.width = "100%";
+  const sanitizeOutput = document.createElement("pre");
+  sanitizeOutput.id = "sanitize-output";
+  sanitizeOutput.style.whiteSpace = "pre-wrap";
+  sanitizeOutput.style.wordBreak = "break-all";
+  const runSanitize = (): void => {
+    // 出力は HTML の文字列そのまま（textContent）で見せる。描画はしない
+    sanitizeOutput.textContent = sanitizeHtml(sanitizeInput.value).replace(/></g, ">\n<");
+  };
+  const sanitizeRow = sanitizeSec.row();
+  for (const preset of SANITIZE_PRESETS) {
+    const btn = makeButton(preset.label, () => {
+      sanitizeInput.value = preset.html;
+      runSanitize();
+    });
+    btn.dataset.sanitizePreset = preset.id;
+    sanitizeRow.appendChild(btn);
+  }
+  sanitizeRow.appendChild(makeButton("入力を通す", runSanitize));
+  const sanitizeNote = document.createElement("p");
+  sanitizeNote.className = "demo-note";
+  sanitizeNote.textContent = "許される qy-swiper は属性が残り caption がテキストになる。危険な属性（javascript: の URL・onerror・style）と cc-swiper・div の image-url は消える";
+  sanitizeSec.sec.append(sanitizeInput, sanitizeNote, sanitizeOutput);
+  sanitizeInput.value = SANITIZE_PRESETS[0].html;
+  runSanitize();
+  mountSection(sanitizeSec, fixedArea);
   // 状態とイベント履歴は操作を持たないが、常に出す（操作パネルの最下部）
   fixedArea.append(stateSec.sec, logSec.sec);
 
