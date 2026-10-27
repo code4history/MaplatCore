@@ -31,7 +31,9 @@ declare const _default: {
     "tbody",
     "tr",
     "th",
-    "td"
+    "td",
+    "qy-swiper",
+    "qy-swiper-slide"
   ],
   "attributes": [
     "href",
@@ -73,7 +75,7 @@ declare const _default: {
     "xlink:href"
   ],
   "slide": {
-    "_note": "cc-swiper-slide が実際に読む属性。Chuci/src/components/swiper/cc-swiper.ts の getAttribute / hasAttribute を全数走査して確定",
+    "_note": "cc-swiper-slide が実際に読む属性。Chuci/src/components/swiper/cc-swiper.ts の getAttribute / hasAttribute を全数走査して確定。qy-swiper-slide は cc-swiper-slide を継承し属性は同じ（Quyuan qy-swiper.ts:148）",
     "valueAttributes": [
       "image-url",
       "image-type",
@@ -99,7 +101,15 @@ declare const _default: {
         "caption"
       ]
     }
+  },
+  "swiper": {
+    "_note": "qy-swiper（Chuci の cc-swiper を継承）が読む真偽値の属性。Chuci cc-swiper.ts の hasAttribute を全数走査して確定",
+    "booleanAttributes": [
+      "has-thumb",
+      "autoplay"
+    ]
   }
-};
+}
+;
 
 export default _default;
