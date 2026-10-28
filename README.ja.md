@@ -203,6 +203,40 @@ MaplatCore はフィールドの意味の定義と、結果として得られる
   ないため、`clearMapTileCacheAsync(mapID)` もその地図には働きません。消すときは
   `noCache` を付ける**前に** `clearMapTileCacheAsync(mapID)` で消してください。
 
+### IIIF の画像サービスから地図の画像を配る（`delivery`）
+
+古地図の画像を、切り出したタイルではなく [IIIF Image API](https://iiif.io/api/image/)
+の画像サービスから直接表示できます。地図の設定（`maps/<mapID>.json`）に `delivery` を書きます:
+
+```json
+{
+  "delivery": { "type": "iiifImage", "url": "https://dl.ndl.go.jp/api/iiif/948741/R0000003" },
+  "compiled": { "...": "..." }
+}
+```
+
+`url` は画像サービスの基点の URL（`/info.json` の手前まで）です。地図を読み込むときに
+`<url>/info.json` を 1 回取得し、タイルは IIIF の URL の形（`<url>/<region>/<size>/0/default.jpg`）
+で要求します。`info.json` の読み取りと要求の URL の組み立ては OpenLayers（`ol/format` の
+`IIIFInfo` と `ol/source` の `IIIF`）が行うため、`ol/source` と同じく `ol/format` も解決できる
+必要があります。
+
+- 使えるもの: 任意の領域を返せる Image API 2・3 のサービス（level 1・level 2 の多く）と、
+  タイルが 256 px の level 0 のサービス。
+- まだ使えないもの: タイルが 256 px 以外の level 0・`sizes` だけの level 0・Image API 1。
+  これらの地図や、`info.json` が読めない地図（`http:`／`https:` でない・取得の失敗・10 秒超・
+  1 MiB 超・JSON でない・`width`／`height` が地図の `compiled` と違う）は使えない地図として扱い、
+  エラーを記録し、他の地図は普通に起動します。`<maplat-app>` では、`sourceLoaded` のイベントに
+  `{ mapID, usable: false }` で入ります。`MaplatApp` クラスでは、`sourceLoaded` の detail に
+  その地図は入りません（印の要素も足しません）。それが初期の地図だったときは、既定の地図から
+  起動します。
+- 画像サービスは、ページからのオリジンをまたぐ要求（CORS）を許している必要があります。
+- `delivery` を持つ地図はタイルキャッシュに登録しません。`enableCache: true` でも
+  `getMapCacheEnable(mapID)` は `false` を返します。
+- `url`・`urls` も持つ地図は `delivery` を使い、警告を記録します。`info.json` の `@id`／`id` が
+  `delivery.url` と違うときも、タイルは `delivery.url` から要求します（警告を記録します）。
+- `info.json` は資格情報（Cookie など）を付けずに取得します。
+
 ### ライフサイクル
 
 - ライフサイクルフェーズと uiHooks については

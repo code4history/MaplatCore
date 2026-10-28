@@ -135,6 +135,48 @@ console.warn = (...args: unknown[]): void => {
   }
 };
 
+// ---- 画像の配信の節（デモだけの処理。製品の挙動は変えない）----
+// IIIF の地図が使えないときに Core が出す console.error を控える（起動の前に仕掛ける）
+const unusableMessages: string[] = [];
+const originalError = console.error.bind(console);
+console.error = (...args: unknown[]): void => {
+  originalError(...args);
+  const first = args[0];
+  if (typeof first === "string" && first.includes("is not usable")) unusableMessages.push(first);
+};
+
+// 直近のタイルの要求（PerformanceObserver の resource を読む）。1 ページで 1 つだけ仕掛ける
+const TILE_REQUEST_MAX = 8;
+const tileRequests: string[] = [];
+let tileRequestSink: ((list: string[]) => void) | undefined;
+let tileRequestObserver: PerformanceObserver | undefined;
+// 地図のタイルは画像（IIIF の切り出しは .jpg、手元のタイルは .jpg、地理院地図・OSM は .png）
+// 背面のベースマップ（OSM・地理院地図）のタイルは一覧に入れない（古地図の画像の出どころを見せる節なので）
+const BASEMAP_TILE_HOST = /(?:^|\.)(?:tile\.openstreetmap\.org|cyberjapandata\.gsi\.go\.jp)$/i;
+const isTileResource = (url: string): boolean => {
+  if (!/\.(?:jpe?g|png|webp)(?:$|\?)/i.test(url)) return false;
+  try {
+    return !BASEMAP_TILE_HOST.test(new URL(url).hostname);
+  } catch {
+    return false;
+  }
+};
+const pushTileRequest = (url: string): void => {
+  if (!isTileResource(url)) return;
+  tileRequests.unshift(url);
+  if (tileRequests.length > TILE_REQUEST_MAX) tileRequests.length = TILE_REQUEST_MAX;
+  tileRequestSink?.([...tileRequests]);
+};
+const startTileRequestObserver = (): void => {
+  if (tileRequestObserver || typeof PerformanceObserver === "undefined") return;
+  // 節を作る前の要求を 1 度だけ拾い、その後に observer を仕掛ける（同じ要求を二重に数えない）
+  for (const entry of performance.getEntriesByType("resource")) pushTileRequest(entry.name);
+  tileRequestObserver = new PerformanceObserver((list) => {
+    for (const entry of list.getEntries()) pushTileRequest(entry.name);
+  });
+  tileRequestObserver.observe({ type: "resource" });
+};
+
 /** URL の ?region= を REGION_IDS で検証する。無い・未知なら先頭 */
 function currentRegion(): RegionId {
   const q = new URLSearchParams(location.search).get("region");
@@ -221,6 +263,20 @@ async function main(): Promise<void> {
 
   // app 設定を明示的に取得（root 起点のページ相対 apps/。検証済みの region だけを使う）
   const setting: AppSetting = await (await fetch(`apps/${region}.json`)).json();
+
+  // この地域の古地図のうち、IIIF の配信（delivery.type === "iiifImage"）を使うもの。
+  // 「IIIF の画像」の節をどの地図で見せるかを決める（デモだけの処理。地図の設定は読むだけ）
+  const iiifMapIDs: string[] = [];
+  for (const source of setting.sources) {
+    if (typeof source === "string") continue;
+    const mapID = (source as { mapID: string }).mapID;
+    try {
+      const map = await (await fetch(`maps/${mapID}.json`)).json();
+      if (map?.delivery?.type === "iiifImage") iiifMapIDs.push(mapID);
+    } catch {
+      // 読めない地図は IIIF として扱わない（節には出さない）
+    }
+  }
 
   // 素材をバンドルから取得（無ければ「欠け」＝ボタンを出さないだけ）
   const loader = CONTENTS[`./content/${region}.json`];
@@ -485,6 +541,14 @@ async function main(): Promise<void> {
     oldGroup.label = "古地図";
     const baseGroup = document.createElement("optgroup");
     baseGroup.label = "現代の地図";
+    // 起動のときに使えなかった地図（IIIF の取得に失敗した等）は、一覧で「使えない地図」にする。
+    // 控えは Core の内部ではなく、公開の振る舞いである console.error の文から地図の ID を取る
+    // （文の形: Maplat: IIIF image for map "<mapID>" is not usable: <reason>）
+    const unusableIds = new Set(
+      unusableMessages
+        .map((message) => /map "([^"]+)" is not usable/.exec(message)?.[1])
+        .filter((mapID): mapID is string => !!mapID)
+    );
     for (const source of setting.sources) {
       const isBasemap = typeof source === "string";
       const mapID = isBasemap ? source : (source as { mapID: string }).mapID;
@@ -494,6 +558,10 @@ async function main(): Promise<void> {
       const opt = document.createElement("option");
       opt.value = mapID;
       opt.textContent = label;
+      if (unusableIds.has(mapID)) {
+        opt.textContent = `${label}（使えない地図）`;
+        opt.disabled = true;
+      }
       (isBasemap ? baseGroup : oldGroup).appendChild(opt);
     }
     for (const g of [oldGroup, baseGroup]) if (g.children.length > 0) mapSelect.appendChild(g);
@@ -896,6 +964,19 @@ async function main(): Promise<void> {
       }
     });
 
+    // ---- IIIF の画像（画像の配信の対比。地域の操作パネルの新しい節）----
+    buildIiifImageSection({
+      app,
+      makeSection,
+      mountSection,
+      showError,
+      logEvent,
+      activeMapId,
+      iiifUsable: iiifMapIDs.find((id) => !unusableIds.has(id)),
+      iiifBroken: iiifMapIDs.find((id) => unusableIds.has(id)),
+      localMapID: sourceIds.find((id) => id !== "gsi" && id !== "osm" && !iiifMapIDs.includes(id))
+    });
+
     // 初期状態を反映
     refreshMapState();
   };
@@ -1049,3 +1130,151 @@ main().catch((e: unknown) => {
   const status = byId("status");
   status.textContent = `地図の読み込みに失敗しました: ${e instanceof Error ? e.message : String(e)}`;
 });
+
+// ---- 画像の配信の節（デモだけの処理。製品の挙動は変えない）----
+
+/** 操作パネルの節（main の中の makeSection が返すものと同じ形） */
+type DemoSection = { sec: HTMLElement; row: () => HTMLDivElement };
+
+/** 節の中に説明の 1 行（見えるもの・対比で分かること）を足す */
+function addIiifNote(row: HTMLElement, text: string): void {
+  const p = document.createElement("p");
+  p.className = "demo-note";
+  p.textContent = text;
+  row.appendChild(p);
+}
+
+/**
+ * 「IIIF の画像」の節を作る。
+ *
+ * 3 つの入力を 1 クリックで切り替えて、画像の配信の道の違いを見せる:
+ *   (a) 国立国会図書館の IIIF から配信（キャッシュ対象外）
+ *   (b) 壊れた delivery（使えない地図になるが、起動は止まらない）
+ *   (c) 既存の地域の古地図（手元のタイル。t.tilemap.jp/…/{z}/{x}/{y}.jpg）
+ * 要求の一覧は PerformanceObserver の resource を読む（デモだけの処理。製品は変えない）。
+ */
+function buildIiifImageSection(ctx: {
+  app: MaplatApp;
+  makeSection: (title: string) => DemoSection;
+  mountSection: (section: DemoSection) => void;
+  showError: (where: string, e: unknown) => void;
+  logEvent: (type: string, text?: string) => void;
+  activeMapId: () => string | undefined;
+  iiifUsable?: string;
+  iiifBroken?: string;
+  localMapID?: string;
+}): void {
+  const { app, makeSection, mountSection, showError, logEvent, activeMapId } = ctx;
+  const sec = makeSection("IIIF の画像");
+
+  // (a) IIIF から配信
+  if (ctx.iiifUsable) {
+    const mapID = ctx.iiifUsable;
+    const row = sec.row();
+    row.appendChild(
+      makeButton("IIIF から配信", () => {
+        app.clearLine();
+        void app.changeMap(mapID).catch((e: unknown) => {
+          showError("IIIF から配信", e);
+        });
+      })
+    );
+    addIiifNote(
+      row,
+      "見えるもの: 古地図が表示される。節の中に「直近のタイルの要求」の一覧（dl.ndl.go.jp/api/iiif/948741/R0000003/768,512,256,256/256,/0/default.jpg の形）。キャッシュの欄は「キャッシュ対象外」"
+    );
+    addIiifNote(row, "対比で分かること: 画像が NDL の IIIF から来ている（ネットワークの要求が IIIF の切り出しの形）");
+  }
+
+  // (b) 壊れた delivery
+  if (ctx.iiifBroken) {
+    const mapID = ctx.iiifBroken;
+    const row = sec.row();
+    row.appendChild(
+      makeButton("壊れた delivery", () => {
+        void app.changeMap(mapID).then(
+          () => {
+            logEvent("changeMap", `${mapID}: 使えない地図なので切り替わりません（他の地図は使えます）`);
+          },
+          (e: unknown) => {
+            showError("壊れた delivery", e);
+          }
+        );
+      })
+    );
+    addIiifNote(
+      row,
+      "見えるもの: 地図の一覧で「使えない地図」になり、他の地図は普通に使える。節に console.error の文（「IIIF image … is not usable: fetch-failed」）を写す"
+    );
+    addIiifNote(row, "対比で分かること: 失敗しても起動が止まらない");
+  }
+
+  // (c) 既存の地域の古地図（手元のタイル）
+  {
+    const row = sec.row();
+    if (ctx.localMapID) {
+      const mapID = ctx.localMapID;
+      row.appendChild(
+        makeButton("この地域の古い地図（手元のタイル）", () => {
+          app.clearLine();
+          void app.changeMap(mapID).catch((e: unknown) => {
+            showError("手元のタイル", e);
+          });
+        })
+      );
+    } else {
+      row.appendChild(
+        makeButton("既存の地域（館林）の古い地図", () => {
+          const url = new URL(location.href);
+          url.searchParams.set("region", "tatebayashi");
+          location.assign(url.toString());
+        })
+      );
+    }
+    addIiifNote(row, "見えるもの: 要求の一覧は t.tilemap.jp/…/{z}/{x}/{y}.jpg の形");
+    addIiifNote(row, "対比で分かること: 手元のタイルの道（今の道）との違い");
+    addIiifNote(row, "同じ画像の手元のタイルはまだ作れないため、既存の地域の古い地図で見せています。");
+  }
+
+  // 直近のタイルの要求（PerformanceObserver の resource。textContent で入れる）
+  const requestTitle = document.createElement("p");
+  requestTitle.className = "demo-note";
+  requestTitle.textContent = "直近のタイルの要求:";
+  const requestList = document.createElement("pre");
+  requestList.id = "iiif-tile-requests";
+  requestList.className = "demo-note";
+  requestList.style.cssText = "white-space:pre-wrap;word-break:break-all;margin:4px 0 0;";
+  requestList.textContent = tileRequests.length > 0 ? tileRequests.join("\n") : "（まだありません）";
+  tileRequestSink = (list) => {
+    requestList.textContent = list.length > 0 ? list.join("\n") : "（まだありません）";
+  };
+  startTileRequestObserver();
+  sec.sec.append(requestTitle, requestList);
+
+  // キャッシュの対象か（Core の公開のメソッドだけで見る）
+  const cacheRow = sec.row();
+  const cacheLabel = document.createElement("span");
+  cacheLabel.textContent = "キャッシュ: ";
+  const cacheValue = document.createElement("span");
+  cacheValue.id = "iiif-cache";
+  const refreshCache = (): void => {
+    const mapID = activeMapId();
+    cacheValue.textContent = mapID && app.getMapCacheEnable(mapID) ? "キャッシュ対象" : "キャッシュ対象外";
+  };
+  refreshCache();
+  app.addEventListener("mapChanged", refreshCache);
+  cacheRow.append(cacheLabel, cacheValue);
+
+  // 使えない地図の記録（Core の console.error を写す）
+  const errorTitle = document.createElement("p");
+  errorTitle.className = "demo-note";
+  errorTitle.textContent = "使えない地図の記録（console.error）:";
+  const errorList = document.createElement("pre");
+  errorList.id = "iiif-unusable-errors";
+  errorList.className = "demo-note";
+  errorList.style.cssText = "white-space:pre-wrap;word-break:break-all;margin:4px 0 0;";
+  errorList.textContent = unusableMessages.length > 0 ? unusableMessages.join("\n") : "（ありません）";
+  sec.sec.append(errorTitle, errorList);
+
+  mountSection(sec);
+}

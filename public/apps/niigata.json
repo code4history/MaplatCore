@@ -1,0 +1,28 @@
+{
+  "appName": {
+    "ja": "新潟市古地図デモ（IIIF）",
+    "en": "Historical Map Demo of Niigata (IIIF)"
+  },
+  "lang": "ja",
+  "homePosition": [
+    139.0495,
+    37.93
+  ],
+  "defaultZoom": 15,
+  "zoomRestriction": true,
+  "minZoom": 10,
+  "maxZoom": 18,
+  "startFrom": "niigata_1920_ndl",
+  "sources": [
+    {
+      "mapID": "niigata_1920_ndl",
+      "label": "新潟市圖（1920・IIIF から配信）"
+    },
+    {
+      "mapID": "niigata_1920_ndl_broken",
+      "label": "新潟市圖（壊れた delivery）"
+    },
+    "gsi",
+    "osm"
+  ]
+}

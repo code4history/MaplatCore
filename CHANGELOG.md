@@ -12,6 +12,7 @@
 - 利用者向けの文書 `docs/api/maplat-app.md`・`maplat-app.ja.md`
 - `MaplatApp` の `appOption.div` に HTMLElement も渡せる（従来の id 文字列も可）。`appOption.restoreExtensionKeys`（`restoreSession` で `localStorage` から拡張キーも読む）。中心の目印の `img` に class `maplat-center-marker`（表現の差し替え口。id `center_circle` は従来どおり）
 - POI のテンプレートの出力（`html`）で、マルチメディアのスライダー `<qy-swiper>`・`<qy-swiper-slide>`（[Quyuan](https://github.com/code4history/Quyuan)）を使えるようにした。`sanitizeHtml` が 2 つの要素を残す。`qy-swiper-slide` に残る属性は `image-url`・`image-type`・`thumbnail-url`・`caption`・`material-url`・`camera-position`・`camera-target`・`show-texture`・`fit-to-container`・`debug-mode`、`qy-swiper` に残る属性は `has-thumb`・`autoplay` だけで、値は POI の `media` と同じ検査を通る（表示には `@maplat/ui` 1.3 以降が要る）
+- 古地図の画像を IIIF Image API の画像サービスから直接配る `delivery: { type: "iiifImage", url }`（地図の設定）。`info.json` の読み取りと要求の URL は OpenLayers の `IIIFInfo`・`IIIF` に任せる。Image API 2・3 の任意の領域を返せるサービスと、タイルが 256 px の level 0 に対応。使えない地図は `sourceLoaded` で `usable: false` になり、他の地図で起動する。タイルキャッシュには登録しない。判定の関数 `checkIiifDelivery`・`resolveIiifDelivery` は `src/iiif/delivery.ts`
 
 ### Changed
 - `MaplatApp` の起動時だけ効くフィールド（`appid`・`enableCache`・`noRotate`・`alwaysGpsOn`・`overlay`・`googleApiKey`・`restoreSession`・`initialRestore`・`uiHooks` など）への構築後の代入は、警告して無視する（読み取りは従来どおり）

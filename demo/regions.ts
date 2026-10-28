@@ -9,6 +9,7 @@ export const REGION_IDS = [
   "nara",
   "tatebayashi",
   "hiroshima",
+  "niigata",
 ] as const;
 export type RegionId = (typeof REGION_IDS)[number];
 
@@ -233,5 +234,15 @@ export const REGION_META: Record<RegionId, RegionMeta> = {
       "広島城の城域（面）",
     ],
     ops: ["map", "poi", "line", "vector", "gps"],
+  },
+  niigata: {
+    label: "新潟",
+    title: "新潟市圖（1920・国立国会図書館の IIIF から配信）",
+    highlights: [
+      "古地図の画像を国立国会図書館の IIIF 画像サービスから直接表示（手元のタイル無し）",
+      "壊れた delivery の地図は「使えない地図」になり、他の地図は普通に使える",
+      "位置合わせは仮（GCP 6 点）",
+    ],
+    ops: ["map"],
   },
 };
