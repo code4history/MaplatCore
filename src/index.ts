@@ -1731,11 +1731,19 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
           // 3. 1 つの同期の区間で層を入れ替える
           replaceMarkers(this, placeMarkerLayers(this, all, classes));
           // マーカーを隠している間は判定できないので、選択の扱いは次の描き直しに委ねる
-          if (this.__outsideSelection?.pending && !this.stateBuffer.hideMarker) {
-            settleOutsideSelection(
-              this,
-              selected ? classes[classes.length - 1] : undefined
-            );
+          const outside = this.__outsideSelection;
+          if (outside && !this.stateBuffer.hideMarker) {
+            if (selected) {
+              // 今回描いた選択中が、範囲外として控えている POI と同じときだけ決め直す。
+              // 判定待ちの印が無くても決め直す（切り替えの最初の分岐で印が立たない道、
+              // 隠すのをやめた後の描き直し）。id が違うときは古い描き直しなので触らない。
+              if (selected.data?.namespaceID === outside.id) {
+                settleOutsideSelection(this, classes[classes.length - 1]);
+              }
+            } else if (outside.pending) {
+              // 切り替え先にその POI が無い（判定待ちのまま）ときは従来どおり外す
+              settleOutsideSelection(this, undefined);
+            }
           }
           // 4. 描画中に来た要求は、最新の 1 件だけを続けて描く
           if (

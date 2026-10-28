@@ -259,6 +259,41 @@ describe("描き直しの判定と範囲外の選択の結び付き", () => {
     expect(app.__outsideSelection).toBeUndefined();
     expect(app.__selectedMarker).toBeUndefined();
   });
+
+  it("切り替え先で範囲内になる範囲外の選択は、描き直しで普通の選択として続く", async () => {
+    const app = await bootApp();
+    app.from = makeSource(() => false) as any;
+    app.selectMarker("p1");
+    await flush();
+    expect(app.__outsideSelection).toMatchObject({ id: "p1" });
+
+    // 切り替えの最初の分岐（変換の中心が紙の中）に当たった状態。
+    // この道では「判定待ち」の印は立たない。
+    app.__outsideSelection = { id: "p1", merc: [100, 200] };
+    app.from = makeSource(() => true) as any;
+    app.redrawMarkers();
+    await flush();
+
+    // 範囲内なので普通の選択として続く（古いメルカトルは残さない）
+    expect(app.__outsideSelection).toBeUndefined();
+    expect(app.__selectedMarker).toBe("p1");
+  });
+
+  it("選択中の id と違う範囲外の選択は、描き直しで触らない", async () => {
+    const app = await bootApp();
+    app.from = makeSource(() => false) as any;
+    app.selectMarker("p1");
+    await flush();
+
+    // 古い描き直しが、別の POI の選択の状態を外さない
+    app.__outsideSelection = { id: "p0", merc: [100, 200] };
+    app.from = makeSource(() => true) as any;
+    app.redrawMarkers();
+    await flush();
+
+    expect(app.__outsideSelection).toMatchObject({ id: "p0", merc: [100, 200] });
+    expect(app.__selectedMarker).toBe("p1");
+  });
 });
 
 describe("GPS の位置移動", () => {
