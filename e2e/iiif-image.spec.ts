@@ -163,4 +163,84 @@ test.describe('IIIF の画像の配信（デモの地域「新潟」）', () => 
     // (5) Manifest への要求が 0 件（Core は Manifest を取らない）
     expect(recorded.manifestCalls()).toBe(0);
   });
+
+  test('新潟の地図の書誌が写した値のままで、表を出すかはアプリ設定で変わり、Manifest を取りに行かない', async ({ page }) => {
+    const recorded = await routeIiif(page);
+    // ページ全体の要求を控える（Manifest への要求を数える）
+    const requests: string[] = [];
+    page.on('request', request => {
+      requests.push(request.url());
+    });
+
+    // 素材（地図の JSON）の copiedMetadata の件数。デモの表と getMapMeta がこれと同じ件数になる
+    const mapPath = resolve(process.cwd(), 'public/maps/niigata_1920_ndl.json');
+    const map = JSON.parse(readFileSync(mapPath, 'utf-8')) as { iiif?: { copiedMetadata?: unknown[] } };
+    const copiedCount = map.iiif?.copiedMetadata?.length ?? 0;
+    expect(copiedCount).toBeGreaterThan(0);
+
+    await page.goto('/?region=niigata', { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => (window as unknown as { __MAPLAT_DEMO_APP__?: unknown }).__MAPLAT_DEMO_APP__, undefined, {
+      timeout: 60000
+    });
+    await page.waitForSelector('#demo-app-controls .demo-sec', { timeout: 30000 });
+
+    // (1) 書誌を持つ地図は、getMapMeta の iiif に写した metadata の全件を載せる（表を出す設定）
+    const shown = await page.evaluate(() => {
+      const app = (window as any).__MAPLAT_DEMO_APP__;
+      const meta = app.getMapMeta('niigata_1920_ndl');
+      return {
+        current: app.currentMapInfo()?.mapID,
+        display: meta?.iiif?.display,
+        count: Array.isArray(meta?.iiif?.metadata) ? meta.iiif.metadata.length : null,
+        keys: meta?.iiif ? Object.keys(meta.iiif) : []
+      };
+    });
+    expect(shown.current).toBe('niigata_1920_ndl');
+    expect(shown.display).toBe('all');
+    expect(shown.count).toBe(copiedCount);
+    // 表示に使わない項目（bindings・copiedValues）は載らない
+    expect(shown.keys).not.toContain('bindings');
+    expect(shown.keys).not.toContain('copiedValues');
+
+    // デモの「書誌」の欄: 写した値・印・metadata の全件の表
+    await expect(page.locator('#iiif-meta-display')).toHaveText('display: all');
+    await expect(page.locator('#iiif-meta-stamp')).toHaveText('Manifest から写した値');
+    await expect(page.locator('#iiif-meta-summary')).toContainText('新潟市圖');
+    // NDL のライセンスは語彙に無いので「Custom」と URL の文字で出る
+    await expect(page.locator('#iiif-meta-summary')).toContainText('Custom');
+    await expect(page.locator('#iiif-meta-summary')).toContainText('dl.ndl.go.jp/ja/help_iiif');
+    await expect(page.locator('#iiif-meta-table tbody tr')).toHaveCount(copiedCount);
+
+    // (2) 表を出さない設定の地図に切り替えると、display が hidden になり表が出ない
+    await page.selectOption('#map-select', 'niigata_1920_ndl_meta_hidden');
+    await expect
+      .poll(async () => page.evaluate(() => (window as any).__MAPLAT_DEMO_APP__.currentMapInfo()?.mapID), { timeout: 30000 })
+      .toBe('niigata_1920_ndl_meta_hidden');
+    const hidden = await page.evaluate(() => {
+      const meta = (window as any).__MAPLAT_DEMO_APP__.getMapMeta('niigata_1920_ndl_meta_hidden');
+      return { display: meta?.iiif?.display, count: Array.isArray(meta?.iiif?.metadata) ? meta.iiif.metadata.length : null };
+    });
+    expect(hidden.display).toBe('hidden');
+    expect(hidden.count).toBe(copiedCount);
+    await expect(page.locator('#iiif-meta-display')).toHaveText('display: hidden');
+    await expect(page.locator('#iiif-meta-table table')).toHaveCount(0);
+    await expect(page.locator('#iiif-meta-table')).toContainText('表を出さない設定（hidden）');
+
+    // (3) 悪い値の Manifest を関数に通した表に、画像・実行・javascript のリンクが残らない
+    const bad = page.locator('#iiif-bad-output');
+    await expect(bad).not.toBeEmpty();
+    await expect(bad.locator('img')).toHaveCount(0);
+    await expect(bad.locator('script')).toHaveCount(0);
+    await expect(bad.locator('a[href^="javascript:"]')).toHaveCount(0);
+    await expect(bad.locator('a[href^="mailto:"]')).toHaveCount(0);
+    // https のリンクだけが新しいタブのリンクで残る
+    const httpsLink = bad.locator('a[href^="https://example.org/"]').first();
+    await expect(httpsLink).toHaveAttribute('target', '_blank');
+    await expect(httpsLink).toHaveAttribute('rel', 'noopener noreferrer');
+
+    // (4) Manifest への要求が 0 件（ページ全体で数える）
+    expect(recorded.manifestCalls()).toBe(0);
+    expect(requests.filter(url => url === MANIFEST)).toEqual([]);
+    expect(requests.filter(url => /\/manifest\.json(?:$|[?#])/.test(url))).toEqual([]);
+  });
 });
