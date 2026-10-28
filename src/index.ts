@@ -17,6 +17,11 @@ import { altKeyOnly } from "ol/events/condition";
 import { HistMap } from "./source/histmap";
 import { TmsMap } from "./source/tmsmap";
 import { BackmapSource, MaplatSource, mapSourceFactory } from "./source_ex";
+import {
+  IiifDeliveryError,
+  isUnusableSource,
+  unusableSource
+} from "./iiif/delivery";
 import { ViewpointArray } from "./source/mixin";
 // META_KEYS の正本は依存の無い src/meta_keys.ts（@maplat/core/common の分割で source/mixin.ts から移した）
 import { META_KEYS } from "./meta_keys";
@@ -266,6 +271,8 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
   timer: any = undefined;
   appName: any;
   cacheHash: any;
+  /** 起動のときに使えなかった地図（IIIF の取得に失敗した等）。sourceLoaded の detail に usable: false で足す */
+  __unusableSources?: { mapID: string; reason: string }[] = [];
   currentPosition: any;
   startFrom? = "";
   from?: MaplatSource;
@@ -699,7 +706,15 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
       maplibreMap: this.maplibreMap // Pass maplibre map instance
     };
     dataSource.forEach(option => {
-      sourcePromise.push(mapSourceFactory(option, commonOption));
+      // IIIF の地図の失敗（IIIF の取得に失敗した・配れない等）だけを受けて印に変える。
+      // それ以外の失敗の扱いは今のまま変えない（起動を止める）
+      sourcePromise.push(
+        mapSourceFactory(option, commonOption).catch(err =>
+          err instanceof IiifDeliveryError
+            ? unusableSource(option, err)
+            : Promise.reject(err)
+        )
+      );
     });
     return Promise.all(sourcePromise);
   }
@@ -1031,17 +1046,38 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
    */
   sourceLoadedDetail(sources: unknown): { mapID: string | null; usable: boolean }[] {
     const list = Array.isArray(sources) ? sources : [];
-    return list.map((source: any) => ({
+    const detail = list.map((source: any) => ({
       mapID: source?.mapID ?? null,
       usable: !!(source && this.cacheHash?.[source.mapID] === source)
     }));
+    // 起動のときに使えなかった地図（IIIF の取得に失敗した等）は、生の source が無いので
+    // ここで末尾に足す（受け手が存在しない source のメソッドを呼ばないようにする）
+    (this.__unusableSources || []).forEach(entry => {
+      detail.push({ mapID: entry.mapID, usable: false });
+    });
+    return detail;
   }
 
   // Async initializer 9: Handle sources loading result
   async handleSources(sources: any) {
     const cache: any[] = [];
+    const loaded: any[] = [];
     this.cacheHash = {};
+    this.__unusableSources = [];
     sources.forEach((source: any) => {
+      // IIIF の地図の失敗の印は source ではない。cacheHash にも生の sourceLoaded の
+      // detail にも入れず、控えておいて要素の経路（sourceLoadedDetail）にだけ足す
+      if (isUnusableSource(source)) {
+        this.__unusableSources!.push({
+          mapID: source.mapID,
+          reason: source.__maplatUnusable.reason
+        });
+        console.error(
+          `Maplat: IIIF image for map "${source.mapID}" is not usable: ${source.__maplatUnusable.reason}`
+        );
+        return;
+      }
+      loaded.push(source);
       source.setMap(this.mapObject);
       // m6-t5: GL 未ロード時は throw せず当該ソースを落とす（ADR-0014）
       const keep = bindProviderGlToSource(source, {
@@ -1064,7 +1100,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
       if (prev) return prev;
       if (curr.isBasemap()) return curr;
     }, null);
-    this.dispatchEvent(new CustomEvent("sourceLoaded", sources));
+    this.dispatchEvent(new CustomEvent("sourceLoaded", loaded));
     if (cache.length === 0) {
       // m6-t5 AC22: 使えるソースが0件（provider-only + GL 未ロード等）。
       // 初期地図選択と操作/自動ハンドラ登録を行わない（this.from 未設定のまま
@@ -1093,10 +1129,20 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
 
   // Async initializer 10: Handle initial map
   async setInitialMap(cache: MaplatSource[]) {
-    const initial: string =
+    let initial: string =
       this.initialRestore.mapID ||
       this.startFrom ||
       cache[cache.length - 1].mapID;
+    // 初期の地図が cacheHash に無い（IIIF の取得に失敗した・GL 未ロードで落とした等）とき、
+    // changeMap は「not found」の警告だけで何もしないので、画面が空になる。今の既定と同じ
+    // 規則（cache の最後）の地図に変える（この 1 か所で両方の理由を直す）
+    if (!cache.some(source => source.mapID === initial)) {
+      const fallback: string = cache[cache.length - 1].mapID;
+      console.warn(
+        `Maplat: the initial map "${initial}" is not usable; starting from "${fallback}" instead.`
+      );
+      initial = fallback;
+    }
     this.from = cache.reduce(
       (prev: MaplatSource | undefined, curr: MaplatSource) => {
         if (prev) {

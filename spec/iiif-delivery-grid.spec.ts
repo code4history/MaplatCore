@@ -74,8 +74,9 @@ type Measured = {
 //
 // mapID は渡さない。今の HistMap は mapID があると tiles/<mapID>/… の url を補い
 // （addCommonOptions）、OL の UrlTile は url があると渡した tileUrlFunction を作り直す
-// （UrlTile の generateTileUrlFunction_）。IIIF の道は url を持たないので、格子を見るこの試験も
-// mapID を渡さない。結線（source_ex）の段で、url を補わせない扱いを入れる。
+// （UrlTile の generateTileUrlFunction_）。製品の結線（source_ex）は、作った source に
+// setTileUrlFunction で IIIF の関数を付け直す（spec/iiif-source-factory.spec.ts が mapID つきで測る）。
+// 格子は width・height だけで決まるので、格子と URL の関数を測るこの試験は mapID を渡さない。
 async function buildSource(name: string): Promise<Measured> {
   const info = readFixture(name);
   const baseUrl = info["@id"] || info.id;

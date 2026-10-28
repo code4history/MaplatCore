@@ -400,3 +400,36 @@ describe("unusableSource / isUnusableSource: 使えない地図の印", () => {
     expect(isUnusableSource({ mapID: "iiif-map" })).toBe(false);
   });
 });
+
+// --- level0-256 の minZoom ---
+// level0 のタイルの地図は、info.json の scaleFactors に無い倍率のズームを要求すると、
+// 静的なサーバに無いファイルを指す。HistMap の minZoom を「最も粗いタイルの倍率」まで上げて、
+// それより引いた表示では OL が最も粗いタイルを縮めて描くようにする。
+describe("resolveIiifDelivery: level0-256 の minZoom", () => {
+  const resolveLevel0 = (info: any) =>
+    resolveIiifDelivery(
+      { type: "iiifImage", url: info["@id"] || info.id },
+      { width: info.width, height: info.height },
+      { fetchImpl: jsonFetch(info) }
+    );
+
+  it("scaleFactors が 1〜16 の資料は minZoom 0（maxZoom 4 と一致する）", async () => {
+    const info = readFixture("level0-tiles-256.info.json");
+    const delivery = await resolveLevel0(info);
+    expect(delivery.minZoom).toBe(0);
+  });
+
+  it("scaleFactors を 1〜4 にした資料は minZoom 2（資料のファイルは変えず、この場で写して変える）", async () => {
+    const info = JSON.parse(
+      JSON.stringify(readFixture("level0-tiles-256.info.json"))
+    );
+    info.tiles[0].scaleFactors = [1, 2, 4];
+    const delivery = await resolveLevel0(info);
+    expect(delivery.minZoom).toBe(2);
+  });
+
+  it("任意の領域が取れる資料（NDL）は、倍率の制限が無いので minZoom を入れない", async () => {
+    const delivery = await resolveLevel0(NDL);
+    expect(delivery.minZoom).toBeUndefined();
+  });
+});

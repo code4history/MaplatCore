@@ -8,7 +8,7 @@
 //     同じなので、OL が作る URL の関数を Maplat の (z, x, y) にそのまま当てられる。
 import { IIIFInfo } from "ol/format";
 import { IIIF } from "ol/source";
-import { transPng } from "../const_ex";
+import { tileSize as TILE_SIZE, transPng } from "../const_ex";
 
 /** Core で配れない理由 */
 export type IiifDeliveryReason =
@@ -150,11 +150,13 @@ export type UnusableSource = {
  * 解決に失敗した IIIF の地図に付ける印を作る（起動全体を止めない）
  */
 export function unusableSource(
-  option: { mapID?: string },
+  option: { mapID?: string } | string,
   err: IiifDeliveryError
 ): UnusableSource {
+  // sources の要素は文字列（地図 ID だけ）のこともある（"gsi"・"osm" 等）
+  const mapID = typeof option === "string" ? option : (option?.mapID ?? "");
   return {
-    mapID: option?.mapID ?? "",
+    mapID,
     __maplatUnusable: { reason: err.reason }
   };
 }
@@ -264,10 +266,14 @@ export async function resolveIiifDelivery(
   opts?: { signal?: AbortSignal; fetchImpl?: typeof fetch }
 ): Promise<{
   tileUrlFunction: (coord: number[]) => string;
+  /** 配信の基準の URL（info.json の @id と違えば delivery.url のほう） */
+  url: string;
   width: number;
   height: number;
   info: unknown;
   warnings: string[];
+  /** level0-256 のときだけ、HistMap に渡すズームの下限 */
+  minZoom?: number;
 }> {
   if (!delivery || delivery.type !== "iiifImage" || typeof delivery.url !== "string")
     throw new IiifDeliveryError(
@@ -339,10 +345,33 @@ export async function resolveIiifDelivery(
     );
 
   const sourceOptions = new IIIFInfo(info).getTileSourceOptions() || {};
+  // level0 のタイルの地図は、scaleFactors に無い倍率のズームを要求すると、静的なサーバに
+  // 無いファイルを指す。HistMap の minZoom を「最も粗いタイルの倍率」まで上げる
+  // （maxZoom は HistMap と同じ式）。任意の領域が取れる地図には入れない。
+  let minZoom: number | undefined;
+  if (checked.tiling === "level0-256") {
+    const scales: number[] = Array.isArray((sourceOptions as any).resolutions)
+      ? ((sourceOptions as any).resolutions as number[])
+      : [];
+    const maxScaleFactor = scales.length > 0 ? Math.max(...scales) : undefined;
+    if (
+      maxScaleFactor !== undefined &&
+      Number.isFinite(maxScaleFactor) &&
+      maxScaleFactor > 0
+    ) {
+      const maxZoom = Math.ceil(
+        Math.max(
+          Math.log2(info.width / TILE_SIZE),
+          Math.log2(info.height / TILE_SIZE)
+        )
+      );
+      minZoom = maxZoom - Math.log2(maxScaleFactor);
+    }
+  }
   const olSource = new IIIF({
     ...(sourceOptions as any),
     url,
-    tileSize: 256,
+    tileSize: TILE_SIZE,
     resolutions: undefined
   });
   const olTileUrlFunction = olSource.getTileUrlFunction();
@@ -354,9 +383,69 @@ export async function resolveIiifDelivery(
 
   return {
     tileUrlFunction,
+    url,
     width: info.width,
     height: info.height,
     info,
-    warnings
+    warnings,
+    ...(minZoom !== undefined ? { minZoom } : {})
   };
+}
+
+// --- 結線（source_ex の 2 つの道から呼ぶ。同じ処理を 2 か所に書かない） ---
+
+/** この地図の `delivery` が IIIF Image か（type が違えば 1 回だけ警告して false） */
+export function wantsIiifDelivery(options: any): boolean {
+  const delivery = options && options.delivery;
+  if (!delivery) return false;
+  if (delivery.type === "iiifImage") return true;
+  console.warn(
+    `Maplat: map "${options.mapID}" has delivery type "${delivery.type}"; ignoring delivery.`
+  );
+  return false;
+}
+
+/**
+ * `delivery` を解決して、HistMap に渡す options に IIIF の URL の関数を入れる
+ * （json の道と noload の道の共通の処理）。
+ *
+ * - `url`・`urls` があれば消す（`delivery` を使う。1 回だけ警告する）
+ * - `minZoom` が返れば options に入れる（level0-256 のときだけ）
+ * - 解決の警告（info.json の `@id` の食い違い）は地図ごとに 1 回 `console.warn` する
+ *
+ * 失敗は `IiifDeliveryError` を投げる。
+ */
+export async function prepareIiifOptions(
+  options: any,
+  expected: { width: number; height: number },
+  opts?: { signal?: AbortSignal; fetchImpl?: typeof fetch }
+): Promise<void> {
+  const delivery = await resolveIiifDelivery(options.delivery, expected, opts);
+  if (options.url || options.urls) {
+    console.warn(
+      `Maplat: map "${options.mapID}" has both delivery and url; using delivery.`
+    );
+    delete options.url;
+    delete options.urls;
+  }
+  for (const warning of delivery.warnings) console.warn(warning);
+  options.tileUrlFunction = delivery.tileUrlFunction;
+  if (delivery.minZoom !== undefined) options.minZoom = delivery.minZoom;
+  // source を作った後に付け直すための控え（この key はタイルのキャッシュを配信ごとに分ける）
+  options.__maplatIiifUrl = delivery.url;
+}
+
+/**
+ * source を作った直後に、IIIF の URL の関数を付け直す。
+ *
+ * OpenLayers の UrlTile は、url（または urls）を与えると構築の時点で URL の関数を
+ * テンプレートから作り直す（generateTileUrlFunction_）。Maplat の HistMap は mapID が
+ * あると `tiles/<mapID>/…` の url を補うので、options に入れただけでは IIIF の URL に
+ * ならない。source の公開の口（setTileUrlFunction）で、作った後に付け直す。
+ * key に配信の URL を渡して、タイルのキャッシュの鍵も配信ごとに分ける。
+ */
+export function applyIiifTileUrlFunction(source: any, options: any): void {
+  if (!options || !options.__maplatIiifUrl) return;
+  if (typeof source?.setTileUrlFunction !== "function") return;
+  source.setTileUrlFunction(options.tileUrlFunction, options.__maplatIiifUrl);
 }
