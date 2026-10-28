@@ -7,6 +7,7 @@ import { MaplatApp } from "../src/index";
 import { setCustomFunction } from "../src/source/mixin";
 import { META_KEYS } from "../src/meta_keys";
 import { IIIF_METADATA_DISPLAY_DEFAULT } from "../src/iiif/manifest";
+import { isIiifMetadataEntry } from "../src/element_contract";
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -232,5 +233,74 @@ describe("initialize: IIIF の値の控え", () => {
     expect(source.iiif.image).toBeUndefined();
     expect(source.iiif.copiedAt).toBeUndefined();
     expect(source.iiif.copiedMetadata).toBeUndefined();
+  });
+});
+
+// copiedMetadata の要素の形（{ from, label, value }）の検査。
+const GOOD_ENTRY_1 = { from: "manifest", label: "タイトル", value: { ja: "新潟市圖" } };
+const GOOD_ENTRY_2 = { from: "canvas", label: { ja: "大きさ", en: "Size" }, value: "4074×2705" };
+const BAD_ENTRIES: unknown[] = [
+  null,
+  "manifest",
+  { from: "other", label: "タイトル", value: "新潟市圖" },
+  { from: "manifest", label: 1, value: "新潟市圖" },
+  { from: "manifest", label: "タイトル", value: { ja: 1 } },
+  { from: "manifest", value: "新潟市圖" }
+];
+
+describe("isIiifMetadataEntry: 要素の形の判定", () => {
+  it.each([
+    ["文字列の label・value", { from: "manifest", label: "タイトル", value: "新潟市圖" }],
+    ["言語の表の label・value", { from: "canvas", label: { ja: "大きさ" }, value: { en: "Size" } }],
+    ["from が canvas", { from: "canvas", label: "x", value: "y" }]
+  ])("良い形（%s）は true", (_name, entry) => {
+    expect(isIiifMetadataEntry(entry)).toBe(true);
+  });
+
+  it.each([
+    ["null", null],
+    ["文字列", "manifest"],
+    ["from が other", { from: "other", label: "x", value: "y" }],
+    ["from が無い", { label: "x", value: "y" }],
+    ["label が数値", { from: "manifest", label: 1, value: "y" }],
+    ["label が無い", { from: "manifest", value: "y" }],
+    ["value が数値", { from: "manifest", label: "x", value: 1 }],
+    ["value の言語の値が数値", { from: "manifest", label: "x", value: { ja: 1 } }]
+  ])("悪い形（%s）は false", (_name, entry) => {
+    expect(isIiifMetadataEntry(entry)).toBe(false);
+  });
+
+  it("配列は false", () => {
+    expect(isIiifMetadataEntry([])).toBe(false);
+  });
+});
+
+describe("getMapMeta: copiedMetadata の要素の形の検査", () => {
+  it("形の合う要素だけを順に返し、外した件数を 1 回だけ警告する", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const source = makeSource({
+      iiif: {
+        manifest: MANIFEST_URL,
+        canvas: CANVAS_URL,
+        copiedMetadata: [GOOD_ENTRY_1, ...BAD_ENTRIES, GOOD_ENTRY_2]
+      }
+    });
+    expect(warn).toHaveBeenCalledTimes(1);
+    const message = String(warn.mock.calls[0][0]);
+    expect(message).toContain("niigata_1920_ndl");
+    expect(message).toContain("6");
+    expect(metaOf(source, source.mapID).iiif.metadata).toEqual([GOOD_ENTRY_1, GOOD_ENTRY_2]);
+    // 同じ地図で getMapMeta を 2 回呼んでも警告は増えない
+    expect(metaOf(source, source.mapID).iiif.metadata).toEqual([GOOD_ENTRY_1, GOOD_ENTRY_2]);
+    expect(warn).toHaveBeenCalledTimes(1);
+  });
+
+  it("全部良い形なら警告しない", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const source = makeSource({
+      iiif: { manifest: MANIFEST_URL, canvas: CANVAS_URL, copiedMetadata: [GOOD_ENTRY_1, GOOD_ENTRY_2] }
+    });
+    expect(warn).not.toHaveBeenCalled();
+    expect(metaOf(source, source.mapID).iiif.metadata).toEqual([GOOD_ENTRY_1, GOOD_ENTRY_2]);
   });
 });

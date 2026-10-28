@@ -918,6 +918,15 @@ export function isMapMeta(v: unknown): v is MapMeta {
   return !!o && typeof o === "object" && typeof o.mapID === "string" && (o.label === undefined || isLocalized(o.label));
 }
 
+/** IIIF の書誌の写し（iiif.copiedMetadata）の要素の形。 */
+export function isIiifMetadataEntry(
+  v: unknown
+): v is { from: "manifest" | "canvas"; label: Localized; value: Localized } {
+  const o = v as Record<string, unknown>;
+  if (!o || typeof o !== "object" || Array.isArray(o)) return false;
+  return (o.from === "manifest" || o.from === "canvas") && isLocalized(o.label) && isLocalized(o.value);
+}
+
 export function isMapListItem(v: unknown): v is MapListItem {
   const o = v as MapListItem;
   return (

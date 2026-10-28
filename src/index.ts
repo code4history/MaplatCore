@@ -224,6 +224,8 @@ function warnPoiLayerNotFound(id: string, api: string) {
  * getMapMeta が返す iiif の節。
  * 地図データの iiif 節のうち表示に使う項目だけを写し、書誌の表の出し方はアプリの設定
  * （無ければ既定）で決める。bindings・copiedValues は表示に使わないので載せない。
+ * 節は initialize で形を検査済み（this.iiif）。ここでは mapID を渡さずに同じ検査を通すだけで、
+ * 形の合わない要素の警告は initialize の 1 回に留める。
  */
 function mapMetaIiif(source: any): MapMetaIiif | undefined {
   const section = normalizeIiifSection(source?.iiif);

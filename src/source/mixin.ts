@@ -28,10 +28,10 @@ import {
 import type { Feature, Polygon, GeoJsonProperties } from "geojson";
 import { View as mlView } from "../view_ex";
 import { META_KEYS, META_KEYS_OPTION } from "../meta_keys";
+import { isIiifMetadataEntry } from "../element_contract";
 import type {
   IiifBindings,
   IiifMetadataDisplay,
-  IiifMetadataEntry,
   MaplatIiifSection
 } from "../iiif/manifest";
 
@@ -61,8 +61,13 @@ function isPlainObject(value: unknown): value is Record<string, any> {
  * 地図データの iiif 節から、形の正しい項目だけを控える。
  * オブジェクトでなければ控えない（undefined）。manifest・canvas・image・copiedAt は文字列のときだけ、
  * bindings・copiedValues はオブジェクトのときだけ、copiedMetadata は配列のときだけ残す。
+ * copiedMetadata は要素の形（isIiifMetadataEntry）に合うものだけを順に残し、外した要素があれば
+ * mapID を渡された呼び出し（initialize）で 1 回だけ警告する。
  */
-export function normalizeIiifSection(value: unknown): MaplatIiifSection | undefined {
+export function normalizeIiifSection(
+  value: unknown,
+  mapID?: string
+): MaplatIiifSection | undefined {
   if (!isPlainObject(value)) return undefined;
   const section: MaplatIiifSection = {};
   if (typeof value.manifest === "string") section.manifest = value.manifest;
@@ -74,7 +79,15 @@ export function normalizeIiifSection(value: unknown): MaplatIiifSection | undefi
     section.copiedValues = value.copiedValues as Record<string, Record<string, string>>;
   }
   if (Array.isArray(value.copiedMetadata)) {
-    section.copiedMetadata = value.copiedMetadata as IiifMetadataEntry[];
+    const entries = value.copiedMetadata.filter(isIiifMetadataEntry);
+    const dropped: number = value.copiedMetadata.length - entries.length;
+    // 警告は initialize の 1 回だけ。getMapMeta は mapID を渡さずに同じ検査を通す（二度目の警告を出さない）
+    if (dropped > 0 && mapID !== undefined) {
+      console.warn(
+        `Maplat: ignored ${dropped} malformed entries in iiif.copiedMetadata (mapID: "${mapID}").`
+      );
+    }
+    section.copiedMetadata = entries;
   }
   return section;
 }
@@ -139,7 +152,7 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
       this.mercatorYShift = options.mercatorYShift;
       this.weiwudi = options.weiwudi;
       // IIIF の書誌は取得しない。地図データに書かれた値（とアプリの設定の出し方）を控えるだけ
-      this.iiif = normalizeIiifSection(options.iiif);
+      this.iiif = normalizeIiifSection(options.iiif, this.mapID);
       this.iiifMetadataDisplay = normalizeIiifMetadataDisplay(options.iiifMetadata);
       if (options.envelopeLngLats) {
         const lngLats = options.envelopeLngLats;
