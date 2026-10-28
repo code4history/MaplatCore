@@ -96,6 +96,20 @@ describe("@maplat/core/common の公開物", () => {
     );
   });
 
+  it("sanitizeIiifHtml は sanitize.ts と同じ関数で、IIIF の許可表で無害化する", async () => {
+    const commonEntry = await import("../src/common");
+    const sanitize = await import("../src/sanitize");
+    expect(typeof (commonEntry as any).sanitizeIiifHtml).toBe("function");
+    expect((commonEntry as any).sanitizeIiifHtml).toBe(sanitize.sanitizeIiifHtml);
+    const clean = (commonEntry as any).sanitizeIiifHtml(
+      '<img src=x onerror=1><a href="https://example.org/">x</a>'
+    );
+    expect(clean).not.toContain("<img");
+    expect(clean).not.toContain("onerror");
+    expect(clean).toContain('target="_blank"');
+    expect(clean).toContain('href="https://example.org/"');
+  });
+
   it("名前の表・機能表・型ガード・基底クラス", () => {
     expect(common.MAPLAT_APP_TAG).toBe("maplat-app");
     expect(common.MAPLAT_APP_EVENTS.length).toBe(24);

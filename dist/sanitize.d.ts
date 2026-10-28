@@ -1,5 +1,21 @@
+/** sanitizeHtml の許可表の種類。 */
+export type SanitizeProfile = "iiif";
+/** sanitizeHtml の呼び出しごとの指定。 */
+export interface SanitizeOptions {
+    /**
+     * "iiif" のときだけ IIIF の書誌の値の許可表（データ正本の iiif 節）を使う。
+     * 指定しないときは従来どおりの許可表で、挙動は変わらない。
+     */
+    profile?: SanitizeProfile;
+}
 /** リモート POI 由来の HTML を無害化する。S1 / S5 の sink で使う。 */
-export declare function sanitizeHtml(dirty: string): string;
+export declare function sanitizeHtml(dirty: string, opts?: SanitizeOptions): string;
+/**
+ * IIIF の Manifest から写す書誌の値のサニタイズ（許可するタグ・属性を絞ったもの）。
+ *
+ * window（DOMPurify）に頼るため、ブラウザ（Electron renderer など）で呼ぶ前提である。
+ */
+export declare function sanitizeIiifHtml(dirty: string): string;
 /** 属性値をエスケープする。属性を組み立てる箇所で使う。 */
 export declare function escapeAttr(value: string): string;
 /**

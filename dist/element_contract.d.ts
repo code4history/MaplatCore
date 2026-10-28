@@ -140,6 +140,28 @@ export interface Viewpoint {
     /** 画面の回転（度） */
     rotation: number;
 }
+/**
+ * getMapMeta / mapChanged の MapMeta.iiif。
+ * IIIF の Manifest の書誌のうち、表示に使う値だけを持つ（Manifest は取得しない）。
+ */
+export interface MapMetaIiif {
+    /** Manifest の URL */
+    manifest?: string;
+    /** 選んだ canvas の URL */
+    canvas?: string;
+    /** 地図の画像の URL */
+    image?: string;
+    /** 書誌を写した日時 */
+    copiedAt?: string;
+    /** 書誌の表を出すか（アプリの設定で選ぶ。設定が無ければ hidden） */
+    display: "all" | "hidden";
+    /** 写した metadata（Manifest と canvas の全件） */
+    metadata?: Array<{
+        from: "manifest" | "canvas";
+        label: Localized;
+        value: Localized;
+    }>;
+}
 /** getMapMeta / mapChanged の detail。 */
 export interface MapMeta {
     mapID: string;
@@ -159,6 +181,8 @@ export interface MapMeta {
     dataAttr?: Localized;
     reference?: Localized;
     description?: Localized;
+    /** IIIF の書誌（地図データに iiif 節があるときだけ） */
+    iiif?: MapMetaIiif;
 }
 /** listMaps() の要素（設定ファイルの sources の順、使える地図のみ）。 */
 export interface MapListItem {
@@ -521,6 +545,12 @@ export interface MaplatUiElement extends HTMLElement {
 export declare function isLngLat(v: unknown): v is LngLat;
 export declare function isViewpoint(v: unknown): v is Viewpoint;
 export declare function isMapMeta(v: unknown): v is MapMeta;
+/** IIIF の書誌の写し（iiif.copiedMetadata）の要素の形。 */
+export declare function isIiifMetadataEntry(v: unknown): v is {
+    from: "manifest" | "canvas";
+    label: Localized;
+    value: Localized;
+};
 export declare function isMapListItem(v: unknown): v is MapListItem;
 /** clickMarker の detail・getMarker の戻り値の形（MaplatPoi）。中身の安全さは見ない（描く側が確かめる）。 */
 export declare function isMaplatPoi(v: unknown): v is MaplatPoi;

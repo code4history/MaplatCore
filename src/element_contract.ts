@@ -466,6 +466,25 @@ export interface Viewpoint {
   rotation: number;
 }
 
+/**
+ * getMapMeta / mapChanged の MapMeta.iiif。
+ * IIIF の Manifest の書誌のうち、表示に使う値だけを持つ（Manifest は取得しない）。
+ */
+export interface MapMetaIiif {
+  /** Manifest の URL */
+  manifest?: string;
+  /** 選んだ canvas の URL */
+  canvas?: string;
+  /** 地図の画像の URL */
+  image?: string;
+  /** 書誌を写した日時 */
+  copiedAt?: string;
+  /** 書誌の表を出すか（アプリの設定で選ぶ。設定が無ければ hidden） */
+  display: "all" | "hidden";
+  /** 写した metadata（Manifest と canvas の全件） */
+  metadata?: Array<{ from: "manifest" | "canvas"; label: Localized; value: Localized }>;
+}
+
 /** getMapMeta / mapChanged の detail。 */
 export interface MapMeta {
   mapID: string;
@@ -485,6 +504,8 @@ export interface MapMeta {
   dataAttr?: Localized;
   reference?: Localized;
   description?: Localized;
+  /** IIIF の書誌（地図データに iiif 節があるときだけ） */
+  iiif?: MapMetaIiif;
 }
 
 /** listMaps() の要素（設定ファイルの sources の順、使える地図のみ）。 */
@@ -895,6 +916,17 @@ export function isViewpoint(v: unknown): v is Viewpoint {
 export function isMapMeta(v: unknown): v is MapMeta {
   const o = v as MapMeta;
   return !!o && typeof o === "object" && typeof o.mapID === "string" && (o.label === undefined || isLocalized(o.label));
+}
+
+/** IIIF の書誌の写し（iiif.copiedMetadata）の要素の形。 */
+export function isIiifMetadataEntry(
+  v: unknown
+): v is { from: "manifest" | "canvas"; label: Localized; value: Localized } {
+  const o = v as Record<string, unknown>;
+  if (!o || typeof o !== "object" || Array.isArray(o)) return false;
+  // isLocalized は文字列の配列も通すので、ここでは配列を弾く（訳の関数に配列を渡さないため）
+  if (Array.isArray(o.label) || Array.isArray(o.value)) return false;
+  return (o.from === "manifest" || o.from === "canvas") && isLocalized(o.label) && isLocalized(o.value);
 }
 
 export function isMapListItem(v: unknown): v is MapListItem {

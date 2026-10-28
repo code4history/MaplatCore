@@ -9,6 +9,7 @@ import { OutsideSelection } from './outside_pois';
 import { Geolocation } from './geolocation';
 import { Coordinate } from 'ol/coordinate';
 import { default as BaseEvent } from 'ol/events/Event';
+import { MapMeta } from './element_contract';
 import { assets } from './assets';
 export { sanitizeHtml, escapeAttr, toPlainText, buildSlideAttrs } from './sanitize';
 /** EPSG:3857 → 経緯度。経度は ±180 に巻き戻す（ol の toLonLat と同じ規則）。
@@ -348,7 +349,7 @@ export declare class MaplatApp extends EventTarget implements ElementImplementat
     resetRotation(): void;
     resetDirection(): void;
     resetCirculation(): void;
-    getMapMeta(mapID: any): any;
+    getMapMeta(mapID: any): MapMeta | undefined;
     getMapCacheEnable(mapID: string): boolean;
     getMapTileCacheStatsAsync(mapID: string): Promise<any>;
     getMapTileCacheSizeAsync(mapID: string): Promise<any>;

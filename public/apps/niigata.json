@@ -16,7 +16,12 @@
   "sources": [
     {
       "mapID": "niigata_1920_ndl",
-      "label": "新潟市圖（1920・IIIF から配信）"
+      "label": "新潟市圖（1920・IIIF から配信）",
+      "iiifMetadata": "all"
+    },
+    {
+      "mapID": "niigata_1920_ndl_meta_hidden",
+      "label": "新潟市圖（書誌の表を出さない）"
     },
     {
       "mapID": "niigata_1920_ndl_broken",

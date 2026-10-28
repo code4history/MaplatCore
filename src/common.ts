@@ -15,9 +15,10 @@
 export { sanitizeHtml, escapeAttr, toPlainText, buildSlideAttrs } from "./sanitize";
 export { createElement } from "./functions";
 export { assets } from "./assets";
-// common だけが export するもの（@maplat/core の入口には無い）: normalizeArg・META_KEYS・META_KEYS_OPTION
+// common だけが export するもの（@maplat/core の入口には無い）: normalizeArg・META_KEYS・META_KEYS_OPTION・sanitizeIiifHtml
 export { normalizeArg } from "./functions";
 export { META_KEYS, META_KEYS_OPTION } from "./meta_keys";
+export { sanitizeIiifHtml } from "./sanitize";
 
 // ---- 層 A・層 B の名前の表と型 ----
 export {
@@ -51,6 +52,7 @@ export {
   isLngLat,
   isViewpoint,
   isMapMeta,
+  isIiifMetadataEntry,
   isMapListItem,
   isMaplatPoi,
   isPoiLayer,
@@ -71,6 +73,7 @@ export type {
   Localized,
   Viewpoint,
   MapMeta,
+  MapMetaIiif,
   MapListItem,
   RestorePosition,
   Restore,
