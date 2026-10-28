@@ -150,6 +150,50 @@ describe("起動後の反映（Core の applyRuntimeOptions）", () => {
   });
 });
 
+describe("範囲外の POI を描かない指定（hide-outside-pois）", () => {
+  it("属性・プロパティ・旧 appOption のどれでも同じフィールドに入る", async () => {
+    const byAttribute = await bootElement(e => e.setAttribute("hide-outside-pois", ""));
+    expect((byAttribute.app as any).__hideOutsidePois).toBe(true);
+
+    const byProperty = await bootElement(e => (e.hideOutsidePois = true));
+    expect((byProperty.app as any).__hideOutsidePois).toBe(true);
+
+    const byAppOption = await bootElement(e => {
+      e.appOption = { setting: { sources: [] }, hideOutsidePois: true };
+    });
+    expect((byAppOption.app as any).__hideOutsidePois).toBe(true);
+
+    // 与えなければ描く（既定は偽）。設定ファイルの値は読まない
+    const byDefault = await bootElement(e => {
+      e.setting = { sources: [], hideOutsidePois: true };
+    });
+    expect((byDefault.app as any).__hideOutsidePois).toBe(false);
+  });
+
+  it("起動後に変えるとマーカーの描き直しが 1 回だけ走る", async () => {
+    const el = await bootElement();
+    const app = el.app as MaplatApp;
+    app.from = { mapID: "m" } as any;
+    const redraw = vi.fn();
+    app.redrawMarkers = redraw;
+
+    el.hideOutsidePois = true;
+    await tick();
+    expect((app as any).__hideOutsidePois).toBe(true);
+    expect(redraw).toHaveBeenCalledTimes(1);
+
+    el.setAttribute("hide-outside-pois", "false");
+    await tick();
+    expect((app as any).__hideOutsidePois).toBe(false);
+    expect(redraw).toHaveBeenCalledTimes(2);
+
+    el.removeAttribute("hide-outside-pois");
+    await tick();
+    expect((app as any).__hideOutsidePois).toBe(false);
+    expect(redraw).toHaveBeenCalledTimes(3);
+  });
+});
+
 describe("remove() の後始末", () => {
   it("前面・背面の target を外し、MapLibre の地図も消す", async () => {
     const app = await bootApp({});

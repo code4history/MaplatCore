@@ -1,4 +1,4 @@
-import { mercToLngLat as u, defaultPinIcon as f, MaplatApp as d } from "./maplat_core.js";
+import { mercToLngLat as u, defaultPinIcon as d, MaplatApp as f } from "./maplat_core.js";
 import { defineMaplatAppElementOnce as v, MaplatAppElementBase as y } from "./maplat_core_common.js";
 import { featuresOf as A, ELEMENT_ATTRIBUTES as T, ELEMENT_PROPERTIES as _, MAPLAT_APP_TAG as I } from "./maplat_core_common.js";
 import { ELEMENT_ATTRIBUTES as L, ELEMENT_OWN_EVENTS as x, ELEMENT_OWN_METHODS as C, ELEMENT_PROPERTIES as N, ELEMENT_STARTUP_KEYS as k, LAYER_A_PRO_ATTRIBUTES as j, MAPLAT_APP_EVENTS as B, MAPLAT_APP_METHODS as z, MAPLAT_APP_TAG as K } from "./maplat_core_common.js";
@@ -66,7 +66,7 @@ class P extends y {
   }
   /** 既定のピンの画像（POI にも祖先にも icon が無いマーカーに地図が描く画像。Core の parts/defaultpin*.png）。 */
   getDefaultPinIcon(e = !1) {
-    return f(e);
+    return d(e);
   }
   /** 現在の地図の zoom を delta だけ変える。 */
   zoomBy(e) {
@@ -80,7 +80,7 @@ class P extends y {
    * @internal
    */
   createCore(e) {
-    return new d(e);
+    return new f(e);
   }
   // ---- 基底クラスの hook ----
   features() {
@@ -150,6 +150,7 @@ class P extends y {
       "debug",
       "icon",
       "selectedIcon",
+      "hideOutsidePois",
       "poiTemplate",
       "poiStyle",
       "iconTemplate"

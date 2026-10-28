@@ -115,7 +115,7 @@ describe("<maplat-app> 登録", () => {
     expect(MaplatAppElement.observedAttributes).toEqual([
       "app-id", "app-src", "map-id", "transparency", "no-rotate", "north-up", "home-margin-pixels",
       "always-gps-on", "fake", "enable-cache", "restore-session", "overlay", "debug", "icon",
-      "selected-icon", "no-center-marker", "center-marker-src", "display-mode"
+      "selected-icon", "no-center-marker", "center-marker-src", "hide-outside-pois", "display-mode"
     ]);
   });
 });

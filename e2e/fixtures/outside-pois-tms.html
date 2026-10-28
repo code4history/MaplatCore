@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <base href="/" />
+  <title>範囲外の POI: 前面が TMS の地図のとき</title>
+  <style>
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; }
+    #map_div { position: absolute; top: 0; left: 0; width: 1024px; height: 768px; }
+  </style>
+</head>
+<body>
+  <div id="map_div"></div>
+  <script type="module">
+    // 前面がメルカトルの地図（TMS）のときも、範囲外の POI が前面の marker 層に描かれ、
+    // 選ぶと中心がそのピンへ寄り、外すと紙の内側へ戻ることを確かめるための小さなアプリ。
+    // POI はページ側で足す（範囲の外は東京の点、範囲の中は盛岡城の点）。
+    import { MaplatApp } from '/src/index.ts';
+
+    const app = new MaplatApp({
+      appid: 'outside-pois-tms',
+      startFrom: 'morioka_ndl_affine',
+      setting: {
+        appName: 'outside-pois-tms',
+        lang: 'ja',
+        homePosition: [141.150205, 39.700125],
+        defaultZoom: 14,
+        startFrom: 'morioka_ndl_affine',
+        sources: [{ mapID: 'morioka_ndl_affine' }, 'gsi']
+      }
+    });
+    window.__MAPLAT_APP__ = app;
+    app.waitReady.then(
+      () => {
+        window.__MAPLAT_READY__ = true;
+      },
+      (err) => {
+        console.error('waitReady failed:', err);
+        window.__MAPLAT_ERROR__ = String((err && err.stack) || err);
+      }
+    );
+  </script>
+</body>
+</html>

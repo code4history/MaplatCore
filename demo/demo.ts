@@ -7,6 +7,9 @@ import { MaplatApp, sanitizeHtml } from "../src/index.ts"; // 開発時。build:
 // テンプレートの警告（ページで 1 回）の記憶を戻す。公開面ではないが、記法のプリセットを切り替えるたびに
 // 警告を出し直して見せるため、デモの中だけで使う（製品の挙動は変えない）
 import { resetTemplateWarnings } from "../src/template_works";
+// 範囲外の POI の判定（classifyMarker）と描く層（outsideMarkerLayer）を節の表に出すため。
+// 公開面ではないが、デモだけが読む（製品の挙動は変えない）
+import { classifyMarker, outsideMarkerLayer } from "../src/outside_pois";
 import { REGION_IDS, REGION_META } from "./regions";
 import type { AppSetting, DemoOps, LineItem, LineKind, MapLineItem, MapPoi, Poi, RegionContent, RegionId, VectorItem } from "./regions";
 
@@ -211,6 +214,215 @@ function makeButton(label: string, onClick: () => void): HTMLButtonElement {
   btn.textContent = label;
   btn.addEventListener("click", onClick);
   return btn;
+}
+
+// ---- 範囲外の POI（古地図の紙の外にある POI を背面の地理の地図に立てる）----
+// 操作パネルの節を 1 つ作る。既存の節（POI・線・面・視点・GPS）とは別の関数にまとめる。
+// 表には classifyMarker の結果（範囲内／範囲外）と outsideMarkerLayer の結果（前面／背面）を
+// textContent で出す。素材の JSON は変えず、紙の外の POI が 2 件未満ならデモの中で点を足す。
+interface OutsidePoiEntry {
+  /** addMarker が返した id（selectMarker に渡す） */
+  id: string;
+  /** その POI のデータ（classifyMarker に渡す） */
+  data: any;
+  /** 地図用 POI のときだけ（その地図のときだけ表に出す） */
+  mapID?: string;
+}
+
+interface OutsidePoiSectionCtx {
+  makeSection: (title: string) => { sec: HTMLElement; row: () => HTMLDivElement };
+  mountSection: (s: { sec: HTMLElement; row: () => HTMLDivElement }) => void;
+  /** 地図の節の透過度の表示も合わせる */
+  setTransparency: (value: number) => void;
+  /** POI の節の「選択中の POI」のチェックも合わせる */
+  onSelected: (id: string | undefined) => void;
+  entries: OutsidePoiEntry[];
+  /** 範囲外の POI を載せる層（アプリ用 POI の層） */
+  layerID: string;
+  homePosition: [number, number];
+}
+
+function mountOutsidePoiSection(app: MaplatApp, ctx: OutsidePoiSectionCtx): void {
+  const { makeSection, mountSection, entries, layerID } = ctx;
+  const sec = makeSection("範囲外の POI");
+  const note = document.createElement("p");
+  note.className = "demo-note";
+  note.textContent = "前者は紙の外の地理の地図の上にピンが立ち、後者は立たない";
+  sec.sec.appendChild(note);
+
+  const table = document.createElement("table");
+  table.id = "outside-poi-table";
+  table.className = "demo-outside-table";
+  table.style.cssText = "border-collapse:collapse;width:100%;font-size:11px;";
+  sec.sec.appendChild(table);
+
+  const status = document.createElement("p");
+  status.className = "demo-note";
+  status.id = "outside-poi-status";
+  status.textContent = "";
+  sec.sec.appendChild(status);
+
+  // 範囲外のピンを押したときは、吹き出しの代わりに clickMarker の内容をこの節に出す
+  app.addEventListener("clickMarker", (evt) => {
+    const data = (evt as unknown as { detail?: Record<string, unknown> }).detail;
+    if (!data) return;
+    const name = i18n(data.name as string | { ja?: string; en?: string });
+    const desc = typeof data.desc === "string" && data.desc ? ` — ${data.desc}` : "";
+    status.textContent = `clickMarker: ${name}${desc}`;
+  });
+
+  const currentMapID = (): string | undefined =>
+    (app.currentMapInfo() as { mapID?: string } | undefined)?.mapID;
+  // その地図に出る POI だけを表に出す（地図用 POI はその地図のときだけ）
+  const visibleEntries = (): OutsidePoiEntry[] =>
+    entries.filter((entry) => entry.mapID === undefined || entry.mapID === currentMapID());
+
+  type Row = { entry: OutsidePoiEntry; classified: Awaited<ReturnType<typeof classifyMarker>> };
+  let rows: Row[] = [];
+  let extrasAdded = false;
+  let seq = 0;
+
+  const classifyRows = async (): Promise<Row[]> =>
+    Promise.all(
+      visibleEntries().map(async (entry) => ({ entry, classified: await classifyMarker(app, entry.data) }))
+    );
+
+  // 紙の外の POI が 2 件に満たないとき、ホームの周りを少しずつ離して紙の縁の外の点を探し、
+  // addMarker で足す（素材の JSON は変えない）。見つかった点は表にも出す
+  const addExtras = async (outsideCount: number): Promise<void> => {
+    if (extrasAdded || outsideCount >= 2) return;
+    extrasAdded = true;
+    if (!app.getPoiLayer(layerID)) return;
+    const [lng, lat] = ctx.homePosition;
+    const dirs: [number, number][] = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]];
+    const found: [number, number][] = [];
+    for (const step of [0.004, 0.008, 0.02, 0.05]) {
+      for (const [dx, dy] of dirs) {
+        if (outsideCount + found.length >= 2) break;
+        const lnglat: [number, number] = [lng + dx * step, lat + dy * step];
+        const classified = await classifyMarker(app, { lnglat });
+        if (classified.kind !== "outside") continue;
+        if (found.some((p) => p[0] === lnglat[0] && p[1] === lnglat[1])) continue;
+        found.push(lnglat);
+        const data = {
+          name: `範囲外の POI の例 ${found.length}`,
+          desc: "紙の縁から外へ離した点（デモが足した例）",
+          lnglat
+        };
+        const id = app.addMarker(data, layerID) as string;
+        entries.push({ id, data });
+      }
+      if (outsideCount + found.length >= 2) break;
+    }
+  };
+
+  const render = (): void => {
+    const layer = outsideMarkerLayer(app);
+    const header = document.createElement("tr");
+    for (const label of ["POI", "範囲", "描く層"]) {
+      const th = document.createElement("th");
+      th.textContent = label;
+      th.style.cssText = "text-align:left;border-bottom:1px solid #d5d9e2;padding:2px 4px;";
+      header.appendChild(th);
+    }
+    const head = document.createElement("thead");
+    head.appendChild(header);
+    const body = document.createElement("tbody");
+    for (const { entry, classified } of rows) {
+      const tr = document.createElement("tr");
+      tr.dataset.id = entry.id;
+      const name = document.createElement("td");
+      name.textContent = i18n(entry.data.name);
+      const kind = document.createElement("td");
+      kind.textContent =
+        classified.kind === "inside" ? "範囲内" : classified.kind === "outside" ? "範囲外" : "範囲外（画素指定）";
+      const drawn = document.createElement("td");
+      // 範囲内は hide-outside-pois でも前面のまま（描かないのは範囲外だけ）
+      drawn.textContent =
+        classified.kind === "inside"
+          ? "前面"
+          : classified.kind === "skip" || layer === "none"
+            ? "描かない"
+            : layer === "front"
+              ? "前面"
+              : "背面";
+      for (const cell of [name, kind, drawn]) {
+        cell.style.cssText = "border-bottom:1px solid #eef0f4;padding:2px 4px;";
+        tr.appendChild(cell);
+      }
+      body.appendChild(tr);
+    }
+    table.replaceChildren(head, body);
+  };
+
+  const refresh = async (): Promise<void> => {
+    const current = ++seq;
+    try {
+      const first = await classifyRows();
+      if (current !== seq) return;
+      await addExtras(first.filter((row) => row.classified.kind === "outside").length);
+      if (current !== seq) return;
+      rows = await classifyRows();
+      if (current !== seq) return;
+      render();
+    } catch {
+      // 地図の切り替えの途中は座標を写せないことがある。次の機会（mapChanged など）に出す
+    }
+  };
+
+  // (1) 範囲外を出す（既定）と hide-outside-pois（起動後も変えられる既存の口を使う）
+  const shownRow = sec.row();
+  shownRow.appendChild(makeButton("範囲外を出す（既定）", () => {
+    app.applyRuntimeOptions({ hideOutsidePois: false });
+    void refresh();
+  }));
+  shownRow.appendChild(makeButton("hide-outside-pois", () => {
+    app.applyRuntimeOptions({ hideOutsidePois: true });
+    void refresh();
+  }));
+
+  // (2) 透過度 0 と 70（紙に覆われた背面のピンが見えるか）
+  const transparencyRow = sec.row();
+  transparencyRow.appendChild(makeButton("透過度 0", () => {
+    ctx.setTransparency(0);
+    void refresh();
+  }));
+  transparencyRow.appendChild(makeButton("透過度 70", () => {
+    ctx.setTransparency(70);
+    void refresh();
+  }));
+
+  // (3) 範囲外のピンを選ぶ → 選択を外す。(4) 範囲内のピンを選ぶ
+  const selectRow = sec.row();
+  selectRow.appendChild(makeButton("範囲外のピンを選ぶ", () => {
+    const hit = rows.find((row) => row.classified.kind === "outside");
+    if (!hit) {
+      status.textContent = "範囲外の POI がありません";
+      return;
+    }
+    app.selectMarker(hit.entry.id);
+    ctx.onSelected(hit.entry.id);
+    status.textContent = `選択中: ${i18n(hit.entry.data.name)}（中心がそのピンへ寄ります）`;
+  }));
+  selectRow.appendChild(makeButton("選択を外す", () => {
+    app.unselectMarker();
+    ctx.onSelected(undefined);
+    status.textContent = "選択を外しました（中心が紙の縁へ戻ります）";
+  }));
+  selectRow.appendChild(makeButton("範囲内のピンを選ぶ", () => {
+    const hit = rows.find((row) => row.classified.kind === "inside");
+    if (!hit) {
+      status.textContent = "範囲内の POI がありません";
+      return;
+    }
+    app.selectMarker(hit.entry.id);
+    ctx.onSelected(hit.entry.id);
+    status.textContent = `選択中: ${i18n(hit.entry.data.name)}`;
+  }));
+
+  mountSection(sec);
+  app.addEventListener("mapChanged", () => { void refresh(); });
+  void refresh();
 }
 
 async function main(): Promise<void> {
@@ -486,15 +698,20 @@ async function main(): Promise<void> {
       if (!app.getPoiLayer(id)) app.addPoiLayer(id, { name });
     };
     if (appPois.length > 0 || demoOps.addPoi.length > 0) app.addPoiLayer(APP_LAYER, { name: "アプリ用 POI" });
+    // 「範囲外の POI」の節が使う（どの POI が範囲の外か・どの層に描くかを出す）。
+    // 地図用 POI はその地図のときだけ節に出すので、mapID を控える
+    const recordedPois: OutsidePoiEntry[] = [];
     // Core の normalizePoi は渡した POI をその場で書き換えるので、素材は写しで渡す（IR1 Major-1 と同じ理由）
-    for (const poi of appPois) app.addMarker(structuredClone(poi), APP_LAYER);
+    for (const poi of appPois) {
+      recordedPois.push({ id: app.addMarker(structuredClone(poi), APP_LAYER) as string, data: poi });
+    }
     // 地図用 POI は maps の地図ごとに 1 件ずつ写しを載せる。地図ごとの件数はトグルの無効化に使う
     const mapPoiCount = new Map<string, number>();
     for (const poi of mapPois) {
       const { maps, ...data } = poi;
       for (const mapID of maps) {
         if (!app.getPoiLayer(mapLayerId(mapID))) app.addPoiLayer(mapLayerId(mapID), { name: "地図用 POI" });
-        app.addMarker(structuredClone(data), mapLayerId(mapID));
+        recordedPois.push({ id: app.addMarker(structuredClone(data), mapLayerId(mapID)) as string, data, mapID });
         mapPoiCount.set(mapID, (mapPoiCount.get(mapID) ?? 0) + 1);
       }
     }
@@ -582,9 +799,14 @@ async function main(): Promise<void> {
     opRange.max = "100";
     opRange.step = "10";
     opRange.value = "0";
+    // 「範囲外の POI」の節の透過度のボタンからも同じ口を使う（スライダーの表示も合わせる）
+    const setTransparency = (value: number): void => {
+      opRange.value = String(value);
+      opText.textContent = `透過度 ${value}%`;
+      app.setTransparency(value);
+    };
     opRange.addEventListener("input", () => {
-      app.setTransparency(Number(opRange.value));
-      opText.textContent = `透過度 ${opRange.value}%`;
+      setTransparency(Number(opRange.value));
     });
     opField.appendChild(opText);
     opField.appendChild(opRange);
@@ -831,6 +1053,25 @@ async function main(): Promise<void> {
       layersBox.replaceChildren(title, ...rows);
     };
     mountSection(poiSec);
+
+    // ---- 範囲外の POI（古地図の紙の外の POI は背面の地図に立つ）----
+    // 館林（城絵図の紙が狭く、紙の外の POI がある地域）だけに出す。他の地域の POI の数を変えない。
+    // 選択は POI の節の「選択中の POI」のチェックにも反映する
+    const markSelected = (id: string | undefined): void => {
+      selectedId = id;
+      refreshSelectCheck();
+    };
+    if (region === "tatebayashi" && recordedPois.length > 0) {
+      mountOutsidePoiSection(app, {
+        makeSection,
+        mountSection,
+        setTransparency,
+        onSelected: markSelected,
+        entries: recordedPois,
+        layerID: APP_LAYER,
+        homePosition: [setting.homePosition[0], setting.homePosition[1]]
+      });
+    }
 
     // ---- 線・面（v4.2。アプリの線・地図の線とも既定で表示。地図の線はその地図に無いときチェックを無効化）----
     const shapeSec = makeSection("線・面");

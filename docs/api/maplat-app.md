@@ -108,6 +108,7 @@ setting-file value can be cancelled from HTML (`north-up="false"`). Writing
 | `icon` / `selected-icon` | `icon` / `selectedIcon` | string | no | Redraws the markers | `icon` / `selectedIcon` |
 | `no-center-marker` | `noCenterMarker` | boolean | no | Hides the centre marker. Applied to the DOM immediately (does not wait for `ready`) | — |
 | `center-marker-src` | `centerMarkerSrc` | string | no | Replaces the centre-marker image (class `maplat-center-marker--custom` is added). Applied immediately | — |
+| `hide-outside-pois` | `hideOutsidePois` | boolean | no | Redraws the markers without the POIs outside the map (see [POIs outside the map](#pois-outside-the-map)) | `hideOutsidePois` |
 | `display-mode` | `displayMode` | string | — | **MaplatCore-Pro only** (`supports("display-mode")`). MaplatCore warns once per key (`<maplat-app>: ignored unsupported attribute "display-mode"`) and ignores it; the property reads `undefined` | — |
 
 ### Property-only keys
@@ -405,6 +406,49 @@ a `poiTemplate` can show a media slider ([Quyuan](https://github.com/code4histor
   are removed; their text stays). Use `qy-swiper` and `qy-swiper-slide`.
 - Showing the slider needs **@maplat/ui 1.3 or later**, which registers the elements.
   @maplat/core itself does not register them.
+
+## POIs outside the map
+
+A POI whose coordinates are outside the foreground map is still drawn when there is
+somewhere to put it. The decision is the same one `setMarker` uses: a POI given as
+mercator `coordinates` or as lng/lat is outside when the foreground map cannot map it
+into its own coordinates, and a POI given as pixel `x`/`y` is not drawn outside (its
+mercator position is unknown).
+
+| Foreground | Inside | Outside |
+|---|---|---|
+| Historical map with a background map (`backMap`) | `marker` layer of the foreground | `marker` layer of the background, in mercator coordinates |
+| TMS or a basemap with an `envelope` | `marker` layer of the foreground | `marker` layer of the foreground, in mercator coordinates (the foreground coordinates are mercator) |
+| Historical map with `overlay="false"` (no background) | foreground | not drawn |
+| `hide-outside-pois` set | foreground | not drawn |
+
+An outside POI looks the same as an inside one: it uses the same icons (`createIconSet`,
+`selectedIcon` while it is selected, the default pin). Rewriting the marker layers is a
+single step, so the foreground and the background are not left empty one after the other
+while the map changes.
+
+**Pressing a pin on the background.** A click first looks at the foreground, as before. If
+nothing is hit there, the background map exists, and the clicked point is outside the
+paper of the historical map (`insideCheckSysCoord` is false for it), the click also looks
+at the `marker` layer of the background. A hit ends in the same events as a foreground
+hit: `clickMarker` (the first POI) and `clickMarkers` (all of them). When neither layer is
+hit, the click ends in `clickMapXy` / `clickMapMerc` / `clickMap` as before. A point that
+the paper covers never presses a background pin, whatever the transparency is. The mouse
+cursor follows the same order and the same condition.
+
+**While an outside POI is selected.** `selectMarker(id)` centres the map on the pin even
+when the pin is outside the paper. While that POI is selected the map is not pulled back
+inside, so the centre can stay off the paper. `unselectMarker()` releases the selection
+and the centre returns to the nearest point inside the paper just after the current task.
+GPS positions do not move the centre while an outside POI is selected. Changing the map
+settles the selection against the new map: a POI that does not exist there is unselected
+and the centre is pulled back inside, one that is now inside becomes a normal selection,
+and one that is still outside keeps the centre on the pin (`outOfMap` is not emitted).
+Inside POIs behave as before.
+
+`hide-outside-pois` turns the drawing off. It is a boolean attribute like the others (see
+[Attribute values](#attribute-values)), it can be changed after startup and redraws the
+markers, and it writes the same field as the legacy `appOption.hideOutsidePois`.
 
 ## `@maplat/core/common` — the shared base for other implementations
 

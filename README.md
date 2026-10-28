@@ -250,6 +250,42 @@ so `ol/format` must be resolvable alongside `ol/source`.
   from `delivery.url` (with a warning).
 - `info.json` is fetched without credentials.
 
+### POIs outside the map
+
+A POI whose coordinates are outside the foreground map is still drawn when there is
+somewhere to put it. A POI given as mercator `coordinates` or as lng/lat is outside when
+the foreground map cannot map it into its own coordinates; a POI given as pixel `x`/`y`
+is not drawn outside.
+
+| Foreground | Inside | Outside |
+|---|---|---|
+| Historical map with a background map | `marker` layer of the foreground | `marker` layer of the background, in mercator coordinates |
+| TMS or a basemap with an `envelope` | `marker` layer of the foreground | `marker` layer of the foreground, in mercator coordinates |
+| Historical map with `overlay="false"` | foreground | not drawn |
+| `hide-outside-pois` set | foreground | not drawn |
+
+An outside POI looks the same as an inside one (same icons, `selectedIcon` while it is
+selected), and the foreground and the background are swapped in one step, so the map does
+not flash empty while it changes.
+
+- **Pressing a pin on the background.** When a click misses the foreground, a background
+  map exists, and the clicked point is outside the paper of the historical map
+  (`insideCheckSysCoord` is false for it), the click also looks at the `marker` layer of
+  the background. A hit ends in `clickMarker` / `clickMarkers` as a foreground hit does;
+  a point the paper covers never presses a background pin, whatever the transparency is.
+  A click that hits neither layer ends in `clickMapXy` / `clickMapMerc` / `clickMap`.
+- **While an outside POI is selected.** `selectMarker(id)` centres the map on the pin even
+  when it is outside the paper, and the map is not pulled back inside while that POI is
+  selected. `unselectMarker()` releases it and the centre returns to the nearest point
+  inside the paper just after the current task. GPS positions do not move the centre while
+  an outside POI is selected. Changing the map settles the selection against the new map
+  (a POI that is gone is unselected and the centre is pulled back; one that is inside
+  becomes a normal selection; one that is still outside keeps the centre on the pin and
+  `outOfMap` is not emitted). Inside POIs behave as before.
+- **`hide-outside-pois`** turns the drawing off. It is a boolean attribute like the
+  others, it can be changed after startup (the markers are redrawn), and it writes the
+  same field as the legacy `appOption.hideOutsidePois`.
+
 ### Lifecycle
 
 - See [docs/ui-core-lifecycle.md](docs/ui-core-lifecycle.md) for lifecycle

@@ -36,6 +36,18 @@ import {
   normalizePoi
 } from "./normalize_pois";
 import { createIconSet, createHtmlFromTemplate } from "./template_works";
+import {
+  addMarkerItem,
+  backMarkerDataAt,
+  centerOnOutsidePoi,
+  classifyMarker,
+  placeMarkerLayers,
+  pullBackInside,
+  replaceMarkers,
+  settleOutsideSelection,
+  type MarkerItem,
+  type OutsideSelection
+} from "./outside_pois";
 import { Geolocation } from './geolocation';
 
 import { Coordinate } from "ol/coordinate";
@@ -72,6 +84,16 @@ const RUNTIME_DEFAULTS = {
 /** テンプレート類（コンテンツ側）の既定: 設定ファイルの値、無ければ false。 */
 function contentOption(appData: any, key: "poiTemplate" | "poiStyle" | "iconTemplate"): unknown {
   return appData?.[key] ?? false;
+}
+
+/**
+ * POI に描くピンの画像。選択中は `selectedIcon`、無ければ既定のピン（`defaultPinIcon`）。
+ * 範囲内と範囲外で見た目を変えないため、setMarker と redrawMarkers が同じ関数を読む。
+ */
+function markerIconFor(core: { __selectedMarker?: any }, data: any): any {
+  const selected = core.__selectedMarker == data.namespaceID;
+  if (!data.icon) return defaultPinIcon(selected);
+  return selected && data.selectedIcon ? data.selectedIcon : data.icon;
 }
 
 interface AppData {
@@ -295,7 +317,14 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
   initialGpsMove_ = false;
   private __backMapMoving = false;
   private __backMapErrorWarned = false;
-  private __selectedMarker: any;
+  /** @internal 選択中の POI の namespaceID（範囲外の扱いは src/outside_pois.ts が読む） */
+  __selectedMarker?: any;
+  /** @internal 範囲外の POI を選んでいる間の状態（src/outside_pois.ts が読む） */
+  __outsideSelection?: OutsideSelection;
+  /** @internal 範囲外の POI を描かない指定（hide-outside-pois。src/outside_pois.ts が読む） */
+  __hideOutsidePois = false;
+  /** @internal 範囲外の選択を外した後の引き戻しの予約（selectMarker で取り消す） */
+  __pullBackTimer?: { cancelled?: boolean };
   // oct26-m2-t1: 可視化時の自己修復（issue #101）で使うリソース参照。
   private __resizeObserver: ResizeObserver | null = null;
   private __visibilityHandler = () => {
@@ -640,6 +669,10 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
       this[prop] = (values[prop] ?? contentOption(this.appData, prop)) as any;
       redraw = true;
     }
+    if ("hideOutsidePois" in values) {
+      this.__hideOutsidePois = values.hideOutsidePois === true;
+      redraw = true;
+    }
     // 描き直しは 1 回だけ（今の要素の applyRuntimeChanges と同じ）
     if (redraw && this.from) this.redrawMarkers();
   }
@@ -766,6 +799,10 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
         if (this.alwaysGpsOn) {
           ignoreMove = !this.initialGpsMove_;
         }
+        // 範囲外の POI を選んでいる間は、GPS で中心を動かさない
+        if (this.__outsideSelection) {
+          ignoreMove = true;
+        }
 
         const insideCheck = await source.setGPSMarkerAsync({ lnglat, acc }, ignoreMove);
         this.moveTo_ = false;
@@ -855,7 +892,11 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
           const source = (overlayLayer ? overlayLayer.getSource() : firstLayer.getSource());
 
           (async () => {
-            const insideCheck = await source.setGPSMarkerAsync({ lnglat, acc }, false); // ignoreMove=false (移動する)
+            // ignoreMove=false (移動する)。範囲外の POI を選んでいる間だけは動かさない
+            const insideCheck = await source.setGPSMarkerAsync(
+              { lnglat, acc },
+              !!this.__outsideSelection
+            );
             if (!insideCheck) {
               source.setGPSMarker();
               // 手動操作時は範囲外でもモーダルを表示したいので gps_out を返す
@@ -910,6 +951,8 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     this.poiStyle = (appOption.poiStyle ?? contentOption(this.appData, "poiStyle")) as any;
     this.iconTemplate = (appOption.iconTemplate ?? contentOption(this.appData, "iconTemplate")) as any;
     this.currentPosition = null;
+    // 範囲外の POI を描かない指定。設定ファイルは読まない（機能のキーは HTML 側）
+    this.__hideOutsidePois = appOption.hideOutsidePois === true;
     this.__init = true;
     const frontDiv = `${this.mapDiv}_front`;
     let newElem = createElement(
@@ -1171,6 +1214,8 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
         this.logger.debug(evt.pixel);
         if (feature.get("datum")) features.push(feature.get("datum"));
       });
+      // 前面で当たらなければ、紙の外の点では背面の地図のピンも見る
+      if (features.length === 0) features.push(...backMarkerDataAt(this, evt));
       if (features.length > 0) {
         this.dispatchEvent(new CustomEvent("clickMarker", features[0]));
         this.dispatchEvent(new CustomEvent("clickMarkers", features));
@@ -1326,23 +1371,18 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
         ).style.cursor = feature ? "pointer" : "";
         return;
       }
+      // 前面で当たらなくても、紙の外の点で背面のピンの上なら指の形にする
+      const onBackPin = backMarkerDataAt(this, evt).length > 0;
       (
         this.mapDivDocument!.querySelector(`#${target}`)! as HTMLElement
-      ).style.cursor = "";
+      ).style.cursor = onBackPin ? "pointer" : "";
     };
     this.mapObject.on("pointermove", moveHandler);
     const mapOutHandler = (evt: any) => {
-      // oct26-m2-t1-ff: 視点確定の保留中は、view の中心が切替前の地図の座標系の
+      // 縁の外へ出た中心を戻す。範囲外の POI を選んでいる間は何もしない。
+      // oct26-m2-t1-ff: 視点確定の保留中も、view の中心が切替前の地図の座標系の
       // 値のままなので、新しい地図の範囲で縁へ引き戻さない（保留の適用に委ねる）。
-      if (this.__pendingView) return;
-      let histCoord = evt.frameState.viewState.center;
-      const source = this.from;
-      if (!(source as MaplatSource).insideCheckSysCoord(histCoord)) {
-        histCoord = (source as MaplatSource).modulateSysCoordInside(
-          histCoord
-        );
-        evt.target.getView().setCenter(histCoord);
-      }
+      pullBackInside(this, evt.target.getView());
     };
     this.mapObject.on("moveend", mapOutHandler);
   }
@@ -1520,44 +1560,15 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
   }
   setMarker(data: any) {
     this.logger.debug(data);
-    const lnglat = data.lnglat || [
-      data.lng || data.longitude,
-      data.lat || data.latitude
-    ];
-    const x = data.x;
-    const y = data.y;
-    const coords = data.coordinates;
-    const src = this.from;
-    const icon = data.icon
-      ? this.__selectedMarker == data.namespaceID && data.selectedIcon
-        ? data.selectedIcon
-        : data.icon
-      : defaultPinIcon(this.__selectedMarker == data.namespaceID);
-    const promise = coords
-      ? (function () {
-        return (src as MaplatSource).merc2SysCoordAsync_ignoreBackground(
-          coords
-        );
-      })()
-      : x && y
-        ? new Promise(resolve => {
-          resolve((src as HistMap).xy2SysCoord([x, y]));
-        })
-        : (function () {
-          const merc = transform(lnglat, "EPSG:4326", "EPSG:3857");
-          return (src as MaplatSource).merc2SysCoordAsync_ignoreBackground(
-            merc
-          );
-        })();
-    return promise.then((xy: any) => {
-      if (!xy) return;
-      if ((src as MaplatSource).insideCheckSysCoord(xy)) {
-        this.mapObject.setMarker(xy, { datum: data }, icon);
-      }
+    const icon = markerIconFor(this, data);
+    // 範囲内なら前面の marker 層、範囲外なら背面（前面がメルカトルの地図なら前面）へ 1 件だけ足す
+    return classifyMarker(this, data).then(classified => {
+      addMarkerItem(this, data, icon, classified);
     });
   }
   resetMarker() {
-    this.mapObject.resetMarker();
+    // 前面だけでなく背面の marker 層も空にする（消す処理は replaceMarkers の 1 か所）
+    replaceMarkers(this, { front: [], back: [] });
   }
   setLine(data: any) {
     // Ready for Polygon
@@ -1678,22 +1689,27 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     }
     this.__redrawMarkerBlock = true;
     const redrawLogic = (source: any) => {
-      const promises: any = [];
-      this.resetMarker();
-      let selected: any;
+      // 1. 描く全件を集める（この時点では層に触らない）
+      const items: MarkerItem[] = [];
+      let selected: MarkerItem | undefined;
+      const collect = (data: any, cluster: any, ancestor: any) => {
+        const dataCopy = createIconSet(data, cluster, ancestor);
+        createHtmlFromTemplate(dataCopy, cluster, ancestor);
+        const item: MarkerItem = {
+          data: dataCopy,
+          icon: markerIconFor(this, dataCopy)
+        };
+        if (this.__selectedMarker == dataCopy.namespaceID) {
+          selected = item;
+        } else {
+          items.push(item);
+        }
+      };
       if (!this.stateBuffer.hideMarker) {
         for (const key of Object.keys(this.pois)) {
           const cluster = this.pois[key];
           if (!cluster.hide) {
-            for (const data of cluster.pois) {
-              const dataCopy = createIconSet(data, cluster, this);
-              createHtmlFromTemplate(dataCopy, cluster, this);
-              if (this.__selectedMarker == dataCopy.namespaceID) {
-                selected = dataCopy;
-              } else {
-                promises.push(this.setMarker(dataCopy));
-              }
-            }
+            for (const data of cluster.pois) collect(data, cluster, this);
           }
         }
         if (source.pois) {
@@ -1701,32 +1717,45 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
             const cluster = source.pois[key];
             if (!cluster.hide) {
               for (const data of cluster.pois) {
-                const dataCopy = createIconSet(data, cluster, source, this);
-                createHtmlFromTemplate(dataCopy, cluster, source, this);
-                if (this.__selectedMarker == dataCopy.namespaceID) {
-                  selected = dataCopy;
-                } else {
-                  promises.push(this.setMarker(dataCopy));
-                }
+                collect(data, cluster, source);
               }
             }
           }
         }
       }
-      let promise_var = Promise.all(promises);
-      if (selected) {
-        promise_var = promise_var.then(() => this.setMarker(selected)) as any;
-      }
-      promise_var.then(() => {
-        if (
-          this.__redrawMarkerThrottle &&
-          this.__redrawMarkerThrottle.length > 0
-        ) {
-          redrawLogic(this.__redrawMarkerThrottle.shift());
-        } else {
-          this.__redrawMarkerBlock = false;
+      // 選択中は各層の配列の最後に置く（この回の判定は全件まとめて行う）
+      const all = selected ? [...items, selected] : items;
+      // 2. 全件を並べて判定する。この間は前面も背面も消さない（ちらつかない）
+      Promise.all(all.map(item => classifyMarker(this, item.data))).then(
+        classes => {
+          // 3. 1 つの同期の区間で層を入れ替える
+          replaceMarkers(this, placeMarkerLayers(this, all, classes));
+          // マーカーを隠している間は判定できないので、選択の扱いは次の描き直しに委ねる
+          const outside = this.__outsideSelection;
+          if (outside && !this.stateBuffer.hideMarker) {
+            if (selected) {
+              // 今回描いた選択中が、範囲外として控えている POI と同じときだけ決め直す。
+              // 判定待ちの印が無くても決め直す（切り替えの最初の分岐で印が立たない道、
+              // 隠すのをやめた後の描き直し）。id が違うときは古い描き直しなので触らない。
+              if (selected.data?.namespaceID === outside.id) {
+                settleOutsideSelection(this, classes[classes.length - 1]);
+              }
+            } else if (outside.pending) {
+              // 切り替え先にその POI が無い（判定待ちのまま）ときは従来どおり外す
+              settleOutsideSelection(this, undefined);
+            }
+          }
+          // 4. 描画中に来た要求は、最新の 1 件だけを続けて描く
+          if (
+            this.__redrawMarkerThrottle &&
+            this.__redrawMarkerThrottle.length > 0
+          ) {
+            redrawLogic(this.__redrawMarkerThrottle.shift());
+          } else {
+            this.__redrawMarkerBlock = false;
+          }
         }
-      });
+      );
     };
     redrawLogic(source);
   }
@@ -1734,6 +1763,11 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     const data = this.getMarker(id);
     if (!data) return;
     this.__selectedMarker = id;
+    // 範囲外を外した直後に予約した引き戻しは取り消す（外 → 外・外 → 内で縁を挟まない）。
+    // 判定待ちの印と二重の守りで、これ単独では振る舞いに現れない。
+    this.__pullBackTimer = undefined;
+    // 範囲の判定が終わるまで縁への引き戻しを止める（範囲外の POI は縁の外に居る）
+    this.__outsideSelection = { id, pending: true };
     const latlng = {
       latitude: data.lnglat
         ? data.lnglat[1]
@@ -1748,10 +1782,28 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     };
     this.setViewpoint(latlng);
     this.redrawMarkers();
+    classifyMarker(this, data).then(classified => {
+      // 途中で別の POI を選んだ・選択を外したときは触らない
+      if (this.__selectedMarker !== id) return;
+      // 選ぶ操作そのものなので、判定が済んだら必ず中心をその POI に合わせる
+      settleOutsideSelection(this, classified, { recenter: true });
+    });
   }
   unselectMarker() {
     delete this.__selectedMarker;
+    const wasOutside = !!this.__outsideSelection;
+    delete this.__outsideSelection;
     this.redrawMarkers();
+    if (!wasOutside) return;
+    // 引き戻しは microtask の後に予約する（その間に選び直されたら取り消す）
+    const token = {};
+    this.__pullBackTimer = token;
+    queueMicrotask(() => {
+      if (this.__pullBackTimer !== token) return;
+      this.__pullBackTimer = undefined;
+      const view = this.mapObject?.getView?.();
+      if (view) pullBackInside(this, view);
+    });
   }
   getMarker(id: any) {
     if (!id.includes("#")) {
@@ -2156,6 +2208,14 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
               view.setMinZoom(to.minZoom || 0);
             }
             if (size && to.insideCheckSysCoord(size[0])) {
+              if (this.__outsideSelection) {
+                // 範囲外の POI を選んでいる間は、切替先でも描き直しの判定に委ねて
+                // 中心をその POI に合わせる
+                this.__outsideSelection = {
+                  ...this.__outsideSelection,
+                  pending: true
+                };
+              }
               view.setCenter(size[0]);
               view.setZoom(size[1]);
               view.setRotation(this.noRotate ? 0 : size[2]);
@@ -2171,8 +2231,17 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
                 delete this.__pendingView.positionMapID;
               }
             } else if (!this.__init) {
-              this.dispatchEvent(new CustomEvent("outOfMap", {}));
-              this.goHome(to);
+              if (this.__outsideSelection) {
+                // 範囲外の POI を選んでいる間は outOfMap を出さない。切替先での扱いは
+                // 描き直しの判定に委ねる（範囲外のままならその POI を中心に据える）
+                this.__outsideSelection = {
+                  ...this.__outsideSelection,
+                  pending: true
+                };
+              } else {
+                this.dispatchEvent(new CustomEvent("outOfMap", {}));
+                this.goHome(to);
+              }
             } else if (!size) {
               if (!this.__hasMapSize()) {
                 // oct26-m2-t1: 未確定時（非表示コンテナ）は goHome が NaN 変換を起こす
@@ -2423,6 +2492,9 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
               view.setCenter(size[0]);
               view.setZoom(size[1]);
               view.setRotation(this.noRotate ? 0 : size[2]);
+            } else if (this.__outsideSelection?.merc) {
+              // 範囲外の POI を選んでいる間は、切替先でもその POI を中心に据える
+              centerOnOutsidePoi(this, this.__outsideSelection.merc);
             } else {
               this.dispatchEvent(new CustomEvent("outOfMap", {}));
               this.goHome(to);
