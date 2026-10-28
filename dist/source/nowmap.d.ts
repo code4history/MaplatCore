@@ -5,6 +5,7 @@ import { Size } from 'ol/size';
 import { default as __DTS_DEFAULT_0__ } from '@c4h/weiwudi';
 import { MaplatMap } from '..';
 import { Feature, Polygon } from 'geojson';
+import { MaplatIiifSection, IiifMetadataDisplay } from '../iiif/manifest';
 declare const NowMap_base: ((abstract new (...args: any[]) => {
     insideCheckXy(xy: Coordinate): boolean;
     insideCheckSysCoord(histCoords: Coordinate): boolean;
@@ -46,6 +47,8 @@ declare const NowMap_base: ((abstract new (...args: any[]) => {
     mercatorYShift: number;
     icon?: string;
     selectedIcon?: string;
+    iiif?: MaplatIiifSection;
+    iiifMetadataDisplay?: IiifMetadataDisplay;
     initialize(options: any): void;
     isBasemap(): any;
     isWmts(): any;

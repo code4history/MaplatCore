@@ -5,6 +5,7 @@ import { Size } from 'ol/size';
 import { default as __DTS_DEFAULT_0__ } from '@c4h/weiwudi';
 import { MaplatMap } from '..';
 import { Feature, Polygon } from 'geojson';
+import { MaplatIiifSection, IiifMetadataDisplay } from '../iiif/manifest';
 /**
  * maptype と layers から Google Maps Tile API の { mapType, layerTypes } を導出する純粋関数。
  * 単体テストの対象として export する（constructor 内インラインでは ol/source/Google が
@@ -58,6 +59,8 @@ declare const GoogleMap_base: ((abstract new (...args: any[]) => {
     mercatorYShift: number;
     icon?: string;
     selectedIcon?: string;
+    iiif?: MaplatIiifSection;
+    iiifMetadataDisplay?: IiifMetadataDisplay;
     initialize(options: any): void;
     isBasemap(): any;
     isWmts(): any;
