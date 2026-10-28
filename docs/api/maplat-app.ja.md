@@ -97,6 +97,7 @@ import '@maplat/core/element';    // <maplat-app> を登録する（副作用 im
 | `icon` / `selected-icon` | `icon` / `selectedIcon` | string | いいえ | マーカーを描き直す | `icon` / `selectedIcon` |
 | `no-center-marker` | `noCenterMarker` | boolean | いいえ | 中心の目印を消す。`ready` を待たずに DOM へ当たる | — |
 | `center-marker-src` | `centerMarkerSrc` | string | いいえ | 中心の目印の画像を差し替える（class `maplat-center-marker--custom` が付く）。すぐに当たる | — |
+| `hide-outside-pois` | `hideOutsidePois` | boolean | いいえ | 範囲外の POI を描かずにマーカーを描き直す（[範囲外の POI](#範囲外の-poi)） | `hideOutsidePois` |
 | `display-mode` | `displayMode` | string | — | **MaplatCore-Pro 専用**（`supports("display-mode")`）。MaplatCore はキーごとに 1 回警告して無視し（`<maplat-app>: ignored unsupported attribute "display-mode"`）、プロパティは `undefined` を返す | — |
 
 ### プロパティのみのキー
@@ -364,6 +365,44 @@ S      = テンプレートの文字列から {% raw %}…{% endraw %}・{% verb
 - `cc-swiper`・`cc-swiper-slide`・`qy-viewer`・`cc-viewer` は使えない（要素は落ち、中の文字は残る）。
   `qy-swiper`・`qy-swiper-slide` を使うこと。
 - スライダーの表示には、要素を登録する **@maplat/ui 1.3 以降**が要る。@maplat/core 自身は登録しない。
+
+## 範囲外の POI
+
+前面の地図の範囲の外にある POI も、置き場所があれば描きます。判定は `setMarker` と同じです:
+メルカトルの `coordinates` か経緯度で与えた POI は、前面の地図がその地点を自分の座標に
+写せないとき範囲外、画素の `x`・`y` で与えた POI は範囲外では描きません（メルカトルの
+位置が分からないため）。
+
+| 前面 | 範囲内 | 範囲外 |
+|---|---|---|
+| 古地図（背面の地図 `backMap` がある） | 前面の `marker` 層 | 背面の `marker` 層にメルカトルの座標で |
+| TMS・`envelope` を持つ基本地図 | 前面の `marker` 層 | 前面の `marker` 層にメルカトルの座標で（前面の座標がメルカトル） |
+| 古地図で `overlay="false"`（背面が無い） | 前面 | 描かない |
+| `hide-outside-pois` が真 | 前面 | 描かない |
+
+範囲外の POI の見た目は範囲内と同じです（同じアイコンの決め方 `createIconSet`・選択中は
+`selectedIcon`・既定のピン）。マーカーの層の入れ替えは 1 回で行うので、地図を切り替える
+途中で前面と背面の片方だけが空になる時間はありません。
+
+**背面のピンを押すとき。** クリックはまず前面を今までどおり見ます。そこで当たらず、背面の
+地図があり、押した点が古地図の紙の外（その点について `insideCheckSysCoord` が偽）のとき
+だけ、背面の `marker` 層も見ます。当たれば前面と同じ形の `clickMarker`（先頭の POI）・
+`clickMarkers`（全部）で終わります。どちらでも当たらなければ、今までどおり `clickMapXy`・
+`clickMapMerc`・`clickMap` で終わります。紙が覆っている点では、透過度によらず背面のピンは
+押せません。マウスのカーソルも同じ順・同じ条件で見ます。
+
+**範囲外の POI を選んでいる間。** `selectMarker(id)` は、ピンが紙の外にあっても地図の中心を
+そのピンへ寄せます。その POI を選んでいる間は地図を紙の内側へ引き戻さないので、中心は紙の
+外に居られます。`unselectMarker()` で選択を外すと、その処理の直後に中心が紙の内側の
+いちばん近い点へ戻ります。範囲外の POI を選んでいる間は、GPS の位置が届いても中心は
+動きません。地図を切り替えると、選択は切り替え先の地図に合わせて決まります: 切り替え先に
+その POI が無ければ選択を外して中心を紙の内側へ引き戻し、範囲内になったなら普通の選択と
+して続け、まだ範囲外なら中心をそのピンに据えたままにします（`outOfMap` は出しません）。
+範囲内の POI の扱いは今までどおりです。
+
+`hide-outside-pois` は描画を止めます。ほかの真偽値の属性と同じ読み方で（[属性の値の解釈](#属性の値の解釈)）、
+起動後にも変えられ、変えるとマーカーを描き直します。旧 `appOption.hideOutsidePois` と同じ
+フィールドに書きます。
 
 ## `@maplat/core/common` — 別の実装のための共通の土台
 
