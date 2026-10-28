@@ -28,6 +28,12 @@ import {
 import type { Feature, Polygon, GeoJsonProperties } from "geojson";
 import { View as mlView } from "../view_ex";
 import { META_KEYS, META_KEYS_OPTION } from "../meta_keys";
+import type {
+  IiifBindings,
+  IiifMetadataDisplay,
+  IiifMetadataEntry,
+  MaplatIiifSection
+} from "../iiif/manifest";
 
 //type SourceConstructor<T> = new (...args: any[]) => T;
 type SourceConstructor<T = object> = new (...args: any[]) => T;
@@ -46,6 +52,37 @@ export type CrossCoordinatesArray = [
   Coordinate[], // Coordinates of center and around 4 points
   Size? // size
 ];
+
+function isPlainObject(value: unknown): value is Record<string, any> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/**
+ * 地図データの iiif 節から、形の正しい項目だけを控える。
+ * オブジェクトでなければ控えない（undefined）。manifest・canvas・image・copiedAt は文字列のときだけ、
+ * bindings・copiedValues はオブジェクトのときだけ、copiedMetadata は配列のときだけ残す。
+ */
+export function normalizeIiifSection(value: unknown): MaplatIiifSection | undefined {
+  if (!isPlainObject(value)) return undefined;
+  const section: MaplatIiifSection = {};
+  if (typeof value.manifest === "string") section.manifest = value.manifest;
+  if (typeof value.canvas === "string") section.canvas = value.canvas;
+  if (typeof value.image === "string") section.image = value.image;
+  if (typeof value.copiedAt === "string") section.copiedAt = value.copiedAt;
+  if (isPlainObject(value.bindings)) section.bindings = value.bindings as IiifBindings;
+  if (isPlainObject(value.copiedValues)) {
+    section.copiedValues = value.copiedValues as Record<string, Record<string, string>>;
+  }
+  if (Array.isArray(value.copiedMetadata)) {
+    section.copiedMetadata = value.copiedMetadata as IiifMetadataEntry[];
+  }
+  return section;
+}
+
+/** アプリの設定の書誌の表の出し方。all・hidden のときだけ控える */
+export function normalizeIiifMetadataDisplay(value: unknown): IiifMetadataDisplay | undefined {
+  return value === "all" || value === "hidden" ? value : undefined;
+}
 
 export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) {
   abstract class Mixin extends Base {
@@ -76,6 +113,10 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
     mercatorYShift = 0;
     icon?: string;
     selectedIcon?: string;
+    /** 地図データの iiif 節（IIIF の書誌の写し） */
+    iiif?: MaplatIiifSection;
+    /** アプリの設定で選んだ、書誌の表の出し方 */
+    iiifMetadataDisplay?: IiifMetadataDisplay;
     static isBasemap_ = false;
     static isWmts_ = true;
     static isMapbox_ = false;
@@ -97,6 +138,9 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
       this.mercatorXShift = options.mercatorXShift;
       this.mercatorYShift = options.mercatorYShift;
       this.weiwudi = options.weiwudi;
+      // IIIF の書誌は取得しない。地図データに書かれた値（とアプリの設定の出し方）を控えるだけ
+      this.iiif = normalizeIiifSection(options.iiif);
+      this.iiifMetadataDisplay = normalizeIiifMetadataDisplay(options.iiifMetadata);
       if (options.envelopeLngLats) {
         const lngLats = options.envelopeLngLats;
         const mercs = lngLats.map((lnglat: Coordinate) =>

@@ -108,5 +108,52 @@
       "has-thumb",
       "autoplay"
     ]
+  },
+  "iiif": {
+    "_note": "IIIF の Manifest から写す書誌の値の許可表。外部のサーバーが決める値なので、見出し・強調・改行・リンクだけに絞る（img は許可しない）。属性は href だけを残し、リンクには target=\"_blank\" と rel=\"noopener noreferrer\" を付け、href は http(s) に限る",
+    "tags": [
+      "a",
+      "b",
+      "br",
+      "i",
+      "p",
+      "small",
+      "span",
+      "sub",
+      "sup"
+    ],
+    "attributes": [
+      "href"
+    ],
+    "forbidContents": {
+      "_note": "許可しない要素のうち「中の文字も捨てる」もの。DOMPurify の既定の一覧から thead を除いた形（既定のままだと表の見出しの文字まで消えるため）。表の要素そのものは tags の許可表に無いので出力には残らない",
+      "tags": [
+        "annotation-xml",
+        "audio",
+        "colgroup",
+        "desc",
+        "foreignobject",
+        "head",
+        "iframe",
+        "math",
+        "mi",
+        "mn",
+        "mo",
+        "ms",
+        "mtext",
+        "noembed",
+        "noframes",
+        "noscript",
+        "plaintext",
+        "script",
+        "selectedcontent",
+        "style",
+        "svg",
+        "template",
+        "title",
+        "video",
+        "xmp"
+      ]
+    }
   }
 }

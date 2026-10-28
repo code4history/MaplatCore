@@ -466,6 +466,25 @@ export interface Viewpoint {
   rotation: number;
 }
 
+/**
+ * getMapMeta / mapChanged の MapMeta.iiif。
+ * IIIF の Manifest の書誌のうち、表示に使う値だけを持つ（Manifest は取得しない）。
+ */
+export interface MapMetaIiif {
+  /** Manifest の URL */
+  manifest?: string;
+  /** 選んだ canvas の URL */
+  canvas?: string;
+  /** 地図の画像の URL */
+  image?: string;
+  /** 書誌を写した日時 */
+  copiedAt?: string;
+  /** 書誌の表を出すか（アプリの設定で選ぶ。設定が無ければ hidden） */
+  display: "all" | "hidden";
+  /** 写した metadata（Manifest と canvas の全件） */
+  metadata?: Array<{ from: "manifest" | "canvas"; label: Localized; value: Localized }>;
+}
+
 /** getMapMeta / mapChanged の detail。 */
 export interface MapMeta {
   mapID: string;
@@ -485,6 +504,8 @@ export interface MapMeta {
   dataAttr?: Localized;
   reference?: Localized;
   description?: Localized;
+  /** IIIF の書誌（地図データに iiif 節があるときだけ） */
+  iiif?: MapMetaIiif;
 }
 
 /** listMaps() の要素（設定ファイルの sources の順、使える地図のみ）。 */

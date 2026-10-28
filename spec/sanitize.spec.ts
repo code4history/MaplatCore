@@ -3,7 +3,7 @@
 // 攻撃ペイロードは spec/fixtures/xss-payloads.ts に集約し、Playwright 側の E2E からも同じものを読む。
 // 片方の環境だけで通しても、もう一方の安全性は証明できない（設計書 §3.5(d) / AC5b）。
 import { describe, expect, it } from "vitest";
-import { sanitizeHtml, escapeAttr, buildSlideAttrs } from "../src/sanitize";
+import { sanitizeHtml, sanitizeIiifHtml, escapeAttr, buildSlideAttrs } from "../src/sanitize";
 import {
   MUST_BE_NEUTRALIZED, MUST_BE_PRESERVED, TARGET_BLANK,
   MEDIA_ATTR_ATTACKS, MEDIA_ATTR_PRESERVED, ATTR_ROUNDTRIP_ATTACKS
@@ -316,5 +316,190 @@ describe("qy-swiper-slide — media の経路とテンプレートの経路の�
     const values = QY_SLIDE_PARITY_MEDIA.slice(-3).map(m =>
       parseOne(sanitizeHtml(`<qy-swiper-slide ${templateAttrs(m)}></qy-swiper-slide>`)).getAttribute("caption"));
     expect(values).toEqual([`A "B" & C`, "it's &", "x < y"]);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// IIIF の書誌の値のサニタイズ（`profile: "iiif"` と `sanitizeIiifHtml`）
+//
+// なぜ既定とは別の許可表が要るか:
+//   POI の説明文は実データの見た目を保つため既定の許可表が広い（img・div・table まで通す）。
+//   IIIF の Manifest から写す書誌は外部のサーバーが決める値で、地図の作者が中身を
+//   確かめていない。見出し・強調・改行・リンクだけに絞った許可表を通す。
+//
+// 何を測るか:
+//   残るタグ・残る属性・残る URL の種類だけを測る。落としたタグの中の文字は残してよい
+//   （KEEP_CONTENT）ので、文字そのものでは判定しない。
+interface IiifSanitizer {
+  label: string;
+  sanitize: (dirty: string) => string;
+}
+
+const IIIF_SANITIZERS: IiifSanitizer[] = [
+  {
+    label: 'sanitizeHtml(dirty, { profile: "iiif" })',
+    sanitize: dirty => sanitizeHtml(dirty, { profile: "iiif" })
+  },
+  { label: "sanitizeIiifHtml(dirty)", sanitize: dirty => sanitizeIiifHtml(dirty) }
+];
+
+/** IIIF の値で残してよいタグ（見出し・強調・改行・リンク）。 */
+const IIIF_ALLOWED_TAGS = ["a", "b", "br", "i", "p", "small", "span", "sub", "sup"];
+
+const TAG_NAME_RE = /<\s*\/?\s*([a-zA-Z][a-zA-Z0-9-]*)/g;
+
+/** HTML に現れるタグ名（小文字・重複なし）。 */
+const tagsIn = (html: string): string[] =>
+  Array.from(new Set(Array.from(html.matchAll(TAG_NAME_RE), m => m[1].toLowerCase())));
+
+/** HTML を 1 つの要素として読み込み、属性名の一覧（昇順）を返す。 */
+const attrNamesOf = (html: string): string[] => {
+  const host = document.createElement("div");
+  host.innerHTML = html;
+  const el = host.firstElementChild!;
+  return Array.from(el.attributes, a => a.name.toLowerCase()).sort();
+};
+
+/** HTML を 1 つの要素として読み込む。 */
+const parseFirst = (html: string): Element => {
+  const host = document.createElement("div");
+  host.innerHTML = html;
+  return host.firstElementChild!;
+};
+
+describe('sanitizeHtml — profile: "iiif" と sanitizeIiifHtml（IIIF の書誌の値）', () => {
+  describe.each(IIIF_SANITIZERS)("$label", ({ sanitize }) => {
+    it.each(MUST_BE_NEUTRALIZED)("$name: 許可するタグ以外は残らない", ({ input }) => {
+      const out = sanitize(input);
+      expect(tagsIn(out).filter(tag => !IIIF_ALLOWED_TAGS.includes(tag))).toEqual([]);
+    });
+
+    it.each(MUST_BE_NEUTRALIZED)("$name: on* の属性と危険な URL は残らない", ({ input }) => {
+      const out = sanitize(input);
+      expect(out).not.toMatch(/\son[a-z]+\s*=/i);
+      const lower = out.toLowerCase();
+      for (const scheme of ["javascript:", "vbscript:", "data:"]) expect(lower).not.toContain(scheme);
+    });
+
+    it("img は src ごと残らない", () => {
+      const out = sanitize(`<img src="https://example.com/a.png" alt="説明">`);
+      expect(out).not.toMatch(/<img/i);
+      expect(out).not.toMatch(/src=/i);
+    });
+
+    it("div は残らず、中の文字は残る", () => {
+      const out = sanitize(`<div>中身<div>入れ子</div></div>`);
+      expect(out).not.toMatch(/<div/i);
+      expect(out).toContain("中身");
+      expect(out).toContain("入れ子");
+    });
+
+    it("table 系は残らず、中の文字は残る", () => {
+      const out = sanitize(
+        "<table><thead><tr><th>見出し</th></tr></thead><tbody><tr><td>値</td></tr></tbody></table>"
+      );
+      for (const tag of ["table", "thead", "tbody", "tr", "th", "td"]) {
+        expect(out).not.toMatch(new RegExp(`<${tag}`, "i"));
+      }
+      expect(out).toContain("見出し");
+      expect(out).toContain("値");
+    });
+
+    it.each([
+      "javascript:alert(1)",
+      "vbscript:msgbox(1)",
+      "mailto:example@example.com",
+      "tel:+81-25-000-0000",
+      "data:text/html,<script>alert(1)</script>"
+    ])("a の href=%s は落ちる", href => {
+      const out = sanitize(`<a href="${href}">リンク</a>`);
+      expect(out).not.toMatch(/href=/i);
+      expect(out).not.toMatch(/\son[a-z]+\s*=/i);
+      expect(out).toContain("リンク");
+    });
+
+    it.each(["https://example.com/x", "http://example.com/x?a=1&b=2"])(
+      "a の href=%s は残り target=_blank と rel が付く",
+      href => {
+        const out = sanitize(`<a href="${href}">詳細</a>`);
+        expect(attrNamesOf(out)).toEqual(["href", "rel", "target"]);
+        const el = parseFirst(out);
+        expect(el.tagName.toLowerCase()).toBe("a");
+        expect(el.getAttribute("href")).toBe(href);
+        expect(el.getAttribute("target")).toBe("_blank");
+        expect(el.getAttribute("rel")).toBe("noopener noreferrer");
+        expect(el.textContent).toBe("詳細");
+      }
+    );
+
+    it("許可するタグは残る", () => {
+      const out = sanitize(
+        "<p><b>太字</b><i>斜体</i><small>小さい字</small><span>範囲</span>" +
+          "<sub>下付き</sub><sup>上付き</sup><br>改行" +
+          '<a href="https://example.com/x">リンク</a></p>'
+      );
+      const tags = tagsIn(out);
+      for (const tag of IIIF_ALLOWED_TAGS) expect(tags).toContain(tag);
+      for (const text of ["太字", "斜体", "小さい字", "範囲", "下付き", "上付き", "改行"]) {
+        expect(out).toContain(text);
+      }
+    });
+
+    it("href 以外の属性（class・style・title・id・on*）は落ちる", () => {
+      const out = sanitize(
+        '<a href="https://example.com/x" class="c" style="color:red" title="t" id="i" ' +
+          'onclick="alert(1)">リンク</a>'
+      );
+      expect(attrNamesOf(out)).toEqual(["href", "rel", "target"]);
+      const el = parseFirst(out);
+      for (const name of ["class", "style", "title", "id", "onclick"]) {
+        expect(el.hasAttribute(name)).toBe(false);
+      }
+    });
+
+    it("span・p の class・style も落ちる", () => {
+      const out = sanitize(`<p class="c" style="color:red"><span class="d">文字</span></p>`);
+      expect(out).not.toMatch(/\sclass=/i);
+      expect(out).not.toMatch(/\sstyle=/i);
+      expect(out).toContain("文字");
+    });
+  });
+
+  it("2 つの入口は同じ結果を返す", () => {
+    const samples = [
+      ...MUST_BE_NEUTRALIZED.map(p => p.input),
+      ...MUST_BE_PRESERVED.map(p => p.input),
+      `<a href="https://example.com/x">詳細</a>`,
+      `<div>中身</div>`,
+      `<table><tr><td>値</td></tr></table>`
+    ];
+    for (const sample of samples) {
+      expect(sanitizeIiifHtml(sample)).toBe(sanitizeHtml(sample, { profile: "iiif" }));
+    }
+  });
+});
+
+describe("sanitizeHtml — 既定の挙動（引数なし）は変わらない", () => {
+  it("img・div・table は今どおり残る", () => {
+    const img = sanitizeHtml(`<img src="https://example.com/a.png" alt="説明">`);
+    expect(img).toContain("<img");
+    expect(img).toContain(`src="https://example.com/a.png"`);
+    expect(sanitizeHtml("<div>中身</div>")).toContain("<div>中身</div>");
+    const table = sanitizeHtml("<table><tr><td>値</td></tr></table>");
+    expect(table).toContain("<table");
+    expect(table).toContain("<td>値</td>");
+  });
+
+  it("a に target・rel を勝手に付けない", () => {
+    const out = sanitizeHtml(`<a href="https://example.com/x">詳細</a>`);
+    expect(out).toContain(`href="https://example.com/x"`);
+    expect(out).not.toMatch(/target=/i);
+    expect(out).not.toMatch(/rel=/i);
+  });
+
+  it("class と mailto: の href は今どおり残る", () => {
+    const out = sanitizeHtml(`<a href="mailto:example@example.com" class="c">連絡</a>`);
+    expect(out).toContain("mailto:example@example.com");
+    expect(out).toContain(`class="c"`);
   });
 });

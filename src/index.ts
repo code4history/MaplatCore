@@ -25,7 +25,12 @@ import {
   unusableSource,
   type UnusableSourceEntry
 } from "./iiif/delivery";
-import { ViewpointArray } from "./source/mixin";
+import {
+  normalizeIiifMetadataDisplay,
+  normalizeIiifSection,
+  ViewpointArray
+} from "./source/mixin";
+import { IIIF_METADATA_DISPLAY_DEFAULT } from "./iiif/manifest";
 // META_KEYS の正本は依存の無い src/meta_keys.ts（@maplat/core/common の分割で source/mixin.ts から移した）
 import { META_KEYS } from "./meta_keys";
 import { recursiveRound } from "./math_ex";
@@ -153,7 +158,7 @@ interface PendingView {
 
 // ライフサイクルの段階の正本は element_contract.ts の LIFECYCLE_PHASES
 // （型だけの import。element_contract.ts は何も import しないので依存は増えない）
-import type { LifecyclePhaseId } from "./element_contract";
+import type { LifecyclePhaseId, MapMeta, MapMetaIiif } from "./element_contract";
 
 interface LifecycleContext {
   phaseId: LifecyclePhaseId;
@@ -213,6 +218,26 @@ function warnPoiLayerNotFound(id: string, api: string) {
   console.warn(
     `MaplatCore: POI layer "${id}" not found (${api}). Pass namespaceID (e.g. "<mapID>#<layerId>" for map-derived layers), not the layer-local id.`
   );
+}
+
+/**
+ * getMapMeta が返す iiif の節。
+ * 地図データの iiif 節のうち表示に使う項目だけを写し、書誌の表の出し方はアプリの設定
+ * （無ければ既定）で決める。bindings・copiedValues は表示に使わないので載せない。
+ */
+function mapMetaIiif(source: any): MapMetaIiif | undefined {
+  const section = normalizeIiifSection(source?.iiif);
+  if (!section) return undefined;
+  const iiif: MapMetaIiif = {
+    display:
+      normalizeIiifMetadataDisplay(source?.iiifMetadataDisplay) ?? IIIF_METADATA_DISPLAY_DEFAULT
+  };
+  if (section.manifest !== undefined) iiif.manifest = section.manifest;
+  if (section.canvas !== undefined) iiif.canvas = section.canvas;
+  if (section.image !== undefined) iiif.image = section.image;
+  if (section.copiedAt !== undefined) iiif.copiedAt = section.copiedAt;
+  if (section.copiedMetadata !== undefined) iiif.metadata = section.copiedMetadata;
+  return iiif;
 }
 
 // div を HTMLElement で受けたとき（id 無し）に内部の子要素の id 接頭辞を一意にする連番
@@ -2559,7 +2584,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
       source = this.cacheHash[mapID];
     }
     if (!source) return;
-    return META_KEYS.reduce(
+    const meta: MapMeta = META_KEYS.reduce(
       (prev: any, curr: string) => {
         prev[curr] = (source as any).get(curr);
         return prev;
@@ -2569,6 +2594,10 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
         label: source.label
       }
     );
+    // IIIF の書誌は、地図データに iiif 節があるときだけ載せる
+    const iiif = mapMetaIiif(source);
+    if (iiif) meta.iiif = iiif;
+    return meta;
   }
   getMapCacheEnable(mapID: string) {
     let source: MaplatSource | undefined;

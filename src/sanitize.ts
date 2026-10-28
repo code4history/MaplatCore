@@ -38,6 +38,40 @@ const ADD_URI_SAFE_ATTR = ALLOWLIST.uriSafeAttributes.values;
 const FORBID_TAGS = ALLOWLIST.forbidTags;
 const FORBID_ATTR = ALLOWLIST.forbidAttributes;
 
+/** sanitizeHtml の許可表の種類。 */
+export type SanitizeProfile = "iiif";
+
+/** sanitizeHtml の呼び出しごとの指定。 */
+export interface SanitizeOptions {
+  /**
+   * "iiif" のときだけ IIIF の書誌の値の許可表（データ正本の iiif 節）を使う。
+   * 指定しないときは従来どおりの許可表で、挙動は変わらない。
+   */
+  profile?: SanitizeProfile;
+}
+
+/** profile: "iiif" のときの許可するタグ・属性（データ正本の iiif 節より）。 */
+const IIIF_ALLOWED_TAGS = ALLOWLIST.iiif.tags;
+const IIIF_ALLOWED_ATTR = ALLOWLIST.iiif.attributes;
+
+/**
+ * profile: "iiif" のときの URL の検査。リンクの飛び先は http(s) だけに限る
+ * （mailto:・tel:・data:・javascript: などは属性ごと落とす）。
+ */
+const IIIF_ALLOWED_URI_REGEXP = /^https?:/i;
+
+/**
+ * profile: "iiif" のとき、許可しない要素のうち「中の文字も捨てる」もの（データ正本の iiif 節より）。
+ * 表の見出しの文字を残すため、thead だけは外してある。
+ */
+const IIIF_FORBID_CONTENTS = ALLOWLIST.iiif.forbidContents.tags;
+
+/**
+ * いま実行中の sanitize の profile。hook（afterSanitizeAttributes）から profile を
+ * 知るために、sanitize の呼び出しの間だけ立てる。呼び出しの後（例外でも）必ず戻す。
+ */
+let activeProfile: SanitizeProfile | undefined;
+
 /**
  * img[src] で許可する data: の MIME。
  * svg+xml は**含めない**（設計書 §3.5(c)）。img 経由ではブラウザが SVG 内の script を
@@ -51,6 +85,13 @@ const isDataUri = (v: string | null): boolean => !!v && /^\s*data:/i.test(v);
 function afterSanitizeAttributes(node: Element): void {
   // 1. target="_blank" には rel を強制付与する（タブナビング対策）
   if (node.tagName === "A" && node.getAttribute("target") === "_blank") {
+    node.setAttribute("rel", "noopener noreferrer");
+  }
+
+  // 1'. profile: "iiif" では target・rel を許可表に入れていないので、リンクにここで付ける。
+  //     飛び先（href）は ALLOWED_URI_REGEXP で http(s) だけに絞ってある。
+  if (activeProfile === "iiif" && node.tagName === "A" && node.hasAttribute("href")) {
+    node.setAttribute("target", "_blank");
     node.setAttribute("rel", "noopener noreferrer");
   }
 
@@ -153,19 +194,40 @@ function uponSanitizeAttribute(node: Element, data: AttrHookEvent): void {
 }
 
 /** リモート POI 由来の HTML を無害化する。S1 / S5 の sink で使う。 */
-export function sanitizeHtml(dirty: string): string {
+export function sanitizeHtml(dirty: string, opts?: SanitizeOptions): string {
   if (dirty === undefined || dirty === null) return "";
-  return getPurifier().sanitize(String(dirty), {
-    ALLOWED_TAGS,
-    ALLOWED_ATTR,
-    ALLOWED_URI_REGEXP,
-    ADD_URI_SAFE_ATTR,
-    FORBID_TAGS,
-    FORBID_ATTR,
-    ALLOW_DATA_ATTR: false,
-    // 禁止タグを落としても中身のテキストは残す（実データの可読性を保つ）
-    KEEP_CONTENT: true
-  }) as unknown as string;
+  const iiif = opts?.profile === "iiif";
+  const previous = activeProfile;
+  // hook から profile を知るために、呼び出しの間だけ立てる（例外でも finally で戻す）
+  activeProfile = iiif ? "iiif" : undefined;
+  try {
+    return getPurifier().sanitize(String(dirty), {
+      ALLOWED_TAGS: iiif ? IIIF_ALLOWED_TAGS : ALLOWED_TAGS,
+      ALLOWED_ATTR: iiif ? IIIF_ALLOWED_ATTR : ALLOWED_ATTR,
+      ALLOWED_URI_REGEXP: iiif ? IIIF_ALLOWED_URI_REGEXP : ALLOWED_URI_REGEXP,
+      ADD_URI_SAFE_ATTR,
+      FORBID_TAGS,
+      FORBID_ATTR,
+      ALLOW_DATA_ATTR: false,
+      // aria-* も許可表の外に出さない（IIIF の値で残す属性は href だけ）
+      ALLOW_ARIA_ATTR: !iiif,
+      // 禁止タグを落としても中身のテキストは残す（実データの可読性を保つ）
+      KEEP_CONTENT: true,
+      // profile: "iiif" のときだけ、文字も捨てる要素の一覧を差し替える
+      ...(iiif ? { FORBID_CONTENTS: IIIF_FORBID_CONTENTS } : {})
+    }) as unknown as string;
+  } finally {
+    activeProfile = previous;
+  }
+}
+
+/**
+ * IIIF の Manifest から写す書誌の値のサニタイズ（許可するタグ・属性を絞ったもの）。
+ *
+ * window（DOMPurify）に頼るため、ブラウザ（Electron renderer など）で呼ぶ前提である。
+ */
+export function sanitizeIiifHtml(dirty: string): string {
+  return sanitizeHtml(dirty, { profile: "iiif" });
 }
 
 /** 属性値をエスケープする。属性を組み立てる箇所で使う。 */
