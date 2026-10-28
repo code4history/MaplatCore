@@ -61,6 +61,28 @@ const markerDefaultStyle = new Style({
   })
 });
 
+/**
+ * ピンの Style を icon（画像の URL・Icon の設定・Style）から作る。
+ * 前面と背面でピンの見た目を 1 つの規則に保つため、setMarker と範囲外の描画が共有する。
+ */
+export function markerStyleFrom(icon: any): Style {
+  if (!icon) return markerDefaultStyle;
+  if (icon instanceof Style) return icon;
+  if (typeof icon == "string") {
+    return new Style({
+      image: new Icon({
+        anchor: [0.5, 1.0],
+        anchorXUnits: 'fraction',
+        anchorYUnits: 'fraction',
+        src: icon
+      })
+    });
+  }
+  return new Style({
+    image: new Icon(icon)
+  });
+}
+
 export class MaplatMap extends Map {
   fakeGps: any;
   fakeRadius: any;
@@ -273,22 +295,7 @@ export class MaplatMap extends Map {
   setMarker(xy: any, data: any, markerStyle: any, layer: any) {
     if (!layer) layer = "marker";
     data["geometry"] = new Point(xy);
-    if (!markerStyle) markerStyle = markerDefaultStyle;
-    else if (typeof markerStyle == "string") {
-      markerStyle = new Style({
-        image: new Icon({
-          anchor: [0.5, 1.0],
-          anchorXUnits: 'fraction',
-          anchorYUnits: 'fraction',
-          src: markerStyle
-        })
-      });
-    } else if (!(markerStyle instanceof Style)) {
-      markerStyle = new Style({
-        image: new Icon(markerStyle)
-      });
-    }
-    return this.setFeature(data, markerStyle, layer);
+    return this.setFeature(data, markerStyleFrom(markerStyle), layer);
   }
   resetMarker(layer: any) {
     if (!layer) layer = "marker";

@@ -246,7 +246,9 @@ export const ELEMENT_ATTRIBUTES: readonly AttrDef[] = [
   { attr: "selected-icon", prop: "selectedIcon", kind: "string", option: "selectedIcon" },
   // 中心の目印（既定で表示。消す・画像を差し替える口）
   { attr: "no-center-marker", prop: "noCenterMarker", kind: "boolean", dom: true },
-  { attr: "center-marker-src", prop: "centerMarkerSrc", kind: "string", dom: true }
+  { attr: "center-marker-src", prop: "centerMarkerSrc", kind: "string", dom: true },
+  // 範囲外の POI を描かない指定（起動後にも変えられる）
+  { attr: "hide-outside-pois", prop: "hideOutsidePois", kind: "boolean", option: "hideOutsidePois" }
 ];
 
 /** 層 A のプロパティのみのキー。 */
@@ -709,6 +711,7 @@ export interface MaplatAppElementSettings {
   selectedIcon: string | undefined;
   noCenterMarker: boolean | undefined;
   centerMarkerSrc: string | undefined;
+  hideOutsidePois: boolean | undefined;
   setting: Record<string, any> | undefined;
   restore: Restore | undefined;
   restoreExtensionKeys: string[] | undefined;

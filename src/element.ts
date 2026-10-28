@@ -273,6 +273,7 @@ export class MaplatAppElement extends MaplatAppElementBase implements MaplatAppE
       "debug",
       "icon",
       "selectedIcon",
+      "hideOutsidePois",
       "poiTemplate",
       "poiStyle",
       "iconTemplate"
