@@ -1868,7 +1868,9 @@ const bI = [
   { attr: "selected-icon", prop: "selectedIcon", kind: "string", option: "selectedIcon" },
   // 中心の目印（既定で表示。消す・画像を差し替える口）
   { attr: "no-center-marker", prop: "noCenterMarker", kind: "boolean", dom: !0 },
-  { attr: "center-marker-src", prop: "centerMarkerSrc", kind: "string", dom: !0 }
+  { attr: "center-marker-src", prop: "centerMarkerSrc", kind: "string", dom: !0 },
+  // 範囲外の POI を描かない指定（起動後にも変えられる）
+  { attr: "hide-outside-pois", prop: "hideOutsidePois", kind: "boolean", option: "hideOutsidePois" }
 ], QC = [
   { prop: "setting", startup: !0, option: "setting" },
   { prop: "restore", startup: !0, option: "restore" },

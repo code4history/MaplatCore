@@ -5,6 +5,7 @@ import { default as EventTarget } from 'ol/events/Target';
 import { MaplatMap } from './map_ex';
 import { BackmapSource, MaplatSource, mapSourceFactory } from './source_ex';
 import { ViewpointArray } from './source/mixin';
+import { OutsideSelection } from './outside_pois';
 import { Geolocation } from './geolocation';
 import { Coordinate } from 'ol/coordinate';
 import { default as BaseEvent } from 'ol/events/Event';
@@ -152,7 +153,16 @@ export declare class MaplatApp extends EventTarget implements ElementImplementat
     initialGpsMove_: boolean;
     private __backMapMoving;
     private __backMapErrorWarned;
-    private __selectedMarker;
+    /** @internal 選択中の POI の namespaceID（範囲外の扱いは src/outside_pois.ts が読む） */
+    __selectedMarker?: any;
+    /** @internal 範囲外の POI を選んでいる間の状態（src/outside_pois.ts が読む） */
+    __outsideSelection?: OutsideSelection;
+    /** @internal 範囲外の POI を描かない指定（hide-outside-pois。src/outside_pois.ts が読む） */
+    __hideOutsidePois: boolean;
+    /** @internal 範囲外の選択を外した後の引き戻しの予約（selectMarker で取り消す） */
+    __pullBackTimer?: {
+        cancelled?: boolean;
+    };
     private __resizeObserver;
     private __visibilityHandler;
     private __pendingView;

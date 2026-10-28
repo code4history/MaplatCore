@@ -376,6 +376,7 @@ export interface MaplatAppElementSettings {
     selectedIcon: string | undefined;
     noCenterMarker: boolean | undefined;
     centerMarkerSrc: string | undefined;
+    hideOutsidePois: boolean | undefined;
     setting: Record<string, any> | undefined;
     restore: Restore | undefined;
     restoreExtensionKeys: string[] | undefined;
