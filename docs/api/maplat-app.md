@@ -237,7 +237,7 @@ and delegate to the map. Arguments and behaviour are those of
 
 | Group | Methods |
 |---|---|
-| Map state & control | `currentMapInfo(): object`, `mapInfo(mapID): object`, `changeMap(mapID, restore?): Promise<unknown>`, `requestUpdateState(partial: Partial<AppState>): void`, `getRotation(): number`, `getDirection(): Promise<number>`, `setViewpoint(cond)`, `goHome()`, `resetRotation()`, `resetDirection()`, `resetCirculation()`, `getMapMeta(mapID?): MapMeta \| undefined`, `setTransparency(percentage): void` (also writes back the `transparency` attribute), `getTransparency(): number` |
+| Map state & control | `currentMapInfo(): object`, `mapInfo(mapID): object`, `changeMap(mapID, restore?): Promise<unknown>`, `requestUpdateState(partial: Partial<AppState>): void`, `getRotation(): number`, `getDirection(): Promise<number>`, `setViewpoint(cond)`, `goHome()`, `resetRotation()`, `resetDirection()`, `resetCirculation()`, `getMapMeta(mapID?): MapMeta \| undefined` (`iiif: { manifest?, canvas?, image?, copiedAt?, display, metadata? }` when the map setting has a `iiif` section), `setTransparency(percentage): void` (also writes back the `transparency` attribute), `getTransparency(): number` |
 | Coordinate system | `clientPointToLngLat(clientX, clientY): Promise<{ longitude, latitude } \| null>`, `lngLatToClientPoint(longitude, latitude): Promise<{ x, y } \| null>` — the element resolves `null` where the class resolves `undefined` |
 | Markers | `addMarker(data, clusterId?)`, `removeMarker(id)`, `updateMarker(id, data, overwrite?)`, `clearMarker(clusterId?)`, `selectMarker(id)`, `unselectMarker()`, `getMarker(id): MaplatPoi \| undefined`, `showAllMarkers()`, `hideAllMarkers()` |
 | Lines & vectors | `addLine(data): string`, `addVector(data): string`, `removeLine(id): boolean`, `removeVector(id): boolean`, `clearLine(filter?)`, `clearVector(filter?)` |
@@ -301,7 +301,7 @@ are exported from `@maplat/core/common` (`MaplatAppEventDetailMap`,
 | `lifecycle:setting-loaded`, `lifecycle:appdata-ready`, `lifecycle:ui-configure`, `lifecycle:core-dom-ready`, `lifecycle:ui-dom-ready`, `lifecycle:core-ready`, `lifecycle:ui-ready` | `{ phaseId, appData }` — the internal `core`, `mapDivDocument` and `uiHookResults` of the class event are **not** included | The lifecycle phases, in the former order |
 | `lifecycle:error` | `{ phaseId, error }` | A `uiHooks` hook failed |
 | `sourceLoaded` | `{ mapID: string \| null; usable: boolean }[]` (the class passes the source objects) | Right after the sources are loaded, including the ones that failed |
-| `mapChanged` | `MapMeta` (`mapID`, `label`, `title`, `license`, …) | A map change completed (`map-id` has already been written back) |
+| `mapChanged` | `MapMeta` (`mapID`, `label`, `title`, `license`, …; `iiif` when the map setting has a `iiif` section) | A map change completed (`map-id` has already been written back) |
 | `changeViewpoint` | `Viewpoint` (`x`, `y`, `longitude`, `latitude`, `mercator_x`, `mercator_y`, `zoom`, `mercZoom`, `direction`, `rotation`) | The viewpoint changed |
 | `updateState` | `AppState` (= `Restore`) | The state changed (throttled) |
 | `outOfMap` | `{}` | The view left the map |

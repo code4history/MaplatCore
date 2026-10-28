@@ -286,6 +286,57 @@ not flash empty while it changes.
   others, it can be changed after startup (the markers are redrawn), and it writes the
   same field as the legacy `appOption.hideOutsidePois`.
 
+### Copied IIIF metadata (`iiif`, `iiifMetadata`)
+
+A map setting (`maps/<mapID>.json`) can record the IIIF Presentation manifest the
+map comes from, together with metadata copied from it by an authoring tool such as
+MaplatEditor:
+
+```json
+{
+  "title": "新潟市圖",
+  "attr": "国立国会図書館 National Diet Library, JAPAN",
+  "license": "Custom",
+  "licenseNote": "https://dl.ndl.go.jp/ja/help_iiif#...",
+  "iiif": {
+    "manifest": "https://dl.ndl.go.jp/api/iiif/948741/manifest.json",
+    "canvas": "https://dl.ndl.go.jp/api/iiif/948741/canvas/3",
+    "image": "https://dl.ndl.go.jp/api/iiif/948741/R0000003",
+    "bindings": { "title": { "from": "manifest", "property": "label" } },
+    "copiedAt": "2026-10-28T12:39:42Z",
+    "copiedValues": { "title": { "ja": "新潟市圖" } },
+    "copiedMetadata": [
+      { "from": "manifest", "label": "Call Number", "value": "YG7-Z-1065" }
+    ]
+  }
+}
+```
+
+- The copied values live in the ordinary metadata keys (`title`, `attr`, `license`,
+  `licenseNote`, …) and are shown like any other metadata.
+- `bindings` says which manifest or canvas property each key was copied from
+  (`{ from: "manifest" | "canvas", property }`), `copiedValues` keeps the values
+  as they were at copy time (key → language → string), and `copiedMetadata` keeps
+  every entry of the manifest's and canvas's `metadata` list.
+- **The viewer never fetches the manifest.** It only reads what is written in the
+  map setting.
+- `getMapMeta()` and the `mapChanged` detail include
+  `iiif: { manifest?, canvas?, image?, copiedAt?, display, metadata? }` for such a
+  map (`metadata` is `copiedMetadata`; `bindings` and `copiedValues` are not
+  included).
+- `display` is `"all"` or `"hidden"` and tells a UI whether to show the full
+  metadata table. Set it per map with `iiifMetadata` on the entry of the app
+  setting's `sources` (`{ "mapID": "...", "iiifMetadata": "all" }`). Without it the
+  value is `"hidden"`.
+- The functions that read a manifest and pick the values to copy are in
+  `src/iiif/manifest.ts` (`listIiifCanvases`, `proposeIiifBindings`,
+  `resolveIiifMetadata`, `compareIiifCopy`, `iiifRightsToLicense`,
+  `IIIF_BINDABLE_KEYS`). They do not fetch and do not use the DOM. HTML values are
+  passed through a sanitizer given by the caller; use `sanitizeIiifHtml` (from
+  `src/sanitize.ts`, which needs a browser `window`). It keeps only `a`, `b`, `br`,
+  `i`, `p`, `small`, `span`, `sub`, `sup` and the `href` attribute (http(s) only;
+  links open in a new tab with `rel="noopener noreferrer"`).
+
 ### Lifecycle
 
 - See [docs/ui-core-lifecycle.md](docs/ui-core-lifecycle.md) for lifecycle

@@ -268,6 +268,51 @@ MaplatCore はフィールドの意味の定義と、結果として得られる
 - **`hide-outside-pois`** は描画を止めます。ほかの真偽値の属性と同じく起動後にも変えられ
   （マーカーを描き直します）、旧 `appOption.hideOutsidePois` と同じフィールドに書きます。
 
+### IIIF の書誌の写し（`iiif`・`iiifMetadata`）
+
+地図の設定（`maps/<mapID>.json`）に、その地図の元の IIIF Presentation の Manifest と、
+そこから MaplatEditor などの作成の道具が写した書誌を書けます:
+
+```json
+{
+  "title": "新潟市圖",
+  "attr": "国立国会図書館 National Diet Library, JAPAN",
+  "license": "Custom",
+  "licenseNote": "https://dl.ndl.go.jp/ja/help_iiif#...",
+  "iiif": {
+    "manifest": "https://dl.ndl.go.jp/api/iiif/948741/manifest.json",
+    "canvas": "https://dl.ndl.go.jp/api/iiif/948741/canvas/3",
+    "image": "https://dl.ndl.go.jp/api/iiif/948741/R0000003",
+    "bindings": { "title": { "from": "manifest", "property": "label" } },
+    "copiedAt": "2026-10-28T12:39:42Z",
+    "copiedValues": { "title": { "ja": "新潟市圖" } },
+    "copiedMetadata": [
+      { "from": "manifest", "label": "Call Number", "value": "YG7-Z-1065" }
+    ]
+  }
+}
+```
+
+- 写した値は普通の書誌の鍵（`title`・`attr`・`license`・`licenseNote` …）に入り、
+  他の書誌と同じように表示されます。
+- `bindings` は、それぞれの鍵を Manifest と canvas のどの項目から写したか
+  （`{ from: "manifest" | "canvas", property }`）、`copiedValues` は写した時点の値
+  （鍵 → 言語 → 文字列）、`copiedMetadata` は Manifest と canvas の `metadata` の全件です。
+- **Viewer は Manifest を取りに行きません。** 地図の設定に書かれた値だけを読みます。
+- そのような地図では、`getMapMeta()` と `mapChanged` の detail に
+  `iiif: { manifest?, canvas?, image?, copiedAt?, display, metadata? }` が入ります
+  （`metadata` は `copiedMetadata`。`bindings` と `copiedValues` は入りません）。
+- `display` は `"all"` か `"hidden"` で、書誌の全項目の表を UI が出すかを表します。
+  アプリの設定の `sources` の要素に `iiifMetadata` を書いて地図ごとに選びます
+  （`{ "mapID": "...", "iiifMetadata": "all" }`）。書かなければ `"hidden"` です。
+- Manifest を読んで写す値を取り出す関数は `src/iiif/manifest.ts` にあります
+  （`listIiifCanvases`・`proposeIiifBindings`・`resolveIiifMetadata`・`compareIiifCopy`・
+  `iiifRightsToLicense`・`IIIF_BINDABLE_KEYS`）。取得をせず、DOM も使いません。HTML の値は
+  呼び出し側が渡すサニタイザに通します。`src/sanitize.ts` の `sanitizeIiifHtml`
+  （ブラウザの `window` が要ります）を渡してください。残すのは `a`・`b`・`br`・`i`・`p`・
+  `small`・`span`・`sub`・`sup` と `href` 属性だけで（`http:`／`https:` のみ）、リンクは
+  `rel="noopener noreferrer"` つきの新しいタブで開きます。
+
 ### ライフサイクル
 
 - ライフサイクルフェーズと uiHooks については

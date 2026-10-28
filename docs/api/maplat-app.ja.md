@@ -210,7 +210,7 @@ Maplat の内部用です。使わないでください。
 
 | 区分 | メソッド |
 |---|---|
-| 地図の状態と制御 | `currentMapInfo(): object`・`mapInfo(mapID): object`・`changeMap(mapID, restore?): Promise<unknown>`・`requestUpdateState(partial: Partial<AppState>): void`・`getRotation(): number`・`getDirection(): Promise<number>`・`setViewpoint(cond)`・`goHome()`・`resetRotation()`・`resetDirection()`・`resetCirculation()`・`getMapMeta(mapID?): MapMeta \| undefined`・`setTransparency(percentage): void`（`transparency` 属性にも書き戻す）・`getTransparency(): number` |
+| 地図の状態と制御 | `currentMapInfo(): object`・`mapInfo(mapID): object`・`changeMap(mapID, restore?): Promise<unknown>`・`requestUpdateState(partial: Partial<AppState>): void`・`getRotation(): number`・`getDirection(): Promise<number>`・`setViewpoint(cond)`・`goHome()`・`resetRotation()`・`resetDirection()`・`resetCirculation()`・`getMapMeta(mapID?): MapMeta \| undefined`（地図の設定に `iiif` 節があれば `iiif: { manifest?, canvas?, image?, copiedAt?, display, metadata? }` を含む）・`setTransparency(percentage): void`（`transparency` 属性にも書き戻す）・`getTransparency(): number` |
 | 座標系 | `clientPointToLngLat(clientX, clientY): Promise<{ longitude, latitude } \| null>`・`lngLatToClientPoint(longitude, latitude): Promise<{ x, y } \| null>` — クラスが `undefined` を返すところで要素は `null` を返す |
 | マーカー | `addMarker(data, clusterId?)`・`removeMarker(id)`・`updateMarker(id, data, overwrite?)`・`clearMarker(clusterId?)`・`selectMarker(id)`・`unselectMarker()`・`getMarker(id): MaplatPoi \| undefined`・`showAllMarkers()`・`hideAllMarkers()` |
 | ラインとベクター | `addLine(data): string`・`addVector(data): string`・`removeLine(id): boolean`・`removeVector(id): boolean`・`clearLine(filter?)`・`clearVector(filter?)` |
@@ -267,7 +267,7 @@ Pro 専用のメソッド（`setDisplayMode`・`getDisplayMode`）は MaplatCore
 | `lifecycle:setting-loaded`・`lifecycle:appdata-ready`・`lifecycle:ui-configure`・`lifecycle:core-dom-ready`・`lifecycle:ui-dom-ready`・`lifecycle:core-ready`・`lifecycle:ui-ready` | `{ phaseId, appData }` — クラスのイベントにある内部の `core`・`mapDivDocument`・`uiHookResults` は**載せない** | ライフサイクルの各段階（旧と同順） |
 | `lifecycle:error` | `{ phaseId, error }` | `uiHooks` の hook が失敗した |
 | `sourceLoaded` | `{ mapID: string \| null; usable: boolean }[]`（クラスは source オブジェクトの配列） | source の読み込み直後（落ちた source を含む） |
-| `mapChanged` | `MapMeta`（`mapID`・`label`・`title`・`license` …） | 地図の切り替えの完了（`map-id` は書き戻し済み） |
+| `mapChanged` | `MapMeta`（`mapID`・`label`・`title`・`license` …。地図の設定に `iiif` 節があれば `iiif`） | 地図の切り替えの完了（`map-id` は書き戻し済み） |
 | `changeViewpoint` | `Viewpoint`（`x`・`y`・`longitude`・`latitude`・`mercator_x`・`mercator_y`・`zoom`・`mercZoom`・`direction`・`rotation`） | 視点が変わった |
 | `updateState` | `AppState`（= `Restore`） | 状態が変わった（間引きあり） |
 | `outOfMap` | `{}` | 地図の範囲外へ出た |
