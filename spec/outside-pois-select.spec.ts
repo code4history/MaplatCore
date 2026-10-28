@@ -206,7 +206,7 @@ describe("地図を切り替えたときの範囲外の選択", () => {
 
   it("(2) 切り替え先で範囲内なら普通の選択として続ける（選択は外さない）", () => {
     const { app } = makeSettleApp();
-    settleOutsideSelection(app, { kind: "inside", xy: [1, 1] });
+    settleOutsideSelection(app, { kind: "inside", xy: [1, 1] }, { recenter: true });
     expect(app.__outsideSelection).toBeUndefined();
     expect(app.__selectedMarker).toBe("p1");
     expect(app.setViewpoint).toHaveBeenCalledWith({
@@ -217,7 +217,7 @@ describe("地図を切り替えたときの範囲外の選択", () => {
 
   it("(3) まだ範囲外ならその POI を中心に据える（古代図は経緯度・TMS はメルカトル）", () => {
     const { app } = makeSettleApp();
-    settleOutsideSelection(app, { kind: "outside", merc: [9, 9] });
+    settleOutsideSelection(app, { kind: "outside", merc: [9, 9] }, { recenter: true });
     expect(app.__outsideSelection).toMatchObject({ id: "p1", merc: [9, 9] });
     expect(app.setViewpoint).toHaveBeenCalled();
 
@@ -229,7 +229,7 @@ describe("地図を切り替えたときの範囲外の選択", () => {
         isWmts: () => true
       }
     });
-    settleOutsideSelection(tms.app, { kind: "outside", merc: [9, 9] });
+    settleOutsideSelection(tms.app, { kind: "outside", merc: [9, 9] }, { recenter: true });
     expect(tms.view.setCenter).toHaveBeenCalledWith([9, 9]);
   });
 });
@@ -293,6 +293,115 @@ describe("描き直しの判定と範囲外の選択の結び付き", () => {
 
     expect(app.__outsideSelection).toMatchObject({ id: "p0", merc: [100, 200] });
     expect(app.__selectedMarker).toBe("p1");
+  });
+
+  it("利用者が地図を動かした後の描き直しは、中心を POI へ戻さない（範囲外のまま）", async () => {
+    const app = await bootApp();
+    app.from = makeSource(() => false) as any;
+    app.selectMarker("p1");
+    await flush();
+    expect(app.__outsideSelection).toMatchObject({ id: "p1" });
+
+    // 利用者が地図を動かす（中心を POI から離す）
+    const view = app.mapObject.getView();
+    view.setCenter([3600000, 3600000]);
+    const setCenter = vi.spyOn(view, "setCenter");
+    (app.setViewpoint as any).mockClear();
+
+    // 地図の位置と関係のない描き直し
+    app.redrawMarkers();
+    await flush();
+
+    // 中心は動かしたままで、寄せ直さない
+    expect(view.getCenter()).toEqual([3600000, 3600000]);
+    expect(setCenter).not.toHaveBeenCalled();
+    expect(app.setViewpoint).not.toHaveBeenCalled();
+    // 選択は続く（まだ範囲外）
+    expect(app.__outsideSelection).toMatchObject({ id: "p1" });
+  });
+
+  it("利用者が地図を動かした後の描き直しで範囲内になったら、中心は戻さず選択だけ解く", async () => {
+    const app = await bootApp();
+    app.from = makeSource(() => false) as any;
+    app.selectMarker("p1");
+    await flush();
+    expect(app.__outsideSelection).toMatchObject({ id: "p1" });
+
+    // 利用者が地図を動かしてから、範囲内になる地図へ切り替えた
+    const view = app.mapObject.getView();
+    view.setCenter([3600000, 3600000]);
+    const setCenter = vi.spyOn(view, "setCenter");
+    (app.setViewpoint as any).mockClear();
+    app.from = makeSource(() => true) as any;
+
+    app.redrawMarkers();
+    await flush();
+
+    // 状態は必ず解くが、視点は動かしたまま
+    expect(app.__outsideSelection).toBeUndefined();
+    expect(app.__selectedMarker).toBe("p1");
+    expect(view.getCenter()).toEqual([3600000, 3600000]);
+    expect(setCenter).not.toHaveBeenCalled();
+    expect(app.setViewpoint).not.toHaveBeenCalled();
+  });
+});
+
+describe("切り替えの最初の分岐（変換した中心が切替先の紙の中）", () => {
+  it("範囲外の選択中に切り替えると、判定待ちが立ち、描き直しでその POI へ寄る", async () => {
+    const { transform } = await import("ol/proj");
+    const app = await bootApp();
+    app.from = makeSource(() => false) as any;
+    app.selectMarker("p1");
+    await flush();
+    expect(app.__outsideSelection).toMatchObject({ id: "p1" });
+
+    // 切替先はメルカトルをそのまま座標に使う地図。変換した中心 [1, 1] だけが紙の中。
+    const to: any = {
+      mapID: "to",
+      insideCheckSysCoord: (xy: number[]) => xy[0] === 1 && xy[1] === 1,
+      merc2SysCoordAsync_ignoreBackground: async (merc: number[]) => [
+        merc[0] / 2,
+        merc[1] / 2
+      ],
+      isWmts: () => true,
+      isBasemap: () => false,
+      maxZoom: 20,
+      minZoom: 0,
+      setGPSMarker: vi.fn()
+    };
+    app.cacheHash = { to };
+    app.convertParametersFromCurrent = ((_to: any, cb: any) =>
+      cb([[1, 1], 5, 0])) as any;
+    app.requestUpdateState = vi.fn() as any;
+    app.dispatchPoiNumber = vi.fn() as any;
+    app.resetVector = vi.fn() as any;
+    app.setTransparency = vi.fn() as any;
+    app.getMapMeta = vi.fn(() => ({})) as any;
+    (app as any).__init = false;
+    const map: any = app.mapObject;
+    map.setLayer = vi.fn();
+    map.exchangeSource = vi.fn();
+    map.updateSize = vi.fn();
+    map.render = vi.fn();
+
+    const view = app.mapObject.getView();
+    const setCenter = vi.spyOn(view, "setCenter");
+    // 描き直しの時点で判定待ちが立っているかを見る
+    let pendingAtRedraw: boolean | undefined;
+    const redraw = app.redrawMarkers.bind(app);
+    app.redrawMarkers = vi.fn(() => {
+      pendingAtRedraw = app.__outsideSelection?.pending === true;
+      redraw();
+    }) as any;
+
+    await app.changeMap("to");
+    await flush();
+
+    expect(pendingAtRedraw).toBe(true);
+    const merc = transform([139.7, 35.7], "EPSG:4326", "EPSG:3857");
+    // 範囲外のままなので、その POI のメルカトルを中心に据える
+    expect(setCenter).toHaveBeenLastCalledWith(merc);
+    expect(app.__outsideSelection).toMatchObject({ id: "p1" });
   });
 });
 

@@ -300,13 +300,17 @@ export function centerOnOutsidePoi(app: OutsidePoisApp, merc: number[]): void {
  *   (2) 範囲内になった        → 選択は続け、中心をその POI に合わせる
  *   (3) まだ範囲外            → 中心をその POI に合わせる（outOfMap は出さない）
  * `classified` は描き直しで判定した結果（POI が無ければ undefined）。
+ * `options.recenter` は中心をその POI に合わせるか。省くと「判定待ちのときだけ」に
+ * なる（描き直しからの決め直しで、利用者が動かした視点を引き戻さない）。
  */
 export function settleOutsideSelection(
   app: OutsidePoisApp,
-  classified: MarkerClass | undefined
+  classified: MarkerClass | undefined,
+  options?: { recenter?: boolean }
 ): void {
   const selection = app.__outsideSelection;
   if (!selection) return;
+  const recenter = options?.recenter ?? !!selection.pending;
   if (!classified || classified.kind === "skip") {
     delete app.__outsideSelection;
     delete app.__selectedMarker;
@@ -317,9 +321,10 @@ export function settleOutsideSelection(
     return;
   }
   if (classified.kind === "inside") {
+    // 範囲内になったら状態は必ず解く（中心を寄せるかは recenter で決める）
     delete app.__outsideSelection;
     const data = app.getMarker ? app.getMarker(selection.id) : undefined;
-    if (data && app.setViewpoint) {
+    if (recenter && data && app.setViewpoint) {
       app.setViewpoint({
         latitude: data.lnglat ? data.lnglat[1] : data.lat ?? data.latitude,
         longitude: data.lnglat ? data.lnglat[0] : data.lng ?? data.longitude
@@ -328,5 +333,5 @@ export function settleOutsideSelection(
     return;
   }
   app.__outsideSelection = { id: selection.id, merc: classified.merc };
-  centerOnOutsidePoi(app, classified.merc);
+  if (recenter) centerOnOutsidePoi(app, classified.merc);
 }

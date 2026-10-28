@@ -1763,7 +1763,8 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     const data = this.getMarker(id);
     if (!data) return;
     this.__selectedMarker = id;
-    // 範囲外を外した直後に予約した引き戻しは取り消す（外 → 外・外 → 内で縁を挟まない）
+    // 範囲外を外した直後に予約した引き戻しは取り消す（外 → 外・外 → 内で縁を挟まない）。
+    // 判定待ちの印と二重の守りで、これ単独では振る舞いに現れない。
     this.__pullBackTimer = undefined;
     // 範囲の判定が終わるまで縁への引き戻しを止める（範囲外の POI は縁の外に居る）
     this.__outsideSelection = { id, pending: true };
@@ -1784,7 +1785,8 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     classifyMarker(this, data).then(classified => {
       // 途中で別の POI を選んだ・選択を外したときは触らない
       if (this.__selectedMarker !== id) return;
-      settleOutsideSelection(this, classified);
+      // 選ぶ操作そのものなので、判定が済んだら必ず中心をその POI に合わせる
+      settleOutsideSelection(this, classified, { recenter: true });
     });
   }
   unselectMarker() {
@@ -2206,6 +2208,14 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
               view.setMinZoom(to.minZoom || 0);
             }
             if (size && to.insideCheckSysCoord(size[0])) {
+              if (this.__outsideSelection) {
+                // 範囲外の POI を選んでいる間は、切替先でも描き直しの判定に委ねて
+                // 中心をその POI に合わせる
+                this.__outsideSelection = {
+                  ...this.__outsideSelection,
+                  pending: true
+                };
+              }
               view.setCenter(size[0]);
               view.setZoom(size[1]);
               view.setRotation(this.noRotate ? 0 : size[2]);
