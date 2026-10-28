@@ -333,7 +333,9 @@ MaplatEditor:
   `resolveIiifMetadata`, `compareIiifCopy`, `iiifRightsToLicense`,
   `IIIF_BINDABLE_KEYS`). They do not fetch and do not use the DOM. HTML values are
   passed through a sanitizer given by the caller; use `sanitizeIiifHtml` (from
-  `src/sanitize.ts`, which needs a browser `window`). It keeps only `a`, `b`, `br`,
+  `src/sanitize.ts`, which needs a browser `window`; it can also be imported from
+  `@maplat/core/common`, together with the `MapMetaIiif` type and the
+  `isIiifMetadataEntry` guard). It keeps only `a`, `b`, `br`,
   `i`, `p`, `small`, `span`, `sub`, `sup` and the `href` attribute (http(s) only;
   links open in a new tab with `rel="noopener noreferrer"`).
 

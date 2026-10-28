@@ -3,7 +3,11 @@
 // 攻撃ペイロードは spec/fixtures/xss-payloads.ts に集約し、Playwright 側の E2E からも同じものを読む。
 // 片方の環境だけで通しても、もう一方の安全性は証明できない（設計書 §3.5(d) / AC5b）。
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
+import { dirname, join } from "node:path";
 import { sanitizeHtml, sanitizeIiifHtml, escapeAttr, buildSlideAttrs } from "../src/sanitize";
+import ALLOWLIST from "../src/sanitize-allowlist.json";
 import {
   MUST_BE_NEUTRALIZED, MUST_BE_PRESERVED, TARGET_BLANK,
   MEDIA_ATTR_ATTACKS, MEDIA_ATTR_PRESERVED, ATTR_ROUNDTRIP_ATTACKS
@@ -501,5 +505,40 @@ describe("sanitizeHtml — 既定の挙動（引数なし）は変わらない",
     const out = sanitizeHtml(`<a href="mailto:example@example.com" class="c">連絡</a>`);
     expect(out).toContain("mailto:example@example.com");
     expect(out).toContain(`class="c"`);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// IIIF の許可表の「中の文字も捨てる要素」の一覧が、DOMPurify の既定と揃っているか
+//
+// なぜ測るか:
+//   この一覧は DOMPurify の既定（DEFAULT_FORBID_CONTENTS）から thead を外した写しである。
+//   DOMPurify の版が上がって既定に要素が増えても、写した側は黙って古いままになる。
+//   手元の DOMPurify の定義と突き合わせて、ずれたら赤にする。
+describe("sanitize-allowlist の IIIF の forbidContents は DOMPurify の既定と揃っている", () => {
+  const require = createRequire(import.meta.url);
+
+  /** DOMPurify の dist（ESM 版）のパス。node_modules の位置は require.resolve から解く。 */
+  const purifierPath = (): string => join(dirname(require.resolve("dompurify")), "purify.es.mjs");
+
+  /** dist のテキストから DEFAULT_FORBID_CONTENTS の配列を取り出す。取り出せなければ例外にする。 */
+  const defaultForbidContents = (): string[] => {
+    const text = readFileSync(purifierPath(), "utf-8");
+    const definition = text.match(
+      /DEFAULT_FORBID_CONTENTS\s*=\s*addToSet\(\s*\{\s*\}\s*,\s*\[([\s\S]*?)\]\s*\)/
+    );
+    if (!definition) {
+      throw new Error("DOMPurify の DEFAULT_FORBID_CONTENTS を取り出せませんでした");
+    }
+    return Array.from(definition[1].matchAll(/"([^"]+)"/g), match => match[1]);
+  };
+
+  it("iiif.forbidContents.tags は既定から thead だけを除いた集合", () => {
+    const defaults = defaultForbidContents();
+    expect(defaults.length).toBeGreaterThan(0);
+    expect(defaults).toContain("thead");
+    expect([...ALLOWLIST.iiif.forbidContents.tags].sort()).toEqual(
+      defaults.filter(tag => tag !== "thead").sort()
+    );
   });
 });

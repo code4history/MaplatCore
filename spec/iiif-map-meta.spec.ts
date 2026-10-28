@@ -265,7 +265,10 @@ describe("isIiifMetadataEntry: 要素の形の判定", () => {
     ["label が数値", { from: "manifest", label: 1, value: "y" }],
     ["label が無い", { from: "manifest", value: "y" }],
     ["value が数値", { from: "manifest", label: "x", value: 1 }],
-    ["value の言語の値が数値", { from: "manifest", label: "x", value: { ja: 1 } }]
+    ["value の言語の値が数値", { from: "manifest", label: "x", value: { ja: 1 } }],
+    ["label が配列", { from: "manifest", label: ["a"], value: "y" }],
+    ["value が配列", { from: "manifest", label: "x", value: ["b"] }],
+    ["label と value が配列", { from: "canvas", label: ["a"], value: ["b"] }]
   ])("悪い形（%s）は false", (_name, entry) => {
     expect(isIiifMetadataEntry(entry)).toBe(false);
   });

@@ -924,6 +924,8 @@ export function isIiifMetadataEntry(
 ): v is { from: "manifest" | "canvas"; label: Localized; value: Localized } {
   const o = v as Record<string, unknown>;
   if (!o || typeof o !== "object" || Array.isArray(o)) return false;
+  // isLocalized は文字列の配列も通すので、ここでは配列を弾く（訳の関数に配列を渡さないため）
+  if (Array.isArray(o.label) || Array.isArray(o.value)) return false;
   return (o.from === "manifest" || o.from === "canvas") && isLocalized(o.label) && isLocalized(o.value);
 }
 

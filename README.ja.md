@@ -309,7 +309,8 @@ MaplatCore はフィールドの意味の定義と、結果として得られる
   （`listIiifCanvases`・`proposeIiifBindings`・`resolveIiifMetadata`・`compareIiifCopy`・
   `iiifRightsToLicense`・`IIIF_BINDABLE_KEYS`）。取得をせず、DOM も使いません。HTML の値は
   呼び出し側が渡すサニタイザに通します。`src/sanitize.ts` の `sanitizeIiifHtml`
-  （ブラウザの `window` が要ります）を渡してください。残すのは `a`・`b`・`br`・`i`・`p`・
+  （ブラウザの `window` が要ります）を渡してください。`sanitizeIiifHtml` は、型 `MapMetaIiif`・
+  型ガード `isIiifMetadataEntry` とともに `@maplat/core/common` からも import できます。残すのは `a`・`b`・`br`・`i`・`p`・
   `small`・`span`・`sub`・`sup` と `href` 属性だけで（`http:`／`https:` のみ）、リンクは
   `rel="noopener noreferrer"` つきの新しいタブで開きます。
 

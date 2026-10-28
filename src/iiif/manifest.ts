@@ -128,25 +128,12 @@ function joinValues(values: unknown, joiner: string): string | undefined {
 }
 
 /**
- * IIIF の値を 言語 → 文字列 の表にする。
- * 版 2 の文字列はそのまま文字列で返し、言語つきの値の並び・版 3 の言語の表は表で返す。
+ * 配列ではない IIIF の値を 言語 → 文字列 の表にする。
+ * 版 2 の文字列はそのまま文字列で返し、言語つきの値・版 3 の言語の表は表で返す。
  * 読めない形なら undefined。
  */
-function toLocalized(raw: unknown, joiner: string): Localized | undefined {
+function toLocalizedValue(raw: unknown, joiner: string): Localized | undefined {
   if (typeof raw === "string") return raw;
-  if (Array.isArray(raw)) {
-    const table: Record<string, string> = {};
-    for (const item of raw) {
-      const single = toLocalized(item, joiner);
-      if (single === undefined) continue;
-      const pairs: Array<[string, string]> =
-        typeof single === "string" ? [[NONE, single]] : Object.entries(single);
-      for (const [language, text] of pairs) {
-        table[language] = hasOwn(table, language) ? `${table[language]}${joiner}${text}` : text;
-      }
-    }
-    return Object.keys(table).length > 0 ? table : undefined;
-  }
   if (!isPlainObject(raw)) return undefined;
   // 版 2 の言語つきの値
   if (typeof raw["@value"] === "string") {
@@ -160,6 +147,27 @@ function toLocalized(raw: unknown, joiner: string): Localized | undefined {
     if (language.startsWith("@")) continue;
     const joined = joinValues(values, joiner);
     if (joined !== undefined) table[language] = joined;
+  }
+  return Object.keys(table).length > 0 ? table : undefined;
+}
+
+/**
+ * IIIF の値を 言語 → 文字列 の表にする。
+ * 配列は版 2 の「言語つきの値の並び」の 1 段だけを読み、配列の中の配列は読まない
+ * （深い入れ子・自分自身を含む値で再帰しないため）。読めない形なら undefined。
+ */
+function toLocalized(raw: unknown, joiner: string): Localized | undefined {
+  if (!Array.isArray(raw)) return toLocalizedValue(raw, joiner);
+  const table: Record<string, string> = {};
+  for (const item of raw) {
+    if (Array.isArray(item)) continue;
+    const single = toLocalizedValue(item, joiner);
+    if (single === undefined) continue;
+    const pairs: Array<[string, string]> =
+      typeof single === "string" ? [[NONE, single]] : Object.entries(single);
+    for (const [language, text] of pairs) {
+      table[language] = hasOwn(table, language) ? `${table[language]}${joiner}${text}` : text;
+    }
   }
   return Object.keys(table).length > 0 ? table : undefined;
 }
@@ -275,6 +283,13 @@ function isNumericLabel(label: Localized): boolean {
   return texts.every(text => /^[0-9]+$/.test(text.trim()));
 }
 
+/** label が空か（canvas に label が無ければ Manifest の label に切り替える） */
+function isEmptyLabel(label: Localized): boolean {
+  const texts = typeof label === "string" ? [label] : Object.values(label);
+  if (texts.length === 0) return true;
+  return texts.every(text => text.trim() === "");
+}
+
 /** 版 2 の画像サービス（canvas.images[0].resource.service）の id */
 function v2ImageService(canvas: PlainObject): string | undefined {
   const images = canvas.images;
@@ -342,26 +357,37 @@ export function listIiifCanvases(
   return { ok: true, version: parsed.version, canvases };
 }
 
+/** 既定で結び付ける鍵（題名は canvas か Manifest を選ぶので別に扱う） */
+const DEFAULT_BINDINGS: ReadonlyArray<{ key: string; property: IiifProperty }> = [
+  { key: "attr", property: "requiredStatement" },
+  { key: "license", property: "rights" },
+  { key: "description", property: "summary" }
+];
+
 /**
  * 既定の selector。
- * canvas の label が頁の番号（数字だけ）なら Manifest の label を、
- * そうでなければ canvas の label を指す。ほかの項目は Manifest から写す。
+ * 題名は、canvas の label が頁の番号（数字だけ）でなければ canvas の label を、
+ * そうでなければ Manifest の label を指す。帰属・ライセンス・要約は Manifest から写す。
+ * 結び付ける元にその項目が無い（読めない）ときは、その鍵を返さない。
  */
 export function proposeIiifBindings(manifest: unknown, canvasId: string): IiifBindings {
   const parsed = parseManifest(manifest);
-  const canvas = parsed.ok ? findCanvas(parsed, canvasId) : undefined;
+  if (!parsed.ok) return {};
+  const canvas = findCanvas(parsed, canvasId);
+  const canvasText = canvasLabel(canvas);
   const labelFrom: IiifFrom =
-    canvas && !isNumericLabel(canvasLabel(canvas)) ? "canvas" : "manifest";
-  return {
-    title: { from: labelFrom, property: "label" },
-    officialTitle: { from: labelFrom, property: "label" },
-    attr: { from: "manifest", property: "requiredStatement" },
-    dataAttr: { from: "manifest", property: "requiredStatement" },
-    license: { from: "manifest", property: "rights" },
-    dataLicense: { from: "manifest", property: "rights" },
-    description: { from: "manifest", property: "summary" },
-    contributor: { from: "manifest", property: "provider" }
-  };
+    canvas && !isEmptyLabel(canvasText) && !isNumericLabel(canvasText) ? "canvas" : "manifest";
+  const bindings: IiifBindings = {};
+  const titleSource = labelFrom === "canvas" ? canvas : parsed.root;
+  if (isReadableProperty(titleSource, "label", parsed.version, TEXT_JOINER)) {
+    bindings.title = { from: labelFrom, property: "label" };
+  }
+  for (const { key, property } of DEFAULT_BINDINGS) {
+    if (isReadableProperty(parsed.root, property, parsed.version, HTML_JOINER)) {
+      bindings[key] = { from: "manifest", property };
+    }
+  }
+  return bindings;
 }
 
 /** 写す元の項目（版 2・版 3 の名前の違いを名寄せする） */
@@ -388,6 +414,31 @@ function readProperty(
     default:
       return undefined;
   }
+}
+
+/**
+ * 値が入っていないか（undefined・null・空の文字列）。
+ * 「その項目が無い」と「あるが形が読めない」を分けるために使う。
+ */
+function isMissingValue(raw: unknown): boolean {
+  if (raw === undefined || raw === null) return true;
+  return typeof raw === "string" && raw.trim() === "";
+}
+
+/** その項目の値を読めるか（読めない項目は既定では結び付けない） */
+function isReadableProperty(
+  source: PlainObject | undefined,
+  property: IiifProperty,
+  version: Version,
+  joiner: string
+): boolean {
+  const raw = readProperty(source, property, version);
+  if (isMissingValue(raw)) return false;
+  if (property === "rights") return typeof raw === "string";
+  const converted = toLocalized(raw, joiner);
+  if (converted === undefined) return false;
+  if (typeof converted === "string") return converted.trim() !== "";
+  return Object.keys(converted).length > 0;
 }
 
 /** metadata の一覧を写した行にする（順を保ち、全部の行を返す） */
@@ -463,6 +514,16 @@ export function resolveIiifMetadata(
       continue;
     }
     const raw = readProperty(from === "canvas" ? canvas : parsed.root, property, parsed.version);
+    // 「その項目が無い」と「あるが形が読めない」を警告の文で分ける
+    if (isMissingValue(raw)) {
+      unresolved.push(key);
+      warnings.push(
+        property === "rights"
+          ? `鍵 ${key} のライセンスの値がありません`
+          : `鍵 ${key} の IIIF の値がありません`
+      );
+      continue;
+    }
     if (property === "rights") {
       if (typeof raw !== "string") {
         unresolved.push(key);
