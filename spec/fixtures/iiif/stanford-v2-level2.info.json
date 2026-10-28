@@ -1,0 +1,54 @@
+{
+  "@context": "http://iiif.io/api/image/2/context.json",
+  "@id": "https://stacks.stanford.edu/image/iiif/hg676jb4964/0380_796-44",
+  "protocol": "http://iiif.io/api/image",
+  "width": 5426,
+  "height": 3820,
+  "sizes": [
+    {
+      "width": 170,
+      "height": 119
+    },
+    {
+      "width": 339,
+      "height": 239
+    },
+    {
+      "width": 678,
+      "height": 478
+    },
+    {
+      "width": 1357,
+      "height": 955
+    },
+    {
+      "width": 2713,
+      "height": 1910
+    },
+    {
+      "width": 5426,
+      "height": 3820
+    },
+    {
+      "width": 5426,
+      "height": 3820
+    }
+  ],
+  "tiles": [
+    {
+      "width": 1024,
+      "height": 1024,
+      "scaleFactors": [
+        1,
+        2,
+        4,
+        8,
+        16,
+        32
+      ]
+    }
+  ],
+  "profile": [
+    "http://iiif.io/api/image/2/level2.json"
+  ]
+}

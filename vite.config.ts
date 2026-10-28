@@ -86,12 +86,13 @@ export default defineConfig({
       }
     },
     rollupOptions: {
-      external: ["ol", "ol/proj", "ol/source", "ol/layer", "ol/Map", "ol/View", "ol/Feature", "ol/geom/Point", "ol/style"],
+      external: ["ol", "ol/proj", "ol/source", "ol/format", "ol/layer", "ol/Map", "ol/View", "ol/Feature", "ol/geom/Point", "ol/style"],
       output: {
         globals: {
           ol: "ol",
           "ol/proj": "ol.proj",
           "ol/source": "ol.source",
+          "ol/format": "ol.format",
           "ol/layer": "ol.layer",
           "ol/Map": "ol.Map",
           "ol/View": "ol.View",
