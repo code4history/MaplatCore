@@ -22,7 +22,7 @@ import { HistMap_tin } from "../src/source/histmap_tin";
 import { transPng } from "../src/const_ex";
 
 // 画素へ戻した値は 1e-6 で丸める。丸めないと浮動小数の誤差で、紙の外の 1 列（右端が 0）を
-// 「紙の中」と取り違え、ceil が 1 大きくなる（設計時の実測で正しい (b) が赤になった）。
+// 「紙の中」と取り違え、ceil が 1 大きくなる（丸めないと、正しい URL の関数でもこの試験が落ちる）。
 const SCALE = 1e6;
 const round6 = (value: number) => Math.round(value * SCALE) / SCALE;
 

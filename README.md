@@ -212,6 +212,42 @@ Without the key, or with `noCache: false`, the map is cached as before.
   has nothing to act on for it; clear the cache with
   `clearMapTileCacheAsync(mapID)` **before** turning `noCache` on.
 
+### Serving a map image from a IIIF Image API service (`delivery`)
+
+An old map can be displayed straight from a [IIIF Image API](https://iiif.io/api/image/)
+service instead of from pre-cut tiles. Add `delivery` to the map setting
+(`maps/<mapID>.json`):
+
+```json
+{
+  "delivery": { "type": "iiifImage", "url": "https://dl.ndl.go.jp/api/iiif/948741/R0000003" },
+  "compiled": { "...": "..." }
+}
+```
+
+`url` is the image service's base URL (the part before `/info.json`). Core fetches
+`<url>/info.json` once when the map is loaded and requests each tile in the IIIF URL
+form (`<url>/<region>/<size>/0/default.jpg`). Reading `info.json` and building the
+request URLs are done by OpenLayers (`ol/format` `IIIFInfo` and `ol/source` `IIIF`),
+so `ol/format` must be resolvable alongside `ol/source`.
+
+- Supported: Image API 2 and 3 services that can return any region (most level 1
+  and level 2 services), and level 0 services whose tiles are 256 px.
+- Not supported yet: level 0 services with other tile sizes or with `sizes` only,
+  and Image API 1. Such a map, or one whose `info.json` cannot be read (not
+  `http:`/`https:`, network error, more than 10 seconds, larger than 1 MiB, not
+  JSON, or a `width`/`height` different from the map's `compiled` data), is
+  treated as unusable: `sourceLoaded` reports it with `usable: false`, an error is
+  logged, and the other maps start normally. If it was the initial map, the app
+  starts from the default map instead.
+- The image service must allow cross-origin requests (CORS) from your page.
+- A map with `delivery` is never registered with the tile cache, so
+  `getMapCacheEnable(mapID)` returns `false` even with `enableCache: true`.
+- If the map also has `url` or `urls`, `delivery` is used and a warning is logged.
+  If `info.json`'s `@id`/`id` differs from `delivery.url`, tiles are still requested
+  from `delivery.url` (with a warning).
+- `info.json` is fetched without credentials.
+
 ### Lifecycle
 
 - See [docs/ui-core-lifecycle.md](docs/ui-core-lifecycle.md) for lifecycle

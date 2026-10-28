@@ -1,4 +1,4 @@
-// 使えない IIIF の地図があっても起動することの試験（AC4 の起動の部分・初期の地図が使えないとき）。
+// 使えない IIIF の地図があっても起動することの試験（初期の地図が使えないときを含む）。
 //
 //   - sourcesLoader: IIIF の失敗（IiifDeliveryError）だけを印（{ mapID, __maplatUnusable }）に変える。
 //     IIIF 以外の失敗は今どおり Promise.all を落とす。

@@ -8,7 +8,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const REGIONS = ["morioka", "nobeoka", "nara", "tatebayashi", "hiroshima"];
+const REGIONS = ["morioka", "nobeoka", "nara", "tatebayashi", "hiroshima", "niigata"];
 let fails = 0;
 function must(cond, msg) {
   if (!cond) {

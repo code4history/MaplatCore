@@ -125,7 +125,7 @@ const jsonMap = (extra: Record<string, unknown> = {}) => ({
 
 const iiifDelivery = (url: string = NDL_URL) => ({ type: "iiifImage", url });
 
-describe("AC4: json の道と noload の道の両方で IIIF の URL の関数が入る", () => {
+describe("json の道と noload の道の両方で IIIF の URL の関数が入る", () => {
   it("noload の道: mapID を渡しても tileUrlFunction は IIIF の URL を返す", async () => {
     stubFetch(NDL);
     const source: any = await mapSourceFactory(
@@ -227,7 +227,7 @@ describe("AC4: json の道と noload の道の両方で IIIF の URL の関数�
   });
 });
 
-describe("AC5: IIIF の地図は Weiwudi に登録されない", () => {
+describe("IIIF の地図は Weiwudi に登録されない", () => {
   it("json の道: enableCache: true でも登録されず、getCacheEnable は偽", async () => {
     stubFetch(NDL);
     const source: any = await mapSourceFactory(
@@ -249,7 +249,7 @@ describe("AC5: IIIF の地図は Weiwudi に登録されない", () => {
   });
 });
 
-describe("AC6: delivery と url が両方あるとき・@id が違うとき", () => {
+describe("delivery と url が両方あるとき・@id が違うとき", () => {
   it("noload の道: delivery で表示され、url を消したことを 1 回だけ警告する", async () => {
     stubFetch(NDL);
     const source: any = await mapSourceFactory(
@@ -314,7 +314,7 @@ describe("AC6: delivery と url が両方あるとき・@id が違うとき", ()
 });
 
 // --- 起動: 実物の mapSourceFactory から sourcesLoader → handleSources まで通す ---
-describe("AC4: 失敗した IIIF の地図があっても他の地図で起動する", () => {
+describe("失敗した IIIF の地図があっても他の地図で起動する", () => {
   it("印に変えて起動を続け、初期の地図も使える地図に選び直す", async () => {
     stubFetch(new Error("ng"));
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
