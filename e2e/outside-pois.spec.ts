@@ -740,6 +740,124 @@ test.describe('範囲外の POI を続けて選ぶ', () => {
       expect(distance).toBeGreaterThan(0.5);
     }
   });
+
+  test('外から外へ、外してから同じ拍で選び直しても、中心の履歴に紙の縁が挟まらない', async ({ page }) => {
+    await openDemo(page);
+    const result = await page.evaluate(async () => {
+      const app = (window as any).__MAPLAT_DEMO_APP__;
+      const view = app.mapObject.getView();
+      const idsOf = (map: any): string[] => {
+        const source = map?.getSource?.('marker');
+        return source
+          ? source.getFeatures().map((f: any) => String(f.get('datum')?.namespaceID ?? ''))
+          : [];
+      };
+      const outsideIds = idsOf(app.backMap);
+      const settle = async (): Promise<void> => {
+        let quiet = 0;
+        for (let i = 0; i < 600 && quiet < 5; i++) {
+          await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+          const busy =
+            view.getAnimating() ||
+            view.getInteracting() ||
+            app.__outsideSelection?.pending === true;
+          quiet = busy ? 0 : quiet + 1;
+        }
+      };
+      const centers: { center: number[]; inside: boolean }[] = [];
+      const record = (): void => {
+        const center = view.getCenter();
+        centers.push({ center, inside: !!center && !!app.from.insideCheckSysCoord(center) });
+      };
+      app.mapObject.on('moveend', record);
+      let modCalls = 0;
+      const original = app.from.modulateSysCoordInside;
+      app.from.modulateSysCoordInside = function (this: any, center: number[]) {
+        modCalls += 1;
+        return original.call(this, center);
+      };
+      app.selectMarker(outsideIds[0]);
+      await settle();
+      // 画面の実際の順（前を外す → 新しいのを選ぶ）を、await を挟まずに同じ拍で行う
+      app.unselectMarker();
+      app.selectMarker(outsideIds[1]);
+      await settle();
+      app.mapObject.un('moveend', record);
+      app.from.modulateSysCoordInside = original;
+      return { outsideIds, centers, modCalls };
+    });
+
+    expect(result.outsideIds.length).toBeGreaterThan(1);
+    // 縁への引き戻しが 1 度も走らない
+    expect(result.modCalls).toBe(0);
+    expect(result.centers.length).toBeGreaterThan(0);
+    // 中心の履歴に紙の内側（縁）が挟まらない
+    for (const entry of result.centers) expect(entry.inside).toBe(false);
+  });
+
+  test('外から内へ、外してから同じ拍で選び直しても、中心の履歴に紙の縁が挟まらない', async ({ page }) => {
+    await openDemo(page);
+    const result = await page.evaluate(async () => {
+      const app = (window as any).__MAPLAT_DEMO_APP__;
+      const view = app.mapObject.getView();
+      const idsOf = (map: any): string[] => {
+        const source = map?.getSource?.('marker');
+        return source
+          ? source.getFeatures().map((f: any) => String(f.get('datum')?.namespaceID ?? ''))
+          : [];
+      };
+      const outsideIds = idsOf(app.backMap);
+      const insideIds = idsOf(app.mapObject);
+      const settle = async (): Promise<void> => {
+        let quiet = 0;
+        for (let i = 0; i < 600 && quiet < 5; i++) {
+          await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+          const busy =
+            view.getAnimating() ||
+            view.getInteracting() ||
+            app.__outsideSelection?.pending === true;
+          quiet = busy ? 0 : quiet + 1;
+        }
+      };
+      app.selectMarker(outsideIds[0]);
+      await settle();
+      // 外したときに戻る先（紙の縁）を先に控える
+      const edge = app.from.modulateSysCoordInside(view.getCenter());
+      const centers: { center: number[]; inside: boolean }[] = [];
+      const record = (): void => {
+        const center = view.getCenter();
+        centers.push({ center, inside: !!center && !!app.from.insideCheckSysCoord(center) });
+      };
+      app.mapObject.on('moveend', record);
+      let modCalls = 0;
+      const original = app.from.modulateSysCoordInside;
+      app.from.modulateSysCoordInside = function (this: any, center: number[]) {
+        modCalls += 1;
+        return original.call(this, center);
+      };
+      // 画面の実際の順（前を外す → 新しいのを選ぶ）を、await を挟まずに同じ拍で行う
+      app.unselectMarker();
+      app.selectMarker(insideIds[0]);
+      await settle();
+      app.mapObject.un('moveend', record);
+      app.from.modulateSysCoordInside = original;
+      return { outsideIds, insideIds, edge, centers, modCalls };
+    });
+
+    expect(result.outsideIds.length).toBeGreaterThan(0);
+    expect(result.insideIds.length).toBeGreaterThan(0);
+    // 選び直しの間、縁への引き戻しが走らない
+    expect(result.modCalls).toBe(0);
+    expect(result.centers.length).toBeGreaterThan(0);
+    // 最後の中心は選び直した範囲内の POI（紙の中）
+    expect(result.centers[result.centers.length - 1].inside).toBe(true);
+    // 途中で紙の縁（外したときに戻る点）へ止まらない
+    for (const entry of result.centers) {
+      if (!entry.center) continue;
+      const distance = Math.hypot(entry.center[0] - result.edge[0], entry.center[1] - result.edge[1]);
+      expect(distance).toBeGreaterThan(0.5);
+    }
+  });
 });
 
 test.describe('背面が GL（MapLibre）のとき', () => {

@@ -187,12 +187,13 @@ describe("nov26-m4-t9 #134 marker 再描画は直列で最新の要求を残す"
     expect(h.conversions).toHaveLength(2);
     expect(h.front.clear).toHaveBeenCalledTimes(0);
     await h.complete();
-    expect(h.ids()).toEqual(["app_normal", "app_selected"]);
+    // 並べ替えずに比べる（選択中が層の配列の最後にあること）
+    expect(h.front.ids()).toEqual(["app_normal", "app_selected"]);
     // 保留回も同じ形（選択中が最後に 1 回だけ）
     await h.complete();
     expect(h.front.clear).toHaveBeenCalledTimes(2);
-    expect(h.ids()).toEqual(["app_normal", "app_selected"]);
-    expect(h.ids().filter(id => id === "app_selected")).toHaveLength(1);
+    expect(h.front.ids()).toEqual(["app_normal", "app_selected"]);
+    expect(h.front.ids().filter((id: string) => id === "app_selected")).toHaveLength(1);
     expect(h.self.__redrawMarkerBlock).toBe(false);
   });
 
