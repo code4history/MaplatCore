@@ -24,7 +24,10 @@ vi.mock("@c4h/weiwudi", () => ({ default: { registerMap } }));
 
 import { mapSourceFactory } from "../src/source_ex";
 import { HistMap_tin } from "../src/source/histmap_tin";
-import { IiifDeliveryError } from "../src/iiif/delivery";
+import {
+  IiifDeliveryError,
+  type IiifDeliveryReason
+} from "../src/iiif/delivery";
 import { MaplatApp } from "../src/index";
 
 function readFixture(name: string) {
@@ -73,6 +76,75 @@ function stubFetch(info: unknown | ((url: string) => unknown), setting: any = {}
       return jsonResponse(body);
     }
     return jsonResponse(setting);
+  });
+  vi.stubGlobal("fetch", fetchStub);
+  return fetchStub;
+}
+
+// info.json の応答をそのまま返す（JSON の本文・Content-Length を指定できる）
+function infoResponse(payload: string, contentLength?: string | null): any {
+  return {
+    ok: true,
+    status: 200,
+    headers: {
+      get: (name: string) => {
+        const key = name.toLowerCase();
+        if (key === "content-type") return "application/json";
+        if (key === "content-length")
+          return contentLength === undefined ? null : contentLength;
+        return null;
+      }
+    },
+    body: null,
+    json: () => Promise.resolve(JSON.parse(payload)),
+    text: () => Promise.resolve(payload)
+  };
+}
+
+// 本文を少しずつ返す応答（Content-Length が無いときの累計の上限を見る）
+function streamingInfoResponse(chunks: Uint8Array[]): any {
+  let index = 0;
+  return {
+    ok: true,
+    status: 200,
+    headers: { get: () => null },
+    body: {
+      getReader: () => ({
+        read: () =>
+          Promise.resolve(
+            index < chunks.length
+              ? { done: false, value: chunks[index++] }
+              : { done: true, value: undefined }
+          ),
+        cancel: () => Promise.resolve()
+      })
+    },
+    json: () => Promise.reject(new Error("本文を JSON では読まない")),
+    text: () => Promise.reject(new Error("本文を文字列では読まない"))
+  };
+}
+
+// info.json だけ与えた応答を返し、それ以外は地図マスタの設定として返す
+function stubInfoResponse(response: any, setting: any = {}) {
+  const fetchStub = vi.fn(async (url: string) =>
+    typeof url === "string" && url.endsWith("/info.json")
+      ? response
+      : jsonResponse(setting)
+  );
+  vi.stubGlobal("fetch", fetchStub);
+  return fetchStub;
+}
+
+// 時間切れの再現: fetch は signal の abort で reject する（実際には待たない）
+function stubHangingUntilAbort() {
+  const fetchStub = vi.fn((url: string, init: any) => {
+    if (typeof url === "string" && url.endsWith("/info.json"))
+      return new Promise((_resolve, reject) => {
+        init.signal.addEventListener("abort", () =>
+          reject(new Error("aborted"))
+        );
+      });
+    return Promise.resolve(jsonResponse({}));
   });
   vi.stubGlobal("fetch", fetchStub);
   return fetchStub;
@@ -162,69 +234,119 @@ describe("json の道と noload の道の両方で IIIF の URL の関数が入�
     expect(source.minZoom).toBe(2);
   });
 
-  it.each([
-    ["noload の道", () => noloadMap({ delivery: iiifDelivery() })],
-    ["json の道", () => jsonMap({ delivery: iiifDelivery() })]
-  ])("%s: 取れない info.json は IiifDeliveryError（fetch-failed）", async (_label, make) => {
-    stubFetch(new Error("ng"));
-    const promise = mapSourceFactory(make(), { enableCache: true });
-    await expect(promise).rejects.toBeInstanceOf(IiifDeliveryError);
-    await expect(promise).rejects.toMatchObject({ reason: "fetch-failed" });
-    expect(createAsync).not.toHaveBeenCalled();
-  });
+  // 8 つの理由すべてを、noload の道と json の道の両方に当てる。地図の作り方（noload か
+  // json か）は同じものを使い、fetch のスタブだけを差し替える。片方の道にだけ前処理が
+  // 入っても、ここで気づけるようにする。
+  const failures: {
+    case: string;
+    reason: IiifDeliveryReason;
+    install: () => void;
+    deliveryUrl?: string;
+    patch?: (options: any, path: "noload" | "json") => any;
+    timeout?: boolean;
+  }[] = [
+    {
+      case: "http:/https: でない URL",
+      reason: "bad-url",
+      install: () => stubFetch(NDL),
+      deliveryUrl: "ftp://example.test/iiif"
+    },
+    {
+      case: "取れない info.json",
+      reason: "fetch-failed",
+      install: () => stubFetch(new Error("ng"))
+    },
+    {
+      case: "10 秒で時間切れ",
+      reason: "timeout",
+      install: () => stubHangingUntilAbort(),
+      timeout: true
+    },
+    {
+      // Content-Length が上限を超える（本文は読ませない）
+      case: "Content-Length が 1 MiB を超える",
+      reason: "too-large",
+      install: () =>
+        stubInfoResponse(
+          infoResponse(JSON.stringify(NDL), String(1024 * 1024 + 1))
+        )
+    },
+    {
+      // Content-Length が無く、読みながらの累計が上限を超える（1.5 MiB）
+      case: "読みながらの累計が 1 MiB を超える",
+      reason: "too-large",
+      install: () => {
+        const chunk = new Uint8Array(512 * 1024).fill(65);
+        stubInfoResponse(streamingInfoResponse([chunk, chunk, chunk]));
+      }
+    },
+    {
+      case: "JSON でない本文",
+      reason: "not-json",
+      install: () => stubInfoResponse(infoResponse("<html>404</html>"))
+    },
+    {
+      case: "v1 の info.json",
+      reason: "unsupported-version",
+      install: () =>
+        stubFetch({
+          "@context":
+            "http://library.stanford.edu/iiif/image-api/1.1/context.json",
+          identifier: NDL_URL,
+          width: NDL.width,
+          height: NDL.height,
+          profile:
+            "http://library.stanford.edu/iiif/image-api/1.1/comliance.html#level2"
+        })
+    },
+    {
+      // level0 のタイルが 512 の資料は、今は配らない
+      case: "配れない level0 の資料",
+      reason: "unsupported-level0",
+      install: () => stubFetch(readFixture("level0-tiles-512.info.json"))
+    },
+    {
+      case: "大きさの食い違い",
+      reason: "size-mismatch",
+      install: () => stubFetch(NDL),
+      patch: (options, path) =>
+        path === "noload"
+          ? { ...options, width: NDL.width - 1 }
+          : { ...options, compiled: { wh: [NDL.width + 10, NDL.height] } }
+    }
+  ];
 
-  it.each([
-    ["noload の道", () => noloadMap()],
-    ["json の道", () => jsonMap()]
-  ])("%s: http:/https: でない URL は IiifDeliveryError（bad-url）", async (_label, make) => {
-    stubFetch(NDL);
-    await expect(
-      mapSourceFactory(
-        { ...make(), delivery: iiifDelivery("ftp://example.test/iiif") },
-        { enableCache: true }
-      )
-    ).rejects.toMatchObject({ reason: "bad-url" });
-  });
+  const paths = [
+    ["noload の道", () => noloadMap(), "noload"],
+    ["json の道", () => jsonMap(), "json"]
+  ] as const;
 
-  it("noload の道: 大きさが渡した width・height と違えば size-mismatch", async () => {
-    stubFetch(NDL);
-    await expect(
-      mapSourceFactory(
-        noloadMap({ width: NDL.width - 1, delivery: iiifDelivery() }),
-        { enableCache: true }
-      )
-    ).rejects.toMatchObject({ reason: "size-mismatch" });
-  });
+  const failureCases = paths.flatMap(([label, make, path]) =>
+    failures.map(failure => ({ ...failure, label, path, make }))
+  );
 
-  it("json の道: 大きさが compiled.wh と違えば size-mismatch", async () => {
-    stubFetch(NDL);
-    await expect(
-      mapSourceFactory(
-        jsonMap({
-          compiled: { wh: [NDL.width + 10, NDL.height] },
-          delivery: iiifDelivery()
-        }),
-        { enableCache: true }
-      )
-    ).rejects.toMatchObject({ reason: "size-mismatch" });
-  });
-
-  it("v1 の info.json は unsupported-version（両方の道）", async () => {
-    const v1 = {
-      "@context": "http://library.stanford.edu/iiif/image-api/1.1/context.json",
-      identifier: NDL_URL,
-      width: NDL.width,
-      height: NDL.height,
-      profile: "http://library.stanford.edu/iiif/image-api/1.1/comliance.html#level2"
-    };
-    stubFetch(v1);
-    await expect(
-      mapSourceFactory(noloadMap({ delivery: iiifDelivery() }), {})
-    ).rejects.toMatchObject({ reason: "unsupported-version" });
-    await expect(
-      mapSourceFactory(jsonMap({ delivery: iiifDelivery() }), {})
-    ).rejects.toMatchObject({ reason: "unsupported-version" });
-  });
+  it.each(failureCases)(
+    "$label: $case は IiifDeliveryError（source を作らない）",
+    async ({ reason, install, deliveryUrl, patch, timeout, make, path }) => {
+      install();
+      const base = { ...make(), delivery: iiifDelivery(deliveryUrl) };
+      const options = patch ? patch(base, path) : base;
+      if (timeout) vi.useFakeTimers();
+      try {
+        const promise = mapSourceFactory(options, { enableCache: true });
+        if (timeout) {
+          // 時間切れは偽の時計で作る（実際には待たない）
+          void promise.catch(() => undefined);
+          await vi.advanceTimersByTimeAsync(10001);
+        }
+        await expect(promise).rejects.toBeInstanceOf(IiifDeliveryError);
+        await expect(promise).rejects.toMatchObject({ reason });
+        expect(createAsync).not.toHaveBeenCalled();
+      } finally {
+        if (timeout) vi.useRealTimers();
+      }
+    }
+  );
 });
 
 describe("IIIF の地図は Weiwudi に登録されない", () => {
@@ -376,5 +498,28 @@ describe("失敗した IIIF の地図があっても他の地図で起動する"
       'Maplat: IIIF image for map "ndl-iiif" is not usable: fetch-failed'
     );
     errorSpy.mockRestore();
+  });
+});
+
+// --- 大きさが無いときの例外 ---
+// noload の道は options の width・height を当てにするが、渡し忘れても OL の素の Error に
+// ならず、理由の付いた IiifDeliveryError で終わること（呼び手は reason を見て扱いを決める）。
+describe("大きさが無いときの例外", () => {
+  it("noload の道: info.json にも width・height が無ければ IiifDeliveryError（size-mismatch）", async () => {
+    const info = JSON.parse(JSON.stringify(LEVEL0));
+    delete info.width;
+    delete info.height;
+    stubFetch(info);
+    const promise = mapSourceFactory(
+      noloadMap({
+        width: undefined,
+        height: undefined,
+        delivery: iiifDelivery(info.id)
+      }),
+      { enableCache: true }
+    );
+    await expect(promise).rejects.toBeInstanceOf(IiifDeliveryError);
+    await expect(promise).rejects.toMatchObject({ reason: "size-mismatch" });
+    expect(createAsync).not.toHaveBeenCalled();
   });
 });

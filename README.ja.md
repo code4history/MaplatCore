@@ -226,8 +226,10 @@ MaplatCore はフィールドの意味の定義と、結果として得られる
 - まだ使えないもの: タイルが 256 px 以外の level 0・`sizes` だけの level 0・Image API 1。
   これらの地図や、`info.json` が読めない地図（`http:`／`https:` でない・取得の失敗・10 秒超・
   1 MiB 超・JSON でない・`width`／`height` が地図の `compiled` と違う）は使えない地図として扱い、
-  `sourceLoaded` に `usable: false` で入り、エラーを記録し、他の地図は普通に起動します。
-  それが初期の地図だったときは、既定の地図から起動します。
+  エラーを記録し、他の地図は普通に起動します。`<maplat-app>` では、`sourceLoaded` のイベントに
+  `{ mapID, usable: false }` で入ります。`MaplatApp` クラスでは、`sourceLoaded` の detail に
+  その地図は入りません（印の要素も足しません）。それが初期の地図だったときは、既定の地図から
+  起動します。
 - 画像サービスは、ページからのオリジンをまたぐ要求（CORS）を許している必要があります。
 - `delivery` を持つ地図はタイルキャッシュに登録しません。`enableCache: true` でも
   `getMapCacheEnable(mapID)` は `false` を返します。

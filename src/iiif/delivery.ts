@@ -84,6 +84,21 @@ function tileSizeOf(tileSize: any): { width?: number; height?: number } {
   return {};
 }
 
+// 大きさとして使える数か（正の整数だけ）
+function isPositiveInteger(value: unknown): value is number {
+  return Number.isInteger(value) && (value as number) > 0;
+}
+
+// 倍率が 1 から始まる 2 の冪の連続か（[1]・[1,2]・[1,2,4]・…）。
+// level0 のタイルの地図は、途中の倍率が欠けていると、そのズームのタイルが静的な
+// サーバに無く画が抜ける（要求は 404 になり、再試行の後に透明になる）。
+// OL は getTileSourceOptions の resolutions を降順に並べ替えるので、ここでも並べ直す。
+function isContiguousPowerOfTwo(scales: unknown): scales is number[] {
+  if (!Array.isArray(scales) || scales.length === 0) return false;
+  const sorted = [...scales].sort((a, b) => a - b);
+  return sorted.every((scale, index) => scale === 2 ** index);
+}
+
 /**
  * info.json を検査して、Core で配れるかを返す（取得しない純粋な関数）
  */
@@ -93,6 +108,21 @@ export function checkIiifDelivery(
 ): IiifDeliveryCheck {
   const json = toInfoObject(info);
   if (!json) return { ok: false, reason: "not-json" };
+
+  // 大きさは正の整数であること。無いまま先へ進むと、OL の格子（new IIIF・size）が
+  // 「Missing or invalid size」の素の Error を投げ、呼び手が reason を受け取れない。
+  // expected も同じ形で見る（noload の道は options の width・height を当てにするため、
+  // undefined のまま比べると undefined !== undefined で素通りする）。
+  if (!isPositiveInteger(json.width) || !isPositiveInteger(json.height))
+    return { ok: false, reason: "size-mismatch" };
+  if (
+    expected &&
+    (!isPositiveInteger(expected.width) ||
+      !isPositiveInteger(expected.height) ||
+      json.width !== expected.width ||
+      json.height !== expected.height)
+  )
+    return { ok: false, reason: "size-mismatch" };
 
   let iiif: IIIFInfo;
   let version: string | undefined;
@@ -107,12 +137,6 @@ export function checkIiifDelivery(
     return { ok: false, reason: "unsupported-version" };
   }
 
-  if (
-    expected &&
-    (json.width !== expected.width || json.height !== expected.height)
-  )
-    return { ok: false, reason: "size-mismatch" };
-
   const level = levelOf(iiif, version);
   const versionNumber = version === "version2" ? "2" : "3";
   const supports: string[] = options.supports || [];
@@ -126,7 +150,11 @@ export function checkIiifDelivery(
     return { ok: true, version: versionNumber, level, tiling: "arbitrary" };
 
   const { width, height } = tileSizeOf(options.tileSize);
-  if (width === 256 && height === 256)
+  if (
+    width === 256 &&
+    height === 256 &&
+    isContiguousPowerOfTwo(options.resolutions)
+  )
     return { ok: true, version: versionNumber, level, tiling: "level0-256" };
   if (
     LEVEL0_CROP_SUPPORTED &&
@@ -170,6 +198,27 @@ export function isUnusableSource(source: unknown): source is UnusableSource {
     typeof source === "object" &&
     "__maplatUnusable" in (source as Record<string, unknown>)
   );
+}
+
+/** 起動のときに使えなかった IIIF の地図（要素の sourceLoaded の材料） */
+export type UnusableSourceEntry = { mapID: string; reason: IiifDeliveryReason };
+
+// 控えはアプリのインスタンスを鍵にした WeakMap に置く。アプリのクラスのフィールドに
+// すると build の型（index.d.ts）に内部の面が出てしまう（利用者に見せる形を増やさない）。
+// インスタンスが消えれば控えも一緒に消える。
+const unusableSourcesByApp = new WeakMap<object, UnusableSourceEntry[]>();
+
+/** 起動のときに使えなかった地図の控えを書く（起動のたびに作り直す） */
+export function setUnusableSources(
+  app: object,
+  list: UnusableSourceEntry[]
+): void {
+  unusableSourcesByApp.set(app, [...list]);
+}
+
+/** 起動のときに使えなかった地図の控えを読む（無ければ空） */
+export function getUnusableSources(app: object): UnusableSourceEntry[] {
+  return [...(unusableSourcesByApp.get(app) ?? [])];
 }
 
 // info.json の取得の上限
@@ -347,7 +396,9 @@ export async function resolveIiifDelivery(
   const sourceOptions = new IIIFInfo(info).getTileSourceOptions() || {};
   // level0 のタイルの地図は、scaleFactors に無い倍率のズームを要求すると、静的なサーバに
   // 無いファイルを指す。HistMap の minZoom を「最も粗いタイルの倍率」まで上げる
-  // （maxZoom は HistMap と同じ式）。任意の領域が取れる地図には入れない。
+  // （maxZoom は HistMap と同じ式）。倍率は 1 から始まる 2 の冪の連続なので差は整数になる。
+  // 最も粗いタイルが maxZoom より細かい資料では差が負になるので 0 に丸める（z が負だと
+  // OL の格子に解像度が無く、表示が壊れる）。任意の領域が取れる地図には入れない。
   let minZoom: number | undefined;
   if (checked.tiling === "level0-256") {
     const scales: number[] = Array.isArray((sourceOptions as any).resolutions)
@@ -365,7 +416,7 @@ export async function resolveIiifDelivery(
           Math.log2(info.height / TILE_SIZE)
         )
       );
-      minZoom = maxZoom - Math.log2(maxScaleFactor);
+      minZoom = Math.max(0, maxZoom - Math.log2(maxScaleFactor));
     }
   }
   const olSource = new IIIF({

@@ -3,7 +3,9 @@
 //   - sourcesLoader: IIIF の失敗（IiifDeliveryError）だけを印（{ mapID, __maplatUnusable }）に変える。
 //     IIIF 以外の失敗は今どおり Promise.all を落とす。
 //   - handleSources: 印のついた地図は cacheHash と生の sourceLoaded の detail に入れず、
-//     __unusableSources に控える。要素の経路（sourceLoadedDetail）の末尾に { mapID, usable: false } を足す。
+//     モジュールの中の控え（setUnusableSources）に書く。要素の経路（sourceLoadedDetail）の
+//     末尾に { mapID, usable: false } を足す。控えはアプリのインスタンスごとに分かれ、
+//     MaplatApp の公開の型には出さない。
 //   - setInitialMap: 初期の地図（startFrom・initialRestore.mapID）が使えないときは、
 //     今の既定と同じ規則（cache の最後）の地図に変えて警告を 1 回出す（画面が空にならない）。
 //
@@ -24,7 +26,7 @@ vi.mock("../src/source_ex", async importOriginal => {
 });
 
 import { MaplatApp } from "../src/index";
-import { IiifDeliveryError } from "../src/iiif/delivery";
+import { getUnusableSources, IiifDeliveryError, setUnusableSources } from "../src/iiif/delivery";
 
 function stub(fields: Record<string, any> = {}): any {
   return Object.assign(Object.create(MaplatApp.prototype), fields);
@@ -142,9 +144,11 @@ describe("handleSources: 使えない地図は起動を止めない", () => {
     await app.handleSources([hist, marked]);
 
     expect(Object.keys(app.cacheHash)).toEqual(["h1"]);
-    expect(app.__unusableSources).toEqual([
+    expect(getUnusableSources(app)).toEqual([
       { mapID: "ndl-iiif", reason: "fetch-failed" }
     ]);
+    // 控えはクラスのフィールドではなく、モジュールの中（公開の型に出さない）
+    expect("__unusableSources" in app).toBe(false);
 
     // 生の detail（旧クラスの経路）には入らない
     expect(app.dispatchEvent).toHaveBeenCalledTimes(1);
@@ -224,5 +228,26 @@ describe("setInitialMap: 初期の地図が使えないとき", () => {
     expect(errors).toEqual([
       'Maplat: IIIF image for map "ndl-iiif" is not usable: timeout'
     ]);
+  });
+});
+
+describe("使えなかった地図の控え（アプリごと）", () => {
+  it("アプリのインスタンスごとに分かれ、無いアプリは空になる", () => {
+    const app = appStub();
+    const other = appStub();
+    setUnusableSources(app, [{ mapID: "a", reason: "timeout" }]);
+    expect(getUnusableSources(app)).toEqual([{ mapID: "a", reason: "timeout" }]);
+    expect(getUnusableSources(other)).toEqual([]);
+  });
+
+  it("handleSources を通すたびに控えを作り直す", async () => {
+    const app = appStub({ setInitialMap: vi.fn().mockResolvedValue(undefined) });
+    await app.handleSources([
+      histSource("h1"),
+      { mapID: "x", __maplatUnusable: { reason: "timeout" } }
+    ]);
+    expect(getUnusableSources(app)).toEqual([{ mapID: "x", reason: "timeout" }]);
+    await app.handleSources([histSource("h2")]);
+    expect(getUnusableSources(app)).toEqual([]);
   });
 });

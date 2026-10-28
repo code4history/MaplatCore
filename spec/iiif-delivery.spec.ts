@@ -433,3 +433,103 @@ describe("resolveIiifDelivery: level0-256 の minZoom", () => {
     expect(delivery.minZoom).toBeUndefined();
   });
 });
+
+// --- level0-256 の倍率の形 ---
+// level0 のタイルの地図は、倍率が 1 から始まる 2 の冪の連続で並んでいるものだけを配る。
+// 途中の倍率が欠けた資料は、そのズームのタイルが静的なサーバに無く画が抜けるので配らない。
+describe("level0-256 の倍率の形", () => {
+  const level0WithScales = (scaleFactors: number[]) => {
+    const info = JSON.parse(
+      JSON.stringify(readFixture("level0-tiles-256.info.json"))
+    );
+    info.tiles[0].scaleFactors = scaleFactors;
+    return info;
+  };
+  const checkLevel0 = (info: any) =>
+    checkIiifDelivery(info, { width: info.width, height: info.height });
+  const resolveLevel0 = (info: any) =>
+    resolveIiifDelivery(
+      { type: "iiifImage", url: info["@id"] || info.id },
+      { width: info.width, height: info.height },
+      { fetchImpl: jsonFetch(info) }
+    );
+
+  it("[1,2,4,8,16,32] は level0-256 で、minZoom は負にならず 0 に丸まる", async () => {
+    const info = level0WithScales([1, 2, 4, 8, 16, 32]);
+    expect(checkLevel0(info)).toEqual({
+      ok: true,
+      version: "3",
+      level: 0,
+      tiling: "level0-256"
+    });
+    const delivery = await resolveLevel0(info);
+    expect(delivery.minZoom).toBe(0);
+  });
+
+  for (const scaleFactors of [[1, 2, 3], [1, 4]]) {
+    it(`[${scaleFactors.join(",")}] は 2 の冪の連続でないので unsupported-level0`, async () => {
+      const info = level0WithScales(scaleFactors);
+      expect(checkLevel0(info)).toEqual({
+        ok: false,
+        reason: "unsupported-level0"
+      });
+      const promise = resolveLevel0(info);
+      await expect(promise).rejects.toBeInstanceOf(IiifDeliveryError);
+      await expect(promise).rejects.toMatchObject({
+        reason: "unsupported-level0"
+      });
+    });
+  }
+
+  it("倍率（scaleFactors）が無い資料も unsupported-level0", async () => {
+    const info = level0WithScales([1, 2, 4]);
+    info.tiles = [{ width: 256, height: 256 }];
+    expect(checkLevel0(info)).toEqual({
+      ok: false,
+      reason: "unsupported-level0"
+    });
+    await expect(resolveLevel0(info)).rejects.toMatchObject({
+      reason: "unsupported-level0"
+    });
+  });
+});
+
+// --- 大きさの検査 ---
+// info.json の width・height が正の整数でないと、この先の OL の格子が
+// 「Missing or invalid size」の素の Error を投げ、呼び手が理由を受け取れない。
+describe("checkIiifDelivery: 大きさの検査", () => {
+  const level0WithoutSize = () => {
+    const info = JSON.parse(
+      JSON.stringify(readFixture("level0-tiles-256.info.json"))
+    );
+    return info;
+  };
+
+  it("info.json に width が無ければ size-mismatch（資料は変えず、この場で写して消す）", () => {
+    const info = level0WithoutSize();
+    delete info.width;
+    expect(checkIiifDelivery(info)).toEqual({
+      ok: false,
+      reason: "size-mismatch"
+    });
+  });
+
+  it("info.json に height が無ければ size-mismatch", () => {
+    const info = level0WithoutSize();
+    delete info.height;
+    expect(checkIiifDelivery(info)).toEqual({
+      ok: false,
+      reason: "size-mismatch"
+    });
+  });
+
+  it("expected の width・height が正の整数でなければ size-mismatch", () => {
+    const info = level0WithoutSize();
+    expect(
+      checkIiifDelivery(info, { width: undefined as any, height: info.height })
+    ).toEqual({ ok: false, reason: "size-mismatch" });
+    expect(
+      checkIiifDelivery(info, { width: info.width, height: 0 })
+    ).toEqual({ ok: false, reason: "size-mismatch" });
+  });
+});

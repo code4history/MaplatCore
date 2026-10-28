@@ -237,9 +237,11 @@ so `ol/format` must be resolvable alongside `ol/source`.
   and Image API 1. Such a map, or one whose `info.json` cannot be read (not
   `http:`/`https:`, network error, more than 10 seconds, larger than 1 MiB, not
   JSON, or a `width`/`height` different from the map's `compiled` data), is
-  treated as unusable: `sourceLoaded` reports it with `usable: false`, an error is
-  logged, and the other maps start normally. If it was the initial map, the app
-  starts from the default map instead.
+  treated as unusable: an error is logged and the other maps start normally. With
+  `<maplat-app>`, the `sourceLoaded` event lists it as `{ mapID, usable: false }`.
+  With the `MaplatApp` class, it is simply left out of the `sourceLoaded` detail
+  (no entry is added for it). If it was the initial map, the app starts from the
+  default map instead.
 - The image service must allow cross-origin requests (CORS) from your page.
 - A map with `delivery` is never registered with the tile cache, so
   `getMapCacheEnable(mapID)` returns `false` even with `enableCache: true`.

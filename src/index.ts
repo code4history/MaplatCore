@@ -18,9 +18,12 @@ import { HistMap } from "./source/histmap";
 import { TmsMap } from "./source/tmsmap";
 import { BackmapSource, MaplatSource, mapSourceFactory } from "./source_ex";
 import {
+  getUnusableSources,
   IiifDeliveryError,
   isUnusableSource,
-  unusableSource
+  setUnusableSources,
+  unusableSource,
+  type UnusableSourceEntry
 } from "./iiif/delivery";
 import { ViewpointArray } from "./source/mixin";
 // META_KEYS の正本は依存の無い src/meta_keys.ts（@maplat/core/common の分割で source/mixin.ts から移した）
@@ -271,8 +274,6 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
   timer: any = undefined;
   appName: any;
   cacheHash: any;
-  /** 起動のときに使えなかった地図（IIIF の取得に失敗した等）。sourceLoaded の detail に usable: false で足す */
-  __unusableSources?: { mapID: string; reason: string }[] = [];
   currentPosition: any;
   startFrom? = "";
   from?: MaplatSource;
@@ -1051,8 +1052,9 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
       usable: !!(source && this.cacheHash?.[source.mapID] === source)
     }));
     // 起動のときに使えなかった地図（IIIF の取得に失敗した等）は、生の source が無いので
-    // ここで末尾に足す（受け手が存在しない source のメソッドを呼ばないようにする）
-    (this.__unusableSources || []).forEach(entry => {
+    // ここで末尾に足す（受け手が存在しない source のメソッドを呼ばないようにする）。
+    // 控えは delivery のモジュールがアプリのインスタンスを鍵に持つ（公開の型に出さない）
+    getUnusableSources(this).forEach(entry => {
       detail.push({ mapID: entry.mapID, usable: false });
     });
     return detail;
@@ -1062,13 +1064,13 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
   async handleSources(sources: any) {
     const cache: any[] = [];
     const loaded: any[] = [];
+    const unusable: UnusableSourceEntry[] = [];
     this.cacheHash = {};
-    this.__unusableSources = [];
     sources.forEach((source: any) => {
       // IIIF の地図の失敗の印は source ではない。cacheHash にも生の sourceLoaded の
       // detail にも入れず、控えておいて要素の経路（sourceLoadedDetail）にだけ足す
       if (isUnusableSource(source)) {
-        this.__unusableSources!.push({
+        unusable.push({
           mapID: source.mapID,
           reason: source.__maplatUnusable.reason
         });
@@ -1093,6 +1095,8 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
       cache.push(source);
       this.cacheHash[source.mapID] = source;
     });
+    // 起動のたびに控えを作り直す（使えなかった地図が無ければ空になる）
+    setUnusableSources(this, unusable);
     // m6-t5 v1.3.1: mercSrc は cache（GL 未ロードで落とされたソースを含まない）から選ぶ。
     // 未フィルタの sources から選ぶと、混在 app + GL 未ロード時に死んだ provider ソースを
     // 指し、backMap 経由で毎フレーム error を吐く（H-4 主要シナリオ）

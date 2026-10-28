@@ -541,8 +541,14 @@ async function main(): Promise<void> {
     oldGroup.label = "古地図";
     const baseGroup = document.createElement("optgroup");
     baseGroup.label = "現代の地図";
-    // 起動のときに使えなかった地図（IIIF の取得に失敗した等）は、一覧で「使えない地図」にする
-    const unusableIds = new Set((app.__unusableSources ?? []).map((entry) => entry.mapID));
+    // 起動のときに使えなかった地図（IIIF の取得に失敗した等）は、一覧で「使えない地図」にする。
+    // 控えは Core の内部ではなく、公開の振る舞いである console.error の文から地図の ID を取る
+    // （文の形: Maplat: IIIF image for map "<mapID>" is not usable: <reason>）
+    const unusableIds = new Set(
+      unusableMessages
+        .map((message) => /map "([^"]+)" is not usable/.exec(message)?.[1])
+        .filter((mapID): mapID is string => !!mapID)
+    );
     for (const source of setting.sources) {
       const isBasemap = typeof source === "string";
       const mapID = isBasemap ? source : (source as { mapID: string }).mapID;
