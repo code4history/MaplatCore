@@ -18,6 +18,7 @@ import {
   normalizePoi
 } from "../normalize_pois";
 import { normalizeArg } from "../functions";
+import { ownEntry } from "../own-lookup";
 import {
   polygon,
   lineString,
@@ -576,7 +577,7 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
     }
 
     getPoiLayer(id: string) {
-      return this.pois[id];
+      return ownEntry<any>(this.pois, id);
     }
 
     addPoiLayer(id: string, data: any) {

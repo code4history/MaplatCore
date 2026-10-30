@@ -14,6 +14,7 @@
 // 既定のピンの画像と投影の変換は本体の入口から読む（要素の束に画像・OL を二重に入れない。
 // 本体の束は外部化されている）
 import { MaplatApp, defaultPinIcon, mercToLngLat, type ElementImplementationInternals } from "./index";
+import { ownEntry } from "./own-lookup";
 import {
   MaplatAppElementBase,
   defineMaplatAppElementOnce,
@@ -110,7 +111,7 @@ export class MaplatAppElement extends MaplatAppElementBase implements MaplatAppE
 
   /** 地図の範囲（経緯度の多角形。最後の頂点は最初の頂点を繰り返さない）。範囲を持たない地図は null。 */
   getMapEnvelope(mapID: string): LngLat[] | null {
-    const source = (this.currentImplementation() as any)?.cacheHash?.[mapID];
+    const source = ownEntry<any>((this.currentImplementation() as any)?.cacheHash, mapID);
     const ring: unknown = source?.envelope?.geometry?.coordinates?.[0];
     if (!Array.isArray(ring) || ring.length < 3) return null;
     const coords = ring.filter(isFiniteXY);
@@ -344,7 +345,7 @@ export class MaplatAppElement extends MaplatAppElementBase implements MaplatAppE
     const specs = this.#envelopes;
     const drawn = await Promise.all(
       specs.map(async spec => {
-        const source = app.cacheHash?.[spec.mapID];
+        const source = ownEntry<any>(app.cacheHash, spec.mapID);
         if (!source) return null;
         try {
           let xys: unknown[];
