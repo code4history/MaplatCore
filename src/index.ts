@@ -34,6 +34,7 @@ import { IIIF_METADATA_DISPLAY_DEFAULT } from "./iiif/manifest";
 // META_KEYS の正本は依存の無い src/meta_keys.ts（@maplat/core/common の分割で source/mixin.ts から移した）
 import { META_KEYS } from "./meta_keys";
 import { recursiveRound } from "./math_ex";
+import { ownEntry } from "./own-lookup";
 import {
   normalizeLayers,
   addIdToPoi,
@@ -1135,7 +1136,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     const cache: any[] = [];
     const loaded: any[] = [];
     const unusable: UnusableSourceEntry[] = [];
-    this.cacheHash = {};
+    this.cacheHash = Object.create(null);
     sources.forEach((source: any) => {
       // IIIF の地図の失敗の印は source ではない。cacheHash にも生の sourceLoaded の
       // detail にも入れず、控えておいて要素の経路（sourceLoadedDetail）にだけ足す
@@ -1536,7 +1537,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     return createMapInfo(this.from);
   }
   mapInfo(mapID: string) {
-    return createMapInfo(this.cacheHash[mapID]);
+    return createMapInfo(ownEntry<MaplatSource>(this.cacheHash, mapID));
   }
   /** @internal 要素の viewExtent。pixel → 地図の座標 → merc を旧の連鎖のまま返す。 */
   async pixelToMerc(pixel: readonly [number, number]): Promise<number[] | undefined> {
@@ -1844,7 +1845,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
       return undefined;
     } else {
       const splits = id.split("#");
-      const source = this.cacheHash[splits[0]];
+      const source = ownEntry<MaplatSource>(this.cacheHash, splits[0]);
       return source?.getPoi(splits[1]);
     }
   }
@@ -1876,8 +1877,9 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
       clusterId = "main";
     }
     if (!clusterId.includes("#")) {
-      if (this.pois[clusterId]) {
-        this.pois[clusterId]["pois"].push(normalizePoi(data));
+      const cluster = ownEntry<any>(this.pois, clusterId);
+      if (cluster) {
+        cluster["pois"].push(normalizePoi(data));
         addIdToPoi(this.pois, clusterId, {
           name: this.appName
         });
@@ -1887,7 +1889,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
       }
     } else {
       const splits = clusterId.split("#");
-      const source = this.cacheHash[splits[0]];
+      const source = ownEntry<MaplatSource>(this.cacheHash, splits[0]);
       if (source) {
         const ret = source.addPoi(data, splits[1]);
         this.dispatchPoiNumber();
@@ -1916,7 +1918,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
       }
     } else {
       const splits = id.split("#");
-      const source = this.cacheHash[splits[0]];
+      const source = ownEntry<MaplatSource>(this.cacheHash, splits[0]);
       if (source) {
         source.removePoi(splits[1]);
         this.dispatchPoiNumber();
@@ -1933,14 +1935,16 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
         for (const key of Object.keys(this.pois)) {
           this.pois[key]["pois"] = [];
         }
-      } else if (this.pois[clusterId]) {
-        this.pois[clusterId]["pois"] = [];
-      } else return;
+      } else {
+        const cluster = ownEntry<any>(this.pois, clusterId);
+        if (!cluster) return;
+        cluster["pois"] = [];
+      }
       this.dispatchPoiNumber();
       this.redrawMarkers();
     } else {
       const splits = clusterId.split("#");
-      const source = this.cacheHash[splits[0]];
+      const source = ownEntry<MaplatSource>(this.cacheHash, splits[0]);
       if (source) {
         source.clearPoi(splits[1]);
         this.dispatchPoiNumber();
@@ -2018,11 +2022,12 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     this.redrawMarkers();
   }
   getPoiLayer(id: any) {
+    if (typeof id !== "string") return undefined;
     if (!id.includes("#")) {
-      return this.pois[id];
+      return ownEntry<any>(this.pois, id);
     } else {
       const splits = id.split("#");
-      const source = this.cacheHash[splits[0]];
+      const source = ownEntry<MaplatSource>(this.cacheHash, splits[0]);
       if (source) {
         return source.getPoiLayer(splits[1]);
       }
@@ -2038,7 +2043,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
       this.redrawMarkers();
     } else {
       const splits = id.split("#");
-      const source = this.cacheHash[splits[0]];
+      const source = ownEntry<MaplatSource>(this.cacheHash, splits[0]);
       if (source) {
         source.addPoiLayer(splits[1], data);
         this.redrawMarkers();
@@ -2064,7 +2069,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
       this.redrawMarkers();
     } else {
       const splits = id.split("#");
-      const source = this.cacheHash[splits[0]];
+      const source = ownEntry<MaplatSource>(this.cacheHash, splits[0]);
       if (!source) {
         warnPoiLayerNotFound(id, "removePoiLayer");
         return;
@@ -2139,7 +2144,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
   changeMap(mapID: string, restore?: Restore) {
     if (restore === undefined) restore = {};
     const now = this.mercSrc;
-    const to: MaplatSource = this.cacheHash[mapID];
+    const to = ownEntry<MaplatSource>(this.cacheHash, mapID);
     if (!to) {
       this.logger.warn(`changeMap: mapID "${mapID}" not found in cacheHash`);
       return Promise.resolve();
@@ -2158,7 +2163,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
             let backSrc: any = null;
             let backTo: any = null;
             const backRestore = restore!.backgroundID
-              ? this.cacheHash[restore!.backgroundID]
+              ? ownEntry<MaplatSource>(this.cacheHash, restore!.backgroundID)
               : undefined;
             if (this.backMap) {
               // Overlay = true case:
@@ -2583,7 +2588,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     if (!mapID) {
       source = this.from;
     } else {
-      source = this.cacheHash[mapID];
+      source = ownEntry<MaplatSource>(this.cacheHash, mapID);
     }
     if (!source) return;
     const meta: MapMeta = META_KEYS.reduce(
@@ -2606,7 +2611,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     if (!mapID) {
       source = this.from;
     } else {
-      source = this.cacheHash[mapID];
+      source = ownEntry<MaplatSource>(this.cacheHash, mapID);
     }
     if (!source) return false;
     return source.getCacheEnable();
@@ -2616,7 +2621,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     if (!mapID) {
       source = this.from;
     } else {
-      source = this.cacheHash[mapID];
+      source = ownEntry<MaplatSource>(this.cacheHash, mapID);
     }
     if (!source) return {};
     return await source.getTileCacheStatsAsync();
@@ -2630,7 +2635,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     if (!mapID) {
       source = this.from;
     } else {
-      source = this.cacheHash[mapID];
+      source = ownEntry<MaplatSource>(this.cacheHash, mapID);
     }
     if (!source) return;
     await source.clearTileCacheAsync();
@@ -2640,7 +2645,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     if (!mapID) {
       source = this.from;
     } else {
-      source = this.cacheHash[mapID];
+      source = ownEntry<MaplatSource>(this.cacheHash, mapID);
     }
     if (!source) {
       callback("stop", {});
@@ -2653,7 +2658,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     if (!mapID) {
       source = this.from;
     } else {
-      source = this.cacheHash[mapID];
+      source = ownEntry<MaplatSource>(this.cacheHash, mapID);
     }
     if (!source) return;
     await source.cancelTileCacheAsync();

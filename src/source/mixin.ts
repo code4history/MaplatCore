@@ -18,6 +18,7 @@ import {
   normalizePoi
 } from "../normalize_pois";
 import { normalizeArg } from "../functions";
+import { ownEntry } from "../own-lookup";
 import {
   polygon,
   lineString,
@@ -521,9 +522,10 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
       if (!clusterId) {
         clusterId = "main";
       }
-      if (this.pois[clusterId]) {
+      const cluster = ownEntry<any>(this.pois, clusterId);
+      if (cluster) {
         data = normalizePoi(data);
-        this.pois[clusterId]["pois"].push(data);
+        cluster["pois"].push(data);
         addIdToPoi(this.pois, clusterId, {
           name: this.officialTitle || this.title,
           namespace: this.mapID
@@ -552,8 +554,9 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
         Object.keys(this.pois).map(key => {
           this.pois[key]["pois"] = [];
         });
-      } else if (this.pois[clusterId]) {
-        this.pois[clusterId]["pois"] = [];
+      } else {
+        const cluster = ownEntry<any>(this.pois, clusterId);
+        if (cluster) cluster["pois"] = [];
       }
     }
 
@@ -576,7 +579,7 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
     }
 
     getPoiLayer(id: string) {
-      return this.pois[id];
+      return ownEntry<any>(this.pois, id);
     }
 
     addPoiLayer(id: string, data: any) {
