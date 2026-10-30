@@ -52,11 +52,7 @@
     "preview": "vite preview",
     "prepublishOnly": "pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build",
     "version:bump": "node scripts/bump-version.js",
-    "version:sync": "node scripts/sync-version.js",
-    "publish:npm": "node scripts/publish-npm.js",
-    "publish:npm:dry": "node scripts/publish-npm.js --dry-run",
-    "publish:all": "node scripts/publish-all.js",
-    "publish:all:dry": "node scripts/publish-all.js --dry-run"
+    "version:sync": "node scripts/sync-version.js"
   },
   "repository": {
     "type": "git",
