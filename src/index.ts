@@ -1877,8 +1877,9 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
       clusterId = "main";
     }
     if (!clusterId.includes("#")) {
-      if (this.pois[clusterId]) {
-        this.pois[clusterId]["pois"].push(normalizePoi(data));
+      const cluster = ownEntry<any>(this.pois, clusterId);
+      if (cluster) {
+        cluster["pois"].push(normalizePoi(data));
         addIdToPoi(this.pois, clusterId, {
           name: this.appName
         });
@@ -1934,9 +1935,11 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
         for (const key of Object.keys(this.pois)) {
           this.pois[key]["pois"] = [];
         }
-      } else if (this.pois[clusterId]) {
-        this.pois[clusterId]["pois"] = [];
-      } else return;
+      } else {
+        const cluster = ownEntry<any>(this.pois, clusterId);
+        if (!cluster) return;
+        cluster["pois"] = [];
+      }
       this.dispatchPoiNumber();
       this.redrawMarkers();
     } else {

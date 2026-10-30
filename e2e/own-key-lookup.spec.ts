@@ -69,4 +69,16 @@ test.describe('keys that come from outside', () => {
     });
     expect(found).toEqual([true, true]);
   });
+
+  test('(vi) clearing markers of an inherited layer leaves Object.prototype alone', async ({ page }) => {
+    expect(await open(page, '')).toBe(true);
+    const inherited = await page.evaluate(() => {
+      const app = (window as any).__MAPLAT_APP__;
+      return ['__proto__', 'morioka_ndl2#__proto__'].map(id => {
+        app.clearMarker(id);
+        return ({} as { pois?: unknown }).pois;
+      });
+    });
+    expect(inherited).toEqual([undefined, undefined]);
+  });
 });

@@ -40,4 +40,9 @@ describe("keys that come from outside are looked up as own keys", () => {
     expect(between(index, "getPoiLayer(id: any) {", "addPoiLayer(id: any")).not.toContain("this.pois[");
     expect(between(mixin, "getPoiLayer(id: string) {", "addPoiLayer(id: string")).not.toContain("this.pois[");
   });
+
+  it("does not index pois directly with a layer ID from the marker methods", () => {
+    expect(index).not.toContain("this.pois[clusterId]");
+    expect(mixin).not.toContain("this.pois[clusterId]");
+  });
 });
