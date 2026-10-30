@@ -804,7 +804,21 @@ async function main(): Promise<void> {
     // nov26-m4-t8: 面は既定で表示（チェック済み）。面の出典（ODbL の表示義務）を出典の領域に textContent で出す
     const activeVectors: VectorItem[] = [...demoOps.addVector];
     const refreshVectorAttr = (): void => {
-      vectorAttr.textContent = activeVectors.map((vec) => `面の出典: ${vec.source}`).join(" ／ ");
+      vectorAttr.textContent = "";
+      activeVectors.forEach((vec, index) => {
+        if (index > 0) vectorAttr.appendChild(document.createTextNode(" ／ "));
+        vectorAttr.appendChild(document.createTextNode(`面の出典: ${vec.source}`));
+        if (!vec.source.startsWith("OpenStreetMap")) return;
+        // OpenStreetMap のデータの表示義務: 著作権表示と copyright ページへのリンク
+        const copyrightLink = document.createElement("a");
+        copyrightLink.href = "https://www.openstreetmap.org/copyright";
+        copyrightLink.target = "_blank";
+        copyrightLink.rel = "noopener";
+        copyrightLink.textContent = "著作権";
+        vectorAttr.appendChild(document.createTextNode(" ／ © OpenStreetMap contributors（"));
+        vectorAttr.appendChild(copyrightLink);
+        vectorAttr.appendChild(document.createTextNode("）"));
+      });
       vectorAttr.style.display = activeVectors.length > 0 ? "" : "none";
     };
     const lineApplies = (line: LineItem | MapLineItem, mapID: string | undefined): boolean => {

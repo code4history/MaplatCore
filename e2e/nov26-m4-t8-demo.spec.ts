@@ -7,6 +7,7 @@ import { test, expect, type Page } from '@playwright/test';
 const REGIONS = ['morioka', 'nara', 'hiroshima', 'nobeoka', 'tatebayashi'] as const;
 const SHOT_DIR = process.env.T8_SHOT_DIR ?? 'test-results-nov26-m4-t8';
 const COALESCE = ['changeViewpoint', 'updateState'];
+const OSM_COPYRIGHT_LINK = '#vector-attr a[href="https://www.openstreetmap.org/copyright"]';
 
 const openDemo = async (page: Page, region: string, query = '') => {
     await page.goto(`/?region=${region}${query}`, { waitUntil: 'domcontentloaded' });
@@ -149,6 +150,9 @@ test.describe('nov26-m4-t8: デモ機能（NayutaProducts#37）', () => {
             const info = await page.locator('.c4h-info-box').innerText();
             expect(info).toContain('OpenStreetMap');
             expect(info).toContain('ODbL');
+            // OpenStreetMap の表示義務: 著作権表示と copyright ページへのリンク
+            await expect(page.locator('#vector-attr')).toContainText('© OpenStreetMap contributors');
+            expect(await page.locator(OSM_COPYRIGHT_LINK).count()).toBeGreaterThanOrEqual(1);
             // 地域説明に面の 1 行がある（REGION_META.highlights）
             await expect(page.locator('#region-note')).toContainText('（面）');
             await page.waitForTimeout(1000);
@@ -163,9 +167,13 @@ test.describe('nov26-m4-t8: デモ機能（NayutaProducts#37）', () => {
         await check.uncheck();
         await expect.poll(async () => (await polygons(page)).length).toBe(0);
         await expect(page.locator('.c4h-info-box')).not.toContainText('ODbL');
+        await expect(page.locator('.c4h-info-box')).not.toContainText('© OpenStreetMap contributors');
+        await expect(page.locator(OSM_COPYRIGHT_LINK)).toHaveCount(0);
         await check.check();
         await expect.poll(async () => (await polygons(page)).length).toBe(1);
         await expect(page.locator('.c4h-info-box')).toContainText('ODbL');
+        await expect(page.locator('#vector-attr')).toContainText('© OpenStreetMap contributors');
+        await expect(page.locator(OSM_COPYRIGHT_LINK)).toHaveCount(1);
     });
 
     test('項目 1（R-t8-5）: 面の内側の POI をクリックすると clickMarker が発火する', async ({ page }) => {
