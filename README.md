@@ -386,6 +386,8 @@ pnpm run test:e2e # Run E2E tests (Playwright)
 ```
 <!-- release-pinned:end -->
 
+The E2E tests need no Google Maps API key. To try the Google maps locally, set `GOOGLE_MAPS_API_KEY` in the environment.
+
 <!-- SECTION 6: Prerequisites -->
 ## Prerequisites
 

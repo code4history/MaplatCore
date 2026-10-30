@@ -363,6 +363,8 @@ pnpm run test:e2e # E2E テスト (Playwright) を実行
 ```
 <!-- release-pinned:end -->
 
+E2E テストに Google Maps の API キーは要りません。手元で Google の地図を確かめるときだけ、環境変数 `GOOGLE_MAPS_API_KEY` で渡してください。
+
 <!-- SECTION 6: Prerequisites -->
 ## 動作環境
 
