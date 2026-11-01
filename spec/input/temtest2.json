@@ -5,7 +5,7 @@
   },
   "ancestors": [
     {
-      "iconTemplate": "{\n  \"icon\": \"<% if (boolean) { %>true<% } else { %>false<% } %>\",\n  \"selectedIcon\": \"<% [0,1,2].map((x)=>{ %><%= x %><% }) %>\"\n}",
+      "iconTemplate": "{\n  \"icon\": \"{% if boolean %}true{% else %}false{% endif %}\",\n  \"selectedIcon\": \"{% for x in [0,1,2] %}{{ x }}{% endfor %}\"\n}",
       "icon": "f",
       "selectedIcon": "g",
       "poiStyle": "abc"
@@ -13,11 +13,11 @@
     {
       "icon": "d",
       "selectedIcon": "e",
-      "poiTemplate": "<%= !boolean %>",
+      "poiTemplate": "{{ not boolean }}",
       "poiStyle": "def"
     },
     {
-      "poiTemplate": "<%= boolean %>",
+      "poiTemplate": "{{ boolean }}",
       "poiStyle": "ghi"
     }
   ]

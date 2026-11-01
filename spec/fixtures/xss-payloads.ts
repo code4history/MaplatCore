@@ -78,3 +78,37 @@ export const ATTR_ROUNDTRIP_ATTACKS: { name: string; media: Record<string, unkno
   { name: "thumbnail-url に山括弧", media: { "thumbnail-url": `x"><img src=y onerror=alert(1)>` } },
   { name: "image-url に山括弧", media: { "image-url": `<img src=y onerror=alert(1)>` } }
 ];
+
+/**
+ * テンプレートの出力に書かれた `<qy-swiper>`・`<qy-swiper-slide>`（POI の `media` と同じ選別を
+ * 要素を限って当てる）。URL 属性に与えると落ちる値。
+ */
+export const QY_SLIDE_URL_REJECTED: string[] = [
+  "javascript:alert(1)",
+  "data:image/png;base64,AA",
+  `x" onmouseover="y`,
+  "x onmouseover=y",
+  "x`+1+`",
+  "x') url('y"
+];
+
+/** `qy-swiper`・`qy-swiper-slide` の上で落ちる属性。 */
+export const QY_FORBIDDEN_ATTRS: string[] = ["class", "title", "style", "onclick", "onerror", "id"];
+
+/** 許可しない要素（中の文字は残る）。 */
+export const QY_UNSUPPORTED_ELEMENTS: string[] = ["cc-swiper", "cc-swiper-slide", "qy-viewer", "cc-viewer"];
+
+/**
+ * media の経路（buildSlideAttrs）とテンプレートの経路（sanitizeHtml）で同じ属性になるべき入力。
+ * 安全なもの・危険な URL・HTML の caption・on* の鍵・真偽値の真と偽、引用符と & を含む caption。
+ */
+export const QY_SLIDE_PARITY_MEDIA: Record<string, unknown>[] = [
+  { "image-url": "img/a.jpg", "image-type": "image", caption: "六百遠忌報恩塔", "fit-to-container": true },
+  { "image-url": "javascript:alert(1)", "thumbnail-url": "/t.jpg", caption: "c" },
+  { "image-url": "https://e.example/a.jpg", caption: `<img src=x onerror="alert(1)">寺` },
+  { "image-url": "//cdn.example/x.jpg", onerror: "alert(1)", "debug-mode": false },
+  { "material-url": "sub/m.mtl", "camera-position": "0,0,1", "camera-target": "0,0,0", "show-texture": "true", "fit-to-container": true, "debug-mode": true },
+  { "image-url": "a.jpg", caption: `A "B" & C` },
+  { "image-url": "a.jpg", caption: "it's <b>&amp;</b>" },
+  { "image-url": "a.jpg", caption: "x &lt; y" }
+];

@@ -67,6 +67,30 @@ MaplatApp.createObject(option).then((app) => {
 });
 ```
 
+### Custom Element `<maplat-app>`
+
+同じ地図を Custom Element としても使えます。`@maplat/core/element` を一度 import
+（タグを登録します）してタグを書けば、要素そのものが地図の入れ物になり、`MaplatApp` の
+メソッドとイベントは要素の上にあります。
+
+```typescript
+import 'ol/ol.css';
+import '@maplat/core/element';
+```
+
+```html
+<maplat-app app-id="morioka"></maplat-app>
+<script type="module">
+  const el = document.querySelector('maplat-app');
+  await el.ready;
+  el.addEventListener('mapChanged', (e) => console.log(e.detail.mapID));
+</script>
+```
+
+属性・プロパティ・メソッド・イベント、共通の土台 `@maplat/core/common`、適合テスト
+`@maplat/core/conformance` は [`docs/api/maplat-app.ja.md`](docs/api/maplat-app.ja.md)
+を参照してください。`MaplatApp` クラスは 1.x の間そのまま使え、次のメジャー版（2.0）で閉じます。
+
 ### CDN（jsDelivr）
 
 ブラウザでバンドラーを使わずに直接利用する場合は、MaplatCore より先に
@@ -179,6 +203,117 @@ MaplatCore はフィールドの意味の定義と、結果として得られる
   ないため、`clearMapTileCacheAsync(mapID)` もその地図には働きません。消すときは
   `noCache` を付ける**前に** `clearMapTileCacheAsync(mapID)` で消してください。
 
+### IIIF の画像サービスから地図の画像を配る（`delivery`）
+
+古地図の画像を、切り出したタイルではなく [IIIF Image API](https://iiif.io/api/image/)
+の画像サービスから直接表示できます。地図の設定（`maps/<mapID>.json`）に `delivery` を書きます:
+
+```json
+{
+  "delivery": { "type": "iiifImage", "url": "https://dl.ndl.go.jp/api/iiif/948741/R0000003" },
+  "compiled": { "...": "..." }
+}
+```
+
+`url` は画像サービスの基点の URL（`/info.json` の手前まで）です。地図を読み込むときに
+`<url>/info.json` を 1 回取得し、タイルは IIIF の URL の形（`<url>/<region>/<size>/0/default.jpg`）
+で要求します。`info.json` の読み取りと要求の URL の組み立ては OpenLayers（`ol/format` の
+`IIIFInfo` と `ol/source` の `IIIF`）が行うため、`ol/source` と同じく `ol/format` も解決できる
+必要があります。
+
+- 使えるもの: 任意の領域を返せる Image API 2・3 のサービス（level 1・level 2 の多く）と、
+  タイルが 256 px の level 0 のサービス。
+- まだ使えないもの: タイルが 256 px 以外の level 0・`sizes` だけの level 0・Image API 1。
+  これらの地図や、`info.json` が読めない地図（`http:`／`https:` でない・取得の失敗・10 秒超・
+  1 MiB 超・JSON でない・`width`／`height` が地図の `compiled` と違う）は使えない地図として扱い、
+  エラーを記録し、他の地図は普通に起動します。`<maplat-app>` では、`sourceLoaded` のイベントに
+  `{ mapID, usable: false }` で入ります。`MaplatApp` クラスでは、`sourceLoaded` の detail に
+  その地図は入りません（印の要素も足しません）。それが初期の地図だったときは、既定の地図から
+  起動します。
+- 画像サービスは、ページからのオリジンをまたぐ要求（CORS）を許している必要があります。
+- `delivery` を持つ地図はタイルキャッシュに登録しません。`enableCache: true` でも
+  `getMapCacheEnable(mapID)` は `false` を返します。
+- `url`・`urls` も持つ地図は `delivery` を使い、警告を記録します。`info.json` の `@id`／`id` が
+  `delivery.url` と違うときも、タイルは `delivery.url` から要求します（警告を記録します）。
+- `info.json` は資格情報（Cookie など）を付けずに取得します。
+
+### 範囲外の POI
+
+前面の地図の範囲の外にある POI も、置き場所があれば描きます。メルカトルの `coordinates`
+か経緯度で与えた POI は、前面の地図がその地点を自分の座標に写せないとき範囲外、画素の
+`x`・`y` で与えた POI は範囲外では描きません。
+
+| 前面 | 範囲内 | 範囲外 |
+|---|---|---|
+| 古地図（背面の地図がある） | 前面の `marker` 層 | 背面の `marker` 層にメルカトルの座標で |
+| TMS・`envelope` を持つ基本地図 | 前面の `marker` 層 | 前面の `marker` 層にメルカトルの座標で |
+| 古地図で `overlay="false"` | 前面 | 描かない |
+| `hide-outside-pois` が真 | 前面 | 描かない |
+
+範囲外の POI の見た目は範囲内と同じです（同じアイコン・選択中は `selectedIcon`）。前面と
+背面の入れ替えは 1 回で行うので、地図を切り替える途中で片方だけが空になる時間はありません。
+
+- **背面のピンを押すとき。** クリックが前面で当たらず、背面の地図があり、押した点が古地図の
+  紙の外（その点について `insideCheckSysCoord` が偽）のときだけ、背面の `marker` 層も見ます。
+  当たれば前面と同じく `clickMarker`・`clickMarkers` で終わります。紙が覆っている点では、
+  透過度によらず背面のピンは押せません。どちらでも当たらなければ `clickMapXy`・
+  `clickMapMerc`・`clickMap` で終わります。
+- **範囲外の POI を選んでいる間。** `selectMarker(id)` は、ピンが紙の外にあっても地図の中心を
+  そのピンへ寄せます。その POI を選んでいる間は地図を紙の内側へ引き戻しません。
+  `unselectMarker()` で選択を外すと、その処理の直後に中心が紙の内側のいちばん近い点へ
+  戻ります。範囲外の POI を選んでいる間は GPS の位置が届いても中心は動きません。地図を
+  切り替えると、切り替え先に無ければ選択を外して中心を紙の内側へ戻し、範囲内なら普通の
+  選択として続け、まだ範囲外なら中心をそのピンに据えたままにします（`outOfMap` は
+  出しません）。範囲内の POI の扱いは今までどおりです。
+- **`hide-outside-pois`** は描画を止めます。ほかの真偽値の属性と同じく起動後にも変えられ
+  （マーカーを描き直します）、旧 `appOption.hideOutsidePois` と同じフィールドに書きます。
+
+### IIIF の書誌の写し（`iiif`・`iiifMetadata`）
+
+地図の設定（`maps/<mapID>.json`）に、その地図の元の IIIF Presentation の Manifest と、
+そこから MaplatEditor などの作成の道具が写した書誌を書けます:
+
+```json
+{
+  "title": "新潟市圖",
+  "attr": "国立国会図書館 National Diet Library, JAPAN",
+  "license": "Custom",
+  "licenseNote": "https://dl.ndl.go.jp/ja/help_iiif#...",
+  "iiif": {
+    "manifest": "https://dl.ndl.go.jp/api/iiif/948741/manifest.json",
+    "canvas": "https://dl.ndl.go.jp/api/iiif/948741/canvas/3",
+    "image": "https://dl.ndl.go.jp/api/iiif/948741/R0000003",
+    "bindings": { "title": { "from": "manifest", "property": "label" } },
+    "copiedAt": "2026-10-28T12:39:42Z",
+    "copiedValues": { "title": { "ja": "新潟市圖" } },
+    "copiedMetadata": [
+      { "from": "manifest", "label": "Call Number", "value": "YG7-Z-1065" }
+    ]
+  }
+}
+```
+
+- 写した値は普通の書誌の鍵（`title`・`attr`・`license`・`licenseNote` …）に入り、
+  他の書誌と同じように表示されます。
+- `bindings` は、それぞれの鍵を Manifest と canvas のどの項目から写したか
+  （`{ from: "manifest" | "canvas", property }`）、`copiedValues` は写した時点の値
+  （鍵 → 言語 → 文字列）、`copiedMetadata` は Manifest と canvas の `metadata` の全件です。
+- **Viewer は Manifest を取りに行きません。** 地図の設定に書かれた値だけを読みます。
+- そのような地図では、`getMapMeta()` と `mapChanged` の detail に
+  `iiif: { manifest?, canvas?, image?, copiedAt?, display, metadata? }` が入ります
+  （`metadata` は `copiedMetadata`。`bindings` と `copiedValues` は入りません）。
+- `display` は `"all"` か `"hidden"` で、書誌の全項目の表を UI が出すかを表します。
+  アプリの設定の `sources` の要素に `iiifMetadata` を書いて地図ごとに選びます
+  （`{ "mapID": "...", "iiifMetadata": "all" }`）。書かなければ `"hidden"` です。
+- Manifest を読んで写す値を取り出す関数は `src/iiif/manifest.ts` にあります
+  （`listIiifCanvases`・`proposeIiifBindings`・`resolveIiifMetadata`・`compareIiifCopy`・
+  `iiifRightsToLicense`・`IIIF_BINDABLE_KEYS`）。取得をせず、DOM も使いません。HTML の値は
+  呼び出し側が渡すサニタイザに通します。`src/sanitize.ts` の `sanitizeIiifHtml`
+  （ブラウザの `window` が要ります）を渡してください。`sanitizeIiifHtml` は、型 `MapMetaIiif`・
+  型ガード `isIiifMetadataEntry` とともに `@maplat/core/common` からも import できます。残すのは `a`・`b`・`br`・`i`・`p`・
+  `small`・`span`・`sub`・`sup` と `href` 属性だけで（`http:`／`https:` のみ）、リンクは
+  `rel="noopener noreferrer"` つきの新しいタブで開きます。
+
 ### ライフサイクル
 
 - ライフサイクルフェーズと uiHooks については
@@ -227,6 +362,8 @@ pnpm lint         # リンター/フォーマッター (ESLint/Prettier) を実�
 pnpm run test:e2e # E2E テスト (Playwright) を実行
 ```
 <!-- release-pinned:end -->
+
+E2E テストに Google Maps の API キーは要りません。手元で Google の地図を確かめるときだけ、環境変数 `GOOGLE_MAPS_API_KEY` で渡してください。
 
 <!-- SECTION 6: Prerequisites -->
 ## 動作環境

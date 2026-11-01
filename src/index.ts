@@ -3,20 +3,38 @@ import { Logger, LOGGER_LEVEL } from "./logger";
 import { bindProviderGlToSource } from "./provider_gl_bind";
 import {
   createElement,
+  createOnceWarner,
   normalizeDegree,
   createMapInfo,
-  normalizeArg
+  normalizeArg,
+  warnMaplatAppDeprecated
 } from "./functions";
 import EventTarget from "ol/events/Target";
-import { transform } from "ol/proj";
+import { transform, toLonLat } from "ol/proj";
 import { MaplatMap } from "./map_ex";
 import { defaults, DragRotateAndZoom } from "ol/interaction";
 import { altKeyOnly } from "ol/events/condition";
 import { HistMap } from "./source/histmap";
 import { TmsMap } from "./source/tmsmap";
 import { BackmapSource, MaplatSource, mapSourceFactory } from "./source_ex";
-import { META_KEYS, ViewpointArray } from "./source/mixin";
+import {
+  getUnusableSources,
+  IiifDeliveryError,
+  isUnusableSource,
+  setUnusableSources,
+  unusableSource,
+  type UnusableSourceEntry
+} from "./iiif/delivery";
+import {
+  normalizeIiifMetadataDisplay,
+  normalizeIiifSection,
+  ViewpointArray
+} from "./source/mixin";
+import { IIIF_METADATA_DISPLAY_DEFAULT } from "./iiif/manifest";
+// META_KEYS の正本は依存の無い src/meta_keys.ts（@maplat/core/common の分割で source/mixin.ts から移した）
+import { META_KEYS } from "./meta_keys";
 import { recursiveRound } from "./math_ex";
+import { ownEntry } from "./own-lookup";
 import {
   normalizeLayers,
   addIdToPoi,
@@ -24,16 +42,65 @@ import {
   normalizePoi
 } from "./normalize_pois";
 import { createIconSet, createHtmlFromTemplate } from "./template_works";
+import {
+  addMarkerItem,
+  backMarkerDataAt,
+  centerOnOutsidePoi,
+  classifyMarker,
+  placeMarkerLayers,
+  pullBackInside,
+  replaceMarkers,
+  settleOutsideSelection,
+  type MarkerItem,
+  type OutsideSelection
+} from "./outside_pois";
 import { Geolocation } from './geolocation';
 
-import redcircle from "../parts/redcircle.png";
-import defaultpin_selected from "../parts/defaultpin_selected.png";
-import defaultpin from "../parts/defaultpin.png";
 import { Coordinate } from "ol/coordinate";
 import BaseEvent from "ol/events/Event";
 
 // m1-t4: サニタイズ層の公開窓口（許可リストの正本は src/sanitize.ts の1箇所のみ）
 export { sanitizeHtml, escapeAttr, toPlainText, buildSlideAttrs } from "./sanitize";
+
+/** EPSG:3857 → 経緯度。経度は ±180 に巻き戻す（ol の toLonLat と同じ規則）。
+ *  <maplat-app> の getMapEnvelope・getViewExtent が使う（旧クラスは transform のまま）。 */
+export function mercToLngLat(merc: readonly number[]): [number, number] {
+  const ll = toLonLat(merc as Coordinate);
+  return [ll[0]!, ll[1]!];
+}
+
+/** 既定のピンの画像（POI にも祖先にも icon が無いマーカーに地図が描く画像）。 */
+export function defaultPinIcon(selected = false): string {
+  return selected ? assets.defaultpin_selected : assets.defaultpin;
+}
+
+/**
+ * 起動時と起動後で共有する機能系キーの既定値（prepareMap と applyRuntimeOptions が読む）。
+ * export しない（公開面を増やさない）。`controls` は起動時だけの値なので表に入れない（共有インスタンス回避）。
+ */
+const RUNTIME_DEFAULTS = {
+  noRotate: false,
+  northUp: false,
+  homeMarginPixels: 50,
+  tapDuration: 3000,
+  tapUIVanish: false,
+  debug: false
+} as const;
+
+/** テンプレート類（コンテンツ側）の既定: 設定ファイルの値、無ければ false。 */
+function contentOption(appData: any, key: "poiTemplate" | "poiStyle" | "iconTemplate"): unknown {
+  return appData?.[key] ?? false;
+}
+
+/**
+ * POI に描くピンの画像。選択中は `selectedIcon`、無ければ既定のピン（`defaultPinIcon`）。
+ * 範囲内と範囲外で見た目を変えないため、setMarker と redrawMarkers が同じ関数を読む。
+ */
+function markerIconFor(core: { __selectedMarker?: any }, data: any): any {
+  const selected = core.__selectedMarker == data.namespaceID;
+  if (!data.icon) return defaultPinIcon(selected);
+  return selected && data.selectedIcon ? data.selectedIcon : data.icon;
+}
 
 interface AppData {
   sources: string[];
@@ -90,14 +157,9 @@ interface PendingView {
   positionMapID?: string;
 }
 
-type LifecyclePhaseId =
-  | "setting-loaded"
-  | "appdata-ready"
-  | "ui-configure"
-  | "core-dom-ready"
-  | "ui-dom-ready"
-  | "core-ready"
-  | "ui-ready";
+// ライフサイクルの段階の正本は element_contract.ts の LIFECYCLE_PHASES
+// （型だけの import。element_contract.ts は何も import しないので依存は増えない）
+import type { LifecyclePhaseId, MapMeta, MapMetaIiif } from "./element_contract";
 
 interface LifecycleContext {
   phaseId: LifecyclePhaseId;
@@ -159,6 +221,31 @@ function warnPoiLayerNotFound(id: string, api: string) {
   );
 }
 
+/**
+ * getMapMeta が返す iiif の節。
+ * 地図データの iiif 節のうち表示に使う項目だけを写し、書誌の表の出し方はアプリの設定
+ * （無ければ既定）で決める。bindings・copiedValues は表示に使わないので載せない。
+ * 節は initialize で形を検査済み（this.iiif）。ここでは mapID を渡さずに同じ検査を通すだけで、
+ * 形の合わない要素の警告は initialize の 1 回に留める。
+ */
+function mapMetaIiif(source: any): MapMetaIiif | undefined {
+  const section = normalizeIiifSection(source?.iiif);
+  if (!section) return undefined;
+  const iiif: MapMetaIiif = {
+    display:
+      normalizeIiifMetadataDisplay(source?.iiifMetadataDisplay) ?? IIIF_METADATA_DISPLAY_DEFAULT
+  };
+  if (section.manifest !== undefined) iiif.manifest = section.manifest;
+  if (section.canvas !== undefined) iiif.canvas = section.canvas;
+  if (section.image !== undefined) iiif.image = section.image;
+  if (section.copiedAt !== undefined) iiif.copiedAt = section.copiedAt;
+  if (section.copiedMetadata !== undefined) iiif.metadata = section.copiedMetadata;
+  return iiif;
+}
+
+// div を HTMLElement で受けたとき（id 無し）に内部の子要素の id 接頭辞を一意にする連番
+let elementDivSeq = 0;
+
 // 公開型: listPoiLayers の戻り値要素（m18-t6 §5.2 / §8）
 export interface PoiLayer {
   id: string;
@@ -186,20 +273,48 @@ interface VectorEntry {
   drawToken: number; // 描画の世代。古い変換の完了を捨てるのに使う
 }
 
-export class MaplatApp extends EventTarget {
+/**
+ * <maplat-app> が Core の実装にだけ求める内部面。
+ * 公開面ではない（公開文書には載せない）。要素は `as any` でなくこの型で受ける。
+ * @internal
+ */
+export interface ElementImplementationInternals {
+  /** sourceLoaded の { mapID, usable }[] の材料（cacheHash の同一性）。 */
+  sourceLoadedDetail(sources: unknown): { mapID: string | null; usable: boolean }[];
+  /** pixel → 地図の座標 → merc の連鎖（旧 clientPointToLngLat と同じ・点検なし）。 */
+  pixelToMerc(pixel: readonly [number, number]): Promise<number[] | undefined>;
+  /** 表示領域の大きさ（pixel）。地図が無い・寸法が 0 以下なら undefined。 */
+  viewportSize(): [number, number] | undefined;
+  /** 前面と背面の地図の大きさを測り直す。 */
+  updateSize(): void;
+  /** 中心の目印の表現を当てる。 */
+  setCenterMarker(next: { hidden?: boolean; src?: string | null }): void;
+  /** 起動後の機能系キー・テンプレート・icon を当てる（undefined は既定／設定ファイル）。 */
+  applyRuntimeOptions(values: Record<string, unknown>): void;
+}
+
+/**
+ * 旧 API のアプリ本体（OpenLayers の地図・POI・GPS 等を持つクラス）。
+ *
+ * @deprecated `MaplatApp` クラスは非推奨です。代わりに `<maplat-app>` 要素
+ *   （`@maplat/core/element`）を使ってください。1.x では従来どおり使えますが、
+ *   このクラスは 2.0 で閉じます（2.0 で削除します）。移行の対応表は
+ *   `docs/api/maplat-app.md`（日本語は `docs/api/maplat-app.ja.md`）。
+ */
+export class MaplatApp extends EventTarget implements ElementImplementationInternals {
   // Static method declaration
+  /**
+   * 旧 API の生成口（`new MaplatApp(option)` のあと `waitReady` を待つ）。
+   *
+   * @deprecated `MaplatApp` クラスは非推奨です。代わりに `<maplat-app>` 要素
+   *   （`@maplat/core/element`）を使ってください。1.x では従来どおり使えますが、
+   *   この口は 2.0 で閉じます（2.0 で削除します）。
+   */
   static createObject: (option: any) => Promise<MaplatApp>;
 
-  appid: string;
   translateUI = false;
-  noRotate = false;
-  initialRestore: Restore = {};
-  mapDiv = "map_div";
-  restoreSession = false;
-  enableCache: boolean; // Changed to boolean
   stateBuffer: Restore = {};
   mobileMapMoveBuffer?: ViewpointArray;
-  overlay = true;
   waitReady: Promise<any>; // Changed to Promise<any> to match settingLoader
   changeMapSeq?: Promise<void>;
   appData?: AppData;
@@ -212,11 +327,9 @@ export class MaplatApp extends EventTarget {
   currentPosition: any;
   startFrom? = "";
   from?: MaplatSource;
-  mapDivDocument: HTMLElement | null;
   mapObject: any;
   mapboxMap: any;
   maplibreMap: any;
-  googleApiKey?: string;
   pois: any;
   poiTemplate?: string;
   poiStyle?: string;
@@ -224,18 +337,22 @@ export class MaplatApp extends EventTarget {
   logger: Logger;
   icon?: string;
   selectedIcon?: string;
-  fakeGps = false;
-  fakeRadius?: number;
   homePosition?: [number, number];
   geolocation?: Geolocation;
   moveTo_ = false;
   gpsEnabled_ = false;
-  alwaysGpsOn = false;
   firstGpsRequest_ = false;
   initialGpsMove_ = false;
   private __backMapMoving = false;
   private __backMapErrorWarned = false;
-  private __selectedMarker: any;
+  /** @internal 選択中の POI の namespaceID（範囲外の扱いは src/outside_pois.ts が読む） */
+  __selectedMarker?: any;
+  /** @internal 範囲外の POI を選んでいる間の状態（src/outside_pois.ts が読む） */
+  __outsideSelection?: OutsideSelection;
+  /** @internal 範囲外の POI を描かない指定（hide-outside-pois。src/outside_pois.ts が読む） */
+  __hideOutsidePois = false;
+  /** @internal 範囲外の選択を外した後の引き戻しの予約（selectMarker で取り消す） */
+  __pullBackTimer?: { cancelled?: boolean };
   // oct26-m2-t1: 可視化時の自己修復（issue #101）で使うリソース参照。
   private __resizeObserver: ResizeObserver | null = null;
   private __visibilityHandler = () => {
@@ -245,7 +362,8 @@ export class MaplatApp extends EventTarget {
   // oct26-m2-t1-ff: 非表示中の changeMap で保留した視点確定と、その適用の予約状態。
   private __pendingView: PendingView | null = null;
   private __pendingViewScheduled = false;
-  private uiHooks?: UiHooks;
+  // 中心の目印の img（setCenterMarker が表現を当てる）
+  private __centerMarkerImg?: HTMLImageElement;
   private lifecycleHookResults: Partial<Record<LifecyclePhaseId, any>> = {};
   private __init = true;
   private __redrawMarkerBlock = false;
@@ -258,11 +376,134 @@ export class MaplatApp extends EventTarget {
   private __vectorDrawSeq?: number;
 
   lastClickEvent: any;
+
+  // ---- 起動時だけ効くキー（起動後は変更不可） ----
+  // 公開面は getter のみ（TypeScript 上は readonly）。実行時は lockStartupFields() が
+  // 警告して無視する setter を足す（strict mode の代入で例外にしないため）。
+  // Core 自身の書き込みは下の __ で始まる保管場所へ行う。
+  // lockStartupFields() の setter だけが読む（private だと未使用扱いになるので protected）
+  /** @internal */
+  protected __startupLocked = false;
+  /** @internal */
+  protected __startupWarner?: (key: string, message: string) => void;
+  private __appid = "sample";
+  private __mapDiv = "map_div";
+  private __mapDivDocument: HTMLElement | null = null;
+  private __enableCache = false;
+  private __noRotate = false;
+  private __alwaysGpsOn = false;
+  private __overlay = true;
+  private __googleApiKey?: string;
+  private __restoreSession = false;
+  private __initialRestore: Restore = {};
+  private __uiHooks?: UiHooks;
+  private __fakeGps: any = false;
+  private __fakeRadius?: number;
+  // 設定ファイルの機能系キーの扱い
+  private __elementMode = false;
+  private __settingFileKeys?: Set<string>;
+  private __featureKeyWarner?: (key: string, message: string) => void;
+
+  /** アプリ ID（appOption.appid）。起動後は変更不可。 */
+  get appid(): string {
+    return this.__appid;
+  }
+  /** 地図の箱の id（要素で渡したときは内部の子要素の id 接頭辞）。起動後は変更不可。 */
+  get mapDiv(): string {
+    return this.__mapDiv;
+  }
+  /** 地図の箱の要素。起動後は変更不可。 */
+  get mapDivDocument(): HTMLElement | null {
+    return this.__mapDivDocument;
+  }
+  /** タイルキャッシュを使うか（appOption.enableCache）。起動後は変更不可。 */
+  get enableCache(): boolean {
+    return this.__enableCache;
+  }
+  /** 回転操作を止めるか（appOption.noRotate ／設定ファイル）。起動後は変更不可。 */
+  get noRotate(): boolean {
+    return this.__noRotate;
+  }
+  /** 常時 GPS モード（appOption.alwaysGpsOn）。起動後は変更不可。 */
+  get alwaysGpsOn(): boolean {
+    return this.__alwaysGpsOn;
+  }
+  /** 背面地図を持つか（appOption.overlay）。起動後は変更不可。 */
+  get overlay(): boolean {
+    return this.__overlay;
+  }
+  /** Google の API キー（appOption.googleApiKey）。起動後は変更不可。 */
+  get googleApiKey(): string | undefined {
+    return this.__googleApiKey;
+  }
+  /** 状態を localStorage に保存・復元するか（appOption.restoreSession）。起動後は変更不可。 */
+  get restoreSession(): boolean {
+    return this.__restoreSession;
+  }
+  /** 起動時に使った復元値（appOption.restore または localStorage）。起動後は差し替え不可。 */
+  get initialRestore(): Restore {
+    return this.__initialRestore;
+  }
+  /** 偽 GPS の中心（appOption.fake が真のときの設定ファイルの fakeGps）。起動後は変更不可。 */
+  get fakeGps(): any {
+    return this.__fakeGps;
+  }
+  /** 偽 GPS の半径（同上）。起動後は変更不可。 */
+  get fakeRadius(): number | undefined {
+    return this.__fakeRadius;
+  }
+  /** 起動時の hook（appOption.uiHooks）。起動後は変更不可。 */
+  private get uiHooks(): UiHooks | undefined {
+    return this.__uiHooks;
+  }
+
+  /**
+   * 機能系キーを appOption ＞ 設定ファイル ＞ 既定値 の順で決める。
+   * 「与えられたか」は undefined / null で判定する（false・0 は与えられた値）。
+   * 要素の経路（<maplat-app>）では設定ファイルの値を読まない。旧クラスの経路では読むが、
+   * メジャー版で廃止する旨を 1 回警告する。
+   */
+  private __featureOption<T>(appOption: any, key: string, defaultValue: T): T {
+    const fromOption = appOption?.[key];
+    if (fromOption != null) return fromOption as T;
+    const fromSetting = (this.appData as any)?.[key];
+    if (fromSetting == null) return defaultValue;
+    const fromFile = !this.__settingFileKeys || this.__settingFileKeys.has(key);
+    if (!fromFile) return fromSetting as T;
+    // キーごと・インスタンスごとに 1 回だけ警告するしくみは createOnceWarner に置く
+    if (!this.__featureKeyWarner) this.__featureKeyWarner = createOnceWarner();
+    if (this.__elementMode) {
+      this.__featureKeyWarner(
+        key,
+        `<maplat-app>: the setting file key "${key}" is a presentation (feature) setting and is ignored; ` +
+          `give it as an attribute or property of the element instead.`
+      );
+      return defaultValue;
+    }
+    this.__featureKeyWarner(
+      key,
+      `MaplatApp: reading the feature key "${key}" from the setting file is deprecated and will be ` +
+        `removed in the next major version; pass it in appOption (or as an attribute of <maplat-app>) instead.`
+    );
+    return fromSetting as T;
+  }
+
   // Maplat App Class
   constructor(appOption: any) {
     super();
     appOption = normalizeArg(appOption);
-    this.appid = appOption.appid || "sample";
+    // 旧 API（クラス）の非推奨を、同一プロセスで 1 回だけ告知する
+    // （重複の排除は src/functions.ts の warnMaplatAppDeprecated がモジュール水準で持つ。
+    //   インスタンスごとではないので、旧クラスを 2 つ作っても警告は 1 回）。
+    // 要素（<maplat-app>）は内部でこのクラスを作るが、その経路では警告しない。見分けは
+    // option の内部キー "__maplatElementMode" の**有無**（in）で行い、値では行わない。
+    // 根拠: src/element.ts の createImplementation は、通常モードで true・旧 UI API の互換層
+    // （MaplatUI。<maplat-app> を経由する）の互換モードで false を、必ずこのキーに入れて作る。
+    // ∴ 値で見分けると、互換モード（false）だけ「要素の経路なのに警告する」ことになる。
+    if (!(appOption && "__maplatElementMode" in appOption)) warnMaplatAppDeprecated();
+    this.__appid = appOption.appid || "sample";
+    // 要素（<maplat-app>）の経路: 設定ファイルの機能系キーを読まない
+    this.__elementMode = appOption.__maplatElementMode === true;
     // Mapbox GL JS support
     const mapboxgl = appOption.mapboxgl || (typeof window !== 'undefined' ? (window as any).mapboxgl : undefined);
     if (mapboxgl && appOption.mapboxToken) {
@@ -271,27 +512,36 @@ export class MaplatApp extends EventTarget {
 
     // MapLibre GL JS support (separate from Mapbox)
     if (appOption.googleApiKey) {
-      this.googleApiKey = appOption.googleApiKey;
+      this.__googleApiKey = appOption.googleApiKey;
     }
 
-    this.mapDiv = appOption.div || "map_div";
-    this.mapDivDocument = document.querySelector(`#${this.mapDiv}`);
+    // div は id 文字列（従来）か HTMLElement（<maplat-app> 等）。要素で渡された場合、
+    // mapDiv は内部の子要素（_front / _back 等）の id の接頭辞にだけ使うので、要素に id が
+    // 無ければ要素へ id を付けずに一意の接頭辞を作る。
+    const div = appOption.div;
+    if (div && typeof div === "object" && (div as Node).nodeType === 1) {
+      this.__mapDivDocument = div as HTMLElement;
+      this.__mapDiv = (div as HTMLElement).id || `maplat_app_${++elementDivSeq}`;
+    } else {
+      this.__mapDiv = div || "map_div";
+      this.__mapDivDocument = document.querySelector(`#${this.__mapDiv}`);
+    }
     this.mapDivDocument!.classList.add("maplat");
     this.logger = new Logger(
       appOption.debug ? LOGGER_LEVEL.ALL : LOGGER_LEVEL.INFO
     );
-    this.enableCache = appOption.enableCache || false;
+    this.__enableCache = appOption.enableCache || false;
     this.icon = appOption.icon;
     this.selectedIcon = appOption.selectedIcon;
 
     this.translateUI = appOption.translateUI;
-    this.uiHooks = appOption.uiHooks;
+    this.__uiHooks = appOption.uiHooks;
     const setting = appOption.setting;
     if (appOption.restore) {
-      if (appOption.restoreSession) this.restoreSession = true;
-      this.initialRestore = appOption.restore;
+      if (appOption.restoreSession) this.__restoreSession = true;
+      this.__initialRestore = appOption.restore;
     } else if (appOption.restoreSession) {
-      this.restoreSession = true;
+      this.__restoreSession = true;
       const lastEpoch = parseInt(localStorage.getItem("epoch") || "0");
       const currentTime = Math.floor(new Date().getTime() / 1000);
       if (lastEpoch && currentTime - lastEpoch < 3600) {
@@ -317,13 +567,44 @@ export class MaplatApp extends EventTarget {
         );
         this.initialRestore.hideLayer =
           localStorage.getItem("hideLayer") || undefined;
+        // restoreExtensionKeys: 層 B の拡張キー（showBorder 等）も同じ期限で読む。
+        // 値は localStorage の文字列のまま（型は書いた側が知っている）。無いキーは載せない。
+        const extensionKeys = appOption.restoreExtensionKeys;
+        if (Array.isArray(extensionKeys)) {
+          for (const key of extensionKeys) {
+            if (typeof key !== "string" || key in this.__initialRestore) continue;
+            const value = localStorage.getItem(key);
+            if (value !== null) (this.__initialRestore as any)[key] = value;
+          }
+        }
       }
     }
+    // <maplat-app> の map-id・transparency（属性 ＞ restore ＞ localStorage）。
+    // restore として渡すと localStorage の読み込みが止まるので、読んだ後に上書きする。
+    // 地図を差し替えたときは、別の地図の座標系の position を捨てる。
+    const restoreOverride = appOption.__restoreOverride as Restore | undefined;
+    if (restoreOverride) {
+      const merged: Restore = { ...this.__initialRestore };
+      if (
+        restoreOverride.mapID !== undefined &&
+        restoreOverride.mapID !== merged.mapID
+      ) {
+        delete merged.position;
+      }
+      for (const [key, value] of Object.entries(restoreOverride)) {
+        if (value !== undefined) (merged as any)[key] = value;
+      }
+      this.__initialRestore = merged;
+    }
     // Add UI HTML Element
+    // 中心の目印。id は旧来の CSS・UI のため残し、class maplat-center-marker を
+    // 表現の差し替え口として足す（<maplat-app> の no-center-marker / center-marker-src も使う）
     const newElems =
-      createElement(`<img id="center_circle" class="prevent-default" alt=""
+      createElement(`<img id="center_circle" class="prevent-default maplat-center-marker" alt=""
             style="position:absolute;top:50%;left:50%;margin-top:-10px;
-            margin-left:-10px;" src="${redcircle}">`);
+            margin-left:-10px;" src="${assets.redcircle}">`);
+    // 表現を当て直す口（setCenterMarker）のために、作った img を控える
+    this.__centerMarkerImg = newElems[0] as HTMLImageElement;
     [...newElems].reverse().forEach(elem => {
       this.mapDivDocument!.insertBefore(
         elem,
@@ -350,7 +631,8 @@ export class MaplatApp extends EventTarget {
         evt.preventDefault();
       });
     });
-    this.overlay = "overlay" in appOption ? appOption.overlay : true;
+    // 「与えられたか」は undefined で判定。overlay: undefined を渡しても既定の true
+    this.__overlay = appOption.overlay ?? true;
     if (this.overlay) {
       this.mapDivDocument!.classList.add("with-opacity");
     }
@@ -358,6 +640,69 @@ export class MaplatApp extends EventTarget {
       const x = await this.settingLoader(setting);
       return this.handleSetting(x, appOption);
     })();
+    // ここから先、起動時だけ効くキーへの外からの代入は警告して無視する
+    this.__startupLocked = true;
+  }
+
+  /**
+   * @internal 中心の目印の表現を当てる。既定の画像は Core が持つ assets.redcircle で、
+   * 要素は「既定 src の控え」を持たない。
+   */
+  setCenterMarker(next: { hidden?: boolean; src?: string | null }): void {
+    const img = this.__centerMarkerImg;
+    if (!img) return;
+    const hidden = next.hidden === true;
+    img.hidden = hidden;
+    img.style.display = hidden ? "none" : "";
+    if (next.src) {
+      img.setAttribute("src", next.src);
+      // 大きさの違う画像でも中心に置く（既定の画像は 20px 角を margin -10px で寄せている）
+      img.style.margin = "0";
+      img.style.transform = "translate(-50%, -50%)";
+      img.classList.add("maplat-center-marker--custom");
+    } else {
+      img.setAttribute("src", assets.redcircle);
+      img.style.margin = "-10px 0 0 -10px";
+      img.style.transform = "";
+      img.classList.remove("maplat-center-marker--custom");
+    }
+  }
+
+  /**
+   * @internal 起動後の機能系キー・テンプレート・icon を当てる。
+   * `undefined` は「与えられていない」＝ Core の既定（RUNTIME_DEFAULTS）／設定ファイルの値。
+   * キーの有無は `in` で見る（`{ northUp: undefined }` は「外された」を意味する）。
+   */
+  applyRuntimeOptions(values: Record<string, unknown>): void {
+    const map = this.mapObject;
+    if ("northUp" in values && map) {
+      map.northUp = (values.northUp ?? RUNTIME_DEFAULTS.northUp) as boolean;
+    }
+    if ("homeMarginPixels" in values && map) {
+      map.homeMarginPixels = (values.homeMarginPixels ?? RUNTIME_DEFAULTS.homeMarginPixels) as number;
+    }
+    if ("debug" in values) {
+      this.logger = new Logger(
+        (values.debug ?? RUNTIME_DEFAULTS.debug) ? LOGGER_LEVEL.ALL : LOGGER_LEVEL.INFO
+      );
+    }
+    let redraw = false;
+    for (const prop of ["icon", "selectedIcon"] as const) {
+      if (!(prop in values)) continue;
+      this[prop] = values[prop] as string | undefined;
+      redraw = true;
+    }
+    for (const prop of ["poiTemplate", "poiStyle", "iconTemplate"] as const) {
+      if (!(prop in values)) continue;
+      this[prop] = (values[prop] ?? contentOption(this.appData, prop)) as any;
+      redraw = true;
+    }
+    if ("hideOutsidePois" in values) {
+      this.__hideOutsidePois = values.hideOutsidePois === true;
+      redraw = true;
+    }
+    // 描き直しは 1 回だけ（今の要素の applyRuntimeChanges と同じ）
+    if (redraw && this.from) this.redrawMarkers();
   }
 
   private buildLifecycleContext(
@@ -423,7 +768,15 @@ export class MaplatApp extends EventTarget {
       maplibreMap: this.maplibreMap // Pass maplibre map instance
     };
     dataSource.forEach(option => {
-      sourcePromise.push(mapSourceFactory(option, commonOption));
+      // IIIF の地図の失敗（IIIF の取得に失敗した・配れない等）だけを受けて印に変える。
+      // それ以外の失敗の扱いは今のまま変えない（起動を止める）
+      sourcePromise.push(
+        mapSourceFactory(option, commonOption).catch(err =>
+          err instanceof IiifDeliveryError
+            ? unusableSource(option, err)
+            : Promise.reject(err)
+        )
+      );
     });
     return Promise.all(sourcePromise);
   }
@@ -431,6 +784,9 @@ export class MaplatApp extends EventTarget {
   async handleSetting(setting: any, appOption: any) {
     await this.runLifecyclePhase("setting-loaded", setting);
     this.appData = normalizeArg(setting as Record<string, any>) as AppData;
+    // 設定ファイル（または appOption.setting）が持っていたキーを hook が触る前に控える。
+    // 機能系キーの廃止警告は、ここに載っていたキーだけを対象にする（UI が後で足す値は除く）。
+    this.__settingFileKeys = new Set(Object.keys(this.appData || {}));
     await this.runLifecyclePhase("appdata-ready");
     await this.runLifecyclePhase("ui-configure");
     const mapReturnValue = await this.prepareMap(appOption);
@@ -441,7 +797,7 @@ export class MaplatApp extends EventTarget {
   }
   // Async Initializers 2.5: For geolocation settings
   initGeolocation(appOption: any) {
-    this.alwaysGpsOn = appOption.alwaysGpsOn || false;
+    this.__alwaysGpsOn = appOption.alwaysGpsOn || false;
     const geolocation = this.geolocation = new Geolocation({
       timerBase: appOption.fake as boolean,
       homePosition: this.appData!.homePosition!
@@ -470,6 +826,10 @@ export class MaplatApp extends EventTarget {
         let ignoreMove = !this.moveTo_ && !this.firstGpsRequest_;
         if (this.alwaysGpsOn) {
           ignoreMove = !this.initialGpsMove_;
+        }
+        // 範囲外の POI を選んでいる間は、GPS で中心を動かさない
+        if (this.__outsideSelection) {
+          ignoreMove = true;
         }
 
         const insideCheck = await source.setGPSMarkerAsync({ lnglat, acc }, ignoreMove);
@@ -560,7 +920,11 @@ export class MaplatApp extends EventTarget {
           const source = (overlayLayer ? overlayLayer.getSource() : firstLayer.getSource());
 
           (async () => {
-            const insideCheck = await source.setGPSMarkerAsync({ lnglat, acc }, false); // ignoreMove=false (移動する)
+            // ignoreMove=false (移動する)。範囲外の POI を選んでいる間だけは動かさない
+            const insideCheck = await source.setGPSMarkerAsync(
+              { lnglat, acc },
+              !!this.__outsideSelection
+            );
             if (!insideCheck) {
               source.setGPSMarker();
               // 手動操作時は範囲外でもモーダルを表示したいので gps_out を返す
@@ -603,15 +967,20 @@ export class MaplatApp extends EventTarget {
     const mercMinZoom = this.appData!.minZoom;
     const mercMaxZoom = this.appData!.maxZoom;
     this.appName = this.appData!.appName;
-    const fakeGps = appOption.fake ? this.appData!.fakeGps : false;
-    const fakeRadius = appOption.fake ? this.appData!.fakeRadius : false;
-    this.noRotate = appOption.noRotate ?? this.appData!.noRotate ?? false;
-    this.poiTemplate =
-      appOption.poiTemplate ?? this.appData!.poiTemplate ?? false;
-    this.poiStyle = appOption.poiStyle ?? this.appData!.poiStyle ?? false;
-    this.iconTemplate =
-      appOption.iconTemplate ?? this.appData!.iconTemplate ?? false;
+    // 設定ファイルの fakeGps / fakeRadius は Core では保存するだけで使っていない。
+    // 要素の経路では読まない（旧クラスは 1.x の間は従来どおり保存する）
+    const fakeGps = appOption.fake && !this.__elementMode ? this.appData!.fakeGps : false;
+    const fakeRadius = appOption.fake && !this.__elementMode ? this.appData!.fakeRadius : false;
+    // 「与えられたか」は undefined で判定（false・0 が既定値に負けないように）。
+    // 機能系キー（noRotate 等）は __featureOption、テンプレート類はコンテンツ側
+    // 既定値の正本は起動時と起動後で共有する RUNTIME_DEFAULTS
+    this.__noRotate = this.__featureOption(appOption, "noRotate", RUNTIME_DEFAULTS.noRotate);
+    this.poiTemplate = (appOption.poiTemplate ?? contentOption(this.appData, "poiTemplate")) as any;
+    this.poiStyle = (appOption.poiStyle ?? contentOption(this.appData, "poiStyle")) as any;
+    this.iconTemplate = (appOption.iconTemplate ?? contentOption(this.appData, "iconTemplate")) as any;
     this.currentPosition = null;
+    // 範囲外の POI を描かない指定。設定ファイルは読まない（機能のキーは HTML 側）
+    this.__hideOutsidePois = appOption.hideOutsidePois === true;
     this.__init = true;
     const frontDiv = `${this.mapDiv}_front`;
     let newElem = createElement(
@@ -619,13 +988,13 @@ export class MaplatApp extends EventTarget {
       `position:absolute;"></div>`
     )[0];
     this.mapDivDocument!.insertBefore(newElem, this.mapDivDocument!.firstChild);
-    this.fakeGps = fakeGps as boolean;
-    this.fakeRadius = fakeRadius as number;
+    this.__fakeGps = fakeGps;
+    this.__fakeRadius = fakeRadius as number;
     this.homePosition = homePos as [number, number];
 
     this.mapObject = new MaplatMap({
       div: frontDiv,
-      controls: this.appData!.controls || [],
+      controls: this.__featureOption<any[]>(appOption, "controls", []),
       interactions: this.noRotate
         ? defaults({ altShiftDragRotate: false, pinchRotate: false })
         : defaults().extend([
@@ -636,11 +1005,10 @@ export class MaplatApp extends EventTarget {
       fakeGps,
       fakeRadius,
       homePosition: homePos,
-      northUp: appOption.northUp ?? this.appData!.northUp ?? false,
-      tapDuration: appOption.tapDuration ?? this.appData!.tapDuration ?? 3000,
-      homeMarginPixels:
-        appOption.homeMarginPixels ?? this.appData!.homeMarginPixels ?? 50,
-      tapUIVanish: appOption.tapUIVanish ?? this.appData!.tapUIVanish ?? false,
+      northUp: this.__featureOption(appOption, "northUp", RUNTIME_DEFAULTS.northUp),
+      tapDuration: this.__featureOption(appOption, "tapDuration", RUNTIME_DEFAULTS.tapDuration),
+      homeMarginPixels: this.__featureOption(appOption, "homeMarginPixels", RUNTIME_DEFAULTS.homeMarginPixels),
+      tapUIVanish: this.__featureOption(appOption, "tapUIVanish", RUNTIME_DEFAULTS.tapUIVanish),
       alwaysGpsOn: appOption.alwaysGpsOn || false
     });
     let backDiv: any;
@@ -744,11 +1112,45 @@ export class MaplatApp extends EventTarget {
     return this.handleSources(x);
   }
 
+  /**
+   * @internal sourceLoaded の材料。「GL 未ロード等で落とした source は usable: false」の
+   * 判断は keep を決めている側（cacheHash の同一性）に 1 つだけ置く。Set は持たない。
+   */
+  sourceLoadedDetail(sources: unknown): { mapID: string | null; usable: boolean }[] {
+    const list = Array.isArray(sources) ? sources : [];
+    const detail = list.map((source: any) => ({
+      mapID: source?.mapID ?? null,
+      usable: !!(source && this.cacheHash?.[source.mapID] === source)
+    }));
+    // 起動のときに使えなかった地図（IIIF の取得に失敗した等）は、生の source が無いので
+    // ここで末尾に足す（受け手が存在しない source のメソッドを呼ばないようにする）。
+    // 控えは delivery のモジュールがアプリのインスタンスを鍵に持つ（公開の型に出さない）
+    getUnusableSources(this).forEach(entry => {
+      detail.push({ mapID: entry.mapID, usable: false });
+    });
+    return detail;
+  }
+
   // Async initializer 9: Handle sources loading result
   async handleSources(sources: any) {
     const cache: any[] = [];
-    this.cacheHash = {};
+    const loaded: any[] = [];
+    const unusable: UnusableSourceEntry[] = [];
+    this.cacheHash = Object.create(null);
     sources.forEach((source: any) => {
+      // IIIF の地図の失敗の印は source ではない。cacheHash にも生の sourceLoaded の
+      // detail にも入れず、控えておいて要素の経路（sourceLoadedDetail）にだけ足す
+      if (isUnusableSource(source)) {
+        unusable.push({
+          mapID: source.mapID,
+          reason: source.__maplatUnusable.reason
+        });
+        console.error(
+          `Maplat: IIIF image for map "${source.mapID}" is not usable: ${source.__maplatUnusable.reason}`
+        );
+        return;
+      }
+      loaded.push(source);
       source.setMap(this.mapObject);
       // m6-t5: GL 未ロード時は throw せず当該ソースを落とす（ADR-0014）
       const keep = bindProviderGlToSource(source, {
@@ -764,6 +1166,8 @@ export class MaplatApp extends EventTarget {
       cache.push(source);
       this.cacheHash[source.mapID] = source;
     });
+    // 起動のたびに控えを作り直す（使えなかった地図が無ければ空になる）
+    setUnusableSources(this, unusable);
     // m6-t5 v1.3.1: mercSrc は cache（GL 未ロードで落とされたソースを含まない）から選ぶ。
     // 未フィルタの sources から選ぶと、混在 app + GL 未ロード時に死んだ provider ソースを
     // 指し、backMap 経由で毎フレーム error を吐く（H-4 主要シナリオ）
@@ -771,7 +1175,7 @@ export class MaplatApp extends EventTarget {
       if (prev) return prev;
       if (curr.isBasemap()) return curr;
     }, null);
-    this.dispatchEvent(new CustomEvent("sourceLoaded", sources));
+    this.dispatchEvent(new CustomEvent("sourceLoaded", loaded));
     if (cache.length === 0) {
       // m6-t5 AC22: 使えるソースが0件（provider-only + GL 未ロード等）。
       // 初期地図選択と操作/自動ハンドラ登録を行わない（this.from 未設定のまま
@@ -789,7 +1193,8 @@ export class MaplatApp extends EventTarget {
     await this.setInitialMap(cache);
     this.setMapClick();
     this.setPointerEvents();
-    this.setMapOnOff();
+    // 操作ボタンの自動非表示（.ol-control への fade）は層 B の責務。要素では動かさない
+    if (!this.__elementMode) this.setMapOnOff();
     this.setMouseCursor();
     this.setBackMapBehavior();
     this.raiseChangeViewpoint();
@@ -799,10 +1204,20 @@ export class MaplatApp extends EventTarget {
 
   // Async initializer 10: Handle initial map
   async setInitialMap(cache: MaplatSource[]) {
-    const initial: string =
+    let initial: string =
       this.initialRestore.mapID ||
       this.startFrom ||
       cache[cache.length - 1].mapID;
+    // 初期の地図が cacheHash に無い（IIIF の取得に失敗した・GL 未ロードで落とした等）とき、
+    // changeMap は「not found」の警告だけで何もしないので、画面が空になる。今の既定と同じ
+    // 規則（cache の最後）の地図に変える（この 1 か所で両方の理由を直す）
+    if (!cache.some(source => source.mapID === initial)) {
+      const fallback: string = cache[cache.length - 1].mapID;
+      console.warn(
+        `Maplat: the initial map "${initial}" is not usable; starting from "${fallback}" instead.`
+      );
+      initial = fallback;
+    }
     this.from = cache.reduce(
       (prev: MaplatSource | undefined, curr: MaplatSource) => {
         if (prev) {
@@ -827,6 +1242,8 @@ export class MaplatApp extends EventTarget {
         this.logger.debug(evt.pixel);
         if (feature.get("datum")) features.push(feature.get("datum"));
       });
+      // 前面で当たらなければ、紙の外の点では背面の地図のピンも見る
+      if (features.length === 0) features.push(...backMarkerDataAt(this, evt));
       if (features.length > 0) {
         this.dispatchEvent(new CustomEvent("clickMarker", features[0]));
         this.dispatchEvent(new CustomEvent("clickMarkers", features));
@@ -982,23 +1399,18 @@ export class MaplatApp extends EventTarget {
         ).style.cursor = feature ? "pointer" : "";
         return;
       }
+      // 前面で当たらなくても、紙の外の点で背面のピンの上なら指の形にする
+      const onBackPin = backMarkerDataAt(this, evt).length > 0;
       (
         this.mapDivDocument!.querySelector(`#${target}`)! as HTMLElement
-      ).style.cursor = "";
+      ).style.cursor = onBackPin ? "pointer" : "";
     };
     this.mapObject.on("pointermove", moveHandler);
     const mapOutHandler = (evt: any) => {
-      // oct26-m2-t1-ff: 視点確定の保留中は、view の中心が切替前の地図の座標系の
+      // 縁の外へ出た中心を戻す。範囲外の POI を選んでいる間は何もしない。
+      // oct26-m2-t1-ff: 視点確定の保留中も、view の中心が切替前の地図の座標系の
       // 値のままなので、新しい地図の範囲で縁へ引き戻さない（保留の適用に委ねる）。
-      if (this.__pendingView) return;
-      let histCoord = evt.frameState.viewState.center;
-      const source = this.from;
-      if (!(source as MaplatSource).insideCheckSysCoord(histCoord)) {
-        histCoord = (source as MaplatSource).modulateSysCoordInside(
-          histCoord
-        );
-        evt.target.getView().setCenter(histCoord);
-      }
+      pullBackInside(this, evt.target.getView());
     };
     this.mapObject.on("moveend", mapOutHandler);
   }
@@ -1125,16 +1537,37 @@ export class MaplatApp extends EventTarget {
     return createMapInfo(this.from);
   }
   mapInfo(mapID: string) {
-    return createMapInfo(this.cacheHash[mapID]);
+    return createMapInfo(ownEntry<MaplatSource>(this.cacheHash, mapID));
+  }
+  /** @internal 要素の viewExtent。pixel → 地図の座標 → merc を旧の連鎖のまま返す。 */
+  async pixelToMerc(pixel: readonly [number, number]): Promise<number[] | undefined> {
+    const map = this.mapObject;
+    const from = this.from;
+    if (!map || !from) return undefined;
+    const xy = map.getCoordinateFromPixel(pixel as any);
+    if (!xy) return undefined;
+    const merc = await (from as MaplatSource).sysCoord2MercAsync(xy);
+    return merc as number[];
+  }
+  /** @internal 表示領域の大きさ。4 隅の作り方は要素が持つ。 */
+  viewportSize(): [number, number] | undefined {
+    const size = this.mapObject?.getSize?.();
+    if (!size || !(size[0] > 0 && size[1] > 0)) return undefined;
+    return [size[0], size[1]];
+  }
+  /** @internal 前面と背面の地図の大きさを測り直す。 */
+  updateSize(): void {
+    this.mapObject?.updateSize?.();
+    this.backMap?.updateSize?.();
   }
   async clientPointToLngLat(clientX: number, clientY: number) {
     if (!this.from || !this.mapObject) return undefined;
     const viewport = this.mapObject.getViewport();
     const rect = viewport.getBoundingClientRect();
     const pixel: [number, number] = [clientX - rect.left, clientY - rect.top];
-    const xy = this.mapObject.getCoordinateFromPixel(pixel);
-    if (!xy) return undefined;
-    const merc = await (this.from as MaplatSource).sysCoord2MercAsync(xy);
+    // pixel → 座標 → merc の連鎖は pixelToMerc に 1 つだけ置く（戻り値は旧のまま undefined）
+    const merc = await this.pixelToMerc(pixel);
+    if (!merc) return undefined;
     const lnglat = transform(merc, "EPSG:3857", "EPSG:4326");
     return {
       longitude: lnglat[0],
@@ -1155,46 +1588,15 @@ export class MaplatApp extends EventTarget {
   }
   setMarker(data: any) {
     this.logger.debug(data);
-    const lnglat = data.lnglat || [
-      data.lng || data.longitude,
-      data.lat || data.latitude
-    ];
-    const x = data.x;
-    const y = data.y;
-    const coords = data.coordinates;
-    const src = this.from;
-    const icon = data.icon
-      ? this.__selectedMarker == data.namespaceID && data.selectedIcon
-        ? data.selectedIcon
-        : data.icon
-      : this.__selectedMarker == data.namespaceID
-        ? defaultpin_selected
-        : defaultpin;
-    const promise = coords
-      ? (function () {
-        return (src as MaplatSource).merc2SysCoordAsync_ignoreBackground(
-          coords
-        );
-      })()
-      : x && y
-        ? new Promise(resolve => {
-          resolve((src as HistMap).xy2SysCoord([x, y]));
-        })
-        : (function () {
-          const merc = transform(lnglat, "EPSG:4326", "EPSG:3857");
-          return (src as MaplatSource).merc2SysCoordAsync_ignoreBackground(
-            merc
-          );
-        })();
-    return promise.then((xy: any) => {
-      if (!xy) return;
-      if ((src as MaplatSource).insideCheckSysCoord(xy)) {
-        this.mapObject.setMarker(xy, { datum: data }, icon);
-      }
+    const icon = markerIconFor(this, data);
+    // 範囲内なら前面の marker 層、範囲外なら背面（前面がメルカトルの地図なら前面）へ 1 件だけ足す
+    return classifyMarker(this, data).then(classified => {
+      addMarkerItem(this, data, icon, classified);
     });
   }
   resetMarker() {
-    this.mapObject.resetMarker();
+    // 前面だけでなく背面の marker 層も空にする（消す処理は replaceMarkers の 1 か所）
+    replaceMarkers(this, { front: [], back: [] });
   }
   setLine(data: any) {
     // Ready for Polygon
@@ -1315,22 +1717,27 @@ export class MaplatApp extends EventTarget {
     }
     this.__redrawMarkerBlock = true;
     const redrawLogic = (source: any) => {
-      const promises: any = [];
-      this.resetMarker();
-      let selected: any;
+      // 1. 描く全件を集める（この時点では層に触らない）
+      const items: MarkerItem[] = [];
+      let selected: MarkerItem | undefined;
+      const collect = (data: any, cluster: any, ancestor: any) => {
+        const dataCopy = createIconSet(data, cluster, ancestor);
+        createHtmlFromTemplate(dataCopy, cluster, ancestor);
+        const item: MarkerItem = {
+          data: dataCopy,
+          icon: markerIconFor(this, dataCopy)
+        };
+        if (this.__selectedMarker == dataCopy.namespaceID) {
+          selected = item;
+        } else {
+          items.push(item);
+        }
+      };
       if (!this.stateBuffer.hideMarker) {
         for (const key of Object.keys(this.pois)) {
           const cluster = this.pois[key];
           if (!cluster.hide) {
-            for (const data of cluster.pois) {
-              const dataCopy = createIconSet(data, cluster, this);
-              createHtmlFromTemplate(dataCopy, cluster, this);
-              if (this.__selectedMarker == dataCopy.namespaceID) {
-                selected = dataCopy;
-              } else {
-                promises.push(this.setMarker(dataCopy));
-              }
-            }
+            for (const data of cluster.pois) collect(data, cluster, this);
           }
         }
         if (source.pois) {
@@ -1338,32 +1745,45 @@ export class MaplatApp extends EventTarget {
             const cluster = source.pois[key];
             if (!cluster.hide) {
               for (const data of cluster.pois) {
-                const dataCopy = createIconSet(data, cluster, source, this);
-                createHtmlFromTemplate(dataCopy, cluster, source, this);
-                if (this.__selectedMarker == dataCopy.namespaceID) {
-                  selected = dataCopy;
-                } else {
-                  promises.push(this.setMarker(dataCopy));
-                }
+                collect(data, cluster, source);
               }
             }
           }
         }
       }
-      let promise_var = Promise.all(promises);
-      if (selected) {
-        promise_var = promise_var.then(() => this.setMarker(selected)) as any;
-      }
-      promise_var.then(() => {
-        if (
-          this.__redrawMarkerThrottle &&
-          this.__redrawMarkerThrottle.length > 0
-        ) {
-          redrawLogic(this.__redrawMarkerThrottle.shift());
-        } else {
-          this.__redrawMarkerBlock = false;
+      // 選択中は各層の配列の最後に置く（この回の判定は全件まとめて行う）
+      const all = selected ? [...items, selected] : items;
+      // 2. 全件を並べて判定する。この間は前面も背面も消さない（ちらつかない）
+      Promise.all(all.map(item => classifyMarker(this, item.data))).then(
+        classes => {
+          // 3. 1 つの同期の区間で層を入れ替える
+          replaceMarkers(this, placeMarkerLayers(this, all, classes));
+          // マーカーを隠している間は判定できないので、選択の扱いは次の描き直しに委ねる
+          const outside = this.__outsideSelection;
+          if (outside && !this.stateBuffer.hideMarker) {
+            if (selected) {
+              // 今回描いた選択中が、範囲外として控えている POI と同じときだけ決め直す。
+              // 判定待ちの印が無くても決め直す（切り替えの最初の分岐で印が立たない道、
+              // 隠すのをやめた後の描き直し）。id が違うときは古い描き直しなので触らない。
+              if (selected.data?.namespaceID === outside.id) {
+                settleOutsideSelection(this, classes[classes.length - 1]);
+              }
+            } else if (outside.pending) {
+              // 切り替え先にその POI が無い（判定待ちのまま）ときは従来どおり外す
+              settleOutsideSelection(this, undefined);
+            }
+          }
+          // 4. 描画中に来た要求は、最新の 1 件だけを続けて描く
+          if (
+            this.__redrawMarkerThrottle &&
+            this.__redrawMarkerThrottle.length > 0
+          ) {
+            redrawLogic(this.__redrawMarkerThrottle.shift());
+          } else {
+            this.__redrawMarkerBlock = false;
+          }
         }
-      });
+      );
     };
     redrawLogic(source);
   }
@@ -1371,6 +1791,11 @@ export class MaplatApp extends EventTarget {
     const data = this.getMarker(id);
     if (!data) return;
     this.__selectedMarker = id;
+    // 範囲外を外した直後に予約した引き戻しは取り消す（外 → 外・外 → 内で縁を挟まない）。
+    // 判定待ちの印と二重の守りで、これ単独では振る舞いに現れない。
+    this.__pullBackTimer = undefined;
+    // 範囲の判定が終わるまで縁への引き戻しを止める（範囲外の POI は縁の外に居る）
+    this.__outsideSelection = { id, pending: true };
     const latlng = {
       latitude: data.lnglat
         ? data.lnglat[1]
@@ -1385,10 +1810,28 @@ export class MaplatApp extends EventTarget {
     };
     this.setViewpoint(latlng);
     this.redrawMarkers();
+    classifyMarker(this, data).then(classified => {
+      // 途中で別の POI を選んだ・選択を外したときは触らない
+      if (this.__selectedMarker !== id) return;
+      // 選ぶ操作そのものなので、判定が済んだら必ず中心をその POI に合わせる
+      settleOutsideSelection(this, classified, { recenter: true });
+    });
   }
   unselectMarker() {
     delete this.__selectedMarker;
+    const wasOutside = !!this.__outsideSelection;
+    delete this.__outsideSelection;
     this.redrawMarkers();
+    if (!wasOutside) return;
+    // 引き戻しは microtask の後に予約する（その間に選び直されたら取り消す）
+    const token = {};
+    this.__pullBackTimer = token;
+    queueMicrotask(() => {
+      if (this.__pullBackTimer !== token) return;
+      this.__pullBackTimer = undefined;
+      const view = this.mapObject?.getView?.();
+      if (view) pullBackInside(this, view);
+    });
   }
   getMarker(id: any) {
     if (!id.includes("#")) {
@@ -1402,7 +1845,7 @@ export class MaplatApp extends EventTarget {
       return undefined;
     } else {
       const splits = id.split("#");
-      const source = this.cacheHash[splits[0]];
+      const source = ownEntry<MaplatSource>(this.cacheHash, splits[0]);
       return source?.getPoi(splits[1]);
     }
   }
@@ -1434,8 +1877,9 @@ export class MaplatApp extends EventTarget {
       clusterId = "main";
     }
     if (!clusterId.includes("#")) {
-      if (this.pois[clusterId]) {
-        this.pois[clusterId]["pois"].push(normalizePoi(data));
+      const cluster = ownEntry<any>(this.pois, clusterId);
+      if (cluster) {
+        cluster["pois"].push(normalizePoi(data));
         addIdToPoi(this.pois, clusterId, {
           name: this.appName
         });
@@ -1445,7 +1889,7 @@ export class MaplatApp extends EventTarget {
       }
     } else {
       const splits = clusterId.split("#");
-      const source = this.cacheHash[splits[0]];
+      const source = ownEntry<MaplatSource>(this.cacheHash, splits[0]);
       if (source) {
         const ret = source.addPoi(data, splits[1]);
         this.dispatchPoiNumber();
@@ -1474,7 +1918,7 @@ export class MaplatApp extends EventTarget {
       }
     } else {
       const splits = id.split("#");
-      const source = this.cacheHash[splits[0]];
+      const source = ownEntry<MaplatSource>(this.cacheHash, splits[0]);
       if (source) {
         source.removePoi(splits[1]);
         this.dispatchPoiNumber();
@@ -1491,14 +1935,16 @@ export class MaplatApp extends EventTarget {
         for (const key of Object.keys(this.pois)) {
           this.pois[key]["pois"] = [];
         }
-      } else if (this.pois[clusterId]) {
-        this.pois[clusterId]["pois"] = [];
-      } else return;
+      } else {
+        const cluster = ownEntry<any>(this.pois, clusterId);
+        if (!cluster) return;
+        cluster["pois"] = [];
+      }
       this.dispatchPoiNumber();
       this.redrawMarkers();
     } else {
       const splits = clusterId.split("#");
-      const source = this.cacheHash[splits[0]];
+      const source = ownEntry<MaplatSource>(this.cacheHash, splits[0]);
       if (source) {
         source.clearPoi(splits[1]);
         this.dispatchPoiNumber();
@@ -1576,11 +2022,12 @@ export class MaplatApp extends EventTarget {
     this.redrawMarkers();
   }
   getPoiLayer(id: any) {
+    if (typeof id !== "string") return undefined;
     if (!id.includes("#")) {
-      return this.pois[id];
+      return ownEntry<any>(this.pois, id);
     } else {
       const splits = id.split("#");
-      const source = this.cacheHash[splits[0]];
+      const source = ownEntry<MaplatSource>(this.cacheHash, splits[0]);
       if (source) {
         return source.getPoiLayer(splits[1]);
       }
@@ -1596,7 +2043,7 @@ export class MaplatApp extends EventTarget {
       this.redrawMarkers();
     } else {
       const splits = id.split("#");
-      const source = this.cacheHash[splits[0]];
+      const source = ownEntry<MaplatSource>(this.cacheHash, splits[0]);
       if (source) {
         source.addPoiLayer(splits[1], data);
         this.redrawMarkers();
@@ -1622,7 +2069,7 @@ export class MaplatApp extends EventTarget {
       this.redrawMarkers();
     } else {
       const splits = id.split("#");
-      const source = this.cacheHash[splits[0]];
+      const source = ownEntry<MaplatSource>(this.cacheHash, splits[0]);
       if (!source) {
         warnPoiLayerNotFound(id, "removePoiLayer");
         return;
@@ -1697,7 +2144,7 @@ export class MaplatApp extends EventTarget {
   changeMap(mapID: string, restore?: Restore) {
     if (restore === undefined) restore = {};
     const now = this.mercSrc;
-    const to: MaplatSource = this.cacheHash[mapID];
+    const to = ownEntry<MaplatSource>(this.cacheHash, mapID);
     if (!to) {
       this.logger.warn(`changeMap: mapID "${mapID}" not found in cacheHash`);
       return Promise.resolve();
@@ -1716,7 +2163,7 @@ export class MaplatApp extends EventTarget {
             let backSrc: any = null;
             let backTo: any = null;
             const backRestore = restore!.backgroundID
-              ? this.cacheHash[restore!.backgroundID]
+              ? ownEntry<MaplatSource>(this.cacheHash, restore!.backgroundID)
               : undefined;
             if (this.backMap) {
               // Overlay = true case:
@@ -1793,6 +2240,14 @@ export class MaplatApp extends EventTarget {
               view.setMinZoom(to.minZoom || 0);
             }
             if (size && to.insideCheckSysCoord(size[0])) {
+              if (this.__outsideSelection) {
+                // 範囲外の POI を選んでいる間は、切替先でも描き直しの判定に委ねて
+                // 中心をその POI に合わせる
+                this.__outsideSelection = {
+                  ...this.__outsideSelection,
+                  pending: true
+                };
+              }
               view.setCenter(size[0]);
               view.setZoom(size[1]);
               view.setRotation(this.noRotate ? 0 : size[2]);
@@ -1808,8 +2263,17 @@ export class MaplatApp extends EventTarget {
                 delete this.__pendingView.positionMapID;
               }
             } else if (!this.__init) {
-              this.dispatchEvent(new CustomEvent("outOfMap", {}));
-              this.goHome(to);
+              if (this.__outsideSelection) {
+                // 範囲外の POI を選んでいる間は outOfMap を出さない。切替先での扱いは
+                // 描き直しの判定に委ねる（範囲外のままならその POI を中心に据える）
+                this.__outsideSelection = {
+                  ...this.__outsideSelection,
+                  pending: true
+                };
+              } else {
+                this.dispatchEvent(new CustomEvent("outOfMap", {}));
+                this.goHome(to);
+              }
             } else if (!size) {
               if (!this.__hasMapSize()) {
                 // oct26-m2-t1: 未確定時（非表示コンテナ）は goHome が NaN 変換を起こす
@@ -1858,9 +2322,10 @@ export class MaplatApp extends EventTarget {
                 to.setViewpoint(restore!.position);
               }
             }
-            // #117: OL の層は切替で作り直され、NowMap と古地図で当てる層も違うので、
-            // 透過度は毎回当て直す（restore.transparency の 0 も有効、無ければ現在値）。
-            // 起動時にも当てるので、状態（stateBuffer）に transparency が必ず載る。
+            // 透過度はアプリの状態として保ち、地図を切り替えても同じ値を当て直す
+            // （OL の層は切替で作り直される・NowMap と古地図で当てる層が違うので、毎回当てる）。
+            // restore で与えた値は 0 も有効（旧は 0 を「与えていない」扱いにしていた）。
+            // 起動時にも当てるので、state（updateState の detail）に transparency が必ず載る。
             this.setTransparency(
               restore!.transparency !== undefined && restore!.transparency !== null
                 ? restore!.transparency
@@ -2059,6 +2524,9 @@ export class MaplatApp extends EventTarget {
               view.setCenter(size[0]);
               view.setZoom(size[1]);
               view.setRotation(this.noRotate ? 0 : size[2]);
+            } else if (this.__outsideSelection?.merc) {
+              // 範囲外の POI を選んでいる間は、切替先でもその POI を中心に据える
+              centerOnOutsidePoi(this, this.__outsideSelection.merc);
             } else {
               this.dispatchEvent(new CustomEvent("outOfMap", {}));
               this.goHome(to);
@@ -2120,10 +2588,10 @@ export class MaplatApp extends EventTarget {
     if (!mapID) {
       source = this.from;
     } else {
-      source = this.cacheHash[mapID];
+      source = ownEntry<MaplatSource>(this.cacheHash, mapID);
     }
     if (!source) return;
-    return META_KEYS.reduce(
+    const meta: MapMeta = META_KEYS.reduce(
       (prev: any, curr: string) => {
         prev[curr] = (source as any).get(curr);
         return prev;
@@ -2133,13 +2601,17 @@ export class MaplatApp extends EventTarget {
         label: source.label
       }
     );
+    // IIIF の書誌は、地図データに iiif 節があるときだけ載せる
+    const iiif = mapMetaIiif(source);
+    if (iiif) meta.iiif = iiif;
+    return meta;
   }
   getMapCacheEnable(mapID: string) {
     let source: MaplatSource | undefined;
     if (!mapID) {
       source = this.from;
     } else {
-      source = this.cacheHash[mapID];
+      source = ownEntry<MaplatSource>(this.cacheHash, mapID);
     }
     if (!source) return false;
     return source.getCacheEnable();
@@ -2149,7 +2621,7 @@ export class MaplatApp extends EventTarget {
     if (!mapID) {
       source = this.from;
     } else {
-      source = this.cacheHash[mapID];
+      source = ownEntry<MaplatSource>(this.cacheHash, mapID);
     }
     if (!source) return {};
     return await source.getTileCacheStatsAsync();
@@ -2163,7 +2635,7 @@ export class MaplatApp extends EventTarget {
     if (!mapID) {
       source = this.from;
     } else {
-      source = this.cacheHash[mapID];
+      source = ownEntry<MaplatSource>(this.cacheHash, mapID);
     }
     if (!source) return;
     await source.clearTileCacheAsync();
@@ -2173,7 +2645,7 @@ export class MaplatApp extends EventTarget {
     if (!mapID) {
       source = this.from;
     } else {
-      source = this.cacheHash[mapID];
+      source = ownEntry<MaplatSource>(this.cacheHash, mapID);
     }
     if (!source) {
       callback("stop", {});
@@ -2186,7 +2658,7 @@ export class MaplatApp extends EventTarget {
     if (!mapID) {
       source = this.from;
     } else {
-      source = this.cacheHash[mapID];
+      source = ownEntry<MaplatSource>(this.cacheHash, mapID);
     }
     if (!source) return;
     await source.cancelTileCacheAsync();
@@ -2330,6 +2802,11 @@ export class MaplatApp extends EventTarget {
       this.__resizeObserver.disconnect();
       this.__resizeObserver = null;
     }
+    // 今まで要素の経路だけが塞いでいた漏れを旧クラスでも塞ぐ。
+    // OL の Map を target から外して内部の ResizeObserver・リスナを解放し、MapLibre の地図も消す。
+    this.mapObject?.setTarget?.(undefined);
+    this.backMap?.setTarget?.(undefined);
+    this.maplibreMap?.remove?.();
     if (this.mapboxMap) {
       this.mapboxMap.remove();
     }
@@ -2337,6 +2814,54 @@ export class MaplatApp extends EventTarget {
     this.mapDivDocument!.classList.remove("maplat");
   }
 }
+/**
+ * 起動時だけ効くキーに対応する MaplatApp の公開フィールド。起動後（コンストラクタの
+ * 完了後）に外から代入されたら警告して無視する（キーごと・インスタンスごとに 1 回）。
+ * 読み取りは従来どおり。Core 自身は __<name> の保管場所へ書く。
+ */
+export const MAPLAT_APP_STARTUP_FIELDS = [
+  "appid",
+  "mapDiv",
+  "mapDivDocument",
+  "enableCache",
+  "noRotate",
+  "alwaysGpsOn",
+  "overlay",
+  "googleApiKey",
+  "restoreSession",
+  "initialRestore",
+  "uiHooks",
+  "fakeGps",
+  "fakeRadius"
+] as const;
+
+(function lockStartupFields() {
+  const proto = MaplatApp.prototype as any;
+  for (const name of MAPLAT_APP_STARTUP_FIELDS) {
+    const desc = Object.getOwnPropertyDescriptor(proto, name);
+    if (!desc?.get) throw new Error(`MaplatApp: missing getter for startup field "${name}"`);
+    const backing = `__${name}`;
+    Object.defineProperty(proto, name, {
+      configurable: true,
+      enumerable: false,
+      get: desc.get,
+      set(this: any, value: unknown) {
+        // コンストラクタを通らない生成（Object.create による検査用の殻）と構築中は書ける
+        if (!this.__startupLocked) {
+          this[backing] = value;
+          return;
+        }
+        // キーごと・インスタンスごとに 1 回だけ警告するしくみは createOnceWarner に置く
+        if (!this.__startupWarner) this.__startupWarner = createOnceWarner();
+        this.__startupWarner(
+          name,
+          `MaplatApp: "${name}" is fixed at startup and cannot be changed after construction; the assignment was ignored.`
+        );
+      }
+    });
+  }
+})();
+
 export { createElement };
 export { CustomEvent };
 // 外部(MaplatEditor等)がdeep importせずに地図・ソースを直接生成できるようにする (#71)

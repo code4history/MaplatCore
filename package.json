@@ -10,12 +10,24 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/maplat_core.js"
+    },
+    "./element": {
+      "types": "./dist/element.d.ts",
+      "import": "./dist/maplat_core_element.js"
+    },
+    "./common": {
+      "types": "./dist/common.d.ts",
+      "import": "./dist/maplat_core_common.js"
+    },
+    "./conformance": {
+      "types": "./dist/conformance/index.d.ts",
+      "import": "./dist/maplat_core_conformance.js"
     }
   },
   "engines": {
     "pnpm": ">=9"
   },
-  "sideEffects": true,
+  "sideEffects": ["./dist/maplat_core.js", "./dist/maplat_core.umd.js", "./dist/maplat_core_element.js", "./src/index.ts", "./src/element.ts", "./src/view_ex.ts", "*.css"],
   "files": [
     "src/",
     "dist/",
@@ -23,9 +35,10 @@
   ],
   "scripts": {
     "dev": "vite --host",
-    "build": "cross-env BUILD_MODE=package vite build",
+    "build": "cross-env BUILD_MODE=package vite build && cross-env BUILD_MODE=element vite build && cross-env BUILD_MODE=common vite build && cross-env BUILD_MODE=conformance vite build && node scripts/verify-common-bundle.mjs",
+    "verify:common": "node scripts/verify-common-bundle.mjs",
     "build:demo": "vite build",
-    "build:with-typecheck": "pnpm run typecheck && cross-env BUILD_MODE=package vite build",
+    "build:with-typecheck": "pnpm run typecheck && cross-env BUILD_MODE=package vite build && cross-env BUILD_MODE=element vite build && cross-env BUILD_MODE=common vite build && cross-env BUILD_MODE=conformance vite build && node scripts/verify-common-bundle.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -39,11 +52,7 @@
     "preview": "vite preview",
     "prepublishOnly": "pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build",
     "version:bump": "node scripts/bump-version.js",
-    "version:sync": "node scripts/sync-version.js",
-    "publish:npm": "node scripts/publish-npm.js",
-    "publish:npm:dry": "node scripts/publish-npm.js --dry-run",
-    "publish:all": "node scripts/publish-all.js",
-    "publish:all:dry": "node scripts/publish-all.js --dry-run"
+    "version:sync": "node scripts/sync-version.js"
   },
   "repository": {
     "type": "git",
@@ -60,11 +69,11 @@
   },
   "homepage": "https://github.com/code4history/MaplatCore/wiki",
   "dependencies": {
+    "@c4h/quyuan": "^1.1.0",
     "@c4h/weiwudi": "^1.1.1",
     "@maplat/transform": "^1.1.0",
     "@turf/turf": "^7.4.0",
     "dompurify": "^3.4.17",
-    "lodash.template": "^4.18.1",
     "whatwg-fetch": "^3.6.20"
   },
   "peerDependencies": {
@@ -84,7 +93,6 @@
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.62.1",
     "@types/geojson": "^7946.0.16",
-    "@types/lodash.template": "^4.5.3",
     "@types/node": "^26.6.5",
     "@typescript-eslint/eslint-plugin": "^8.66.0",
     "@typescript-eslint/parser": "^8.66.0",

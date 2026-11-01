@@ -67,6 +67,32 @@ MaplatApp.createObject(option).then((app) => {
 });
 ```
 
+### Custom Element `<maplat-app>`
+
+The same map is also available as a Custom Element. Import
+`@maplat/core/element` once (it registers the tag) and write the tag; the
+element is the map container, and the `MaplatApp` methods and events are on the
+element.
+
+```typescript
+import 'ol/ol.css';
+import '@maplat/core/element';
+```
+
+```html
+<maplat-app app-id="morioka"></maplat-app>
+<script type="module">
+  const el = document.querySelector('maplat-app');
+  await el.ready;
+  el.addEventListener('mapChanged', (e) => console.log(e.detail.mapID));
+</script>
+```
+
+See [`docs/api/maplat-app.md`](docs/api/maplat-app.md) for the attributes,
+properties, methods and events, the shared base `@maplat/core/common` and the
+conformance tests `@maplat/core/conformance`. The `MaplatApp` class stays
+available in 1.x and closes in the next major version (2.0).
+
 ### CDN (jsDelivr)
 
 For usage directly in the browser without a bundler, you must load OpenLayers
@@ -186,6 +212,133 @@ Without the key, or with `noCache: false`, the map is cached as before.
   has nothing to act on for it; clear the cache with
   `clearMapTileCacheAsync(mapID)` **before** turning `noCache` on.
 
+### Serving a map image from a IIIF Image API service (`delivery`)
+
+An old map can be displayed straight from a [IIIF Image API](https://iiif.io/api/image/)
+service instead of from pre-cut tiles. Add `delivery` to the map setting
+(`maps/<mapID>.json`):
+
+```json
+{
+  "delivery": { "type": "iiifImage", "url": "https://dl.ndl.go.jp/api/iiif/948741/R0000003" },
+  "compiled": { "...": "..." }
+}
+```
+
+`url` is the image service's base URL (the part before `/info.json`). Core fetches
+`<url>/info.json` once when the map is loaded and requests each tile in the IIIF URL
+form (`<url>/<region>/<size>/0/default.jpg`). Reading `info.json` and building the
+request URLs are done by OpenLayers (`ol/format` `IIIFInfo` and `ol/source` `IIIF`),
+so `ol/format` must be resolvable alongside `ol/source`.
+
+- Supported: Image API 2 and 3 services that can return any region (most level 1
+  and level 2 services), and level 0 services whose tiles are 256 px.
+- Not supported yet: level 0 services with other tile sizes or with `sizes` only,
+  and Image API 1. Such a map, or one whose `info.json` cannot be read (not
+  `http:`/`https:`, network error, more than 10 seconds, larger than 1 MiB, not
+  JSON, or a `width`/`height` different from the map's `compiled` data), is
+  treated as unusable: an error is logged and the other maps start normally. With
+  `<maplat-app>`, the `sourceLoaded` event lists it as `{ mapID, usable: false }`.
+  With the `MaplatApp` class, it is simply left out of the `sourceLoaded` detail
+  (no entry is added for it). If it was the initial map, the app starts from the
+  default map instead.
+- The image service must allow cross-origin requests (CORS) from your page.
+- A map with `delivery` is never registered with the tile cache, so
+  `getMapCacheEnable(mapID)` returns `false` even with `enableCache: true`.
+- If the map also has `url` or `urls`, `delivery` is used and a warning is logged.
+  If `info.json`'s `@id`/`id` differs from `delivery.url`, tiles are still requested
+  from `delivery.url` (with a warning).
+- `info.json` is fetched without credentials.
+
+### POIs outside the map
+
+A POI whose coordinates are outside the foreground map is still drawn when there is
+somewhere to put it. A POI given as mercator `coordinates` or as lng/lat is outside when
+the foreground map cannot map it into its own coordinates; a POI given as pixel `x`/`y`
+is not drawn outside.
+
+| Foreground | Inside | Outside |
+|---|---|---|
+| Historical map with a background map | `marker` layer of the foreground | `marker` layer of the background, in mercator coordinates |
+| TMS or a basemap with an `envelope` | `marker` layer of the foreground | `marker` layer of the foreground, in mercator coordinates |
+| Historical map with `overlay="false"` | foreground | not drawn |
+| `hide-outside-pois` set | foreground | not drawn |
+
+An outside POI looks the same as an inside one (same icons, `selectedIcon` while it is
+selected), and the foreground and the background are swapped in one step, so the map does
+not flash empty while it changes.
+
+- **Pressing a pin on the background.** When a click misses the foreground, a background
+  map exists, and the clicked point is outside the paper of the historical map
+  (`insideCheckSysCoord` is false for it), the click also looks at the `marker` layer of
+  the background. A hit ends in `clickMarker` / `clickMarkers` as a foreground hit does;
+  a point the paper covers never presses a background pin, whatever the transparency is.
+  A click that hits neither layer ends in `clickMapXy` / `clickMapMerc` / `clickMap`.
+- **While an outside POI is selected.** `selectMarker(id)` centres the map on the pin even
+  when it is outside the paper, and the map is not pulled back inside while that POI is
+  selected. `unselectMarker()` releases it and the centre returns to the nearest point
+  inside the paper just after the current task. GPS positions do not move the centre while
+  an outside POI is selected. Changing the map settles the selection against the new map
+  (a POI that is gone is unselected and the centre is pulled back; one that is inside
+  becomes a normal selection; one that is still outside keeps the centre on the pin and
+  `outOfMap` is not emitted). Inside POIs behave as before.
+- **`hide-outside-pois`** turns the drawing off. It is a boolean attribute like the
+  others, it can be changed after startup (the markers are redrawn), and it writes the
+  same field as the legacy `appOption.hideOutsidePois`.
+
+### Copied IIIF metadata (`iiif`, `iiifMetadata`)
+
+A map setting (`maps/<mapID>.json`) can record the IIIF Presentation manifest the
+map comes from, together with metadata copied from it by an authoring tool such as
+MaplatEditor:
+
+```json
+{
+  "title": "新潟市圖",
+  "attr": "国立国会図書館 National Diet Library, JAPAN",
+  "license": "Custom",
+  "licenseNote": "https://dl.ndl.go.jp/ja/help_iiif#...",
+  "iiif": {
+    "manifest": "https://dl.ndl.go.jp/api/iiif/948741/manifest.json",
+    "canvas": "https://dl.ndl.go.jp/api/iiif/948741/canvas/3",
+    "image": "https://dl.ndl.go.jp/api/iiif/948741/R0000003",
+    "bindings": { "title": { "from": "manifest", "property": "label" } },
+    "copiedAt": "2026-10-28T12:39:42Z",
+    "copiedValues": { "title": { "ja": "新潟市圖" } },
+    "copiedMetadata": [
+      { "from": "manifest", "label": "Call Number", "value": "YG7-Z-1065" }
+    ]
+  }
+}
+```
+
+- The copied values live in the ordinary metadata keys (`title`, `attr`, `license`,
+  `licenseNote`, …) and are shown like any other metadata.
+- `bindings` says which manifest or canvas property each key was copied from
+  (`{ from: "manifest" | "canvas", property }`), `copiedValues` keeps the values
+  as they were at copy time (key → language → string), and `copiedMetadata` keeps
+  every entry of the manifest's and canvas's `metadata` list.
+- **The viewer never fetches the manifest.** It only reads what is written in the
+  map setting.
+- `getMapMeta()` and the `mapChanged` detail include
+  `iiif: { manifest?, canvas?, image?, copiedAt?, display, metadata? }` for such a
+  map (`metadata` is `copiedMetadata`; `bindings` and `copiedValues` are not
+  included).
+- `display` is `"all"` or `"hidden"` and tells a UI whether to show the full
+  metadata table. Set it per map with `iiifMetadata` on the entry of the app
+  setting's `sources` (`{ "mapID": "...", "iiifMetadata": "all" }`). Without it the
+  value is `"hidden"`.
+- The functions that read a manifest and pick the values to copy are in
+  `src/iiif/manifest.ts` (`listIiifCanvases`, `proposeIiifBindings`,
+  `resolveIiifMetadata`, `compareIiifCopy`, `iiifRightsToLicense`,
+  `IIIF_BINDABLE_KEYS`). They do not fetch and do not use the DOM. HTML values are
+  passed through a sanitizer given by the caller; use `sanitizeIiifHtml` (from
+  `src/sanitize.ts`, which needs a browser `window`; it can also be imported from
+  `@maplat/core/common`, together with the `MapMetaIiif` type and the
+  `isIiifMetadataEntry` guard). It keeps only `a`, `b`, `br`,
+  `i`, `p`, `small`, `span`, `sub`, `sup` and the `href` attribute (http(s) only;
+  links open in a new tab with `rel="noopener noreferrer"`).
+
 ### Lifecycle
 
 - See [docs/ui-core-lifecycle.md](docs/ui-core-lifecycle.md) for lifecycle
@@ -232,6 +385,8 @@ pnpm lint         # Run linter and formatter (ESLint/Prettier)
 pnpm run test:e2e # Run E2E tests (Playwright)
 ```
 <!-- release-pinned:end -->
+
+The E2E tests need no Google Maps API key. To try the Google maps locally, set `GOOGLE_MAPS_API_KEY` in the environment.
 
 <!-- SECTION 6: Prerequisites -->
 ## Prerequisites

@@ -2,6 +2,43 @@
 
 このプロジェクトの主な変更を記録します。版数は [Semantic Versioning](https://semver.org/) に従います。
 
+## [Unreleased]
+
+### Added
+- Custom Element `<maplat-app>`（入口 `@maplat/core/element`）。要素そのものが地図の入れ物で、属性・プロパティ（`app-id`・`map-id`・`transparency`・`north-up` …）、`MaplatApp` の公開メソッド 46 個の委譲、同じ名前の DOM イベント、状態の読み取り（`ready`・`implementation`・`version`・`appData`・`initialRestore`・`state`・`currentMapId`・`viewpoint`・`gpsEnabled`）を持つ
+- `<maplat-app>` の `map-id`・`transparency` は地図の側の変化を属性へ書き戻す。中心の目印は `no-center-marker`・`center-marker-src` で消す・差し替える。`uiHooks` の `context.core`・`context.mapDivDocument` は要素の経路では要素になる（`MaplatApp` の経路は従来どおり）
+- 要素の新設 API: `listMaps`・`getViewpoint`・`supports`・`setEnvelopes`・`getMapEnvelope`・`getViewExtent`・`zoomBy`・`getDefaultPinIcon`、イベント `gpsEnabledChanged`・`moveStart`・`moveEnd`
+- 入口 `@maplat/core/common`（地図を持たない共通部分: 名前の表・型・要素の基底クラス `MaplatAppElementBase`・補助関数）と `@maplat/core/conformance`（層 A の適合テスト群と模擬の `<maplat-app>`）
+- 利用者向けの文書 `docs/api/maplat-app.md`・`maplat-app.ja.md`
+- `MaplatApp` の `appOption.div` に HTMLElement も渡せる（従来の id 文字列も可）。`appOption.restoreExtensionKeys`（`restoreSession` で `localStorage` から拡張キーも読む）。中心の目印の `img` に class `maplat-center-marker`（表現の差し替え口。id `center_circle` は従来どおり）
+- POI のテンプレートの出力（`html`）で、マルチメディアのスライダー `<qy-swiper>`・`<qy-swiper-slide>`（[Quyuan](https://github.com/code4history/Quyuan)）を使えるようにした。`sanitizeHtml` が 2 つの要素を残す。`qy-swiper-slide` に残る属性は `image-url`・`image-type`・`thumbnail-url`・`caption`・`material-url`・`camera-position`・`camera-target`・`show-texture`・`fit-to-container`・`debug-mode`、`qy-swiper` に残る属性は `has-thumb`・`autoplay` だけで、値は POI の `media` と同じ検査を通る（表示には `@maplat/ui` 1.3 以降が要る）
+- 古地図の画像を IIIF Image API の画像サービスから直接配る `delivery: { type: "iiifImage", url }`（地図の設定）。`info.json` の読み取りと要求の URL は OpenLayers の `IIIFInfo`・`IIIF` に任せる。Image API 2・3 の任意の領域を返せるサービスと、タイルが 256 px の level 0 に対応。使えない地図は `sourceLoaded` で `usable: false` になり、他の地図で起動する。タイルキャッシュには登録しない。判定の関数 `checkIiifDelivery`・`resolveIiifDelivery` は `src/iiif/delivery.ts`
+- `<maplat-app>` の属性 `hide-outside-pois`（プロパティ `hideOutsidePois`）。範囲外の POI を描かない。起動後にも変えられ、変えるとマーカーを描き直す
+- 地図の設定の `iiif` 節（IIIF の Manifest から写した書誌: `manifest`・`canvas`・`image`・`bindings`・`copiedAt`・`copiedValues`・`copiedMetadata`）。`getMapMeta`・`mapChanged` の `MapMeta` に `iiif`（`display` はアプリの設定の `sources[]` の `iiifMetadata`、既定 `"hidden"`）。Viewer は Manifest を取得しない。Manifest を読む純粋な関数（`resolveIiifMetadata` ほか）は `src/iiif/manifest.ts`、IIIF の値のサニタイズは `sanitizeHtml(dirty, { profile: "iiif" })`・`sanitizeIiifHtml`。`@maplat/core/common` から `sanitizeIiifHtml`・型 `MapMetaIiif`・型ガード `isIiifMetadataEntry` を import できる。`iiif.copiedMetadata` の形の合わない要素は、地図ごとに 1 回警告して外す
+
+### Changed
+- 範囲外の POI が背面の地図に見えるようになった。古地図の紙の外にある POI は背面の `marker` 層にメルカトルの座標で立ち、TMS・基本地図では前面に立つ。範囲外の POI を選んでいる間は中心を紙の内側へ引き戻さず、背面のピンは紙の外の点でだけ押せる
+- `MaplatApp` の起動時だけ効くフィールド（`appid`・`enableCache`・`noRotate`・`alwaysGpsOn`・`overlay`・`googleApiKey`・`restoreSession`・`initialRestore`・`uiHooks` など）への構築後の代入は、警告して無視する（読み取りは従来どおり）
+- `MaplatApp` が設定ファイルの機能系キー（`noRotate`・`northUp`・`tapDuration`・`tapUIVanish`・`homeMarginPixels`・`controls`）を読むと、次のメジャー版（2.0）で廃止する旨を 1 回警告する。`<maplat-app>` はこれらを設定ファイルから読まない（属性・プロパティで与える）
+
+### Deprecated
+- `MaplatApp` クラスの API（`new MaplatApp(appOption)`・`createObject`・`waitReady`・`mapObject`・`appOption.div` など）。1.x では従来どおり使えるが、削除予定のメジャー **2.0**（次のメジャー版）で閉じ、`<maplat-app>` だけになる。移行の対応表は `docs/api/maplat-app.md`
+  - 型定義の JSDoc に `@deprecated` を付けた。また、利用者がこのクラスを直接作ると（`new MaplatApp`・`createObject`）、同じページの中で 1 回だけ `console.warn` で告知する。`<maplat-app>` が中で作る分と、旧 UI API（`@maplat/ui` の `MaplatUi`）から使う分では告知しない
+
+### Removed
+- POI の `poiTemplate`・`iconTemplate` を lodash.template で評価するのをやめ、Nunjucks の記法（Quyuan の `@c4h/quyuan/template`）で評価するようにした。依存 `lodash.template` を外した（#93）
+  - 理由: lodash.template はテンプレートの中身を JavaScript としてそのまま実行するため、地図データや POI データに書かれたテンプレートからページの権限でコードが動いた。利用がほとんど無いため、予告の期間を置かずに外した
+  - 旧い記法の検出: テンプレート（`{% raw %}…{% endraw %}`・`{% verbatim %}…{% endverbatim %}` の中を除く）に `<%`…`%>` または `${`…`}` があれば旧い記法とみなし、評価せずにそのテンプレートは無いものとして扱い、ページで 1 回だけ `console.warn` で知らせる。`<%`・`${` を文字として出したいときは `{% raw %}…{% endraw %}` で囲む
+  - 書き換え: `<%- name %>` → `{{ name }}`、`<%= html %>` → `{{ html | safe }}`、`${name}` → `{{ name }}`、`<% if (a) { %>…<% } %>` → `{% if a %}…{% endif %}`、`<% list.forEach(x => { %>…<% }) %>` → `{% for x in list %}…{% endfor %}`。`iconTemplate` は JSON を作るので、文字列の値は `"icon": {{ url | dump | safe }}` と書く（`"{{ url }}"` は `&` などを HTML の形に置き換える）。対応表は `docs/api/maplat-app.md` を参照
+  - `{{ }}` は既定で HTML エスケープする（lodash の `<%= %>` はしなかった）。テンプレートの誤りや存在しない値で地図の描画が止まらなくなった（存在しない値は空文字）
+  - 検出に当たらないまま表示が変わる場合が 1 つだけある: lodash の記法を含まず、`{{ }}`・`{% %}` を文字として書いていたテンプレートは、1.3 から Nunjucks として評価される
+
+### Security
+- 状態 URL や `localStorage` から来る地図 ID・層 ID の引き当てを、自分の鍵（`Object.hasOwn`）だけに限った。存在しない ID は、継承した名前でも今までの未知の ID と同じ扱いになり、起動や以後の地図の切り替えに影響しない。公開メソッドの `addMarker`・`clearMarker` に渡す層 ID も同じ
+- 地図 ID は文字列だけを受ける（公開の型のとおり）。地図の設定の `mapID: 5` のような数値の ID を `changeMap(5)`・`mapInfo(5)`・`startFrom: 5` のように数値のまま渡しても引き当たらない。文字列（`"5"`）で渡す
+- 上記により、`poiTemplate`・`iconTemplate` の値（POI の名前・説明など）からの注入は起きにくくなった。ただし **Nunjucks もサンドボックスではない**: テンプレートの文字列そのものを第三者が書ける構成（第三者の POI JSON・地図 JSON を読む構成）では、引き続きページの権限でコードが動きうる。そのような構成では、信頼できないデータのテンプレートを使わないこと
+- `sanitizeHtml` が残す `qy-swiper-slide` の属性は、要素を限った検査で POI の `media` と同じ選別（名前の許可表・URL の検査・テキスト化）を通す。ほかの要素にはこれらの属性を残さない
+
 ## [1.2.0] - 2026-11-02
 
 1.2.0-rc.1 と同じ内容の正式版です（版番号と、内部依存の指定を RC から正式版（^1.1.1）へ戻したことだけが違います）。変更点は 1.2.0-rc.1 までの各項を参照してください。

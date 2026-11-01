@@ -1,0 +1,36 @@
+{
+  "region": "niigata",
+  "mapPois": [],
+  "appPois": [
+    {
+      "name": "日和山展望台",
+      "lat": 37.9337132,
+      "lng": 139.0433846,
+      "desc": "船乗りが空模様（日和）を見た日和山に建つ展望台。1920 年の新潟市圖にも「日和山」が描かれている。",
+      "source": "日和山展望台／OpenStreetMap https://www.openstreetmap.org/（2026-10-28 照合）",
+      "verify": {
+        "area": "point",
+        "checkedAt": "2026-10-28",
+        "sources": [
+          {
+            "src": "osm",
+            "query": "日和山展望台",
+            "coord": [
+              139.0433846,
+              37.9337132
+            ],
+            "distanceM": 0,
+            "fetchedAt": "2026-10-28T09:12:00Z"
+          }
+        ]
+      }
+    }
+  ],
+  "appLines": [],
+  "mapLines": [],
+  "demoOps": {
+    "addPoi": [],
+    "movePoi": [],
+    "addVector": []
+  }
+}

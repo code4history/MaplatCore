@@ -1,0 +1,121 @@
+{
+  "@context": "http://iiif.io/api/presentation/3/context.json",
+  "id": "https://iiif.example.test/manifest/sample-map/manifest.json",
+  "type": "Manifest",
+  "label": {
+    "en": ["Sample Town Map"],
+    "ja": ["見本町全図", "附 町名索引"]
+  },
+  "summary": {
+    "en": ["A <b>hand-written</b> sample map used only for tests."],
+    "ja": ["試験のためだけに作った<b>見本</b>の地図。"]
+  },
+  "requiredStatement": {
+    "label": { "en": ["Attribution"], "ja": ["帰属"] },
+    "value": {
+      "en": ["Sample Library", "<a href=\"https://iiif.example.test/library\">Sample Library Online</a>"],
+      "ja": ["見本図書館"]
+    }
+  },
+  "rights": "http://creativecommons.org/licenses/by-sa/4.0/",
+  "provider": [
+    {
+      "id": "https://iiif.example.test/library",
+      "type": "Agent",
+      "label": { "en": ["Sample Library"], "ja": ["見本図書館"] }
+    }
+  ],
+  "metadata": [
+    {
+      "label": { "en": ["Creator"], "ja": ["作者"] },
+      "value": { "none": ["Sample Surveyor"] }
+    },
+    {
+      "label": { "en": ["Date"], "ja": ["年代"] },
+      "value": { "en": ["1901"], "ja": ["明治34年", "1901年"] }
+    },
+    {
+      "label": { "en": ["Note"] },
+      "value": { "en": ["See <i>the index</i>."] }
+    }
+  ],
+  "items": [
+    {
+      "id": "https://iiif.example.test/manifest/sample-map/canvas/1",
+      "type": "Canvas",
+      "label": { "none": ["1"] },
+      "width": 4000,
+      "height": 3000,
+      "items": [
+        {
+          "id": "https://iiif.example.test/manifest/sample-map/page/1",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "https://iiif.example.test/manifest/sample-map/annotation/1",
+              "type": "Annotation",
+              "motivation": "painting",
+              "target": "https://iiif.example.test/manifest/sample-map/canvas/1",
+              "body": {
+                "id": "https://iiif.example.test/image/sample-map-1/full/max/0/default.jpg",
+                "type": "Image",
+                "format": "image/jpeg",
+                "width": 4000,
+                "height": 3000,
+                "service": [
+                  {
+                    "id": "https://iiif.example.test/image/sample-map-1",
+                    "type": "ImageService3",
+                    "profile": "level1"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "https://iiif.example.test/manifest/sample-map/canvas/2",
+      "type": "Canvas",
+      "label": { "en": ["Index sheet"], "ja": ["索引図"] },
+      "summary": { "en": ["The index sheet of the sample map."] },
+      "metadata": [
+        {
+          "label": { "en": ["Sheet"] },
+          "value": { "en": ["Index"] }
+        }
+      ],
+      "width": 2000,
+      "height": 1500,
+      "items": [
+        {
+          "id": "https://iiif.example.test/manifest/sample-map/page/2",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "https://iiif.example.test/manifest/sample-map/annotation/2",
+              "type": "Annotation",
+              "motivation": "painting",
+              "target": "https://iiif.example.test/manifest/sample-map/canvas/2",
+              "body": {
+                "id": "https://iiif.example.test/image/sample-map-2/full/max/0/default.jpg",
+                "type": "Image",
+                "format": "image/jpeg",
+                "width": 2000,
+                "height": 1500,
+                "service": [
+                  {
+                    "id": "https://iiif.example.test/image/sample-map-2",
+                    "type": "ImageService3",
+                    "profile": "level1"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

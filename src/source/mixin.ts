@@ -18,6 +18,7 @@ import {
   normalizePoi
 } from "../normalize_pois";
 import { normalizeArg } from "../functions";
+import { ownEntry } from "../own-lookup";
 import {
   polygon,
   lineString,
@@ -27,6 +28,13 @@ import {
 } from "@turf/turf";
 import type { Feature, Polygon, GeoJsonProperties } from "geojson";
 import { View as mlView } from "../view_ex";
+import { META_KEYS, META_KEYS_OPTION } from "../meta_keys";
+import { isIiifMetadataEntry } from "../element_contract";
+import type {
+  IiifBindings,
+  IiifMetadataDisplay,
+  MaplatIiifSection
+} from "../iiif/manifest";
 
 //type SourceConstructor<T> = new (...args: any[]) => T;
 type SourceConstructor<T = object> = new (...args: any[]) => T;
@@ -45,6 +53,50 @@ export type CrossCoordinatesArray = [
   Coordinate[], // Coordinates of center and around 4 points
   Size? // size
 ];
+
+function isPlainObject(value: unknown): value is Record<string, any> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/**
+ * 地図データの iiif 節から、形の正しい項目だけを控える。
+ * オブジェクトでなければ控えない（undefined）。manifest・canvas・image・copiedAt は文字列のときだけ、
+ * bindings・copiedValues はオブジェクトのときだけ、copiedMetadata は配列のときだけ残す。
+ * copiedMetadata は要素の形（isIiifMetadataEntry）に合うものだけを順に残し、外した要素があれば
+ * mapID を渡された呼び出し（initialize）で 1 回だけ警告する。
+ */
+export function normalizeIiifSection(
+  value: unknown,
+  mapID?: string
+): MaplatIiifSection | undefined {
+  if (!isPlainObject(value)) return undefined;
+  const section: MaplatIiifSection = {};
+  if (typeof value.manifest === "string") section.manifest = value.manifest;
+  if (typeof value.canvas === "string") section.canvas = value.canvas;
+  if (typeof value.image === "string") section.image = value.image;
+  if (typeof value.copiedAt === "string") section.copiedAt = value.copiedAt;
+  if (isPlainObject(value.bindings)) section.bindings = value.bindings as IiifBindings;
+  if (isPlainObject(value.copiedValues)) {
+    section.copiedValues = value.copiedValues as Record<string, Record<string, string>>;
+  }
+  if (Array.isArray(value.copiedMetadata)) {
+    const entries = value.copiedMetadata.filter(isIiifMetadataEntry);
+    const dropped: number = value.copiedMetadata.length - entries.length;
+    // 警告は initialize の 1 回だけ。getMapMeta は mapID を渡さずに同じ検査を通す（二度目の警告を出さない）
+    if (dropped > 0 && mapID !== undefined) {
+      console.warn(
+        `Maplat: ignored ${dropped} malformed entries in iiif.copiedMetadata (mapID: "${mapID}").`
+      );
+    }
+    section.copiedMetadata = entries;
+  }
+  return section;
+}
+
+/** アプリの設定の書誌の表の出し方。all・hidden のときだけ控える */
+export function normalizeIiifMetadataDisplay(value: unknown): IiifMetadataDisplay | undefined {
+  return value === "all" || value === "hidden" ? value : undefined;
+}
 
 export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) {
   abstract class Mixin extends Base {
@@ -75,6 +127,10 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
     mercatorYShift = 0;
     icon?: string;
     selectedIcon?: string;
+    /** 地図データの iiif 節（IIIF の書誌の写し） */
+    iiif?: MaplatIiifSection;
+    /** アプリの設定で選んだ、書誌の表の出し方 */
+    iiifMetadataDisplay?: IiifMetadataDisplay;
     static isBasemap_ = false;
     static isWmts_ = true;
     static isMapbox_ = false;
@@ -96,6 +152,9 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
       this.mercatorXShift = options.mercatorXShift;
       this.mercatorYShift = options.mercatorYShift;
       this.weiwudi = options.weiwudi;
+      // IIIF の書誌は取得しない。地図データに書かれた値（とアプリの設定の出し方）を控えるだけ
+      this.iiif = normalizeIiifSection(options.iiif, this.mapID);
+      this.iiifMetadataDisplay = normalizeIiifMetadataDisplay(options.iiifMetadata);
       if (options.envelopeLngLats) {
         const lngLats = options.envelopeLngLats;
         const mercs = lngLats.map((lnglat: Coordinate) =>
@@ -190,7 +249,14 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
     async getTileCacheStatsAsync() {
       if (!this.weiwudi) return {};
       try {
-        return await this.weiwudi.stats();
+        const stats = await this.weiwudi.stats();
+        // 全タイル数 total を含める。Weiwudi の stats は登録時に total が分かった
+        // ときだけ載せるので、無ければ Weiwudi のインスタンスの totalTile（旧 UI が直接読んでいた値）で補う
+        const totalTile = (this.weiwudi as any).totalTile;
+        if (stats && typeof stats === "object" && stats.total == null && typeof totalTile === "number") {
+          return { ...stats, total: totalTile };
+        }
+        return stats;
       } catch (_e) {
         return {};
       }
@@ -456,9 +522,10 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
       if (!clusterId) {
         clusterId = "main";
       }
-      if (this.pois[clusterId]) {
+      const cluster = ownEntry<any>(this.pois, clusterId);
+      if (cluster) {
         data = normalizePoi(data);
-        this.pois[clusterId]["pois"].push(data);
+        cluster["pois"].push(data);
         addIdToPoi(this.pois, clusterId, {
           name: this.officialTitle || this.title,
           namespace: this.mapID
@@ -487,8 +554,9 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
         Object.keys(this.pois).map(key => {
           this.pois[key]["pois"] = [];
         });
-      } else if (this.pois[clusterId]) {
-        this.pois[clusterId]["pois"] = [];
+      } else {
+        const cluster = ownEntry<any>(this.pois, clusterId);
+        if (cluster) cluster["pois"] = [];
       }
     }
 
@@ -511,7 +579,7 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
     }
 
     getPoiLayer(id: string) {
-      return this.pois[id];
+      return ownEntry<any>(this.pois, id);
     }
 
     addPoiLayer(id: string, data: any) {
@@ -819,41 +887,10 @@ export function setCustomFunctionMaplat<TBase extends SourceConstructor>(Base: T
   return Mixin;
 }
 
-export const META_KEYS = [
-  "title",
-  "officialTitle",
-  "author",
-  "createdAt",
-  "era",
-  "contributor",
-  "mapper",
-  "license",
-  "dataLicense",
-  // m6-t2: ライセンスの自由記述欄。META_KEYS_OPTION と lockstep (同じ index) で足す。
-  "licenseNote",
-  "dataLicenseNote",
-  "attr",
-  "dataAttr",
-  "reference",
-  "description"
-];
-export const META_KEYS_OPTION = [
-  "title",
-  "official_title",
-  "author",
-  "created_at",
-  "era",
-  "contributor",
-  "mapper",
-  "license",
-  "data_license",
-  "license_note",
-  "data_license_note",
-  "attr",
-  "data_attr",
-  "reference",
-  "description"
-];
+
+// META_KEYS / META_KEYS_OPTION の正本は src/meta_keys.ts（@maplat/core/common の分割で移した）。
+// 従来の import 元（"./source/mixin"）を壊さないよう、ここから再 export する。
+export { META_KEYS, META_KEYS_OPTION };
 
 // m6-t6 hotfix → m6-t9 (§3.1 AC2): provider（google/mapbox/maplibre）は Maplat 同梱タイルの
 // テンプレート url を持たない。自動補完はもちろん、data.url に手動値が残っていた場合でも

@@ -8,6 +8,11 @@ import { GoogleMap } from "./source/googlemap";
 import { HistMap } from "./source/histmap";
 import { HistMap_tin } from "./source/histmap_tin";
 import { isProviderMapType } from "./source/mixin";
+import {
+  applyIiifTileUrlFunction,
+  prepareIiifOptions,
+  wantsIiifDelivery
+} from "./iiif/delivery";
 import "whatwg-fetch";
 
 export type MaplatSource = HistMap | NowMap | GoogleMap;
@@ -180,7 +185,17 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
     return obj;
   } else if (options.noload) {
     options.mercMaxZoom = options.mercMinZoom = undefined;
-    return new HistMap_tin(options);
+    // IIIF Image の地図だけ、URL の関数を解決してから作る（それ以外は await を挟まない）
+    const iiifNoload = wantsIiifDelivery(options);
+    if (iiifNoload) {
+      await prepareIiifOptions(options, {
+        width: options.width,
+        height: options.height
+      });
+    }
+    const obj = new HistMap_tin(options);
+    if (iiifNoload) applyIiifTileUrlFunction(obj, options);
+    return obj;
   }
 
 
@@ -251,7 +266,9 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
   delete options.homePos;
   delete options.defZoom;
   if (!options.imageExtension) options.imageExtension = "jpg";
-  if (options.mapID && !options.url && !options.urls) {
+  // IIIF Image の地図は tiles/<mapID>/... の url を補わない（delivery の URL を使う）
+  const iiifMap = wantsIiifDelivery(options);
+  if (!iiifMap && options.mapID && !options.url && !options.urls) {
     options.url = `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtension}`;
   }
   if (!options.compiled || !options.compiled.wh) {
@@ -262,12 +279,19 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
   }
   options.width = options.width || options.compiled.wh[0];
   options.height = options.height || options.compiled.wh[1];
+  if (iiifMap) {
+    await prepareIiifOptions(options, {
+      width: options.compiled.wh[0],
+      height: options.compiled.wh[1]
+    });
+  }
   options.weiwudi = await registerMapToSW(options);
   if (options.weiwudi) {
     options.url = options.weiwudi.url;
     delete options.urls;
   }
   const obj = await HistMap_tin.createAsync(options);
+  applyIiifTileUrlFunction(obj, options);
   await obj.initialWait;
   // setupMapParameter uses callback pattern, wrap it in Promise
   await new Promise<void>((resolve) => {
@@ -279,7 +303,8 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
 export async function registerMapToSW(options: any) {
   const setting: any = {};
   // #90: 地図ごとの noCache で Weiwudi への登録を外す。設定ファイルは JSON なので真偽値で書ける ∴ "true" 等の文字列は真とみなさない（=== true）
-  if (options.maptype === "mapbox" || options.maptype === "maplibre" || options.maptype === "google" || !options.enableCache || options.noCache === true) return;
+  // IIIF Image の地図は URL の関数を配信ごとに作り直すので、キャッシュの層を通さない
+  if (options.maptype === "mapbox" || options.maptype === "maplibre" || options.maptype === "google" || !options.enableCache || options.noCache === true || options.delivery?.type === "iiifImage") return;
   else if (options.maptype === "base" || options.maptype === "overlay")
     setting.type = "wmts";
   else setting.type = "xyz";

@@ -1,4 +1,10 @@
 import { Feature, Map } from 'ol';
+import { Style } from 'ol/style';
+/**
+ * ピンの Style を icon（画像の URL・Icon の設定・Style）から作る。
+ * 前面と背面でピンの見た目を 1 つの規則に保つため、setMarker と範囲外の描画が共有する。
+ */
+export declare function markerStyleFrom(icon: any): Style;
 export declare class MaplatMap extends Map {
     fakeGps: any;
     fakeRadius: any;

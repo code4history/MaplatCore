@@ -29,7 +29,9 @@ interface ClientPoint {
 const MAPBOX_TOKEN =
   process.env.MAPBOX_TOKEN ||
   'pk.eyJ1IjoicmVraXNoaWtva3VkbyIsImEiOiJjazRoMmF3dncwODU2M2ttdzI2aDVqYXVwIn0.8Hb9sekgjfck6Setxk5uVg';
-const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY || 'AIzaSyB0v_F9EVPbE7R2uOm6Mixrtzts21DEICc';
+// Google のキーが無くてもこの試験は通る（Google の地図に切り替えない）。
+// 手元で Google の地図を確かめるときだけ環境変数で渡す。
+const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY ?? '';
 const TEST_PAGE =
   `/e2e/test.html?mapboxgl=false` +
   `&mapboxToken=${encodeURIComponent(MAPBOX_TOKEN)}` +

@@ -4,6 +4,17 @@
 // 地域内コンテンツ切り替え UI（地図セレクタ・POI・線・面・視点・透過・GPS）・出典表示。
 // Core 本体（公開ライブラリ）の公開 API だけを使う（Pro 専用 API・Core 専用 export を import しない）。
 import { MaplatApp, sanitizeHtml } from "../src/index.ts"; // 開発時。build:demo でバンドル
+// テンプレートの警告（ページで 1 回）の記憶を戻す。公開面ではないが、記法のプリセットを切り替えるたびに
+// 警告を出し直して見せるため、デモの中だけで使う（製品の挙動は変えない）
+import { resetTemplateWarnings } from "../src/template_works";
+// 範囲外の POI の判定（classifyMarker）と描く層（outsideMarkerLayer）を節の表に出すため。
+// 公開面ではないが、デモだけが読む（製品の挙動は変えない）
+import { classifyMarker, outsideMarkerLayer } from "../src/outside_pois";
+// IIIF の書誌の節（デモだけの処理）: 解決器・サニタイザをそのまま使い、資料はテストと同じもの（spec/fixtures/iiif/）を読む
+import { type IiifBindings, type IiifMetadataEntry, compareIiifCopy, listIiifCanvases, proposeIiifBindings, resolveIiifMetadata } from "../src/iiif/manifest.ts";
+import { sanitizeIiifHtml } from "../src/sanitize.ts";
+import NDL_MANIFEST from "../spec/fixtures/iiif/ndl-948741.manifest.json";
+import V3_MANIFEST from "../spec/fixtures/iiif/presentation-v3-minimal.manifest.json";
 import { REGION_IDS, REGION_META } from "./regions";
 import type { AppSetting, DemoOps, LineItem, LineKind, MapLineItem, MapPoi, Poi, RegionContent, RegionId, VectorItem } from "./regions";
 
@@ -64,20 +75,173 @@ const ERA_ICONS = {
   unknown: dotPin("#6b7280", "#fff")
 };
 // iconTemplate は POI の属性を受けて {"icon": …} の JSON を返す（Core の createIconSet が JSON.parse する）。
-// start が無い POI は「年代なし」。アイコンの文字列は JSON.stringify で埋めてから、テンプレートでも JSON.stringify して出す
+// 記法は Nunjucks（@maplat/core 1.3 から）。start が無い POI は「年代なし」。
+// アイコンの文字列は JSON.stringify で Nunjucks の文字列リテラルとして埋め、出力では dump | safe で JSON の文字列にする
 const ERA_ICON_TEMPLATE =
-  `<% var eraIcon = typeof start === "number" ? (start < 1600 ? ${JSON.stringify(ERA_ICONS.early)} : ` +
-  `start < 1868 ? ${JSON.stringify(ERA_ICONS.edo)} : ${JSON.stringify(ERA_ICONS.modern)}) : ${JSON.stringify(ERA_ICONS.unknown)}; %>` +
-  `{"icon":<%= JSON.stringify(eraIcon) %>}`;
-// poiTemplate（Issue #37 の 4）: clickMarker の detail.html の元。値は <%- %> で escape し、表示の前に sanitizeHtml を通す
+  `{% if start is number %}{% if start < 1600 %}{% set eraIcon = ${JSON.stringify(ERA_ICONS.early)} %}` +
+  `{% elif start < 1868 %}{% set eraIcon = ${JSON.stringify(ERA_ICONS.edo)} %}` +
+  `{% else %}{% set eraIcon = ${JSON.stringify(ERA_ICONS.modern)} %}{% endif %}` +
+  `{% else %}{% set eraIcon = ${JSON.stringify(ERA_ICONS.unknown)} %}{% endif %}` +
+  `{"icon": {{ eraIcon | dump | safe }}}`;
+// poiTemplate（Issue #37 の 4）: clickMarker の detail.html の元。{{ }} は HTML エスケープし、表示の前に sanitizeHtml を通す
 const POI_TEMPLATE =
-  '<div class="demo-poi-html"><strong><%- typeof name === "string" ? name : (name && (name.ja || name.en)) || "" %></strong>' +
-  '<% if (typeof desc === "string" && desc) { %><p><%- desc %></p><% } %></div>';
+  '<div class="demo-poi-html"><strong>{{ name if name is string else (name.ja or name.en or "") }}</strong>' +
+  '{% if desc is string and desc %}<p>{{ desc }}</p>{% endif %}</div>';
+
+// poiTemplate の記法のプリセット（新しい記法・旧い記法・書き誤り・| safe の有無）。
+// 旧い記法（lodash.template）は 1.3 から評価されず、ページで 1 回だけ console.warn が出る
+const TEMPLATE_PRESETS: { id: string; label: string; template: string }[] = [
+  { id: "nunjucks", label: "(a) 新しい記法", template: POI_TEMPLATE },
+  {
+    id: "legacy",
+    label: "(b) 旧い記法",
+    template:
+      '<div class="demo-poi-html"><strong><%- typeof name === "string" ? name : (name && (name.ja || name.en)) || "" %></strong>' +
+      '<% if (typeof desc === "string" && desc) { %><p><%- desc %></p><% } %></div>'
+  },
+  { id: "broken", label: "(c) 書き誤り", template: '<div class="demo-poi-html"><strong>{{ name }</strong></div>' },
+  {
+    id: "safe",
+    label: "(d) | safe の有無",
+    template:
+      '<div class="demo-poi-html"><p>{{ "{{ name }}" }}: {{ name if name is string else name.ja }}</p>' +
+      '<p>{{ "{{ name | safe }}" }}: {{ (name if name is string else name.ja) | safe }}</p></div>'
+  }
+];
+const TEMPLATE_LAYER = "template_demo";
+
+// sanitizeHtml の入出力のプリセット（許される qy-swiper と、危険な属性）。
+// (a) 相対 URL・caption に <i>・has-thumb が残る（caption はテキストになる）。
+// (b) javascript: の URL・onerror・style・<cc-swiper>・<div image-url> だけが消える
+const SANITIZE_PRESETS = [
+  {
+    id: "qy-allowed",
+    label: "許される qy-swiper",
+    html: '<qy-swiper has-thumb><qy-swiper-slide image-url="img/a.jpg" image-type="image" caption="&lt;i&gt;六百遠忌&lt;/i&gt;報恩塔" fit-to-container></qy-swiper-slide></qy-swiper>'
+  },
+  {
+    id: "qy-dangerous",
+    label: "危険な属性",
+    html: '<qy-swiper style="color:red" onclick="alert(1)"><qy-swiper-slide image-url="javascript:alert(1)" image-type="image" onerror="alert(1)" caption="c"></qy-swiper-slide></qy-swiper><cc-swiper><cc-swiper-slide image-url="a.jpg">cc-swiper の中の文字</cc-swiper-slide></cc-swiper><div image-url="a.jpg">div の中の文字</div>'
+  }
+] as const;
+
+// ---- IIIF の書誌の節（デモだけの処理）----
+// 「関数を試す」で使う Manifest の資料。テストと同じ資料を読む（ネットワークに出ない）。
+// canvas の既定は、地図の画像に使う 1 枚（国立国会図書館は表紙の次の 3 枚目、手書きの見本は 2 枚目）
+const IIIF_TRY_SOURCES = [
+  {
+    id: "ndl",
+    label: "国立国会図書館の Manifest（版 2）",
+    manifest: NDL_MANIFEST as unknown,
+    canvas: "https://dl.ndl.go.jp/api/iiif/948741/canvas/3"
+  },
+  {
+    id: "v3",
+    label: "手書きの Manifest（版 3）",
+    manifest: V3_MANIFEST as unknown,
+    canvas: "https://iiif.example.test/manifest/sample-map/canvas/2"
+  }
+];
+
+// 悪い値の Manifest（デモの中だけの手書き。外部のサーバーから来た値の見え方を見せる）
+const IIIF_BAD_MANIFEST = {
+  "@context": "http://iiif.io/api/presentation/3/context.json",
+  id: "https://iiif.example.test/bad/manifest.json",
+  type: "Manifest",
+  label: { none: ["悪い値の見本"] },
+  summary: {
+    none: [
+      '値の中の<img src="x" onerror="alert(1)">画像と、<script>alert(1)</script>実行のタグ。',
+      '<a href="javascript:alert(1)">javascript のリンク</a>と<a href="https://example.org/">https のリンク</a>。'
+    ]
+  },
+  requiredStatement: {
+    label: { none: ["帰属"] },
+    value: { none: ['<b>見本</b>の提供元<img src="x" onerror="alert(1)">'] }
+  },
+  metadata: [
+    { label: { none: ["画像"] }, value: { none: ['<img src="x" onerror="alert(1)">'] } },
+    {
+      label: { none: ["表"] },
+      value: { none: ["<table><thead><tr><th>見出し</th></tr></thead><tbody><tr><td>セル</td></tr></tbody></table>"] }
+    },
+    {
+      label: { none: ["リンク"] },
+      value: {
+        none: [
+          '<a href="https://example.org/">https のリンク</a>／<a href="mailto:test@example.org">mailto のリンク</a>／<a href="javascript:alert(1)">javascript のリンク</a>'
+        ]
+      }
+    }
+  ],
+  items: []
+};
+const IIIF_BAD_BINDINGS: IiifBindings = {
+  title: { from: "manifest", property: "label" },
+  attr: { from: "manifest", property: "requiredStatement" },
+  description: { from: "manifest", property: "summary" }
+};
+// HTML として入る鍵（出す場所では sanitizeIiifHtml を通す。それ以外の鍵は文字として textContent で出す）
+const IIIF_HTML_KEYS = new Set(["attr", "dataAttr", "description", "contributor"]);
 
 // ベースマップ（gsi / osm）の表示名。地図の id 自体は app 設定の sources（bare string）から得る。
 const BASEMAP_LABEL: Record<string, string> = {
   gsi: "地理院地図",
   osm: "OpenStreetMap"
+};
+
+// テンプレートの警告（Core の console.warn）を、デモの「テンプレートの警告」欄へ写す（デモだけの処理）
+let templateWarningSink: ((message: string) => void) | undefined;
+const originalWarn = console.warn.bind(console);
+console.warn = (...args: unknown[]): void => {
+  originalWarn(...args);
+  const first = args[0];
+  if (typeof first === "string" && first.startsWith("MaplatApp: ") && first.includes("poiTemplate/iconTemplate")) {
+    templateWarningSink?.(first);
+  }
+};
+
+// ---- 画像の配信の節（デモだけの処理。製品の挙動は変えない）----
+// IIIF の地図が使えないときに Core が出す console.error を控える（起動の前に仕掛ける）
+const unusableMessages: string[] = [];
+const originalError = console.error.bind(console);
+console.error = (...args: unknown[]): void => {
+  originalError(...args);
+  const first = args[0];
+  if (typeof first === "string" && first.includes("is not usable")) unusableMessages.push(first);
+};
+
+// 直近のタイルの要求（PerformanceObserver の resource を読む）。1 ページで 1 つだけ仕掛ける
+const TILE_REQUEST_MAX = 8;
+const tileRequests: string[] = [];
+let tileRequestSink: ((list: string[]) => void) | undefined;
+let tileRequestObserver: PerformanceObserver | undefined;
+// 地図のタイルは画像（IIIF の切り出しは .jpg、手元のタイルは .jpg、地理院地図・OSM は .png）
+// 背面のベースマップ（OSM・地理院地図）のタイルは一覧に入れない（古地図の画像の出どころを見せる節なので）
+const BASEMAP_TILE_HOST = /(?:^|\.)(?:tile\.openstreetmap\.org|cyberjapandata\.gsi\.go\.jp)$/i;
+const isTileResource = (url: string): boolean => {
+  if (!/\.(?:jpe?g|png|webp)(?:$|\?)/i.test(url)) return false;
+  try {
+    return !BASEMAP_TILE_HOST.test(new URL(url).hostname);
+  } catch {
+    return false;
+  }
+};
+const pushTileRequest = (url: string): void => {
+  if (!isTileResource(url)) return;
+  tileRequests.unshift(url);
+  if (tileRequests.length > TILE_REQUEST_MAX) tileRequests.length = TILE_REQUEST_MAX;
+  tileRequestSink?.([...tileRequests]);
+};
+const startTileRequestObserver = (): void => {
+  if (tileRequestObserver || typeof PerformanceObserver === "undefined") return;
+  // 節を作る前の要求を 1 度だけ拾い、その後に observer を仕掛ける（同じ要求を二重に数えない）
+  for (const entry of performance.getEntriesByType("resource")) pushTileRequest(entry.name);
+  tileRequestObserver = new PerformanceObserver((list) => {
+    for (const entry of list.getEntries()) pushTileRequest(entry.name);
+  });
+  tileRequestObserver.observe({ type: "resource" });
 };
 
 /** URL の ?region= を REGION_IDS で検証する。無い・未知なら先頭 */
@@ -100,6 +264,16 @@ function i18n(value: string | { ja?: string; en?: string } | undefined): string 
   return value[pageLang()] ?? value.ja ?? value.en ?? "";
 }
 
+/** IIIF の書誌の値から表示用文字列を得る（ページ言語優先。言語を持たない値（none）も拾う） */
+function localizedText(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (value && typeof value === "object") {
+    const table = value as Record<string, string>;
+    return table[pageLang()] ?? table.ja ?? table.en ?? table.none ?? Object.values(table)[0] ?? "";
+  }
+  return "";
+}
+
 /** 要素取得（無ければ例外） */
 function byId<T extends HTMLElement = HTMLElement>(id: string): T {
   const el = document.getElementById(id);
@@ -114,6 +288,215 @@ function makeButton(label: string, onClick: () => void): HTMLButtonElement {
   btn.textContent = label;
   btn.addEventListener("click", onClick);
   return btn;
+}
+
+// ---- 範囲外の POI（古地図の紙の外にある POI を背面の地理の地図に立てる）----
+// 操作パネルの節を 1 つ作る。既存の節（POI・線・面・視点・GPS）とは別の関数にまとめる。
+// 表には classifyMarker の結果（範囲内／範囲外）と outsideMarkerLayer の結果（前面／背面）を
+// textContent で出す。素材の JSON は変えず、紙の外の POI が 2 件未満ならデモの中で点を足す。
+interface OutsidePoiEntry {
+  /** addMarker が返した id（selectMarker に渡す） */
+  id: string;
+  /** その POI のデータ（classifyMarker に渡す） */
+  data: any;
+  /** 地図用 POI のときだけ（その地図のときだけ表に出す） */
+  mapID?: string;
+}
+
+interface OutsidePoiSectionCtx {
+  makeSection: (title: string) => { sec: HTMLElement; row: () => HTMLDivElement };
+  mountSection: (s: { sec: HTMLElement; row: () => HTMLDivElement }) => void;
+  /** 地図の節の透過度の表示も合わせる */
+  setTransparency: (value: number) => void;
+  /** POI の節の「選択中の POI」のチェックも合わせる */
+  onSelected: (id: string | undefined) => void;
+  entries: OutsidePoiEntry[];
+  /** 範囲外の POI を載せる層（アプリ用 POI の層） */
+  layerID: string;
+  homePosition: [number, number];
+}
+
+function mountOutsidePoiSection(app: MaplatApp, ctx: OutsidePoiSectionCtx): void {
+  const { makeSection, mountSection, entries, layerID } = ctx;
+  const sec = makeSection("範囲外の POI");
+  const note = document.createElement("p");
+  note.className = "demo-note";
+  note.textContent = "前者は紙の外の地理の地図の上にピンが立ち、後者は立たない";
+  sec.sec.appendChild(note);
+
+  const table = document.createElement("table");
+  table.id = "outside-poi-table";
+  table.className = "demo-outside-table";
+  table.style.cssText = "border-collapse:collapse;width:100%;font-size:11px;";
+  sec.sec.appendChild(table);
+
+  const status = document.createElement("p");
+  status.className = "demo-note";
+  status.id = "outside-poi-status";
+  status.textContent = "";
+  sec.sec.appendChild(status);
+
+  // 範囲外のピンを押したときは、吹き出しの代わりに clickMarker の内容をこの節に出す
+  app.addEventListener("clickMarker", (evt) => {
+    const data = (evt as unknown as { detail?: Record<string, unknown> }).detail;
+    if (!data) return;
+    const name = i18n(data.name as string | { ja?: string; en?: string });
+    const desc = typeof data.desc === "string" && data.desc ? ` — ${data.desc}` : "";
+    status.textContent = `clickMarker: ${name}${desc}`;
+  });
+
+  const currentMapID = (): string | undefined =>
+    (app.currentMapInfo() as { mapID?: string } | undefined)?.mapID;
+  // その地図に出る POI だけを表に出す（地図用 POI はその地図のときだけ）
+  const visibleEntries = (): OutsidePoiEntry[] =>
+    entries.filter((entry) => entry.mapID === undefined || entry.mapID === currentMapID());
+
+  type Row = { entry: OutsidePoiEntry; classified: Awaited<ReturnType<typeof classifyMarker>> };
+  let rows: Row[] = [];
+  let extrasAdded = false;
+  let seq = 0;
+
+  const classifyRows = async (): Promise<Row[]> =>
+    Promise.all(
+      visibleEntries().map(async (entry) => ({ entry, classified: await classifyMarker(app, entry.data) }))
+    );
+
+  // 紙の外の POI が 2 件に満たないとき、ホームの周りを少しずつ離して紙の縁の外の点を探し、
+  // addMarker で足す（素材の JSON は変えない）。見つかった点は表にも出す
+  const addExtras = async (outsideCount: number): Promise<void> => {
+    if (extrasAdded || outsideCount >= 2) return;
+    extrasAdded = true;
+    if (!app.getPoiLayer(layerID)) return;
+    const [lng, lat] = ctx.homePosition;
+    const dirs: [number, number][] = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]];
+    const found: [number, number][] = [];
+    for (const step of [0.004, 0.008, 0.02, 0.05]) {
+      for (const [dx, dy] of dirs) {
+        if (outsideCount + found.length >= 2) break;
+        const lnglat: [number, number] = [lng + dx * step, lat + dy * step];
+        const classified = await classifyMarker(app, { lnglat });
+        if (classified.kind !== "outside") continue;
+        if (found.some((p) => p[0] === lnglat[0] && p[1] === lnglat[1])) continue;
+        found.push(lnglat);
+        const data = {
+          name: `範囲外の POI の例 ${found.length}`,
+          desc: "紙の縁から外へ離した点（デモが足した例）",
+          lnglat
+        };
+        const id = app.addMarker(data, layerID) as string;
+        entries.push({ id, data });
+      }
+      if (outsideCount + found.length >= 2) break;
+    }
+  };
+
+  const render = (): void => {
+    const layer = outsideMarkerLayer(app);
+    const header = document.createElement("tr");
+    for (const label of ["POI", "範囲", "描く層"]) {
+      const th = document.createElement("th");
+      th.textContent = label;
+      th.style.cssText = "text-align:left;border-bottom:1px solid #d5d9e2;padding:2px 4px;";
+      header.appendChild(th);
+    }
+    const head = document.createElement("thead");
+    head.appendChild(header);
+    const body = document.createElement("tbody");
+    for (const { entry, classified } of rows) {
+      const tr = document.createElement("tr");
+      tr.dataset.id = entry.id;
+      const name = document.createElement("td");
+      name.textContent = i18n(entry.data.name);
+      const kind = document.createElement("td");
+      kind.textContent =
+        classified.kind === "inside" ? "範囲内" : classified.kind === "outside" ? "範囲外" : "範囲外（画素指定）";
+      const drawn = document.createElement("td");
+      // 範囲内は hide-outside-pois でも前面のまま（描かないのは範囲外だけ）
+      drawn.textContent =
+        classified.kind === "inside"
+          ? "前面"
+          : classified.kind === "skip" || layer === "none"
+            ? "描かない"
+            : layer === "front"
+              ? "前面"
+              : "背面";
+      for (const cell of [name, kind, drawn]) {
+        cell.style.cssText = "border-bottom:1px solid #eef0f4;padding:2px 4px;";
+        tr.appendChild(cell);
+      }
+      body.appendChild(tr);
+    }
+    table.replaceChildren(head, body);
+  };
+
+  const refresh = async (): Promise<void> => {
+    const current = ++seq;
+    try {
+      const first = await classifyRows();
+      if (current !== seq) return;
+      await addExtras(first.filter((row) => row.classified.kind === "outside").length);
+      if (current !== seq) return;
+      rows = await classifyRows();
+      if (current !== seq) return;
+      render();
+    } catch {
+      // 地図の切り替えの途中は座標を写せないことがある。次の機会（mapChanged など）に出す
+    }
+  };
+
+  // (1) 範囲外を出す（既定）と hide-outside-pois（起動後も変えられる既存の口を使う）
+  const shownRow = sec.row();
+  shownRow.appendChild(makeButton("範囲外を出す（既定）", () => {
+    app.applyRuntimeOptions({ hideOutsidePois: false });
+    void refresh();
+  }));
+  shownRow.appendChild(makeButton("hide-outside-pois", () => {
+    app.applyRuntimeOptions({ hideOutsidePois: true });
+    void refresh();
+  }));
+
+  // (2) 透過度 0 と 70（紙に覆われた背面のピンが見えるか）
+  const transparencyRow = sec.row();
+  transparencyRow.appendChild(makeButton("透過度 0", () => {
+    ctx.setTransparency(0);
+    void refresh();
+  }));
+  transparencyRow.appendChild(makeButton("透過度 70", () => {
+    ctx.setTransparency(70);
+    void refresh();
+  }));
+
+  // (3) 範囲外のピンを選ぶ → 選択を外す。(4) 範囲内のピンを選ぶ
+  const selectRow = sec.row();
+  selectRow.appendChild(makeButton("範囲外のピンを選ぶ", () => {
+    const hit = rows.find((row) => row.classified.kind === "outside");
+    if (!hit) {
+      status.textContent = "範囲外の POI がありません";
+      return;
+    }
+    app.selectMarker(hit.entry.id);
+    ctx.onSelected(hit.entry.id);
+    status.textContent = `選択中: ${i18n(hit.entry.data.name)}（中心がそのピンへ寄ります）`;
+  }));
+  selectRow.appendChild(makeButton("選択を外す", () => {
+    app.unselectMarker();
+    ctx.onSelected(undefined);
+    status.textContent = "選択を外しました（中心が紙の縁へ戻ります）";
+  }));
+  selectRow.appendChild(makeButton("範囲内のピンを選ぶ", () => {
+    const hit = rows.find((row) => row.classified.kind === "inside");
+    if (!hit) {
+      status.textContent = "範囲内の POI がありません";
+      return;
+    }
+    app.selectMarker(hit.entry.id);
+    ctx.onSelected(hit.entry.id);
+    status.textContent = `選択中: ${i18n(hit.entry.data.name)}`;
+  }));
+
+  mountSection(sec);
+  app.addEventListener("mapChanged", () => { void refresh(); });
+  void refresh();
 }
 
 async function main(): Promise<void> {
@@ -166,6 +549,26 @@ async function main(): Promise<void> {
 
   // app 設定を明示的に取得（root 起点のページ相対 apps/。検証済みの region だけを使う）
   const setting: AppSetting = await (await fetch(`apps/${region}.json`)).json();
+
+  // この地域の古地図のうち、IIIF の配信（delivery.type === "iiifImage"）を使うもの。
+  // 「IIIF の画像」の節をどの地図で見せるかを決める（デモだけの処理。地図の設定は読むだけ）
+  const iiifMapIDs: string[] = [];
+  // 書誌（iiif 節）を持つ地図。「IIIF の書誌」の節の地図の切り替えに、アプリ設定の順で出す
+  const bibliographyMaps: Array<{ mapID: string; label: string }> = [];
+  for (const source of setting.sources) {
+    if (typeof source === "string") continue;
+    const mapID = (source as { mapID: string }).mapID;
+    try {
+      const map = await (await fetch(`maps/${mapID}.json`)).json();
+      if (map?.delivery?.type === "iiifImage") iiifMapIDs.push(mapID);
+      if (map?.iiif && typeof map.iiif === "object" && !Array.isArray(map.iiif)) {
+        const label = i18n((source as { label?: string | { ja?: string; en?: string } }).label) || mapID;
+        bibliographyMaps.push({ mapID, label });
+      }
+    } catch {
+      // 読めない地図は IIIF として扱わない（節には出さない）
+    }
+  }
 
   // 素材をバンドルから取得（無ければ「欠け」＝ボタンを出さないだけ）
   const loader = CONTENTS[`./content/${region}.json`];
@@ -375,15 +778,20 @@ async function main(): Promise<void> {
       if (!app.getPoiLayer(id)) app.addPoiLayer(id, { name });
     };
     if (appPois.length > 0 || demoOps.addPoi.length > 0) app.addPoiLayer(APP_LAYER, { name: "アプリ用 POI" });
+    // 「範囲外の POI」の節が使う（どの POI が範囲の外か・どの層に描くかを出す）。
+    // 地図用 POI はその地図のときだけ節に出すので、mapID を控える
+    const recordedPois: OutsidePoiEntry[] = [];
     // Core の normalizePoi は渡した POI をその場で書き換えるので、素材は写しで渡す（IR1 Major-1 と同じ理由）
-    for (const poi of appPois) app.addMarker(structuredClone(poi), APP_LAYER);
+    for (const poi of appPois) {
+      recordedPois.push({ id: app.addMarker(structuredClone(poi), APP_LAYER) as string, data: poi });
+    }
     // 地図用 POI は maps の地図ごとに 1 件ずつ写しを載せる。地図ごとの件数はトグルの無効化に使う
     const mapPoiCount = new Map<string, number>();
     for (const poi of mapPois) {
       const { maps, ...data } = poi;
       for (const mapID of maps) {
         if (!app.getPoiLayer(mapLayerId(mapID))) app.addPoiLayer(mapLayerId(mapID), { name: "地図用 POI" });
-        app.addMarker(structuredClone(data), mapLayerId(mapID));
+        recordedPois.push({ id: app.addMarker(structuredClone(data), mapLayerId(mapID)) as string, data, mapID });
         mapPoiCount.set(mapID, (mapPoiCount.get(mapID) ?? 0) + 1);
       }
     }
@@ -396,7 +804,21 @@ async function main(): Promise<void> {
     // nov26-m4-t8: 面は既定で表示（チェック済み）。面の出典（ODbL の表示義務）を出典の領域に textContent で出す
     const activeVectors: VectorItem[] = [...demoOps.addVector];
     const refreshVectorAttr = (): void => {
-      vectorAttr.textContent = activeVectors.map((vec) => `面の出典: ${vec.source}`).join(" ／ ");
+      vectorAttr.textContent = "";
+      activeVectors.forEach((vec, index) => {
+        if (index > 0) vectorAttr.appendChild(document.createTextNode(" ／ "));
+        vectorAttr.appendChild(document.createTextNode(`面の出典: ${vec.source}`));
+        if (!vec.source.startsWith("OpenStreetMap")) return;
+        // OpenStreetMap のデータの表示義務: 著作権表示と copyright ページへのリンク
+        const copyrightLink = document.createElement("a");
+        copyrightLink.href = "https://www.openstreetmap.org/copyright";
+        copyrightLink.target = "_blank";
+        copyrightLink.rel = "noopener";
+        copyrightLink.textContent = "著作権";
+        vectorAttr.appendChild(document.createTextNode(" ／ © OpenStreetMap contributors（"));
+        vectorAttr.appendChild(copyrightLink);
+        vectorAttr.appendChild(document.createTextNode("）"));
+      });
       vectorAttr.style.display = activeVectors.length > 0 ? "" : "none";
     };
     const lineApplies = (line: LineItem | MapLineItem, mapID: string | undefined): boolean => {
@@ -430,6 +852,14 @@ async function main(): Promise<void> {
     oldGroup.label = "古地図";
     const baseGroup = document.createElement("optgroup");
     baseGroup.label = "現代の地図";
+    // 起動のときに使えなかった地図（IIIF の取得に失敗した等）は、一覧で「使えない地図」にする。
+    // 控えは Core の内部ではなく、公開の振る舞いである console.error の文から地図の ID を取る
+    // （文の形: Maplat: IIIF image for map "<mapID>" is not usable: <reason>）
+    const unusableIds = new Set(
+      unusableMessages
+        .map((message) => /map "([^"]+)" is not usable/.exec(message)?.[1])
+        .filter((mapID): mapID is string => !!mapID)
+    );
     for (const source of setting.sources) {
       const isBasemap = typeof source === "string";
       const mapID = isBasemap ? source : (source as { mapID: string }).mapID;
@@ -439,6 +869,10 @@ async function main(): Promise<void> {
       const opt = document.createElement("option");
       opt.value = mapID;
       opt.textContent = label;
+      if (unusableIds.has(mapID)) {
+        opt.textContent = `${label}（使えない地図）`;
+        opt.disabled = true;
+      }
       (isBasemap ? baseGroup : oldGroup).appendChild(opt);
     }
     for (const g of [oldGroup, baseGroup]) if (g.children.length > 0) mapSelect.appendChild(g);
@@ -459,9 +893,14 @@ async function main(): Promise<void> {
     opRange.max = "100";
     opRange.step = "10";
     opRange.value = "0";
+    // 「範囲外の POI」の節の透過度のボタンからも同じ口を使う（スライダーの表示も合わせる）
+    const setTransparency = (value: number): void => {
+      opRange.value = String(value);
+      opText.textContent = `透過度 ${value}%`;
+      app.setTransparency(value);
+    };
     opRange.addEventListener("input", () => {
-      app.setTransparency(Number(opRange.value));
-      opText.textContent = `透過度 ${opRange.value}%`;
+      setTransparency(Number(opRange.value));
     });
     opField.appendChild(opText);
     opField.appendChild(opRange);
@@ -615,6 +1054,48 @@ async function main(): Promise<void> {
     eraNote.className = "demo-note";
     eraNote.textContent = "年代（start）の色: 1599 年以前 赤・1600〜1867 年 緑・1868 年以降 青・年代なし 灰";
     poiSec.sec.appendChild(eraNote);
+    // ---- poiTemplate の記法のプリセット（Nunjucks と旧い記法の対比）----
+    // 切り替えるたびに警告の記憶を戻し（デモだけの処理）、警告の欄を空にしてから描き直す
+    const templateRow = poiSec.row();
+    const templateLabel = document.createElement("span");
+    templateLabel.textContent = "poiTemplate の記法: ";
+    templateRow.appendChild(templateLabel);
+    const applyTemplatePreset = (preset: (typeof TEMPLATE_PRESETS)[number]): void => {
+      resetTemplateWarnings();
+      templateWarnings.replaceChildren();
+      templateCurrent.textContent = `今のテンプレート（${preset.label}）: ${preset.template}`;
+      // 先にテンプレートを替える（層・POI の追加で起きる描き直しが、前のプリセットで評価して警告を出さないように）
+      app.poiTemplate = preset.template;
+      if (preset.id === "safe" && !app.getPoiLayer(TEMPLATE_LAYER)) {
+        // 名前に <b> を含む POI（{{ name }} では文字のまま、{{ name | safe }} では太字になる）
+        app.addPoiLayer(TEMPLATE_LAYER, { name: "記法の例" });
+        const [lng, lat] = homeLngLat();
+        app.addMarker({ name: "<b>太字</b>の名前", desc: "名前に <b> を含む POI", lnglat: [lng, lat + 0.002] }, TEMPLATE_LAYER);
+      }
+      detailBox.textContent = "";
+      app.redrawMarkers();
+      if (!templateWarnings.childElementCount) templateWarnings.textContent = "テンプレートの警告: なし";
+    };
+    for (const preset of TEMPLATE_PRESETS) {
+      const btn = makeButton(preset.label, () => { applyTemplatePreset(preset); });
+      btn.dataset.templatePreset = preset.id;
+      templateRow.appendChild(btn);
+    }
+    const templateCurrent = document.createElement("p");
+    templateCurrent.className = "demo-note";
+    templateCurrent.id = "template-current";
+    templateCurrent.textContent = `今のテンプレート（${TEMPLATE_PRESETS[0].label}）: ${POI_TEMPLATE}`;
+    const templateWarnings = document.createElement("div");
+    templateWarnings.className = "demo-note demo-template-warnings";
+    templateWarnings.id = "template-warnings";
+    templateWarnings.textContent = "テンプレートの警告: なし";
+    templateWarningSink = (message) => {
+      if (templateWarnings.textContent === "テンプレートの警告: なし") templateWarnings.replaceChildren();
+      const line = document.createElement("p");
+      line.textContent = `テンプレートの警告: ${message}`;
+      templateWarnings.appendChild(line);
+    };
+    poiSec.sec.append(templateCurrent, templateWarnings);
     // clickMarkers の件数と、poiTemplate から作られた detail.html（sanitizeHtml を通したものだけ）
     const hitsLine = document.createElement("p");
     hitsLine.className = "demo-poi-hits";
@@ -666,6 +1147,25 @@ async function main(): Promise<void> {
       layersBox.replaceChildren(title, ...rows);
     };
     mountSection(poiSec);
+
+    // ---- 範囲外の POI（古地図の紙の外の POI は背面の地図に立つ）----
+    // 館林（城絵図の紙が狭く、紙の外の POI がある地域）だけに出す。他の地域の POI の数を変えない。
+    // 選択は POI の節の「選択中の POI」のチェックにも反映する
+    const markSelected = (id: string | undefined): void => {
+      selectedId = id;
+      refreshSelectCheck();
+    };
+    if (region === "tatebayashi" && recordedPois.length > 0) {
+      mountOutsidePoiSection(app, {
+        makeSection,
+        mountSection,
+        setTransparency,
+        onSelected: markSelected,
+        entries: recordedPois,
+        layerID: APP_LAYER,
+        homePosition: [setting.homePosition[0], setting.homePosition[1]]
+      });
+    }
 
     // ---- 線・面（v4.2。アプリの線・地図の線とも既定で表示。地図の線はその地図に無いときチェックを無効化）----
     const shapeSec = makeSection("線・面");
@@ -799,6 +1299,33 @@ async function main(): Promise<void> {
       }
     });
 
+    // ---- IIIF の画像（画像の配信の対比。地域の操作パネルの新しい節）----
+    buildIiifImageSection({
+      app,
+      makeSection,
+      mountSection,
+      showError,
+      logEvent,
+      activeMapId,
+      iiifUsable: iiifMapIDs.find((id) => !unusableIds.has(id)),
+      iiifBroken: iiifMapIDs.find((id) => unusableIds.has(id)),
+      localMapID: sourceIds.find((id) => id !== "gsi" && id !== "osm" && !iiifMapIDs.includes(id))
+    });
+
+    // ---- IIIF の書誌（写した書誌の表示と、解決器・比較の関数の入出力）----
+    // 使えない地図（起動のときに使えなかったもの）は切り替えのボタンに出さない
+    const bibliographyUsable = bibliographyMaps.filter((map) => !unusableIds.has(map.mapID));
+    if (bibliographyUsable.length > 0) {
+      buildIiifBibliographySection({
+        app,
+        makeSection,
+        mountSection,
+        showError,
+        activeMapId,
+        maps: bibliographyUsable
+      });
+    }
+
     // 初期状態を反映
     refreshMapState();
   };
@@ -908,6 +1435,38 @@ async function main(): Promise<void> {
   lifeNote.textContent = "?restoreSession=1 を付けて読み込むと restoreSession 付きで作り、1 時間以内に保存した地図・視点・透過度に戻ります";
   lifeSec.sec.appendChild(lifeNote);
   mountSection(lifeSec, fixedArea);
+  // ---- sanitizeHtml の入出力（テンプレートの出力の <qy-swiper>・<qy-swiper-slide>）----
+  // Core のデモは qy-* を登録しないので、スライダーの見た目ではなく、残る属性と消える属性を文字列で見せる
+  const sanitizeSec = makeSection("sanitizeHtml の入出力");
+  const sanitizeInput = document.createElement("textarea");
+  sanitizeInput.id = "sanitize-input";
+  sanitizeInput.rows = 6;
+  sanitizeInput.style.width = "100%";
+  const sanitizeOutput = document.createElement("pre");
+  sanitizeOutput.id = "sanitize-output";
+  sanitizeOutput.style.whiteSpace = "pre-wrap";
+  sanitizeOutput.style.wordBreak = "break-all";
+  const runSanitize = (): void => {
+    // 出力は HTML の文字列そのまま（textContent）で見せる。描画はしない
+    sanitizeOutput.textContent = sanitizeHtml(sanitizeInput.value).replace(/></g, ">\n<");
+  };
+  const sanitizeRow = sanitizeSec.row();
+  for (const preset of SANITIZE_PRESETS) {
+    const btn = makeButton(preset.label, () => {
+      sanitizeInput.value = preset.html;
+      runSanitize();
+    });
+    btn.dataset.sanitizePreset = preset.id;
+    sanitizeRow.appendChild(btn);
+  }
+  sanitizeRow.appendChild(makeButton("入力を通す", runSanitize));
+  const sanitizeNote = document.createElement("p");
+  sanitizeNote.className = "demo-note";
+  sanitizeNote.textContent = "許される qy-swiper は属性が残り caption がテキストになる。危険な属性（javascript: の URL・onerror・style）と cc-swiper・div の image-url は消える";
+  sanitizeSec.sec.append(sanitizeInput, sanitizeNote, sanitizeOutput);
+  sanitizeInput.value = SANITIZE_PRESETS[0].html;
+  runSanitize();
+  mountSection(sanitizeSec, fixedArea);
   // 状態とイベント履歴は操作を持たないが、常に出す（操作パネルの最下部）
   fixedArea.append(stateSec.sec, logSec.sec);
 
@@ -920,3 +1479,514 @@ main().catch((e: unknown) => {
   const status = byId("status");
   status.textContent = `地図の読み込みに失敗しました: ${e instanceof Error ? e.message : String(e)}`;
 });
+
+// ---- 画像の配信の節（デモだけの処理。製品の挙動は変えない）----
+
+/** 操作パネルの節（main の中の makeSection が返すものと同じ形） */
+type DemoSection = { sec: HTMLElement; row: () => HTMLDivElement };
+
+/** 節の中に説明の 1 行（見えるもの・対比で分かること）を足す */
+function addIiifNote(row: HTMLElement, text: string): void {
+  const p = document.createElement("p");
+  p.className = "demo-note";
+  p.textContent = text;
+  row.appendChild(p);
+}
+
+/**
+ * 「IIIF の画像」の節を作る。
+ *
+ * 3 つの入力を 1 クリックで切り替えて、画像の配信の道の違いを見せる:
+ *   (a) 国立国会図書館の IIIF から配信（キャッシュ対象外）
+ *   (b) 壊れた delivery（使えない地図になるが、起動は止まらない）
+ *   (c) 既存の地域の古地図（手元のタイル。t.tilemap.jp/…/{z}/{x}/{y}.jpg）
+ * 要求の一覧は PerformanceObserver の resource を読む（デモだけの処理。製品は変えない）。
+ */
+function buildIiifImageSection(ctx: {
+  app: MaplatApp;
+  makeSection: (title: string) => DemoSection;
+  mountSection: (section: DemoSection) => void;
+  showError: (where: string, e: unknown) => void;
+  logEvent: (type: string, text?: string) => void;
+  activeMapId: () => string | undefined;
+  iiifUsable?: string;
+  iiifBroken?: string;
+  localMapID?: string;
+}): void {
+  const { app, makeSection, mountSection, showError, logEvent, activeMapId } = ctx;
+  const sec = makeSection("IIIF の画像");
+
+  // (a) IIIF から配信
+  if (ctx.iiifUsable) {
+    const mapID = ctx.iiifUsable;
+    const row = sec.row();
+    row.appendChild(
+      makeButton("IIIF から配信", () => {
+        app.clearLine();
+        void app.changeMap(mapID).catch((e: unknown) => {
+          showError("IIIF から配信", e);
+        });
+      })
+    );
+    addIiifNote(
+      row,
+      "見えるもの: 古地図が表示される。節の中に「直近のタイルの要求」の一覧（dl.ndl.go.jp/api/iiif/948741/R0000003/768,512,256,256/256,/0/default.jpg の形）。キャッシュの欄は「キャッシュ対象外」"
+    );
+    addIiifNote(row, "対比で分かること: 画像が NDL の IIIF から来ている（ネットワークの要求が IIIF の切り出しの形）");
+  }
+
+  // (b) 壊れた delivery
+  if (ctx.iiifBroken) {
+    const mapID = ctx.iiifBroken;
+    const row = sec.row();
+    row.appendChild(
+      makeButton("壊れた delivery", () => {
+        void app.changeMap(mapID).then(
+          () => {
+            logEvent("changeMap", `${mapID}: 使えない地図なので切り替わりません（他の地図は使えます）`);
+          },
+          (e: unknown) => {
+            showError("壊れた delivery", e);
+          }
+        );
+      })
+    );
+    addIiifNote(
+      row,
+      "見えるもの: 地図の一覧で「使えない地図」になり、他の地図は普通に使える。節に console.error の文（「IIIF image … is not usable: fetch-failed」）を写す"
+    );
+    addIiifNote(row, "対比で分かること: 失敗しても起動が止まらない");
+  }
+
+  // (c) 既存の地域の古地図（手元のタイル）
+  {
+    const row = sec.row();
+    if (ctx.localMapID) {
+      const mapID = ctx.localMapID;
+      row.appendChild(
+        makeButton("この地域の古い地図（手元のタイル）", () => {
+          app.clearLine();
+          void app.changeMap(mapID).catch((e: unknown) => {
+            showError("手元のタイル", e);
+          });
+        })
+      );
+    } else {
+      row.appendChild(
+        makeButton("既存の地域（館林）の古い地図", () => {
+          const url = new URL(location.href);
+          url.searchParams.set("region", "tatebayashi");
+          location.assign(url.toString());
+        })
+      );
+    }
+    addIiifNote(row, "見えるもの: 要求の一覧は t.tilemap.jp/…/{z}/{x}/{y}.jpg の形");
+    addIiifNote(row, "対比で分かること: 手元のタイルの道（今の道）との違い");
+    addIiifNote(row, "同じ画像の手元のタイルはまだ作れないため、既存の地域の古い地図で見せています。");
+  }
+
+  // 直近のタイルの要求（PerformanceObserver の resource。textContent で入れる）
+  const requestTitle = document.createElement("p");
+  requestTitle.className = "demo-note";
+  requestTitle.textContent = "直近のタイルの要求:";
+  const requestList = document.createElement("pre");
+  requestList.id = "iiif-tile-requests";
+  requestList.className = "demo-note";
+  requestList.style.cssText = "white-space:pre-wrap;word-break:break-all;margin:4px 0 0;";
+  requestList.textContent = tileRequests.length > 0 ? tileRequests.join("\n") : "（まだありません）";
+  tileRequestSink = (list) => {
+    requestList.textContent = list.length > 0 ? list.join("\n") : "（まだありません）";
+  };
+  startTileRequestObserver();
+  sec.sec.append(requestTitle, requestList);
+
+  // キャッシュの対象か（Core の公開のメソッドだけで見る）
+  const cacheRow = sec.row();
+  const cacheLabel = document.createElement("span");
+  cacheLabel.textContent = "キャッシュ: ";
+  const cacheValue = document.createElement("span");
+  cacheValue.id = "iiif-cache";
+  const refreshCache = (): void => {
+    const mapID = activeMapId();
+    cacheValue.textContent = mapID && app.getMapCacheEnable(mapID) ? "キャッシュ対象" : "キャッシュ対象外";
+  };
+  refreshCache();
+  app.addEventListener("mapChanged", refreshCache);
+  cacheRow.append(cacheLabel, cacheValue);
+
+  // 使えない地図の記録（Core の console.error を写す）
+  const errorTitle = document.createElement("p");
+  errorTitle.className = "demo-note";
+  errorTitle.textContent = "使えない地図の記録（console.error）:";
+  const errorList = document.createElement("pre");
+  errorList.id = "iiif-unusable-errors";
+  errorList.className = "demo-note";
+  errorList.style.cssText = "white-space:pre-wrap;word-break:break-all;margin:4px 0 0;";
+  errorList.textContent = unusableMessages.length > 0 ? unusableMessages.join("\n") : "（ありません）";
+  sec.sec.append(errorTitle, errorList);
+
+  mountSection(sec);
+}
+
+// ---- IIIF の書誌の節（デモだけの処理。製品の挙動は変えない）----
+
+/** 表の 1 行（項目名は文字、値は sanitizeIiifHtml に通した HTML か文字のどちらか） */
+type IiifTableRow = { from?: string; label: string; html?: string; text?: string };
+
+/**
+ * 表を作る。項目名は必ず textContent、値は sanitizeIiifHtml に通した HTML だけを innerHTML に入れる。
+ * from を持つ行があれば、先頭に「写した元」の列を出す。
+ */
+function iiifRowTable(rows: IiifTableRow[]): HTMLTableElement {
+  const table = document.createElement("table");
+  table.className = "demo-iiif-table";
+  const hasFrom = rows.some((row) => row.from !== undefined);
+  const head = document.createElement("tr");
+  for (const text of hasFrom ? ["from", "項目名", "値"] : ["項目名", "値"]) {
+    const th = document.createElement("th");
+    th.textContent = text;
+    head.appendChild(th);
+  }
+  const thead = document.createElement("thead");
+  thead.appendChild(head);
+  table.appendChild(thead);
+  const tbody = document.createElement("tbody");
+  for (const row of rows) {
+    const tr = document.createElement("tr");
+    if (hasFrom) {
+      const from = document.createElement("td");
+      from.textContent = row.from ?? "";
+      tr.appendChild(from);
+    }
+    const label = document.createElement("td");
+    label.textContent = row.label;
+    const value = document.createElement("td");
+    if (row.html !== undefined) value.innerHTML = sanitizeIiifHtml(row.html);
+    else value.textContent = row.text ?? "";
+    tr.append(label, value);
+    tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+  return table;
+}
+
+/** 写した metadata の全件を、写した元つきの表にする */
+function iiifMetadataRows(entries: IiifMetadataEntry[]): IiifTableRow[] {
+  return entries.map((entry) => ({
+    from: entry.from,
+    label: localizedText(entry.label),
+    html: localizedText(entry.value)
+  }));
+}
+
+/**
+ * 「IIIF の書誌」の節を作る。
+ *
+ * 3 つの見せ方:
+ *   (a) 表示中の地図の書誌（写した値・表示の印・アプリの設定に応じた metadata の表）。
+ *       表を出さない設定の地図に切り替えると表が出ない（(a')）
+ *   (b) 資料の Manifest を解決器に通した結果（写す鍵・写した値・metadata の全件）と、
+ *       「人が直した」「IIIF の側が変わった」の判定
+ *   (c) 悪い値を含む Manifest をサニタイズに通した表
+ */
+function buildIiifBibliographySection(ctx: {
+  app: MaplatApp;
+  makeSection: (title: string) => DemoSection;
+  mountSection: (section: DemoSection) => void;
+  showError: (where: string, e: unknown) => void;
+  activeMapId: () => string | undefined;
+  maps: Array<{ mapID: string; label: string }>;
+}): void {
+  const { app, makeSection, mountSection, showError, activeMapId, maps } = ctx;
+  const sec = makeSection("IIIF の書誌");
+
+  // (a) (a') 書誌を持つ地図へ切り替える
+  const mapRow = sec.row();
+  for (const map of maps) {
+    const btn = makeButton(map.label, () => {
+      app.clearLine();
+      void app.changeMap(map.mapID).catch((e: unknown) => {
+        showError("IIIF の書誌", e);
+      });
+    });
+    btn.dataset.iiifMap = map.mapID;
+    mapRow.appendChild(btn);
+  }
+  addIiifNote(
+    mapRow,
+    "見えるもの: 節の「書誌」の欄に getMapMeta の title・attr・license・licenseNote と、iiif.metadata の全件の表（項目名は textContent、値は sanitizeIiifHtml）。copiedAt と「Manifest から写した値」の印"
+  );
+  addIiifNote(mapRow, "対比で分かること: 書誌が Manifest から写されたものだと分かる。NDL のライセンスが「Custom」と URL の文字で出る見え方を人間が見る");
+  addIiifNote(mapRow, "見えるもの: 「書誌の表を出さない」地図では表が出ない（display: \"hidden\"）");
+  addIiifNote(mapRow, "対比で分かること: 表を出すかはアプリ設定で選ぶ");
+
+  const summaryBox = document.createElement("div");
+  summaryBox.id = "iiif-meta-summary";
+  summaryBox.className = "demo-note";
+  const displayLine = document.createElement("p");
+  displayLine.id = "iiif-meta-display";
+  const tableBox = document.createElement("div");
+  tableBox.id = "iiif-meta-table";
+  tableBox.className = "demo-note";
+  sec.sec.append(summaryBox, displayLine, tableBox);
+
+  const appendLine = (label: string, value: string): void => {
+    const p = document.createElement("p");
+    const key = document.createElement("span");
+    key.textContent = `${label}: `;
+    const text = document.createElement("span");
+    text.textContent = value;
+    p.append(key, text);
+    summaryBox.appendChild(p);
+  };
+
+  const refreshBibliography = (): void => {
+    const meta = app.getMapMeta(activeMapId()) as Record<string, unknown> | undefined;
+    const iiif = meta?.iiif as
+      | { display?: string; copiedAt?: string; metadata?: IiifMetadataEntry[] }
+      | undefined;
+    summaryBox.replaceChildren();
+    displayLine.textContent = "";
+    tableBox.replaceChildren();
+    if (!meta || !iiif) {
+      appendLine("書誌", "この地図には IIIF の書誌（iiif 節）がありません");
+      return;
+    }
+    appendLine("title", localizedText(meta.title));
+    appendLine("attr", localizedText(meta.attr));
+    appendLine("license", typeof meta.license === "string" ? meta.license : "");
+    appendLine("licenseNote", localizedText(meta.licenseNote));
+    appendLine("copiedAt", typeof iiif.copiedAt === "string" ? iiif.copiedAt : "（ありません）");
+    const stamp = document.createElement("p");
+    stamp.id = "iiif-meta-stamp";
+    stamp.textContent = "Manifest から写した値";
+    summaryBox.appendChild(stamp);
+    displayLine.textContent = `display: ${iiif.display === "all" ? "all" : "hidden"}`;
+    if (iiif.display !== "all") {
+      const note = document.createElement("p");
+      note.id = "iiif-meta-hidden";
+      note.textContent = "表を出さない設定（hidden）";
+      tableBox.replaceChildren(note);
+      return;
+    }
+    const entries = Array.isArray(iiif.metadata) ? iiif.metadata : [];
+    tableBox.replaceChildren(iiifRowTable(iiifMetadataRows(entries)));
+  };
+  app.addEventListener("mapChanged", refreshBibliography);
+  refreshBibliography();
+
+  // (b) 関数を試す: 資料の Manifest と canvas を選び、写す鍵と写した値を並べる
+  const tryRow = sec.row();
+  const manifestField = document.createElement("label");
+  manifestField.className = "demo-field";
+  manifestField.appendChild(document.createTextNode("資料の Manifest"));
+  const manifestSelect = document.createElement("select");
+  manifestSelect.id = "iiif-try-manifest";
+  for (const source of IIIF_TRY_SOURCES) {
+    const opt = document.createElement("option");
+    opt.value = source.id;
+    opt.textContent = source.label;
+    manifestSelect.appendChild(opt);
+  }
+  manifestField.appendChild(manifestSelect);
+  const canvasField = document.createElement("label");
+  canvasField.className = "demo-field";
+  canvasField.appendChild(document.createTextNode("canvas"));
+  const canvasSelect = document.createElement("select");
+  canvasSelect.id = "iiif-try-canvas";
+  canvasField.appendChild(canvasSelect);
+  tryRow.append(manifestField, canvasField);
+  addIiifNote(tryRow, "見えるもの: 入力の JSON（bindings）と出力の表（values・copiedValues・copiedMetadata・unresolved・warnings）、判定の表");
+  addIiifNote(tryRow, "対比で分かること: 純粋な関数が何を取り出すか（v2 と v3 で同じ鍵に揃う）。「人が直した」と「IIIF の側が変わった」が分かれる");
+
+  const preStyle = "white-space:pre-wrap;word-break:break-all;margin:4px 0 0;max-height:240px;overflow:auto;";
+  const tryInput = document.createElement("pre");
+  tryInput.id = "iiif-try-input";
+  tryInput.className = "demo-note";
+  tryInput.style.cssText = preStyle;
+  const tryOutput = document.createElement("pre");
+  tryOutput.id = "iiif-try-output";
+  tryOutput.className = "demo-note";
+  tryOutput.style.cssText = preStyle;
+  const tryTableBox = document.createElement("div");
+  tryTableBox.id = "iiif-try-table";
+  tryTableBox.className = "demo-note";
+  sec.sec.append(tryInput, tryOutput, tryTableBox);
+
+  // 判定の表の状態（押すたびに「人が直した」「IIIF の側が変わった」を切り替える）
+  let lastResolved: ReturnType<typeof resolveIiifMetadata> | undefined;
+  let humanEdited = false;
+  let iiifChanged = false;
+
+  const compareRow = sec.row();
+  const humanBtn = makeButton("題名を手で直した", () => {
+    humanEdited = !humanEdited;
+    syncCompareButtons();
+    renderCompare();
+  });
+  humanBtn.dataset.iiifEdit = "human";
+  const iiifBtn = makeButton("IIIF の側が変わった", () => {
+    iiifChanged = !iiifChanged;
+    syncCompareButtons();
+    renderCompare();
+  });
+  iiifBtn.dataset.iiifEdit = "iiif";
+  compareRow.append(humanBtn, iiifBtn);
+  addIiifNote(compareRow, "見えるもの: 押した数だけ「人が直した」「IIIF の側が変わった」が変わる判定の表");
+  addIiifNote(compareRow, "対比で分かること: 今の値と写した時点の値で「人が直した」を、写した時点の値と取り直した値で「IIIF の側が変わった」を見る");
+  const compareBox = document.createElement("div");
+  compareBox.id = "iiif-try-compare";
+  compareBox.className = "demo-note";
+  sec.sec.appendChild(compareBox);
+
+  const syncCompareButtons = (): void => {
+    humanBtn.setAttribute("aria-pressed", String(humanEdited));
+    iiifBtn.setAttribute("aria-pressed", String(iiifChanged));
+  };
+
+  // 1 か所だけ値を変えた写しを作る（今の値と取り直した値の違いを、デモの中で作る）
+  const editTitle = (target: Record<string, unknown>, suffix: string): void => {
+    const value = target.title;
+    if (typeof value === "string") {
+      target.title = `${value}${suffix}`;
+      return;
+    }
+    if (value && typeof value === "object") {
+      const table = value as Record<string, string>;
+      const key = pageLang() in table ? pageLang() : Object.keys(table)[0];
+      if (key !== undefined) table[key] = `${table[key]}${suffix}`;
+    }
+  };
+
+  const renderCompare = (): void => {
+    if (!lastResolved || !lastResolved.ok) {
+      compareBox.textContent = "（先に資料の Manifest と canvas を選ぶと、判定の表を出します）";
+      return;
+    }
+    const copied = lastResolved.copiedValues;
+    const current = structuredClone(lastResolved.values) as Record<string, unknown>;
+    const fresh = structuredClone(copied) as Record<string, Record<string, string>>;
+    if (humanEdited) editTitle(current, "（題名を手で直した）");
+    if (iiifChanged) editTitle(fresh, "（IIIF の側が変わった）");
+    const rows = compareIiifCopy(current as Parameters<typeof compareIiifCopy>[0], copied, fresh, pageLang());
+
+    const table = document.createElement("table");
+    table.className = "demo-iiif-table";
+    table.id = "iiif-try-compare-table";
+    const head = document.createElement("tr");
+    for (const text of ["鍵", "言語", "人が直した", "IIIF の側が変わった"]) {
+      const th = document.createElement("th");
+      th.textContent = text;
+      head.appendChild(th);
+    }
+    const thead = document.createElement("thead");
+    thead.appendChild(head);
+    table.appendChild(thead);
+    const tbody = document.createElement("tbody");
+    for (const row of rows) {
+      const tr = document.createElement("tr");
+      for (const text of [
+        row.key,
+        row.lang,
+        String(row.humanEdited),
+        row.iiifChanged === undefined ? "（判定しない）" : String(row.iiifChanged)
+      ]) {
+        const td = document.createElement("td");
+        td.textContent = text;
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
+    }
+    table.appendChild(tbody);
+    const note = document.createElement("p");
+    note.textContent = "人が直した: 今の値 ≠ 写した時点の値。IIIF の側が変わった: 写した時点の値 ≠ 取り直した値";
+    compareBox.replaceChildren(table, note);
+  };
+
+  const fillCanvases = (source: (typeof IIIF_TRY_SOURCES)[number]): void => {
+    canvasSelect.replaceChildren();
+    const listed = listIiifCanvases(source.manifest);
+    if (!listed.ok) {
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = `canvas を読めません（${listed.reason}）`;
+      canvasSelect.appendChild(opt);
+      return;
+    }
+    for (const canvas of listed.canvases) {
+      const opt = document.createElement("option");
+      opt.value = canvas.id;
+      const label = localizedText(canvas.label);
+      opt.textContent = label ? `${label}（${canvas.width}×${canvas.height}）` : canvas.id;
+      canvasSelect.appendChild(opt);
+    }
+    canvasSelect.value = listed.canvases.some((canvas) => canvas.id === source.canvas)
+      ? source.canvas
+      : (listed.canvases[0]?.id ?? "");
+  };
+
+  const runTry = (): void => {
+    const source = IIIF_TRY_SOURCES.find((item) => item.id === manifestSelect.value) ?? IIIF_TRY_SOURCES[0];
+    const canvasId = canvasSelect.value;
+    const bindings = proposeIiifBindings(source.manifest, canvasId);
+    const resolved = resolveIiifMetadata(source.manifest, { canvas: canvasId, bindings }, pageLang(), sanitizeIiifHtml);
+    tryInput.textContent = JSON.stringify({ canvas: canvasId, bindings }, null, 2);
+    tryTableBox.replaceChildren();
+    lastResolved = resolved;
+    if (!resolved.ok) {
+      tryOutput.textContent = `解決できませんでした: ${resolved.reason}`;
+      renderCompare();
+      return;
+    }
+    // 出力は表にせず JSON の文字列（textContent）で見せる
+    tryOutput.textContent = JSON.stringify(
+      {
+        version: resolved.version,
+        values: resolved.values,
+        copiedValues: resolved.copiedValues,
+        copiedMetadata: resolved.copiedMetadata,
+        unresolved: resolved.unresolved,
+        warnings: resolved.warnings
+      },
+      null,
+      2
+    );
+    tryTableBox.replaceChildren(iiifRowTable(iiifMetadataRows(resolved.copiedMetadata)));
+    renderCompare();
+  };
+
+  manifestSelect.addEventListener("change", () => {
+    const source = IIIF_TRY_SOURCES.find((item) => item.id === manifestSelect.value) ?? IIIF_TRY_SOURCES[0];
+    fillCanvases(source);
+    runTry();
+  });
+  canvasSelect.addEventListener("change", runTry);
+
+  // (c) 悪い値の Manifest をサニタイズに通した表
+  const badRow = sec.row();
+  addIiifNote(badRow, "見えるもの: 表の値に画像も実行も出ない");
+  addIiifNote(badRow, "対比で分かること: IIIF の値のサニタイズ");
+  const badOutput = document.createElement("div");
+  badOutput.id = "iiif-bad-output";
+  badOutput.className = "demo-note";
+  sec.sec.appendChild(badOutput);
+
+  const bad = resolveIiifMetadata(IIIF_BAD_MANIFEST, { canvas: "", bindings: IIIF_BAD_BINDINGS }, pageLang(), sanitizeIiifHtml);
+  if (!bad.ok) {
+    badOutput.textContent = `悪い値の Manifest を読めませんでした: ${bad.reason}`;
+  } else {
+    const valueRows: IiifTableRow[] = Object.entries(bad.values).map(([key, value]) =>
+      IIIF_HTML_KEYS.has(key)
+        ? { label: key, html: localizedText(value) }
+        : { label: key, text: localizedText(value) }
+    );
+    badOutput.replaceChildren(iiifRowTable([...valueRows, ...iiifMetadataRows(bad.copiedMetadata)]));
+  }
+
+  // 初期の状態（1 つ目の資料と、地図に使う canvas）
+  fillCanvases(IIIF_TRY_SOURCES[0]);
+  syncCompareButtons();
+  runTry();
+
+  mountSection(sec);
+}

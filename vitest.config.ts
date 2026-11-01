@@ -1,7 +1,14 @@
 import { defineConfig } from "vitest/config";
 import { resolve } from "path";
+import { readFileSync } from "fs";
+
+const packageJson = JSON.parse(readFileSync("./package.json", "utf-8"));
 
 export default defineConfig({
+  // <maplat-app> の version（src/element.ts）。vite.config.ts と同じ値を埋め込む
+  define: {
+    __MAPLAT_CORE_VERSION__: JSON.stringify(packageJson.version)
+  },
   test: {
     globals: true,
     environment: "jsdom",
