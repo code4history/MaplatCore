@@ -1,9 +1,13 @@
-import { mercToLngLat as u, defaultPinIcon as d, MaplatApp as f } from "./maplat_core.js";
-import { defineMaplatAppElementOnce as v, MaplatAppElementBase as y } from "./maplat_core_common.js";
-import { featuresOf as A, ELEMENT_ATTRIBUTES as T, ELEMENT_PROPERTIES as _, MAPLAT_APP_TAG as I } from "./maplat_core_common.js";
-import { ELEMENT_ATTRIBUTES as L, ELEMENT_OWN_EVENTS as x, ELEMENT_OWN_METHODS as C, ELEMENT_PROPERTIES as N, ELEMENT_STARTUP_KEYS as k, LAYER_A_PRO_ATTRIBUTES as j, MAPLAT_APP_EVENTS as B, MAPLAT_APP_METHODS as z, MAPLAT_APP_TAG as K } from "./maplat_core_common.js";
-const M = "1.2.0-rc.1", O = Object.freeze(A("core")), c = (l) => Array.isArray(l) && Number.isFinite(l[0]) && Number.isFinite(l[1]);
-class P extends y {
+import { mercToLngLat as u, defaultPinIcon as d, MaplatApp as v } from "./maplat_core.js";
+import { defineMaplatAppElementOnce as y, MaplatAppElementBase as A } from "./maplat_core_common.js";
+import { featuresOf as T, ELEMENT_ATTRIBUTES as _, ELEMENT_PROPERTIES as O, MAPLAT_APP_TAG as I } from "./maplat_core_common.js";
+import { ELEMENT_ATTRIBUTES as x, ELEMENT_OWN_EVENTS as C, ELEMENT_OWN_METHODS as N, ELEMENT_PROPERTIES as j, ELEMENT_STARTUP_KEYS as k, LAYER_A_PRO_ATTRIBUTES as B, MAPLAT_APP_EVENTS as z, MAPLAT_APP_METHODS as K, MAPLAT_APP_TAG as U } from "./maplat_core_common.js";
+function h(s, e) {
+  if (!(s === null || typeof s != "object") && typeof e == "string")
+    return Object.hasOwn(s, e) ? s[e] : void 0;
+}
+const M = "1.2.0", P = Object.freeze(T("core")), c = (s) => Array.isArray(s) && Number.isFinite(s[0]) && Number.isFinite(s[1]);
+class g extends A {
   /** 実装の種別。有償版は "core-pro"。 */
   implementation = "core";
   /** 実装の版（@maplat/core の版）。 */
@@ -41,7 +45,7 @@ class P extends y {
   }
   /** 地図の範囲（経緯度の多角形。最後の頂点は最初の頂点を繰り返さない）。範囲を持たない地図は null。 */
   getMapEnvelope(e) {
-    const t = this.currentImplementation()?.cacheHash?.[e]?.envelope?.geometry?.coordinates?.[0];
+    const t = h(this.currentImplementation()?.cacheHash, e)?.envelope?.geometry?.coordinates?.[0];
     if (!Array.isArray(t) || t.length < 3) return null;
     const i = t.filter(c);
     if (i.length > 1) {
@@ -49,8 +53,8 @@ class P extends y {
       a[0] === r[0] && a[1] === r[1] && i.pop();
     }
     return i.map((a) => {
-      const [r, s] = u(a);
-      return { longitude: r, latitude: s };
+      const [r, l] = u(a);
+      return { longitude: r, latitude: l };
     });
   }
   /**
@@ -80,11 +84,11 @@ class P extends y {
    * @internal
    */
   createCore(e) {
-    return new f(e);
+    return new v(e);
   }
   // ---- 基底クラスの hook ----
   features() {
-    return O;
+    return P;
   }
   /**
    * 互換モードでは、要素の機能系キーの getter が Core の実際の値（設定ファイルから読んだ値を含む）を返す。
@@ -117,7 +121,7 @@ class P extends y {
   createImplementation(e) {
     const n = { ...e.appOption };
     for (const [i, a] of Object.entries(e.values)) {
-      const r = h.get(i);
+      const r = f.get(i);
       r && (n[r] = a);
     }
     n.div = e.element, this.#a = e.appOption?.__maplatCompat === !0, n.__maplatElementMode = e.appOption?.__maplatCompat !== !0, e.setting !== void 0 && (n.setting = e.setting);
@@ -156,7 +160,7 @@ class P extends y {
       "iconTemplate"
     ]) {
       if (!n.has(a)) continue;
-      const r = h.get(a);
+      const r = f.get(a);
       i[r ?? a] = t(a, r, void 0);
     }
     Object.keys(i).length > 0 && e.applyRuntimeOptions(i);
@@ -184,14 +188,14 @@ class P extends y {
       [0, i[1]]
     ];
     try {
-      const r = await Promise.all(a.map((s) => t.pixelToMerc(s)));
-      if (n !== this.#n || r.some((s) => s === void 0)) return;
+      const r = await Promise.all(a.map((l) => t.pixelToMerc(l)));
+      if (n !== this.#n || r.some((l) => l === void 0)) return;
       if (!r.every(c)) {
         this.#e = null;
         return;
       }
-      this.#e = r.map((s) => {
-        const [o, p] = u(s);
+      this.#e = r.map((l) => {
+        const [o, p] = u(l);
         return { longitude: o, latitude: p };
       });
     } catch {
@@ -205,12 +209,12 @@ class P extends y {
     const t = n.mapObject, i = n.from;
     if (!t || !i) return;
     const a = this.#t, r = await Promise.all(
-      a.map(async (s) => {
-        const o = n.cacheHash?.[s.mapID];
+      a.map(async (l) => {
+        const o = h(n.cacheHash, l.mapID);
         if (!o) return null;
         try {
           let p;
-          if (s.mapID === i.mapID && typeof o.xy2SysCoord == "function" && o.width && o.height)
+          if (l.mapID === i.mapID && typeof o.xy2SysCoord == "function" && o.width && o.height)
             p = [
               [0, 0],
               [o.width, 0],
@@ -223,7 +227,7 @@ class P extends y {
             if (!Array.isArray(m)) return null;
             p = await Promise.all(m.map((E) => i.merc2SysCoordAsync(E)));
           }
-          return p.every(c) ? { spec: s, xys: p } : null;
+          return p.every(c) ? { spec: l, xys: p } : null;
         } catch {
           return null;
         }
@@ -231,9 +235,9 @@ class P extends y {
     );
     if (!(e !== this.#i || this.currentImplementation() !== n)) {
       t.resetEnvelope();
-      for (const s of r) {
-        if (!s) continue;
-        const { spec: o, xys: p } = s;
+      for (const l of r) {
+        if (!l) continue;
+        const { spec: o, xys: p } = l;
         o.stroke && t.setEnvelope(p, {
           color: o.stroke.color,
           width: o.stroke.width ?? 2,
@@ -259,24 +263,24 @@ class P extends y {
     };
   }
 }
-const h = new Map(
-  [...T, ..._].filter((l) => l.option).map((l) => [l.prop, l.option])
+const f = new Map(
+  [..._, ...O].filter((s) => s.option).map((s) => [s.prop, s.option])
 );
-function g(l = I) {
-  v(P, l, "@maplat/core/element");
+function b(s = I) {
+  y(g, s, "@maplat/core/element");
 }
-g();
+b();
 export {
-  L as ELEMENT_ATTRIBUTES,
-  x as ELEMENT_OWN_EVENTS,
-  C as ELEMENT_OWN_METHODS,
-  N as ELEMENT_PROPERTIES,
+  x as ELEMENT_ATTRIBUTES,
+  C as ELEMENT_OWN_EVENTS,
+  N as ELEMENT_OWN_METHODS,
+  j as ELEMENT_PROPERTIES,
   k as ELEMENT_STARTUP_KEYS,
-  j as LAYER_A_PRO_ATTRIBUTES,
-  B as MAPLAT_APP_EVENTS,
-  z as MAPLAT_APP_METHODS,
-  K as MAPLAT_APP_TAG,
-  P as MaplatAppElement,
-  g as defineMaplatAppElement
+  B as LAYER_A_PRO_ATTRIBUTES,
+  z as MAPLAT_APP_EVENTS,
+  K as MAPLAT_APP_METHODS,
+  U as MAPLAT_APP_TAG,
+  g as MaplatAppElement,
+  b as defineMaplatAppElement
 };
 //# sourceMappingURL=maplat_core_element.js.map
