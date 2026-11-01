@@ -17,10 +17,10 @@ importers:
     dependencies:
       '@c4h/quyuan':
         specifier: ^1.1.0
-        version: 1.1.0
+        version: 1.1.1
       '@c4h/weiwudi':
-        specifier: ^1.1.1-rc.1
-        version: 1.1.1-rc.1(workbox-routing@7.4.1)
+        specifier: ^1.1.1
+        version: 1.1.1(workbox-routing@7.4.1)
       '@maplat/transform':
         specifier: ^1.1.0
         version: 1.1.0
@@ -133,17 +133,17 @@ packages:
     resolution: {integrity: sha512-0GEz8qJWokkUVYQYRukmkSHIFNoBH8QTreeHrAFbvz1XFYc3Y+puhMs8PQ5x8GNugiC2l5jvDBXKLbBIByeSBw==}
     hasBin: true
 
-  '@c4h/quyuan@1.1.0':
-    resolution: {integrity: sha512-bqSjjMtcv7+mNiQzPLfAJyF7iNP1zBfA0ZQIb1+LE8dTjdEhQsD6aUEoiTdgnAa8q/XoAt+6Jo63Zqat5Thl4w==}
+  '@c4h/quyuan@1.1.1':
+    resolution: {integrity: sha512-CwAzx5rQ6W819KHPXP31SDLZ2OkFcU+0KqOd7qN/jtAOIIaTf3NYrsV+kb95N4wqDTh6sve0n9dw3yuOZbkjIg==}
     engines: {node: '>=20.0.0', pnpm: '>=9.0.0'}
     peerDependencies:
-      '@c4h/chuci': ^1.0.1
+      '@c4h/chuci': ^1.0.2
     peerDependenciesMeta:
       '@c4h/chuci':
         optional: true
 
-  '@c4h/weiwudi@1.1.1-rc.1':
-    resolution: {integrity: sha512-vKmUytM+w8seuDGTkPcsrEIP7mktj1RMJTiR+xCx3GrMDExZqGdO40xbhst+sVqiNJvaM/uFHWijHkDVUZPb0A==}
+  '@c4h/weiwudi@1.1.1':
+    resolution: {integrity: sha512-hgk0fpXUohUAmfLBXzAct5GsfNndQTsORGqbvM2Qa4S6NvasrGVZNa63SUhA7FldCwKjngflgVt5S6Un1B3OMg==}
     engines: {node: '>=20.0.0', pnpm: '>=9.0.0'}
     peerDependencies:
       workbox-routing: ^7.4.0
@@ -2049,13 +2049,13 @@ snapshots:
     dependencies:
       css-tree: 3.2.1
 
-  '@c4h/quyuan@1.1.0':
+  '@c4h/quyuan@1.1.1':
     dependencies:
       nunjucks: 3.2.4
     transitivePeerDependencies:
       - chokidar
 
-  '@c4h/weiwudi@1.1.1-rc.1(workbox-routing@7.4.1)':
+  '@c4h/weiwudi@1.1.1(workbox-routing@7.4.1)':
     dependencies:
       workbox-routing: 7.4.1
 
