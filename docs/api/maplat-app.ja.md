@@ -100,6 +100,8 @@ import '@maplat/core/element';    // <maplat-app> を登録する（副作用 im
 | `hide-outside-pois` | `hideOutsidePois` | boolean | いいえ | 範囲外の POI を描かずにマーカーを描き直す（[範囲外の POI](#範囲外の-poi)） | `hideOutsidePois` |
 | `display-mode` | `displayMode` | string | — | **MaplatCore-Pro 専用**（`supports("display-mode")`）。MaplatCore はキーごとに 1 回警告して無視し（`<maplat-app>: ignored unsupported attribute "display-mode"`）、プロパティは `undefined` を返す | — |
 
+**`app-src`・`app-id` の信頼の境界。** この 2 つの属性は読み込む設定ファイルを決めるので、値の責任はページの作者にあります。自分で管理していない設定ファイルは信頼しないコンテンツとして扱ってください。設定ファイルは読み込む地図の配信元を決め、その中の `poiTemplate`・`iconTemplate` は Nunjucks のテンプレートとして評価されます（Nunjucks はサンドボックスではありません）。URL のクエリなど、閲覧者が決められる値を `app-src`・`app-id` にそのまま入れないでください。そうした値で選ばせるときは、決まった設定ファイルの一覧へ対応づけてください。
+
 ### プロパティのみのキー
 
 | プロパティ | 型 | 起動時 | 起動後に変えたら | 旧 `appOption` |
