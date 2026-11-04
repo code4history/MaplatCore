@@ -1,13 +1,13 @@
 // 旧クラス MaplatApp の公開面（壊さない）の機械検査。
-// 期待値は段階 0（HEAD 54f5721）で `Object.getOwnPropertyNames(MaplatApp.prototype)` を
+// 期待値は Web Components 化の前の `MaplatApp` で `Object.getOwnPropertyNames(MaplatApp.prototype)` を
 // 出力した一覧に、要素のために足した @internal のメソッドを足したもの。
-// モジュールの export は段階 0 の一覧に mercToLngLat・defaultPinIcon の 2 個を足したもの
+// モジュールの export は Web Components 化の前の一覧に mercToLngLat・defaultPinIcon の 2 個を足したもの
 // （実装後の状態を写すと自己参照になるので、着手前の実測を基準にする）。
 import { describe, it, expect } from "vitest";
 import * as core from "../src/index";
 import { MaplatApp } from "../src/index";
 
-/** 段階 0（54f5721）の prototype の一覧。 */
+/** Web Components 化の前の `MaplatApp` の prototype の一覧。 */
 const PROTOTYPE_AT_HEAD = [
   "__addEntry", "__applyInitialViewpoint", "__applyPendingView", "__captureRawViewState",
   "__captureViewState", "__convertFromCurrent", "__convertParameters", "__drawVectorEntry",
@@ -32,7 +32,7 @@ const PROTOTYPE_AT_HEAD = [
   "vectors"
 ].sort();
 
-/** 段階 0（54f5721）のモジュールの export。 */
+/** Web Components 化の前のモジュールの export。 */
 const EXPORTS_AT_HEAD = [
   "CustomEvent", "GPSErrorEvent", "GPSRequestEvent", "GPSResultEvent",
   "MAPLAT_APP_STARTUP_FIELDS", "MaplatApp", "MaplatMap", "assets", "buildSlideAttrs",
@@ -42,24 +42,24 @@ const EXPORTS_AT_HEAD = [
 /** `src/index.ts` に足したモジュール関数。 */
 const ADDED_EXPORTS = ["defaultPinIcon", "mercToLngLat"];
 
-/** 段階 2 で足す `@internal` メソッド（viewExtentMercsAsync ではなく viewportSize）。 */
-const ADDED_METHODS_PHASE2 = ["sourceLoadedDetail", "pixelToMerc", "viewportSize", "updateSize"];
+/** `<maplat-app>` のために足した `@internal` メソッド（地図の表示まわり。viewExtentMercsAsync ではなく viewportSize）。 */
+const ADDED_METHODS_VIEW = ["sourceLoadedDetail", "pixelToMerc", "viewportSize", "updateSize"];
 
-/** 段階 3 で足す `@internal` メソッド。 */
-const ADDED_METHODS_PHASE3 = ["setCenterMarker", "applyRuntimeOptions"];
+/** `<maplat-app>` のために足した `@internal` メソッド（起動後の設定まわり）。 */
+const ADDED_METHODS_RUNTIME = ["setCenterMarker", "applyRuntimeOptions"];
 
 describe("MaplatApp の公開面", () => {
-  it("prototype の一覧は段階 0 ＋ @internal 6 個と完全一致する", () => {
+  it("prototype の一覧は Web Components 化の前の一覧＋ <maplat-app> のために足した @internal 6 個と完全一致する", () => {
     const expected = [
       ...PROTOTYPE_AT_HEAD,
-      ...ADDED_METHODS_PHASE2,
-      ...ADDED_METHODS_PHASE3
+      ...ADDED_METHODS_VIEW,
+      ...ADDED_METHODS_RUNTIME
     ].sort();
     expect(expected.length).toBe(PROTOTYPE_AT_HEAD.length + 6);
     expect(Object.getOwnPropertyNames(MaplatApp.prototype).sort()).toEqual(expected);
   });
 
-  it("モジュールの export は段階 0 の一覧に mercToLngLat・defaultPinIcon を足したもの", () => {
+  it("モジュールの export は Web Components 化の前の一覧に mercToLngLat・defaultPinIcon を足したもの", () => {
     const expected = [...EXPORTS_AT_HEAD, ...ADDED_EXPORTS].sort();
     expect(expected.length).toBe(EXPORTS_AT_HEAD.length + 2);
     expect(Object.keys(core).sort()).toEqual(expected);
