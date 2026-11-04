@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // ビルド後の @maplat/core/common（dist/maplat_core_common.js）と @maplat/core/conformance
 // （dist/maplat_core_conformance.js）に、OpenLayers・Weiwudi・@maplat/transform・turf 由来のコードが
-// 入っていないことを確かめる（仕様 §10.1 U8 の前提 (1)）。`pnpm run build` の最後に走る。
+// 入っていないことを確かめる。`pnpm run build` の最後に走る。
 //
 // 判定（どれか 1 つでも当たれば失敗。exit code 1）:
 //   (a) ソースマップの sources に node_modules/ol/・@c4h/weiwudi・@maplat/transform・@turf・

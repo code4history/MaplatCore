@@ -120,7 +120,7 @@ describe("<maplat-app> 登録", () => {
   });
 });
 
-// 旧クラスの内部用メソッド（委譲の表の外）。段階 2・3 で足した @internal の 6 名を含む。
+// 旧クラスの内部用メソッド（委譲の表の外）。<maplat-app> のために足した @internal の 6 名を含む。
 const INTERNAL_METHODS = [
   "settingLoader", "sourcesLoader", "handleSetting", "initGeolocation", "prepareMap",
   "handlePois", "handleSources", "setInitialMap", "setMapClick", "setPointerEvents",
@@ -154,7 +154,7 @@ describe("<maplat-app> 公開面の一覧（src/index.ts との突き合わせ�
       all.push(m[3]);
     }
     const internal = INTERNAL_METHODS;
-    expect(all.length).toBe(76); // nov26-m4-t5（#91）の 2 個＋段階 2・3 の内部面 6 個
+    expect(all.length).toBe(76); // nov26-m4-t5（#91）の 2 個＋ <maplat-app> のために足した内部面 6 個
     expect(all.filter(n => !internal.includes(n))).toEqual([...MAPLAT_APP_METHODS]);
     for (const name of MAPLAT_APP_METHODS) {
       expect(typeof (MaplatApp.prototype as any)[name]).toBe("function");
