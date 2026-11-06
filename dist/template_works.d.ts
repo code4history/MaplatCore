@@ -12,3 +12,9 @@ export declare function isLegacyTemplate(src: string): boolean;
 export declare function resetTemplateWarnings(): void;
 export declare function createIconSet(data: any, ...ancestors: any[]): Record<string, any>;
 export declare function createHtmlFromTemplate(data: any, ...ancestors: any[]): any;
+/**
+ * POI の複製に、祖先のテンプレートから icon・selectedIcon と html・poiStyle を補う。
+ * マーカーの描画（clickMarker の detail）と getMarker の戻り値が同じ形になるよう、両方がこの 1 つを通る。
+ * 渡した data は書き換えない。
+ */
+export declare function applyPoiTemplates(data: any, ...ancestors: any[]): any;
