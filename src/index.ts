@@ -41,7 +41,7 @@ import {
   normalizeLayer,
   normalizePoi
 } from "./normalize_pois";
-import { createIconSet, createHtmlFromTemplate } from "./template_works";
+import { applyPoiTemplates } from "./template_works";
 import {
   addMarkerItem,
   backMarkerDataAt,
@@ -100,6 +100,33 @@ function markerIconFor(core: { __selectedMarker?: any }, data: any): any {
   const selected = core.__selectedMarker == data.namespaceID;
   if (!data.icon) return defaultPinIcon(selected);
   return selected && data.selectedIcon ? data.selectedIcon : data.icon;
+}
+
+/**
+ * POI を、格納している実体・その層・祖先（アプリの層ならアプリ、地図の層なら source）で引く。
+ * アプリの層（`#` なし）は最初に当たったもの、地図の層（`#` あり）は最後に当たったもの。
+ */
+function findPoiEntry(app: any, id: string): { poi: any; cluster: any; ancestor: any } | undefined {
+  if (!id.includes("#")) {
+    for (const key of Object.keys(app.pois)) {
+      const cluster = app.pois[key];
+      for (const poi of cluster.pois) {
+        if (poi.id === id) return { poi, cluster, ancestor: app };
+      }
+    }
+    return undefined;
+  }
+  const splits = id.split("#");
+  const source = ownEntry<MaplatSource>(app.cacheHash, splits[0]) as any;
+  if (!source?.pois) return undefined;
+  let ret: { poi: any; cluster: any; ancestor: any } | undefined;
+  for (const key of Object.keys(source.pois)) {
+    const cluster = source.pois[key];
+    for (const poi of cluster.pois) {
+      if (poi.id === splits[1]) ret = { poi, cluster, ancestor: source };
+    }
+  }
+  return ret;
 }
 
 interface AppData {
@@ -1721,8 +1748,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
       const items: MarkerItem[] = [];
       let selected: MarkerItem | undefined;
       const collect = (data: any, cluster: any, ancestor: any) => {
-        const dataCopy = createIconSet(data, cluster, ancestor);
-        createHtmlFromTemplate(dataCopy, cluster, ancestor);
+        const dataCopy = applyPoiTemplates(data, cluster, ancestor);
         const item: MarkerItem = {
           data: dataCopy,
           icon: markerIconFor(this, dataCopy)
@@ -1834,23 +1860,12 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     });
   }
   getMarker(id: any) {
-    if (!id.includes("#")) {
-      for (const key of Object.keys(this.pois)) {
-        for (const poi of this.pois[key].pois) {
-          if (poi.id === id) {
-            return poi; // 早期リターン
-          }
-        }
-      }
-      return undefined;
-    } else {
-      const splits = id.split("#");
-      const source = ownEntry<MaplatSource>(this.cacheHash, splits[0]);
-      return source?.getPoi(splits[1]);
-    }
+    const entry = findPoiEntry(this, id);
+    if (!entry) return undefined;
+    return applyPoiTemplates(entry.poi, entry.cluster, entry.ancestor);
   }
   updateMarker(id: any, data: any, overwrite: any) {
-    const poi = this.getMarker(id);
+    const poi = findPoiEntry(this, id)?.poi;
     if (!poi) return;
     data = normalizePoi(data || {});
     if (overwrite) {

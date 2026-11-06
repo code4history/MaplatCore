@@ -615,7 +615,7 @@ export type MaplatPoiMedia =
  * http/https だけを通す）。実装は読み込みで正規化する: 座標は lnglat にまとめる（lng/lat/longitude/latitude は
  * 消す）・id と namespaceID を必ず付ける。マーカーの描画のたびに、祖先（POI のレイヤー → 地図 → アプリ）の
  * テンプレートから icon・selectedIcon（iconTemplate / icon）と html・poiStyle（poiTemplate）を補った複製が
- * クリックの detail になる。ここに無いキー（テンプレートが読む独自のキー等）もそのまま載る。
+ * クリックの detail になる（`getMarker` の戻り値も同じ複製）。ここに無いキー（テンプレートが読む独自のキー等）もそのまま載る。
  */
 export interface MaplatPoi {
   /** レイヤーの中の id（無ければ実装が `${レイヤーのキー}_${連番}` を付ける） */
@@ -775,7 +775,12 @@ export interface MaplatAppDelegatedMethods {
   lngLatToClientPoint: (longitude: number, latitude: number) => Promise<{ x: number; y: number } | null>;
   selectMarker: AnyFn;
   unselectMarker: AnyFn;
-  /** POI の datum（id か namespaceID で引く）。見つからなければ undefined */
+  /**
+   * POI の datum（id か namespaceID で引く）。`clickMarker` の detail と同じ形: 祖先（POI のレイヤー → 地図。
+   * アプリの層ならレイヤー → アプリ）のテンプレートから icon・selectedIcon・html・poiStyle を補った複製を返す
+   * （格納している POI そのものではない。書き換えは `updateMarker`）。見つからなければ undefined。
+   * 他の層 A の実装（MaplatCorePro など）は追随中で、実体を返すことがある
+   */
   getMarker: (id: string) => MaplatPoi | undefined;
   updateMarker: AnyFn;
   addMarker: AnyFn;

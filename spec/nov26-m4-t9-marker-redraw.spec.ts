@@ -214,3 +214,35 @@ describe("nov26-m4-t9 #134 marker 再描画は直列で最新の要求を残す"
     expect(h.self.__redrawMarkerBlock).toBe(false);
   });
 });
+
+describe("getMarker は描画の datum と同じ形（clickMarker の detail）を返す", () => {
+  const withId = (id: string, namespaceID: string) => ({
+    id,
+    namespaceID,
+    name: id,
+    u: "u.png",
+    lnglat: [0, 0]
+  });
+  const tpl = {
+    poiTemplate: "<b>{{ name }}</b>",
+    iconTemplate: '{"icon": {{ u | dump | safe }}}'
+  };
+
+  it("T7: アプリの層（ancestor = this）と地図の層（ancestor = source）の両方で deep-equal", async () => {
+    const h = makeApp({ main: { pois: [withId("app_0", "app_0")], ...tpl } });
+    h.sources.A.pois = { main: { pois: [withId("0", "A#0")], ...tpl } };
+    h.self.cacheHash = h.sources;
+    h.redraw();
+    await h.complete();
+    const datums = new Map(
+      h.front.features.map((f: any) => [f.get("datum").namespaceID, f.get("datum")])
+    );
+    expect([...datums.keys()].sort()).toEqual(["A#0", "app_0"]);
+    for (const id of ["app_0", "A#0"]) {
+      const got = proto.getMarker.call(h.self, id);
+      expect(got.html).toBeDefined();
+      expect(got.icon).toBe("u.png");
+      expect(got).toEqual(datums.get(id));
+    }
+  });
+});
