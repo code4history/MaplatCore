@@ -1,8 +1,8 @@
 #!/bin/env node
-// MaplatCore/scripts/sync-version.js — M1-T1 修正版
-// 設計書: docs/superpowers/specs/2026-09-10-M1-T1-design.md §3.3
-// 変更: 全5パターンのオプショナル化、CDN URL パターン追加、Current release パターン追加
-// 変更なし: deno.json/jsr.json の JSON エントリ（ファイル不在でスキップされる既存動作を維持）
+// package.json の version を README.md・README.ja.md（と、あれば deno.json・jsr.json）へ写す。
+// 置き換えるのは、もともと版を書いている箇所だけ。版の無い `npm install @maplat/<名前>` などには版を足さない。
+// 版は prerelease（例 1.3.0-rc.1）を含めて 1 つの版として扱う。
+// deno.json・jsr.json は、ファイルが無ければ何もしない。
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -34,28 +34,28 @@ const filesToUpdate = [
     path: path.join(rootDir, 'README.md'),
     type: 'markdown',
     patterns: [
-      { regex: /npm install @maplat\/core(?:@[\d.]+)?/g, replacement: `npm install @maplat/core@${version}` },
-      { regex: /deno add @maplat\/core(?:@[\d.]+)?/g, replacement: `deno add @maplat/core@${version}` },
-      { regex: /npx jsr add @maplat\/core(?:@[\d.]+)?/g, replacement: `npx jsr add @maplat/core@${version}` },
-      { regex: /jsr:@maplat\/core(?:@[\d.]+)?/g, replacement: `jsr:@maplat/core@${version}` },
-      { regex: /npm:@maplat\/core(?:@[\d.]+)?/g, replacement: `npm:@maplat/core@${version}` },
-      { regex: /cdn\.jsdelivr\.net\/npm\/@maplat\/core@[\d.]+/g, replacement: `cdn.jsdelivr.net/npm/@maplat/core@${version}` },
-      { regex: /Current release: `[\d.]+`/g, replacement: `Current release: \`${version}\`` },
-      { regex: /現在のリリース: `[\d.]+`/g, replacement: `現在のリリース: \`${version}\`` }
+      { regex: /npm install @maplat\/core@\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?/g, replacement: `npm install @maplat/core@${version}` },
+      { regex: /deno add @maplat\/core@\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?/g, replacement: `deno add @maplat/core@${version}` },
+      { regex: /npx jsr add @maplat\/core@\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?/g, replacement: `npx jsr add @maplat/core@${version}` },
+      { regex: /jsr:@maplat\/core@\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?/g, replacement: `jsr:@maplat/core@${version}` },
+      { regex: /npm:@maplat\/core@\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?/g, replacement: `npm:@maplat/core@${version}` },
+      { regex: /cdn\.jsdelivr\.net\/npm\/@maplat\/core@\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?/g, replacement: `cdn.jsdelivr.net/npm/@maplat/core@${version}` },
+      { regex: /Current release: `\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?`/g, replacement: `Current release: \`${version}\`` },
+      { regex: /現在のリリース: `\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?`/g, replacement: `現在のリリース: \`${version}\`` }
     ]
   },
   {
     path: path.join(rootDir, 'README.ja.md'),
     type: 'markdown',
     patterns: [
-      { regex: /npm install @maplat\/core(?:@[\d.]+)?/g, replacement: `npm install @maplat/core@${version}` },
-      { regex: /deno add @maplat\/core(?:@[\d.]+)?/g, replacement: `deno add @maplat/core@${version}` },
-      { regex: /npx jsr add @maplat\/core(?:@[\d.]+)?/g, replacement: `npx jsr add @maplat/core@${version}` },
-      { regex: /jsr:@maplat\/core(?:@[\d.]+)?/g, replacement: `jsr:@maplat/core@${version}` },
-      { regex: /npm:@maplat\/core(?:@[\d.]+)?/g, replacement: `npm:@maplat/core@${version}` },
-      { regex: /cdn\.jsdelivr\.net\/npm\/@maplat\/core@[\d.]+/g, replacement: `cdn.jsdelivr.net/npm/@maplat/core@${version}` },
-      { regex: /Current release: `[\d.]+`/g, replacement: `Current release: \`${version}\`` },
-      { regex: /現在のリリース: `[\d.]+`/g, replacement: `現在のリリース: \`${version}\`` }
+      { regex: /npm install @maplat\/core@\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?/g, replacement: `npm install @maplat/core@${version}` },
+      { regex: /deno add @maplat\/core@\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?/g, replacement: `deno add @maplat/core@${version}` },
+      { regex: /npx jsr add @maplat\/core@\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?/g, replacement: `npx jsr add @maplat/core@${version}` },
+      { regex: /jsr:@maplat\/core@\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?/g, replacement: `jsr:@maplat/core@${version}` },
+      { regex: /npm:@maplat\/core@\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?/g, replacement: `npm:@maplat/core@${version}` },
+      { regex: /cdn\.jsdelivr\.net\/npm\/@maplat\/core@\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?/g, replacement: `cdn.jsdelivr.net/npm/@maplat/core@${version}` },
+      { regex: /Current release: `\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?`/g, replacement: `Current release: \`${version}\`` },
+      { regex: /現在のリリース: `\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?`/g, replacement: `現在のリリース: \`${version}\`` }
     ]
   }
 ];
