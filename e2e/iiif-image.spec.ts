@@ -113,7 +113,7 @@ test.describe('IIIF の画像の配信（デモの地域「新潟」）', () => 
     const recorded = await routeIiif(page);
 
     // 既存の e2e と同じ形でアプリの準備を待つ（デモは window.__MAPLAT_DEMO_APP__ に app を出す）
-    await page.goto('/?region=niigata', { waitUntil: 'domcontentloaded' });
+    await page.goto('/?region=niigata&cache=0', { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => (window as unknown as { __MAPLAT_DEMO_APP__?: unknown }).__MAPLAT_DEMO_APP__, undefined, {
       timeout: 60000
     });
@@ -178,7 +178,7 @@ test.describe('IIIF の画像の配信（デモの地域「新潟」）', () => 
     const copiedCount = map.iiif?.copiedMetadata?.length ?? 0;
     expect(copiedCount).toBeGreaterThan(0);
 
-    await page.goto('/?region=niigata', { waitUntil: 'domcontentloaded' });
+    await page.goto('/?region=niigata&cache=0', { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => (window as unknown as { __MAPLAT_DEMO_APP__?: unknown }).__MAPLAT_DEMO_APP__, undefined, {
       timeout: 60000
     });

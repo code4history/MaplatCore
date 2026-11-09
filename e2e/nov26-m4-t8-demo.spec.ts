@@ -10,7 +10,7 @@ const COALESCE = ['changeViewpoint', 'updateState'];
 const OSM_COPYRIGHT_LINK = '#vector-attr a[href="https://www.openstreetmap.org/copyright"]';
 
 const openDemo = async (page: Page, region: string, query = '') => {
-    await page.goto(`/?region=${region}${query}`, { waitUntil: 'domcontentloaded' });
+    await page.goto(`/?region=${region}&cache=0${query}`, { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => (window as any).__MAPLAT_DEMO_APP__, undefined, { timeout: 60000 });
     // 操作パネルの節は app を作った直後に同期で作られる。app ごとの節が出るまで待つ
     await page.waitForSelector('#demo-app-controls .demo-sec', { timeout: 30000 });
