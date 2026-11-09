@@ -368,6 +368,7 @@ function buildCacheSection(ctx: CacheSectionContext): void {
   totalNum.id = "cache-total";
   const statsFail = document.createElement("span");
   statsFail.id = "cache-stats-fail";
+  for (const n of [sizeNum, countNum, totalNum]) n.textContent = "—";
   sizeView.append("保存済み: ", sizeNum, " バイト ／ タイル: ", countNum, " / ", totalNum, " ", statsFail);
   sizeRow.appendChild(sizeView);
   const progress = text("cache-progress", "進捗:");
