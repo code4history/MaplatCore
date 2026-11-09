@@ -1,5 +1,5 @@
 /// <reference types="vitest" />
-import { defineConfig } from "vite";
+import { defineConfig, build as viteBuild, type Plugin } from "vite";
 import dts from "vite-plugin-dts";
 import { resolve } from "path";
 import { readFileSync } from "fs";
@@ -20,6 +20,52 @@ const coreEntry = resolve(__dirname, "src/index.ts");
 const commonModules = ["src/common", "src/element_base", "src/element_contract"].map(p => resolve(__dirname, p));
 const isCommonModule = (id: string) => commonModules.some(base => id === base || id === `${base}.ts`);
 const commonOutput = "./maplat_core_common.js";
+
+// デモ限定: Weiwudi の Service Worker を 1 本にまとめて /weiwudi-sw.js として配る（複製を追跡しない）。
+// lib ビルドは process.env.NODE_ENV を置換しないので define で固定する（無いと SW の評価が失敗する）。
+// まとめに失敗したら警告を出して配らない（デモはキャッシュ無しで動く。ビルドは失敗させない）
+function demoWeiwudiSw(): Plugin {
+  const entry = resolve(__dirname, "demo/weiwudi-sw-entry.ts");
+  let cached: Promise<string> | undefined;
+  const bundle = (): Promise<string> =>
+    (cached ??= viteBuild({
+      configFile: false,
+      logLevel: "silent",
+      publicDir: false,
+      define: { "process.env.NODE_ENV": JSON.stringify("production") },
+      build: {
+        write: false,
+        minify: false,
+        lib: { entry, formats: ["iife"], name: "WeiwudiSW", fileName: () => "weiwudi-sw.js" }
+      }
+    }).then((out) => {
+      const list = Array.isArray(out) ? out : [out];
+      const chunk = (list[0] as any).output.find((o: any) => o.type === "chunk");
+      return chunk.code as string;
+    }));
+  return {
+    name: "demo-weiwudi-sw",
+    configureServer(server) {
+      server.middlewares.use("/weiwudi-sw.js", (_req, res, next) => {
+        bundle().then((code) => {
+          res.setHeader("Content-Type", "text/javascript");
+          res.setHeader("Cache-Control", "no-cache");
+          res.end(code);
+        }, (e) => {
+          console.warn(`[demo-weiwudi-sw] Service Worker をまとめられません: ${String(e)}`);
+          next();
+        });
+      });
+    },
+    async generateBundle() {
+      try {
+        this.emitFile({ type: "asset", fileName: "weiwudi-sw.js", source: await bundle() });
+      } catch (e) {
+        this.warn(`Service Worker をまとめられません（キャッシュ無しのデモになります）: ${String(e)}`);
+      }
+    }
+  };
+}
 
 export default defineConfig({
   base: "./",
@@ -120,6 +166,7 @@ export default defineConfig({
     emptyOutDir: true
   },
   plugins: isElementBuild || isCommonBuild || isConformanceBuild ? [] : [
+    ...(isPackageBuild ? [] : [demoWeiwudiSw()]),
     dts({
       outDir: "dist",
       exclude: ["spec", "node_modules"],

@@ -3,6 +3,7 @@
 // 地域ドロップダウン（?region= 付き再読み込み）・app 設定の setting 明示渡し・
 // 地域内コンテンツ切り替え UI（地図セレクタ・POI・線・面・視点・透過・GPS）・出典表示。
 // Core 本体（公開ライブラリ）の公開 API だけを使う（Pro 専用 API・Core 専用 export を import しない）。
+import Weiwudi from "@c4h/weiwudi";
 import { MaplatApp, sanitizeHtml } from "../src/index.ts"; // 開発時。build:demo でバンドル
 // テンプレートの警告（ページで 1 回）の記憶を戻す。公開面ではないが、記法のプリセットを切り替えるたびに
 // 警告を出し直して見せるため、デモの中だけで使う（製品の挙動は変えない）
@@ -288,6 +289,402 @@ function makeButton(label: string, onClick: () => void): HTMLButtonElement {
   btn.textContent = label;
   btn.addEventListener("click", onClick);
   return btn;
+}
+
+// ---- タイルキャッシュ（Weiwudi の Service Worker と、Core の公開 API の呼び出し）----
+// Service Worker はページごとに 1 回だけ登録する（remove()→再生成では登録の結果を使い回す）。
+// 失敗してもデモのほかの機能は止めず、キャッシュ無しで起動して節に理由を出す。
+const SW_WAIT_MESSAGE = "Service Worker を待っています…";
+const cacheDisabledByUrl = (): boolean => new URLSearchParams(location.search).get("cache") === "0";
+let swRegistration: Promise<string | undefined> | undefined;
+
+/** 成功なら undefined、使えないなら理由の文字列 */
+function ensureServiceWorker(status: HTMLElement): Promise<string | undefined> {
+  if (cacheDisabledByUrl()) return Promise.resolve("URL の ?cache=0 で無効にしています");
+  swRegistration ??= (async () => {
+    const before = status.textContent;
+    status.textContent = SW_WAIT_MESSAGE;
+    try {
+      if (!navigator.serviceWorker) throw new Error("このブラウザでは navigator.serviceWorker が使えません");
+      await Weiwudi.registerSW(new URL("./weiwudi-sw.js", location.href), { scope: "./" });
+      return undefined;
+    } catch (e) {
+      // Weiwudi 1.1.x は文字列、新しい版は Error を投げうる
+      return `Service Worker を使えないのでキャッシュ無しで動いています: ${String(e instanceof Error ? e.message : e)}`;
+    } finally {
+      if (status.textContent === SW_WAIT_MESSAGE) status.textContent = before;
+    }
+  })();
+  return swRegistration;
+}
+
+// 待ち時間はコードの中の定数（試験は page.clock で進める）
+const CACHE_STALL_MS = 30_000; // 進捗（イベントか count の増加）が無いまま待つ上限
+const CACHE_POLL_MS = 2_000; // count を読む間隔
+const CACHE_CANCEL_LIMIT_MS = 10_000; // 発火側の cancel の完了を待つ上限
+const CACHE_CLEAR_CHECK_MS = 500; // 消去の確認の読み取りの間隔
+const CACHE_CLEAR_LIMIT_MS = 3_000; // 消去の確認を打ち切るまでの経過時間
+const CACHE_READ_LIMIT_MS = 3_000; // 統計・サイズの 1 回の読み取りを待つ上限（SW が詰まると Core の Promise は解決しない）
+
+/** 読み取りに上限をつける。上限・失敗のときは fallback を返す（待ち続けない） */
+function withReadLimit<T>(read: () => Promise<T>, fallback: T): Promise<T> {
+  return new Promise<T>((resolve) => {
+    const timer = setTimeout(() => { resolve(fallback); }, CACHE_READ_LIMIT_MS);
+    const done = (v: T): void => {
+      clearTimeout(timer);
+      resolve(v);
+    };
+    try {
+      void read().then(done, () => { done(fallback); });
+    } catch {
+      done(fallback);
+    }
+  });
+}
+const CACHE_FETCH_MAX_TILES = 3000;
+
+interface CacheSectionContext {
+  app: MaplatApp;
+  makeSection: (title: string) => { sec: HTMLElement; row: () => HTMLDivElement };
+  mountSection: (s: { sec: HTMLElement; row: () => HTMLDivElement }) => void;
+  showError: (where: string, e: unknown) => void;
+  logEvent: (type: string, text?: string) => void;
+  activeMapId: () => string | undefined;
+  /** キャッシュ無しで起動した理由（有効なら undefined） */
+  disabledReason: string | undefined;
+}
+
+type CacheStats = { count?: number; size?: number; total?: number; percent?: number };
+
+// 節「キャッシュ」。操作の対象は今表示している地図。キャッシュの操作は Core の公開 API だけを使う。
+// Core は取得・中止・消去の失敗を握りつぶす（統計の失敗は {} を返す）ので、公開 API の範囲で
+// 「進んでいない」「応答が無い」「消えていない」を見張り、ボタンが必ず戻るようにする。
+function buildCacheSection(ctx: CacheSectionContext): void {
+  const { app, makeSection, mountSection, showError, logEvent, activeMapId, disabledReason } = ctx;
+  const sec = makeSection("キャッシュ");
+  sec.sec.id = "demo-cache";
+  const text = (id: string, label: string): HTMLSpanElement => {
+    const r = sec.row();
+    const k = document.createElement("span");
+    k.textContent = `${label} `;
+    const v = document.createElement("span");
+    v.id = id;
+    r.append(k, v);
+    return v;
+  };
+  const appState = text("cache-app", "アプリのキャッシュ:");
+  const target = text("cache-target", "対象の地図:");
+  const sizeRow = sec.row();
+  const sizeView = document.createElement("span");
+  sizeView.id = "cache-stats";
+  const sizeNum = document.createElement("span");
+  sizeNum.id = "cache-size";
+  const countNum = document.createElement("span");
+  countNum.id = "cache-count";
+  const totalNum = document.createElement("span");
+  totalNum.id = "cache-total";
+  const statsFail = document.createElement("span");
+  statsFail.id = "cache-stats-fail";
+  for (const n of [sizeNum, countNum, totalNum]) n.textContent = "—";
+  sizeView.append("保存済み: ", sizeNum, " バイト ／ タイル: ", countNum, " / ", totalNum, " ", statsFail);
+  sizeRow.appendChild(sizeView);
+  const progress = text("cache-progress", "進捗:");
+  const result = text("cache-result", "終了:");
+  const message = text("cache-message", "");
+  const buttons = sec.row();
+  const fetchBtn = makeButton("全タイルを取得", () => { onFetchClick(); });
+  fetchBtn.id = "cache-fetch";
+  const clearBtn = makeButton("キャッシュを消す", () => { onClear(); });
+  clearBtn.id = "cache-clear";
+  buttons.append(fetchBtn, clearBtn);
+  const note = document.createElement("p");
+  note.className = "demo-note";
+  note.id = "cache-note";
+  sec.sec.appendChild(note);
+  const fixedNote = document.createElement("p");
+  fixedNote.className = "demo-note";
+  fixedNote.textContent =
+    "IIIF の画像は配信ごとに URL を作り直すため、キャッシュの対象外です。Service Worker の解除は DevTools の Application › Service Workers から行えます";
+  sec.sec.appendChild(fixedNote);
+
+  const enabled = disabledReason === undefined;
+  appState.textContent = enabled ? "有効" : `無効（${disabledReason}）`;
+
+  // 取得の状態: idle（待機）→ fetching（取得中）→ cancelling（中止を押した）／ firing（見張りが発火して cancel の完了待ち）
+  let state: "idle" | "fetching" | "cancelling" | "firing" = "idle";
+  let busyClear = false;
+  let gen = 0; // 取得を押すたび、発火・中止の無応答のたびに進める。古い世代のイベント・読み取りは捨てる
+  let fetchMapID: string | undefined;
+  let lastTotal: number | undefined;
+  let statsFailures = 0;
+  let statsPending = false;
+  let watchTimer: ReturnType<typeof setTimeout> | undefined;
+  let pollTimer: ReturnType<typeof setInterval> | undefined;
+
+  const setMessage = (s: string): void => { message.textContent = s; };
+
+  // ボタンの表示と、一括取得を押せる条件（機械で決める）
+  const refreshButtons = (): void => {
+    const mapID = activeMapId();
+    const usable = enabled && !!mapID && app.getMapCacheEnable(mapID);
+    target.textContent = mapID ? `${mapID} ／ キャッシュ: ${usable ? "対象" : "対象外"}` : "—";
+    fetchBtn.textContent = state === "fetching" || state === "cancelling" || state === "firing" ? "取得を中止" : "全タイルを取得";
+    clearBtn.disabled = !usable || busyClear || state !== "idle";
+    if (state === "idle") {
+      let reason = "";
+      if (!enabled) reason = "キャッシュが無効なので一括取得を使えません";
+      else if (!usable) reason = "この地図はキャッシュの対象外なので一括取得を使えません";
+      else if (lastTotal === undefined) reason = "全体のタイル数が分からないので一括取得を止めています";
+      else if (lastTotal > CACHE_FETCH_MAX_TILES) reason = `全体のタイル数が多すぎる（${lastTotal} 枚）ので一括取得を止めています`;
+      fetchBtn.disabled = reason !== "";
+      if (reason) fetchBtn.title = reason;
+      else fetchBtn.removeAttribute("title");
+      note.textContent = reason;
+    } else {
+      // 取得中は「取得を中止」。中止の完了待ち（firing）と中止を押したあと（cancelling）は押せない
+      fetchBtn.disabled = state === "firing" || state === "cancelling";
+      fetchBtn.removeAttribute("title");
+      note.textContent = "";
+    }
+  };
+
+  const showStats = (stats: CacheStats | undefined): void => {
+    if (!stats || typeof stats.size !== "number") {
+      // 連続 2 回失敗したときだけ「取得できません」にする（表示の点滅を避ける）
+      statsFailures++;
+      if (statsFailures >= 2) {
+        sizeNum.textContent = "—";
+        countNum.textContent = "—";
+        totalNum.textContent = "—";
+        statsFail.textContent = "（取得できません）";
+        lastTotal = undefined;
+      }
+      return;
+    }
+    statsFailures = 0;
+    statsFail.textContent = "";
+    sizeNum.textContent = String(stats.size);
+    countNum.textContent = typeof stats.count === "number" ? String(stats.count) : "—";
+    totalNum.textContent = typeof stats.total === "number" ? String(stats.total) : "—";
+    lastTotal = typeof stats.total === "number" && stats.total > 0 ? stats.total : undefined;
+  };
+
+  // 統計を読む。前の読み取りが戻っていなければ飛ばす。結果は世代が同じときだけ使う
+  const readStats = async (mapID: string | undefined, forGen: number): Promise<CacheStats | undefined> => {
+    if (!enabled || !mapID || statsPending) return undefined;
+    statsPending = true;
+    try {
+      const stats = (await withReadLimit(() => Promise.resolve(app.getMapTileCacheStatsAsync(mapID)), {})) as CacheStats | undefined;
+      if (forGen !== gen) return undefined;
+      return stats ?? {};
+    } finally {
+      statsPending = false;
+    }
+  };
+  const refreshStats = async (): Promise<void> => {
+    // 前の読み取りが戻っていない（上限は 3 秒）。待機中なら少し後にもう一度読む
+    if (statsPending) {
+      if (state === "idle") setTimeout(() => { void refreshStats(); }, CACHE_CLEAR_CHECK_MS);
+      return;
+    }
+    const g = gen;
+    const stats = await readStats(activeMapId(), g);
+    if (stats !== undefined && g === gen) {
+      showStats(stats);
+      refreshButtons();
+    }
+  };
+
+  // ---- 見張り ----
+  const clearWatch = (): void => {
+    if (watchTimer !== undefined) clearTimeout(watchTimer);
+    watchTimer = undefined;
+  };
+  const stopTimers = (): void => {
+    clearWatch();
+    if (pollTimer !== undefined) clearInterval(pollTimer);
+    pollTimer = undefined;
+  };
+  const armWatch = (): void => {
+    clearWatch();
+    watchTimer = setTimeout(onWatchFired, CACHE_STALL_MS);
+  };
+  const startTimers = (): void => {
+    armWatch();
+    const g = gen;
+    // 最初の読み取りは基準だけを決める（地図の表示で溜まったタイルを進捗に数えない）
+    let baseline: number | undefined;
+    pollTimer = setInterval(() => {
+      void (async () => {
+        const stats = await readStats(fetchMapID, g);
+        if (stats === undefined || g !== gen) return;
+        showStats(stats);
+        if (typeof stats.count !== "number") return;
+        if (baseline !== undefined && stats.count > baseline) armWatch();
+        baseline = stats.count;
+      })();
+    }, CACHE_POLL_MS);
+  };
+  const toIdle = (): void => {
+    stopTimers();
+    state = "idle";
+    refreshButtons();
+    void refreshStats();
+  };
+
+  function onWatchFired(): void {
+    watchTimer = undefined;
+    if (state === "fetching") {
+      // 開始側: 進んでいない。ジョブを止め、cancel の完了か 10 秒の上限のどちらか早い方でボタンを戻す
+      const mapID = fetchMapID;
+      gen++; // 統計の読み取りを止め、古い世代のイベントを捨てる
+      stopTimers();
+      state = "firing";
+      refreshButtons();
+      let done = false;
+      const finish = (timedOut: boolean): void => {
+        if (done) return;
+        done = true;
+        clearTimeout(limit);
+        const msg = timedOut
+          ? "中止の応答がありません（SW が応答していない可能性があります）"
+          : "進んでいません（遅い回線の可能性があります。取得は中止しました）";
+        setMessage(msg);
+        showError("タイルキャッシュ", msg);
+        toIdle();
+      };
+      const limit = setTimeout(() => { finish(true); }, CACHE_CANCEL_LIMIT_MS);
+      try {
+        void Promise.resolve(app.cancelMapTileCacheAsync(mapID ?? "")).then(() => { finish(false); }, () => { finish(false); });
+      } catch {
+        finish(false);
+      }
+    } else if (state === "cancelling") {
+      // 中止側: 中止の応答が無い。cancel はもう呼ばない
+      gen++;
+      const msg = "中止の応答がありません（遅い回線の可能性があります）";
+      setMessage(msg);
+      showError("タイルキャッシュ", msg);
+      toIdle();
+    }
+  }
+
+  const formatProgress = (d: Record<string, unknown> | undefined): string => {
+    if (!d) return "";
+    const parts: string[] = [];
+    if (typeof d.percent === "number") parts.push(`${d.percent}%`);
+    if (typeof d.processed === "number" && typeof d.total === "number") parts.push(`(${d.processed} / ${d.total})`);
+    if (typeof d.error === "number" && d.error > 0) parts.push(`失敗 ${d.error}`);
+    return parts.join(" ");
+  };
+
+  function onFetchClick(): void {
+    if (state === "fetching") {
+      // 中止: 開始側の見張りを止め、中止側の見張りに置き換える
+      state = "cancelling";
+      armWatch();
+      refreshButtons();
+      logEvent("tileCache", "中止を要求");
+      try {
+        void Promise.resolve(app.cancelMapTileCacheAsync(fetchMapID ?? "")).catch(() => undefined);
+      } catch {
+        // 呼び出しの失敗は見張りが知らせる
+      }
+      return;
+    }
+    if (state !== "idle") return;
+    const mapID = activeMapId();
+    if (!mapID) return;
+    const myGen = ++gen;
+    state = "fetching";
+    fetchMapID = mapID;
+    progress.textContent = "";
+    result.textContent = "";
+    setMessage("");
+    refreshButtons();
+    logEvent("tileCache", `${mapID} の全タイルの取得を開始`);
+    // 見張りを先に張る。取得の戻りは待たない（Core は失敗を握りつぶし、戻りが来ないことがある）
+    startTimers();
+    const onEvent = (type: string, detail: unknown): void => {
+      if (myGen !== gen) return; // 古い世代
+      const d = detail as Record<string, unknown> | undefined;
+      if (type === "proceed") {
+        progress.textContent = formatProgress(d);
+        armWatch();
+        void refreshStats();
+        return;
+      }
+      if (type === "finish" || type === "stop" || type === "canceled") {
+        const extra = formatProgress(d);
+        result.textContent = type === "finish" && typeof d?.error === "number" ? `finish（失敗 ${d.error} 枚）` : type;
+        if (extra) progress.textContent = extra;
+        logEvent("tileCache", `${type} ${mapID}`);
+        toIdle();
+      }
+    };
+    try {
+      void Promise.resolve(app.fetchAllMapTileCacheAsync(mapID, onEvent)).catch(() => undefined);
+    } catch {
+      // 呼び出しの失敗は見張りが知らせる
+    }
+  }
+
+  function onClear(): void {
+    const mapID = activeMapId();
+    if (!mapID || busyClear || state !== "idle") return;
+    busyClear = true;
+    refreshButtons();
+    setMessage("");
+    logEvent("tileCache", `${mapID} のキャッシュを消す`);
+    // 戻りは待たない。サイズが 0 になるのを 0.5 秒ごと 3 秒まで確かめる
+    try {
+      void Promise.resolve(app.clearMapTileCacheAsync(mapID)).catch(() => undefined);
+    } catch {
+      // 失敗はサイズで分かる
+    }
+    // 確認は経過時間で打ち切る（読み取りが戻らなくても 3 秒でボタンを戻す）
+    let settled = false;
+    let lastSize = -1;
+    let checkTimer: ReturnType<typeof setTimeout> | undefined;
+    const settle = (ok: boolean): void => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(deadline);
+      if (checkTimer !== undefined) clearTimeout(checkTimer);
+      busyClear = false;
+      if (ok) {
+        setMessage("消去しました");
+      } else {
+        const msg = `消去できませんでした（サイズ ${lastSize < 0 ? "不明" : `${lastSize} バイト`}が残っています）`;
+        setMessage(msg);
+        showError("タイルキャッシュ", msg);
+      }
+      refreshButtons();
+      void refreshStats();
+    };
+    const deadline = setTimeout(() => { settle(false); }, CACHE_CLEAR_LIMIT_MS);
+    const check = (): void => {
+      void (async () => {
+        const size = await withReadLimit(async () => Number(await app.getMapTileCacheSizeAsync(mapID)), -1);
+        if (settled) return;
+        lastSize = size;
+        if (size === 0) settle(true);
+        else checkTimer = setTimeout(check, CACHE_CLEAR_CHECK_MS);
+      })();
+    };
+    checkTimer = setTimeout(check, CACHE_CLEAR_CHECK_MS);
+  }
+
+  app.addEventListener("mapChanged", () => {
+    statsFailures = 0;
+    // 前の地図の総数で一括取得の可否を決めない（読み直すまで「分からない」に戻す）
+    if (state === "idle") lastTotal = undefined;
+    refreshButtons();
+    void refreshStats();
+  });
+  refreshButtons();
+  void refreshStats();
+  mountSection(sec);
 }
 
 // ---- 範囲外の POI（古地図の紙の外にある POI を背面の地理の地図に立てる）----
@@ -1203,6 +1600,9 @@ async function main(): Promise<void> {
     viewRow.appendChild(makeButton("北を上に", () => { app.resetDirection(); }));
     mountSection(viewSec);
 
+    // ---- キャッシュ（視点の次）----
+    buildCacheSection({ app, makeSection, mountSection, showError, logEvent, activeMapId, disabledReason: cacheDisabledReason });
+
     // ---- GPS ----
     const gpsSec = makeSection("GPS");
     const gpsRow = gpsSec.row();
@@ -1333,6 +1733,7 @@ async function main(): Promise<void> {
   // ---- nov26-m4-t8: 破棄と再生成（Issue #37 の 6）----
   // 再生成は「app.remove() → 同じ setting で createObject → 各節を作り直す」。古い app への参照を残さない
   let current: MaplatApp | undefined;
+  let cacheDisabledReason: string | undefined;
   const sourceIds = setting.sources.map((s) => (typeof s === "string" ? s : (s as { mapID: string }).mapID));
   const wantRestore = (): boolean => new URLSearchParams(location.search).get("restoreSession") === "1";
   // 再読み込みでも同じ作り方になるよう、URL の ?restoreSession=1 を合わせる（地域の切替でも残る）
@@ -1369,7 +1770,15 @@ async function main(): Promise<void> {
   const create = async (restoreSession: boolean): Promise<void> => {
     if (restoreSession) dropForeignSession();
     // setting を明示渡し。同時に存在する app は 1 つだけ。poiTemplate は clickMarker の detail.html の元（Issue #37 の 4）
-    const app = await MaplatApp.createObject({ appid: region, setting, poiTemplate: POI_TEMPLATE, restoreSession });
+    // Service Worker を先に登録してから enableCache で作る。使えなければキャッシュ無しで起動する
+    cacheDisabledReason = await ensureServiceWorker(status);
+    const app = await MaplatApp.createObject({
+      appid: region,
+      setting,
+      poiTemplate: POI_TEMPLATE,
+      restoreSession,
+      ...(cacheDisabledReason === undefined ? { enableCache: true } : {})
+    });
     current = app;
     // 検査用の口（e2e が Feature の style を読む。デモはパッケージに入らない）
     (window as any).__MAPLAT_DEMO_APP__ = app;
