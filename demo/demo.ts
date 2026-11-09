@@ -295,6 +295,9 @@ function makeButton(label: string, onClick: () => void): HTMLButtonElement {
 // Service Worker はページごとに 1 回だけ登録する（remove()→再生成では登録の結果を使い回す）。
 // 失敗してもデモのほかの機能は止めず、キャッシュ無しで起動して節に理由を出す。
 const SW_WAIT_MESSAGE = "Service Worker を待っています…";
+// Weiwudi.registerSW の待ちの上限は制御を待つ 10 秒だけで、その後の疎通確認（fetch）には上限が無い。
+// SW が制御を始めたのに応答しないとデモが起動しないので、デモ側で打ち切る（10 秒に疎通確認の余裕 5 秒）
+const CACHE_REGISTER_LIMIT_MS = 15_000;
 const cacheDisabledByUrl = (): boolean => new URLSearchParams(location.search).get("cache") === "0";
 let swRegistration: Promise<string | undefined> | undefined;
 
@@ -306,7 +309,14 @@ function ensureServiceWorker(status: HTMLElement): Promise<string | undefined> {
     status.textContent = SW_WAIT_MESSAGE;
     try {
       if (!navigator.serviceWorker) throw new Error("このブラウザでは navigator.serviceWorker が使えません");
-      await Weiwudi.registerSW(new URL("./weiwudi-sw.js", location.href), { scope: "./" });
+      await new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(() => { reject(new Error("Service Worker の登録が時間内に終わりませんでした")); }, CACHE_REGISTER_LIMIT_MS);
+        // 負けたあとで registerSW が解決・失敗しても起動には影響させない（結果はここで握る）
+        Weiwudi.registerSW(new URL("./weiwudi-sw.js", location.href), { scope: "./" }).then(
+          () => { clearTimeout(timer); resolve(); },
+          (e: unknown) => { clearTimeout(timer); reject(e); }
+        );
+      });
       return undefined;
     } catch (e) {
       // Weiwudi 1.1.x は文字列、新しい版は Error を投げうる
@@ -655,7 +665,10 @@ function buildCacheSection(ctx: CacheSectionContext): void {
       if (ok) {
         setMessage("消去しました");
       } else {
-        const msg = `消去できませんでした（サイズ ${lastSize < 0 ? "不明" : `${lastSize} バイト`}が残っています）`;
+        const msg =
+          lastSize < 0
+            ? "消去を確認できませんでした（サイズを読み取れません）"
+            : `消去できませんでした（サイズ ${lastSize} バイトが残っています）`;
         setMessage(msg);
         showError("タイルキャッシュ", msg);
       }

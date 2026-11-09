@@ -323,7 +323,7 @@ test.describe('デモのタイルキャッシュ（失敗の見え方。決定�
     await expect(page.locator(FETCH)).toHaveText('全タイルを取得');
     expect(await page.evaluate(() => (window as any).__cancelCalls)).toBe(1);
   });
-  test('統計の読み取りが解決しなくても、消去ボタンは 3 秒で戻って「消去できませんでした」を出す', async ({ page }) => {
+  test('統計の読み取りが解決しなくても、消去ボタンは 3 秒で戻って「消去を確認できませんでした」を出す', async ({ page }) => {
     const errors = errorsOf(page);
     await openWithClock(page);
     await page.evaluate(() => {
@@ -335,7 +335,8 @@ test.describe('デモのタイルキャッシュ（失敗の見え方。決定�
     await page.locator(CLEAR).click();
     await expect(page.locator(CLEAR)).toBeDisabled();
     await page.clock.runFor(4_000);
-    await expect(page.locator('#demo-cache')).toContainText('消去できませんでした');
+    await expect(page.locator('#demo-cache')).toContainText('確認できませんでした');
+    await expect(page.locator('#demo-cache')).not.toContainText('不明');
     await expect(page.locator(CLEAR)).toBeEnabled();
     expect(errors).toEqual([]);
   });
@@ -353,5 +354,66 @@ test.describe('デモのタイルキャッシュ（失敗の見え方。決定�
     });
     await page.clock.runFor(4_000);
     await expect(page.locator('#cache-size')).toHaveText('777');
+  });
+  test('読み取れる大きさが残っているときは、その大きさを添えて「消去できませんでした」を出す', async ({ page }) => {
+    await openWithClock(page);
+    await page.evaluate(() => {
+      const app = (window as any).__MAPLAT_DEMO_APP__;
+      app.getMapTileCacheSizeAsync = async () => 123;
+      app.clearMapTileCacheAsync = async () => {};
+    });
+    await page.locator(CLEAR).click();
+    await page.clock.runFor(3_000);
+    await expect(page.locator('#demo-cache')).toContainText('消去できませんでした（サイズ 123 バイトが残っています）');
+  });
+});
+
+// Service Worker の登録が終わらない環境でも、デモは一定時間でキャッシュ無しに切り替えて起動する
+test.describe('デモのタイルキャッシュ（Service Worker の登録が終わらない）', () => {
+  test.setTimeout(120000);
+
+  // 時計は goto の前に止める。待ちの開始（#status の表示）を確かめてから進めるので、読み込みの速さに左右されない
+  const startPaused = async (page: Page): Promise<string[]> => {
+    const errors = errorsOf(page);
+    await page.clock.install();
+    await page.clock.pauseAt(Date.now() + 2_000);
+    await page.goto(MORIOKA, { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('#status')).toHaveText('Service Worker を待っています…', { timeout: 30000 });
+    return errors;
+  };
+  const appExists = (page: Page) => page.evaluate(() => !!(window as any).__MAPLAT_DEMO_APP__);
+
+  const expectFallsBackAfterLimit = async (page: Page, errors: string[]): Promise<void> => {
+    await page.clock.runFor(14_000);
+    expect(await appExists(page)).toBe(false);
+    await expect(page.locator('#status')).toHaveText('Service Worker を待っています…');
+    await page.clock.runFor(2_000);
+    await expect.poll(() => appExists(page), { timeout: 30000 }).toBe(true);
+    await expect(page.locator('#demo-cache')).toContainText('時間内に終わりませんでした', { timeout: 30000 });
+    expect(await page.evaluate(() => (window as any).__MAPLAT_DEMO_APP__.enableCache)).toBe(false);
+    await expect(page.locator(FETCH)).toBeDisabled();
+    expect(errors).toEqual([]);
+  };
+
+  test('register が返らなくても 15 秒でキャッシュ無しに切り替えて起動する', async ({ page }) => {
+    await page.addInitScript(() => {
+      navigator.serviceWorker.register = () => new Promise(() => {});
+    });
+    const errors = await startPaused(page);
+    await expectFallsBackAfterLimit(page, errors);
+  });
+
+  test('Service Worker が制御を始めても ping が返らないときも 15 秒でキャッシュ無しに切り替えて起動する', async ({ page }) => {
+    // 登録と制御は実物。Weiwudi の疎通確認（…/ping への fetch）だけを返さない
+    await page.addInitScript(() => {
+      const original = window.fetch.bind(window);
+      window.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
+        const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+        if (/\/ping$/.test(url.split('?')[0])) return new Promise<Response>(() => {});
+        return original(input, init);
+      }) as typeof window.fetch;
+    });
+    const errors = await startPaused(page);
+    await expectFallsBackAfterLimit(page, errors);
   });
 });
