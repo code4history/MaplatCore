@@ -322,8 +322,25 @@ function ensureServiceWorker(status: HTMLElement): Promise<string | undefined> {
 const CACHE_STALL_MS = 30_000; // 進捗（イベントか count の増加）が無いまま待つ上限
 const CACHE_POLL_MS = 2_000; // count を読む間隔
 const CACHE_CANCEL_LIMIT_MS = 10_000; // 発火側の cancel の完了を待つ上限
-const CACHE_CLEAR_CHECK_MS = 500;
-const CACHE_CLEAR_CHECKS = 6; // 500ms × 6 = 3 秒
+const CACHE_CLEAR_CHECK_MS = 500; // 消去の確認の読み取りの間隔
+const CACHE_CLEAR_LIMIT_MS = 3_000; // 消去の確認を打ち切るまでの経過時間
+const CACHE_READ_LIMIT_MS = 3_000; // 統計・サイズの 1 回の読み取りを待つ上限（SW が詰まると Core の Promise は解決しない）
+
+/** 読み取りに上限をつける。上限・失敗のときは fallback を返す（待ち続けない） */
+function withReadLimit<T>(read: () => Promise<T>, fallback: T): Promise<T> {
+  return new Promise<T>((resolve) => {
+    const timer = setTimeout(() => { resolve(fallback); }, CACHE_READ_LIMIT_MS);
+    const done = (v: T): void => {
+      clearTimeout(timer);
+      resolve(v);
+    };
+    try {
+      void read().then(done, () => { done(fallback); });
+    } catch {
+      done(fallback);
+    }
+  });
+}
 const CACHE_FETCH_MAX_TILES = 3000;
 
 interface CacheSectionContext {
@@ -457,16 +474,19 @@ function buildCacheSection(ctx: CacheSectionContext): void {
     if (!enabled || !mapID || statsPending) return undefined;
     statsPending = true;
     try {
-      const stats = (await app.getMapTileCacheStatsAsync(mapID)) as CacheStats | undefined;
+      const stats = (await withReadLimit(() => Promise.resolve(app.getMapTileCacheStatsAsync(mapID)), {})) as CacheStats | undefined;
       if (forGen !== gen) return undefined;
       return stats ?? {};
-    } catch {
-      return forGen === gen ? {} : undefined;
     } finally {
       statsPending = false;
     }
   };
   const refreshStats = async (): Promise<void> => {
+    // 前の読み取りが戻っていない（上限は 3 秒）。待機中なら少し後にもう一度読む
+    if (statsPending) {
+      if (state === "idle") setTimeout(() => { void refreshStats(); }, CACHE_CLEAR_CHECK_MS);
+      return;
+    }
     const g = gen;
     const stats = await readStats(activeMapId(), g);
     if (stats !== undefined && g === gen) {
@@ -622,38 +642,43 @@ function buildCacheSection(ctx: CacheSectionContext): void {
     } catch {
       // 失敗はサイズで分かる
     }
-    let tries = 0;
+    // 確認は経過時間で打ち切る（読み取りが戻らなくても 3 秒でボタンを戻す）
+    let settled = false;
+    let lastSize = -1;
+    let checkTimer: ReturnType<typeof setTimeout> | undefined;
+    const settle = (ok: boolean): void => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(deadline);
+      if (checkTimer !== undefined) clearTimeout(checkTimer);
+      busyClear = false;
+      if (ok) {
+        setMessage("消去しました");
+      } else {
+        const msg = `消去できませんでした（サイズ ${lastSize < 0 ? "不明" : `${lastSize} バイト`}が残っています）`;
+        setMessage(msg);
+        showError("タイルキャッシュ", msg);
+      }
+      refreshButtons();
+      void refreshStats();
+    };
+    const deadline = setTimeout(() => { settle(false); }, CACHE_CLEAR_LIMIT_MS);
     const check = (): void => {
-      tries++;
       void (async () => {
-        let size = -1;
-        try {
-          size = Number(await app.getMapTileCacheSizeAsync(mapID));
-        } catch {
-          size = -1;
-        }
-        if (size === 0) {
-          busyClear = false;
-          setMessage("消去しました");
-          refreshButtons();
-          void refreshStats();
-        } else if (tries >= CACHE_CLEAR_CHECKS) {
-          busyClear = false;
-          const msg = `消去できませんでした（サイズ ${size < 0 ? "不明" : `${size} バイト`}が残っています）`;
-          setMessage(msg);
-          showError("タイルキャッシュ", msg);
-          refreshButtons();
-          void refreshStats();
-        } else {
-          setTimeout(check, CACHE_CLEAR_CHECK_MS);
-        }
+        const size = await withReadLimit(async () => Number(await app.getMapTileCacheSizeAsync(mapID)), -1);
+        if (settled) return;
+        lastSize = size;
+        if (size === 0) settle(true);
+        else checkTimer = setTimeout(check, CACHE_CLEAR_CHECK_MS);
       })();
     };
-    setTimeout(check, CACHE_CLEAR_CHECK_MS);
+    checkTimer = setTimeout(check, CACHE_CLEAR_CHECK_MS);
   }
 
   app.addEventListener("mapChanged", () => {
     statsFailures = 0;
+    // 前の地図の総数で一括取得の可否を決めない（読み直すまで「分からない」に戻す）
+    if (state === "idle") lastTotal = undefined;
     refreshButtons();
     void refreshStats();
   });
