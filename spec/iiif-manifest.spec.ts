@@ -23,7 +23,9 @@ import {
 import { META_KEYS } from "../src/meta_keys";
 
 function readFixture(name: string) {
-  return JSON.parse(readFileSync(resolve(__dirname, "fixtures/iiif", name), "utf-8"));
+  return JSON.parse(
+    readFileSync(resolve(__dirname, "fixtures/iiif", name), "utf-8")
+  );
 }
 
 /** NDL の Presentation v2（本物を 1 回取ったもの）。 */
@@ -31,8 +33,10 @@ const NDL = readFixture("ndl-948741.manifest.json");
 /** 手で書いた Presentation v3。 */
 const V3 = readFixture("presentation-v3-minimal.manifest.json");
 
-const ndlCanvas = (n: number): string => `https://dl.ndl.go.jp/api/iiif/948741/canvas/${n}`;
-const ndlImageService = (n: number): string => `https://dl.ndl.go.jp/api/iiif/948741/R000000${n}`;
+const ndlCanvas = (n: number): string =>
+  `https://dl.ndl.go.jp/api/iiif/948741/canvas/${n}`;
+const ndlImageService = (n: number): string =>
+  `https://dl.ndl.go.jp/api/iiif/948741/R000000${n}`;
 const ONE_TO_NINE = Array.from({ length: 9 }, (_, i) => i + 1);
 
 const V3_CANVAS_1 = "https://iiif.example.test/manifest/sample-map/canvas/1";
@@ -68,16 +72,21 @@ const MANIFEST_BINDINGS = {
 /** サニタイズをしないで通す（sanitize そのものの性質は別の試験で測る）。 */
 const identity = (html: string): string => html;
 
-type ResolvedMetadata = Extract<ReturnType<typeof resolveIiifMetadata>, { ok: true }>;
+type ResolvedMetadata = Extract<
+  ReturnType<typeof resolveIiifMetadata>,
+  { ok: true }
+>;
 
 /** ok: false を試験の失敗として扱う。 */
-function resolved(result: ReturnType<typeof resolveIiifMetadata>): ResolvedMetadata {
+function resolved(
+  result: ReturnType<typeof resolveIiifMetadata>
+): ResolvedMetadata {
   if (!result.ok) throw new Error(`解決に失敗した: ${result.reason}`);
   return result;
 }
 
 describe("listIiifCanvases", () => {
-  it("v2（NDL）は 9 枚で、canvas 1 は label \"1\"・4074×2705・imageService は R0000001", () => {
+  it('v2（NDL）は 9 枚で、canvas 1 は label "1"・4074×2705・imageService は R0000001', () => {
     const result = listIiifCanvases(NDL);
     if (!result.ok) throw new Error(`解決に失敗した: ${result.reason}`);
     expect(result.version).toBe("2");
@@ -94,14 +103,20 @@ describe("listIiifCanvases", () => {
   it("v2（NDL）の canvas の id・label・imageService は 1〜9 の順", () => {
     const result = listIiifCanvases(NDL);
     if (!result.ok) throw new Error(`解決に失敗した: ${result.reason}`);
-    expect(result.canvases.map(canvas => canvas.id)).toEqual(ONE_TO_NINE.map(ndlCanvas));
-    expect(result.canvases.map(canvas => canvas.label)).toEqual(ONE_TO_NINE.map(n => String(n)));
+    expect(result.canvases.map(canvas => canvas.id)).toEqual(
+      ONE_TO_NINE.map(ndlCanvas)
+    );
+    expect(result.canvases.map(canvas => canvas.label)).toEqual(
+      ONE_TO_NINE.map(n => String(n))
+    );
     expect(result.canvases.map(canvas => canvas.imageService)).toEqual(
       ONE_TO_NINE.map(ndlImageService)
     );
-    expect(result.canvases.every(canvas => canvas.width === 4074 && canvas.height === 2705)).toBe(
-      true
-    );
+    expect(
+      result.canvases.every(
+        canvas => canvas.width === 4074 && canvas.height === 2705
+      )
+    ).toBe(true);
   });
 
   it("v3（手書き）は 2 枚で、canvas 2 は言語の表の label", () => {
@@ -124,7 +139,9 @@ describe("listIiifCanvases", () => {
     expect(result.canvases[0].id).toBe(V3_CANVAS_1);
     expect(result.canvases[0].width).toBe(4000);
     expect(result.canvases[0].height).toBe(3000);
-    expect(result.canvases[0].imageService).toBe("https://iiif.example.test/image/sample-map-1");
+    expect(result.canvases[0].imageService).toBe(
+      "https://iiif.example.test/image/sample-map-1"
+    );
   });
 
   it("Manifest の形をしていないとき（null・配列・sequences／items が配列でない）は not-manifest", () => {
@@ -134,10 +151,19 @@ describe("listIiifCanvases", () => {
       [],
       "https://dl.ndl.go.jp/api/iiif/948741/manifest.json",
       { "@context": "http://iiif.io/api/presentation/2/context.json" },
-      { "@context": "http://iiif.io/api/presentation/2/context.json", sequences: {} },
+      {
+        "@context": "http://iiif.io/api/presentation/2/context.json",
+        sequences: {}
+      },
       { "@context": "http://iiif.io/api/presentation/3/context.json" },
-      { "@context": "http://iiif.io/api/presentation/3/context.json", items: {} },
-      { "@context": "http://iiif.io/api/presentation/3/context.json", items: "items" }
+      {
+        "@context": "http://iiif.io/api/presentation/3/context.json",
+        items: {}
+      },
+      {
+        "@context": "http://iiif.io/api/presentation/3/context.json",
+        items: "items"
+      }
     ]) {
       expect(listIiifCanvases(input)).toEqual(asNotManifest);
     }
@@ -192,23 +218,53 @@ describe("proposeIiifBindings", () => {
     }
   });
 
-  it("数字だけでない label の canvas（v3 の canvas 2）は canvas の label を指す", () => {
+  it("数字だけでない label の canvas（v3 の canvas 2）でも Manifest の label を指す", () => {
     const proposed = proposeIiifBindings(V3, V3_CANVAS_2);
-    expect(proposed.title).toEqual({ from: "canvas", property: "label" });
+    expect(proposed.title).toEqual({ from: "manifest", property: "label" });
   });
 
-  it("v3 の既定は題名（canvas）・帰属・ライセンス・要約の 4 つ", () => {
+  it("v3 の既定は題名（Manifest）・帰属・ライセンス・要約の 4 つ", () => {
     expect(proposeIiifBindings(V3, V3_CANVAS_2)).toEqual({
-      title: { from: "canvas", property: "label" },
+      title: { from: "manifest", property: "label" },
       attr: { from: "manifest", property: "requiredStatement" },
       license: { from: "manifest", property: "rights" },
       description: { from: "manifest", property: "summary" }
     });
   });
 
+  it("canvas の label が page 1 でも Manifest の書名を写す", () => {
+    const manifest = {
+      "@context": "http://iiif.io/api/presentation/2/context.json",
+      label: "〔地図〕最上時代山形城下絵図",
+      sequences: [{ canvases: [{ "@id": "canvas", label: "page 1" }] }]
+    };
+    const bindings = proposeIiifBindings(manifest, "canvas");
+    expect(bindings.title).toEqual({ from: "manifest", property: "label" });
+    expect(
+      resolved(
+        resolveIiifMetadata(
+          manifest,
+          { canvas: "canvas", bindings },
+          "ja",
+          identity
+        )
+      ).values.title
+    ).toBe("〔地図〕最上時代山形城下絵図");
+  });
+
+  it("Manifest の label が読めなければ canvas に落とさず title を返さない", () => {
+    for (const label of [undefined, null, "", {}, 123]) {
+      const manifest = { ...V3, label };
+      expect(proposeIiifBindings(manifest, V3_CANVAS_2)).not.toHaveProperty(
+        "title"
+      );
+    }
+  });
+
   it("canvas が見つからなければ Manifest の label を指す", () => {
     expect(
-      proposeIiifBindings(NDL, "https://dl.ndl.go.jp/api/iiif/948741/canvas/99").title
+      proposeIiifBindings(NDL, "https://dl.ndl.go.jp/api/iiif/948741/canvas/99")
+        .title
     ).toEqual({ from: "manifest", property: "label" });
   });
 
@@ -217,7 +273,10 @@ describe("proposeIiifBindings", () => {
       null,
       {},
       { "@context": "http://iiif.io/api/presentation/2/context.json" },
-      { "@context": "http://iiif.io/api/presentation/3/context.json", items: {} }
+      {
+        "@context": "http://iiif.io/api/presentation/3/context.json",
+        items: {}
+      }
     ]) {
       expect(proposeIiifBindings(broken, "canvas")).toEqual({});
     }
@@ -240,7 +299,12 @@ describe("proposeIiifBindings", () => {
   it("その既定で写すと、画像のライセンス・帰属が地図のデータの鍵に混ざらない", () => {
     const bindings = proposeIiifBindings(NDL, ndlCanvas(3));
     const result = resolved(
-      resolveIiifMetadata(NDL, { canvas: ndlCanvas(3), bindings }, "ja", identity)
+      resolveIiifMetadata(
+        NDL,
+        { canvas: ndlCanvas(3), bindings },
+        "ja",
+        identity
+      )
     );
     expect(result.values).toEqual({
       title: "新潟市圖",
@@ -261,23 +325,33 @@ describe("proposeIiifBindings", () => {
     const result = resolved(
       resolveIiifMetadata(V3, { canvas: V3_CANVAS_2, bindings }, "ja", identity)
     );
-    expect(Object.keys(result.values).sort()).toEqual(["attr", "description", "license", "title"]);
+    expect(Object.keys(result.values).sort()).toEqual([
+      "attr",
+      "description",
+      "license",
+      "title"
+    ]);
     expect(result.unresolved).toEqual([]);
     expect(result.warnings).toEqual([]);
   });
 
   it("デモの地図の素材の bindings は既定の出力と同じ", () => {
     const demoMap = JSON.parse(
-      readFileSync(resolve(__dirname, "../public/maps/niigata_1920_ndl.json"), "utf-8")
+      readFileSync(
+        resolve(__dirname, "../public/maps/niigata_1920_ndl.json"),
+        "utf-8"
+      )
     );
-    expect(proposeIiifBindings(NDL, demoMap.iiif.canvas)).toEqual(demoMap.iiif.bindings);
+    expect(proposeIiifBindings(NDL, demoMap.iiif.canvas)).toEqual(
+      demoMap.iiif.bindings
+    );
   });
 });
 
 describe("resolveIiifMetadata — v2（NDL）", () => {
   const iiif = { canvas: ndlCanvas(3), bindings: MANIFEST_BINDINGS };
 
-  it("版は \"2\" で、label・attribution・license を写す", () => {
+  it('版は "2" で、label・attribution・license を写す', () => {
     const result = resolved(resolveIiifMetadata(NDL, iiif, "ja", identity));
     expect(result.version).toBe("2");
     expect(result.values).toEqual({
@@ -294,26 +368,41 @@ describe("resolveIiifMetadata — v2（NDL）", () => {
 
   it("v2 に description・provider は無いので unresolved になり、values に入らない", () => {
     const result = resolved(resolveIiifMetadata(NDL, iiif, "ja", identity));
-    expect([...result.unresolved].sort()).toEqual(["contributor", "description"]);
+    expect([...result.unresolved].sort()).toEqual([
+      "contributor",
+      "description"
+    ]);
     expect(result.values).not.toHaveProperty("description");
     expect(result.values).not.toHaveProperty("contributor");
     expect(result.copiedValues).not.toHaveProperty("description");
     expect(result.copiedValues).not.toHaveProperty("contributor");
   });
 
-  it("copiedMetadata は Manifest の metadata 10 件を順に from: \"manifest\" で返す", () => {
+  it('copiedMetadata は Manifest の metadata 10 件を順に from: "manifest" で返す', () => {
     const result = resolved(resolveIiifMetadata(NDL, iiif, "ja", identity));
     expect(result.copiedMetadata).toEqual([
-      { from: "manifest", label: "Persistent ID", value: "info:ndljp/pid/948741" },
+      {
+        from: "manifest",
+        label: "Persistent ID",
+        value: "info:ndljp/pid/948741"
+      },
       { from: "manifest", label: "Title", value: "新潟市圖" },
       { from: "manifest", label: "Publisher", value: "髙橋長藏" },
       { from: "manifest", label: "Publication Date", value: "1920.11" },
-      { from: "manifest", label: "Publication Date (W3CDTF fortmat)", value: "1920" },
+      {
+        from: "manifest",
+        label: "Publication Date (W3CDTF fortmat)",
+        value: "1920"
+      },
       { from: "manifest", label: "Call Number", value: "YG7-Z-1065" },
       { from: "manifest", label: "Bibliographic ID", value: "000000564371" },
       { from: "manifest", label: "DOI", value: "10.11501/948741" },
       { from: "manifest", label: "Access Restrictions", value: "PDM" },
-      { from: "manifest", label: "URL", value: "https://dl.ndl.go.jp/info:ndljp/pid/948741" }
+      {
+        from: "manifest",
+        label: "URL",
+        value: "https://dl.ndl.go.jp/info:ndljp/pid/948741"
+      }
     ]);
   });
 
@@ -330,7 +419,7 @@ describe("resolveIiifMetadata — v2（NDL）", () => {
 describe("resolveIiifMetadata — v3（手書き）", () => {
   const iiif = { canvas: V3_CANVAS_2, bindings: MANIFEST_BINDINGS };
 
-  it("版は \"3\" で、label・summary・requiredStatement・rights・provider を写す", () => {
+  it('版は "3" で、label・summary・requiredStatement・rights・provider を写す', () => {
     const result = resolved(resolveIiifMetadata(V3, iiif, "ja", identity));
     expect(result.version).toBe("3");
     expect(result.values).toEqual({
@@ -357,13 +446,21 @@ describe("resolveIiifMetadata — v3（手書き）", () => {
   it("copiedMetadata は Manifest の 3 件と canvas の 1 件を順に from つきで返す", () => {
     const result = resolved(resolveIiifMetadata(V3, iiif, "ja", identity));
     expect(result.copiedMetadata).toEqual([
-      { from: "manifest", label: { en: "Creator", ja: "作者" }, value: { ja: "Sample Surveyor" } },
+      {
+        from: "manifest",
+        label: { en: "Creator", ja: "作者" },
+        value: { ja: "Sample Surveyor" }
+      },
       {
         from: "manifest",
         label: { en: "Date", ja: "年代" },
         value: { en: "1901", ja: "明治34年<br>1901年" }
       },
-      { from: "manifest", label: { en: "Note" }, value: { en: "See <i>the index</i>." } },
+      {
+        from: "manifest",
+        label: { en: "Note" },
+        value: { en: "See <i>the index</i>." }
+      },
       { from: "canvas", label: { en: "Sheet" }, value: { en: "Index" } }
     ]);
   });
@@ -380,11 +477,14 @@ describe("resolveIiifMetadata — v3（手書き）", () => {
     ]);
   });
 
-  it("from: \"canvas\" の label は canvas の label を返す", () => {
+  it('from: "canvas" の label は canvas の label を返す', () => {
     const result = resolved(
       resolveIiifMetadata(
         V3,
-        { canvas: V3_CANVAS_2, bindings: { title: { from: "canvas", property: "label" } } },
+        {
+          canvas: V3_CANVAS_2,
+          bindings: { title: { from: "canvas", property: "label" } }
+        },
         "ja",
         identity
       )
@@ -401,7 +501,10 @@ describe("resolveIiifMetadata — 言語", () => {
     type: "Manifest",
     label: { none: ["見出し"] },
     metadata: [
-      { label: { en: ["Creator"], none: ["作成者"] }, value: { none: ["Anonymous"] } },
+      {
+        label: { en: ["Creator"], none: ["作成者"] },
+        value: { none: ["Anonymous"] }
+      },
       { label: { en: ["Date"] }, value: { en: ["1901"], none: ["不明"] } }
     ],
     items: []
@@ -409,19 +512,31 @@ describe("resolveIiifMetadata — 言語", () => {
   const bindings = { title: { from: "manifest", property: "label" } } as const;
 
   it("none は lang の値が無いときだけ lang の値になる（lang ja）", () => {
-    const result = resolved(resolveIiifMetadata(inlineManifest, { bindings }, "ja", identity));
+    const result = resolved(
+      resolveIiifMetadata(inlineManifest, { bindings }, "ja", identity)
+    );
     expect(result.values.title).toEqual({ ja: "見出し" });
     expect(result.copiedMetadata).toEqual([
       { from: "manifest", label: { ja: "作成者" }, value: { ja: "Anonymous" } },
-      { from: "manifest", label: { en: "Date" }, value: { en: "1901", ja: "不明" } }
+      {
+        from: "manifest",
+        label: { en: "Date" },
+        value: { en: "1901", ja: "不明" }
+      }
     ]);
   });
 
   it("lang の値があるときは none を使わない（lang en）", () => {
-    const result = resolved(resolveIiifMetadata(inlineManifest, { bindings }, "en", identity));
+    const result = resolved(
+      resolveIiifMetadata(inlineManifest, { bindings }, "en", identity)
+    );
     expect(result.values.title).toEqual({ en: "見出し" });
     expect(result.copiedMetadata).toEqual([
-      { from: "manifest", label: { en: "Creator" }, value: { en: "Anonymous" } },
+      {
+        from: "manifest",
+        label: { en: "Creator" },
+        value: { en: "Anonymous" }
+      },
       { from: "manifest", label: { en: "Date" }, value: { en: "1901" } }
     ]);
   });
@@ -429,7 +544,12 @@ describe("resolveIiifMetadata — 言語", () => {
   it("v2 の文字列の値は lang によらず同じ文字列", () => {
     for (const lang of ["ja", "en", "fr"]) {
       const result = resolved(
-        resolveIiifMetadata(NDL, { bindings: MANIFEST_BINDINGS }, lang, identity)
+        resolveIiifMetadata(
+          NDL,
+          { bindings: MANIFEST_BINDINGS },
+          lang,
+          identity
+        )
       );
       expect(result.values.title).toBe("新潟市圖");
       expect(result.values.license).toBe("Custom");
@@ -438,11 +558,14 @@ describe("resolveIiifMetadata — 言語", () => {
 });
 
 describe("resolveIiifMetadata — 複数の値のつなぎ方", () => {
-  it("文字として入る鍵（title・officialTitle）は \" / \" でつなぐ", () => {
+  it('文字として入る鍵（title・officialTitle）は " / " でつなぐ', () => {
     const result = resolved(
       resolveIiifMetadata(V3, { bindings: MANIFEST_BINDINGS }, "ja", identity)
     );
-    expect(result.values.title).toEqual({ en: "Sample Town Map", ja: "見本町全図 / 附 町名索引" });
+    expect(result.values.title).toEqual({
+      en: "Sample Town Map",
+      ja: "見本町全図 / 附 町名索引"
+    });
     expect(result.values.officialTitle).toEqual({
       en: "Sample Town Map",
       ja: "見本町全図 / 附 町名索引"
@@ -463,12 +586,15 @@ describe("resolveIiifMetadata — 複数の値のつなぎ方", () => {
     const result = resolved(
       resolveIiifMetadata(V3, { bindings: MANIFEST_BINDINGS }, "ja", identity)
     );
-    expect(result.copiedMetadata[1].value).toEqual({ en: "1901", ja: "明治34年<br>1901年" });
+    expect(result.copiedMetadata[1].value).toEqual({
+      en: "1901",
+      ja: "明治34年<br>1901年"
+    });
   });
 });
 
 describe("resolveIiifMetadata — canvas が見つからないとき", () => {
-  it("from: \"canvas\" の selector は unresolved になり、warnings は 1 行", () => {
+  it('from: "canvas" の selector は unresolved になり、warnings は 1 行', () => {
     const result = resolved(
       resolveIiifMetadata(
         NDL,
@@ -489,7 +615,7 @@ describe("resolveIiifMetadata — canvas が見つからないとき", () => {
     expect(result.warnings).toHaveLength(1);
   });
 
-  it("from: \"manifest\" の selector は canvas が見つからなくても解決する", () => {
+  it('from: "manifest" の selector は canvas が見つからなくても解決する', () => {
     const result = resolved(
       resolveIiifMetadata(
         NDL,
@@ -513,23 +639,42 @@ describe("resolveIiifMetadata — 壊れた入力", () => {
 
   it("Manifest でない（null・配列・文字列・数値）は not-manifest", () => {
     for (const input of [null, undefined, [], [NDL], "manifest", 42, true]) {
-      expect(resolveIiifMetadata(input, { bindings: MANIFEST_BINDINGS }, "ja", identity)).toEqual(
-        asNotManifest
-      );
+      expect(
+        resolveIiifMetadata(
+          input,
+          { bindings: MANIFEST_BINDINGS },
+          "ja",
+          identity
+        )
+      ).toEqual(asNotManifest);
     }
   });
 
   it("v2 の sequences が配列でない・v3 の items が配列でないときは not-manifest", () => {
     for (const input of [
       { "@context": "http://iiif.io/api/presentation/2/context.json" },
-      { "@context": "http://iiif.io/api/presentation/2/context.json", sequences: {} },
-      { "@context": "http://iiif.io/api/presentation/2/context.json", sequences: "sequences" },
+      {
+        "@context": "http://iiif.io/api/presentation/2/context.json",
+        sequences: {}
+      },
+      {
+        "@context": "http://iiif.io/api/presentation/2/context.json",
+        sequences: "sequences"
+      },
       { "@context": "http://iiif.io/api/presentation/3/context.json" },
-      { "@context": "http://iiif.io/api/presentation/3/context.json", items: {} }
+      {
+        "@context": "http://iiif.io/api/presentation/3/context.json",
+        items: {}
+      }
     ]) {
-      expect(resolveIiifMetadata(input, { bindings: MANIFEST_BINDINGS }, "ja", identity)).toEqual(
-        asNotManifest
-      );
+      expect(
+        resolveIiifMetadata(
+          input,
+          { bindings: MANIFEST_BINDINGS },
+          "ja",
+          identity
+        )
+      ).toEqual(asNotManifest);
     }
   });
 
@@ -540,9 +685,14 @@ describe("resolveIiifMetadata — 壊れた入力", () => {
       { "@context": "http://iiif.io/api/presentation/1/context.json" },
       { "@context": "http://iiif.io/api/image/2/context.json" }
     ]) {
-      expect(resolveIiifMetadata(input, { bindings: MANIFEST_BINDINGS }, "ja", identity)).toEqual(
-        asUnsupported
-      );
+      expect(
+        resolveIiifMetadata(
+          input,
+          { bindings: MANIFEST_BINDINGS },
+          "ja",
+          identity
+        )
+      ).toEqual(asUnsupported);
     }
   });
 
@@ -577,24 +727,43 @@ describe("resolveIiifMetadata — 壊れた入力", () => {
   });
 
   it("property が無いときと、あって形が読めないときで警告の文が違う", () => {
-    const bindings = { description: { from: "manifest", property: "summary" } } as const;
+    const bindings = {
+      description: { from: "manifest", property: "summary" }
+    } as const;
     // NDL の版 2 には description が無い
-    const missing = resolved(resolveIiifMetadata(NDL, { bindings }, "ja", identity));
+    const missing = resolved(
+      resolveIiifMetadata(NDL, { bindings }, "ja", identity)
+    );
     expect(missing.unresolved).toEqual(["description"]);
-    expect(missing.warnings).toEqual(["鍵 description の IIIF の値がありません"]);
+    expect(missing.warnings).toEqual([
+      "鍵 description の IIIF の値がありません"
+    ]);
     // 版 3 の summary はあるが数値
     const malformed = resolved(
       resolveIiifMetadata({ ...V3, summary: 42 }, { bindings }, "ja", identity)
     );
     expect(malformed.unresolved).toEqual(["description"]);
-    expect(malformed.warnings).toEqual(["鍵 description の IIIF の値の形が読めません"]);
+    expect(malformed.warnings).toEqual([
+      "鍵 description の IIIF の値の形が読めません"
+    ]);
   });
 
   it("ライセンスが無いときはライセンスの警告にする", () => {
-    const bindings = { license: { from: "manifest", property: "rights" } } as const;
-    const missing = resolved(resolveIiifMetadata({ ...V3, rights: undefined }, { bindings }, "ja", identity));
+    const bindings = {
+      license: { from: "manifest", property: "rights" }
+    } as const;
+    const missing = resolved(
+      resolveIiifMetadata(
+        { ...V3, rights: undefined },
+        { bindings },
+        "ja",
+        identity
+      )
+    );
     expect(missing.unresolved).toEqual(["license"]);
-    expect(missing.warnings).toEqual(["鍵 license のライセンスの値がありません"]);
+    expect(missing.warnings).toEqual([
+      "鍵 license のライセンスの値がありません"
+    ]);
   });
 });
 
@@ -625,11 +794,19 @@ describe("resolveIiifMetadata — 深い入れ子・循環", () => {
     const manifest = manifestOf({ label: nested(20000) });
     expect(() => listIiifCanvases(manifest)).not.toThrow();
     expect(() => proposeIiifBindings(manifest, "canvas")).not.toThrow();
-    expect(() => resolveIiifMetadata(manifest, { bindings: title }, "ja", identity)).not.toThrow();
+    expect(() =>
+      resolveIiifMetadata(manifest, { bindings: title }, "ja", identity)
+    ).not.toThrow();
 
-    expect(listIiifCanvases(manifest)).toEqual({ ok: true, version: "3", canvases: [] });
+    expect(listIiifCanvases(manifest)).toEqual({
+      ok: true,
+      version: "3",
+      canvases: []
+    });
     expect(proposeIiifBindings(manifest, "canvas")).toEqual({});
-    const result = resolved(resolveIiifMetadata(manifest, { bindings: title }, "ja", identity));
+    const result = resolved(
+      resolveIiifMetadata(manifest, { bindings: title }, "ja", identity)
+    );
     expect(result.values).toEqual({});
     expect(result.unresolved).toEqual(["title"]);
     expect(result.warnings).toEqual(["鍵 title の IIIF の値の形が読めません"]);
@@ -639,28 +816,46 @@ describe("resolveIiifMetadata — 深い入れ子・循環", () => {
     const manifest = manifestOf({ label: circular() });
     expect(() => listIiifCanvases(manifest)).not.toThrow();
     expect(() => proposeIiifBindings(manifest, "canvas")).not.toThrow();
-    expect(() => resolveIiifMetadata(manifest, { bindings: title }, "ja", identity)).not.toThrow();
+    expect(() =>
+      resolveIiifMetadata(manifest, { bindings: title }, "ja", identity)
+    ).not.toThrow();
 
-    expect(listIiifCanvases(manifest)).toEqual({ ok: true, version: "3", canvases: [] });
+    expect(listIiifCanvases(manifest)).toEqual({
+      ok: true,
+      version: "3",
+      canvases: []
+    });
     expect(proposeIiifBindings(manifest, "canvas")).toEqual({});
-    const result = resolved(resolveIiifMetadata(manifest, { bindings: title }, "ja", identity));
+    const result = resolved(
+      resolveIiifMetadata(manifest, { bindings: title }, "ja", identity)
+    );
     expect(result.values).toEqual({});
     expect(result.unresolved).toEqual(["title"]);
   });
 
   it("metadata の値が循環していても例外を投げず、その行を落として警告する", () => {
-    const manifest = manifestOf({ metadata: [{ label: "循環", value: circular() }] });
+    const manifest = manifestOf({
+      metadata: [{ label: "循環", value: circular() }]
+    });
     expect(() =>
       resolveIiifMetadata(manifest, { bindings: {} }, "ja", identity)
     ).not.toThrow();
-    const result = resolved(resolveIiifMetadata(manifest, { bindings: {} }, "ja", identity));
+    const result = resolved(
+      resolveIiifMetadata(manifest, { bindings: {} }, "ja", identity)
+    );
     expect(result.copiedMetadata).toEqual([]);
-    expect(result.warnings).toEqual(["Manifest の metadata の値の形が読めません"]);
+    expect(result.warnings).toEqual([
+      "Manifest の metadata の値の形が読めません"
+    ]);
   });
 
   it("2 万段の入れ子の metadata の値でも例外を投げない", () => {
-    const manifest = manifestOf({ metadata: [{ label: "深い", value: nested(20000) }] });
-    const result = resolved(resolveIiifMetadata(manifest, { bindings: {} }, "ja", identity));
+    const manifest = manifestOf({
+      metadata: [{ label: "深い", value: nested(20000) }]
+    });
+    const result = resolved(
+      resolveIiifMetadata(manifest, { bindings: {} }, "ja", identity)
+    );
     expect(result.copiedMetadata).toEqual([]);
     expect(result.warnings).toHaveLength(1);
   });
@@ -670,7 +865,12 @@ describe("resolveIiifMetadata — sanitize は呼び出し側が渡す", () => {
   it("NDL: HTML の鍵の値と copiedMetadata の値にだけ渡す（12 回）", () => {
     const sanitize = vi.fn(identity);
     resolved(
-      resolveIiifMetadata(NDL, { canvas: ndlCanvas(3), bindings: MANIFEST_BINDINGS }, "ja", sanitize)
+      resolveIiifMetadata(
+        NDL,
+        { canvas: ndlCanvas(3), bindings: MANIFEST_BINDINGS },
+        "ja",
+        sanitize
+      )
     );
     const passed = sanitize.mock.calls.map(call => call[0]).sort();
     expect(passed).toEqual(
@@ -696,7 +896,9 @@ describe("resolveIiifMetadata — sanitize は呼び出し側が渡す", () => {
 
   it("v3: 項目名（requiredStatement の label・metadata の label）と label の値は渡さない", () => {
     const sanitize = vi.fn(identity);
-    resolved(resolveIiifMetadata(V3, { bindings: MANIFEST_BINDINGS }, "ja", sanitize));
+    resolved(
+      resolveIiifMetadata(V3, { bindings: MANIFEST_BINDINGS }, "ja", sanitize)
+    );
     const passed = sanitize.mock.calls.map(call => call[0]);
     expect(passed).not.toContain("Sample Town Map");
     expect(passed).not.toContain("Attribution");
@@ -775,7 +977,12 @@ describe("copiedValues", () => {
       [V3, V3_CANVAS_2, "en"]
     ] as const) {
       const result = resolved(
-        resolveIiifMetadata(manifest, { canvas: canvasId, bindings: MANIFEST_BINDINGS }, lang, identity)
+        resolveIiifMetadata(
+          manifest,
+          { canvas: canvasId, bindings: MANIFEST_BINDINGS },
+          lang,
+          identity
+        )
       );
       for (const [key, table] of Object.entries(result.copiedValues)) {
         const value = result.values[key];
@@ -786,7 +993,9 @@ describe("copiedValues", () => {
   });
 
   it("写さなかった鍵・値の無い licenseNote は入らない", () => {
-    const ndl = resolved(resolveIiifMetadata(NDL, { bindings: MANIFEST_BINDINGS }, "ja", identity));
+    const ndl = resolved(
+      resolveIiifMetadata(NDL, { bindings: MANIFEST_BINDINGS }, "ja", identity)
+    );
     expect(Object.keys(ndl.copiedValues).sort()).toEqual([
       "attr",
       "dataAttr",
@@ -797,7 +1006,9 @@ describe("copiedValues", () => {
       "officialTitle",
       "title"
     ]);
-    const v3 = resolved(resolveIiifMetadata(V3, { bindings: MANIFEST_BINDINGS }, "ja", identity));
+    const v3 = resolved(
+      resolveIiifMetadata(V3, { bindings: MANIFEST_BINDINGS }, "ja", identity)
+    );
     expect(Object.keys(v3.copiedValues).sort()).toEqual([
       "attr",
       "contributor",
@@ -830,10 +1041,14 @@ describe("iiifRightsToLicense", () => {
   });
 
   it("www. の有無と http／https の違いは同じ語にする", () => {
-    expect(iiifRightsToLicense("http://www.creativecommons.org/licenses/by/2.0/")).toEqual({
+    expect(
+      iiifRightsToLicense("http://www.creativecommons.org/licenses/by/2.0/")
+    ).toEqual({
       license: "CC BY"
     });
-    expect(iiifRightsToLicense("https://www.creativecommons.org/licenses/by-sa/4.0/")).toEqual({
+    expect(
+      iiifRightsToLicense("https://www.creativecommons.org/licenses/by-sa/4.0/")
+    ).toEqual({
       license: "CC BY-SA"
     });
   });
@@ -843,7 +1058,9 @@ describe("iiifRightsToLicense", () => {
       license: "Custom",
       licenseNote: NDL_LICENSE_URI
     });
-    expect(iiifRightsToLicense("https://rightsstatements.org/page/InC/1.0/")).toEqual({
+    expect(
+      iiifRightsToLicense("https://rightsstatements.org/page/InC/1.0/")
+    ).toEqual({
       license: "Custom",
       licenseNote: "https://rightsstatements.org/page/InC/1.0/"
     });
@@ -875,7 +1092,7 @@ describe("IIIF_BINDABLE_KEYS", () => {
 });
 
 describe("IIIF_METADATA_DISPLAY_DEFAULT", () => {
-  it("表を出さない（\"hidden\"）", () => {
+  it('表を出さない（"hidden"）', () => {
     expect(IIIF_METADATA_DISPLAY_DEFAULT).toBe("hidden");
   });
 });

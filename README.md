@@ -328,6 +328,9 @@ MaplatEditor:
   metadata table. Set it per map with `iiifMetadata` on the entry of the app
   setting's `sources` (`{ "mapID": "...", "iiifMetadata": "all" }`). Without it the
   value is `"hidden"`.
+- `proposeIiifBindings` always proposes the manifest label for `title`. If that label
+  cannot be read, it omits `title`; it does not fall back to the canvas label.
+  Explicit `{ from: "canvas", property: "label" }` bindings remain supported.
 - The functions that read a manifest and pick the values to copy are in
   `src/iiif/manifest.ts` (`listIiifCanvases`, `proposeIiifBindings`,
   `resolveIiifMetadata`, `compareIiifCopy`, `iiifRightsToLicense`,

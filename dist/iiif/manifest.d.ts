@@ -54,11 +54,10 @@ export declare function listIiifCanvases(manifest: unknown): {
 };
 /**
  * 既定の selector。
- * 題名は、canvas の label が頁の番号（数字だけ）でなければ canvas の label を、
- * そうでなければ Manifest の label を指す。帰属・ライセンス・要約は Manifest から写す。
+ * 題名は常に Manifest の label を指す。帰属・ライセンス・要約も Manifest から写す。
  * 結び付ける元にその項目が無い（読めない）ときは、その鍵を返さない。
  */
-export declare function proposeIiifBindings(manifest: unknown, canvasId: string): IiifBindings;
+export declare function proposeIiifBindings(manifest: unknown, _canvasId: string): IiifBindings;
 /**
  * 写す値を取り出す（取得しない）。
  * HTML として入る鍵の値と metadata の値は、呼び出し側が渡した関数（sanitize）を通してから返す。
