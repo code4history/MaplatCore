@@ -262,7 +262,7 @@ function findCanvas(parsed: ParsedManifest, canvasId: string | undefined): Plain
   return parsed.canvases.find(canvas => canvasIdOf(canvas, parsed.version) === canvasId);
 }
 
-/** canvas の label を、言語を選ばずに読む（数字だけかの判定と一覧の表示に使う） */
+/** canvas の label を、言語を選ばずに読む（一覧の表示に使う） */
 function canvasLabel(canvas: PlainObject | undefined): Localized {
   if (!canvas) return "";
   const converted = toLocalized(canvas.label, TEXT_JOINER);
@@ -274,20 +274,6 @@ function canvasLabel(canvas: PlainObject | undefined): Localized {
   }
   if (Object.keys(others).length > 0) return others;
   return converted[NONE] ?? "";
-}
-
-/** label が数字だけか（1 枚ものの地図で、canvas の label が頁の番号になっている場合を見分ける） */
-function isNumericLabel(label: Localized): boolean {
-  const texts = typeof label === "string" ? [label] : Object.values(label);
-  if (texts.length === 0) return false;
-  return texts.every(text => /^[0-9]+$/.test(text.trim()));
-}
-
-/** label が空か（canvas に label が無ければ Manifest の label に切り替える） */
-function isEmptyLabel(label: Localized): boolean {
-  const texts = typeof label === "string" ? [label] : Object.values(label);
-  if (texts.length === 0) return true;
-  return texts.every(text => text.trim() === "");
 }
 
 /** 版 2 の画像サービス（canvas.images[0].resource.service）の id */
@@ -357,7 +343,7 @@ export function listIiifCanvases(
   return { ok: true, version: parsed.version, canvases };
 }
 
-/** 既定で結び付ける鍵（題名は canvas か Manifest を選ぶので別に扱う） */
+/** 既定で結び付ける鍵（題名は別に扱う） */
 const DEFAULT_BINDINGS: ReadonlyArray<{ key: string; property: IiifProperty }> = [
   { key: "attr", property: "requiredStatement" },
   { key: "license", property: "rights" },
@@ -366,21 +352,15 @@ const DEFAULT_BINDINGS: ReadonlyArray<{ key: string; property: IiifProperty }> =
 
 /**
  * 既定の selector。
- * 題名は、canvas の label が頁の番号（数字だけ）でなければ canvas の label を、
- * そうでなければ Manifest の label を指す。帰属・ライセンス・要約は Manifest から写す。
+ * 題名は常に Manifest の label を指す。帰属・ライセンス・要約も Manifest から写す。
  * 結び付ける元にその項目が無い（読めない）ときは、その鍵を返さない。
  */
-export function proposeIiifBindings(manifest: unknown, canvasId: string): IiifBindings {
+export function proposeIiifBindings(manifest: unknown, _canvasId: string): IiifBindings {
   const parsed = parseManifest(manifest);
   if (!parsed.ok) return {};
-  const canvas = findCanvas(parsed, canvasId);
-  const canvasText = canvasLabel(canvas);
-  const labelFrom: IiifFrom =
-    canvas && !isEmptyLabel(canvasText) && !isNumericLabel(canvasText) ? "canvas" : "manifest";
   const bindings: IiifBindings = {};
-  const titleSource = labelFrom === "canvas" ? canvas : parsed.root;
-  if (isReadableProperty(titleSource, "label", parsed.version, TEXT_JOINER)) {
-    bindings.title = { from: labelFrom, property: "label" };
+  if (isReadableProperty(parsed.root, "label", parsed.version, TEXT_JOINER)) {
+    bindings.title = { from: "manifest", property: "label" };
   }
   for (const { key, property } of DEFAULT_BINDINGS) {
     if (isReadableProperty(parsed.root, property, parsed.version, HTML_JOINER)) {

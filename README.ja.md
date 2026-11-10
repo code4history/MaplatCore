@@ -305,6 +305,9 @@ MaplatCore はフィールドの意味の定義と、結果として得られる
 - `display` は `"all"` か `"hidden"` で、書誌の全項目の表を UI が出すかを表します。
   アプリの設定の `sources` の要素に `iiifMetadata` を書いて地図ごとに選びます
   （`{ "mapID": "...", "iiifMetadata": "all" }`）。書かなければ `"hidden"` です。
+- `proposeIiifBindings` の題名の既定は常に Manifest の `label` です。読めない場合は
+  `title` を返さず、canvas の label へは切り替えません。利用者が「このコマ」を選ぶための
+  明示的な `{ from: "canvas", property: "label" }` の指定は引き続き使えます。
 - Manifest を読んで写す値を取り出す関数は `src/iiif/manifest.ts` にあります
   （`listIiifCanvases`・`proposeIiifBindings`・`resolveIiifMetadata`・`compareIiifCopy`・
   `iiifRightsToLicense`・`IIIF_BINDABLE_KEYS`）。取得をせず、DOM も使いません。HTML の値は

@@ -36,6 +36,7 @@
   - 検出に当たらないまま表示が変わる場合が 1 つだけある: lodash の記法を含まず、`{{ }}`・`{% %}` を文字として書いていたテンプレートは、1.3 から Nunjucks として評価される
 
 ### Fixed
+- `proposeIiifBindings` の題名の既定を常に Manifest の `label` にした。読めなければ `title` を返さず、canvas の label に切り替えない。明示的な canvas の指定は引き続き使える
 - `getMarker(id)` が、マーカーの描画と同じく祖先（POI のレイヤー → 地図 → アプリ）の `poiTemplate`・`iconTemplate` を当てた POI を返すようにした。これまでは格納しているデータをそのまま返していたため、`poiTemplate` で本文を作る POI を `@maplat/ui` の `openMarker()`・マーカー一覧・状態 URL（`om:`）から開くと本文が空になり、地図上のマーカーを押したときだけテンプレートが当たっていた（#150）。戻り値は `clickMarker` の detail と同じ形の複製で、格納している POI そのものではない。POI の書き換えは従来どおり `updateMarker` で行う
 
 ### Security
