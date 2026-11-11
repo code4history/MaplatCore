@@ -189,3 +189,43 @@ describe("clientPointToLngLat の連鎖", () => {
     expect(pixelToMerc).not.toHaveBeenCalled();
   });
 });
+
+describe("lngLatToClientPoint はピンと同じ地図で測る", () => {
+  const map = (left: number, top: number, offset: number) => ({
+    getViewport: () => ({ getBoundingClientRect: () => ({ left, top }) }),
+    getPixelFromCoordinate: vi.fn((c: number[]) => [c[0] + offset, c[1] + offset])
+  });
+  const from = (inside: boolean) => ({
+    isWmts: () => false,
+    insideCheckSysCoord: () => inside,
+    merc2SysCoordAsync_ignoreBackground: vi.fn(async () => [1, 2]),
+    // 前面の外挿（紙の外では背面のメルカトルと離れる）
+    merc2SysCoordAsync: vi.fn(async () => [7, 8])
+  });
+
+  it("古地図の範囲外は背面のメルカトルの画素（前面の外挿は使わない）", async () => {
+    const front = map(10, 20, 0);
+    const back = map(10, 20, 1000);
+    const app = stub({ from: from(false), mapObject: front, backMap: back });
+    const merc = transform([139.5, 36.2], "EPSG:4326", "EPSG:3857");
+    const result = await app.lngLatToClientPoint(139.5, 36.2);
+    expect(front.getPixelFromCoordinate).not.toHaveBeenCalled();
+    expect(app.from.merc2SysCoordAsync).not.toHaveBeenCalled();
+    expect(result.x).toBeCloseTo(merc[0] + 1000 + 10, 3);
+    expect(result.y).toBeCloseTo(merc[1] + 1000 + 20, 3);
+  });
+
+  it("範囲内は前面の座標（ピンと同じ判定の座標）", async () => {
+    const front = map(10, 20, 0);
+    const back = map(10, 20, 1000);
+    const app = stub({ from: from(true), mapObject: front, backMap: back });
+    expect(await app.lngLatToClientPoint(139.5, 36.2)).toEqual({ x: 11, y: 22 });
+    expect(back.getPixelFromCoordinate).not.toHaveBeenCalled();
+  });
+
+  it("背面の無い古地図の範囲外は従来どおり前面の外挿", async () => {
+    const front = map(10, 20, 0);
+    const app = stub({ from: from(false), mapObject: front, backMap: undefined });
+    expect(await app.lngLatToClientPoint(139.5, 36.2)).toEqual({ x: 17, y: 28 });
+  });
+});

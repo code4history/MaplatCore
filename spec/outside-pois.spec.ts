@@ -7,6 +7,7 @@
 import { describe, it, expect, vi, beforeAll } from "vitest";
 import {
   classifyMarker,
+  locateMerc,
   placeMarkerLayers,
   replaceMarkers,
   backMarkerDataAt,
@@ -215,6 +216,44 @@ describe("backPinHittable: 背面のピンが押せる場所か", () => {
       setBackPinHitMinTransparency(null);
     }
     expect(backPinHittable(app(true) as any, [1, 2])).toBe(false);
+  });
+});
+
+describe("locateMerc: 点が描かれる地図と座標（lngLatToClientPoint が使う）", () => {
+  it("範囲内は前面の座標", async () => {
+    const a = makeApp({ inside: () => true });
+    const located = await locateMerc(a.app, [100, 200]);
+    expect(located?.map).toBe(a.app.mapObject);
+    expect(located?.coord).toEqual([10, 20]);
+  });
+
+  it("古地図の範囲外は、背面のメルカトル（前面の外挿は使わない）", async () => {
+    const a = makeApp({ inside: () => false });
+    a.app.from.isWmts = () => false;
+    const located = await locateMerc(a.app, [100, 200]);
+    expect(located?.map).toBe(a.app.backMap);
+    expect(located?.coord).toEqual([100, 200]);
+  });
+
+  it("範囲外のピンを隠していても背面を返す（地点は背面に見えている）", async () => {
+    const a = makeApp({ inside: () => false });
+    a.app.from.isWmts = () => false;
+    a.app.__hideOutsidePois = true;
+    expect((await locateMerc(a.app, [100, 200]))?.map).toBe(a.app.backMap);
+  });
+
+  it("前面がメルカトルの地図なら、範囲外も前面のメルカトル", async () => {
+    const a = makeApp({ inside: () => false });
+    a.app.from.isWmts = () => true;
+    const located = await locateMerc(a.app, [100, 200]);
+    expect(located?.map).toBe(a.app.mapObject);
+    expect(located?.coord).toEqual([100, 200]);
+  });
+
+  it("背面の無い古地図の範囲外は undefined（呼び出し元が従来の外挿で補う）", async () => {
+    const a = makeApp({ inside: () => false, back: false });
+    a.app.from.isWmts = () => false;
+    expect(await locateMerc(a.app, [100, 200])).toBeUndefined();
   });
 });
 
