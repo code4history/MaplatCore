@@ -154,7 +154,7 @@ describe("<maplat-app> 公開面の一覧（src/index.ts との突き合わせ�
       all.push(m[3]);
     }
     const internal = INTERNAL_METHODS;
-    expect(all.length).toBe(76); // nov26-m4-t5（#91）の 2 個＋ <maplat-app> のために足した内部面 6 個
+    expect(all.length).toBe(76); // 線・面の個別削除（#91 の removeLine・removeVector）の 2 個＋ <maplat-app> のために足した内部面 6 個
     expect(all.filter(n => !internal.includes(n))).toEqual([...MAPLAT_APP_METHODS]);
     for (const name of MAPLAT_APP_METHODS) {
       expect(typeof (MaplatApp.prototype as any)[name]).toBe("function");
@@ -163,7 +163,7 @@ describe("<maplat-app> 公開面の一覧（src/index.ts との突き合わせ�
     }
   });
 
-  it("@internal を付けたメソッド ⊆ 内部用の一覧で、内部用の一覧 ∩ MAPLAT_APP_METHODS = ∅（m4）", () => {
+  it("@internal を付けたメソッド ⊆ 内部用の一覧で、内部用の一覧 ∩ MAPLAT_APP_METHODS = ∅", () => {
     const src = readFileSync(resolve(__dirname, "../src/index.ts"), "utf-8");
     // ブロックコメントは「中に */ を含まない」単位で切り、その直後のメソッド宣言だけを見る
     const marked: string[] = [];
