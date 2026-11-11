@@ -19,7 +19,7 @@
 ### Changed
 - 範囲外の POI が背面の地図に見えるようになった。古地図の紙の外にある POI は背面の `marker` 層にメルカトルの座標で立ち、TMS・基本地図では前面に立つ。範囲外の POI を選んでいる間は中心を紙の内側へ引き戻さず、背面のピンは紙の外の点でだけ押せる
 - `MaplatApp` の起動時だけ効くフィールド（`appid`・`enableCache`・`noRotate`・`alwaysGpsOn`・`overlay`・`googleApiKey`・`restoreSession`・`initialRestore`・`uiHooks` など）への構築後の代入は、警告して無視する（読み取りは従来どおり）
-- 上の起動時だけ効くフィールドのうち公開の 12 個は、TypeScript の型定義でも読み取り専用になった（`get` のみ）。`app.restoreSession = false` のような代入はコンパイルエラー（`TS2540`）になる。実行時も、インスタンスの列挙できるプロパティから prototype の accessor に変わり、`Object.keys(app)`・スプレッドには出ない
+- 上の起動時だけ効くフィールドのうち公開の 12 個は、TypeScript の型定義でも読み取り専用になった（`get` のみ）。`app.restoreSession = false` のような代入はコンパイルエラー（`TS2540`）になる。実行時も、インスタンスの列挙できるプロパティから prototype の accessor（列挙されない）に変わり、`Object.keys(app)`・スプレッドに同じ名前のキー（`appid`・`restoreSession` など）は出ない。値の保管場所 `__appid`・`__restoreSession` などはインスタンスの列挙できるプロパティなので、こちらは出る
 - `appOption.overlay` に `undefined`・`null` を明示したときの扱いを変えた。従来は背面の地図なしになっていたが、省略したときと同じく背面の地図ありになる。背面の地図を使わないときは `overlay: false` を渡す
 - `MaplatApp` が設定ファイルの機能系キー（`noRotate`・`northUp`・`tapDuration`・`tapUIVanish`・`homeMarginPixels`・`controls`）を読むと、次のメジャー版（2.0）で廃止する旨を 1 回警告する。`<maplat-app>` はこれらを設定ファイルから読まない（属性・プロパティで与える）
 
