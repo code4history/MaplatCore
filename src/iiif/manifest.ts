@@ -122,7 +122,7 @@ function joinValues(values: unknown, joiner: string): string | undefined {
   if (Array.isArray(values)) {
     const parts: string[] = [];
     for (const value of values) if (typeof value === "string") parts.push(value);
-    return parts.join(joiner);
+    return parts.length > 0 ? parts.join(joiner) : undefined;
   }
   return undefined;
 }
@@ -276,16 +276,50 @@ function canvasLabel(canvas: PlainObject | undefined): Localized {
   return converted[NONE] ?? "";
 }
 
+/** 文字列 1 つ・配列のどちらでも、中の文字列だけを返す */
+function stringsOf(value: unknown): string[] {
+  if (typeof value === "string") return [value];
+  if (Array.isArray(value)) return value.filter((item): item is string => typeof item === "string");
+  return [];
+}
+
+/**
+ * サービスが画像サービスか。
+ * 型（type／@type）があれば ImageService1〜3 だけを受け付ける。
+ * 型を省いた従来の Image API 2 のサービスは、@context か profile に Image API の印
+ * （iiif.io/api/image/ を含む URI、または level0〜level2）があるものだけを受け付ける。
+ * 型の無い認証（/api/auth/）や annex のサービス（annex/services）は画像サービスと見なさない。
+ */
+function isImageService(service: PlainObject): boolean {
+  const type = service.type ?? service["@type"];
+  if (type !== undefined) return /^ImageService[123]$/.test(String(type));
+  const marks = [...stringsOf(service["@context"]), ...stringsOf(service.profile)];
+  if (marks.some(mark => mark.includes("/api/auth/") || mark.includes("annex/services"))) return false;
+  return marks.some(mark => mark.includes("iiif.io/api/image/") || /^level[0-2]$/.test(mark));
+}
+
+/**
+ * 画像サービスは Presentation の版とは独立して id／@id を持つ。
+ * 複数候補は記載順に調べ、画像サービスでないもの・id が読めないものは飛ばす。
+ */
+function imageServiceId(raw: unknown): string | undefined {
+  const services = Array.isArray(raw) ? raw : [raw];
+  for (const service of services) {
+    if (!isPlainObject(service) || !isImageService(service)) continue;
+    for (const id of [service.id, service["@id"]]) {
+      if (typeof id === "string" && id.trim() !== "") return id;
+    }
+  }
+  return undefined;
+}
+
 /** 版 2 の画像サービス（canvas.images[0].resource.service）の id */
 function v2ImageService(canvas: PlainObject): string | undefined {
   const images = canvas.images;
   if (!Array.isArray(images) || !isPlainObject(images[0])) return undefined;
   const resource = images[0].resource;
   if (!isPlainObject(resource)) return undefined;
-  const service = Array.isArray(resource.service) ? resource.service[0] : resource.service;
-  if (!isPlainObject(service)) return undefined;
-  const id = service["@id"];
-  return typeof id === "string" ? id : undefined;
+  return imageServiceId(resource.service);
 }
 
 /** 版 3 の画像サービス（canvas.items[0].items[0].body.service）の id */
@@ -296,10 +330,7 @@ function v3ImageService(canvas: PlainObject): string | undefined {
   if (!Array.isArray(annotations) || !isPlainObject(annotations[0])) return undefined;
   const body = annotations[0].body;
   if (!isPlainObject(body)) return undefined;
-  const service = Array.isArray(body.service) ? body.service[0] : body.service;
-  if (!isPlainObject(service)) return undefined;
-  const id = service.id;
-  return typeof id === "string" ? id : undefined;
+  return imageServiceId(body.service);
 }
 
 /** 数を読む（読めなければ 0） */
@@ -418,10 +449,43 @@ function isReadableProperty(
   const converted = toLocalized(raw, joiner);
   if (converted === undefined) return false;
   if (typeof converted === "string") return converted.trim() !== "";
-  return Object.keys(converted).length > 0;
+  return Object.values(converted).some(text => text.trim() !== "");
 }
 
-/** metadata の一覧を写した行にする（順を保ち、全部の行を返す） */
+/** 空白だけ・空の文字列か、値が無い（undefined・null） */
+function isBlankText(value: unknown): boolean {
+  return value === undefined || value === null || (typeof value === "string" && value.trim() === "");
+}
+
+/** 言語の表の 1 言語の値が空か（空白だけの文字列、または空白だけの文字列しか無い配列） */
+function isBlankLanguageValues(values: unknown): boolean {
+  return isBlankText(values) || (Array.isArray(values) && values.every(isBlankText));
+}
+
+/** 配列ではない IIIF の値が空か（版 2 の言語つきの値・版 3 の言語の表） */
+function isBlankSingleValue(raw: unknown): boolean {
+  if (isBlankText(raw)) return true;
+  if (!isPlainObject(raw)) return false;
+  if (hasOwn(raw, "@value")) return isBlankText(raw["@value"]);
+  const entries = Object.entries(raw);
+  // @ で始まる鍵しか無いものは、空ではなく形の読めない値として扱う
+  if (entries.length > 0 && entries.every(([key]) => key.startsWith("@"))) return false;
+  return entries.every(([key, values]) => key.startsWith("@") || isBlankLanguageValues(values));
+}
+
+/**
+ * metadata の値が空か（写す中身が無いか）。
+ * 中身があって形が読めない値（数・入れ子の配列など）とは分ける。
+ * 入れ子は決まった深さしか見ない（循環した値・深い入れ子で再帰しない）。
+ */
+function isBlankMetadataValue(raw: unknown): boolean {
+  return Array.isArray(raw) ? raw.every(isBlankSingleValue) : isBlankSingleValue(raw);
+}
+
+/**
+ * metadata の一覧を写した行にする（順を保つ）。
+ * 値が空の行は写す価値が無いので、警告なしで捨てる。中身があって読めない行は警告して捨てる。
+ */
 function collectMetadata(
   source: PlainObject | undefined,
   from: IiifFrom,
@@ -433,6 +497,7 @@ function collectMetadata(
   const entries: IiifMetadataEntry[] = [];
   for (const raw of source.metadata) {
     if (!isPlainObject(raw)) continue;
+    if (isBlankMetadataValue(raw.value)) continue;
     const label = localizeLabel(raw.label, TEXT_JOINER, lang) ?? "";
     const localized = localizeValue(raw.value, HTML_JOINER, lang);
     if (localized === undefined) {
