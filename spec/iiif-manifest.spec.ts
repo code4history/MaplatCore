@@ -216,6 +216,68 @@ describe("画像サービスの版と複数候補", () => {
     const result = listIiifCanvases(manifest);
     expect(result.ok && result.canvases[0].imageService).toBe(image2["@id"]);
   });
+
+  /** v2 の先頭 canvas の service を差し替えて、選ばれた画像サービスを返す */
+  const pickV2 = (service: unknown) => {
+    const manifest = structuredClone(NDL);
+    manifest.sequences[0].canvases[0].images[0].resource.service = service;
+    const result = listIiifCanvases(manifest);
+    if (!result.ok) throw new Error(result.reason);
+    return result.canvases[0].imageService;
+  };
+  const untypedImage = {
+    "@context": "http://iiif.io/api/image/2/context.json",
+    "@id": "https://example.org/image/untyped",
+    profile: "http://iiif.io/api/image/2/level1.json"
+  };
+
+  it("型の無い認証サービスが前にあっても、型の無い画像サービスを選ぶ", () => {
+    // 認証（Auth API 1）の login サービスは型を持たず、id も画像サービスと同じ形の URL
+    const login = {
+      "@context": "http://iiif.io/api/auth/1/context.json",
+      "@id": "https://example.org/auth/login",
+      profile: "http://iiif.io/api/auth/1/login"
+    };
+    // 認証の profile だけで @context の無いもの
+    const token = {
+      "@id": "https://example.org/auth/token",
+      profile: "http://iiif.io/api/auth/1/token"
+    };
+    // 物理寸法（annex の services）も画像サービスではない
+    const physdim = {
+      "@context": "http://iiif.io/api/annex/services/physdim/1/context.json",
+      "@id": "https://example.org/physdim",
+      profile: "http://iiif.io/api/annex/services/physdim"
+    };
+    expect(pickV2([login, untypedImage])).toBe(untypedImage["@id"]);
+    expect(pickV2([token, physdim, untypedImage])).toBe(untypedImage["@id"]);
+    expect(pickV2([login, token, physdim])).toBeUndefined();
+  });
+
+  it.each([
+    ["@context だけ", { "@context": "http://iiif.io/api/image/2/context.json" }],
+    ["profile の URI だけ", { profile: "http://iiif.io/api/image/2/level2.json" }],
+    [
+      "profile の配列の先頭",
+      { profile: ["http://iiif.io/api/image/2/level1.json", { formats: ["jpg"] }] }
+    ],
+    ["profile が level0", { profile: "level0" }],
+    ["profile が level2", { profile: "level2" }],
+    ["v3 の @context", { "@context": "http://iiif.io/api/image/3/context.json" }]
+  ])("型の無い画像サービスを受け付ける（%s）", (_name, marks) => {
+    const service = { "@id": "https://example.org/image/marked", ...marks };
+    expect(pickV2(service)).toBe("https://example.org/image/marked");
+  });
+
+  it("型も画像 API の印も無いサービスは画像として選ばない", () => {
+    const bare = { "@id": "https://example.org/unknown" };
+    const otherProfile = {
+      "@id": "https://example.org/other",
+      profile: "https://example.org/profiles/level1"
+    };
+    expect(pickV2(bare)).toBeUndefined();
+    expect(pickV2([bare, otherProfile, untypedImage])).toBe(untypedImage["@id"]);
+  });
 });
 
 describe("proposeIiifBindings", () => {
@@ -854,6 +916,84 @@ describe("resolveIiifMetadata — 壊れた入力", () => {
     expect(missing.warnings).toEqual([
       "鍵 license のライセンスの値がありません"
     ]);
+  });
+});
+
+describe("resolveIiifMetadata — 値の空な metadata の行", () => {
+  const v3Of = (metadata: unknown[]) =>
+    ({
+      "@context": "http://iiif.io/api/presentation/3/context.json",
+      id: "https://iiif.example.test/empty/manifest.json",
+      type: "Manifest",
+      label: { en: [] },
+      items: [],
+      metadata
+    }) as Record<string, unknown>;
+  const kept = { label: { en: ["Place"] }, value: { en: ["Sample Town"] } };
+  const keptEntry = { from: "manifest", label: { en: "Place" }, value: { en: "Sample Town" } };
+
+  it.each([
+    ["空の言語配列", { en: [] }],
+    ["空の言語配列が複数", { en: [], ja: [] }],
+    ["空の文字列だけの言語配列", { en: ["", "  "] }],
+    ["空の言語の表", {}],
+    ["空の文字列", ""],
+    ["空白だけの文字列", "   "],
+    ["空の配列", []],
+    ["版 2 の空の言語つきの値", [{ "@value": "", "@language": "en" }]],
+    ["値が null", null],
+    ["値が無い", undefined]
+  ])("%s の行は警告なしで捨て、ほかの行は残す", (_name, value) => {
+    const empty = value === undefined ? { label: { en: ["Empty"] } } : { label: { en: ["Empty"] }, value };
+    const result = resolved(
+      resolveIiifMetadata(v3Of([empty, kept]), { bindings: {} }, "en", identity)
+    );
+    expect(result.copiedMetadata).toEqual([keptEntry]);
+    expect(result.warnings).toEqual([]);
+  });
+
+  it("中身があって読めない値は、今までどおり警告して捨てる", () => {
+    const result = resolved(
+      resolveIiifMetadata(
+        v3Of([{ label: "数", value: { en: [42] } }, { label: "数", value: 42 }, kept]),
+        { bindings: {} },
+        "en",
+        identity
+      )
+    );
+    expect(result.copiedMetadata).toEqual([keptEntry]);
+    expect(result.warnings).toEqual([
+      "Manifest の metadata の値の形が読めません",
+      "Manifest の metadata の値の形が読めません"
+    ]);
+  });
+
+  it("空の言語と中身のある言語が並ぶ行は、中身のある言語だけ残す", () => {
+    const result = resolved(
+      resolveIiifMetadata(
+        v3Of([{ label: { en: ["Place"] }, value: { ja: [], en: ["Sample Town"] } }]),
+        { bindings: {} },
+        "en",
+        identity
+      )
+    );
+    expect(result.copiedMetadata).toEqual([keptEntry]);
+    expect(result.warnings).toEqual([]);
+  });
+
+  it("題名の判定は変えない（空の label は読めない値として警告する）", () => {
+    const manifest = v3Of([]);
+    expect(proposeIiifBindings(manifest, "").title).toBeUndefined();
+    const result = resolved(
+      resolveIiifMetadata(
+        manifest,
+        { bindings: { title: { from: "manifest", property: "label" } } },
+        "en",
+        identity
+      )
+    );
+    expect(result.unresolved).toEqual(["title"]);
+    expect(result.warnings).toEqual(["鍵 title の IIIF の値の形が読めません"]);
   });
 });
 
