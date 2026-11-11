@@ -46,6 +46,7 @@ import {
   addMarkerItem,
   backMarkerDataAt,
   centerOnOutsidePoi,
+  locateMerc,
   classifyMarker,
   placeMarkerLayers,
   pullBackInside,
@@ -1604,10 +1605,15 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
   async lngLatToClientPoint(longitude: number, latitude: number) {
     if (!this.from || !this.mapObject) return undefined;
     const merc = transform([longitude, latitude], "EPSG:4326", "EPSG:3857");
-    const sysCoord = await (this.from as MaplatSource).merc2SysCoordAsync(merc);
-    const pixel = this.mapObject.getPixelFromCoordinate(sysCoord);
+    // ピンと同じ規則で描かれる地図を選ぶ（範囲外の点は背面のメルカトル。前面の外挿とは紙の外で離れる）
+    const located = await locateMerc(this, merc);
+    const map = located ? located.map : this.mapObject;
+    const coord = located
+      ? located.coord
+      : await (this.from as MaplatSource).merc2SysCoordAsync(merc);
+    const pixel = map.getPixelFromCoordinate(coord);
     if (!pixel) return undefined;
-    const rect = this.mapObject.getViewport().getBoundingClientRect();
+    const rect = map.getViewport().getBoundingClientRect();
     return {
       x: pixel[0] + rect.left,
       y: pixel[1] + rect.top

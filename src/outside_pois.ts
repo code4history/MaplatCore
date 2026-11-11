@@ -102,6 +102,25 @@ export async function classifyMarker(
   return { kind: "outside", merc };
 }
 
+/**
+ * メルカトルの点が画面のどの地図のどの座標に描かれるか（lngLatToClientPoint が使う）。
+ * ピンを置く規則と同じ判定で、範囲内は前面の座標、範囲外は前面がメルカトルの地図なら
+ * 前面のメルカトル、前面が古地図で背面があれば背面のメルカトル。範囲外のピンを隠す
+ * 指定によらず背面を返す（地点そのものは背面の地図に見えている）。
+ * 背面の無い古地図の紙の外と、写せない点は undefined（呼び出し元が従来の前面の外挿で補う）。
+ */
+export async function locateMerc(
+  app: OutsidePoisApp,
+  merc: number[]
+): Promise<{ map: any; coord: number[] } | undefined> {
+  const classified = await classifyMarker(app, { coordinates: merc });
+  if (classified.kind === "inside") return { map: app.mapObject, coord: classified.xy };
+  if (classified.kind !== "outside") return undefined;
+  if (isMercatorFront(app.from)) return { map: app.mapObject, coord: merc };
+  if (app.backMap) return { map: app.backMap, coord: merc };
+  return undefined;
+}
+
 /** 前面の地図がメルカトルをそのまま座標に使う地図（TMS・envelope を持つ基本地図）か。 */
 export function isMercatorFront(src: any): boolean {
   return typeof src?.isWmts === "function" ? src.isWmts() === true : false;

@@ -38,6 +38,7 @@
 ### Fixed
 - `proposeIiifBindings` の題名の既定を常に Manifest の `label` にした。読めなければ `title` を返さず、canvas の label に切り替えない。明示的な canvas の指定は引き続き使える
 - `getMarker(id)` が、マーカーの描画と同じく祖先（POI のレイヤー → 地図 → アプリ）の `poiTemplate`・`iconTemplate` を当てた POI を返すようにした。これまでは格納しているデータをそのまま返していたため、`poiTemplate` で本文を作る POI を `@maplat/ui` の `openMarker()`・マーカー一覧・状態 URL（`om:`）から開くと本文が空になり、地図上のマーカーを押したときだけテンプレートが当たっていた（#150）。戻り値は `clickMarker` の detail と同じ形の複製で、格納している POI そのものではない。POI の書き換えは従来どおり `updateMarker` で行う
+- `lngLatToClientPoint` が、古地図の紙の外の点で、背面の地図に描かれた位置（範囲外の POI のピンの位置）を返すようにした。これまでは前面の古地図の変換を紙の外へ延ばした位置を返していたため、紙から離れるほど、また縮尺を上げるほど背面のピンとずれた（館林のデモで縮尺 14.5 で 14〜65 px、16 で 100〜361 px）。範囲内の点は、ピンを置くときと同じ判定の前面の座標を返す。背面の無い古地図（`overlay: false`）の紙の外は従来どおり
 
 ### Security
 - 状態 URL や `localStorage` から来る地図 ID・層 ID の引き当てを、自分の鍵（`Object.hasOwn`）だけに限った。存在しない ID は、継承した名前でも今までの未知の ID と同じ扱いになり、起動や以後の地図の切り替えに影響しない。公開メソッドの `addMarker`・`clearMarker` に渡す層 ID も同じ
