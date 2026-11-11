@@ -414,6 +414,7 @@ test.describe('デモのタイルキャッシュ（Service Worker の登録が�
       }) as typeof window.fetch;
     });
     const errors = await startPaused(page);
+    await expect.poll(() => page.evaluate(() => !!navigator.serviceWorker.controller), { timeout: 30000 }).toBe(true);
     await expectFallsBackAfterLimit(page, errors);
   });
 });
