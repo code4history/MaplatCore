@@ -59,6 +59,11 @@ for (const { id, expected: e } of cases) {
         ...e.canvasSize,
         imageService: e.imageService
       });
+      // 選択 canvas 以外も、どの canvas にも画像サービスが読める
+      const missing = result.canvases.filter(
+        canvas => typeof canvas.imageService !== "string"
+      );
+      expect(missing.map(canvas => canvas.id)).toEqual([]);
     });
 
     it("どの canvas を選んでも題名の既定は Manifest の label", () => {
