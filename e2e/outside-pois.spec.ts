@@ -908,10 +908,32 @@ test.describe('背面が GL（MapLibre）のとき', () => {
       null,
       { timeout: 30_000 }
     );
-    await page.waitForTimeout(500);
+    // ピンのアイコン画像は非同期に読み込まれ、読み込み前の OL はピンを描かない（当たりも無い）。
+    // 画像の読み込みが終わる（ImageState: 2=LOADED、3=ERROR）まで待ち、背面の視点の追従も止まってから測る。
+    const iconState = await page.waitForFunction(
+      (markerID) => {
+        const app = (window as any).__MAPLAT_APP__;
+        if (app.__backMapMoving || app.backMap.getView().getAnimating()) return false;
+        const feature = app.backMap
+          .getSource('marker')
+          .getFeatures()
+          .find((f: any) => String(f.get('datum')?.namespaceID ?? '') === markerID);
+        const style = feature?.getStyle?.();
+        const image = (Array.isArray(style) ? style[0] : style)?.getImage?.();
+        const state = image?.getImageState?.();
+        return state >= 2 ? state : false;
+      },
+      id,
+      // 負荷が高いと animation frame がほとんど回らないので、判定は時間の間隔で回す
+      { timeout: 60_000, polling: 100 }
+    );
+    expect(await iconState.jsonValue(), 'ピンのアイコン画像を読み込めていません').toBe(2);
 
-    const result = await page.evaluate((markerID) => {
+    const result = await page.evaluate(async (markerID) => {
       const app = (window as any).__MAPLAT_APP__;
+      // 読み込みの完了で OL が予約した描き直し（次の animation frame）が済んでから、描いた結果で当たりを測る。
+      // 強制の再描画はしない（読み込み後に描き直されない不具合を隠さないため）。
+      for (let i = 0; i < 2; i++) await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
       const feature = app.backMap
         .getSource('marker')
         .getFeatures()
@@ -948,8 +970,8 @@ test.describe('背面が GL（MapLibre）のとき', () => {
       });
     });
     await page.mouse.click(result.pageX, result.pageY);
-    await page.waitForTimeout(500);
-    const clicked = await page.evaluate(() => (window as any).__GL_CLICK__);
-    expect(String(clicked?.namespaceID ?? '')).toBe(id);
+    await expect
+      .poll(() => page.evaluate(() => String((window as any).__GL_CLICK__?.namespaceID ?? '')), { timeout: 10_000 })
+      .toBe(id);
   });
 });
