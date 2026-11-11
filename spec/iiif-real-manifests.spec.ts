@@ -42,6 +42,8 @@ for (const { id, expected: e } of cases) {
         );
       }
       expect(source.retrievedOn).toBe("2026-11-11");
+      // CORS は Origin を付けた要求で記録する（付けないと返さないサーバーがある）
+      expect(source.infoRequestHeaders.origin).toBe("https://example.org");
       expect(source.terms).toBeTruthy();
       expect(source.termsUrl).toMatch(/^https:\/\//);
     });
@@ -101,6 +103,7 @@ for (const { id, expected: e } of cases) {
 
     it("実画素数は info.json で検査し、異なる記録寸法を拒む", () => {
       expect({ width: info.width, height: info.height }).toEqual(e.imageSize);
+      expect(info.id ?? info["@id"]).toBe(e.deliveryServiceUrl);
       expect(checkIiifDelivery(info, e.imageSize)).toEqual({
         ok: true,
         version: e.imageVersion,
