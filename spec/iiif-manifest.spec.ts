@@ -183,6 +183,41 @@ describe("listIiifCanvases", () => {
   });
 });
 
+describe("画像サービスの版と複数候補", () => {
+  const image2 = {
+    "@id": "https://example.org/image/2",
+    "@type": "ImageService2"
+  };
+  const image3 = { id: "https://example.org/image/3", type: "ImageService3" };
+
+  it.each([
+    [image2, image2["@id"]],
+    [[image2, image3], image2["@id"]],
+    [[image3, image2], image3.id],
+    [[null, {}, { id: "", type: "ImageService3" }, image2], image2["@id"]],
+    [
+      [{ id: "https://example.org/auth", type: "AuthCookieService1" }, image3],
+      image3.id
+    ]
+  ])("v3 は読める最初の画像サービスを返す: %j", (service, expected) => {
+    const manifest = structuredClone(V3);
+    manifest.items[0].items[0].items[0].body.service = service;
+    const result = listIiifCanvases(manifest);
+    expect(result.ok && result.canvases[0].imageService).toBe(expected);
+  });
+
+  it("v2 も画像以外・読めない先頭を飛ばして画像サービスを返す", () => {
+    const manifest = structuredClone(NDL);
+    manifest.sequences[0].canvases[0].images[0].resource.service = [
+      { "@id": "https://example.org/auth", "@type": "AuthCookieService1" },
+      {},
+      image2
+    ];
+    const result = listIiifCanvases(manifest);
+    expect(result.ok && result.canvases[0].imageService).toBe(image2["@id"]);
+  });
+});
+
 describe("proposeIiifBindings", () => {
   it("label が数字だけの canvas（NDL の canvas 1）は Manifest の label を指す", () => {
     const proposed = proposeIiifBindings(NDL, ndlCanvas(1));
@@ -259,6 +294,61 @@ describe("proposeIiifBindings", () => {
         "title"
       );
     }
+  });
+
+  it("v2 の label が読めなければ page 1 に落とさない", () => {
+    for (const label of [undefined, null, "", {}, [], 123, { "@value": "" }]) {
+      const manifest = structuredClone(NDL);
+      manifest.label = label;
+      manifest.sequences[0].canvases[0].label = "page 1";
+      expect(proposeIiifBindings(manifest, ndlCanvas(1))).not.toHaveProperty(
+        "title"
+      );
+    }
+  });
+
+  it("空の言語配列・空白だけの言語値を既定で結び付けない", () => {
+    for (const label of [
+      { ja: [] },
+      { ja: [42] },
+      { ja: [""] },
+      { ja: ["  "] }
+    ]) {
+      expect(
+        proposeIiifBindings({ ...V3, label }, V3_CANVAS_1)
+      ).not.toHaveProperty("title");
+    }
+    expect(
+      proposeIiifBindings(
+        { ...V3, label: { ja: [], en: ["Map"] } },
+        V3_CANVAS_1
+      ).title
+    ).toEqual({ from: "manifest", property: "label" });
+  });
+
+  it("空の言語配列を写さず、別の言語の題名を残す", () => {
+    const bindings = {
+      title: { from: "manifest", property: "label" }
+    } as const;
+    const empty = resolved(
+      resolveIiifMetadata(
+        { ...V3, label: { ja: [] } },
+        { bindings },
+        "ja",
+        identity
+      )
+    );
+    expect(empty.unresolved).toEqual(["title"]);
+    expect(empty.values).toEqual({});
+    const mixed = resolved(
+      resolveIiifMetadata(
+        { ...V3, label: { ja: [], en: ["Map"] } },
+        { bindings },
+        "ja",
+        identity
+      )
+    );
+    expect(mixed.values.title).toEqual({ en: "Map" });
   });
 
   it("canvas が見つからなければ Manifest の label を指す", () => {

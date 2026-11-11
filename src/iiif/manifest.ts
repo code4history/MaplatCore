@@ -122,7 +122,7 @@ function joinValues(values: unknown, joiner: string): string | undefined {
   if (Array.isArray(values)) {
     const parts: string[] = [];
     for (const value of values) if (typeof value === "string") parts.push(value);
-    return parts.join(joiner);
+    return parts.length > 0 ? parts.join(joiner) : undefined;
   }
   return undefined;
 }
@@ -276,16 +276,31 @@ function canvasLabel(canvas: PlainObject | undefined): Localized {
   return converted[NONE] ?? "";
 }
 
+/**
+ * 画像サービスは Presentation の版とは独立して id／@id を持つ。
+ * 複数候補は記載順に調べ、型が画像以外のもの・id が読めないものは飛ばす。
+ * 型を省いた従来の Image API 2 のサービスも受け付ける。
+ */
+function imageServiceId(raw: unknown): string | undefined {
+  const services = Array.isArray(raw) ? raw : [raw];
+  for (const service of services) {
+    if (!isPlainObject(service)) continue;
+    const type = service.type ?? service["@type"];
+    if (type !== undefined && !/^ImageService[123]$/.test(String(type))) continue;
+    for (const id of [service.id, service["@id"]]) {
+      if (typeof id === "string" && id.trim() !== "") return id;
+    }
+  }
+  return undefined;
+}
+
 /** 版 2 の画像サービス（canvas.images[0].resource.service）の id */
 function v2ImageService(canvas: PlainObject): string | undefined {
   const images = canvas.images;
   if (!Array.isArray(images) || !isPlainObject(images[0])) return undefined;
   const resource = images[0].resource;
   if (!isPlainObject(resource)) return undefined;
-  const service = Array.isArray(resource.service) ? resource.service[0] : resource.service;
-  if (!isPlainObject(service)) return undefined;
-  const id = service["@id"];
-  return typeof id === "string" ? id : undefined;
+  return imageServiceId(resource.service);
 }
 
 /** 版 3 の画像サービス（canvas.items[0].items[0].body.service）の id */
@@ -296,10 +311,7 @@ function v3ImageService(canvas: PlainObject): string | undefined {
   if (!Array.isArray(annotations) || !isPlainObject(annotations[0])) return undefined;
   const body = annotations[0].body;
   if (!isPlainObject(body)) return undefined;
-  const service = Array.isArray(body.service) ? body.service[0] : body.service;
-  if (!isPlainObject(service)) return undefined;
-  const id = service.id;
-  return typeof id === "string" ? id : undefined;
+  return imageServiceId(body.service);
 }
 
 /** 数を読む（読めなければ 0） */
@@ -418,7 +430,7 @@ function isReadableProperty(
   const converted = toLocalized(raw, joiner);
   if (converted === undefined) return false;
   if (typeof converted === "string") return converted.trim() !== "";
-  return Object.keys(converted).length > 0;
+  return Object.values(converted).some(text => text.trim() !== "");
 }
 
 /** metadata の一覧を写した行にする（順を保ち、全部の行を返す） */
