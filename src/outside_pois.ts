@@ -107,7 +107,8 @@ export async function classifyMarker(
  * ピンを置く規則と同じ判定で、範囲内は前面の座標、範囲外は前面がメルカトルの地図なら
  * 前面のメルカトル、前面が古地図で背面があれば背面のメルカトル。範囲外のピンを隠す
  * 指定によらず背面を返す（地点そのものは背面の地図に見えている）。
- * 背面の無い古地図の紙の外と、写せない点は undefined（呼び出し元が従来の前面の外挿で補う）。
+ * 背面の無い古地図の紙の外は undefined（呼び出し元が従来の前面の外挿で補う）。前面の変換で
+ * 写せない点は、ピンと同じく範囲外として扱うので背面（前面がメルカトルの地図なら前面）を返す。
  */
 export async function locateMerc(
   app: OutsidePoisApp,
@@ -119,6 +120,33 @@ export async function locateMerc(
   if (isMercatorFront(app.from)) return { map: app.mapObject, coord: merc };
   if (app.backMap) return { map: app.backMap, coord: merc };
   return undefined;
+}
+
+/**
+ * 前面の地図の画素に背面の地図が見えていれば、背面のその点のメルカトルを返す
+ * （clientPointToLngLat と clickMap・clickMapMerc が使う。locateMerc の逆向き）。前面が古地図で、
+ * その画素の前面の座標が紙の外（insideCheckSysCoord が偽）で、背面があるときだけ `{ merc }`。
+ * 背面の画素が座標にならなければ `{ merc: undefined }`（前面の外挿で補わない）。それ以外（紙の内・
+ * 前面がメルカトルの地図・背面の無い古地図）は undefined で、呼び出し元が前面の変換で求める。
+ */
+export function backMercAtPixel(
+  app: OutsidePoisApp,
+  pixel: readonly [number, number]
+): { merc: number[] | undefined } | undefined {
+  const src = app.from;
+  const front = app.mapObject;
+  const back = app.backMap;
+  if (!src || !front || !back || isMercatorFront(src)) return undefined;
+  const xy = front.getCoordinateFromPixel(pixel);
+  if (!xy || src.insideCheckSysCoord(xy)) return undefined;
+  // 前面と背面の viewport は同じ位置に重なっているはずだが、client 座標を介して写す
+  const fr = front.getViewport().getBoundingClientRect();
+  const br = back.getViewport().getBoundingClientRect();
+  const merc = back.getCoordinateFromPixel([
+    pixel[0] + fr.left - br.left,
+    pixel[1] + fr.top - br.top
+  ]);
+  return { merc: merc ? [merc[0], merc[1]] : undefined };
 }
 
 /** 前面の地図がメルカトルをそのまま座標に使う地図（TMS・envelope を持つ基本地図）か。 */

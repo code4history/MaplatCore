@@ -329,8 +329,11 @@ test.describe('Maplat legacy workflow', () => {
     await dragSequence(page, initialPoint);
     await delay(2000);
     const secondClick = await clickMapAtOffset(page, messageQueue, initialPoint);
+    // ドラッグの後、同じ画面の点は古地図の紙の外になり、clickMap は背面の地図に見えている地点を返す
+    // （前面の変換を紙の外へ延ばした地点ではない）。延長の値は経度で約 0.0076 離れたが、
+    // 背面の地点は約 0.0039 なので、地図が動いたことを確かめる下限を 0.002 にする
     expect(Math.abs((secondClick.payload?.longitude ?? 0) - (firstClick.payload?.longitude ?? 0))).toBeGreaterThan(
-      0.007
+      0.002
     );
     expect(Math.abs((secondClick.payload?.latitude ?? 0) - (firstClick.payload?.latitude ?? 0))).toBeGreaterThan(
       0.003

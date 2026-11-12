@@ -47,6 +47,7 @@ import {
   backMarkerDataAt,
   centerOnOutsidePoi,
   locateMerc,
+  backMercAtPixel,
   classifyMarker,
   placeMarkerLayers,
   pullBackInside,
@@ -1278,18 +1279,22 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
       } else {
         const xy = evt.coordinate;
         this.dispatchEvent(new CustomEvent("clickMapXy", xy));
-        (this.from as MaplatSource)
-          .sysCoord2MercAsync(xy)
-          .then((merc: any) => {
-            this.dispatchEvent(new CustomEvent("clickMapMerc", merc));
-            const lnglat = transform(merc, "EPSG:3857", "EPSG:4326");
-            this.dispatchEvent(
-              new CustomEvent("clickMap", {
-                longitude: lnglat[0],
-                latitude: lnglat[1]
-              })
-            );
-          });
+        // 古地図の紙の外は背面の地図に見えている地点（clientPointToLngLat と同じ規則）
+        const back = backMercAtPixel(this, evt.pixel);
+        (back
+          ? Promise.resolve(back.merc)
+          : (this.from as MaplatSource).sysCoord2MercAsync(xy)
+        ).then((merc: any) => {
+          if (!merc) return;
+          this.dispatchEvent(new CustomEvent("clickMapMerc", merc));
+          const lnglat = transform(merc, "EPSG:3857", "EPSG:4326");
+          this.dispatchEvent(
+            new CustomEvent("clickMap", {
+              longitude: lnglat[0],
+              latitude: lnglat[1]
+            })
+          );
+        });
       }
     });
   }
@@ -1593,8 +1598,11 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     const viewport = this.mapObject.getViewport();
     const rect = viewport.getBoundingClientRect();
     const pixel: [number, number] = [clientX - rect.left, clientY - rect.top];
+    // 古地図の紙の外は、背面の地図に見えている地点（lngLatToClientPoint・ピンと同じ規則の逆向き）。
+    // pixelToMerc は getViewExtent と共用なので変えず、ここで振り分ける
+    const back = backMercAtPixel(this, pixel);
     // pixel → 座標 → merc の連鎖は pixelToMerc に 1 つだけ置く（戻り値は旧のまま undefined）
-    const merc = await this.pixelToMerc(pixel);
+    const merc = back ? back.merc : await this.pixelToMerc(pixel);
     if (!merc) return undefined;
     const lnglat = transform(merc, "EPSG:3857", "EPSG:4326");
     return {
