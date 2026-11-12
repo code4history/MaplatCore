@@ -1307,22 +1307,28 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     let xyBuffer: { xy: any; pixel: any } | undefined;
     const pointermoveHandler = (xy: any, pixel: any) => {
       this.dispatchEvent(new CustomEvent("pointerMoveOnMapXy", xy));
-      // 古地図の紙の外は背面の地図に見えている地点（clickMapMerc と同じ規則）
-      const back = pixel ? backMercAtPixel(this, pixel) : undefined;
-      (back
-        ? Promise.resolve(back.merc)
-        : (this.from as MaplatSource).sysCoord2MercAsync(xy)
-      ).then((merc: any) => {
-        // 背面の画素が座標にならなければ merc は出さない（clickMapMerc と同じ）
-        if (merc) this.dispatchEvent(new CustomEvent("pointerMoveOnMapMerc", merc));
-        if (xyBuffer) {
-          const next = xyBuffer;
-          xyBuffer = undefined;
-          pointermoveHandler(next.xy, next.pixel);
-        } else {
-          waiting = false;
-        }
-      });
+      // 古地図の紙の外は背面の地図に見えている地点（clickMapMerc と同じ規則）。
+      // 判定や変換が投げても次の移動を止めないよう、同期の判定も Promise の中で行う
+      new Promise<any>(resolve => {
+        const back = pixel ? backMercAtPixel(this, pixel) : undefined;
+        resolve(back ? back.merc : (this.from as MaplatSource).sysCoord2MercAsync(xy));
+      })
+        .then((merc: any) => {
+          // 背面の画素が座標にならなければ merc は出さない（clickMapMerc と同じ）
+          if (merc) this.dispatchEvent(new CustomEvent("pointerMoveOnMapMerc", merc));
+        })
+        .catch(() => {
+          // 変換に失敗した移動は merc を出さないだけにする
+        })
+        .then(() => {
+          if (xyBuffer) {
+            const next = xyBuffer;
+            xyBuffer = undefined;
+            pointermoveHandler(next.xy, next.pixel);
+          } else {
+            waiting = false;
+          }
+        });
     };
     this.mapObject.on("pointermove", (evt: any) => {
       if (dragging) return;

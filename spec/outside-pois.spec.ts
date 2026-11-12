@@ -657,6 +657,35 @@ describe("ポインタの移動の merc は地図のクリックと同じ規則"
     expect(h.mercs).toEqual([[500, 600]]);
   });
 
+  it("前面の変換が失敗しても、次の移動は受け付ける", async () => {
+    const h = await makeMoveApp({ inside: true });
+    (h.app.from as any).sysCoord2MercAsync = vi.fn(async () => {
+      throw new Error("boom");
+    });
+    h.move([1, 2], [3, 4]);
+    await h.settle();
+    expect(h.mercs).toEqual([]);
+    (h.app.from as any).sysCoord2MercAsync = vi.fn(async (xy: number[]) => xy);
+    h.move([5, 6], [7, 8]);
+    await h.settle();
+    expect(h.mercs).toEqual([[7, 8]]);
+  });
+
+  it("紙の内外の判定が例外を投げても、次の移動は受け付ける", async () => {
+    const h = await makeMoveApp({ inside: false });
+    (h.app.from as any).insideCheckSysCoord = () => {
+      throw new Error("boom");
+    };
+    h.move([1, 2], [3, 4]);
+    await h.settle();
+    expect(h.xys).toEqual([[3, 4]]);
+    expect(h.mercs).toEqual([]);
+    (h.app.from as any).insideCheckSysCoord = () => false;
+    h.move([5, 6], [7, 8]);
+    await h.settle();
+    expect(h.mercs).toEqual([[500, 600]]);
+  });
+
   it("計算中に来た移動は最後の 1 つだけを、その画素で測る", async () => {
     const h = await makeMoveApp({ inside: false });
     h.move([1, 2], [3, 4]);
