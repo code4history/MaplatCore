@@ -16,6 +16,7 @@ import {
   setBackPinHitMinTransparency
 } from "../src/outside_pois";
 import { MaplatApp } from "../src/index";
+import { transform } from "ol/proj";
 
 const MARKER_LAYER = "marker";
 
@@ -513,6 +514,43 @@ describe("地図のクリックは前面で当たらなければ背面のピン�
     h.click();
     expect(marker).toBe(frontDatum);
     expect(h.forEachFeatureAtPixel).not.toHaveBeenCalled();
+  });
+
+  // 地図のクリックの経緯度は clientPointToLngLat と同じ規則（紙の外は背面に見えている地点）
+  async function clickMapMercOf(option: { inside: boolean; back?: boolean }) {
+    const h = await makeClickApp(option);
+    // 背面のピンには当たらない
+    h.forEachFeatureAtPixel.mockImplementation(() => undefined);
+    (h.app.mapObject as any).getCoordinateFromPixel = vi.fn(() => [3, 4]);
+    if (option.back === false) delete (h.app as any).backMap;
+    else (h.app.backMap as any).getCoordinateFromPixel = vi.fn((p: number[]) => [p[0] * 100, p[1] * 100]);
+    const got = new Promise<any>(resolve =>
+      h.app.addEventListener("clickMapMerc", (e: any) => resolve(e.detail))
+    );
+    let lnglat: any;
+    h.app.addEventListener("clickMap", (e: any) => (lnglat = e.detail));
+    h.click();
+    const merc = await got;
+    return { merc, lnglat: () => lnglat };
+  }
+
+  it("紙の外の地図のクリックは、背面に見えている地点の merc・経緯度", async () => {
+    const r = await clickMapMercOf({ inside: false });
+    expect(r.merc).toEqual([100, 200]);
+    await Promise.resolve();
+    const ll = transform([100, 200], "EPSG:3857", "EPSG:4326");
+    expect(r.lnglat().longitude).toBeCloseTo(ll[0], 9);
+    expect(r.lnglat().latitude).toBeCloseTo(ll[1], 9);
+  });
+
+  it("紙の内の地図のクリックは、前面の座標から merc（従来どおり）", async () => {
+    const r = await clickMapMercOf({ inside: true });
+    expect(r.merc).toEqual([3, 4]);
+  });
+
+  it("背面の無い古地図の紙の外の地図のクリックは、前面の外挿（従来どおり）", async () => {
+    const r = await clickMapMercOf({ inside: false, back: false });
+    expect(r.merc).toEqual([3, 4]);
   });
 
   it("背面が無ければ今までどおり地図のクリック", async () => {
