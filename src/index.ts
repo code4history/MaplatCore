@@ -1317,8 +1317,9 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
           // 背面の画素が座標にならなければ merc は出さない（clickMapMerc と同じ）
           if (merc) this.dispatchEvent(new CustomEvent("pointerMoveOnMapMerc", merc));
         })
-        .catch(() => {
-          // 変換に失敗した移動は merc を出さないだけにする
+        .catch((e: unknown) => {
+          // 変換に失敗した移動は merc を出さないだけにする（回数が多いので debug に留める）
+          this.logger.debug(e);
         })
         .then(() => {
           if (xyBuffer) {
