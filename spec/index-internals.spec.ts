@@ -229,3 +229,109 @@ describe("lngLatToClientPoint はピンと同じ地図で測る", () => {
     expect(await app.lngLatToClientPoint(139.5, 36.2)).toEqual({ x: 17, y: 28 });
   });
 });
+
+// 紙の外の点は、背面の地図に見えている地点を返す（lngLatToClientPoint・ピンと同じ規則の逆向き）。
+// 前面: 画素 = 前面の座標。紙は 0〜100 の正方形。前面の座標 → merc は ×100 ＋ 50（紙の外へ延ばすと
+// 背面と 0.5 px ずれる）。背面: 画素 ×100 = merc。どちらの地図も viewport は (10, 20) にある。
+describe("clientPointToLngLat は紙の外で背面の地点を返す", () => {
+  const rect = { left: 10, top: 20 };
+  const makeFront = () => ({
+    getViewport: () => ({ getBoundingClientRect: () => rect }),
+    getCoordinateFromPixel: vi.fn((p: number[]) => [p[0], p[1]]),
+    getPixelFromCoordinate: vi.fn((c: number[]) => [c[0], c[1]])
+  });
+  const makeBack = () => ({
+    getViewport: () => ({ getBoundingClientRect: () => rect }),
+    getCoordinateFromPixel: vi.fn((p: number[]) => [p[0] * 100, p[1] * 100]),
+    getPixelFromCoordinate: vi.fn((c: number[]) => [c[0] / 100, c[1] / 100])
+  });
+  const makeFrom = (wmts = false) => {
+    const toXy = async (m: number[]) => [(m[0] - 50) / 100, (m[1] - 50) / 100];
+    return {
+      isWmts: () => wmts,
+      insideCheckSysCoord: (xy: number[]) => xy[0] >= 0 && xy[0] <= 100 && xy[1] >= 0 && xy[1] <= 100,
+      sysCoord2MercAsync: vi.fn(async (xy: number[]) => [xy[0] * 100 + 50, xy[1] * 100 + 50]),
+      merc2SysCoordAsync_ignoreBackground: vi.fn(toXy),
+      merc2SysCoordAsync: vi.fn(toXy)
+    };
+  };
+  const makeApp = (opts: { back?: boolean; wmts?: boolean } = {}) =>
+    stub({
+      from: makeFrom(opts.wmts),
+      mapObject: makeFront(),
+      backMap: opts.back === false ? undefined : makeBack()
+    });
+  const mercOf = (r: { longitude: number; latitude: number }) =>
+    transform([r.longitude, r.latitude], "EPSG:4326", "EPSG:3857");
+  const expectMerc = (r: any, merc: number[]) => {
+    const got = mercOf(r);
+    expect(got[0]).toBeCloseTo(merc[0], 3);
+    expect(got[1]).toBeCloseTo(merc[1], 3);
+  };
+  const expectPoint = (r: any, x: number, y: number) => {
+    expect(r.x).toBeCloseTo(x, 6);
+    expect(r.y).toBeCloseTo(y, 6);
+  };
+
+  it("紙の内は前面の変換（従来どおり）で、lngLatToClientPoint と往復する", async () => {
+    const app = makeApp();
+    const r = await app.clientPointToLngLat(10 + 40, 20 + 60);
+    expectMerc(r, [4050, 6050]);
+    expect(app.backMap.getCoordinateFromPixel).not.toHaveBeenCalled();
+    expectPoint(await app.lngLatToClientPoint(r.longitude, r.latitude), 50, 80);
+  });
+
+  it("古地図の紙の外は背面の地図の地点（前面の外挿は使わない）で、往復する", async () => {
+    const app = makeApp();
+    const r = await app.clientPointToLngLat(10 + 200, 20 + 50);
+    expectMerc(r, [20000, 5000]);
+    expect(app.from.sysCoord2MercAsync).not.toHaveBeenCalled();
+    expectPoint(await app.lngLatToClientPoint(r.longitude, r.latitude), 210, 70);
+  });
+
+  it("紙の縁の内側は前面、外側は背面（境界をまたいで判定が切り替わる）", async () => {
+    const app = makeApp();
+    // 縁の上（insideCheckSysCoord は縁を含む）は前面
+    expectMerc(await app.clientPointToLngLat(10 + 100, 20 + 50), [10050, 5050]);
+    // 縁のすぐ外は背面
+    expectMerc(await app.clientPointToLngLat(10 + 101, 20 + 50), [10100, 5000]);
+    expectPoint(await app.lngLatToClientPoint(...lnglatOfMerc([10100, 5000])), 111, 70);
+  });
+
+  it("前面がメルカトルの地図は、紙（範囲）の外も前面の変換", async () => {
+    const app = makeApp({ wmts: true });
+    expectMerc(await app.clientPointToLngLat(10 + 200, 20 + 50), [20050, 5050]);
+    expect(app.backMap.getCoordinateFromPixel).not.toHaveBeenCalled();
+  });
+
+  it("背面の無い古地図（overlay 偽）の紙の外は従来どおり前面の外挿（lngLatToClientPoint と同じ扱い）", async () => {
+    const app = makeApp({ back: false });
+    const r = await app.clientPointToLngLat(10 + 200, 20 + 50);
+    expectMerc(r, [20050, 5050]);
+    expectPoint(await app.lngLatToClientPoint(r.longitude, r.latitude), 210, 70);
+  });
+
+  it("前面の画素が座標にならなければ undefined（要素では null）", async () => {
+    const app = makeApp();
+    app.mapObject.getCoordinateFromPixel = vi.fn(() => null);
+    await expect(app.clientPointToLngLat(10 + 200, 20 + 50)).resolves.toBeUndefined();
+  });
+
+  it("背面の画素が座標にならなければ undefined（前面の外挿で補わない）", async () => {
+    const app = makeApp();
+    app.backMap.getCoordinateFromPixel = vi.fn(() => null);
+    await expect(app.clientPointToLngLat(10 + 200, 20 + 50)).resolves.toBeUndefined();
+    expect(app.from.sysCoord2MercAsync).not.toHaveBeenCalled();
+  });
+
+  it("pixelToMerc（getViewExtent の 4 隅）は紙の外でも前面の外挿のまま", async () => {
+    const app = makeApp();
+    expect(await app.pixelToMerc([200, 50])).toEqual([20050, 5050]);
+    expect(app.backMap.getCoordinateFromPixel).not.toHaveBeenCalled();
+  });
+});
+
+function lnglatOfMerc(merc: number[]): [number, number] {
+  const ll = transform(merc, "EPSG:3857", "EPSG:4326");
+  return [ll[0], ll[1]];
+}

@@ -40,9 +40,12 @@ All methods below are on the `MaplatApp` instance returned by
 
 - `clientPointToLngLat(clientX: number, clientY: number): [number, number]`
   - Convert screen coordinates (pixels relative to viewport) to
-    Longitude/Latitude.
+    Longitude/Latitude. Outside the paper of a historical map, when the
+    background map exists, returns the place the background map shows there.
 - `lngLatToClientPoint(lng: number, lat: number): [number, number]`
-  - Convert Longitude/Latitude to screen coordinates.
+  - Convert Longitude/Latitude to screen coordinates. A place outside the
+    paper of a historical map is measured on the background map (where its pin
+    is drawn), so the two methods are inverse to each other there as well.
 
 ## Markers (point data)
 
