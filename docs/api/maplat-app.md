@@ -438,6 +438,18 @@ hit, the click ends in `clickMapXy` / `clickMapMerc` / `clickMap` as before. A p
 the paper covers never presses a background pin, whatever the transparency is. The mouse
 cursor follows the same order and the same condition.
 
+**Coordinates outside the paper.** Under the same condition (the background map exists and
+the point is outside the paper of a historical map), `clickMapMerc` / `clickMap` and
+`clientPointToLngLat` return the place that the background map shows at that point, not
+the foreground transformation extended beyond the paper. `lngLatToClientPoint` measures a
+place outside the paper on the background, so the two methods are inverse to each other
+outside the paper as well. `clickMapXy` stays the foreground coordinate. Without a
+background map (`overlay: false`) and on a foreground in Web Mercator (TMS, base maps), all
+of them use the foreground as before. Near the edge, the background and the historical map
+do not line up exactly: a point just outside the paper can return a place that the paper
+also shows elsewhere, and `lngLatToClientPoint` then returns that point on the paper.
+`getViewExtent` keeps using the foreground transformation for all four corners.
+
 **While an outside POI is selected.** `selectMarker(id)` centres the map on the pin even
 when the pin is outside the paper. While that POI is selected the map is not pulled back
 inside, so the centre can stay off the paper. `unselectMarker()` releases the selection
