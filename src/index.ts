@@ -1300,32 +1300,37 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
   }
   // Async initializer 12: Handle pointer event
   setPointerEvents() {
-    let xyBuffer: any;
     let waiting = false;
     let dragging = false;
     const pointerCounter: any = {};
-    const pointermoveHandler = (xy: any) => {
+    // 計算中に来た移動は最後の 1 つだけを残す（前面の座標と、背面で測るための画素）
+    let xyBuffer: { xy: any; pixel: any } | undefined;
+    const pointermoveHandler = (xy: any, pixel: any) => {
       this.dispatchEvent(new CustomEvent("pointerMoveOnMapXy", xy));
-      (this.from as MaplatSource)
-        .sysCoord2MercAsync(xy)
-        .then((merc: any) => {
-          this.dispatchEvent(new CustomEvent("pointerMoveOnMapMerc", merc));
-          if (xyBuffer) {
-            const next = xyBuffer;
-            xyBuffer = false;
-            pointermoveHandler(next);
-          } else {
-            waiting = false;
-          }
-        });
+      // 古地図の紙の外は背面の地図に見えている地点（clickMapMerc と同じ規則）
+      const back = pixel ? backMercAtPixel(this, pixel) : undefined;
+      (back
+        ? Promise.resolve(back.merc)
+        : (this.from as MaplatSource).sysCoord2MercAsync(xy)
+      ).then((merc: any) => {
+        // 背面の画素が座標にならなければ merc は出さない（clickMapMerc と同じ）
+        if (merc) this.dispatchEvent(new CustomEvent("pointerMoveOnMapMerc", merc));
+        if (xyBuffer) {
+          const next = xyBuffer;
+          xyBuffer = undefined;
+          pointermoveHandler(next.xy, next.pixel);
+        } else {
+          waiting = false;
+        }
+      });
     };
     this.mapObject.on("pointermove", (evt: any) => {
       if (dragging) return;
       if (waiting) {
-        xyBuffer = evt.coordinate;
+        xyBuffer = { xy: evt.coordinate, pixel: evt.pixel };
       } else {
         waiting = true;
-        pointermoveHandler(evt.coordinate);
+        pointermoveHandler(evt.coordinate, evt.pixel);
       }
     });
     this.mapObject.on("pointerdown", (evt: any) => {

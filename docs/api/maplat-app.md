@@ -438,12 +438,16 @@ hit, the click ends in `clickMapXy` / `clickMapMerc` / `clickMap` as before. A p
 the paper covers never presses a background pin, whatever the transparency is. The mouse
 cursor follows the same order and the same condition.
 
+<a id="coordinates-outside-the-paper"></a>
 **Coordinates outside the paper.** Under the same condition (the background map exists and
-the point is outside the paper of a historical map), `clickMapMerc` / `clickMap` and
-`clientPointToLngLat` return the place that the background map shows at that point, not
+the point is outside the paper of a historical map), `clickMapMerc` / `clickMap`,
+`pointerMoveOnMapMerc` and `clientPointToLngLat` return the place that the background map shows at that point, not
 the foreground transformation extended beyond the paper. `lngLatToClientPoint` measures a
 place outside the paper on the background, so the two methods are inverse to each other
-outside the paper as well. `clickMapXy` stays the foreground coordinate. Without a
+outside the paper as well. `clickMapXy` and `pointerMoveOnMapXy` stay the foreground
+coordinate. When the background pixel cannot be converted to a coordinate, the click fires
+only `clickMapXy` (no `clickMapMerc` / `clickMap`), the pointer move fires only
+`pointerMoveOnMapXy`, and `clientPointToLngLat` returns `null`. Without a
 background map (`overlay: false`) and on a foreground in Web Mercator (TMS, base maps), all
 of them use the foreground as before. Near the edge, the background and the historical map
 do not line up exactly: a point just outside the paper can return a place that the paper

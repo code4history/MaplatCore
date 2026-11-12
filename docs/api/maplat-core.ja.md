@@ -36,10 +36,10 @@
 
 ## 座標系
 
-- `clientPointToLngLat(clientX: number, clientY: number): [number, number]`
+- `clientPointToLngLat(clientX: number, clientY: number): Promise<{ longitude: number, latitude: number } | undefined>`
   - 画面座標（ビューポートに対するピクセル）を経度/緯度に変換します。古地図の紙の外の点は、
     背面の地図があれば、背面の地図がそこに見せている地点を返します。
-- `lngLatToClientPoint(lng: number, lat: number): [number, number]`
+- `lngLatToClientPoint(lng: number, lat: number): Promise<{ x: number, y: number } | undefined>`
   - 経度/緯度を画面座標に変換します。古地図の紙の外の地点は背面の地図（ピンが描かれる所）で
     測るので、2 つのメソッドは紙の外でも互いの逆になります。
 
@@ -166,7 +166,8 @@ Maplat はマーカーを「レイヤ」で管理します。各レイヤはロ�
 
 - `clickMarker`: マーカーがクリックされたときに発火します。
   `evt.detail` にマーカーデータが含まれます。
-- `clickMap`: 地図の背景がクリックされたときに発火します。
+- `clickMap`: 地図の背景がクリックされたときに発火します。古地図の紙の外では、背面の地図が
+  そこに見せている地点を返します（[紙の外の座標](maplat-app.ja.md#coordinates-outside-the-paper)）。
 - `gps_result`: GPS 位置更新があったときに発火します。
 - `gps_error`: GPS が失敗したときに発火します。
 

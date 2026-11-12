@@ -38,11 +38,11 @@ All methods below are on the `MaplatApp` instance returned by
 
 ## Coordinate system
 
-- `clientPointToLngLat(clientX: number, clientY: number): [number, number]`
+- `clientPointToLngLat(clientX: number, clientY: number): Promise<{ longitude: number, latitude: number } | undefined>`
   - Convert screen coordinates (pixels relative to viewport) to
     Longitude/Latitude. Outside the paper of a historical map, when the
     background map exists, returns the place the background map shows there.
-- `lngLatToClientPoint(lng: number, lat: number): [number, number]`
+- `lngLatToClientPoint(lng: number, lat: number): Promise<{ x: number, y: number } | undefined>`
   - Convert Longitude/Latitude to screen coordinates. A place outside the
     paper of a historical map is measured on the background map (where its pin
     is drawn), so the two methods are inverse to each other there as well.
@@ -171,7 +171,9 @@ Use `app.addEventListener(type, callback)` to handle events.
 
 - `clickMarker`: Fired when a marker is clicked. `evt.detail` contains marker
   data.
-- `clickMap`: Fired when the map background is clicked.
+- `clickMap`: Fired when the map background is clicked. Outside the paper of a
+  historical map it carries the place the background map shows there; see
+  [Coordinates outside the paper](maplat-app.md#coordinates-outside-the-paper).
 - `gps_result`: Fired when a GPS position update happens.
 - `gps_error`: Fired when GPS fails.
 

@@ -553,10 +553,118 @@ describe("地図のクリックは前面で当たらなければ背面のピン�
     expect(r.merc).toEqual([3, 4]);
   });
 
+  it("紙の外で背面の画素が座標にならなければ、clickMapXy だけ出て clickMapMerc・clickMap は出ない", async () => {
+    const h = await makeClickApp({ inside: false });
+    h.forEachFeatureAtPixel.mockImplementation(() => undefined);
+    (h.app.mapObject as any).getCoordinateFromPixel = vi.fn(() => [3, 4]);
+    (h.app.backMap as any).getCoordinateFromPixel = vi.fn(() => null);
+    const sysCoord2MercAsync = vi.spyOn(h.app.from as any, "sysCoord2MercAsync");
+    h.click();
+    // 非同期の連鎖が終わるまで待つ
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(h.seen).toEqual(["clickMapXy"]);
+    // 前面の外挿では補わない
+    expect(sysCoord2MercAsync).not.toHaveBeenCalled();
+  });
+
+  it("前面の画素が座標にならなければ、背面を見ずに前面の変換（evt.coordinate）で求める", async () => {
+    const h = await makeClickApp({ inside: false });
+    h.forEachFeatureAtPixel.mockImplementation(() => undefined);
+    (h.app.mapObject as any).getCoordinateFromPixel = vi.fn(() => null);
+    const backPixel = vi.fn((p: number[]) => [p[0] * 100, p[1] * 100]);
+    (h.app.backMap as any).getCoordinateFromPixel = backPixel;
+    const got = new Promise<any>(resolve =>
+      h.app.addEventListener("clickMapMerc", (e: any) => resolve(e.detail))
+    );
+    h.click();
+    expect(await got).toEqual([3, 4]);
+    expect(backPixel).not.toHaveBeenCalled();
+    expect(h.seen).toEqual(["clickMapXy", "clickMapMerc", "clickMap"]);
+  });
+
   it("背面が無ければ今までどおり地図のクリック", async () => {
     const h = await makeClickApp({ inside: false });
     delete (h.app as any).backMap;
     h.click();
     expect(h.seen).toContain("clickMapXy");
+  });
+});
+
+describe("ポインタの移動の merc は地図のクリックと同じ規則", () => {
+  async function makeMoveApp(option: { inside: boolean; back?: "ok" | "null" | "none" }) {
+    const div = document.createElement("div");
+    document.body.appendChild(div);
+    const app = new MaplatApp({ div, setting: { sources: [] } });
+    await app.waitReady;
+    app.from = {
+      mapID: "hist",
+      insideCheckSysCoord: () => option.inside,
+      sysCoord2MercAsync: vi.fn(async (xy: number[]) => xy),
+      isWmts: () => false
+    } as any;
+    (app.mapObject as any).getCoordinateFromPixel = vi.fn(() => [3, 4]);
+    const back = option.back ?? "ok";
+    if (back === "none") delete (app as any).backMap;
+    else
+      (app.backMap as any).getCoordinateFromPixel = vi.fn((p: number[]) =>
+        back === "null" ? null : [p[0] * 100, p[1] * 100]
+      );
+    app.setPointerEvents();
+    const xys: any[] = [];
+    const mercs: any[] = [];
+    app.addEventListener("pointerMoveOnMapXy", (e: any) => {
+      xys.push(e.detail);
+    });
+    app.addEventListener("pointerMoveOnMapMerc", (e: any) => {
+      mercs.push(e.detail);
+    });
+    const move = (pixel: number[], coordinate: number[]) =>
+      app.mapObject.dispatchEvent({ type: "pointermove", pixel, coordinate } as any);
+    const settle = () => new Promise(resolve => setTimeout(resolve, 0));
+    return { app, xys, mercs, move, settle };
+  }
+
+  it("紙の外は背面に見えている地点の merc（pointerMoveOnMapXy は前面の座標のまま）", async () => {
+    const h = await makeMoveApp({ inside: false });
+    h.move([1, 2], [3, 4]);
+    await h.settle();
+    expect(h.xys).toEqual([[3, 4]]);
+    expect(h.mercs).toEqual([[100, 200]]);
+    expect((h.app.from as any).sysCoord2MercAsync).not.toHaveBeenCalled();
+  });
+
+  it("紙の内・背面の無い古地図は前面の変換（従来どおり）", async () => {
+    const inside = await makeMoveApp({ inside: true });
+    inside.move([1, 2], [3, 4]);
+    await inside.settle();
+    expect(inside.mercs).toEqual([[3, 4]]);
+    const noBack = await makeMoveApp({ inside: false, back: "none" });
+    noBack.move([1, 2], [3, 4]);
+    await noBack.settle();
+    expect(noBack.mercs).toEqual([[3, 4]]);
+  });
+
+  it("背面の画素が座標にならなければ merc は出さず、次の移動は受け付ける", async () => {
+    const h = await makeMoveApp({ inside: false, back: "null" });
+    h.move([1, 2], [3, 4]);
+    await h.settle();
+    expect(h.xys).toEqual([[3, 4]]);
+    expect(h.mercs).toEqual([]);
+    (h.app.backMap as any).getCoordinateFromPixel = vi.fn((p: number[]) => [p[0] * 100, p[1] * 100]);
+    h.move([5, 6], [7, 8]);
+    await h.settle();
+    expect(h.xys).toEqual([[3, 4], [7, 8]]);
+    expect(h.mercs).toEqual([[500, 600]]);
+  });
+
+  it("計算中に来た移動は最後の 1 つだけを、その画素で測る", async () => {
+    const h = await makeMoveApp({ inside: false });
+    h.move([1, 2], [3, 4]);
+    h.move([2, 3], [4, 5]);
+    h.move([5, 6], [7, 8]);
+    await h.settle();
+    await h.settle();
+    expect(h.xys).toEqual([[3, 4], [7, 8]]);
+    expect(h.mercs).toEqual([[100, 200], [500, 600]]);
   });
 });

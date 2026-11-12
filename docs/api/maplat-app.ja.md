@@ -393,10 +393,14 @@ S      = テンプレートの文字列から {% raw %}…{% endraw %}・{% verb
 `clickMapMerc`・`clickMap` で終わります。紙が覆っている点では、透過度によらず背面のピンは
 押せません。マウスのカーソルも同じ順・同じ条件で見ます。
 
+<a id="coordinates-outside-the-paper"></a>
 **紙の外の座標。** 同じ条件（背面の地図があり、古地図の紙の外の点）では、`clickMapMerc`・
-`clickMap` と `clientPointToLngLat` は、前面の変換を紙の外へ延ばした地点ではなく、その点に
+`clickMap`・`pointerMoveOnMapMerc` と `clientPointToLngLat` は、前面の変換を紙の外へ延ばした地点ではなく、その点に
 背面の地図が見せている地点を返します。`lngLatToClientPoint` も紙の外の地点を背面で測るので、
-2 つのメソッドは紙の外でも互いの逆になります。`clickMapXy` は前面の座標のままです。背面の
+2 つのメソッドは紙の外でも互いの逆になります。`clickMapXy`・`pointerMoveOnMapXy` は前面の
+座標のままです。背面の画素が座標にならないときは、クリックは `clickMapXy` だけを出し
+（`clickMapMerc`・`clickMap` は出ません）、ポインタの移動は `pointerMoveOnMapXy` だけを出し、
+`clientPointToLngLat` は `null` を返します。背面の
 無い古地図（`overlay: false`）と、前面がメルカトルの地図（TMS・基本地図）では、どれも従来
 どおり前面で求めます。紙の縁の近くでは背面と古地図が完全には重ならないため、紙のすぐ外の点が、
 紙の上の別の所にも描かれている地点を返すことがあります。そのとき `lngLatToClientPoint` は
