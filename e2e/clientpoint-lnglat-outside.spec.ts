@@ -319,7 +319,7 @@ test.describe('紙の外のポインタの移動', () => {
     const px = await findOffPaper(page);
     expect(px, '紙の外の画素がある').not.toBeNull();
 
-    // 1 回目の移動で測る（取っておいた値を一度捨ててから始める）
+    // 最初の移動が正しい地点を返すことを確かめる（測る回数はここでは見ない）
     await page.mouse.move(5, 5);
     const first = await moveAndMeasure(page, px!, 1);
     const second = await moveAndMeasure(page, px!, 10);
