@@ -4,7 +4,7 @@ import { glCanvasMatchesSize } from "./gl_canvas_size";
 
 export class MapboxLayer extends Layer {
   constructor(options: any) {
-    // m6-t9 §3.4 (実装レビュー round2 H-AC5-2): layer_maplibre.ts と同型のガードを
+    // layer_maplibre.ts と同型のガードを
     // 予防的に適用する（実運用での顕在化は未確認。差分適用が効いているため潜在化している
     // と推測されるのみで、根本原因の確証は maplibre 側のみ）
     let lastAppliedStyle: unknown;
@@ -44,7 +44,7 @@ export class MapboxLayer extends Layer {
       const opacity = this.getOpacity();
       canvas.style.opacity = opacity;
 
-      // oct26-m2-t2（MaplatCore #100）: MapLibreLayer.render() と同型の canvas 同期 2 点を移植する。
+      // MaplatCore #100: MapLibreLayer.render() と同型の canvas 同期 2 点を移植する。
       // (b) canvas を OpenLayers の viewport 左上へ絶対配置する。
       canvas.style.position = 'absolute';
       canvas.style.left = '0';

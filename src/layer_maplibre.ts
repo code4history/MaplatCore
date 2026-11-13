@@ -4,7 +4,7 @@ import { glCanvasMatchesSize } from "./gl_canvas_size";
 
 export class MapLibreLayer extends Layer {
   constructor(options: any) {
-    // m6-t9 §3.4 (実装レビュー round2 H-AC5-2): render() は OpenLayers のレンダーフレーム
+    // render() は OpenLayers のレンダーフレーム
     // ごとに呼ばれる。setStyle は差分が無くても呼ぶたびスタイル再構築（スプライト再取得含む）を
     // 検討するコストを持つため、直前に適用した style と同一なら呼ばない（実運用スタイル
     // ＝MapTiler v3-openmaptiles でのちらつきの根本原因と特定済み）
@@ -98,7 +98,7 @@ export class MapLibreLayer extends Layer {
       // Ensure map size is correct
       if (frameState.size) {
         const [width, height] = frameState.size;
-        // nov26-m4-t2（#107）: GL の画素比で割って CSS ピクセル同士で比べる
+        // #107: GL の画素比で割って CSS ピクセル同士で比べる
         if (!glCanvasMatchesSize(mlMap, canvas, [width, height])) {
           // console.log('MapLibre size mismatch, resizing:', {
           //   current: { width: canvas.width, height: canvas.height },

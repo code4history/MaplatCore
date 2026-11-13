@@ -775,12 +775,12 @@ export function createLayerAConformanceCases(options: LayerAConformanceOptions):
     await waitFor(() => (el.getViewpoint()?.zoom ?? -Infinity) > vp.zoom + 0.5, timeout, "zoom increased");
   });
 
-  // ---- A-ベクター（nov26-m4-t5・#91: 線・面の id・個別削除・種類ごとの削除）----
+  // ---- A-ベクター（#91: 線・面の id・個別削除・種類ごとの削除）----
   //
   // 要素の公開面には、Core の中身が持つ一覧（vectors getter）に当たる読み取りが無い。そこで一覧の中身は
   // 「消せるか」で確かめる: add が返した id を removeVector に渡す true／false と、clearLine・clearVector の
   // { type } の絞り込み。並び（追加順・置き換えたものは末尾）と stroke → style の正規化は、公開面から
-  // 読めないのでここでは確かめない（正規化は Core の単体試験 spec/nov26-m4-t5-vector-remove.spec.ts が見る）。
+  // 読めないのでここでは確かめない（正規化は Core の単体試験 spec/vector-remove.spec.ts が見る）。
   // 描画の画素も見ない（それは各実装の e2e の役目）。座標は固定データの地図の範囲に置く。
   const vectorLine = () => ({ lnglats: [[141.15, 39.7], [141.16, 39.71]] });
   const vectorPolygon = (extra: Record<string, unknown> = {}) => ({

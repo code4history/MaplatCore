@@ -463,7 +463,7 @@ export class MockLayerAApp extends EventTarget implements LayerAImplementation {
   removePoiLayer(id: string) {
     if (id !== "main") this.#layers.delete(id);
   }
-  // nov26-m4-t5（#91）: 線を足して id を返す。data.id があればその id、無ければ自動の id。
+  // #91: 線を足して id を返す。data.id があればその id、無ければ自動の id。
   // 呼び手の data は変えず、写しに setLine と同じ正規化（type・stroke → style）をする（Core と同じ）。
   addLine(data: any): string {
     const d: any = { ...data, type: "Line" };

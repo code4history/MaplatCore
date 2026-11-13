@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-// demo/demo.ts（oct26-m11-t4）: 単一デモページのロジック。
+// demo/demo.ts: 単一デモページのロジック。
 // 地域ドロップダウン（?region= 付き再読み込み）・app 設定の setting 明示渡し・
 // 地域内コンテンツ切り替え UI（地図セレクタ・POI・線・面・視点・透過・GPS）・出典表示。
 // Core 本体（公開ライブラリ）の公開 API だけを使う（Pro 専用 API・Core 専用 export を import しない）。
@@ -23,10 +23,10 @@ import type { AppSetting, DemoOps, LineItem, LineKind, MapLineItem, MapPoi, Poi,
 // キーは "./content/<region>.json"（demo/ 起点の相対 glob）。ページの基点に依存しない。
 const CONTENTS = import.meta.glob("./content/*.json", { import: "default" });
 
-// 素材の型は regions.ts（t1 v6.4）が正本。v4.2 で局所型を廃止した
+// 素材の型は regions.ts が正本（このファイルに局所型を置かない）
 const EMPTY_OPS: DemoOps = { addPoi: [], movePoi: [], addVector: [] };
 
-// 移動ピンのアイコン（HR-23/2: 既存の POI と見分ける）。ファイルを増やさないため data URI の SVG
+// 移動ピンのアイコン（既存の POI と見分ける）。ファイルを増やさないため data URI の SVG
 const MOVE_ICON =
   "data:image/svg+xml;charset=utf-8," +
   encodeURIComponent(
@@ -35,7 +35,7 @@ const MOVE_ICON =
       '<path d="M8 13h9m-3.5-4 4 4-4 4" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' +
       "</svg>"
   );
-// 選んだ移動ピンのアイコン（HR-25/1）。地の色を橙に替え、縁を太くする（既定のピンの selected と同じく「選ばれた」と分かる形）
+// 選んだ移動ピンのアイコン。地の色を橙に替え、縁を太くする（既定のピンの selected と同じく「選ばれた」と分かる形）
 const MOVE_ICON_SELECTED =
   "data:image/svg+xml;charset=utf-8," +
   encodeURIComponent(
@@ -47,14 +47,14 @@ const MOVE_ICON_SELECTED =
 
 // 線・面の見た目（kind 別パレット）。単一正本はここ 1 箇所。
 // stroke は addLine の stroke、style は addVector の style（{ stroke, fill }）にそのまま渡す。
-// nov26-m4-t8: fill は OpenLayers の Fill の options（{ color }）の形で渡す（素の文字列では塗られない）
+// fill は OpenLayers の Fill の options（{ color }）の形で渡す（素の文字列では塗られない）
 const PALETTE: Record<LineKind, { stroke: { color: string; width: number }; fill: { color: string } }> = {
   festival: { stroke: { color: "#e60033", width: 4 }, fill: { color: "rgba(230, 0, 51, 0.15)" } },
   walk: { stroke: { color: "#1a7f37", width: 4 }, fill: { color: "rgba(26, 127, 55, 0.15)" } },
   feature: { stroke: { color: "#f97316", width: 4 }, fill: { color: "rgba(249, 115, 22, 0.15)" } }
 };
 
-// nov26-m4-t8: 層の既定アイコン（icon・selectedIcon）と、年代で色を変えるアイコン（iconTemplate）。
+// 層の既定アイコン（icon・selectedIcon）と、年代で色を変えるアイコン（iconTemplate）。
 // ファイルを増やさないため data URI の SVG（丸い穴のあるピン。移動ピンとも既定のピンとも見分ける）
 const dotPin = (fill: string, ring: string): string =>
   "data:image/svg+xml;charset=utf-8," +
@@ -951,7 +951,7 @@ async function main(): Promise<void> {
   markerInfo.id = "marker-info";
   markerInfo.style.cssText = "margin-top:8px;display:none;";
   document.querySelector(".c4h-info-box")?.appendChild(markerInfo);
-  // nov26-m4-t8: 面の出典（ODbL の表示義務）。表示中の面の source をそのまま textContent で出す
+  // 面の出典（ODbL の表示義務）。表示中の面の source をそのまま textContent で出す
   const vectorAttr = document.createElement("p");
   vectorAttr.id = "vector-attr";
   vectorAttr.style.cssText = "margin-top:4px;display:none;";
@@ -989,7 +989,7 @@ async function main(): Promise<void> {
   const appLines: LineItem[] = content?.appLines ?? [];
   const mapLines: MapLineItem[] = content?.mapLines ?? [];
 
-  // ---- nov26-m4-t8: app ごとの節と、app を作り直しても残る節 ----
+  // ---- app ごとの節と、app を作り直しても残る節 ----
   // app ごとの節（地図・POI・線・面・視点・GPS）は appArea に置き、再生成のたびに作り直す。
   // 「破棄と再生成」「状態」「イベント履歴」は fixedArea に置き、app を作り直しても残す（操作パネルの最下部）
   const appArea = document.createElement("div");
@@ -999,7 +999,7 @@ async function main(): Promise<void> {
   fixedArea.id = "demo-fixed-controls";
   controls.appendChild(fixedArea);
 
-  // ---- 操作パネルの部品（HR-18。t4 v4.1 §4.2）----
+  // ---- 操作パネルの部品 ----
   interface Sec { sec: HTMLElement; row: () => HTMLDivElement; }
   const makeSection = (title: string): Sec => {
     const sec = document.createElement("section");
@@ -1015,7 +1015,7 @@ async function main(): Promise<void> {
     };
     return { sec, row };
   };
-  // 中に操作が 1 つも無い節は出さない（上位 §8.4 の欠けの非表示）。t8: 置き場所（app ごと／残す）を選べる。既定は app ごとの節
+  // 中に操作が 1 つも無い節は出さない（欠けの非表示）。置き場所（app ごと／残す）を選べる。既定は app ごとの節
   const mountSection = (s: Sec, parent: HTMLElement = appArea): void => {
     if (s.sec.querySelector("button, input, select")) parent.appendChild(s.sec);
   };
@@ -1030,7 +1030,7 @@ async function main(): Promise<void> {
     wrap.appendChild(document.createTextNode(label));
     return wrap;
   };
-  // その地図に対象が無いチェックを無効にする（HR-20/2 の一般化。選択状態は保つ）
+  // その地図に対象が無いチェックを無効にする（選択状態は保つ）
   const setUsable = (wrap: HTMLLabelElement, usable: boolean, reason: string): void => {
     const cb = wrap.querySelector("input");
     if (!cb) return;
@@ -1041,7 +1041,7 @@ async function main(): Promise<void> {
     else wrap.title = reason;
   };
 
-  // ---- nov26-m4-t8: 状態。app を作り直しても残す ----
+  // ---- 状態。app を作り直しても残す ----
   const stateSec = makeSection("状態");
   const stateRow = (label: string, id: string): HTMLElement => {
     const r = stateSec.row();
@@ -1065,7 +1065,7 @@ async function main(): Promise<void> {
   const stUnknown = stateRow("未知の mapID", "state-unknown-map");
   const stError = stateRow("エラー", "state-error");
 
-  // ---- nov26-m4-t8: イベント履歴。新しい順・最大 50 件。changeViewpoint と updateState は直前と同種なら上書き ----
+  // ---- イベント履歴。新しい順・最大 50 件。changeViewpoint と updateState は直前と同種なら上書き ----
   const LOG_MAX = 50;
   const COALESCE = new Set(["changeViewpoint", "updateState"]);
   const logSec = makeSection("イベント履歴");
@@ -1131,9 +1131,9 @@ async function main(): Promise<void> {
     // ---- 出典表示（現在地図のラベル・attr・license・dataLicense）----
     // currentMapInfo()（createMapInfo）は source[key] の直接プロパティしか読まないが、
     // 地図メタは mixin.ts が OL の this.set(key, …)（values_）に格納するため attr/license が
-    // 直接プロパティになく、出典欄が空になる（レビュー Major-2）。公開 API の getMapMeta(mapID)
+    // 直接プロパティになく、出典欄が空になる。公開 API の getMapMeta(mapID)
     // は source.get(key) で読むのでこちらを使う。attr は {ja, en} 形があり得るため i18n() を通す。
-    // 手順 4: refreshAttr の dataLicense 行を置き換える（IR2 Minor-N1。§4.4）
+    // 手順 4: refreshAttr の dataLicense 行を置き換える
     const attrDataParts = (m: { dataAttr?: string | { ja?: string; en?: string }; dataLicense?: string } | undefined): string[] => {
       const dataAttr = m ? i18n(m.dataAttr) : "";
       if (dataAttr && m?.dataLicense) return [`地理参照データ: ${dataAttr}（${m.dataLicense}）`];
@@ -1158,7 +1158,7 @@ async function main(): Promise<void> {
       else if (attrStr) parts.push(attrStr);
       else if (label) parts.push(label);
       if (m?.license) parts.push(`ライセンス: ${m.license}`);
-      // 上位設計 §10.2-3: dataAttr・dataLicense（CC BY-SA など）の地図は「地理参照データ」を併記する
+      // dataAttr・dataLicense（CC BY-SA など）の地図は「地理参照データ」を併記する
       parts.push(...attrDataParts(m));
       attr.textContent = parts.join(" ／ ");
     };
@@ -1171,7 +1171,7 @@ async function main(): Promise<void> {
       stRotation.textContent = status.textContent;
     };
 
-    // ---- POI レイヤ（v4.2・HR-22）----
+    // ---- POI レイヤ ----
     // アプリ用 POI はアプリ全体の層 "app"（全地図に出る）。追加 POI もここに入れる。
     // 地図用 POI は地図ソースごとの層 "<mapID>#map"（Core は現在の地図のソースの層だけを描く＝その地図にだけ出る）。
     // 移動ピンはアプリ全体の層 "move"（全地図に出る。独自アイコン）。
@@ -1179,8 +1179,8 @@ async function main(): Promise<void> {
     const MAP_LAYER = "map";
     const MOVE_LAYER = "move";
     const mapLayerId = (mapID: string): string => `${mapID}#${MAP_LAYER}`;
-    // v4.3（IR3 Major-1）: 出る地図が限られる追加 POI・移動ピンは、地図用 POI と同じく地図ソースごとの層に載せる
-    // （Core は現在の地図のソースの層だけを描く＝その地図にだけ出る。ベースマップ gsi/osm の層も同じ。t4 §4.3 C8）
+    // 出る地図が限られる追加 POI・移動ピンは、地図用 POI と同じく地図ソースごとの層に載せる
+    // （Core は現在の地図のソースの層だけを描く＝その地図にだけ出る。ベースマップ gsi/osm の層も同じ）
     const ADD_LAYER = "add";
     const addLayerId = (mapID: string): string => `${mapID}#${ADD_LAYER}`;
     const moveLayerId = (mapID: string): string => `${mapID}#${MOVE_LAYER}`;
@@ -1191,7 +1191,7 @@ async function main(): Promise<void> {
     // 「範囲外の POI」の節が使う（どの POI が範囲の外か・どの層に描くかを出す）。
     // 地図用 POI はその地図のときだけ節に出すので、mapID を控える
     const recordedPois: OutsidePoiEntry[] = [];
-    // Core の normalizePoi は渡した POI をその場で書き換えるので、素材は写しで渡す（IR1 Major-1 と同じ理由）
+    // Core の normalizePoi は渡した POI をその場で書き換えるので、素材は写しで渡す（素材を書き換えないため）
     for (const poi of appPois) {
       recordedPois.push({ id: app.addMarker(structuredClone(poi), APP_LAYER) as string, data: poi });
     }
@@ -1206,12 +1206,12 @@ async function main(): Promise<void> {
       }
     }
 
-    // ---- 線・面（v4.2・HR-20/21）----
+    // ---- 線・面 ----
     // アプリの線は全地図に、地図の線は maps の地図にだけ描く。どちらも既定で表示（チェック済み）。
     // 地図を切り替えると Core は全部の線を描き直す（地図の区別をしない）ので、切替前に clearLine し、
-    // mapChanged で「表示中かつこの地図に出す線」だけを描く（IR1 Major-3 の是正を維持）。
+    // mapChanged で「表示中かつこの地図に出す線」だけを描く（前の地図の線・面を残さない）。
     const activeLines: LineItem[] = [...appLines, ...mapLines];
-    // nov26-m4-t8: 面は既定で表示（チェック済み）。面の出典（ODbL の表示義務）を出典の領域に textContent で出す
+    // 面は既定で表示（チェック済み）。面の出典（ODbL の表示義務）を出典の領域に textContent で出す
     const activeVectors: VectorItem[] = [...demoOps.addVector];
     const refreshVectorAttr = (): void => {
       vectorAttr.textContent = "";
@@ -1235,7 +1235,7 @@ async function main(): Promise<void> {
       if (!("maps" in line)) return true; // アプリの線
       return mapID !== undefined && line.maps.includes(mapID);
     };
-    // v4.4（HR-25/3）: 素材がその古地図の範囲で切った部分（clipped）を持てばそれを、無ければ points をそのまま描く
+    // 素材がその古地図の範囲で切った部分（clipped）を持てばそれを、無ければ points をそのまま描く
     const drawnPoints = (line: LineItem, mapID: string | undefined): [number, number][] =>
       (mapID !== undefined ? line.clipped?.[mapID] : undefined) ?? line.points;
     const redrawShapes = (): void => {
@@ -1287,7 +1287,7 @@ async function main(): Promise<void> {
     }
     for (const g of [oldGroup, baseGroup]) if (g.children.length > 0) mapSelect.appendChild(g);
     mapSelect.addEventListener("change", () => {
-      // IR1 Major-3 の是正を維持: 切替前に線・面を空にする
+      // 前の地図の線・面を残さない: 切替前に線・面を空にする
       app.clearLine();
       void app.changeMap(mapSelect.value);
     });
@@ -1320,9 +1320,9 @@ async function main(): Promise<void> {
       if (activeId !== undefined) mapSelect.value = activeId;
     };
 
-    // ---- POI（v4.2。表示のチェック・追加はチェック〔HR-23/1〕・移動はチェック〔HR-23/2・3〕）----
+    // ---- POI（表示のチェック・追加はチェック・移動はチェック）----
     const poiSec = makeSection("POI");
-    // POI の選択（v4.4・HR-25/1・2）: クリックした POI を Core の selectMarker で選ぶ（アイコンが selected になり、画面の中央へ来る）。
+    // POI の選択: クリックした POI を Core の selectMarker で選ぶ（アイコンが selected になり、画面の中央へ来る）。
     // 「選択中の POI」のチェックは選択があるときだけ有効で、外すと unselectMarker で全部を未選択に戻す
     let selectedId: string | undefined;
     const selectWrap = makeCheck("選択中の POI", false, (on) => { if (!on) clearSelection(); });
@@ -1367,7 +1367,7 @@ async function main(): Promise<void> {
       const n = mapPoiCount.get(activeMapId() ?? "") ?? 0;
       setUsable(mapPoiCheck, n > 0, "この地図には地図用 POI がありません");
     };
-    // 追加 POI・移動のうち出る地図が限られるもの（v4.3・IR3 Major-1）。その地図に無ければチェックを無効化する（HR-20・22 の一般化）
+    // 追加 POI・移動のうち出る地図が限られるもの。その地図に無ければチェックを無効化する
     const opChecks: { wrap: HTMLLabelElement; maps: string[] }[] = [];
     const refreshOpChecks = (): void => {
       const mapID = activeMapId() ?? "";
@@ -1375,7 +1375,7 @@ async function main(): Promise<void> {
     };
     if (demoOps.addPoi.length > 0 || demoOps.movePoi.length > 0) {
       const opRow = poiSec.row();
-      // POI 追加（HR-23/1）: on で追加・off で削除。Core の removeMarker は #111 の修正（edd55e9 以降）が前提
+      // POI 追加: on で追加・off で削除。Core の removeMarker は #111 の修正（edd55e9 以降）が前提
       // maps が無ければアプリ全体の層（全地図）、あれば地図ごとの層 "<mapID>#add"（その地図にだけ出る）
       for (const op of demoOps.addPoi) {
         const layers = op.maps ? op.maps.map(addLayerId) : [APP_LAYER];
@@ -1392,13 +1392,13 @@ async function main(): Promise<void> {
         if (op.maps) opChecks.push({ wrap, maps: op.maps });
         opRow.appendChild(wrap);
       }
-      // 移動ピン（HR-23/2・3）: 始点・終点は参照する線（アプリの線か地図の線）の最初と最後の頂点。既存の POI の座標は使わない
+      // 移動ピン: 始点・終点は参照する線（アプリの線か地図の線）の最初と最後の頂点。既存の POI の座標は使わない
       // 地図の線を参照するときは、その線の maps の地図ごとの層 "<mapID>#move" に 1 本ずつ置く（線と同じ地図にだけ出る）
       const lineMapsOf = (l: LineItem | MapLineItem): string[] | undefined => ("maps" in l ? l.maps : undefined);
       const sourceIds = setting.sources.map((s) => (typeof s === "string" ? s : (s as { mapID: string }).mapID));
       for (const move of demoOps.movePoi) {
         const line = appLines.find((l) => l.label === move.line) ?? mapLines.find((l) => l.label === move.line);
-        if (!line || line.points.length < 2) continue; // 素材の検査（t3 AC-T3-11）が先に落とす。ここでは出さないだけ
+        if (!line || line.points.length < 2) continue; // 素材の検査（scripts/verify-demo-content.js）が先に落とす。ここでは出さないだけ
         const pin = (at: [number, number], where: string) => ({
           name: move.label,
           desc: `${line.label}の${where}`,
@@ -1407,7 +1407,7 @@ async function main(): Promise<void> {
           selectedIcon: MOVE_ICON_SELECTED
         });
         const lineMaps = lineMapsOf(line);
-        // v4.4（HR-25/3）: 線が古地図の範囲で切った部分（clipped）を持つときは、地図ごとの層に置き、
+        // 線が古地図の範囲で切った部分（clipped）を持つときは、地図ごとの層に置き、
         // その地図で描く部分の最初と最後の頂点を始点・終点にする（範囲の外へ移って消えない）。
         // 地図の線は maps の地図ごと、切った部分を持つアプリの線は全地図ごと、どちらでもなければアプリ全体の層に 1 本
         const perMap = lineMaps ?? (line.clipped ? sourceIds : undefined);
@@ -1429,7 +1429,7 @@ async function main(): Promise<void> {
     }
     poiSec.row().appendChild(selectWrap);
 
-    // ---- nov26-m4-t8: アイコン指定の層・年代で色を変える層・重なった POI ----
+    // ---- アイコン指定の層・年代で色を変える層・重なった POI ----
     // 素材を増やさずにボタンだけで足す。地点は app 設定の homePosition の周り
     const homeLngLat = (): [number, number] => [setting.homePosition[0], setting.homePosition[1]];
     const extraRow = poiSec.row();
@@ -1516,7 +1516,7 @@ async function main(): Promise<void> {
     detailBox.id = "poi-detail";
     poiSec.sec.append(hitsLine, detailBox);
 
-    // ---- nov26-m4-t8: POI の層の一覧（listPoiLayers）・層ごとの表示切替・層ごとの消去 ----
+    // ---- POI の層の一覧（listPoiLayers）・層ごとの表示切替・層ごとの消去 ----
     const layersBox = document.createElement("div");
     layersBox.className = "demo-poi-layers";
     layersBox.id = "poi-layers";
@@ -1588,7 +1588,7 @@ async function main(): Promise<void> {
     for (const line of appLines) {
       shapeRow.appendChild(makeCheck(line.label, true, (on) => { toggleIn<LineItem>(activeLines, line, on); redrawShapes(); }));
     }
-    // HR-20: 地図の線は、現在の地図に無いときチェックを無効化する（選択状態は保つ）
+    // 地図の線は、現在の地図に無いときチェックを無効化する（選択状態は保つ）
     const lineChecks: { line: MapLineItem; wrap: HTMLLabelElement }[] = [];
     for (const line of mapLines) {
       const wrap = makeCheck(line.label, true, (on) => { toggleIn<LineItem>(activeLines, line, on); redrawShapes(); });
@@ -1635,7 +1635,7 @@ async function main(): Promise<void> {
 
     // ---- 地図切替・視点変化に追従して、出典・選択中の地図・線・視点を出し直す ----
     const refreshMapState = (): void => {
-      // v4.4（HR-25/2）: 地図ごとの層の POI（"<mapID>#…"）を選んだまま別の地図へ替えたら、選択を外す（描かれない POI を選んだままにしない）
+      // 地図ごとの層の POI（"<mapID>#…"）を選んだまま別の地図へ替えたら、選択を外す（描かれない POI を選んだままにしない）
       if (selectedId?.includes("#") && !selectedId.startsWith(`${activeMapId()}#`)) clearSelection();
       refreshSelectCheck();
       refreshAttr();
@@ -1658,7 +1658,7 @@ async function main(): Promise<void> {
       stViewpoint.textContent = text;
       logEvent("changeViewpoint", text);
     });
-    // nov26-m4-t8: 状態とイベント履歴
+    // 状態とイベント履歴
     app.addEventListener("updateState", (evt) => {
       const text = brief(detailOf(evt));
       stUpdate.textContent = text;
@@ -1700,11 +1700,11 @@ async function main(): Promise<void> {
       if (data.image && typeof data.imageCredit === "string") parts.push(`写真: ${data.imageCredit}`);
       markerInfo.textContent = parts.join(" — ");
       markerInfo.style.display = "";
-      // nov26-m4-t8: poiTemplate から作られた detail.html は sanitizeHtml を通したものだけを出す（HR-13）
+      // poiTemplate から作られた detail.html は sanitizeHtml を通したものだけを出す
       if (typeof data.html === "string") detailBox.innerHTML = sanitizeHtml(data.html);
       else detailBox.textContent = "";
       logEvent("clickMarker", parts[0] ?? "");
-      // v4.4（HR-25/1）: クリックした POI を選ぶ（Core が selected のアイコンで描き直す）
+      // クリックした POI を選ぶ（Core が selected のアイコンで描き直す）
       if (typeof data.namespaceID === "string") {
         selectedId = data.namespaceID;
         app.selectMarker(selectedId);
@@ -1743,7 +1743,7 @@ async function main(): Promise<void> {
     refreshMapState();
   };
 
-  // ---- nov26-m4-t8: 破棄と再生成 ----
+  // ---- 破棄と再生成 ----
   // 再生成は「app.remove() → 同じ setting で createObject → 各節を作り直す」。古い app への参照を残さない
   let current: MaplatApp | undefined;
   let cacheDisabledReason: string | undefined;
@@ -1896,7 +1896,7 @@ async function main(): Promise<void> {
 }
 
 // 初期化（fetch / createObject など）に失敗したら画面に出す。
-// 無言で「読み込み中…」のまま止めない（レビュー Minor-1）。
+// 無言で「読み込み中…」のまま止めない。
 main().catch((e: unknown) => {
   const status = byId("status");
   status.textContent = `地図の読み込みに失敗しました: ${e instanceof Error ? e.message : String(e)}`;

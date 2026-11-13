@@ -112,7 +112,7 @@ const baseDict = {
 };
 
 const checkMapTypeIsWMTS = (maptype?: string) => (maptype || '').match(/^(?:base|overlay|google(?:_(?:roadmap|satellite|hybrid|terrain))?|mapbox|maplibre|osm)$/);
-// m6-t6 hotfix (実装レビュー H-A) → m6-t9 (§3.1 AC2): provider（google/mapbox/maplibre）は
+// provider（google/mapbox/maplibre）は
 // Maplat 同梱タイルのテンプレート url を持たない。自動補完すると ol/source/Google.js の
 // baseUrl(= options.url || 'https://tile.googleapis.com/') を汚染し、Google Maps Platform への
 // createSession リクエストがプレビューサーバ宛てに誤送信される（404）。data.url に手動値が
@@ -122,12 +122,12 @@ const checkMapTypeIsWMTS = (maptype?: string) => (maptype || '').match(/^(?:base
 
 export async function mapSourceFactory(options: any, commonOptions: any) {
   if (typeof options === "string") {
-    // m6-t3: baseDict エントリを破壊的に書き換えない（レビュー Minor m3）
+    // baseDict エントリを破壊的に書き換えない
     options = { ...(baseDict as any)[options] };
   }
 
   options = normalizeArg(Object.assign(options, commonOptions));
-  // m6-t10 §3.5.2: 解決結果が undefined のときは label キーを実体化しない。
+  // 解決結果が undefined のときは label キーを実体化しない。
   // 実体化すると、settingFile 経路（:188 の Object.assign(resp, options)）で
   // 設定ファイル側の label が undefined で潰れる（Object.assign は値が undefined でも
   // own enumerable property をコピーするため）。:189 のフォールバックは resp.year であり、
@@ -165,7 +165,7 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
       undefined;
     if (!options.imageExtension) options.imageExtension = "jpg";
     if (isProviderMapType(options.maptype)) {
-      // m6-t9 (§3.1 AC2): H-A は自動補完由来の汚染を防いだが、data.url に手動値が
+      // 自動補完を止めるだけでは足りない。data.url に手動値が
       // 残っている場合はそのまま ol/source/Google 等の baseUrl を汚染し得た（同型バグ）。
       // provider は自動補完・手動値のいずれの url/urls も使わないため、ここで確実に除去する
       delete options.url;
@@ -241,7 +241,7 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
       undefined;
     if (!options.imageExtension) options.imageExtension = "jpg";
     if (isProviderMapType(options.maptype)) {
-      // m6-t9 (§3.1 AC2): 手動値からの汚染防止（上の分岐と同型。設定 json 経由の読み込み経路）
+      // 手動値からの汚染防止（上の分岐と同型。設定 json 経由の読み込み経路）
       delete options.url;
       delete options.urls;
     } else if (options.mapID && !options.url && !options.urls) {

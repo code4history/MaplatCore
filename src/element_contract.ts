@@ -103,7 +103,7 @@ export const MAPLAT_APP_METHODS = [
   "removePoiLayer",
   "addLine",
   "addVector",
-  // nov26-m4-t5（#91）: 線・面を id で 1 件だけ消す
+  // #91: 線・面を id で 1 件だけ消す
   "removeVector",
   "removeLine",
   "clearLine",

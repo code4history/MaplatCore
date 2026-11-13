@@ -1,6 +1,6 @@
 /**
- * m6-t5: Mapbox / MapLibre ソースへ共有 GL インスタンスを割り当てる。
- * GL が無いときは throw せずスキップ（ADR-0014 / 設計 AC10）。
+ * Mapbox / MapLibre ソースへ共有 GL インスタンスを割り当てる。
+ * GL が無いときは throw せずスキップする。
  *
  * @returns true なら cache に含める / false なら当該ソースを落とす
  */
