@@ -133,7 +133,7 @@ function checkSchema(contents) {
       must(typeof v.kind === "string" && KINDS.has(v.kind), `${where}: kind が allowlist 外`);
       must(typeof v.source === "string" && v.source.trim() !== "", `${where}: source が空`);
     }
-    // v2.3: movePoi の形（label・line・from/to 不在）は checkScope（AC-T3-11）が見る
+    // v2.3: movePoi の形（label・line・from/to 不在）は checkScope が見る
   }
   if (fails === 0) console.log("OK: schema");
 }
@@ -181,7 +181,7 @@ function checkVerify(contents) {
   if (fails === 0) console.log("OK: verify");
 }
 
-// ---- AC-T3-7 source の形式 ----
+// ---- source の形式 ----
 function sourceOk(s) {
   if (typeof s !== "string" || s.trim() === "") return false;
   if (/http/i.test(s)) return true;                       // URL
@@ -204,7 +204,7 @@ function checkSource(contents) {
   if (fails === 0) console.log("OK: source");
 }
 
-// ---- AC-T3-8 kind/maps の allowlist ----
+// ---- kind/maps の allowlist ----
 function regionSources(region) {
   const app = readJson(`public/apps/${region}.json`);
   const srcs = Array.isArray(app.sources) ? app.sources : [];
@@ -234,7 +234,7 @@ function checkKindmaps(contents) {
   if (fails === 0) console.log("OK: kindmaps");
 }
 
-// ---- AC-T3-10 写真の権利表示 ----
+// ---- 写真の権利表示 ----
 function checkImage(contents) {
   for (const content of contents) {
     for (const { poi: p, where } of allPois(content)) {
@@ -434,7 +434,7 @@ function runSelftest(contents) {
   for (const x of NG) must(!licenseOk(x), "selftest: NG ライセンスが PASS した: " + JSON.stringify(x));
   for (const x of IMAGE_LICENSES) must(licenseOk(x), "selftest: allowlist の値が FAIL した: " + x);
 
-  // (2) 範囲検査の陽性対照（AC-T3-6）: 実素材は全頂点が地域 union 内（緑）。
+  // (2) 範囲検査の陽性対照: 実素材は全頂点が地域 union 内（緑）。
   //     故意に盛岡の経緯度を館林の線へ混入したら FAIL で検出できること。
   for (const r of REGIONS) {
     must(fs.existsSync(`public/apps/${r}.json`), `missing public/apps/${r}.json`);

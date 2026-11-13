@@ -38,7 +38,7 @@ test.describe('pois layer ref (wrapper) — viewer 到達', () => {
     expect(hiddenList.some((ns: string) => ns.includes('hidden'))).toBe(true);
   });
 
-  test('補: showPoiLayer("hidden") 後はマーカーが 4 に増える', async ({ page }) => {
+  test('showPoiLayer("hidden") 後はマーカーが 4 に増える', async ({ page }) => {
     await page.goto(fixturePath);
     await waitForReady(page);
 

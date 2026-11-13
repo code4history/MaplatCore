@@ -220,7 +220,7 @@ describe("文脈ごとの判別", () => {
   });
 });
 
-describe("補: 旧レイヤ辞書の無回帰", () => {
+describe("旧レイヤ辞書の無回帰", () => {
   it("plain dict {key: cluster} stays dict", async () => {
     const dict = { mylayer: { pois: [{ lng: 1, lat: 2, name: "n" }] } };
     const out = await normalizeLayers(structuredClone(dict), opts());
@@ -247,7 +247,7 @@ describe("非破壊性（wrapper / FC 入力）", () => {
   });
 });
 
-describe("補/回帰: POIオブジェクト配列モードでは wrapper.layer の fetch が走らない", () => {
+describe("回帰: POIオブジェクト配列モードでは wrapper.layer の fetch が走らない", () => {
   it("混在配列（先頭=座標POI, 後続=ラッパー）で fetch 呼ばれず throw しない", async () => {
     const spy = stubFetch({}); // 一切応答しない（呼ばれたら監視できる）
     const mixed = [

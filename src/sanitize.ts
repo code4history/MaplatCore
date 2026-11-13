@@ -76,7 +76,7 @@ let activeProfile: SanitizeProfile | undefined;
  * img[src] で許可する data: の MIME。
  * svg+xml は**含めない**（設計書 §3.5(c)）。img 経由ではブラウザが SVG 内の script を
  * 実行しないため即 XSS ではないが、許可面を最小に保つ防御的判断である。
- * 実運用データで必要と判明した場合のみ、人間承認のうえ §6.2 の条件付き AC を適用して追加する。
+ * 実運用データで必要と判明した場合のみ、人間の承認のうえで追加する。
  */
 const SAFE_IMAGE_DATA_URI = /^data:image\/(png|jpeg|gif|webp|avif);/i;
 

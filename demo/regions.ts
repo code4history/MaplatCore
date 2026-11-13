@@ -171,7 +171,7 @@ export interface RegionMeta {
   title: string;
   /** この地域で見られる操作（v5 カード本文の箇条。今は無い操作には「（11 月以降順次）」を付ける） */
   highlights: string[];
-  /** highlights が「今あるもの」として名乗る操作。今は無い操作を入れない（AC-T4-7） */
+  /** highlights が「今あるもの」として名乗る操作。今は無い操作を入れない */
   ops: RegionOp[];
 }
 

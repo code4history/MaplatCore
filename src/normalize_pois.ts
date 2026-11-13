@@ -19,7 +19,7 @@ export async function nodesLoader(
 }
 
 // --- pois layer ref (wrapper) support ---
-// 許可キー方式（hide / title / icon / selectedIcon のみ）。t3 v1.3 §5.2/§5.3
+// 許可キー方式（hide / title / icon / selectedIcon のみ）。判定の規則はこのファイルの判定表が正本
 const OVERRIDE_KEYS = ["hide", "title", "icon", "selectedIcon"] as const;
 const COORD_KEYS = [
   "lnglat",
@@ -33,7 +33,7 @@ function isPlainObject(x: any): boolean {
   return typeof x === "object" && x !== null && !Array.isArray(x);
 }
 
-// 配列要素文脈のラッパー判別。t3 v1.3 §5.2 の規則。
+// 配列要素文脈のラッパー判別。
 // layer が string または FeatureCollection であり、かつ座標キーを持たない plain object。
 export function isPoiLayerRef(x: any): boolean {
   if (!isPlainObject(x)) return false;
