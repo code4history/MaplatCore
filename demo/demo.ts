@@ -47,14 +47,14 @@ const MOVE_ICON_SELECTED =
 
 // 線・面の見た目（kind 別パレット）。単一正本はここ 1 箇所。
 // stroke は addLine の stroke、style は addVector の style（{ stroke, fill }）にそのまま渡す。
-// nov26-m4-t8（NayutaProducts#37）: fill は OpenLayers の Fill の options（{ color }）の形で渡す（素の文字列では塗られない）
+// nov26-m4-t8: fill は OpenLayers の Fill の options（{ color }）の形で渡す（素の文字列では塗られない）
 const PALETTE: Record<LineKind, { stroke: { color: string; width: number }; fill: { color: string } }> = {
   festival: { stroke: { color: "#e60033", width: 4 }, fill: { color: "rgba(230, 0, 51, 0.15)" } },
   walk: { stroke: { color: "#1a7f37", width: 4 }, fill: { color: "rgba(26, 127, 55, 0.15)" } },
   feature: { stroke: { color: "#f97316", width: 4 }, fill: { color: "rgba(249, 115, 22, 0.15)" } }
 };
 
-// nov26-m4-t8（Issue #37 の 4）: 層の既定アイコン（icon・selectedIcon）と、年代で色を変えるアイコン（iconTemplate）。
+// nov26-m4-t8: 層の既定アイコン（icon・selectedIcon）と、年代で色を変えるアイコン（iconTemplate）。
 // ファイルを増やさないため data URI の SVG（丸い穴のあるピン。移動ピンとも既定のピンとも見分ける）
 const dotPin = (fill: string, ring: string): string =>
   "data:image/svg+xml;charset=utf-8," +
@@ -84,7 +84,7 @@ const ERA_ICON_TEMPLATE =
   `{% else %}{% set eraIcon = ${JSON.stringify(ERA_ICONS.modern)} %}{% endif %}` +
   `{% else %}{% set eraIcon = ${JSON.stringify(ERA_ICONS.unknown)} %}{% endif %}` +
   `{"icon": {{ eraIcon | dump | safe }}}`;
-// poiTemplate（Issue #37 の 4）: clickMarker の detail.html の元。{{ }} は HTML エスケープし、表示の前に sanitizeHtml を通す
+// poiTemplate: clickMarker の detail.html の元。{{ }} は HTML エスケープし、表示の前に sanitizeHtml を通す
 const POI_TEMPLATE =
   '<div class="demo-poi-html"><strong>{{ name if name is string else (name.ja or name.en or "") }}</strong>' +
   '{% if desc is string and desc %}<p>{{ desc }}</p>{% endif %}</div>';
@@ -1041,7 +1041,7 @@ async function main(): Promise<void> {
     else wrap.title = reason;
   };
 
-  // ---- nov26-m4-t8: 状態（Issue #37 の 7）。app を作り直しても残す ----
+  // ---- nov26-m4-t8: 状態。app を作り直しても残す ----
   const stateSec = makeSection("状態");
   const stateRow = (label: string, id: string): HTMLElement => {
     const r = stateSec.row();
@@ -1065,7 +1065,7 @@ async function main(): Promise<void> {
   const stUnknown = stateRow("未知の mapID", "state-unknown-map");
   const stError = stateRow("エラー", "state-error");
 
-  // ---- nov26-m4-t8: イベント履歴（Issue #37 の 7）。新しい順・最大 50 件。changeViewpoint と updateState は直前と同種なら上書き ----
+  // ---- nov26-m4-t8: イベント履歴。新しい順・最大 50 件。changeViewpoint と updateState は直前と同種なら上書き ----
   const LOG_MAX = 50;
   const COALESCE = new Set(["changeViewpoint", "updateState"]);
   const logSec = makeSection("イベント履歴");
@@ -1429,7 +1429,7 @@ async function main(): Promise<void> {
     }
     poiSec.row().appendChild(selectWrap);
 
-    // ---- nov26-m4-t8: アイコン指定の層・年代で色を変える層・重なった POI（Issue #37 の 4）----
+    // ---- nov26-m4-t8: アイコン指定の層・年代で色を変える層・重なった POI ----
     // 素材を増やさずにボタンだけで足す。地点は app 設定の homePosition の周り
     const homeLngLat = (): [number, number] => [setting.homePosition[0], setting.homePosition[1]];
     const extraRow = poiSec.row();
@@ -1516,7 +1516,7 @@ async function main(): Promise<void> {
     detailBox.id = "poi-detail";
     poiSec.sec.append(hitsLine, detailBox);
 
-    // ---- nov26-m4-t8: POI の層の一覧（listPoiLayers）・層ごとの表示切替・層ごとの消去（Issue #37 の 2・3）----
+    // ---- nov26-m4-t8: POI の層の一覧（listPoiLayers）・層ごとの表示切替・層ごとの消去 ----
     const layersBox = document.createElement("div");
     layersBox.className = "demo-poi-layers";
     layersBox.id = "poi-layers";
@@ -1658,7 +1658,7 @@ async function main(): Promise<void> {
       stViewpoint.textContent = text;
       logEvent("changeViewpoint", text);
     });
-    // nov26-m4-t8: 状態とイベント履歴（Issue #37 の 7）
+    // nov26-m4-t8: 状態とイベント履歴
     app.addEventListener("updateState", (evt) => {
       const text = brief(detailOf(evt));
       stUpdate.textContent = text;
@@ -1743,7 +1743,7 @@ async function main(): Promise<void> {
     refreshMapState();
   };
 
-  // ---- nov26-m4-t8: 破棄と再生成（Issue #37 の 6）----
+  // ---- nov26-m4-t8: 破棄と再生成 ----
   // 再生成は「app.remove() → 同じ setting で createObject → 各節を作り直す」。古い app への参照を残さない
   let current: MaplatApp | undefined;
   let cacheDisabledReason: string | undefined;
@@ -1782,7 +1782,7 @@ async function main(): Promise<void> {
   };
   const create = async (restoreSession: boolean): Promise<void> => {
     if (restoreSession) dropForeignSession();
-    // setting を明示渡し。同時に存在する app は 1 つだけ。poiTemplate は clickMarker の detail.html の元（Issue #37 の 4）
+    // setting を明示渡し。同時に存在する app は 1 つだけ。poiTemplate は clickMarker の detail.html の元
     // Service Worker を先に登録してから enableCache で作る。使えなければキャッシュ無しで起動する
     cacheDisabledReason = await ensureServiceWorker(status);
     const app = await MaplatApp.createObject({

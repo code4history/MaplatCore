@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 
-// nov26-m4-t8（NayutaProducts#37）: MaplatCore のデモ（index.html ＋ demo/demo.ts）に足したデモ機能。
+// nov26-m4-t8: MaplatCore のデモ（index.html ＋ demo/demo.ts）に足したデモ機能。
 // デモは window.__MAPLAT_DEMO_APP__ に app を出す（検査用の口。デモはパッケージに入らない）。
 // 面は feature 層の Feature の name が 'Polygon'（src/map_ex.ts の setVector）。POI は marker 層の Feature の datum。
 
@@ -110,7 +110,7 @@ const clickEmptyMap = async (page: Page) => {
 const logTypes = (page: Page) =>
     page.locator('#event-log li').evaluateAll(lis => lis.map(li => (li as HTMLElement).dataset.type ?? ''));
 
-test.describe('nov26-m4-t8: デモ機能（NayutaProducts#37）', () => {
+test.describe('nov26-m4-t8: デモ機能', () => {
     test.setTimeout(180000);
 
     test('m4-t9 E-1: 盛岡の初期表示は可視 POI と marker Feature の namespaceID が一対一', async ({ page }) => {
@@ -179,7 +179,7 @@ test.describe('nov26-m4-t8: デモ機能（NayutaProducts#37）', () => {
     test('項目 1（R-t8-5）: 面の内側の POI をクリックすると clickMarker が発火する', async ({ page }) => {
         await openDemo(page, 'morioka');
         await expect.poll(async () => (await polygons(page)).length, { timeout: 30000 }).toBe(1);
-        // アプリ用 POI（層 "app"）の先頭は桜山神社＝盛岡城跡公園の面の内側（Issue #37 の実測）
+        // アプリ用 POI（層 "app"）の先頭は桜山神社＝盛岡城跡公園の面の内側（実測）
         // nov26-m4-t9（#134）で描画を直列化したため、B32 で保留した厳密な一件を復元する。
         await expect.poll(async () => (await markersOf(page, 'app_0')).length, { timeout: 30000 }).toBe(1);
         await clickPoi(page, 'app_0');
@@ -187,7 +187,7 @@ test.describe('nov26-m4-t8: デモ機能（NayutaProducts#37）', () => {
         expect(hit, 'clickMarker が発火しない').toBeTruthy();
     });
 
-    // 項目 2（Issue #37 の 2）: 層の一覧と層ごとの表示切替
+    // 項目 2: 層の一覧と層ごとの表示切替
     test('項目 2: 層の一覧の行数が listPoiLayers と一致し、チェックを外すとその層の POI が消える', async ({ page }) => {
         await openDemo(page, 'morioka');
         const layerRows = page.locator('#poi-layers .demo-poi-layer:not([data-layer$="#all"])');
@@ -204,7 +204,7 @@ test.describe('nov26-m4-t8: デモ機能（NayutaProducts#37）', () => {
         await expect.poll(async () => (await markersOf(page, 'app_')).length).toBeGreaterThan(0);
     });
 
-    // 項目 3（Issue #37 の 3）: 層ごとの clearMarker と <mapID>#all
+    // 項目 3: 層ごとの clearMarker と <mapID>#all
     test('項目 3: 層の「消す」でその層が 0 件、<mapID>#all でこの地図の層が全部 0 件', async ({ page }) => {
         await openDemo(page, 'morioka');
         await page.locator('#poi-layers .demo-poi-layer[data-layer="app"] button').click();
@@ -227,7 +227,7 @@ test.describe('nov26-m4-t8: デモ機能（NayutaProducts#37）', () => {
         ).toBe(0);
     });
 
-    // 項目 4（Issue #37 の 4）: icon・selectedIcon の層・iconTemplate の層・重なった POI と clickMarkers・poiTemplate
+    // 項目 4: icon・selectedIcon の層・iconTemplate の層・重なった POI と clickMarkers・poiTemplate
     test('項目 4: 層の icon で描かれ、iconTemplate で年代ごとにアイコンが変わる', async ({ page }) => {
         await openDemo(page, 'morioka');
         await page.getByRole('button', { name: 'アイコン指定の層を足す' }).click();
@@ -257,7 +257,7 @@ test.describe('nov26-m4-t8: デモ機能（NayutaProducts#37）', () => {
         await expect(page.locator('#poi-detail script')).toHaveCount(0);
     });
 
-    // 項目 5（Issue #37 の 6）: remove()・再生成・restoreSession 付き・未知の mapID
+    // 項目 5: remove()・再生成・restoreSession 付き・未知の mapID
     test('項目 5: 再生成で地図が 1 つだけ作り直され、remove() で消え、未知の mapID は地図を変えない', async ({ page }) => {
         await openDemo(page, 'morioka');
         const viewports = () => page.locator('#map_div .ol-viewport').count();
@@ -290,7 +290,7 @@ test.describe('nov26-m4-t8: デモ機能（NayutaProducts#37）', () => {
         await expect(page.locator('#state-unknown-map')).toContainText(`${mapID} のまま`);
     });
 
-    // 項目 6（Issue #37 の 7）: 状態とイベント履歴
+    // 項目 6: 状態とイベント履歴
     test('項目 6: clickMap が状態と履歴の先頭に出て、changeViewpoint・updateState は続けて並ばない', async ({ page }) => {
         await openDemo(page, 'morioka');
         // 視点を何度か動かす（changeViewpoint・updateState が続けて来る）
