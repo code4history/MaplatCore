@@ -2,10 +2,10 @@
 //
 // - merc2XyVisibleLayers を持たない Transform（1.0.x 相当のスタブ）では null（従来経路へのフォールバック合図）
 // - 兄弟 symlink の Transform で、紙外の本図を除いた「後で」2 件を切り出す
-// fixture は e2e と同じ e2e/fixtures/oct26-m2-t4/*.json（compiled は MaplatTransform の tests/compiled と同一）
+// fixture は e2e と同じ e2e/fixtures/gps-poi/*.json（compiled は MaplatTransform の tests/compiled と同一）
 //
 // 解決された @maplat/transform に merc2XyVisibleLayers が無い環境（standalone CI が lock どおり Transform 1.0.0 を
-// 解決する間）では、新メソッドを前提とする検査を理由つきで skip する（e2e/oct26-m2-t4-gps-poi.spec.ts と同じ判定）。
+// 解決する間）では、新メソッドを前提とする検査を理由つきで skip する（e2e/gps-poi.spec.ts と同じ判定）。
 // 新メソッドが無いときに null を返す経路の検査は skip しない（CI でこそ検査すべき経路）。
 // 前提テストは兄弟 symlink（node_modules/@maplat/transform → ../../../MaplatTransform）の環境でのみ実行する。
 // pnpm の standalone 解決も node_modules/.pnpm への symlink なので、実体パスが node_modules の外にあることで判定する。
@@ -30,7 +30,7 @@ const IS_SIBLING_SYMLINK = (() => {
 
 const fixture = (name: string) =>
   JSON.parse(
-    readFileSync(resolve(__dirname, `../e2e/fixtures/oct26-m2-t4/${name}.json`), "utf8")
+    readFileSync(resolve(__dirname, `../e2e/fixtures/gps-poi/${name}.json`), "utf8")
   );
 
 const loadMt = (name: string) => {

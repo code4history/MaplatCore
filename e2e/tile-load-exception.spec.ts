@@ -8,7 +8,7 @@ import { test, expect } from '@playwright/test';
 // （#94 の再診断で使った probe を正式化したもの）。
 // 注入中に読まれたタイルは ERROR で決着し、読込中数が 0 に戻る（上限 16 に張り付かない）。
 // 注入解除後にパン／ズームすると、読込中数が 0 に戻り、新しい表示範囲のタイルが LOADED になる。
-// 実行（CI と同じ設定）: ./node_modules/.bin/playwright test --config=playwright-ci.config.ts e2e/oct26-m2-t5-tile-load-exception.spec.ts
+// 実行（CI と同じ設定）: ./node_modules/.bin/playwright test --config=playwright-ci.config.ts e2e/tile-load-exception.spec.ts
 
 const TILE_STATE = { IDLE: 0, LOADING: 1, LOADED: 2, ERROR: 3, EMPTY: 4 };
 

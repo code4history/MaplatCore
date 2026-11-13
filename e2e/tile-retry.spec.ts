@@ -5,13 +5,13 @@ import { test, expect } from '@playwright/test';
 // 変更前は 404 と同じ扱いで ERROR のまま残り、原因が解消してもパン・ズームしない限り空白だった
 // （OL のレンダラは IDLE のタイルしかキューに入れない）。変更後は例外由来に限り、1／2／4 秒の遅延で
 // 最大 3 回、OL の ImageTile.load()（ERROR → IDLE → LOADING）で読み直す。
-// 故障注入は e2e/oct26-m2-t5-tile-load-exception.spec.ts と同じ（作業 canvas〔256×256・地図の DOM 外〕の
+// 故障注入は e2e/tile-load-exception.spec.ts と同じ（作業 canvas〔256×256・地図の DOM 外〕の
 // getContext('2d') を null にする）。boot・snapshot・pollSnapshot も同所の形を写した（既存のファイルは変えない）。
 // 確かめること: 注入で ERROR になったタイルが、注入の解除後、view を動かさなくても LOADED になる。
 // 注意: 再試行は最初の失敗から 1+2+4＝7 秒で尽きる。負荷の高い CI で解除が遅れると正しい実装でも
 // LOADED にならないので、最初の ERROR を見たらすぐに解除し、最初の注入から解除までの経過時間を記録して
 // 7 秒未満であることを前提として断言する。
-// 実行（CI と同じ設定）: ./node_modules/.bin/playwright test --config=playwright-ci.config.ts e2e/nov26-m4-t6-tile-retry.spec.ts
+// 実行（CI と同じ設定）: ./node_modules/.bin/playwright test --config=playwright-ci.config.ts e2e/tile-retry.spec.ts
 
 const TILE_STATE = { IDLE: 0, LOADING: 1, LOADED: 2, ERROR: 3, EMPTY: 4 };
 

@@ -70,7 +70,7 @@ async function openApp(page: Page, start: string) {
   page.on('console', m => {
     if (m.type() === 'error') console.log('BROWSER', m.type(), m.text().slice(0, 300));
   });
-  await page.goto(`/e2e/oct26-m2-t4-gps-poi.html?start=${start}`, { waitUntil: 'domcontentloaded' });
+  await page.goto(`/e2e/gps-poi.html?start=${start}`, { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(
     () => (window as any).__MAPLAT_APP__ !== undefined || (window as any).__MAPLAT_ERROR__ !== undefined,
     null,

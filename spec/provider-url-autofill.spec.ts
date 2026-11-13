@@ -55,10 +55,10 @@ describe("hotfix: provider の url 自動補完除外", () => {
   });
 
   it("回帰: base（既存の maplat 同梱タイル）は従来どおり url が自動補完される", async () => {
-    // baseDict 経由（文字列 ID）は既存の m6-t3-basedict-licenses.spec.ts で検証済みのため、
+    // baseDict 経由（文字列 ID）は既存の basedict-licenses.spec.ts で検証済みのため、
     // ここでは maptype 明示の base で自動補完対象のままであることのみ確認する。
     // expect(source).toBeTruthy() のみでは url の値そのものを
-    // 検証していなかった。m5-t2-translator-removal.spec.ts:38-49 と同じ手法（mapSourceFactory
+    // 検証していなかった。translator-removal.spec.ts:38-49 と同じ手法（mapSourceFactory
     // は Object.assign(options, commonOptions) で引数オブジェクトを直接書き換え、normalizeArg も
     // 同一参照を返すため、呼び出し後の options 自身が factory 内部の最終状態を表す）で
     // options.url を直接 assert する

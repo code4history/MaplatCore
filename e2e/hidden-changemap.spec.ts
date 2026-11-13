@@ -8,7 +8,7 @@ import { test, expect } from '@playwright/test';
 // 「控えた視点が有限でない」の試験は、非表示中に控えた視点が有限でない場合の防御を固定する。
 // 末尾の 3 本は、調査用の probe を試験に移したもので、
 // 保留中の changeMap の先行適用と、保留中の postrender ガードを固定する。
-// 実行: ./node_modules/.bin/playwright test --config=./e2e/oct26-m2-t1-probe.config.ts --grep "非表示中の地図切替で視点を保つ"
+// 実行: ./node_modules/.bin/playwright test --config=./e2e/hidden-container.playwright.config.ts --grep "非表示中の地図切替で視点を保つ"
 
 const TOL_MERC = 20; // メルカトル座標での中心差の許容（盛岡の緯度で約 15 m）
 const TOL_ZOOM = 0.01;

@@ -13,7 +13,7 @@
   <div id="map_div"></div>
   <script type="module">
     // GPS / POI の層選択の e2e のアプリ起動ページ。
-    // 地図定義は e2e/fixtures/oct26-m2-t4/*.json を settingFile で読む（public/ へ置かない）。
+    // 地図定義は e2e/fixtures/gps-poi/*.json を settingFile で読む（public/ へ置かない）。
     // アプリ設定は setting オプションでインライン指定する。タイルは置かない（地物の座標判定に不要）。
     // ?start=<mapID> で起動地図を選ぶ（既定 nobeoka1932）。
     import { MaplatApp } from '/src/index.ts';
@@ -21,7 +21,7 @@
     const start = params.get('start') || 'nobeoka1932';
     const fx = id => ({
       mapID: id,
-      settingFile: `e2e/fixtures/oct26-m2-t4/${id}.json`,
+      settingFile: `e2e/fixtures/gps-poi/${id}.json`,
       imageExtension: 'png'
     });
     window.MaplatApp = MaplatApp;

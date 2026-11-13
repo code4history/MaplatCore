@@ -21,7 +21,7 @@ function createAppStub(): any {
   return app;
 }
 
-// Promise の連鎖が流れ切るのを待つ（前例 spec/oct26-m2-t5-tile-load-exception.spec.ts）
+// Promise の連鎖が流れ切るのを待つ（前例 spec/tile-load-exception.spec.ts）
 async function settle() {
   for (let i = 0; i < 10; i++) await new Promise(r => setTimeout(r, 0));
 }

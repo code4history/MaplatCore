@@ -2,7 +2,7 @@
 // onload 内の例外（getContext("2d") が null・drawImage の失敗など）で ERROR になったタイルだけを、
 // 回数上限つき（3 回・遅延 1／2／4 秒）で読み直させることを固定する。
 // 変更前は例外由来の失敗も 404（0×0）と同じ扱いで ERROR のまま残り、回復後もパン・ズームしない限り空白だった。
-// 土台は spec/oct26-m2-t5-tile-load-exception.spec.ts の makeHarness・fireLoad（既存のファイルは変えない）。
+// 土台は spec/tile-load-exception.spec.ts の makeHarness・fireLoad（既存のファイルは変えない）。
 // 違い: タイルの殻が状態（getState）と OL の ImageTile.load() 相当（load）を持ち、source の殻が getMap を持つ。
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { setupTileLoadFunction } from "../src/source/mixin";

@@ -8,7 +8,7 @@ const rootDir = resolve(configDir, '..'); // = <MaplatCore>
 // GPS / POI の層選択の e2e の専用 config。
 // 通常の playwright.config.ts は webServer.command に 'pnpm run dev' を使い、入れ子 pnpm が
 // outer workspace の pnpm-lock.yaml を壊しうる。本 config は vite バイナリを直接起動する
-// （e2e/oct26-m2-t1-probe.config.ts と同じ型）。背景の dev server は使わない。
+// （e2e/hidden-container.playwright.config.ts と同じ型）。背景の dev server は使わない。
 export default defineConfig({
   testDir: configDir,
   fullyParallel: false,

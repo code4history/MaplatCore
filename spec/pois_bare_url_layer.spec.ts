@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { normalizeLayers } from "../src/normalize_pois";
-import unchangedBaseline from "./expect/m4-t5-unchanged-baseline.json";
+import unchangedBaseline from "./expect/pois-bare-url-unchanged-baseline.json";
 
 // 配列要素位置の裸 URL 文字列を fetch の前に判別する（判定表は src/normalize_pois.ts）。
 //
@@ -230,7 +230,7 @@ describe("参照先 404 は throw のまま（nodesLoader の契約不変）", (
 
 describe("修正前後で出力が完全一致する（バンドル伝播不要判定の裏づけ）", () => {
   // preview バンドルを再生成しない判定を、主張ではなく実測で裏づける。
-  // 期待値 spec/expect/m4-t5-unchanged-baseline.json は **修正前の実装を実行して採取した値**
+  // 期待値 spec/expect/pois-bare-url-unchanged-baseline.json は **修正前の実装を実行して採取した値**
   // であり、これと一致することが「現行データは伝播しなくても無影響」の直接証拠になる。
   const cases: [string, unknown][] = [
     // Editor が t2/t3 で出力する形（上書きレイヤの配列）

@@ -2,7 +2,7 @@
 // GL の resize() を呼ばないこと。canvas.width/height は物理ピクセル、frameState.size は CSS ピクセルなので、
 // GL ライブラリの画素比で割って CSS ピクセル同士で比べる。
 // 画素比は GL の map.getPixelRatio() があればその値、無ければ window.devicePixelRatio を使う。両方の経路を走らせる。
-// スタブの形は spec/oct26-m2-t2-mapbox-canvas-sync.spec.ts と同じ（既存ファイルの断言を触らないため複製する）。
+// スタブの形は spec/mapbox-canvas-sync.spec.ts と同じ（既存ファイルの断言を触らないため複製する）。
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { MapboxLayer } from "../src/layer_mapbox";
 import { MapLibreLayer } from "../src/layer_maplibre";
