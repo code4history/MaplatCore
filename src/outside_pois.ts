@@ -7,6 +7,7 @@ import { Feature } from "ol";
 import { Point } from "ol/geom";
 import { transform } from "ol/proj";
 import { markerStyleFrom } from "./map_ex";
+import { measureViewportOffset } from "./viewport_offset";
 
 /** 地図の marker 層の名前（MaplatMap のコンストラクタが作る層）。 */
 const MARKER_LAYER = "marker";
@@ -128,10 +129,12 @@ export async function locateMerc(
  * その画素の前面の座標が紙の外（insideCheckSysCoord が偽）で、背面があるときだけ `{ merc }`。
  * 背面の画素が座標にならなければ `{ merc: undefined }`（前面の外挿で補わない）。それ以外（紙の内・
  * 前面がメルカトルの地図・背面の無い古地図）は undefined で、呼び出し元が前面の変換で求める。
+ * `offset` は前面と背面の viewport のずれを返す関数（ポインタの移動は取っておいた値を渡す）。
  */
 export function backMercAtPixel(
   app: OutsidePoisApp,
-  pixel: readonly [number, number]
+  pixel: readonly [number, number],
+  offset?: () => readonly [number, number]
 ): { merc: number[] | undefined } | undefined {
   const src = app.from;
   const front = app.mapObject;
@@ -139,13 +142,10 @@ export function backMercAtPixel(
   if (!src || !front || !back || isMercatorFront(src)) return undefined;
   const xy = front.getCoordinateFromPixel(pixel);
   if (!xy || src.insideCheckSysCoord(xy)) return undefined;
-  // 前面と背面の viewport は同じ位置に重なっているはずだが、client 座標を介して写す
-  const fr = front.getViewport().getBoundingClientRect();
-  const br = back.getViewport().getBoundingClientRect();
-  const merc = back.getCoordinateFromPixel([
-    pixel[0] + fr.left - br.left,
-    pixel[1] + fr.top - br.top
-  ]);
+  // 前面と背面の viewport は同じ位置に重なっているはずだが、client 座標を介して写す。
+  // ずれは紙の外と分かってから求める。offset を渡されなければ、いま測る
+  const [dx, dy] = offset ? offset() : measureViewportOffset(front, back);
+  const merc = back.getCoordinateFromPixel([pixel[0] + dx, pixel[1] + dy]);
   return { merc: merc ? [merc[0], merc[1]] : undefined };
 }
 
