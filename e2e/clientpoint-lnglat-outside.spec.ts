@@ -239,3 +239,113 @@ test.describe('紙の外の clientPointToLngLat', () => {
     }
   });
 });
+
+// 紙の外のポインタの移動（pointerMoveOnMapMerc）は、前面と背面の viewport のずれを取っておいて使う。
+// 連続する移動では測り直さず、背面の配置が変わった後は測り直したずれで背面の地点を返すことを、
+// 実際のマウスの移動で確かめる。
+test.describe('紙の外のポインタの移動', () => {
+  test.use({ viewport: { width: 1280, height: 800 } });
+
+  // 紙の外の画素（前面の viewport 内）を 1 つ探す
+  const findOffPaper = (page: Page): Promise<[number, number] | null> =>
+    page.evaluate(() => {
+      const app = (window as any).__MAPLAT_DEMO_APP__;
+      const [w, h] = app.mapObject.getSize();
+      for (let x = 40; x < w - 40; x += 20) {
+        for (let y = 40; y < h - 40; y += 20) {
+          const xy = app.mapObject.getCoordinateFromPixel([x, y]);
+          if (xy && !app.from.insideCheckSysCoord(xy)) return [x, y] as [number, number];
+        }
+      }
+      return null;
+    });
+
+  // 前面の画素へマウスを動かし、届いた pointerMoveOnMapMerc と、いまの配置で背面のその点を測った値を返す
+  const moveAndMeasure = (page: Page, px: [number, number], steps: number) =>
+    page.evaluate(
+      async ({ px, steps }) => {
+        const app = (window as any).__MAPLAT_DEMO_APP__;
+        const fr = app.mapObject.getViewport().getBoundingClientRect();
+        const br = app.backMap.getViewport().getBoundingClientRect();
+        const expected = app.backMap.getCoordinateFromPixel([px[0] + fr.left - br.left, px[1] + fr.top - br.top]);
+        const got: number[][] = [];
+        const onMerc = (e: any) => got.push(e.detail);
+        app.addEventListener('pointerMoveOnMapMerc', onMerc);
+        // 移動の間の getBoundingClientRect の呼び出しを数える
+        const proto = Element.prototype as any;
+        const orig = proto.getBoundingClientRect;
+        let calls = 0;
+        proto.getBoundingClientRect = function (this: Element) {
+          calls++;
+          return orig.call(this);
+        };
+        const target = app.mapObject.getViewport();
+        try {
+          for (let i = 0; i < steps; i++) {
+            const opt = {
+              bubbles: true,
+              clientX: fr.left + px[0],
+              clientY: fr.top + px[1],
+              pointerId: 1,
+              pointerType: 'mouse',
+              isPrimary: true
+            };
+            target.dispatchEvent(new PointerEvent('pointermove', opt));
+            await new Promise((r) => setTimeout(r, 20));
+          }
+        } finally {
+          proto.getBoundingClientRect = orig;
+          app.removeEventListener('pointerMoveOnMapMerc', onMerc);
+        }
+        return { got, expected, calls };
+      },
+      { px, steps }
+    );
+
+  const waitFrames = (page: Page) =>
+    page.evaluate(
+      () =>
+        new Promise<void>((resolve) => {
+          let n = 0;
+          const step = () => (++n >= 3 ? resolve() : requestAnimationFrame(step));
+          requestAnimationFrame(step);
+        })
+    );
+
+  test('連続する移動では測り直さず、背面の配置が変わった後は測り直したずれを使う', async ({ page }) => {
+    test.setTimeout(120000);
+    await openDemo(page);
+    await zoomTo(page, 14.5);
+    const px = await findOffPaper(page);
+    expect(px, '紙の外の画素がある').not.toBeNull();
+
+    // 最初の移動が正しい地点を返すことを確かめる（測る回数はここでは見ない）
+    await page.mouse.move(5, 5);
+    const first = await moveAndMeasure(page, px!, 1);
+    const second = await moveAndMeasure(page, px!, 10);
+    expect(second.got.length).toBeGreaterThan(0);
+    // 呼ぶのは OL がイベントの画素を求める 1 回だけ（Maplat 側では測らない）。変更前は 1 回の移動で 4 回
+    expect(second.calls, '連続する移動で Maplat は getBoundingClientRect を呼ばない').toBeLessThanOrEqual(10);
+    const near = (a: number[], b: number[]) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+    const res0 = await page.evaluate(() => (window as any).__MAPLAT_DEMO_APP__.backMap.getView().getResolution());
+    expect(near(first.got[first.got.length - 1], first.expected) / res0).toBeLessThan(0.01);
+
+    // 背面の地図の配置をずらす（大きさも変わるので ResizeObserver が知らせる）
+    await page.evaluate(() => {
+      const el = (window as any).__MAPLAT_DEMO_APP__.backMap.getTargetElement();
+      el.style.left = '40px';
+      el.style.top = '30px';
+    });
+    await waitFrames(page);
+    const after = await moveAndMeasure(page, px!, 3);
+    await page.evaluate(() => {
+      const el = (window as any).__MAPLAT_DEMO_APP__.backMap.getTargetElement();
+      el.style.left = '0px';
+      el.style.top = '0px';
+    });
+    expect(after.got.length).toBeGreaterThan(0);
+    const res = await page.evaluate(() => (window as any).__MAPLAT_DEMO_APP__.backMap.getView().getResolution());
+    // ずらす前の値を使い続けると 50 px 分ずれる。測り直していれば丸めの分だけ
+    expect(near(after.got[after.got.length - 1], after.expected) / res).toBeLessThan(1);
+  });
+});

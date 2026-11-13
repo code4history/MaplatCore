@@ -57,6 +57,7 @@ import {
   type OutsideSelection
 } from "./outside_pois";
 import { Geolocation } from './geolocation';
+import { ViewportOffsetCache, measureViewportOffset } from "./viewport_offset";
 
 import { Coordinate } from "ol/coordinate";
 import BaseEvent from "ol/events/Event";
@@ -384,6 +385,8 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
   __pullBackTimer?: { cancelled?: boolean };
   // 可視化時の自己修復（issue #101）で使うリソース参照。
   private __resizeObserver: ResizeObserver | null = null;
+  // 前面と背面の viewport のずれ（紙の外のポインタの移動で毎回測らないために取っておく）
+  private __viewportOffset?: ViewportOffsetCache;
   private __visibilityHandler = () => {
     this.__applyInitialViewpoint();
     this.__schedulePendingView();
@@ -1055,6 +1058,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
         off_control: true,
         div: backDiv
       });
+      this.__viewportOffset = new ViewportOffsetCache(this.mapObject, this.backMap);
     }
     // Mapbox GL JS support
     const mapboxgl = appOption.mapboxgl || (typeof window !== 'undefined' ? (window as any).mapboxgl : undefined);
@@ -1280,7 +1284,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
         const xy = evt.coordinate;
         this.dispatchEvent(new CustomEvent("clickMapXy", xy));
         // 古地図の紙の外は背面の地図に見えている地点（clientPointToLngLat と同じ規則）
-        const back = backMercAtPixel(this, evt.pixel);
+        const back = backMercAtPixel(this, evt.pixel, this.__offsetNow);
         (back
           ? Promise.resolve(back.merc)
           : (this.from as MaplatSource).sysCoord2MercAsync(xy)
@@ -1310,7 +1314,8 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
       // 古地図の紙の外は背面の地図に見えている地点（clickMapMerc と同じ規則）。
       // 判定や変換が投げても次の移動を止めないよう、同期の判定も Promise の中で行う
       new Promise<any>(resolve => {
-        const back = pixel ? backMercAtPixel(this, pixel) : undefined;
+        // ずれは取っておいた値を使う（毎回測ると受け手の DOM の書き換えのたびに layout が走る）
+        const back = pixel ? backMercAtPixel(this, pixel, this.__offsetCached) : undefined;
         resolve(back ? back.merc : (this.from as MaplatSource).sysCoord2MercAsync(xy));
       })
         .then((merc: any) => {
@@ -1428,27 +1433,29 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
   // Async initializer 14: Handle mouse cursor
   setMouseCursor() {
     // change mouse cursor when over marker
+    // 同じ値なら書かない（移動のたびに style を書き換えない）
+    const setCursor = (target: string, cursor: string) => {
+      const el = this.mapDivDocument!.querySelector(`#${target}`)! as HTMLElement;
+      if (el.style.cursor !== cursor) el.style.cursor = cursor;
+    };
     const moveHandler = (evt: any) => {
-      const pixel = evt.target.getEventPixel(evt.originalEvent);
+      // evt.pixel は OL がイベントに取っておく値。getEventPixel で測り直さない
+      const pixel = evt.pixel;
       const hit = evt.target.hasFeatureAtPixel(pixel);
       const target = evt.target.getTarget();
       if (hit) {
         const feature = evt.target.forEachFeatureAtPixel(
-          evt.pixel,
+          pixel,
           (feature: any) => {
             if (feature.get("datum")) return feature;
           }
         );
-        (
-          this.mapDivDocument!.querySelector(`#${target}`)! as HTMLElement
-        ).style.cursor = feature ? "pointer" : "";
+        setCursor(target, feature ? "pointer" : "");
         return;
       }
       // 前面で当たらなくても、紙の外の点で背面のピンの上なら指の形にする
       const onBackPin = backMarkerDataAt(this, evt).length > 0;
-      (
-        this.mapDivDocument!.querySelector(`#${target}`)! as HTMLElement
-      ).style.cursor = onBackPin ? "pointer" : "";
+      setCursor(target, onBackPin ? "pointer" : "");
     };
     this.mapObject.on("pointermove", moveHandler);
     const mapOutHandler = (evt: any) => {
@@ -1600,6 +1607,12 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     if (!size || !(size[0] > 0 && size[1] > 0)) return undefined;
     return [size[0], size[1]];
   }
+  // 前面と背面の viewport のずれ。ポインタの移動は取っておいた値、クリックと
+  // clientPointToLngLat は回数が少ないので毎回測り、その値を取っておく
+  private __offsetCached = () =>
+    this.__viewportOffset ? this.__viewportOffset.get() : measureViewportOffset(this.mapObject, this.backMap!);
+  private __offsetNow = () =>
+    this.__viewportOffset ? this.__viewportOffset.refresh() : measureViewportOffset(this.mapObject, this.backMap!);
   /** @internal 前面と背面の地図の大きさを測り直す。 */
   updateSize(): void {
     this.mapObject?.updateSize?.();
@@ -1612,7 +1625,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     const pixel: [number, number] = [clientX - rect.left, clientY - rect.top];
     // 古地図の紙の外は、背面の地図に見えている地点（lngLatToClientPoint・ピンと同じ規則の逆向き）。
     // pixelToMerc は getViewExtent と共用なので変えず、ここで振り分ける
-    const back = backMercAtPixel(this, pixel);
+    const back = backMercAtPixel(this, pixel, this.__offsetNow);
     // pixel → 座標 → merc の連鎖は pixelToMerc に 1 つだけ置く（戻り値は旧のまま undefined）
     const merc = back ? back.merc : await this.pixelToMerc(pixel);
     if (!merc) return undefined;
@@ -2843,6 +2856,8 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
       this.__resizeObserver.disconnect();
       this.__resizeObserver = null;
     }
+    this.__viewportOffset?.dispose();
+    this.__viewportOffset = undefined;
     // 今まで要素の経路だけが塞いでいた漏れを旧クラスでも塞ぐ。
     // OL の Map を target から外して内部の ResizeObserver・リスナを解放し、MapLibre の地図も消す。
     this.mapObject?.setTarget?.(undefined);
