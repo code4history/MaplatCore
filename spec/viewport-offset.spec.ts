@@ -217,3 +217,42 @@ describe("紙の外のポインタの移動は、取っておいたずれで背�
     expect(watching.every(o => o.disconnected)).toBe(true);
   });
 });
+
+describe("カーソルの処理はイベントの画素を使い、同じ値を書き直さない", () => {
+  it("getEventPixel で測り直さず、カーソルが変わらなければ style を書かない", async () => {
+    const div = document.createElement("div");
+    document.body.appendChild(div);
+    const app = new MaplatApp({ div, setting: { sources: [] } });
+    await app.waitReady;
+    app.from = { mapID: "hist", insideCheckSysCoord: () => true, isWmts: () => false } as any;
+    const map: any = app.mapObject;
+    const getEventPixel = vi.spyOn(map, "getEventPixel");
+    map.hasFeatureAtPixel = vi.fn(() => false);
+    const el = app.mapDivDocument!.querySelector(`#${map.getTarget()}`) as HTMLElement;
+    const writes: string[] = [];
+    let cursor = "";
+    Object.defineProperty(el.style, "cursor", {
+      configurable: true,
+      get: () => cursor,
+      set: (v: string) => {
+        writes.push(v);
+        cursor = v;
+      }
+    });
+    app.setMouseCursor();
+    for (let i = 0; i < 5; i++) {
+      map.dispatchEvent({ type: "pointermove", pixel: [i, i], coordinate: [0, 0], target: map } as any);
+    }
+    expect(getEventPixel).not.toHaveBeenCalled();
+    expect(map.hasFeatureAtPixel).toHaveBeenLastCalledWith([4, 4]);
+    expect(writes).toEqual([]);
+    map.hasFeatureAtPixel = vi.fn(() => true);
+    map.forEachFeatureAtPixel = vi.fn((_p: number[], cb: (f: any) => any) =>
+      cb({ get: (k: string) => (k === "datum" ? {} : undefined) })
+    );
+    for (let i = 0; i < 3; i++) {
+      map.dispatchEvent({ type: "pointermove", pixel: [i, i], coordinate: [0, 0], target: map } as any);
+    }
+    expect(writes).toEqual(["pointer"]);
+  });
+});

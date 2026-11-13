@@ -1433,27 +1433,29 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
   // Async initializer 14: Handle mouse cursor
   setMouseCursor() {
     // change mouse cursor when over marker
+    // 同じ値なら書かない（移動のたびに style を書き換えない）
+    const setCursor = (target: string, cursor: string) => {
+      const el = this.mapDivDocument!.querySelector(`#${target}`)! as HTMLElement;
+      if (el.style.cursor !== cursor) el.style.cursor = cursor;
+    };
     const moveHandler = (evt: any) => {
-      const pixel = evt.target.getEventPixel(evt.originalEvent);
+      // evt.pixel は OL がイベントに取っておく値。getEventPixel で測り直さない
+      const pixel = evt.pixel;
       const hit = evt.target.hasFeatureAtPixel(pixel);
       const target = evt.target.getTarget();
       if (hit) {
         const feature = evt.target.forEachFeatureAtPixel(
-          evt.pixel,
+          pixel,
           (feature: any) => {
             if (feature.get("datum")) return feature;
           }
         );
-        (
-          this.mapDivDocument!.querySelector(`#${target}`)! as HTMLElement
-        ).style.cursor = feature ? "pointer" : "";
+        setCursor(target, feature ? "pointer" : "");
         return;
       }
       // 前面で当たらなくても、紙の外の点で背面のピンの上なら指の形にする
       const onBackPin = backMarkerDataAt(this, evt).length > 0;
-      (
-        this.mapDivDocument!.querySelector(`#${target}`)! as HTMLElement
-      ).style.cursor = onBackPin ? "pointer" : "";
+      setCursor(target, onBackPin ? "pointer" : "");
     };
     this.mapObject.on("pointermove", moveHandler);
     const mapOutHandler = (evt: any) => {
