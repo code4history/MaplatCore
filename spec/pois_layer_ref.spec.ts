@@ -4,7 +4,7 @@ import {
   isPoiLayerRef
 } from "../src/normalize_pois";
 
-// AC4-1〜8,10,11 の unit（設計 §6.1）。表駆動 pois.spec.ts は既存3ケースの無回帰基準として別途維持。
+// pois ラッパーの unit。表駆動 pois.spec.ts は既存3ケースの無回帰基準として別途維持。
 
 const opts = (namespace = "ns", name = "AppName") => ({
   namespace,
@@ -52,7 +52,7 @@ const stubFetch = (map: Record<string, any>) => {
   return fetchSpy;
 };
 
-describe("AC4-1: wrapper {layer:<URL>, hide:true} → cluster.hide", () => {
+describe("wrapper {layer:<URL>, hide:true} → cluster.hide", () => {
   it("URL wrapper with hide:true lands hide on cluster", async () => {
     const FC = fc("urlA", [point("p1", 0, 0)]);
     stubFetch({ "pois/x.geojson": FC });
@@ -63,7 +63,7 @@ describe("AC4-1: wrapper {layer:<URL>, hide:true} → cluster.hide", () => {
   });
 });
 
-describe("AC4-2: wrapper {layer:<FC>, icon} → layer化 + 補完が通常FCと同一", () => {
+describe("wrapper {layer:<FC>, icon} → layer化 + 補完が通常FCと同一", () => {
   it("inline-FC wrapper produces same cluster as plain FC (plus icon)", async () => {
     const FC = fc("fcB", [point("p1", 1, 2)]);
     const plain = await normalizeLayers([FC], opts());
@@ -79,7 +79,7 @@ describe("AC4-2: wrapper {layer:<FC>, icon} → layer化 + 補完が通常FCと�
   });
 });
 
-describe("AC4-3: 上書き4キーの着地先", () => {
+describe("上書き4キーの着地先", () => {
   it("hide→hide / title→name / icon→icon / selectedIcon→selectedIcon", async () => {
     const FC = fc("fcC", [point("p1", 1, 2)]);
     const out = await normalizeLayers(
@@ -101,7 +101,7 @@ describe("AC4-3: 上書き4キーの着地先", () => {
   });
 });
 
-describe("AC4-4: 無効値は上書きしない（データ側の値が残る）", () => {
+describe("無効値は上書きしない（データ側の値が残る）", () => {
   const cases: [string, any, string, any][] = [
     ["hide:false は上書きしない（データ側 false のまま）", { hide: false }, "hide", false],
     ["hide:'yes'（非真）は上書きしない（データ側 false が残る）", { hide: "yes" }, "hide", false],
@@ -130,7 +130,7 @@ describe("AC4-4: 無効値は上書きしない（データ側の値が残る）
   }
 });
 
-describe("AC4-5: 優先順位 ラッパー > FC.properties", () => {
+describe("優先順位 ラッパー > FC.properties", () => {
   it("both set icon → wrapper wins", async () => {
     const FC = fc("fcE", [point("p1", 1, 2)], { icon: "props.png" });
     const out = await normalizeLayers(
@@ -141,7 +141,7 @@ describe("AC4-5: 優先順位 ラッパー > FC.properties", () => {
   });
 });
 
-describe("AC4-6: FC.properties.icon/.hide の cluster 到達（現行挙動の固定）", () => {
+describe("FC.properties.icon/.hide の cluster 到達（現行挙動の固定）", () => {
   it("plain FC with properties.icon/hide reaches cluster", async () => {
     const FC = fc("fcF", [point("p1", 1, 2)], { icon: "p.png", hide: true });
     const out = await normalizeLayers([structuredClone(FC)], opts());
@@ -150,7 +150,7 @@ describe("AC4-6: FC.properties.icon/.hide の cluster 到達（現行挙動の�
   });
 });
 
-describe("AC4-7: 未知キー破棄 + warn / 内部キー非到達", () => {
+describe("未知キー破棄 + warn / 内部キー非到達", () => {
   it("unknown key foo is dropped with warn; internal keys (pois/id/__nextId) not overwritten", async () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const FC = fc("fcG", [point("p1", 1, 2)]);
@@ -174,7 +174,7 @@ describe("AC4-7: 未知キー破棄 + warn / 内部キー非到達", () => {
   });
 });
 
-describe("AC4-8: 文脈ごとの判別", () => {
+describe("文脈ごとの判別", () => {
   it("(i) 全文脈で非ラッパー: isPoiLayerRef === false", () => {
     const FC = fc("h", [point("p1", 1, 2)]);
     const dictLayer = { pois: [{ id: "x" }] }; // layer が FC でない object
@@ -220,7 +220,7 @@ describe("AC4-8: 文脈ごとの判別", () => {
   });
 });
 
-describe("AC4-9 補: 旧レイヤ辞書の無回帰", () => {
+describe("旧レイヤ辞書の無回帰", () => {
   it("plain dict {key: cluster} stays dict", async () => {
     const dict = { mylayer: { pois: [{ lng: 1, lat: 2, name: "n" }] } };
     const out = await normalizeLayers(structuredClone(dict), opts());
@@ -230,7 +230,7 @@ describe("AC4-9 補: 旧レイヤ辞書の無回帰", () => {
   });
 });
 
-describe("AC4-10: 非破壊性（wrapper / FC 入力）", () => {
+describe("非破壊性（wrapper / FC 入力）", () => {
   it("wrapper input object is not mutated", async () => {
     const FC = fc("nonmut", [point("p1", 1, 2)]);
     const wrapper = { layer: structuredClone(FC), hide: true, icon: "i.png" };
@@ -247,7 +247,7 @@ describe("AC4-10: 非破壊性（wrapper / FC 入力）", () => {
   });
 });
 
-describe("AC4-9補/回帰: POIオブジェクト配列モードでは wrapper.layer の fetch が走らない", () => {
+describe("回帰: POIオブジェクト配列モードでは wrapper.layer の fetch が走らない", () => {
   it("混在配列（先頭=座標POI, 後続=ラッパー）で fetch 呼ばれず throw しない", async () => {
     const spy = stubFetch({}); // 一切応答しない（呼ばれたら監視できる）
     const mixed = [

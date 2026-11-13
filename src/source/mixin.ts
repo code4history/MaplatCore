@@ -326,7 +326,7 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
       const rotation = cond.rotation;
       const map = this.getMap();
       const view = map?.getView();
-      // oct26-m2-t1: 未確定ガード。非表示コンテナ（寸法 0）では view の resolution が
+      // 未確定ガード。非表示コンテナ（寸法 0）では view の resolution が
       // NaN になり（OL が viewport size を [0,0] として resolveConstraints を走らせる
       // ため）、後続の viewpoint2MercsAsync() が xy2MercWithLayer に NaN を流して
       // issue #101 の "coordinates must contain numbers" を投げる。コンテナ寸法が無い
@@ -892,7 +892,7 @@ export function setCustomFunctionMaplat<TBase extends SourceConstructor>(Base: T
 // 従来の import 元（"./source/mixin"）を壊さないよう、ここから再 export する。
 export { META_KEYS, META_KEYS_OPTION };
 
-// m6-t6 hotfix → m6-t9 (§3.1 AC2): provider（google/mapbox/maplibre）は Maplat 同梱タイルの
+// provider（google/mapbox/maplibre）は Maplat 同梱タイルの
 // テンプレート url を持たない。自動補完はもちろん、data.url に手動値が残っていた場合でも
 // ol/source/Google 等の baseUrl を汚染しないよう、provider は url/urls の対象から除外する。
 // mapSourceFactory（source_ex.ts）と本関数（NowMap/HistMap 経由で mapbox/maplibre にも

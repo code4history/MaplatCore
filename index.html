@@ -6,7 +6,7 @@
   <title>MaplatCore デモ - 古地図</title>
   <link rel="stylesheet" href="./demo/demo-shell.css">
   <style>
-    /* HR-18: 地図を主領域・右に操作パネル。C4H 正本 demo-shell.css（バイト等価）に無いレイアウトだけを置く。class は demo- 接頭辞に限る */
+    /* 地図を主領域・右に操作パネル。C4H 正本 demo-shell.css（バイト等価）に無いレイアウトだけを置く。class は demo- 接頭辞に限る */
     body.c4h-app { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
     .demo-layout { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 320px; }
     .demo-map-col { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
@@ -25,7 +25,7 @@
     .demo-field { display: flex; flex-direction: column; gap: 4px; width: 100%; font-size: 12px; }
     .demo-field select, .demo-field input[type="range"] { width: 100%; }
     .demo-field select { padding: 4px 6px; font-size: 13px; }
-    /* nov26-m4-t8: POI の層の一覧・clickMarkers・detail.html・状態・イベント履歴 */
+    /* POI の層の一覧・clickMarkers・detail.html・状態・イベント履歴 */
     .demo-note { margin: 2px 0 6px; font-size: 11px; color: #5a6478; }
     .demo-poi-layers { margin-top: 6px; }
     .demo-poi-layer { flex-wrap: nowrap; margin-bottom: 4px; }

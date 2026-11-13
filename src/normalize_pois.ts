@@ -18,8 +18,8 @@ export async function nodesLoader(
   }
 }
 
-// --- pois layer ref (wrapper) support (m18-t4) ---
-// 許可キー方式（hide / title / icon / selectedIcon のみ）。t3 v1.3 §5.2/§5.3
+// --- pois layer ref (wrapper) support ---
+// 許可キー方式（hide / title / icon / selectedIcon のみ）。判定の規則はこのファイルの判定表が正本
 const OVERRIDE_KEYS = ["hide", "title", "icon", "selectedIcon"] as const;
 const COORD_KEYS = [
   "lnglat",
@@ -33,7 +33,7 @@ function isPlainObject(x: any): boolean {
   return typeof x === "object" && x !== null && !Array.isArray(x);
 }
 
-// 配列要素文脈のラッパー判別。t3 v1.3 §5.2 の規則。
+// 配列要素文脈のラッパー判別。
 // layer が string または FeatureCollection であり、かつ座標キーを持たない plain object。
 export function isPoiLayerRef(x: any): boolean {
   if (!isPlainObject(x)) return false;
@@ -95,7 +95,7 @@ export async function normalizeLayers(layers: any, options: any) {
 
   //In case "layers" is array
   if (Array.isArray(layers)) {
-    // step1: モード判定（m4-t5 で fetch の前へ移した）。
+    // step1: モード判定（fetch の前で行う）。
     //
     // 【是正の理由】以前はここで全要素に nodesLoader を適用してから、解決後の先頭要素で
     // モードを判定していた。そのため **配列要素位置の裸 URL 文字列が判定より前に中身へ化け**、
@@ -104,14 +104,14 @@ export async function normalizeLayers(layers: any, options: any) {
     // 偶然レイヤ配列モードへ入って正常に見えていた。
     // ラッパー（plain object）は nodesLoader が素通しするため元から fetch 前に判別できており、
     // **正しい判定順は本ファイル内に既に存在していた**。裸 URL だけがその恩恵を受けていない
-    // という非対称を解消する（m4 マイルストーン再設計 G5 / MC7）。
+    // という非対称を解消する。
     //
-    // 【判定表】生の先頭要素だけで決める（m4-t5 設計 §5.1 が唯一の定義箇所）:
+    // 【判定表】生の先頭要素だけで決める（この表が唯一の定義箇所）:
     //   文字列                  → レイヤ配列（レガシー POI 配列の要素は POI オブジェクトであり
     //                              文字列にはなり得ない ∴ 配列位置の文字列は「レイヤの URL」以外
     //                              に解釈の余地がない。**中身を見ないからこそ健全**である）
     //   FeatureCollection       → レイヤ配列（現行どおり）
-    //   isPoiLayerRef が真      → レイヤ配列（現行どおり・m18-t4）
+    //   isPoiLayerRef が真      → レイヤ配列（現行どおり）
     //   それ以外 / 空配列        → POI オブジェクト配列（配列全体で1レイヤ・現行どおり）
     const head = layers[0];
     const isLayerArray =
@@ -150,10 +150,10 @@ export async function normalizeLayers(layers: any, options: any) {
       //In case old type single layer spec
     } else {
       // step3: POI オブジェクト配列モード。配列全体で1レイヤ。
-      // **要素ごとの nodesLoader 解決は維持する**（m4-t5 設計 §5.3）。以前もこのモードで
+      // **要素ごとの nodesLoader 解決は維持する**。以前もこのモードで
       // 全要素を解決しており、要素が「単一 POI オブジェクトを返す URL」のときに正しく動く。
       // 実データには無い形だが、動いている挙動を根拠なく落とさない（AGENTS.md 原則2）。
-      // ∴ m4-t5 の変更はモード判定の位置だけに閉じている。
+      // ∴ 判定順の是正はモード判定の位置だけに閉じている。
       layers = await Promise.all(layers.map(async (x: any) => await nodesLoader(x)));
       layers = {
         main: normalizeLayer(layers, "main", options)
@@ -256,7 +256,7 @@ export function addIdToPoi(layers: any, key: any, options: any) {
   });
 }
 
-// pois layer ref（ラッパー）の公開型（m18-t4・§3.5）。
+// pois layer ref（ラッパー）の公開型。
 // layer は URL 文字列 or インライン FeatureCollection。runtime 判別述語 isPoiLayerRef と一致。
 export type PoiLayerRef = {
   layer: string | FeatureCollection;

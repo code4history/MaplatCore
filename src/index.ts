@@ -61,7 +61,7 @@ import { Geolocation } from './geolocation';
 import { Coordinate } from "ol/coordinate";
 import BaseEvent from "ol/events/Event";
 
-// m1-t4: サニタイズ層の公開窓口（許可リストの正本は src/sanitize.ts の1箇所のみ）
+// サニタイズ層の公開窓口（許可リストの正本は src/sanitize.ts の1箇所のみ）
 export { sanitizeHtml, escapeAttr, toPlainText, buildSlideAttrs } from "./sanitize";
 
 /** EPSG:3857 → 経緯度。経度は ±180 に巻き戻す（ol の toLonLat と同じ規則）。
@@ -165,7 +165,7 @@ interface Restore {
   hideLayer?: string;
 }
 
-// oct26-m2-t1-ff: 切替前の地図の視点（地図の座標系の値）。変換核
+// 切替前の地図の視点（地図の座標系の値）。変換核
 // __convertParameters の入力で、view の getCenter / getZoom / getDecimalZoom /
 // getRotation をそのまま控えたもの。
 interface CapturedViewState {
@@ -175,7 +175,7 @@ interface CapturedViewState {
   rotation: number;
 }
 
-// oct26-m2-t1-ff: 非表示中（寸法 0）・初期化済みの changeMap で保留した視点確定。
+// 非表示中（寸法 0）・初期化済みの changeMap で保留した視点確定。
 // from/state は非表示中の最初の切替の時点の値のまま保つ（非表示の間は view が
 // 動かないので、それが「最後に表示していた地図と視点」である）。state が無いのは
 // 控えた値が有限でなかった場合で、再表示時は goHome で確定する。
@@ -241,7 +241,7 @@ export class GPSRequestEvent extends BaseEvent {
   }
 }
 
-// POI レイヤ未解決時の開発用 warning ヘルパ（m18-t6 §5.4）
+// POI レイヤ未解決時の開発用 warning ヘルパ
 // getPoiLayer には置かない（state 復元経路 :1546-1553 が直接呼ぶ query 契約）。
 // "main" 先頭ガードは仕様上の拒否であり warning 対象外。
 function warnPoiLayerNotFound(id: string, api: string) {
@@ -275,7 +275,7 @@ function mapMetaIiif(source: any): MapMetaIiif | undefined {
 // div を HTMLElement で受けたとき（id 無し）に内部の子要素の id 接頭辞を一意にする連番
 let elementDivSeq = 0;
 
-// 公開型: listPoiLayers の戻り値要素（m18-t6 §5.2 / §8）
+// 公開型: listPoiLayers の戻り値要素
 export interface PoiLayer {
   id: string;
   namespaceID: string;
@@ -287,13 +287,13 @@ export interface PoiLayer {
   [key: string]: any;
 }
 
-// 公開型: 線・面の種類と、clearLine／clearVector の絞り込み（nov26-m4-t5 / #91）
+// 公開型: 線・面の種類と、clearLine／clearVector の絞り込み（#91）
 export type VectorType = "Line" | "Polygon";
 export interface VectorFilter {
   type?: VectorType;
 }
 
-// nov26-m4-t5: addLine／addVector で登録した線・面の 1 件
+// addLine／addVector で登録した線・面の 1 件
 interface VectorEntry {
   id: string;
   data: any; // 描画に使う写し（呼び手の data は変えない）
@@ -382,13 +382,13 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
   __hideOutsidePois = false;
   /** @internal 範囲外の選択を外した後の引き戻しの予約（selectMarker で取り消す） */
   __pullBackTimer?: { cancelled?: boolean };
-  // oct26-m2-t1: 可視化時の自己修復（issue #101）で使うリソース参照。
+  // 可視化時の自己修復（issue #101）で使うリソース参照。
   private __resizeObserver: ResizeObserver | null = null;
   private __visibilityHandler = () => {
     this.__applyInitialViewpoint();
     this.__schedulePendingView();
   };
-  // oct26-m2-t1-ff: 非表示中の changeMap で保留した視点確定と、その適用の予約状態。
+  // 非表示中の changeMap で保留した視点確定と、その適用の予約状態。
   private __pendingView: PendingView | null = null;
   private __pendingViewScheduled = false;
   // 中心の目印の img（setCenterMarker が表現を当てる）
@@ -398,7 +398,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
   private __redrawMarkerBlock = false;
   private __redrawMarkerThrottle: MaplatSource[] = [];
   private __transparency: any;
-  // nov26-m4-t5: 線・面の登録簿と連番。Object.create(MaplatApp.prototype) の殻でも
+  // 線・面の登録簿と連番。Object.create(MaplatApp.prototype) の殻でも
   // 動くよう初期化子に頼らず遅延で作る（__vectorStore・連番は undefined を 0 とみなす）。
   private __vectors?: Map<string, VectorEntry>;
   private __vectorSeq?: number;
@@ -1080,13 +1080,13 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
         pitchWithRotate: false,
         scrollZoom: false,
         touchZoomRotate: false,
-        // m6-t9 §3.3: mapbox-gl-js v3 系は既定・状況により Globe 投影になり得るため、
+        // mapbox-gl-js v3 系は既定・状況により Globe 投影になり得るため、
         // Maplat は常に平面（Mercator）表示を前提とする本ライブラリの用途上、明示的に固定する
         projection: 'mercator'
       });
     }
 
-    // oct26-m2-t1: 可視化時の自己修復（issue #101）。非表示コンテナで初期化すると
+    // 可視化時の自己修復（issue #101）。非表示コンテナで初期化すると
     // view の resolution が未確定のまま初期視点適用が defer されるため、可視化の
     // 契機（visibilitychange / コンテナ寸法確定）で初期視点を再適用する。
     this.registerSelfHeal();
@@ -1181,7 +1181,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
       }
       loaded.push(source);
       source.setMap(this.mapObject);
-      // m6-t5: GL 未ロード時は throw せず当該ソースを落とす（ADR-0014）
+      // GL 未ロード時は throw せず当該ソースを落とす
       const keep = bindProviderGlToSource(source, {
         mapboxMap: this.mapboxMap,
         maplibreMap: this.maplibreMap,
@@ -1197,18 +1197,18 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     });
     // 起動のたびに控えを作り直す（使えなかった地図が無ければ空になる）
     setUnusableSources(this, unusable);
-    // m6-t5 v1.3.1: mercSrc は cache（GL 未ロードで落とされたソースを含まない）から選ぶ。
+    // mercSrc は cache（GL 未ロードで落とされたソースを含まない）から選ぶ。
     // 未フィルタの sources から選ぶと、混在 app + GL 未ロード時に死んだ provider ソースを
-    // 指し、backMap 経由で毎フレーム error を吐く（H-4 主要シナリオ）
+    // 指し、backMap 経由で毎フレーム error を吐く
     this.mercSrc = cache.reduce((prev: any, curr: any) => {
       if (prev) return prev;
       if (curr.isBasemap()) return curr;
     }, null);
     this.dispatchEvent(new CustomEvent("sourceLoaded", loaded));
     if (cache.length === 0) {
-      // m6-t5 AC22: 使えるソースが0件（provider-only + GL 未ロード等）。
+      // 使えるソースが0件（provider-only + GL 未ロード等）。
       // 初期地図選択と操作/自動ハンドラ登録を行わない（this.from 未設定のまま
-      // postrender/pointermove/click が走り TypeError で停止するのを防ぐ。ADR-0014）。
+      // postrender/pointermove/click が走り TypeError で停止するのを防ぐ）。
       // lifecycle 2相は実行する（UI 側が ready を待つ経路をハングさせない）
       if (this.logger?.warn) {
         this.logger.warn("No usable sources; skipping map initialization handlers");
@@ -1453,7 +1453,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     this.mapObject.on("pointermove", moveHandler);
     const mapOutHandler = (evt: any) => {
       // 縁の外へ出た中心を戻す。範囲外の POI を選んでいる間は何もしない。
-      // oct26-m2-t1-ff: 視点確定の保留中も、view の中心が切替前の地図の座標系の
+      // 視点確定の保留中も、view の中心が切替前の地図の座標系の
       // 値のままなので、新しい地図の範囲で縁へ引き戻さない（保留の適用に委ねる）。
       pullBackInside(this, evt.target.getView());
     };
@@ -1463,7 +1463,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
   setBackMapBehavior() {
     const backMapMove = (_evt: any) => {
       if (!this.backMap) return;
-      // oct26-m2-t1-ff: 保留中は誤った視点で背面地図を動かさず、mercBuffer も
+      // 保留中は誤った視点で背面地図を動かさず、mercBuffer も
       // 切替前の状態のまま保つ（保留の適用が同じ変換核でキャッシュを使うため）。
       if (this.__pendingView) return;
       if (this.__backMapMoving) {
@@ -1474,7 +1474,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
       if (backSrc) {
         this.__backMapMoving = true;
         this.logger.debug("Backmap moving started");
-        // nov26-m4-t1（#108）: 変換が同期で投げても非同期で失敗しても、フラグを戻して
+        // #108: 変換が同期で投げても非同期で失敗しても、フラグを戻して
         // 次の postrender で追従を再開する。例外は postrender の dispatch へ出さない。
         const onError = (err: any) => {
           this.__backMapMoving = false;
@@ -1482,7 +1482,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
         };
         this.__convertFromCurrent(backSrc, (size: any) => {
           if (!size) {
-            // oct26-m2-t1: 未確定ガードにより座標変換がスキップされた場合
+            // 未確定ガードにより座標変換がスキップされた場合
             // （非表示コンテナで view 未確定）。後段の setCenter(size[0]) が
             // undefined 参照になるため、ここで終了する。
             this.__backMapMoving = false;
@@ -1499,7 +1499,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     };
     this.mapObject.on("postrender", backMapMove);
   }
-  // nov26-m4-t1（#108）: 変換が恒常的に失敗する地図では postrender ごとに失敗するので、
+  // #108: 変換が恒常的に失敗する地図では postrender ごとに失敗するので、
   // warn は最初の 1 回だけにし、以降は debug に落とす。
   private __reportBackMapError(err: any) {
     if (!this.__backMapErrorWarned) {
@@ -1512,12 +1512,12 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
   // Async initializer 16: Handle back map's behavior
   raiseChangeViewpoint() {
     this.mapObject.on("postrender", async (_evt: any) => {
-      // oct26-m2-t1: 未確定ガード。非表示コンテナ（寸法 0）では mercs2Viewpoint が
+      // 未確定ガード。非表示コンテナ（寸法 0）では mercs2Viewpoint が
       // size=0 から NaN の zoom/rotation を返し、後続の normalizeDegree(NaN) が
       // while(1) 無限ループに陥る（issue #101）。コンテナ寸法が確定するまで変換を
       // 行わず、可視化時の自己修復（__applyInitialViewpoint）の再描画に委ねる。
       if (!this.__hasMapSize()) return;
-      // oct26-m2-t1-ff: 視点確定の保留中は、切替前の地図の座標系の値を
+      // 視点確定の保留中は、切替前の地図の座標系の値を
       // changeViewpoint・stateBuffer（restoreSession 時は localStorage）へ出さない。
       // 再表示の契機（ResizeObserver 等）が来ない場合に備え、ここからも適用を予約する。
       if (this.__pendingView) {
@@ -1668,7 +1668,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
       this.mapObject.setVector(xys, data.type, data.style);
     });
   }
-  // nov26-m4-t5: data の座標（coordinates はメルカトル・lnglats は経緯度）を今の地図の座標へ変換する
+  // data の座標（coordinates はメルカトル・lnglats は経緯度）を今の地図の座標へ変換する
   private __projectVector(data: any): Promise<any> {
     this.logger.debug(data);
     let xyPromises;
@@ -1699,7 +1699,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     this.__vectorDrawSeq = (this.__vectorDrawSeq || 0) + 1;
     return this.__vectorDrawSeq;
   }
-  // nov26-m4-t5: 登録簿の 1 件を描く。変換の解決までに消された・置き換えられた・
+  // 登録簿の 1 件を描く。変換の解決までに消された・置き換えられた・
   // 描き直しが始まった（世代が進んだ）場合は描かない。
   private __drawVectorEntry(entry: VectorEntry) {
     const token = this.__nextVectorDrawToken();
@@ -2129,7 +2129,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
       this.redrawMarkers();
     }
   }
-  // nov26-m4-t5（#91）: 線を足して id を返す。data.id を与えればその id、無ければ自動の id。
+  // #91: 線を足して id を返す。data.id を与えればその id、無ければ自動の id。
   // 呼び手の data は変えず、写しに setLine と同じ正規化（type・stroke → style）をする。
   addLine(data: any): string {
     const d: any = { ...data, type: "Line" };
@@ -2141,13 +2141,13 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     delete d.id;
     return this.__addEntry(data.id, d);
   }
-  // nov26-m4-t5（#91）: 線・面を足して id を返す（data.type が "Line" なら線、それ以外は面）
+  // #91: 線・面を足して id を返す（data.type が "Line" なら線、それ以外は面）
   addVector(data: any): string {
     const d: any = { ...data };
     delete d.id;
     return this.__addEntry(data.id, d);
   }
-  // nov26-m4-t5（#91）: id の 1 件だけを消す。消したら true、無ければ false
+  // #91: id の 1 件だけを消す。消したら true、無ければ false
   removeVector(id: string): boolean {
     const store = this.__vectorStore();
     const entry = store.get(id);
@@ -2197,7 +2197,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
       () =>
         new Promise((resolve, _reject) => {
           const convert = () => this.convertParametersFromCurrent(to, (size: any) => {
-            // oct26-m2-t1-ff: ソースの差し替え・zoomRestriction の setMinZoom より前に、
+            // ソースの差し替え・zoomRestriction の setMinZoom より前に、
             // 切替前の地図と視点を控える（非表示中に視点確定を保留する場合の入力）。
             const prevFrom = this.from;
             const prevState = this.__captureViewState();
@@ -2293,7 +2293,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
               view.setZoom(size[1]);
               view.setRotation(this.noRotate ? 0 : size[2]);
             } else if (!this.__init && !size && !this.__hasMapSize() && prevFrom) {
-              // oct26-m2-t1-ff: 初期化済みで非表示中（寸法 0）の切替。変換ができないので
+              // 初期化済みで非表示中（寸法 0）の切替。変換ができないので
               // outOfMap を発火せず goHome も呼ばず、視点の確定を再表示まで保留する。
               // 非表示中に切替が続いても from/state は最初の保留のまま保つ。
               if (!this.__pendingView) {
@@ -2317,7 +2317,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
               }
             } else if (!size) {
               if (!this.__hasMapSize()) {
-                // oct26-m2-t1: 未確定時（非表示コンテナ）は goHome が NaN 変換を起こす
+                // 未確定時（非表示コンテナ）は goHome が NaN 変換を起こす
                 // ため呼ばず、初期視点の適用を可視化時の自己修復へ defer する。
               } else {
                 this.goHome(to);
@@ -2340,7 +2340,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
               this.redrawMarkers();
             }
             this.resetVector();
-            // nov26-m4-t5: 登録簿に残っている線・面だけを新しい地図の座標で描き直す
+            // 登録簿に残っている線・面だけを新しい地図の座標で描き直す
             this.__vectorStore().forEach(entry => this.__drawVectorEntry(entry));
             this.dispatchEvent(
               new CustomEvent("mapChanged", this.getMapMeta(to.mapID))
@@ -2349,10 +2349,10 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
             this.mapObject.render();
             if (restore!.position) {
               if (!this.__hasMapSize()) {
-                // oct26-m2-t1: 未確定時は __init を維持したまま自己修復へ defer する
+                // 未確定時は __init を維持したまま自己修復へ defer する
                 // （setViewpointRadian が未確定ガードで安全に return するため、
                 //   ここで __init を false にすると初期視点未適用のまま扱われてしまう）。
-                // oct26-m2-t1-ff: 視点確定を保留中なら、position を行き先の mapID と共に
+                // 視点確定を保留中なら、position を行き先の mapID と共に
                 // 保留へ添え、再表示時に変換の後で上書きする。
                 if (this.__pendingView) {
                   this.__pendingView.position = restore!.position;
@@ -2374,7 +2374,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
             );
             if (this.__init) {
               if (!this.__hasMapSize()) {
-                // oct26-m2-t1: 未確定時は __init を維持したまま初期視点の適用を
+                // 未確定時は __init を維持したまま初期視点の適用を
                 // 可視化時の自己修復（__applyInitialViewpoint）へ defer する。
               } else {
                 this.__init = false;
@@ -2383,7 +2383,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
             } else if (this.backMap && backTo) {
               this.convertParametersFromCurrent(backTo, (size: any) => {
                 if (!size) {
-                  // oct26-m2-t1: 未確定ガードにより座標変換がスキップされた場合。
+                  // 未確定ガードにより座標変換がスキップされた場合。
                   return;
                 }
                 const view = (this.backMap as MaplatMap).getView();
@@ -2397,7 +2397,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
             resolve(undefined);
           });
           if (this.__pendingView) {
-            // oct26-m2-t1-ff: 保留が残ったまま寸法がある状態で切替が来た場合（アプリが
+            // 保留が残ったまま寸法がある状態で切替が来た場合（アプリが
             // 自分で updateSize した直後など）、先に保留を適用してから変換する。
             // 保留が無い通常の切替は従来どおり同期で変換へ進む。
             this.__applyPendingView().then(convert);
@@ -2450,7 +2450,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     const src = useTo || this.from!;
     src.goHome();
   }
-  // oct26-m2-t1: 可視化時の自己修復ハンドラの登録（issue #101）。
+  // 可視化時の自己修復ハンドラの登録（issue #101）。
   // 非表示コンテナ（寸法 0）で初期化すると view の resolution が未確定のままとなり、
   // changeMap での初期視点適用（goHome / setViewpoint）が defer される（__init が
   // true のまま残る）。可視化の契機（visibilitychange / コンテナ寸法確定）で
@@ -2468,7 +2468,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
       this.__resizeObserver.observe(div);
     }
   }
-  // oct26-m2-t1: 初期視点が未適用（__init）かつコンテナ寸法が有効なときに、初期視点
+  // 初期視点が未適用（__init）かつコンテナ寸法が有効なときに、初期視点
   // を再適用して view を確定させる。再適用は initialRestore.position があれば
   // setViewpoint、なければ goHome を使い、適用後に updateSize + render を呼ぶ
   // （changeMap の既存描画順序 mapChanged → updateSize → render と同一の流れ）。
@@ -2477,7 +2477,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     const map = this.mapObject;
     const view = map ? map.getView() : undefined;
     if (!map || !view) return;
-    // oct26-m2-t1-ff: #map_div の client 寸法では判定しない。前面地図が絶対配置の
+    // #map_div の client 寸法では判定しない。前面地図が絶対配置の
     // 画面（e2e/test.html 等）では表示中も #map_div の clientHeight が 0 のため、
     // 自己修復が一度も動かなかった。寸法の判定は下の updateSize 後の __hasMapSize で行う。
     if (!this.mapDivDocument) return;
@@ -2496,7 +2496,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     map.updateSize();
     map.render();
   }
-  // oct26-m2-t1-ff: 保留した視点確定の適用を changeMapSeq の後ろに予約する。
+  // 保留した視点確定の適用を changeMapSeq の後ろに予約する。
   // 寸法が無ければ予約しない。ResizeObserver・visibilitychange・postrender が
   // 続けて来ても、適用が走るまでは 1 回だけ予約する。
   private __schedulePendingView() {
@@ -2514,11 +2514,11 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
       return this.__applyPendingView();
     });
   }
-  // oct26-m2-t1-ff: 保留した視点確定を、表示中の changeMap と同じ規則で適用する。
+  // 保留した視点確定を、表示中の changeMap と同じ規則で適用する。
   // 切替前の地図と視点を変換核 __convertParameters に通し（mercBuffer を含む同じ変換）、
   // 範囲内なら setCenter/setZoom/setRotation、範囲外なら outOfMap + goHome。
   // 保留に position があり行き先が一致すれば、変換の後で setViewpoint で上書きする。
-  // 締めは m2-t1 の __applyInitialViewpoint と同じ updateSize + render。
+  // 締めは __applyInitialViewpoint と同じ updateSize + render。
   private __applyPendingView(): Promise<void> {
     const pending = this.__pendingView;
     const map = this.mapObject;
@@ -2548,7 +2548,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
         finish();
       };
       if (!pending.state) {
-        // oct26-m2-t1-ff MIN-3: 控えた視点が有限でなかった。変換せず goHome で確定する
+        // 控えた視点が有限でなかった。変換せず goHome で確定する
         // （outOfMap は発火しない。変換核へ NaN を流すと #101 と同じ例外になるため）。
         this.goHome(to);
         finish();
@@ -2581,7 +2581,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
       }
     });
   }
-  // oct26-m2-t1-ff: 現在の view の視点を控える。有限でない値を含む場合は undefined
+  // 現在の view の視点を控える。有限でない値を含む場合は undefined
   // （非表示中に resolution が NaN へ崩れた後など。変換核へ流すと #101 と同じ例外になる）。
   private __captureViewState(): CapturedViewState | undefined {
     const view = this.mapObject ? this.mapObject.getView() : undefined;
@@ -2598,7 +2598,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     }
     return { center: [center[0], center[1]], zoom, decimalZoom, rotation };
   }
-  // oct26-m2-t1-ff: view の値を検査せずにそのまま読む（切り出し前の
+  // view の値を検査せずにそのまま読む（切り出し前の
   // convertParametersFromCurrent が変換の直前に読んでいた値と同じ）。
   private __captureRawViewState(view: any): CapturedViewState {
     return {
@@ -2608,7 +2608,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
       rotation: view.getRotation()
     };
   }
-  // oct26-m2-t1: コンテナ寸法が有効（map size が正）かどうか。非表示コンテナ
+  // コンテナ寸法が有効（map size が正）かどうか。非表示コンテナ
   // （display:none 等）では OL の map size が [0,0] となり、view の resolution が
   // NaN に崩れて座標変換が破綻する（issue #101）。未確定ガードと自己修復の判定に使う。
   private __hasMapSize(): boolean {
@@ -2708,7 +2708,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
   convertParametersFromCurrent(to: any, callback: any) {
     this.__convertFromCurrent(to, callback);
   }
-  // nov26-m4-t1（#108）: convertParametersFromCurrent の本体。公開の型を変えずに
+  // #108: convertParametersFromCurrent の本体。公開の型を変えずに
   // onError の口を得るために private へ移した。onError を渡したときだけ、同期例外も
   // 非同期の失敗（__convertParameters の onError）も投げずに onError へ渡す。
   // onError が無いときは今までと同じ（例外をそのまま投げる）。
@@ -2719,7 +2719,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
   ) {
     try {
       const view = this.mapObject.getView();
-      // oct26-m2-t1: 未確定ガード。非表示コンテナ（寸法 0）では view の resolution が
+      // 未確定ガード。非表示コンテナ（寸法 0）では view の resolution が
       // NaN になる（OL が viewport size を [0,0] として resolveConstraints を走らせる
       // ため。実測: convertParametersFromCurrent 時点 res=39135.75 → updateSize 後 NaN）。
       // 後続の viewpoint2MercsAsync が NaN を xy2MercWithLayer へ流して issue #101 の
@@ -2746,7 +2746,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
       else throw err;
     }
   }
-  // oct26-m2-t1-ff: 変換核。切替前の地図 fromSrc と、そのときの視点 state（地図の
+  // 変換核。切替前の地図 fromSrc と、そのときの視点 state（地図の
   // 座標系の値）から、行き先 to の視点を求めて callback(size) を呼ぶ。中身は切り出し前の
   // convertParametersFromCurrent と同じ（mercBuffer のキャッシュ判定・
   // viewpoint2MercsAsync・mercs2ViewpointAsync・mercBuffer の更新）。

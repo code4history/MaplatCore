@@ -1,25 +1,25 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { normalizeLayers } from "../src/normalize_pois";
-import unchangedBaseline from "./expect/m4-t5-unchanged-baseline.json";
+import unchangedBaseline from "./expect/pois-bare-url-unchanged-baseline.json";
 
-// M4-T5: 配列要素位置の裸 URL 文字列を fetch の前に判別する（設計 §5.1 の判定表）。
+// 配列要素位置の裸 URL 文字列を fetch の前に判別する（判定表は src/normalize_pois.ts）。
 //
-// 現行の欠陥（設計 §2.1 の実測）: normalizeLayers は配列分岐で全要素に nodesLoader を
+// 修正前の欠陥（実測）: normalizeLayers は配列分岐で全要素に nodesLoader を
 // 適用してから先頭要素でモードを判定するため、裸 URL 文字列が判定より前に中身へ化ける。
 // 中身が FeatureCollection なら偶然レイヤ配列モードへ入って正常に動くが、中身がレガシー
 // POI 配列だと「配列の配列」になって POI オブジェクト配列モードへ落ち、POI が壊れる。
 // ラッパー（{layer:…}）は nodesLoader が素通しするため fetch 前に判別されており、
 // **正しい判定順は同ファイル内に既に存在している**。裸 URL だけがその恩恵を受けていない。
 //
-// AC1  ["url"]（中身レガシー配列）→ 1レイヤ            … 現行は壊れる
-// AC2  ["url", FC] → 2レイヤ（親設計 MC7 の本体）      … 現行は壊れる
-// AC3  ["url"]（中身FC）→ 現行と同一（無回帰）
-// AC4  単独形（文字列 / FC / 上書き付きラッパー）→ 現行と同一
-// AC5  配列[ラッパー] → 現行と同一（m18-t4 の契約不変）
-// AC6  レガシー POI 配列モードでも要素の nodesLoader 解決が維持される（設計 §5.3）
-// AC7  非先頭のレガシー配列は throw のまま／混在配列も throw（設計 §5.4 の挙動固定）
-// AC8  参照先 404 は throw のまま（nodesLoader の契約不変）
-// AC10 バンドル伝播不要判定の裏づけ — Editor 出力形・公開データ形で修正前後の出力が完全一致
+// - ["url"]（中身レガシー配列）→ 1レイヤ            … 現行は壊れる
+// - ["url", FC] → 2レイヤ（この修正の本体）      … 現行は壊れる
+// - ["url"]（中身FC）→ 現行と同一（無回帰）
+// - 単独形（文字列 / FC / 上書き付きラッパー）→ 現行と同一
+// - 配列[ラッパー] → 現行と同一（ラッパーの契約不変）
+// - レガシー POI 配列モードでも要素の nodesLoader 解決が維持される
+// - 非先頭のレガシー配列は throw のまま／混在配列も throw（挙動固定）
+// - 参照先 404 は throw のまま（nodesLoader の契約不変）
+// - バンドル伝播不要判定の裏づけ — Editor 出力形・公開データ形で修正前後の出力が完全一致
 
 const opts = () => ({ namespace: "ns", name: "AppName" });
 
@@ -71,7 +71,7 @@ const shape = (out: any) =>
     Object.entries(out).map(([k, v]: [string, any]) => [k, v.pois.length])
   );
 
-describe("AC1: 裸 URL 要素（中身がレガシー POI 配列）が1レイヤになる", () => {
+describe("裸 URL 要素（中身がレガシー POI 配列）が1レイヤになる", () => {
   it('["legacy.json"] → main レイヤに2 POI', async () => {
     stubFetch();
     const out: any = await normalizeLayers(["legacy.json"], opts());
@@ -85,7 +85,7 @@ describe("AC1: 裸 URL 要素（中身がレガシー POI 配列）が1レイヤ
   });
 });
 
-describe("AC2: 裸 URL 要素 + 生 FC が2レイヤになる（親設計 MC7）", () => {
+describe("裸 URL 要素 + 生 FC が2レイヤになる", () => {
   it('["legacy.json", FC] → main と fcid の2レイヤ', async () => {
     stubFetch();
     const out: any = await normalizeLayers(["legacy.json", fc("fcid")], opts());
@@ -101,7 +101,7 @@ describe("AC2: 裸 URL 要素 + 生 FC が2レイヤになる（親設計 MC7）
   });
 });
 
-describe("AC3: 裸 URL 要素（中身が FC）は現行と同一（無回帰）", () => {
+describe("裸 URL 要素（中身が FC）は現行と同一（無回帰）", () => {
   it('["t.json"] → tid レイヤ + 空の main', async () => {
     stubFetch();
     const out: any = await normalizeLayers(["t.json"], opts());
@@ -109,7 +109,7 @@ describe("AC3: 裸 URL 要素（中身が FC）は現行と同一（無回帰）
   });
 });
 
-describe("AC4: 単独形は現行と同一", () => {
+describe("単独形は現行と同一", () => {
   it('"legacy.json"（文字列単独形）→ main に2 POI', async () => {
     stubFetch();
     const out: any = await normalizeLayers("legacy.json", opts());
@@ -133,7 +133,7 @@ describe("AC4: 単独形は現行と同一", () => {
   });
 });
 
-describe("AC5: 配列[ラッパー] は現行と同一（m18-t4 の契約不変）", () => {
+describe("配列[ラッパー] は現行と同一（ラッパーの契約不変）", () => {
   it("ラッパー2件 → 上書きが載り、参照先の中身は変わらない", async () => {
     stubFetch();
     const out: any = await normalizeLayers(
@@ -159,7 +159,7 @@ describe("AC5: 配列[ラッパー] は現行と同一（m18-t4 の契約不変�
   });
 });
 
-describe("AC6: POI オブジェクト配列モードでも要素の解決が維持される（設計 §5.3）", () => {
+describe("POI オブジェクト配列モードでも要素の解決が維持される", () => {
   it('[{旧POI}, "one_poi.json"] → 2 POI（URL 要素が単一 POI オブジェクトへ解決される）', async () => {
     const spy = stubFetch();
     const out: any = await normalizeLayers(
@@ -186,7 +186,7 @@ describe("AC6: POI オブジェクト配列モードでも要素の解決が維�
   });
 });
 
-describe("AC7: key を持てない非先頭レイヤは throw のまま（設計 §5.4 の挙動固定）", () => {
+describe("key を持てない非先頭レイヤは throw のまま（挙動固定）", () => {
   it('["t.json", "legacy.json"] → throw（レガシー配列は id を持てない）', async () => {
     stubFetch();
     await expect(
@@ -205,7 +205,7 @@ describe("AC7: key を持てない非先頭レイヤは throw のまま（設計
   });
 });
 
-describe("AC8: 参照先 404 は throw のまま（nodesLoader の契約不変）", () => {
+describe("参照先 404 は throw のまま（nodesLoader の契約不変）", () => {
   it("配列要素の 404", async () => {
     stubFetch();
     await expect(normalizeLayers(["missing.json"], opts())).rejects.toThrow(
@@ -228,9 +228,9 @@ describe("AC8: 参照先 404 は throw のまま（nodesLoader の契約不変�
   });
 });
 
-describe("AC10: 修正前後で出力が完全一致する（バンドル伝播不要判定の裏づけ）", () => {
-  // 設計 §6: preview バンドルを再生成しない判定を、主張ではなく実測で裏づける。
-  // 期待値 spec/expect/m4-t5-unchanged-baseline.json は **修正前の実装を実行して採取した値**
+describe("修正前後で出力が完全一致する（バンドル伝播不要判定の裏づけ）", () => {
+  // preview バンドルを再生成しない判定を、主張ではなく実測で裏づける。
+  // 期待値 spec/expect/pois-bare-url-unchanged-baseline.json は **修正前の実装を実行して採取した値**
   // であり、これと一致することが「現行データは伝播しなくても無影響」の直接証拠になる。
   const cases: [string, unknown][] = [
     // Editor が t2/t3 で出力する形（上書きレイヤの配列）

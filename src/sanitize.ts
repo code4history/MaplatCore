@@ -1,4 +1,4 @@
-// m1-t4: viewer の HTML 合成経路の無害化（設計書 §3.1〜§3.5）。
+// viewer の HTML 合成経路の無害化。
 //
 // なぜ描画側でサニタイズするか:
 //   normalize_pois.ts でビューア自身がリモートの POI JSON を fetch しており、取得側で止められない。
@@ -7,10 +7,10 @@
 //   実データは desc に HTML を含むのが常態である（実測: stones 121/121・tatebayashi 10/12。
 //   b × 610 / br × 592 / a × 2）。厳しくすると既存データの見た目が壊れる。
 //
-// 許可リストの定義はこのファイルが唯一の正本である（設計書 §3.2 / §3.4）。
+// 許可リストの定義はこのファイルが唯一の正本である。
 // 他所に複製を作らないこと。
 import createDOMPurify from "dompurify";
-// 許可リストの**データ正本**。コード側に複製しないこと（AC7）。
+// 許可リストの**データ正本**。コード側に複製しないこと。
 import ALLOWLIST from "./sanitize-allowlist.json";
 
 /** 許可するタグ（データ正本 sanitize-allowlist.json より）。 */
@@ -76,7 +76,7 @@ let activeProfile: SanitizeProfile | undefined;
  * img[src] で許可する data: の MIME。
  * svg+xml は**含めない**（設計書 §3.5(c)）。img 経由ではブラウザが SVG 内の script を
  * 実行しないため即 XSS ではないが、許可面を最小に保つ防御的判断である。
- * 実運用データで必要と判明した場合のみ、人間承認のうえ §6.2 の条件付き AC を適用して追加する。
+ * 実運用データで必要と判明した場合のみ、人間の承認のうえで追加する。
  */
 const SAFE_IMAGE_DATA_URI = /^data:image\/(png|jpeg|gif|webp|avif);/i;
 
@@ -289,13 +289,13 @@ const SLIDE_URL_ATTRS = new Set(ALLOWLIST.slide.urlAttributes);
 const isSafeUrl = (v: string): boolean => /^(?:https?:)?\/\/|^\/|^[^:]*$/i.test(v.trim());
 
 /**
- * URL 属性で拒否する文字（m1-t9 D2 / 設計書 AC5）。
+ * URL 属性で拒否する文字。
  *
  * なぜ `[<>]` だけでは足りないか:
  *   escapeAttr は「属性コンテキスト」のエスケープにすぎず、受け手が
  *   getAttribute で読み戻すとエンティティが復号されて生の文字に戻る。
  *   受け手（Chuci）が文字列補間していれば、`"` ひとつで属性を閉じて
- *   ` onmouseover="…"` を注入できる（m1 包括セキュリティレビュー SRH-1）。
+ *   ` onmouseover="…"` を注入できる（セキュリティレビューでの指摘）。
  *   山括弧だけを見ていたのは「HTML タグの注入」しか想定していなかったためで、
  *   **属性ブレイクアウトは山括弧を必要としない**。
  *
@@ -307,7 +307,7 @@ const isSafeUrl = (v: string): boolean => /^(?:https?:)?\/\/|^\/|^[^:]*$/i.test(
  *
  * なぜ許容できるか:
  *   URL にこれらの生文字は現れない。必要ならパーセントエンコードされる。
- *   実データで確認済み（m1-t9 AC6・2026-08-01）: github/Maplat の maps 165件・
+ *   実データで確認済み（2026-08-01）: github/Maplat の maps 165件・
  *   pois 16件と MaplatEditor の SQLite 実データ（maps 264行 / poi_sources 5行）を
  *   全数走査し、URL 属性を持つレコードは **0件**。この強化で壊れる実データは無い。
  *

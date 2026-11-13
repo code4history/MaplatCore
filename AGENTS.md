@@ -36,7 +36,7 @@ Vitest unit specs live in `spec/` and mirror source filenames (e.g. `viewpoint.t
 
 ## Commit & Pull Request Guidelines
 
-Recent `git log` shows a mix of Conventional Commits (`fix:`, `chore:`, `docs:`) and task-ID-prefixed messages (e.g. `m15-t1:`, `c2-m4-t1:`) tied to this project's internal task tracking. Keep commits scoped to one concern; when a message is not part of a tracked task, prefer a Conventional Commits prefix. Pull requests should describe the change, note any affected API behavior, and confirm lint, typecheck, unit tests, and (when relevant) e2e tests pass locally before requesting review.
+Recent `git log` shows a mix of Conventional Commits (`fix:`, `chore:`, `docs:`) and task-ID-prefixed messages tied to this project's internal task tracking. Keep commits scoped to one concern; when a message is not part of a tracked task, prefer a Conventional Commits prefix. Pull requests should describe the change, note any affected API behavior, and confirm lint, typecheck, unit tests, and (when relevant) e2e tests pass locally before requesting review.
 
 ## Release & Configuration Tips
 

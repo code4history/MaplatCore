@@ -1,9 +1,9 @@
 {
   "_note": [
-    "m1-t4: 許可リストの**データ正本**（設計書 §3.2 / §3.4・AC7）。",
-    "sanitize.ts と scripts/m1-t4/scan-poi-tags.mjs の**両方がこのファイルを読む**。",
+    "許可リストの**データ正本**。",
+    "sanitize.ts と POI のタグの走査スクリプトの**両方がこのファイルを読む**。",
     "コード側に許可リストを複製しないこと。複製すると実サニタイズと走査の判定がずれる。",
-    "verify-html-sinks.mjs の AC7 検査が第二の定義を検出して FAILED にする。"
+    "HTML の出口の検査（verify-html-sinks.mjs）が第二の定義を検出して FAILED にする。"
   ],
   "tags": [
     "b",

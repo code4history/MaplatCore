@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-// m18-t4: pois ラッパー（{layer, hide/title/icon/selectedIcon}）の実ブラウザ到達検証（設計 §6.2）。
+// pois ラッパー（{layer, hide/title/icon/selectedIcon}）の実ブラウザ到達検証。
 // 既存 consumption.spec.ts の3テストには手を入れず、新規 spec として独立させる（Info-3）。
 
 const fixturePath = '/tests/consumption/pois-layer-ref.html';
@@ -13,7 +13,7 @@ async function waitForReady(page) {
 }
 
 test.describe('pois layer ref (wrapper) — viewer 到達', () => {
-  test('AC4-11: ラッパー hide:true のレイヤはマーカーが描画されず、他レイヤは描画される', async ({ page }) => {
+  test('ラッパー hide:true のレイヤはマーカーが描画されず、他レイヤは描画される', async ({ page }) => {
     await page.goto(fixturePath);
     await waitForReady(page);
 
@@ -38,7 +38,7 @@ test.describe('pois layer ref (wrapper) — viewer 到達', () => {
     expect(hiddenList.some((ns: string) => ns.includes('hidden'))).toBe(true);
   });
 
-  test('AC4-11 補: showPoiLayer("hidden") 後はマーカーが 4 に増える', async ({ page }) => {
+  test('showPoiLayer("hidden") 後はマーカーが 4 に増える', async ({ page }) => {
     await page.goto(fixturePath);
     await waitForReady(page);
 
@@ -56,7 +56,7 @@ test.describe('pois layer ref (wrapper) — viewer 到達', () => {
     expect(markerCount).toBe(4);
   });
 
-  test('AC4-12: ラッパー icon 上書きがマーカー画像に反映される', async ({ page }) => {
+  test('ラッパー icon 上書きがマーカー画像に反映される', async ({ page }) => {
     await page.goto(fixturePath);
     await waitForReady(page);
 

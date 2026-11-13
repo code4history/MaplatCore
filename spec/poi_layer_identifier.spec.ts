@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { MaplatApp } from "../src/index";
 
 /**
- * POI layer API 契約明確化 (m18-t6) — namespaceID 解決と warning 仕様の検証。
+ * POI layer API 契約明確化 — namespaceID 解決と warning 仕様の検証。
  *
  * この spec は src/index.ts の MaplatApp.prototype に生える POI layer API を、
  * 最小の mock `this` に直接 bind して呼び出す。spec/poi_layer_order.spec.ts が
@@ -96,7 +96,7 @@ const listPoiLayers = proto.listPoiLayers as (
   nonzero?: boolean
 ) => any[];
 
-describe("POI layer identifier contract (m18-t6)", () => {
+describe("POI layer identifier contract", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
   });

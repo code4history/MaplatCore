@@ -11,7 +11,7 @@ export const META_KEYS = [
   "mapper",
   "license",
   "dataLicense",
-  // m6-t2: ライセンスの自由記述欄。META_KEYS_OPTION と lockstep (同じ index) で足す。
+  // ライセンスの自由記述欄。META_KEYS_OPTION と lockstep (同じ index) で足す。
   "licenseNote",
   "dataLicenseNote",
   "attr",

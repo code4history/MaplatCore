@@ -1,4 +1,4 @@
-// nov26-m4-t2（MaplatCore #107）: MapboxLayer・MapLibreLayer の描画ごとの寸法同期で使う比較。
+// MaplatCore #107: MapboxLayer・MapLibreLayer の描画ごとの寸法同期で使う比較。
 // canvas.width/height は物理ピクセル、OpenLayers の frameState.size は CSS ピクセルなので、
 // そのまま比べると DPR>1 では常に食い違い、描画のたびに GL の resize() が呼ばれていた。
 // src/index.ts からは export しない（内部用。前例 src/provider_gl_bind.ts）。
