@@ -73,6 +73,8 @@ const HTML_KEYS = new Set(["attr", "dataAttr", "description", "contributor"]);
 const TEXT_JOINER = " / ";
 /** HTML として入る鍵と metadata の値のつなぎ方 */
 const HTML_JOINER = "<br>";
+/** 入れ子の配列をたどる深さの上限（深い入れ子・循環する値で止まるため） */
+const NESTED_ARRAY_MAX_DEPTH = 32;
 
 /** Creative Commons の URI の道 → ライセンスの語彙（綴りは UI のライセンスの一覧に合わせる） */
 const CREATIVE_COMMONS: Array<{ pattern: RegExp; license: string }> = [
@@ -116,12 +118,53 @@ function hasOwn(table: PlainObject, key: string) {
   return Object.prototype.hasOwnProperty.call(table, key);
 }
 
-/** 値を文字列の配列として読む（文字列 1 つ・文字列の配列のどちらも受ける） */
+/**
+ * 配列の中の配列を深さ上限つきで平らにする。items は、配列でない要素と、
+ * 深さ上限を超えた入れ子（それ以上たどらず 1 つの値として残す）。
+ * 一度見た配列は seen（WeakSet）で飛ばすので、自分自身を含む（循環する）配列でも止まる。
+ * truncated は、循環・深さ上限で読み落とした形が無いか（空と読めない形を分ける）。
+ */
+function flattenNestedArrays(
+  values: readonly unknown[],
+  seen: WeakSet<object>,
+  depth: number
+): { items: unknown[]; truncated: boolean } {
+  const items: unknown[] = [];
+  let truncated = false;
+  for (const value of values) {
+    if (!Array.isArray(value)) {
+      items.push(value);
+      continue;
+    }
+    if (seen.has(value)) {
+      truncated = true;
+      continue;
+    }
+    if (depth >= NESTED_ARRAY_MAX_DEPTH) {
+      items.push(value);
+      truncated = true;
+      continue;
+    }
+    seen.add(value);
+    const inner = flattenNestedArrays(value, seen, depth + 1);
+    for (const item of inner.items) items.push(item);
+    truncated = truncated || inner.truncated;
+  }
+  return { items, truncated };
+}
+
+/**
+ * 値を文字列の配列として読む（文字列 1 つ・文字列の配列のどちらも受ける）。
+ * 配列の中の配列も深さ上限つきで平らにして、中の文字列を読む。
+ */
 function joinValues(values: unknown, joiner: string): string | undefined {
   if (typeof values === "string") return values;
   if (Array.isArray(values)) {
-    const parts: string[] = [];
-    for (const value of values) if (typeof value === "string") parts.push(value);
+    const seen = new WeakSet<object>();
+    seen.add(values);
+    const parts = flattenNestedArrays(values, seen, 0).items.filter(
+      (value): value is string => typeof value === "string"
+    );
     return parts.length > 0 ? parts.join(joiner) : undefined;
   }
   return undefined;
@@ -153,14 +196,17 @@ function toLocalizedValue(raw: unknown, joiner: string): Localized | undefined {
 
 /**
  * IIIF の値を 言語 → 文字列 の表にする。
- * 配列は版 2 の「言語つきの値の並び」の 1 段だけを読み、配列の中の配列は読まない
- * （深い入れ子・自分自身を含む値で再帰しないため）。読めない形なら undefined。
+ * 配列は版 2 の「言語つきの値の並び」を読み、配列の中の配列も深さ上限つきで平らにして読む
+ * （深い入れ子・自分自身を含む値でも止まるよう、深さ上限と一度見た配列を WeakSet で飛ばす）。
+ * 読めない形なら undefined。
  */
 function toLocalized(raw: unknown, joiner: string): Localized | undefined {
   if (!Array.isArray(raw)) return toLocalizedValue(raw, joiner);
+  const seen = new WeakSet<object>();
+  seen.add(raw);
+  const items = flattenNestedArrays(raw, seen, 0).items;
   const table: Record<string, string> = {};
-  for (const item of raw) {
-    if (Array.isArray(item)) continue;
+  for (const item of items) {
     const single = toLocalizedValue(item, joiner);
     if (single === undefined) continue;
     const pairs: Array<[string, string]> =
@@ -457,9 +503,17 @@ function isBlankText(value: unknown): boolean {
   return value === undefined || value === null || (typeof value === "string" && value.trim() === "");
 }
 
-/** 言語の表の 1 言語の値が空か（空白だけの文字列、または空白だけの文字列しか無い配列） */
+/**
+ * 言語の表の 1 言語の値が空か（空白だけの文字列、または空白だけの文字列しか無い配列）。
+ * 配列の中の配列も深さ上限つきで平らにしてから中身を見る。循環・深さ上限で読み落とした
+ * 形があるときは、空ではなく読めない値として扱う。
+ */
 function isBlankLanguageValues(values: unknown): boolean {
-  return isBlankText(values) || (Array.isArray(values) && values.every(isBlankText));
+  if (!Array.isArray(values)) return isBlankText(values);
+  const seen = new WeakSet<object>();
+  seen.add(values);
+  const { items, truncated } = flattenNestedArrays(values, seen, 0);
+  return !truncated && items.every(isBlankText);
 }
 
 /** 配列ではない IIIF の値が空か（版 2 の言語つきの値・版 3 の言語の表） */
@@ -475,11 +529,16 @@ function isBlankSingleValue(raw: unknown): boolean {
 
 /**
  * metadata の値が空か（写す中身が無いか）。
- * 中身があって形が読めない値（数・入れ子の配列など）とは分ける。
- * 入れ子は決まった深さしか見ない（循環した値・深い入れ子で再帰しない）。
+ * 中身があって形が読めない値（数・循環する値・深さ上限を超えた入れ子など）とは分ける。
+ * 入れ子の配列は深さ上限つきで平らにして中身を見る。循環・深さ上限で読み落とした形が
+ * あるときは、空ではなく読めない値として扱う（警告して捨てる側に回す）。
  */
 function isBlankMetadataValue(raw: unknown): boolean {
-  return Array.isArray(raw) ? raw.every(isBlankSingleValue) : isBlankSingleValue(raw);
+  if (!Array.isArray(raw)) return isBlankSingleValue(raw);
+  const seen = new WeakSet<object>();
+  seen.add(raw);
+  const { items, truncated } = flattenNestedArrays(raw, seen, 0);
+  return !truncated && items.every(isBlankSingleValue);
 }
 
 /**
