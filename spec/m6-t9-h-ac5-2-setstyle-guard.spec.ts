@@ -1,4 +1,4 @@
-// m6-t9 §3.4 実装レビュー round2 H-AC5-2 回帰テスト。
+// render() 内の setStyle のガードの回帰テスト。
 // layer_maplibre.ts / layer_mapbox.ts の render() は OpenLayers のレンダーフレーム
 // ごとに呼ばれるが、setStyle(source.style) を直前値との比較なしに無条件で呼んでいた。
 // MapLibre/Mapbox の setStyle は差分がゼロでない場合スタイル再構築（スプライト再取得含む）を
@@ -62,7 +62,7 @@ function makeMbMapStub() {
   };
 }
 
-describe("m6-t9 H-AC5-2: render() 内の setStyle は style 変更時のみ呼ばれる", () => {
+describe("render() 内の setStyle は style 変更時のみ呼ばれる", () => {
   it("MapLibreLayer: 同一 style での連続 render は setStyle を1回のみ呼ぶ", () => {
     const mlMap = makeMlMapStub();
     const source = withEventTargetStub({ maplibreMap: mlMap, style: "https://example.test/style-a.json" });

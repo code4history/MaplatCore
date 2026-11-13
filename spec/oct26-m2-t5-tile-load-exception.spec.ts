@@ -1,9 +1,9 @@
-// oct26-m2-t5（MaplatCore #109）: タイル合成用の tileLoadFunction（setupTileLoadFunction）で、
+// MaplatCore #109: タイル合成用の tileLoadFunction（setupTileLoadFunction）で、
 // 元画像の onload 内（getContext("2d") → drawImage）が例外を投げても、そのタイルが必ず決着することを固定する。
 // 変更前は例外で resolve が飛ばされ、Promise.all が保留 → tileLoadFn も handleImageError_ も呼ばれず、
 // OL の ImageTile が LOADING のまま残って TileQueue（上限 16）が詰まっていた。
-// AC3: 例外時は handleImageError_ が 1 回呼ばれ、tileLoadFn は呼ばれない。
-// AC4: 正常系（描画成功 → tileLoadFn）と画像 0×0（読込失敗 → handleImageError_）は現行どおり。
+// 例外時は handleImageError_ が 1 回呼ばれ、tileLoadFn は呼ばれない。
+// 正常系（描画成功 → tileLoadFn）と画像 0×0（読込失敗 → handleImageError_）は現行どおり。
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { setupTileLoadFunction } from "../src/source/mixin";
 
@@ -73,8 +73,8 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("oct26-m2-t5 setupTileLoadFunction: onload 内の例外でタイルが決着しない問題（#109）", () => {
-  it("AC3: getContext('2d') が null（drawImage で TypeError）でも handleImageError_ が 1 回呼ばれる", async () => {
+describe("setupTileLoadFunction: onload 内の例外でタイルが決着しない問題（#109）", () => {
+  it("getContext('2d') が null（drawImage で TypeError）でも handleImageError_ が 1 回呼ばれる", async () => {
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null as any);
     const h = makeHarness();
     const tile = makeTile();
@@ -86,7 +86,7 @@ describe("oct26-m2-t5 setupTileLoadFunction: onload 内の例外でタイルが�
     expect(h.tileLoadFn).not.toHaveBeenCalled();
   });
 
-  it("AC3: drawImage 自体が例外を投げても handleImageError_ が 1 回呼ばれる", async () => {
+  it("drawImage 自体が例外を投げても handleImageError_ が 1 回呼ばれる", async () => {
     const drawImage = vi.fn(() => {
       throw new Error("injected drawImage failure");
     });
@@ -101,7 +101,7 @@ describe("oct26-m2-t5 setupTileLoadFunction: onload 内の例外でタイルが�
     expect(h.tileLoadFn).not.toHaveBeenCalled();
   });
 
-  it("AC3: 複数片（mercatorShift あり）の全片で例外 → handleImageError_ が 1 回呼ばれる", async () => {
+  it("複数片（mercatorShift あり）の全片で例外 → handleImageError_ が 1 回呼ばれる", async () => {
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null as any);
     // zoom 3 で 128px 相当ずれる shift（MERC_MAX = 20037508.342789244）
     const h = makeHarness({ x: 20037508.342789244 / 8, y: -20037508.342789244 / 8 });
@@ -114,7 +114,7 @@ describe("oct26-m2-t5 setupTileLoadFunction: onload 内の例外でタイルが�
     expect(h.tileLoadFn).not.toHaveBeenCalled();
   });
 
-  it("AC4（回帰）: 描画が成功すれば tileLoadFn(tile, dataUrl) が呼ばれ、handleImageError_ は呼ばれない", async () => {
+  it("（回帰）描画が成功すれば tileLoadFn(tile, dataUrl) が呼ばれ、handleImageError_ は呼ばれない", async () => {
     const drawImage = vi.fn();
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({ drawImage } as any);
     vi.spyOn(HTMLCanvasElement.prototype, "toDataURL").mockReturnValue("data:image/png;base64,AAAA");
@@ -129,7 +129,7 @@ describe("oct26-m2-t5 setupTileLoadFunction: onload 内の例外でタイルが�
     expect(tile.handleImageError_).not.toHaveBeenCalled();
   });
 
-  it("AC4（回帰）: 画像が 0×0（読込失敗）なら handleImageError_ が 1 回呼ばれる", async () => {
+  it("（回帰）画像が 0×0（読込失敗）なら handleImageError_ が 1 回呼ばれる", async () => {
     const drawImage = vi.fn();
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({ drawImage } as any);
     const h = makeHarness();

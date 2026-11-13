@@ -1,7 +1,7 @@
-// m1-t4 AC2 / AC4 / AC5a / AC5c: サニタイズ層の検証（設計書 §3.2 / §3.5）。
+// サニタイズ層の検証。
 //
 // 攻撃ペイロードは spec/fixtures/xss-payloads.ts に集約し、Playwright 側の E2E からも同じものを読む。
-// 片方の環境だけで通しても、もう一方の安全性は証明できない（設計書 §3.5(d) / AC5b）。
+// 片方の環境だけで通しても、もう一方の安全性は証明できない。
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
@@ -14,7 +14,7 @@ import {
 } from "./fixtures/xss-payloads";
 import * as qyPayloads from "./fixtures/xss-payloads";
 
-describe("sanitizeHtml — 攻撃ペイロードの無害化（AC5a / AC5c 異常系）", () => {
+describe("sanitizeHtml — 攻撃ペイロードの無害化（異常系）", () => {
   it.each(MUST_BE_NEUTRALIZED)("$name が無害化される", ({ input, mustNotContain }) => {
     const out = sanitizeHtml(input);
     for (const needle of mustNotContain) {
@@ -23,7 +23,7 @@ describe("sanitizeHtml — 攻撃ペイロードの無害化（AC5a / AC5c 異�
   });
 });
 
-describe("sanitizeHtml — 実データの見た目を壊さない（AC4 / AC5c 正系）", () => {
+describe("sanitizeHtml — 実データの見た目を壊さない（正系）", () => {
   it.each(MUST_BE_PRESERVED)("$name が保持される", ({ input, mustContain }) => {
     const out = sanitizeHtml(input);
     for (const needle of mustContain) {
@@ -32,7 +32,7 @@ describe("sanitizeHtml — 実データの見た目を壊さない（AC4 / AC5c 
   });
 });
 
-describe("sanitizeHtml — target=_blank の rel 強制付与（AC6）", () => {
+describe("sanitizeHtml — target=_blank の rel 強制付与", () => {
   it("rel=noopener noreferrer が付く", () => {
     const out = sanitizeHtml(TARGET_BLANK.input);
     for (const needle of TARGET_BLANK.mustContain) expect(out).toContain(needle);
@@ -50,7 +50,7 @@ describe("escapeAttr", () => {
   });
 });
 
-describe("buildSlideAttrs — 属性名 allowlist（AC2 / 設計書 §3.4）", () => {
+describe("buildSlideAttrs — 属性名 allowlist", () => {
   it.each(MEDIA_ATTR_ATTACKS)("$name が出力に現れない", ({ media, mustNotContain }) => {
     const out = buildSlideAttrs(media);
     for (const needle of mustNotContain) {
@@ -110,10 +110,9 @@ describe("属性の往復（設計書 §3.4・受け手が innerHTML へ補間�
 });
 
 // ─────────────────────────────────────────────────────────────
-// m1-t9 D2: URL 属性の検査強化（AC5）
+// URL 属性の検査強化
 //
-// 起票元: m1 包括セキュリティレビュー SRH-1（Major）
-// 設計書: docs/superpowers/specs/2026-08-01-m1-t9-chuci-template-interpolation-design.md v1.2
+// 起票元: セキュリティレビューでの指摘
 //
 // なぜ必要か:
 //   既存の URL 属性検査は isSafeUrl と /[<>]/ の2つだけで、**クォートを通す**。
@@ -121,15 +120,15 @@ describe("属性の往復（設計書 §3.4・受け手が innerHTML へ補間�
 //   受け手が getAttribute で読み戻すとエンティティが復号されて生の " に戻り、
 //   受け手が文字列補間していれば属性ブレイクアウトが成立する。
 //
-// なぜ受け手側（Chuci の D1）だけで足りないか:
+// なぜ受け手側（Chuci）だけで足りないか:
 //   @c4h/chuci は独立した公開パッケージであり、利用者が別版を引く期間がある。
 //   渡す側でも塞ぐことで版ずれ期間を防御する（多層防御）。
 //
-// 実データへの影響（AC6・2026-08-01 実測）:
+// 実データへの影響（2026-08-01 実測）:
 //   github/Maplat の maps 165件・pois 16件と SQLite 実データ（maps 264行 /
 //   poi_sources 5行）を全数走査した結果、image-url / thumbnail-url /
 //   material-url を持つレコードは **0件**。空白の拒否を含めても実データは壊れない。
-describe("buildSlideAttrs — URL 属性の危険文字を拒否する（m1-t9 D2 / AC5）", () => {
+describe("buildSlideAttrs — URL 属性の危険文字を拒否する", () => {
   const URL_ATTRS = ["image-url", "thumbnail-url", "material-url"] as const;
 
   it.each(URL_ATTRS)("%s のダブルクォートを拒否する（属性ブレイクアウトの本体）", attr => {
@@ -154,7 +153,7 @@ describe("buildSlideAttrs — URL 属性の危険文字を拒否する（m1-t9 D
     expect(out).not.toContain(attr);
   });
 
-  it("正常な URL は通す（AC4 正系・実データを壊さない）", () => {
+  it("正常な URL は通す（正系・実データを壊さない）", () => {
     const benign = "https://example.com/path/a%20b.jpg?q=1&r=2";
     const out = buildSlideAttrs({
       "image-url": benign,

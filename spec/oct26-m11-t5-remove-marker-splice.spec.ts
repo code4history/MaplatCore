@@ -1,4 +1,4 @@
-// oct26-m11-t5（MaplatCore #111）: removeMarker / removePoi が delete で POI 配列に穴を残さないことを固定する。
+// MaplatCore #111: removeMarker / removePoi が delete で POI 配列に穴を残さないことを固定する。
 // 変更前は `delete this.pois[key].pois[i]` で要素が詰まらず length も変わらないため、
 // 2 回目の removeMarker・getMarker の for…of が穴で TypeError になり、dispatchPoiNumber の数も減らなかった。
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -47,7 +47,7 @@ function makeApp(appPois: Record<string, any>, cacheHash: Record<string, any> = 
   return self;
 }
 
-describe("oct26-m11-t5 #111 removeMarker（app 経路）は配列を詰める", () => {
+describe("#111 removeMarker（app 経路）は配列を詰める", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
   });
@@ -124,7 +124,7 @@ describe("oct26-m11-t5 #111 removeMarker（app 経路）は配列を詰める", 
   });
 });
 
-describe("oct26-m11-t5 #111 cluster 経路（<mapID>#<id>）は source.removePoi で配列を詰める", () => {
+describe("#111 cluster 経路（<mapID>#<id>）は source.removePoi で配列を詰める", () => {
   it("C-1: removeMarker('omt#…') を 2 回（別 id）呼ぶと、map source の配列が空になり穴が無い", () => {
     const source = makeMapSource("omt", { main: layer("main", ["main_0", "main_1"]) });
     const self = makeApp({}, { omt: source }, source);

@@ -1,4 +1,4 @@
-// nov26-m4-t2（MaplatCore #107）t2/AC1・t2/AC3: DPR>1 で MapboxLayer・MapLibreLayer が描画ごとに
+// MaplatCore #107: DPR>1 で MapboxLayer・MapLibreLayer が描画ごとに
 // GL の resize() を呼ばないこと。canvas.width/height は物理ピクセル、frameState.size は CSS ピクセルなので、
 // GL ライブラリの画素比で割って CSS ピクセル同士で比べる。
 // 画素比は GL の map.getPixelRatio() があればその値、無ければ window.devicePixelRatio を使う。両方の経路を走らせる。
@@ -101,7 +101,7 @@ function renderAndCountResize(
 const kinds: Kind[] = ["mapbox", "maplibre"];
 const routes: Route[] = ["getPixelRatio あり", "getPixelRatio なし（window.devicePixelRatio）"];
 
-describe("nov26-m4-t2 t2/AC1: DPR>1 で寸法が合っているときは resize() を呼ばない", () => {
+describe("DPR>1 で寸法が合っているときは resize() を呼ばない", () => {
   for (const kind of kinds) {
     for (const route of routes) {
       it(`${kind}・${route}: DPR 2・canvas 1600x1200・size 800x600 で 0 回`, () => {
@@ -117,7 +117,7 @@ describe("nov26-m4-t2 t2/AC1: DPR>1 で寸法が合っているときは resize(
   }
 });
 
-describe("nov26-m4-t2 t2/AC3: DPR 2 で寸法が本当に変わったときは resize() を 1 回呼ぶ", () => {
+describe("DPR 2 で寸法が本当に変わったときは resize() を 1 回呼ぶ", () => {
   for (const kind of kinds) {
     for (const route of routes) {
       it(`${kind}・${route}: DPR 2・canvas 1600x1200・size 640x600 で 1 回`, () => {
@@ -127,7 +127,7 @@ describe("nov26-m4-t2 t2/AC3: DPR 2 で寸法が本当に変わったときは r
   }
 });
 
-describe("nov26-m4-t2 エッジケース: 画素比・canvas 寸法が異常なとき", () => {
+describe("エッジケース: 画素比・canvas 寸法が異常なとき", () => {
   for (const kind of kinds) {
     it(`${kind}: getPixelRatio が 0 を返すときは画素比 1 とみなす（800x600 同士で 0 回）`, () => {
       expect(renderAndCountResize(kind, "getPixelRatio あり", 0, [800, 600], [800, 600])).toBe(0);

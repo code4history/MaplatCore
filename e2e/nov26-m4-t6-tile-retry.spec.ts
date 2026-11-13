@@ -1,14 +1,14 @@
 import { test, expect } from '@playwright/test';
 
-// nov26-m4-t6（MaplatCore #110）の受け入れ条件 E2E。
+// MaplatCore #110 の受け入れ条件の E2E。
 // タイル合成（src/source/mixin.ts setupTileLoadFunction）の onload 内の例外で ERROR になったタイルは、
 // 変更前は 404 と同じ扱いで ERROR のまま残り、原因が解消してもパン・ズームしない限り空白だった
 // （OL のレンダラは IDLE のタイルしかキューに入れない）。変更後は例外由来に限り、1／2／4 秒の遅延で
 // 最大 3 回、OL の ImageTile.load()（ERROR → IDLE → LOADING）で読み直す。
 // 故障注入は e2e/oct26-m2-t5-tile-load-exception.spec.ts と同じ（作業 canvas〔256×256・地図の DOM 外〕の
 // getContext('2d') を null にする）。boot・snapshot・pollSnapshot も同所の形を写した（既存のファイルは変えない）。
-// t6/AC1: 注入で ERROR になったタイルが、注入の解除後、view を動かさなくても LOADED になる。
-// 申し送り MIN-t6-1: 再試行は最初の失敗から 1+2+4＝7 秒で尽きる。負荷の高い CI で解除が遅れると正しい実装でも
+// 確かめること: 注入で ERROR になったタイルが、注入の解除後、view を動かさなくても LOADED になる。
+// 注意: 再試行は最初の失敗から 1+2+4＝7 秒で尽きる。負荷の高い CI で解除が遅れると正しい実装でも
 // LOADED にならないので、最初の ERROR を見たらすぐに解除し、最初の注入から解除までの経過時間を記録して
 // 7 秒未満であることを前提として断言する。
 // 実行（CI と同じ設定）: ./node_modules/.bin/playwright test --config=playwright-ci.config.ts e2e/nov26-m4-t6-tile-retry.spec.ts
@@ -69,7 +69,7 @@ function countStates(tiles: { state: number }[]) {
   return c;
 }
 
-test('nov26-m4-t6: 例外で ERROR になったタイルが、注入の解除後に view を動かさなくても LOADED になる（#110）', async ({ page }) => {
+test('例外で ERROR になったタイルが、注入の解除後に view を動かさなくても LOADED になる（#110）', async ({ page }) => {
   test.setTimeout(120000);
   await boot(page);
   const base = await snapshot(page);
@@ -94,7 +94,7 @@ test('nov26-m4-t6: 例外で ERROR になったタイルが、注入の解除後
     v.setZoom(v.getZoom() + 1);
   });
 
-  // 最初の ERROR を見たらすぐ解除する（MIN-t6-1）。全部の決着は待たない
+  // 最初の ERROR を見たらすぐ解除する。全部の決着は待たない
   const during = await pollSnapshot(
     page,
     s => s.injected > 0 && s.tiles.some((t: any) => !baseKeys.has(t.key) && t.state === TILE_STATE.ERROR),
@@ -146,19 +146,19 @@ test('nov26-m4-t6: 例外で ERROR になったタイルが、注入の解除後
       trackedStates: countStates(afterTracked)
     }
   };
-  console.log('[nov26-m4-t6]', JSON.stringify(report));
+  console.log('[tile-retry]', JSON.stringify(report));
 
   // 前提: 注入が実際に効き、ERROR のタイルができた
   expect(during.injected).toBeGreaterThan(0);
   expect(errorKeys.size, '前提: 注入中に ERROR のタイルができた').toBeGreaterThan(0);
-  // 前提（MIN-t6-1）: 解除は再試行の持ち時間（1+2+4＝7 秒）の内に行われた
+  // 前提: 解除は再試行の持ち時間（1+2+4＝7 秒）の内に行われた
   expect(elapsedMs, '前提: 最初の注入から解除まで 7 秒未満').toBeLessThan(7000);
   // view を動かしていない
   expect(after.zoom).toBe(during.zoom);
-  // t6/AC1: 控えたタイルのうちキャッシュに残っているものは ERROR が 0・LOADED が 1 以上
-  expect.soft(afterTracked.filter((t: any) => t.state === TILE_STATE.ERROR).length, 't6/AC1: ERROR が 0').toBe(0);
+  // 控えたタイルのうちキャッシュに残っているものは ERROR が 0・LOADED が 1 以上
+  expect.soft(afterTracked.filter((t: any) => t.state === TILE_STATE.ERROR).length, 'ERROR が 0').toBe(0);
   expect.soft(
     afterTracked.filter((t: any) => t.state === TILE_STATE.LOADED).length,
-    't6/AC1: LOADED が 1 以上'
+    'LOADED が 1 以上'
   ).toBeGreaterThan(0);
 });

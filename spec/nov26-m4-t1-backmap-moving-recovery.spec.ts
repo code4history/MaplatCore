@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { MaplatApp } from "../src/index";
 
-// nov26-m4-t1（#108）: 背面地図の追従（setBackMapBehavior の postrender の受け手）が、
+// #108: 背面地図の追従（setBackMapBehavior の postrender の受け手）が、
 // 座標変換の同期例外・非同期の失敗で __backMapMoving を立てたまま止まらないこと。
 // 殻の作り方は spec/lifecycle.spec.ts の Object.create(MaplatApp.prototype) に倣う。
 
@@ -57,14 +57,14 @@ const injectReject = (fromSrc: any) =>
     Promise.reject(new Error("injected"))
   );
 
-describe("nov26-m4-t1: 背面地図の追従が座標変換の例外で止まらない（#108）", () => {
-  it("AC1: 同期例外の後も __backMapMoving が戻り、次の postrender で追従する", async () => {
+describe("背面地図の追従が座標変換の例外で止まらない（#108）", () => {
+  it("同期例外の後も __backMapMoving が戻り、次の postrender で追従する", async () => {
     const { app, backView, fromSrc, fire } = createBackMapStub();
     injectSyncThrow(fromSrc);
     try {
       fire();
     } catch {
-      // 修正前は例外が外へ出る（AC3 で別に判定する）
+      // 修正前は例外が外へ出る（dispatch が投げないことは別の試験で判定する）
     }
     await flush();
     expect(app.__backMapMoving).toBe(false);
@@ -74,7 +74,7 @@ describe("nov26-m4-t1: 背面地図の追従が座標変換の例外で止まら
     expect(backView.setCenter).toHaveBeenCalledWith([10, 20]);
   });
 
-  it("AC2: 変換の Promise が reject した後も追従する", async () => {
+  it("変換の Promise が reject した後も追従する", async () => {
     const { app, backView, fromSrc, fire } = createBackMapStub();
     injectReject(fromSrc);
     // 修正前は reject が未処理のまま再送出される。ここでは握って判定を続ける。
@@ -93,14 +93,14 @@ describe("nov26-m4-t1: 背面地図の追従が座標変換の例外で止まら
     }
   });
 
-  it("AC3: 例外を注入した postrender の dispatch が投げない", async () => {
+  it("例外を注入した postrender の dispatch が投げない", async () => {
     const { fromSrc, fire } = createBackMapStub();
     injectSyncThrow(fromSrc);
     expect(() => fire()).not.toThrow();
     await flush();
   });
 
-  it("AC4: 正常系の追従（中心・zoom・回転）は変わらない", async () => {
+  it("正常系の追従（中心・zoom・回転）は変わらない", async () => {
     const { app, backView, fire } = createBackMapStub();
     fire();
     await flush();
@@ -111,7 +111,7 @@ describe("nov26-m4-t1: 背面地図の追従が座標変換の例外で止まら
     expect(app.logger.warn).not.toHaveBeenCalled();
   });
 
-  it("AC4: noRotate のときは回転 0", async () => {
+  it("noRotate のときは回転 0", async () => {
     const { app, backView, fire } = createBackMapStub();
     app.noRotate = true;
     fire();
@@ -119,7 +119,7 @@ describe("nov26-m4-t1: 背面地図の追従が座標変換の例外で止まら
     expect(backView.setRotation).toHaveBeenCalledWith(0);
   });
 
-  it("AC4: 変換中の postrender は \"Backmap moving skipped\" で抑止される", async () => {
+  it("変換中の postrender は \"Backmap moving skipped\" で抑止される", async () => {
     const { app, fromSrc, fire } = createBackMapStub();
     fromSrc.viewpoint2MercsAsync.mockImplementation(
       () => new Promise(() => undefined)
@@ -131,7 +131,7 @@ describe("nov26-m4-t1: 背面地図の追従が座標変換の例外で止まら
     expect(fromSrc.viewpoint2MercsAsync).toHaveBeenCalledTimes(1);
   });
 
-  it("AC5: 失敗の記録は最初の 1 回だけ warn（2 回目以降は debug）", async () => {
+  it("失敗の記録は最初の 1 回だけ warn（2 回目以降は debug）", async () => {
     const { app, fromSrc, fire } = createBackMapStub();
     injectSyncThrow(fromSrc);
     injectSyncThrow(fromSrc);

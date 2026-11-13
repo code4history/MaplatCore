@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 
-// nov26-m4-t4（#117）: 透過度 0 が復元に反映され、状態に透過度が載る。
+// #117: 透過度 0 が復元に反映され、状態に透過度が載る。
 // 地図を切り替えても透過度を保つ（changeMap が毎回 setTransparency を当て直す）。
 
 const waitApp = async (page: Page) => {
@@ -16,10 +16,10 @@ const waitApp = async (page: Page) => {
 const opacity = (page: Page, index: number) =>
     page.evaluate(i => (window as any).__MAPLAT_APP__.mapObject.getLayers().item(i).getOpacity(), index);
 
-test.describe('nov26-m4-t4: 透過度 0 の復元と透過度の保持（#117）', () => {
+test.describe('透過度 0 の復元と透過度の保持（#117）', () => {
     test.setTimeout(90000);
 
-    test('AC1: changeMap の restore.transparency=0 が効く', async ({ page }) => {
+    test('changeMap の restore.transparency=0 が効く', async ({ page }) => {
         await page.goto('e2e/test.html', { waitUntil: 'domcontentloaded' });
         await waitApp(page);
         await page.evaluate(async () => {
@@ -33,13 +33,13 @@ test.describe('nov26-m4-t4: 透過度 0 の復元と透過度の保持（#117）
         expect(await opacity(page, 0)).toBeCloseTo(1, 5);
     });
 
-    test('AC2: 透過度を設定しない起動の直後、stateBuffer.transparency が 0', async ({ page }) => {
+    test('透過度を設定しない起動の直後、stateBuffer.transparency が 0', async ({ page }) => {
         await page.goto('e2e/test.html', { waitUntil: 'domcontentloaded' });
         await waitApp(page);
         expect(await page.evaluate(() => (window as any).__MAPLAT_APP__.stateBuffer.transparency)).toBe(0);
     });
 
-    test('AC3(a): ?restore_transparency=0 で起動すると状態と値が 0', async ({ page }) => {
+    test('?restore_transparency=0 で起動すると状態と値が 0', async ({ page }) => {
         await page.goto('e2e/test.html?restore_transparency=0', { waitUntil: 'domcontentloaded' });
         await waitApp(page);
         const r = await page.evaluate(() => {
@@ -51,7 +51,7 @@ test.describe('nov26-m4-t4: 透過度 0 の復元と透過度の保持（#117）
     });
 
     // restoreSession の localStorage 経路。位置が無いとメルカトル原点を当てるため、
-    // 盛岡の範囲の位置を先に既定起動で読んでから入れる（タスク設計レビュー MIN-t4-1）。
+    // 盛岡の範囲の位置を先に既定起動で読んでから入れる。
     const probePosition = async (page: Page) => {
         await page.goto('e2e/test.html', { waitUntil: 'domcontentloaded' });
         await waitApp(page);
@@ -79,7 +79,7 @@ test.describe('nov26-m4-t4: 透過度 0 の復元と透過度の保持（#117）
         await waitApp(page);
     };
 
-    test('AC3(b): restoreSession の localStorage の transparency=0 が状態に載る', async ({ page }) => {
+    test('restoreSession の localStorage の transparency=0 が状態に載る', async ({ page }) => {
         await bootFromSession(page, 0);
         const r = await page.evaluate(() => {
             const app = (window as any).__MAPLAT_APP__;
@@ -89,13 +89,13 @@ test.describe('nov26-m4-t4: 透過度 0 の復元と透過度の保持（#117）
         expect(r.state).toBe(0);
     });
 
-    test('AC3(c): restoreSession の localStorage の transparency=40 が当たる', async ({ page }) => {
+    test('restoreSession の localStorage の transparency=40 が当たる', async ({ page }) => {
         await bootFromSession(page, 40);
         expect(await page.evaluate(() => (window as any).__MAPLAT_APP__.getTransparency())).toBe(40);
         expect(await opacity(page, 0)).toBeCloseTo(0.6, 5);
     });
 
-    test('AC4: restore なしの changeMap でも透過度を保つ', async ({ page }) => {
+    test('restore なしの changeMap でも透過度を保つ', async ({ page }) => {
         await page.goto('e2e/test.html', { waitUntil: 'domcontentloaded' });
         await waitApp(page);
         await page.evaluate(async () => {

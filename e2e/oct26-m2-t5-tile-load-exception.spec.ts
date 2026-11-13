@@ -1,13 +1,13 @@
 import { test, expect } from '@playwright/test';
 
-// oct26-m2-t5（MaplatCore #109）の受け入れ条件 E2E。
+// MaplatCore #109 の受け入れ条件の E2E。
 // Maplat のタイル合成（src/source/mixin.ts setupTileLoadFunction）は、元画像の onload 内で
 // 256×256 の作業 canvas に getContext("2d") → drawImage する。ここで例外が出ると、変更前は
 // タイルが LOADING のまま残り、OL の TileQueue（読込中の上限 16）が埋まって以後のタイルを一切読まなくなった。
 // 故障注入: 作業 canvas（256×256・地図の DOM 外）の getContext('2d') を一時的に null にする
-// （oct26-m2-t3 #94 再診断 probe5 C1 を正式化したもの）。
-// AC2: 注入中に読まれたタイルは ERROR で決着し、読込中数が 0 に戻る（上限 16 に張り付かない）。
-// AC1: 注入解除後にパン／ズームすると、読込中数が 0 に戻り、新しい表示範囲のタイルが LOADED になる。
+// （#94 の再診断で使った probe を正式化したもの）。
+// 注入中に読まれたタイルは ERROR で決着し、読込中数が 0 に戻る（上限 16 に張り付かない）。
+// 注入解除後にパン／ズームすると、読込中数が 0 に戻り、新しい表示範囲のタイルが LOADED になる。
 // 実行（CI と同じ設定）: ./node_modules/.bin/playwright test --config=playwright-ci.config.ts e2e/oct26-m2-t5-tile-load-exception.spec.ts
 
 const TILE_STATE = { IDLE: 0, LOADING: 1, LOADED: 2, ERROR: 3, EMPTY: 4 };
@@ -66,7 +66,7 @@ function countStates(tiles: { state: number }[]) {
   return c;
 }
 
-test('oct26-m2-t5: タイル合成の onload 内で例外が出ても TileQueue が詰まらず回復する（#109）', async ({ page }) => {
+test('タイル合成の onload 内で例外が出ても TileQueue が詰まらず回復する（#109）', async ({ page }) => {
   test.setTimeout(120000);
   await boot(page);
   const base = await snapshot(page);
@@ -151,28 +151,28 @@ test('oct26-m2-t5: タイル合成の onload 内で例外が出ても TileQueue 
       newTileStates: countStates(afterNew)
     }
   };
-  console.log('[oct26-m2-t5]', JSON.stringify(report));
+  console.log('[tile-load-exception]', JSON.stringify(report));
 
   // 前提: 注入が実際に効いた（作業 canvas の getContext が呼ばれて null を返した）
   expect(during.injected).toBeGreaterThan(0);
-  // AC2: 注入中のタイルは LOADING に残らず ERROR で決着し、読込中数が 0 に戻る
-  expect.soft(during.loading, 'AC2: 注入中の読込中数が 0 に戻る').toBe(0);
+  // 注入中のタイルは LOADING に残らず ERROR で決着し、読込中数が 0 に戻る
+  expect.soft(during.loading, '注入中の読込中数が 0 に戻る').toBe(0);
   expect.soft(
     duringNew.filter((t: any) => t.state === TILE_STATE.LOADING).length,
-    'AC2: 注入中に作られたタイルが LOADING に残らない'
+    '注入中に作られたタイルが LOADING に残らない'
   ).toBe(0);
   expect.soft(
     duringNew.filter((t: any) => t.state === TILE_STATE.ERROR).length,
-    'AC2: 注入中に作られたタイルが ERROR で決着する'
+    '注入中に作られたタイルが ERROR で決着する'
   ).toBeGreaterThan(0);
-  // AC1: 注入解除後、読込中数が 0 に戻り、新しい範囲のタイルが LOADED になる
-  expect.soft(after.loading, 'AC1: 注入解除後の読込中数が 0 に戻る').toBe(0);
+  // 注入解除後、読込中数が 0 に戻り、新しい範囲のタイルが LOADED になる
+  expect.soft(after.loading, '注入解除後の読込中数が 0 に戻る').toBe(0);
   expect.soft(
     afterNew.filter((t: any) => t.state === TILE_STATE.LOADED).length,
-    'AC1: 注入解除後の新しいタイルが LOADED になる'
+    '注入解除後の新しいタイルが LOADED になる'
   ).toBeGreaterThan(0);
   expect.soft(
     afterNew.filter((t: any) => t.state === TILE_STATE.LOADING).length,
-    'AC1: 注入解除後の新しいタイルが LOADING に残らない'
+    '注入解除後の新しいタイルが LOADING に残らない'
   ).toBe(0);
 });

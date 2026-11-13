@@ -1,4 +1,4 @@
-// M6-T3 AC4: baseDict 3件 (osm/gsi/gsi_ortho) の license 系フィールド。
+// baseDict 3件 (osm/gsi/gsi_ortho) の license 系フィールド。
 // mapSourceFactory 経由で baseDict の値を検証する（文字列 ID で引く経路）。
 import { describe, it, expect } from "vitest";
 import { mapSourceFactory } from "../src/source_ex";
@@ -10,7 +10,7 @@ async function loadBuiltin(mapID: string) {
   });
 }
 
-describe("m6-t3: baseDict licenses (AC4)", () => {
+describe("baseDict licenses", () => {
   it('osm: license="Custom", dataLicense="ODbL", licenseNote あり, dataLicenseNote なし', async () => {
     const source = await loadBuiltin("osm");
     expect(source.get("license")).toBe("Custom");

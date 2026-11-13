@@ -1,4 +1,4 @@
-// nov26-m4-t9（MaplatCore #134）: 実メソッドを呼び、座標変換の完了だけを手動で制御する。
+// MaplatCore #134: 実メソッドを呼び、座標変換の完了だけを手動で制御する。
 //
 // 観測点は「変換の前に層を消さないこと」「1 回の呼び出しで層が入れ替わること」
 // 「層に置かれた地物」に移した（消すのは全件の判定が済んだ後の 1 回で、1 件ずつは描かない）。
@@ -78,7 +78,7 @@ function makeApp(appPois: Record<string, any> = {}) {
   return { self, sources, conversions, redraw, complete, ids, front: sources.A };
 }
 
-describe("nov26-m4-t9 #134 marker 再描画は直列で最新の要求を残す", () => {
+describe("#134 marker 再描画は直列で最新の要求を残す", () => {
   it("U-1a: 同 source を3回要求しても走る回は1つで、変換の前に層を消さない", async () => {
     const h = makeApp({ main: layer(["app_0", "app_1"]) });
     h.redraw();

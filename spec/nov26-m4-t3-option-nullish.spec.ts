@@ -1,4 +1,4 @@
-// nov26-m4-t3（#116）: prepareMap() の 8 キー（noRotate・poiTemplate・poiStyle・iconTemplate・
+// #116: prepareMap() の 8 キー（noRotate・poiTemplate・poiStyle・iconTemplate・
 // northUp・tapDuration・homeMarginPixels・tapUIVanish）で、appOption／設定ファイルの false・0 が
 // 「与えられた値」として設定ファイル・既定値に負けないこと。null は「与えていない」扱い。
 // 前例: 試作 886884b の spec/wc-legacy-startup-feature-keys.spec.ts 166〜195 行の 3 件。
@@ -35,7 +35,7 @@ async function boot(appOption: Record<string, any>, setting: Record<string, any>
   return app;
 }
 
-describe("nov26-m4-t3: appOption／設定ファイルの 8 キーで false・0 が負けない（#116）", () => {
+describe("appOption／設定ファイルの 8 キーで false・0 が負けない（#116）", () => {
   it("false / 0 は与えられた値として設定ファイル・既定値に負けない", async () => {
     const app = await boot(
       { northUp: false, noRotate: false, tapDuration: 0, homeMarginPixels: 0, tapUIVanish: false },

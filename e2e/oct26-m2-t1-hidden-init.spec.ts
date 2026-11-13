@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-// oct26-m2-t1 AC1（主判定）の E2E。
+// 非表示コンテナで初期化しても View が壊れないことの E2E。
 // issue #101 の「非表示 iframe」「非表示コンテナ」を、レイアウト寸法 0 のコンテナ
 // （display:none）で初期化する fixture で再現する。非表示コンテナでは rAF が走らず、
 // かつコンテナ寸法が無いため OL の view が確定しない（issue 実測: canvas 400×300 の
@@ -9,7 +9,7 @@ import { test, expect } from '@playwright/test';
 // createObject が resolve しない（＝view が壊れたまま）。修正後は createObject が
 // resolve し、可視化後に view が有限な zoom/center を返すことを確認する。
 
-test.describe('oct26-m2-t1 非表示コンテナ初期化の View 安定化 (AC1)', () => {
+test.describe('非表示コンテナ初期化の View 安定化', () => {
   test.setTimeout(120000);
 
   test('非表示コンテナ(0サイズ)で初期化→可視化後に view の zoom/center が有限になる', async ({ page }) => {
@@ -26,7 +26,7 @@ test.describe('oct26-m2-t1 非表示コンテナ初期化の View 安定化 (AC1
         { polling: 200, timeout: 30000 }
       );
     } catch (e) {
-      console.log('AC1_FAIL_PAGE_ERRORS', JSON.stringify(pageErrors));
+      console.log('FAIL_PAGE_ERRORS', JSON.stringify(pageErrors));
       throw e;
     }
 
@@ -63,10 +63,10 @@ test.describe('oct26-m2-t1 非表示コンテナ初期化の View 安定化 (AC1
         canvasHeight: frontCanvas ? (frontCanvas as HTMLElement).offsetHeight : undefined
       };
     });
-    console.log('AC1_STATE', JSON.stringify(state));
-    console.log('AC1_PAGE_ERRORS', JSON.stringify(pageErrors));
+    console.log('STATE', JSON.stringify(state));
+    console.log('PAGE_ERRORS', JSON.stringify(pageErrors));
 
-    // AC1: 表示復帰後に有限な zoom と finite な center を返す
+    // 表示復帰後に有限な zoom と finite な center を返す
     expect(typeof state.zoom).toBe('number');
     expect(Number.isFinite(state.zoom)).toBe(true);
     expect(Array.isArray(state.center)).toBe(true);
@@ -76,12 +76,12 @@ test.describe('oct26-m2-t1 非表示コンテナ初期化の View 安定化 (AC1
       expect(Number.isFinite(c)).toBe(true);
     }
 
-    // AC1: "coordinates must contain numbers" が発生しない（issue #101 の破綻エラー）
+    // "coordinates must contain numbers" が発生しない（issue #101 の破綻エラー）
     expect(
       pageErrors.filter((e) => e.includes('coordinates must contain numbers'))
     ).toEqual([]);
 
-    // AC2（描画順序の判定手段 = MIN-3 で確定）: 可視化後に前面 map/canvas に正の寸法が
+    // 可視化後に前面 map/canvas に正の寸法が
     // 確定している（changeMap → updateSize → render の既存描画経路が生きている実測）。
     // 初期化で view が壊れず self-heal が view 寸法を確定させたことの直接証拠。
     expect(Array.isArray(state.mapSize)).toBe(true);

@@ -1,4 +1,4 @@
-// oct26-m2-t2（MaplatCore #100）AC-1（主判定）: MapboxLayer.render() が OpenLayers の frameState へ
+// MaplatCore #100: MapboxLayer.render() が OpenLayers の frameState へ
 // canvas を同期することを、mapbox-gl をスタブにして決定論的に検証する。
 // 同期の内容は MapLibreLayer.render() と同型の 2 点:
 //   (a) canvas.width / canvas.height が frameState.size[0] / [1] と一致しないとき mapboxMap.resize() を呼ぶ
@@ -66,7 +66,7 @@ function makeMapboxLayer(mbMap: ReturnType<typeof makeMbMapStub>) {
   return new MapboxLayer({ source });
 }
 
-describe("oct26-m2-t2 AC-1: MapboxLayer は frameState へ canvas を同期する（MapLibreLayer と同型）", () => {
+describe("MapboxLayer は frameState へ canvas を同期する（MapLibreLayer と同型）", () => {
   it("MapLibreLayer（正常対照）: size 不一致時に resize() を呼ぶ", () => {
     const mlMap = makeMlMapStub();
     const source = withEventTargetStub({ maplibreMap: mlMap, style: "https://example.test/a.json" });

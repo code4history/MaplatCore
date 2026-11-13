@@ -1,4 +1,4 @@
-// nov26-m4-t7（#90）: 地図ごとにタイルキャッシュ（Weiwudi）から外す noCache の回帰テスト。
+// #90: 地図ごとにタイルキャッシュ（Weiwudi）から外す noCache の回帰テスト。
 //
 // 判定は registerMapToSW（src/source_ex.ts）の中にあり、mapSourceFactory の 3 か所の呼び出し
 // （sources の要素が WMTS 系・設定ファイル経由の WMTS 系・古地図）はすべてこの関数を通る。
@@ -62,7 +62,7 @@ const fileElement = (extra: Record<string, unknown> = {}) => ({
   ...extra,
 });
 
-describe("nov26-m4-t7/AC1: noCache: true の地図は Weiwudi に登録されない", () => {
+describe("noCache: true の地図は Weiwudi に登録されない", () => {
   it("sources の要素の経路", async () => {
     const source: any = await mapSourceFactory(inlineBase({ noCache: true }), { enableCache: true });
     expect(registerMap).not.toHaveBeenCalled();
@@ -77,7 +77,7 @@ describe("nov26-m4-t7/AC1: noCache: true の地図は Weiwudi に登録されな
   });
 });
 
-describe("nov26-m4-t7/AC2: 指定が無い・noCache: false の地図は従来どおり登録される", () => {
+describe("指定が無い・noCache: false の地図は従来どおり登録される", () => {
   it("sources の要素の経路・指定なし", async () => {
     const source: any = await mapSourceFactory(inlineBase(), { enableCache: true });
     expect(registerMap).toHaveBeenCalledTimes(1);
@@ -106,7 +106,7 @@ describe("nov26-m4-t7/AC2: 指定が無い・noCache: false の地図は従来�
   });
 });
 
-describe("nov26-m4-t7/AC3: 二層（地図マスタと app の要素。app の要素が勝つ）", () => {
+describe("二層（地図マスタと app の要素。app の要素が勝つ）", () => {
   it("地図マスタの noCache: true を app の要素の noCache: false で打ち消せる（登録される）", async () => {
     stubSettingFileFetch({ ...BASE_MAP_SETTING_FILE, noCache: true });
     const source: any = await mapSourceFactory(fileElement({ noCache: false }), { enableCache: true });
@@ -122,7 +122,7 @@ describe("nov26-m4-t7/AC3: 二層（地図マスタと app の要素。app の�
   });
 });
 
-describe("nov26-m4-t7/AC4: enableCache: false ではどの地図も登録しない", () => {
+describe("enableCache: false ではどの地図も登録しない", () => {
   it.each([
     ["指定なし", {}],
     ["noCache: false", { noCache: false }],

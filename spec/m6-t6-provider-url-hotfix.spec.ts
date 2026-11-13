@@ -1,4 +1,4 @@
-// m6-t6 実装レビュー H-A hotfix 回帰テスト。
+// provider の url 自動補完の除外の回帰テスト。
 // mapSourceFactory の url 自動補完（source_ex.ts:153/213）が provider（google）maptype にも
 // 効いてしまい、ol/source/Google の baseUrl(= options.url || 'https://tile.googleapis.com/') を
 // 汚染して createSession リクエストが誤った先へ飛ぶ問題の回帰防止。
@@ -24,7 +24,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe("m6-t6 hotfix: provider の url 自動補完除外", () => {
+describe("hotfix: provider の url 自動補完除外", () => {
   it("google_roadmap: options.url が未指定のまま ol/source/Google へ渡り、既定の tile.googleapis.com を使う", async () => {
     stubRejectingFetch();
     const source = await mapSourceFactory(
@@ -36,7 +36,7 @@ describe("m6-t6 hotfix: provider の url 自動補完除外", () => {
       },
       {},
     );
-    // m6-t6 hotfix 前は options.url が `tiles/hotfix-google-1/{z}/{x}/{y}.jpg` へ自動補完され、
+    // hotfix 前は options.url が `tiles/hotfix-google-1/{z}/{x}/{y}.jpg` へ自動補完され、
     // createSessionUrl_ がプレビューサーバ相対の壊れた URL になっていた
     expect((source as any).createSessionUrl_).toBe(
       "https://tile.googleapis.com/v1/createSession",
@@ -57,7 +57,7 @@ describe("m6-t6 hotfix: provider の url 自動補完除外", () => {
   it("回帰: base（既存の maplat 同梱タイル）は従来どおり url が自動補完される", async () => {
     // baseDict 経由（文字列 ID）は既存の m6-t3-basedict-licenses.spec.ts で検証済みのため、
     // ここでは maptype 明示の base で自動補完対象のままであることのみ確認する。
-    // 実装レビュー round2 N-2: expect(source).toBeTruthy() のみでは url の値そのものを
+    // expect(source).toBeTruthy() のみでは url の値そのものを
     // 検証していなかった。m5-t2-translator-removal.spec.ts:38-49 と同じ手法（mapSourceFactory
     // は Object.assign(options, commonOptions) で引数オブジェクトを直接書き換え、normalizeArg も
     // 同一参照を返すため、呼び出し後の options 自身が factory 内部の最終状態を表す）で

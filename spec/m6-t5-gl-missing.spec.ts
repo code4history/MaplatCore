@@ -1,11 +1,11 @@
-// M6-T5 AC10: GL 未ロード時に throw せず当該ソースを落とす
+// GL 未ロード時に throw せず当該ソースを落とす
 import { describe, it, expect, vi } from "vitest";
 import { bindProviderGlToSource } from "../src/provider_gl_bind";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { resolve } from "node:path";
 
-describe("m6-t5: provider GL bind (AC10)", () => {
+describe("provider GL bind", () => {
   it("mapbox ソースで mapboxMap 無し → skip (false) かつ warn、throw しない", () => {
     const warn = vi.fn();
     const source = {
@@ -92,8 +92,8 @@ describe("m6-t5: provider GL bind (AC10)", () => {
   });
 });
 
-// M6-T5 AC11: devDependencies の maplibre-gl が解決できること
-describe("m6-t5: maplibre-gl devDep resolution (AC11)", () => {
+// devDependencies の maplibre-gl が解決できること
+describe("maplibre-gl devDep resolution", () => {
   it("package.json に maplibre-gl devDep（6.x は ESM-only。peer は ^5||^6 据え置き）", async () => {
     const pkg = JSON.parse(
       readFileSync(resolve(__dirname, "../package.json"), "utf8")
@@ -112,7 +112,7 @@ describe("m6-t5: maplibre-gl devDep resolution (AC11)", () => {
   });
 });
 
-// M6-T5 AC22: provider-only app + GL 未ロードでも handleSources が停止しない（v1.3 M2）
+// provider-only app + GL 未ロードでも handleSources が停止しない
 // 実経路を通すため handleSources を直接駆動する（startFrom 設定による setInitialMap 回避は禁止）
 import { MaplatApp } from "../src/index";
 
@@ -147,7 +147,7 @@ const mapboxSource = {
   setMap: vi.fn()
 };
 
-describe("m6-t5: handleSources provider-only + GL missing (AC22)", () => {
+describe("handleSources provider-only + GL missing", () => {
   it("cache 空: throw せず handler 未登録・sourceLoaded dispatch・lifecycle 2相は実行", async () => {
     const app = makeAppStub();
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);

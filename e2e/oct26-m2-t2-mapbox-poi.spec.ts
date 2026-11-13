@@ -1,12 +1,12 @@
-// oct26-m2-t2（MaplatCore #100）AC-2: Mapbox ベースマップへの切替の回帰ガード。
+// MaplatCore #100: Mapbox ベースマップへの切替の回帰ガード。
 // changeMap("mapbox") が resolve し（mapID === "mapbox"）、POI marker main_1 が存在し、
 // lngLatToClientPoint の結果が有限値であることを検証する。
 // headless chromium では issue の視覚症状（POI 非表示・TMS overlay 半サイズ）が再現しないため、
-// 本 spec は変更前から PASS する回帰ガードである（設計 §5.3）。視覚症状の解消は人間検証 HV-M2T2-MAPBOX-VISUAL が判定する。
-// 実行はこの worktree の vite を自分で起動してから行う（設計 §6。既定 config の webServer は reuse で起動されない）。
+// 本 spec は変更前から PASS する回帰ガードである。視覚症状の解消は人が画面で確かめる。
+// 実行はこの worktree の vite を自分で起動してから行う（既定 config の webServer は reuse で起動されない）。
 import { test, expect } from '@playwright/test';
 
-test.describe('oct26-m2-t2 AC-2: Mapbox basemap regression guard', () => {
+test.describe('Mapbox basemap regression guard', () => {
   test('Mapbox basemap: POI marker drawn and coordinate transform finite', async ({ page }) => {
     test.setTimeout(180_000);
     await page.setViewportSize({ width: 1280, height: 900 });
@@ -43,7 +43,7 @@ test.describe('oct26-m2-t2 AC-2: Mapbox basemap regression guard', () => {
           app?.mapObject?.getLayer?.('marker')?.getSource?.()?.getFeatures?.().length ?? null
       };
     });
-    console.log(`AC2_BEFORE ${JSON.stringify(before)}`);
+    console.log(`BEFORE ${JSON.stringify(before)}`);
 
     // Mapbox へ切り替え
     await page.locator('#mapbox').click();
@@ -111,10 +111,10 @@ test.describe('oct26-m2-t2 AC-2: Mapbox basemap regression guard', () => {
         markerFeatureCount
       };
     });
-    console.log(`AC2_AFTER ${JSON.stringify(after)}`);
+    console.log(`AFTER ${JSON.stringify(after)}`);
     browserLog.slice(-40).forEach(m => console.log(`BROWSER ${m}`));
 
-    // ---- AC-2 の機械判定 ----
+    // ---- 機械判定 ----
     expect(after.mapID, 'changeMap("mapbox") must resolve').toBe('mapbox');
     expect(after.markerExists, 'POI marker main_1 must exist under Mapbox basemap').toBe(true);
     expect(after.clientPoint, 'lngLatToClientPoint must not return null/undefined').not.toBeNull();

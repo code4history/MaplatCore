@@ -1,26 +1,26 @@
 import { test, expect, type Page } from '@playwright/test';
 
-// oct26-m2-t4 AC5〜AC10 (a) の E2E（設計 docs/superpowers/specs/2026-09-14-oct26-m2-t4-design.md §7）。
+// GPS / POI の層選択の E2E。
 // - MaplatCore#104: GPS / POI の表示候補から紙外の本図を除いてから 1・2 位を取る
 // - MaplatCore#105: 表現範囲外の位置で setGPSMarker を呼んだら前の GPS マーカーを消し、イベントを出さない
 // 地物の紙座標は app.from.sysCoord2Xy() で紙座標へ戻し、各成分の差 0.05 未満で一致とする。
 // 延岡 v2 の期待座標は直書きせず、どの層に描くか（層番号）だけを定数で固定し、座標はその層の Transform で
-// 実行時に算出する（nobeokaLayerXy。oct26-m12-t3 設計 §4 (b)）。m12 で三角形内が純アフィンになり座標値が
-// 動いたため。旧 Transform（1.0.0・m12 前）と新 Transform のどちらを解決しても同じ検査になる。
+// 実行時に算出する（nobeokaLayerXy）。Transform の更新で三角形内が純アフィンになり座標値が
+// 動いたため。旧 Transform（1.0.0）と新 Transform のどちらを解決しても同じ検査になる。
 //
-// #104 系（AC5〜AC7・AC9）は @maplat/transform に merc2XyVisibleLayers が無い環境（standalone CI が
-// Transform 1.0.0 を解決する間）では skip する。AC8（#105 範囲外）はフォールバック経路でも成立するので skip しない。
+// #104 系の試験は @maplat/transform に merc2XyVisibleLayers が無い環境（standalone CI が
+// Transform 1.0.0 を解決する間）では skip する。#105（範囲外）の試験はフォールバック経路でも成立するので skip しない。
 //
-// 環境変数 OCT26_T4_TRANSFORM_DIST に @maplat/transform 1.0.0 相当の dist（例: MaplatTransform 46975d4 の
+// 環境変数 GPS_POI_TRANSFORM_DIST に @maplat/transform 1.0.0 相当の dist（例: MaplatTransform 46975d4 の
 // commit 済み dist/maplat_transform.js を書き出したファイル）を与えると、ブラウザが読む Transform をその版へ
-// 差し替える（AC10: 新 Core ＋ Transform 1.0.0 の組み合わせ。scripts/oct26-m2-t4/ac10.zsh の (d)）。
+// 差し替える（新 Core ＋ Transform 1.0.0 の組み合わせを確かめる）。
 
 const SKIP_REASON =
-  '@maplat/transform に merc2XyVisibleLayers が無い。M6 の lock 再生成後に有効';
+  '@maplat/transform に merc2XyVisibleLayers が無い。lock の再生成後に有効';
 const TOL = 0.05;
 const ACC = 60;
 
-// 1932 延岡 v2（設計 §6.4）
+// 1932 延岡 v2
 const NOBEOKA_INSIDE: [number, number] = [131.655753, 32.556258];
 const NOBEOKA_OUT: [number, number] = [131.644679, 32.613064];
 const NOBEOKA_104: [number, number] = [131.635619, 32.569472];
@@ -29,7 +29,7 @@ const NOBEOKA_9: [number, number] = [131.658501, 32.600698];
 const NOBEOKA_MAIN_LAYER = 0;
 const NOBEOKA_INSET_LAYER = 1;
 
-// 合成 fixture: 本図の紙座標 (x,y) ↔ メルカトル (14600000 + 2x, 3800000 − 2y)（設計 §6.1）
+// 合成 fixture: 本図の紙座標 (x,y) ↔ メルカトル (14600000 + 2x, 3800000 − 2y)
 const R = 6378137;
 const mainPx2LngLat = ([x, y]: [number, number]): [number, number] => {
   const mx = 14600000 + 2 * x;
@@ -39,7 +39,7 @@ const mainPx2LngLat = ([x, y]: [number, number]): [number, number] => {
     (2 * Math.atan(Math.exp(my / R)) - Math.PI / 2) * (180 / Math.PI)
   ];
 };
-// A の紙座標 (570,1300) は層 3（A）の対応式で本図の紙座標 (357.5,412.5) へ写す（設計 §6.1 m-2）
+// A の紙座標 (570,1300) は層 3（A）の対応式で本図の紙座標 (357.5,412.5) へ写す
 const SYN_POINTS: [string, [number, number]][] = [
   ['(700,900) 駅前', [700, 900]],
   ['(1200,700) 市内', [1200, 700]],
@@ -57,7 +57,7 @@ interface GpsState {
   subs: Xy[];
 }
 
-const TRANSFORM_DIST = process.env.OCT26_T4_TRANSFORM_DIST;
+const TRANSFORM_DIST = process.env.GPS_POI_TRANSFORM_DIST;
 
 async function openApp(page: Page, start: string) {
   const pageErrors: string[] = [];
@@ -202,18 +202,18 @@ async function events(page: Page): Promise<string[]> {
   return page.evaluate(() => (window as any).__T4_EVENTS__);
 }
 
-test.describe('oct26-m2-t4 GPS / POI の層選択', () => {
+test.describe('GPS / POI の層選択', () => {
   test.setTimeout(180000);
   test.use({ viewport: { width: 1024, height: 768 } });
 
-  test('#104 実データ GPS: 延岡 v2 で本図紙外・挿入図対応の地点は挿入図へ描く (AC5)', async ({ page }) => {
+  test('#104 実データ GPS: 延岡 v2 で本図紙外・挿入図対応の地点は挿入図へ描く', async ({ page }) => {
     await openApp(page, 'nobeoka1932');
     test.skip(!(await hasVisibleLayers(page)), SKIP_REASON);
     const inset104 = await nobeokaLayerXy(page, NOBEOKA_104, NOBEOKA_INSET_LAYER);
     const main104 = await nobeokaLayerXy(page, NOBEOKA_104, NOBEOKA_MAIN_LAYER);
     await setGps(page, NOBEOKA_104);
     const s = await gpsState(page);
-    console.log('AC5_STATE', JSON.stringify(s));
+    console.log('NOBEOKA_STATE', JSON.stringify(s));
     expect(s.total).toBe(2);
     expectXy(s.main, inset104, 'main');
     expectXy(s.circle, inset104, '精度円の中心');
@@ -221,18 +221,18 @@ test.describe('oct26-m2-t4 GPS / POI の層選択', () => {
     expectNoFeatureAt(s, main104, '本図候補');
   });
 
-  test('#104 POI と合成データ: addMarker 経路と合成 5 層・D-4layer が是正後の表示と一致 (AC6)', async ({ page }) => {
+  test('#104 POI と合成データ: addMarker 経路と合成 5 層・D-4layer が是正後の表示と一致', async ({ page }) => {
     // (a) 延岡 v2 の addMarker（addMarker → redrawMarkers → setMarker 経路）
     await openApp(page, 'nobeoka1932');
     test.skip(!(await hasVisibleLayers(page)), SKIP_REASON);
     const inset104 = await nobeokaLayerXy(page, NOBEOKA_104, NOBEOKA_INSET_LAYER);
     await addMarker(page, NOBEOKA_104, 'ac6a');
     const ma = await markerXys(page);
-    console.log('AC6a_MARKERS', JSON.stringify(ma));
+    console.log('SYN_ADDMARKER', JSON.stringify(ma));
     expect(ma).toHaveLength(1);
     expectXy(ma[0], inset104, 'ピン');
 
-    // (b) 合成 5 層（設計 §6.2「是正後の表示」列）
+    // (b) 合成 5 層（是正後の表示）
     await openApp(page, 'synthetic5');
     const expected: Record<string, { gps: number; main: Xy; sub?: Xy }> = {
       '(700,900) 駅前': { gps: 3, main: [1700, 1250], sub: [700, 900] },
@@ -248,7 +248,7 @@ test.describe('oct26-m2-t4 GPS / POI の層選択', () => {
       await clearAll(page);
       await setGps(page, ll);
       const s = await gpsState(page);
-      console.log('AC6b_GPS', label, JSON.stringify(s));
+      console.log('SYN5_GPS', label, JSON.stringify(s));
       expect(s.total, `${label}: GPS 地物数`).toBe(e.gps);
       expectXy(s.main, e.main, `${label}: main`);
       expectXy(s.circle, e.main, `${label}: 精度円`);
@@ -260,7 +260,7 @@ test.describe('oct26-m2-t4 GPS / POI の層選択', () => {
       }
       await addMarker(page, ll, `ac6b-${label}`);
       const m = await markerXys(page);
-      console.log('AC6b_MARKERS', label, JSON.stringify(m));
+      console.log('SYN5_MARKERS', label, JSON.stringify(m));
       expect(m, `${label}: ピン件数`).toHaveLength(1);
       expectXy(m[0], e.main, `${label}: ピン`);
     }
@@ -272,17 +272,17 @@ test.describe('oct26-m2-t4 GPS / POI の層選択', () => {
     const s4 = await gpsState(page);
     await addMarker(page, ll4, 'ac6c');
     const m4 = await markerXys(page);
-    console.log('AC6c', JSON.stringify(s4), JSON.stringify(m4));
+    console.log('SYN4', JSON.stringify(s4), JSON.stringify(m4));
     expect(s4.total).toBe(0);
     expect(m4).toHaveLength(0);
   });
 
-  test('紙外本図除外後の2位: D-6layer の本図 (-500,768) で main 広域図・sub 広域図 C (AC7)', async ({ page }) => {
+  test('紙外本図除外後の2位: D-6layer の本図 (-500,768) で main 広域図・sub 広域図 C', async ({ page }) => {
     await openApp(page, 'synthetic6');
     test.skip(!(await hasVisibleLayers(page)), SKIP_REASON);
     await setGps(page, mainPx2LngLat([-500, 768]));
     const s = await gpsState(page);
-    console.log('AC7_STATE', JSON.stringify(s));
+    console.log('SYN6_STATE', JSON.stringify(s));
     expect(s.total).toBe(3);
     expectXy(s.main, [1661.9, 290], 'main');
     expectXy(s.circle, [1661.9, 290], '精度円');
@@ -290,13 +290,13 @@ test.describe('oct26-m2-t4 GPS / POI の層選択', () => {
     expectXy(s.subs[0], [301.9, 290], 'sub');
   });
 
-  test('#105 範囲外で0件・イベントなし: 紙内 3 件 → 範囲外で 0 件 (AC8)', async ({ page }) => {
+  test('#105 範囲外で0件・イベントなし: 紙内 3 件 → 範囲外で 0 件', async ({ page }) => {
     await openApp(page, 'nobeoka1932');
     const mainInside = await nobeokaLayerXy(page, NOBEOKA_INSIDE, NOBEOKA_MAIN_LAYER);
     const insetInside = await nobeokaLayerXy(page, NOBEOKA_INSIDE, NOBEOKA_INSET_LAYER);
     await setGps(page, NOBEOKA_INSIDE);
     const s1 = await gpsState(page);
-    console.log('AC8_INSIDE', JSON.stringify(s1));
+    console.log('OUT_INSIDE', JSON.stringify(s1));
     expect(s1.total).toBe(3);
     expectXy(s1.main, mainInside, 'main');
     expectXy(s1.circle, mainInside, '精度円');
@@ -305,12 +305,12 @@ test.describe('oct26-m2-t4 GPS / POI の層選択', () => {
 
     await setGps(page, NOBEOKA_OUT);
     const s2 = await gpsState(page);
-    console.log('AC8_OUT', JSON.stringify(s2));
+    console.log('OUT_OUTSIDE', JSON.stringify(s2));
     expect(s2.total).toBe(0);
     expect(await events(page)).toEqual([]);
   });
 
-  test('#105 置換とPOI保持: 範囲内→範囲内の置換、範囲外でも POI は残る (AC9)', async ({ page }) => {
+  test('#105 置換とPOI保持: 範囲内→範囲内の置換、範囲外でも POI は残る', async ({ page }) => {
     await openApp(page, 'nobeoka1932');
     test.skip(!(await hasVisibleLayers(page)), SKIP_REASON);
     const mainInside = await nobeokaLayerXy(page, NOBEOKA_INSIDE, NOBEOKA_MAIN_LAYER);
@@ -321,7 +321,7 @@ test.describe('oct26-m2-t4 GPS / POI の層選択', () => {
 
     await setGps(page, NOBEOKA_104);
     const s = await gpsState(page);
-    console.log('AC9_REPLACE', JSON.stringify(s));
+    console.log('KEEP_REPLACE', JSON.stringify(s));
     expect(s.total).toBe(2);
     expectXy(s.main, inset104, 'main');
     expectNoFeatureAt(s, mainInside, '前の main');
@@ -333,14 +333,14 @@ test.describe('oct26-m2-t4 GPS / POI の層選択', () => {
     await setGps(page, NOBEOKA_OUT);
     const s2 = await gpsState(page);
     const m2 = await markerXys(page);
-    console.log('AC9_OUT', JSON.stringify(s2), JSON.stringify(m2));
+    console.log('KEEP_OUT', JSON.stringify(s2), JSON.stringify(m2));
     expect(s2.total).toBe(0);
     expect(m2).toHaveLength(1);
     expectXy(m2[0], inset104, 'POI');
     expect(await events(page)).toEqual([]);
   });
 
-  test('C-3 互換: 3 地図間の changeMap 2 周と各地図での setGPSMarker で例外なし (AC10a)', async ({ page }) => {
+  test('C-3 互換: 3 地図間の changeMap 2 周と各地図での setGPSMarker で例外なし', async ({ page }) => {
     const pageErrors = await openApp(page, 'synthetic5');
     const gpsPoints: [number, number][] = [
       ...SYN_POINTS.map(([, px]) => mainPx2LngLat(px)),
@@ -375,7 +375,7 @@ test.describe('oct26-m2-t4 GPS / POI の層選択', () => {
     }
     await settle(page, 500);
     const rejections = await page.evaluate(() => (window as any).__T4_REJECTIONS__);
-    console.log('AC10a', JSON.stringify({ resolved, pageErrors, rejections }));
+    console.log('COMPAT', JSON.stringify({ resolved, pageErrors, rejections }));
     expect(resolved).toBe(6);
     expect(pageErrors).toEqual([]);
     expect(rejections).toEqual([]);

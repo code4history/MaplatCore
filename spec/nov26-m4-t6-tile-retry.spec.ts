@@ -1,4 +1,4 @@
-// nov26-m4-t6（MaplatCore #110）: タイル合成用の tileLoadFunction（setupTileLoadFunction）で、
+// MaplatCore #110: タイル合成用の tileLoadFunction（setupTileLoadFunction）で、
 // onload 内の例外（getContext("2d") が null・drawImage の失敗など）で ERROR になったタイルだけを、
 // 回数上限つき（3 回・遅延 1／2／4 秒）で読み直させることを固定する。
 // 変更前は例外由来の失敗も 404（0×0）と同じ扱いで ERROR のまま残り、回復後もパン・ズームしない限り空白だった。
@@ -111,8 +111,8 @@ afterEach(() => {
   document.body.innerHTML = "";
 });
 
-describe("nov26-m4-t6 setupTileLoadFunction: 例外で ERROR になったタイルの再読込（#110）", () => {
-  it("AC1（単体）: 例外の後に回復すれば、1 秒後の読み直しで tileLoadFn が呼ばれる", async () => {
+describe("setupTileLoadFunction: 例外で ERROR になったタイルの再読込（#110）", () => {
+  it("例外の後に回復すれば、1 秒後の読み直しで tileLoadFn が呼ばれる", async () => {
     const drawImage = vi.fn();
     const getContext = vi
       .spyOn(HTMLCanvasElement.prototype, "getContext")
@@ -137,7 +137,7 @@ describe("nov26-m4-t6 setupTileLoadFunction: 例外で ERROR になったタイ�
     expect(tile.handleImageError_).toHaveBeenCalledTimes(1);
   });
 
-  it("AC2: 例外が続くと再試行は 3 回（1／2／4 秒）で止まり、ERROR のまま", async () => {
+  it("例外が続くと再試行は 3 回（1／2／4 秒）で止まり、ERROR のまま", async () => {
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null as any);
     vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const h = makeHarness();
@@ -170,7 +170,7 @@ describe("nov26-m4-t6 setupTileLoadFunction: 例外で ERROR になったタイ�
     expect(h.tileLoadFn).not.toHaveBeenCalled();
   });
 
-  it("AC3: 0×0 画像（読込失敗）のタイルは再試行しない", async () => {
+  it("0×0 画像（読込失敗）のタイルは再試行しない", async () => {
     const drawImage = vi.fn();
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({ drawImage } as any);
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
@@ -186,7 +186,7 @@ describe("nov26-m4-t6 setupTileLoadFunction: 例外で ERROR になったタイ�
     expect(warn).not.toHaveBeenCalled();
   });
 
-  it("AC4: 4 片のうち 1 片だけが例外なら、残りの片で合成して tileLoadFn を呼び、再試行しない", async () => {
+  it("4 片のうち 1 片だけが例外なら、残りの片で合成して tileLoadFn を呼び、再試行しない", async () => {
     const drawImage = vi.fn();
     vi.spyOn(HTMLCanvasElement.prototype, "getContext")
       .mockReturnValueOnce(null as any)
@@ -209,7 +209,7 @@ describe("nov26-m4-t6 setupTileLoadFunction: 例外で ERROR になったタイ�
     expect(tile.load).toHaveBeenCalledTimes(0);
   });
 
-  it("AC5: 30 枚が例外で失敗しても、記録（console.warn）は source ごとに 1 回", async () => {
+  it("30 枚が例外で失敗しても、記録（console.warn）は source ごとに 1 回", async () => {
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null as any);
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const h = makeHarness();
@@ -236,7 +236,7 @@ describe("nov26-m4-t6 setupTileLoadFunction: 例外で ERROR になったタイ�
     expect(warn).toHaveBeenCalledTimes(2);
   });
 
-  it("AC6: 破棄した地図（target 要素が DOM から外れた）のタイルは読み直さない", async () => {
+  it("破棄した地図（target 要素が DOM から外れた）のタイルは読み直さない", async () => {
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null as any);
     vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const h = makeHarness();

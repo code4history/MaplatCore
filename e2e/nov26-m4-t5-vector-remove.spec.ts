@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 
-// nov26-m4-t5（#91）: 線・面を個別に、または種類ごとに消せる公開 API。
+// #91: 線・面を個別に、または種類ごとに消せる公開 API。
 // feature 層の Feature の name（'Line'／'Polygon'。src/map_ex.ts の setVector）で数える。
 // e2e/test.html は起動時に addLine で線を 1 本足すので、その 1 本も数に含める。
 
@@ -55,10 +55,10 @@ const addTwoAndTwo = (page: Page) =>
         { LINE_A, LINE_B, POLY, POLY2, STYLE }
     );
 
-test.describe('nov26-m4-t5: 線・面の個別・種類ごとの削除（#91）', () => {
+test.describe('線・面の個別・種類ごとの削除（#91）', () => {
     test.setTimeout(90000);
 
-    test('AC2: removeVector／removeLine でその 1 件だけが消える', async ({ page }) => {
+    test('removeVector／removeLine でその 1 件だけが消える', async ({ page }) => {
         await waitApp(page);
         const ids = await addTwoAndTwo(page);
         expect(await countByName(page, 5)).toEqual({ Line: 3, Polygon: 2 });
@@ -72,7 +72,7 @@ test.describe('nov26-m4-t5: 線・面の個別・種類ごとの削除（#91）'
         expect(await countByName(page, 3)).toEqual({ Line: 2, Polygon: 1 });
     });
 
-    test('AC3: clearVector／clearLine の type 指定で種類だけを消す', async ({ page }) => {
+    test('clearVector／clearLine の type 指定で種類だけを消す', async ({ page }) => {
         await waitApp(page);
         await addTwoAndTwo(page);
         expect(await countByName(page, 5)).toEqual({ Line: 3, Polygon: 2 });
@@ -89,7 +89,7 @@ test.describe('nov26-m4-t5: 線・面の個別・種類ごとの削除（#91）'
         expect(await countByName(page, 0)).toEqual({ Line: 0, Polygon: 0 });
     });
 
-    test('AC4: 引数なしの clearLine()／clearVector() は全部消す', async ({ page }) => {
+    test('引数なしの clearLine()／clearVector() は全部消す', async ({ page }) => {
         await waitApp(page);
         await addTwoAndTwo(page);
         expect(await countByName(page, 5)).toEqual({ Line: 3, Polygon: 2 });
@@ -101,7 +101,7 @@ test.describe('nov26-m4-t5: 線・面の個別・種類ごとの削除（#91）'
         expect(await countByName(page, 0)).toEqual({ Line: 0, Polygon: 0 });
     });
 
-    test('AC5: 個別に消した項目は changeMap の後に復活せず、残した項目は新しい地図で描き直される', async ({ page }) => {
+    test('個別に消した項目は changeMap の後に復活せず、残した項目は新しい地図で描き直される', async ({ page }) => {
         await waitApp(page);
         const ids = await page.evaluate(
             ({ LINE_A, LINE_B }) => {

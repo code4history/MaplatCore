@@ -1,9 +1,9 @@
-// m6-t4: Google maptype → Tile API { mapType, layerTypes } 導出の単体テスト
-// マイルストーン設計 §2.1 / タスク設計 §4.7 の期待値表 7 ケース
+// Google maptype → Tile API { mapType, layerTypes } 導出の単体テスト
+// 期待値表 7 ケース
 import { describe, expect, it } from "vitest";
 import { deriveGoogleTileOptions } from "../src/source/googlemap";
 
-describe("deriveGoogleTileOptions (m6-t4)", () => {
+describe("deriveGoogleTileOptions", () => {
   it("#1 google_roadmap + [] → roadmap / []", () => {
     expect(deriveGoogleTileOptions("google_roadmap", [])).toEqual({
       mapType: "roadmap",

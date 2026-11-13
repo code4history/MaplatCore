@@ -5,10 +5,10 @@ import { dirname, resolve } from 'path';
 const configDir = dirname(fileURLToPath(import.meta.url)); // = <MaplatCore>/e2e
 const rootDir = resolve(configDir, '..'); // = <MaplatCore>
 
-// oct26-m2-t1 設計時 probe 用の専用 config。
+// vite を直接起動する専用 config（非表示コンテナの e2e などで使う）。
 // 通常の playwright.config.ts は webServer.command: 'pnpm run dev' を使い、
-// 入れ子 pnpm が outer workspace を解決して outer pnpm-lock.yaml を壊す
-// （M2 横断契約）。本 config は vite バイナリを直接起動して pnpm を入れ子にしない。
+// 入れ子 pnpm が outer workspace を解決して outer pnpm-lock.yaml を壊す。
+// 本 config は vite バイナリを直接起動して pnpm を入れ子にしない。
 export default defineConfig({
   testDir: configDir,
   fullyParallel: false,

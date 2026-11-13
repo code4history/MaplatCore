@@ -1,7 +1,7 @@
-// oct26-m2-t4 AC10 (b): GPS / POI の表示候補 selectDisplayCandidates（MaplatCore#104）
+// GPS / POI の表示候補 selectDisplayCandidates（MaplatCore#104）
 //
 // - merc2XyVisibleLayers を持たない Transform（1.0.x 相当のスタブ）では null（従来経路へのフォールバック合図）
-// - 兄弟 symlink の Transform（T4a）で、紙外の本図を除いた「後で」2 件を切り出す（設計 §4.3・M-7）
+// - 兄弟 symlink の Transform で、紙外の本図を除いた「後で」2 件を切り出す
 // fixture は e2e と同じ e2e/fixtures/oct26-m2-t4/*.json（compiled は MaplatTransform の tests/compiled と同一）
 //
 // 解決された @maplat/transform に merc2XyVisibleLayers が無い環境（standalone CI が lock どおり Transform 1.0.0 を
@@ -15,7 +15,7 @@ import { resolve, sep } from "path";
 import { MapTransform } from "@maplat/transform";
 import { selectDisplayCandidates } from "../src/source/display_candidates";
 
-const SKIP_REASON = "@maplat/transform に merc2XyVisibleLayers が無い。M6 の lock 再生成後に有効";
+const SKIP_REASON = "@maplat/transform に merc2XyVisibleLayers が無い。lock の再生成後に有効";
 const HAS_VISIBLE_LAYERS =
   typeof (new MapTransform() as unknown as { merc2XyVisibleLayers?: unknown }).merc2XyVisibleLayers ===
   "function";
@@ -51,7 +51,7 @@ const expectClose = (actual: [number, number[]][] | null, expected: [number, [nu
   });
 };
 
-describe("oct26-m2-t4: selectDisplayCandidates", () => {
+describe("selectDisplayCandidates", () => {
   it("merc2XyVisibleLayers を持たない Transform（1.0.x 相当）では null を返す", () => {
     const stub = {
       merc2XyWithLayer: () => [[0, [1, 1]]]

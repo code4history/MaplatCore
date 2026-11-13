@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { MaplatApp } from "../src/index";
 
-// nov26-m4-t5（#91）: 線・面を個別に、または種類ごとに消せる公開 API。
+// #91: 線・面を個別に、または種類ごとに消せる公開 API。
 // 殻は Object.create(MaplatApp.prototype)（前例 spec/lifecycle.spec.ts）。
 
 function createAppStub(): any {
@@ -46,8 +46,8 @@ const polygon = (extra: any = {}) => ({
   ...extra
 });
 
-describe("nov26-m4-t5: 線・面の id と個別・種類ごとの削除（#91）", () => {
-  it("AC1: addLine／addVector は id を返す（与えた id・自動の id は重ならず # を含まない）", async () => {
+describe("線・面の id と個別・種類ごとの削除（#91）", () => {
+  it("addLine／addVector は id を返す（与えた id・自動の id は重ならず # を含まない）", async () => {
     const app = createAppStub();
     const a = app.addLine(line());
     const b = app.addVector(polygon());
@@ -65,7 +65,7 @@ describe("nov26-m4-t5: 線・面の id と個別・種類ごとの削除（#91�
     expect(d).toBe("42");
   });
 
-  it("AC1: 自動の id が呼び手の id と重なるときは番号を進めて取り直す", async () => {
+  it("自動の id が呼び手の id と重なるときは番号を進めて取り直す", async () => {
     const app = createAppStub();
     app.addLine(line({ id: "vector_1" }));
     const auto = app.addLine(line());
@@ -74,7 +74,7 @@ describe("nov26-m4-t5: 線・面の id と個別・種類ごとの削除（#91�
     expect(app.vectors.length).toBe(2);
   });
 
-  it("AC2: removeVector(id) はその 1 件だけを消し、true／無ければ false を返す", async () => {
+  it("removeVector(id) はその 1 件だけを消し、true／無ければ false を返す", async () => {
     const app = createAppStub();
     const a = app.addLine(line());
     const b = app.addVector(polygon());
@@ -91,7 +91,7 @@ describe("nov26-m4-t5: 線・面の id と個別・種類ごとの削除（#91�
     expect(app.vectors.length).toBe(0);
   });
 
-  it("AC3: clearVector({ type }) は種類で絞って消す（clearLine も同じ）", async () => {
+  it("clearVector({ type }) は種類で絞って消す（clearLine も同じ）", async () => {
     const app = createAppStub();
     app.addLine(line());
     app.addLine(line());
@@ -107,7 +107,7 @@ describe("nov26-m4-t5: 線・面の id と個別・種類ごとの削除（#91�
     expect(app.vectors.map((v: any) => v.type)).toEqual(["Line"]);
   });
 
-  it("B26-MIN-1: type を省いた addVector は線として数え、{ type: \"Line\" } で消える", async () => {
+  it("type を省いた addVector は線として数え、{ type: \"Line\" } で消える", async () => {
     const app = createAppStub();
     app.addVector(line());
     app.addVector(polygon());
@@ -121,7 +121,7 @@ describe("nov26-m4-t5: 線・面の id と個別・種類ごとの削除（#91�
     expect(app.vectors[0].type).toBeUndefined();
   });
 
-  it("AC4: 引数なしの clearLine()／clearVector() は全部消す", async () => {
+  it("引数なしの clearLine()／clearVector() は全部消す", async () => {
     const app = createAppStub();
     app.addLine(line());
     app.addVector(polygon());
@@ -137,7 +137,7 @@ describe("nov26-m4-t5: 線・面の id と個別・種類ごとの削除（#91�
     expect(app.mapObject.resetVector).toHaveBeenCalledTimes(2);
   });
 
-  it("AC6: 変換の解決前に removeVector すると、解決後に描かれない", async () => {
+  it("変換の解決前に removeVector すると、解決後に描かれない", async () => {
     const app = createAppStub();
     let resolve: (v: any) => void = () => undefined;
     app.from.merc2SysCoordAsync = vi.fn(
@@ -153,7 +153,7 @@ describe("nov26-m4-t5: 線・面の id と個別・種類ごとの削除（#91�
     expect(app.mapObject.setVector).toHaveBeenCalledTimes(0);
   });
 
-  it("AC6: resetVector の後に古い変換が完了しても描かない（描き直しの世代だけが描く）", async () => {
+  it("resetVector の後に古い変換が完了しても描かない（描き直しの世代だけが描く）", async () => {
     const app = createAppStub();
     const resolvers: Array<() => void> = [];
     app.from.merc2SysCoordAsync = vi.fn(
@@ -169,7 +169,7 @@ describe("nov26-m4-t5: 線・面の id と個別・種類ごとの削除（#91�
     expect(app.mapObject.setVector).toHaveBeenCalledTimes(0);
   });
 
-  it("AC7: 既にある id で足すと置き換える（2 件にならない）", async () => {
+  it("既にある id で足すと置き換える（2 件にならない）", async () => {
     const app = createAppStub();
     app.addVector(polygon({ id: "dup" }));
     await settle();
@@ -182,7 +182,7 @@ describe("nov26-m4-t5: 線・面の id と個別・種類ごとの削除（#91�
     expect(app.mapObject.setVector).toHaveBeenCalledTimes(2);
   });
 
-  it("AC8: addLine／addVector は呼び手の data を書き換えない（凍結した data でも例外にならない）", async () => {
+  it("addLine／addVector は呼び手の data を書き換えない（凍結した data でも例外にならない）", async () => {
     const app = createAppStub();
     const lineData = Object.freeze(
       line({ id: "l", stroke: { color: "#f00", width: 2 } })
@@ -195,7 +195,7 @@ describe("nov26-m4-t5: 線・面の id と個別・種類ごとの削除（#91�
     expect([JSON.stringify(lineData), JSON.stringify(vecData)]).toEqual(before);
   });
 
-  it("MIN-t5-1: addLine({ lnglats, stroke }) は写しに正規化した style で描く", async () => {
+  it("addLine({ lnglats, stroke }) は写しに正規化した style で描く", async () => {
     const app = createAppStub();
     const stroke = { color: "#ffcc33", width: 2 };
     app.addLine({

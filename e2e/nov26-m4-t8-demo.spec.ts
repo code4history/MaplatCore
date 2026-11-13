@@ -1,11 +1,11 @@
 import { test, expect, type Page } from '@playwright/test';
 
-// nov26-m4-t8: MaplatCore のデモ（index.html ＋ demo/demo.ts）に足したデモ機能。
+// MaplatCore のデモ（index.html ＋ demo/demo.ts）に足したデモ機能。
 // デモは window.__MAPLAT_DEMO_APP__ に app を出す（検査用の口。デモはパッケージに入らない）。
 // 面は feature 層の Feature の name が 'Polygon'（src/map_ex.ts の setVector）。POI は marker 層の Feature の datum。
 
 const REGIONS = ['morioka', 'nara', 'hiroshima', 'nobeoka', 'tatebayashi'] as const;
-const SHOT_DIR = process.env.T8_SHOT_DIR ?? 'test-results-nov26-m4-t8';
+const SHOT_DIR = process.env.DEMO_SHOT_DIR ?? 'test-results-demo';
 const COALESCE = ['changeViewpoint', 'updateState'];
 const OSM_COPYRIGHT_LINK = '#vector-attr a[href="https://www.openstreetmap.org/copyright"]';
 
@@ -17,8 +17,8 @@ const openDemo = async (page: Page, region: string, query = '') => {
     // クリックの検査用: 最後の clickMarker の detail を控える
     await page.evaluate(() => {
         const app = (window as any).__MAPLAT_DEMO_APP__;
-        (window as any).__T8_LAST_CLICK_MARKER__ = undefined;
-        app.addEventListener('clickMarker', (e: any) => { (window as any).__T8_LAST_CLICK_MARKER__ = e.detail; });
+        (window as any).__DEMO_LAST_CLICK_MARKER__ = undefined;
+        app.addEventListener('clickMarker', (e: any) => { (window as any).__DEMO_LAST_CLICK_MARKER__ = e.detail; });
     });
 };
 
@@ -52,7 +52,7 @@ const markersOf = (page: Page, prefix: string) =>
             });
     }, prefix);
 
-// 地図の視点の移動（goHome などのアニメーション・操作）が止まるまで待つ。固定の待ち時間は CI の負荷で足りなくなる（B32 MIN-2）
+// 地図の視点の移動（goHome などのアニメーション・操作）が止まるまで待つ。固定の待ち時間は CI の負荷で足りなくなる
 const waitViewSettled = (page: Page) =>
     page.waitForFunction(() => {
         const view = (window as any).__MAPLAT_DEMO_APP__?.mapObject?.getView?.();
@@ -60,7 +60,7 @@ const waitViewSettled = (page: Page) =>
     }, undefined, { timeout: 30000 });
 
 // namespaceID が prefix で始まる marker を画面の点へ写し、そこをクリックする（ピンは下端が地点なので少し上を押す）。
-// 押すたびに視点の停止を待ち、画素を計算し直す（移動中に 1 回だけ計算すると別の地点を押す。B32 MIN-2）
+// 押すたびに視点の停止を待ち、画素を計算し直す（移動中に 1 回だけ計算すると別の地点を押す）
 const clickPoi = async (page: Page, prefix: string) => {
     const pointOf = () => page.evaluate(prefix => {
         const app = (window as any).__MAPLAT_DEMO_APP__;
@@ -73,7 +73,7 @@ const clickPoi = async (page: Page, prefix: string) => {
         const rect = app.mapObject.getViewport().getBoundingClientRect();
         return { x: pixel[0] + rect.left, y: pixel[1] + rect.top };
     }, prefix);
-    await page.evaluate(() => { (window as any).__T8_LAST_CLICK_MARKER__ = undefined; });
+    await page.evaluate(() => { (window as any).__DEMO_LAST_CLICK_MARKER__ = undefined; });
     for (const dy of [-12, -8, -16, -4, -20]) {
         await waitViewSettled(page);
         const point = await pointOf();
@@ -81,7 +81,7 @@ const clickPoi = async (page: Page, prefix: string) => {
         await page.mouse.click(point!.x, point!.y + dy);
         // clickMarker は同期で発火する（Core の click の受け手）。発火したかを短く待って確かめる
         const fired = await page
-            .waitForFunction(() => (window as any).__T8_LAST_CLICK_MARKER__, undefined, { timeout: 2000 })
+            .waitForFunction(() => (window as any).__DEMO_LAST_CLICK_MARKER__, undefined, { timeout: 2000 })
             .then(() => true, () => false);
         if (fired) return;
     }
@@ -110,10 +110,10 @@ const clickEmptyMap = async (page: Page) => {
 const logTypes = (page: Page) =>
     page.locator('#event-log li').evaluateAll(lis => lis.map(li => (li as HTMLElement).dataset.type ?? ''));
 
-test.describe('nov26-m4-t8: デモ機能', () => {
+test.describe('デモ機能', () => {
     test.setTimeout(180000);
 
-    test('m4-t9 E-1: 盛岡の初期表示は可視 POI と marker Feature の namespaceID が一対一', async ({ page }) => {
+    test('盛岡の初期表示は可視 POI と marker Feature の namespaceID が一対一', async ({ page }) => {
         await openDemo(page, 'morioka');
         // redraw・clear・hide を呼ばず、初期化時に始まった描画と視点移動の完了だけを待つ。
         await page.waitForFunction(() => {
@@ -140,7 +140,7 @@ test.describe('nov26-m4-t8: デモ機能', () => {
         expect(actual).toEqual(expected);
     });
 
-    // 項目 1（t8/AC2・AC3）: 面が rgba で塗られ、面の出典が読める。人間の確認用に画面を保存する
+    // 項目 1: 面が rgba で塗られ、面の出典が読める。人間の確認用に画面を保存する
     for (const region of REGIONS) {
         test(`項目 1: ${region} の面が rgba で塗られ、出典（OpenStreetMap・ODbL）が出る`, async ({ page }) => {
             await openDemo(page, region);
@@ -180,10 +180,10 @@ test.describe('nov26-m4-t8: デモ機能', () => {
         await openDemo(page, 'morioka');
         await expect.poll(async () => (await polygons(page)).length, { timeout: 30000 }).toBe(1);
         // アプリ用 POI（層 "app"）の先頭は桜山神社＝盛岡城跡公園の面の内側（実測）
-        // nov26-m4-t9（#134）で描画を直列化したため、B32 で保留した厳密な一件を復元する。
+        // #134 で描画を直列化したため、以前は保留していた厳密な一件の検査を戻す。
         await expect.poll(async () => (await markersOf(page, 'app_0')).length, { timeout: 30000 }).toBe(1);
         await clickPoi(page, 'app_0');
-        const hit = await page.evaluate(() => (window as any).__T8_LAST_CLICK_MARKER__);
+        const hit = await page.evaluate(() => (window as any).__DEMO_LAST_CLICK_MARKER__);
         expect(hit, 'clickMarker が発火しない').toBeTruthy();
     });
 
@@ -246,11 +246,11 @@ test.describe('nov26-m4-t8: デモ機能', () => {
         await openDemo(page, 'morioka');
         await page.getByRole('button', { name: '同じ地点に 2 件置く' }).click();
         await expect.poll(async () => (await markersOf(page, 'overlap_demo_')).length, { timeout: 30000 }).toBe(2);
-        // goHome の移動が収まるのは clickPoi が押すたびに待つ（固定の待ちを置かない。B32 MIN-2）
+        // goHome の移動が収まるのは clickPoi が押すたびに待つ（固定の待ちを置かない）
         await clickPoi(page, 'overlap_demo_');
         await expect(page.locator('#poi-hits')).toContainText('clickMarkers:');
         const n = Number((await page.locator('#poi-hits').innerText()).match(/clickMarkers: (\d+) 件/)?.[1] ?? '0');
-        // nov26-m4-t9（#134）: 同位置の二つの POI を、一件ずつ返す厳密条件。
+        // #134: 同位置の二つの POI を、一件ずつ返す厳密条件。
         expect(n).toBe(2);
         await expect(page.locator('#poi-hits')).toContainText('重なった POI');
         await expect(page.locator('#poi-detail strong')).toHaveCount(1);

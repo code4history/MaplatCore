@@ -172,7 +172,7 @@ describe("模擬の層 A: 公開面以外を持たない", () => {
   });
 });
 
-describe("模擬の層 A: 線・面の登録簿（nov26-m4-t5・#91）", () => {
+describe("模擬の層 A: 線・面の登録簿（#91）", () => {
   // 適合テスト群は要素の公開面（メソッドの戻り値と clear の絞り込み）だけで書くので、一覧の並びと
   // stroke → style の正規化は公開面から読めない。模擬の中身が Core と同じ結果を返すことは、ここで見る。
   it("id・置き換えは末尾・stroke → style の正規化・呼び手の data を変えない（Core と同じ）", async () => {
@@ -308,7 +308,7 @@ describe("適合テスト群の形", () => {
       new Set(["A-形", "A-同期", "A-優先", "A-起動後", "A-メソッド", "A-互換", "A-ベクター", "A-イベント", "A-機能", "A-破棄"])
     );
     expect(new Set(cases.map(c => c.name)).size).toBe(cases.length);
-    // 件数の下限（nov26-m4-t5・#91 の A-ベクター 6 件と、模擬の修正 2 件を含む）。
+    // 件数の下限（#91 の A-ベクター 6 件と、模擬の修正 2 件を含む）。
     // layout の 2 件を足すと e2e の下限 53
     expect(cases.length).toBeGreaterThanOrEqual(51);
     // 実ブラウザ（layout）でだけ足す群がある

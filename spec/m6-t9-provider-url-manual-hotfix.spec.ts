@@ -1,4 +1,4 @@
-// m6-t9 §3.1 AC2: m6-t6 H-A 回帰テスト（m6-t6-provider-url-hotfix.spec.ts）は
+// 自動補完の除外の回帰テスト（m6-t6-provider-url-hotfix.spec.ts）は
 // 「自動補完されないこと」のみを検証していたが、AppSourceEditor 経由で data.url に
 // 手動値が残っていた場合、mapSourceFactory はそれを素通りさせ ol/source/Google の
 // baseUrl（= options.url || 'https://tile.googleapis.com/'、node_modules/ol/source/Google.js:172）を
@@ -19,7 +19,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe("m6-t9 hotfix: provider の url 手動値からの汚染防止（H-A と同型）", () => {
+describe("hotfix: provider の url 手動値からの汚染防止（自動補完の除外と同型）", () => {
   it("google_roadmap: data.url に手動値が残っていても baseUrl を汚染しない", async () => {
     stubRejectingFetch();
     const options: any = {

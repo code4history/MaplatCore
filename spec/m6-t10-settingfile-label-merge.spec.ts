@@ -1,4 +1,4 @@
-// m6-t10 設計 §3.5.2 / AC20 の回帰テスト。
+// settingFile 経由の label がアプリ要素に潰されないことの回帰テスト。
 //
 // エディタの新しい出力文法（ADR-0017）では、ベースマップの定義は maps/<slug>.json
 // （settingFile）側に置かれ、アプリ JSON の sources 要素は「上書き分のみ」を持つ。
@@ -42,7 +42,7 @@ const BASE_MAP_SETTING_FILE = {
   maxZoom: 19,
 };
 
-describe("m6-t10 §3.5.2 / AC20: settingFile 経由の label がアプリ要素に潰されない", () => {
+describe("settingFile 経由の label がアプリ要素に潰されない", () => {
   it("アプリ要素が label を持たないとき、settingFile 側の label が生き残る", async () => {
     stubSettingFileFetch(BASE_MAP_SETTING_FILE);
     // 新文法のアプリ JSON 要素: 参照と上書き分のみ。label も maptype も持たない
