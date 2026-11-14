@@ -38,6 +38,24 @@ describe("getMarker はテンプレートを当てた複製を返す", () => {
     expect(got).not.toBe(entity);
   });
 
+  it("T2b: 地図の層。層にも地図にもテンプレートが無ければアプリの poiTemplate・iconTemplate が当たる（描画と同じ）", () => {
+    const entity = { id: "q1", namespaceID: "A#q1", name: "z" };
+    const source = { pois: { main: { pois: [entity] } } };
+    const self: any = {
+      pois: {},
+      cacheHash: { A: source },
+      poiTemplate: "<b>{{ name }}</b>",
+      poiStyle: "app-style",
+      iconTemplate: '{"icon": "app.png"}',
+      redrawMarkers: vi.fn()
+    };
+    expect(getMarker(self, "A#q1")).toMatchObject({ html: "<b>z</b>", poiStyle: "app-style", icon: "app.png" });
+    // 地図の poiTemplate があれば、アプリより地図が勝つ
+    (source as any).poiTemplate = "<i>{{ name }}</i>";
+    expect(getMarker(self, "A#q1").html).toBe("<i>z</i>");
+    expect(entity).not.toHaveProperty("html");
+  });
+
   it("T3: iconTemplate・層の icon・POI 自身の icon の優先", () => {
     const tpl = { id: "p1", namespaceID: "p1", u: "a.png" };
     const self1 = appWith({ pois: [tpl], iconTemplate: '{"icon": {{ u | dump | safe }}}', icon: "layer.png" });

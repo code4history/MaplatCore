@@ -68,12 +68,12 @@ describe("@maplat/core/common の POI テンプレートの評価", () => {
     expect(getMarker(self, "p1")).toMatchObject({ html: "<b>x</b>", poiStyle: "s", icon: "a.png" });
   });
 
-  it("地図の層の POI: getMarker の戻り値と、common の applyPoiTemplates(poi, 層, 地図) が同じ", () => {
+  it("地図の層の POI: getMarker の戻り値と、common の applyPoiTemplates(poi, 層, 地図, アプリ) が同じ", () => {
     const poi = { id: "q1", namespaceID: "A#q1", name: "z" };
     const layer = { pois: [poi] };
-    const source = { pois: { main: layer }, poiTemplate: "<i>{{ name }}</i>", icon: "map.png" };
-    const self: any = { pois: {}, cacheHash: { A: source } };
-    expect(getMarker(self, "A#q1")).toEqual(common.applyPoiTemplates(poi, layer, source));
+    const source = { pois: { main: layer }, icon: "map.png" };
+    const self: any = { pois: {}, cacheHash: { A: source }, poiTemplate: "<i>{{ name }}</i>" };
+    expect(getMarker(self, "A#q1")).toEqual(common.applyPoiTemplates(poi, layer, source, self));
     expect(getMarker(self, "A#q1")).toMatchObject({ html: "<i>z</i>", icon: "map.png" });
   });
 });
