@@ -24,6 +24,14 @@ In the metadata table (`copiedMetadata`), entries whose value is empty (`{"en": 
 
 Bound keys such as the title are checked separately from the metadata table. When the value is missing (including an empty string), the warning is `鍵 <key> の IIIF の値がありません` (there is no IIIF value); when a value is present but cannot be read, such as an empty language map, the warning is `鍵 <key> の IIIF の値の形が読めません` (the shape of the IIIF value cannot be read). In both cases the key is left unresolved (`unresolved`). A license (`rights` / `license`) is read only from a URI string, and its warnings say `ライセンスの値` (license value) instead of `IIIF の値`.
 
+## Comparing with copied values (`compareIiifCopy`)
+
+`compareIiifCopy(current, copiedValues, fresh, lang)` returns one row (`{ key, lang, humanEdited, iiifChanged }`) per key and language. Whether a person edited the value (`humanEdited`) is decided by comparing the map's current value with the value at the last copy (`copiedValues`); whether the IIIF side changed (`iiifChanged`) is decided by comparing the value at the last copy with the re-fetched value (`fresh`). The current IIIF value is never compared directly with the map's current value. When the map's current value is a string, it is compared as the value for the language `lang`.
+
+When the re-fetched values (`fresh`) are given, keys and languages that are not in the last copy also get rows: a key bound after the last copy, a key the manifest had no value for at the last copy, and a language that appears in the re-fetched value. These rows count as changed on the IIIF side (`iiifChanged: true`). Because there is no value from the last copy, `humanEdited` is true when the map currently has a value for that language.
+
+Rows are ordered key by key in the order of `copiedValues`: the languages from the last copy, then the languages added for that key. Keys that are not in `copiedValues` follow at the end, in the order of the re-fetched values. Without `fresh` (`undefined`), only the keys and languages in `copiedValues` are returned, with `iiifChanged` set to `undefined`.
+
 ## Out of scope
 
 Only a single-image body in the first image annotation is handled. Compositing several images, Choice, and loading an external AnnotationPage are not supported. Even when several services are listed, this is not an API that automatically retries another candidate when a request fails.

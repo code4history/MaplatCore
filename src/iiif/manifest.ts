@@ -680,6 +680,9 @@ export function resolveIiifMetadata(
  * copiedValues と比べて、鍵・言語ごとに「人が直した」「IIIF の側が変わった」を返す。
  * 人が直したかは今の値と写した時点の値で、IIIF の側が変わったかは写した時点の値と取り直した値で見る。
  * 今の IIIF の値と今の値を直接は比べない。取り直した値が無ければ IIIF の側が変わったかは判定しない。
+ * 取り直した値にあって copiedValues に無い鍵・言語（写した後に結び付けた鍵、前回は値が無く写せなかった鍵、
+ * 増えた言語）も行にする。その行は IIIF の側が変わったとみなし、人が直したかは今の地図に値があるかで見る。
+ * 行の順は、copiedValues の鍵ごとに写した言語 → 増えた言語、その後に copiedValues に無い鍵を取り直した値の順で並べる。
  */
 export function compareIiifCopy(
   current: Record<string, Localized | string | undefined>,
@@ -693,20 +696,36 @@ export function compareIiifCopy(
     humanEdited: boolean;
     iiifChanged: boolean | undefined;
   }> = [];
-  for (const [key, table] of Object.entries(copiedValues ?? {})) {
-    if (!table) continue;
+  // 多言語でない鍵・文字列で写した値は、lang の言語の値として比べる
+  const nowOf = (key: string, language: string): string | undefined => {
     const currentValue = current?.[key];
+    return typeof currentValue === "string"
+      ? language === lang
+        ? currentValue
+        : undefined
+      : currentValue?.[language];
+  };
+  const copiedTables = copiedValues ?? {};
+  for (const [key, table] of Object.entries(copiedTables)) {
+    if (!table) continue;
     for (const [language, copied] of Object.entries(table)) {
-      // 多言語でない鍵・文字列で写した値は、lang の言語の値として比べる
-      const now =
-        typeof currentValue === "string"
-          ? language === lang
-            ? currentValue
-            : undefined
-          : currentValue?.[language];
+      const now = nowOf(key, language);
       const humanEdited = now === undefined || now !== copied;
       const iiifChanged = fresh === undefined ? undefined : fresh[key]?.[language] !== copied;
       rows.push({ key, lang: language, humanEdited, iiifChanged });
+    }
+    // 前回写した後に取り直した値で増えた言語は、その鍵の行の後ろに足す
+    for (const language of Object.keys(fresh?.[key] ?? {})) {
+      if (Object.prototype.hasOwnProperty.call(table, language)) continue;
+      rows.push({ key, lang: language, humanEdited: nowOf(key, language) !== undefined, iiifChanged: true });
+    }
+  }
+  // 前回写した値に無い鍵（後から結び付けた・前回は値が無く写せなかった）は、最後に取り直した値の順で足す。
+  // 写した時点の値は無いので、人が直したかは今の地図に値があるかで見る。
+  for (const [key, table] of Object.entries(fresh ?? {})) {
+    if (!table || copiedTables[key]) continue;
+    for (const language of Object.keys(table)) {
+      rows.push({ key, lang: language, humanEdited: nowOf(key, language) !== undefined, iiifChanged: true });
     }
   }
   return rows;
