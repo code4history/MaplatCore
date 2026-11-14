@@ -2,7 +2,7 @@
 
 This directory holds the **release-dependent API signatures** for `@maplat/core`.
 
-ADR-0012 splits Maplat documentation into two layers:
+Maplat documentation is split into two layers:
 
 - **Release-dependent signatures** (method names, parameters, return types) —
   this `docs/api/` directory. Updated on each release.
@@ -22,6 +22,10 @@ here for the canonical list.
   `@maplat/core/common` and the conformance tests `@maplat/core/conformance`,
   and the relationship to the `MaplatApp` class (which closes in the next
   major version (2.0))
+- [`iiif-manifest.md`](iiif-manifest.md) ([日本語](iiif-manifest.ja.md)) — how
+  the internal IIIF manifest functions (`src/iiif/manifest.ts`, used by
+  authoring tools such as MaplatEditor; not part of the public API) read a
+  manifest
 
 ## Relationship to README
 
