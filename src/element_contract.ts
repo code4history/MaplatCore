@@ -776,7 +776,7 @@ export interface MaplatAppDelegatedMethods {
   selectMarker: AnyFn;
   unselectMarker: AnyFn;
   /**
-   * POI の datum（id か namespaceID で引く）。`clickMarker` の detail と同じ形: 祖先（POI のレイヤー → 地図。
+   * POI の datum（id か namespaceID で引く）。`clickMarker` の detail と同じ形: 祖先（POI のレイヤー → 地図 → アプリ。
    * アプリの層ならレイヤー → アプリ）のテンプレートから icon・selectedIcon・html・poiStyle を補った複製を返す
    * （格納している POI そのものではない。書き換えは `updateMarker`）。見つからなければ undefined。
    * 他の層 A の実装（MaplatCorePro など）は追随中で、実体を返すことがある
