@@ -318,3 +318,112 @@ describe("compareIiifCopy — 返す範囲と順", () => {
     expect(compareIiifCopy({ title: "新潟市圖" }, {}, undefined, "ja")).toEqual([]);
   });
 });
+
+describe("compareIiifCopy — 前回写した値に無い鍵・言語も行にする", () => {
+  it("写した後で結び付けた鍵（今の地図に値が無い）は IIIF の側が変わった行になる", () => {
+    const rows = compareIiifCopy(
+      { title: "新潟市圖（改）" },
+      { title: { ja: "新潟市圖" } },
+      { title: { ja: "新潟市圖" }, contributor: { ja: "新潟縣" } },
+      "ja",
+    );
+
+    expect(rows).toEqual([
+      { key: "title", lang: "ja", humanEdited: true, iiifChanged: false },
+      { key: "contributor", lang: "ja", humanEdited: false, iiifChanged: true },
+    ]);
+  });
+
+  it("前回は値が無く写せなかった鍵に今は値があり、地図に手で入れた値があれば両方変わった行になる", () => {
+    const rows = compareIiifCopy(
+      { title: "新潟市圖", description: "手で入れた説明" },
+      { title: { ja: "新潟市圖" } },
+      { title: { ja: "新潟市圖" }, description: { ja: "<p>明治の新潟</p>", en: "<p>Niigata in Meiji</p>" } },
+      "ja",
+    );
+
+    expect(rows).toEqual([
+      { key: "title", lang: "ja", humanEdited: false, iiifChanged: false },
+      // 欄が文字列なら、どの言語の行でも値があるとみなす（別の言語の値で黙って上書きしない）
+      { key: "description", lang: "ja", humanEdited: true, iiifChanged: true },
+      { key: "description", lang: "en", humanEdited: true, iiifChanged: true },
+    ]);
+  });
+
+  it("取り直した値で増えた言語は、その鍵の写した言語の後ろに並ぶ", () => {
+    const rows = compareIiifCopy(
+      { title: { ja: "新潟市圖", fr: "Niigata (fr)" }, attr: "国立国会図書館" },
+      { title: { ja: "新潟市圖" }, attr: { ja: "国立国会図書館" } },
+      {
+        title: { en: "Niigata", ja: "新潟市圖", fr: "Niigata (fr)" },
+        attr: { ja: "国立国会図書館" },
+      },
+      "ja",
+    );
+
+    expect(rows).toEqual([
+      { key: "title", lang: "ja", humanEdited: false, iiifChanged: false },
+      { key: "title", lang: "en", humanEdited: false, iiifChanged: true },
+      { key: "title", lang: "fr", humanEdited: true, iiifChanged: true },
+      { key: "attr", lang: "ja", humanEdited: false, iiifChanged: false },
+    ]);
+  });
+
+  it("文字列で写した欄に取り直した値で言語が増えても、その言語の行は人が直した扱いになる", () => {
+    const rows = compareIiifCopy(
+      { title: "新潟市圖" },
+      { title: { ja: "新潟市圖" } },
+      { title: { ja: "新潟市圖", en: "Niigata" } },
+      "ja",
+    );
+
+    expect(rows).toEqual([
+      { key: "title", lang: "ja", humanEdited: false, iiifChanged: false },
+      { key: "title", lang: "en", humanEdited: true, iiifChanged: true },
+    ]);
+  });
+
+  it("後から結び付けた鍵の欄が文字列なら、別の言語の行も人が直した扱いになる", () => {
+    const rows = compareIiifCopy(
+      { description: "手で入れた説明" },
+      {},
+      { description: { en: "<p>Niigata in Meiji</p>" } },
+      "ja",
+    );
+
+    expect(rows).toEqual([{ key: "description", lang: "en", humanEdited: true, iiifChanged: true }]);
+  });
+
+  it("取り直した値が無いときは、前回写した値にある鍵・言語だけを返す（今までと同じ）", () => {
+    const rows = compareIiifCopy(
+      { title: { ja: "新潟市圖", en: "Niigata" }, contributor: "新潟縣" },
+      { title: { ja: "新潟市圖" } },
+      undefined,
+      "ja",
+    );
+
+    expect(rows).toEqual([{ key: "title", lang: "ja", humanEdited: false, iiifChanged: undefined }]);
+  });
+
+  it.each(CASES)("新しい行が足されても、前回写した値の行の判定は変わらない・$name", ({
+    copied,
+    current,
+    fresh,
+    humanEdited,
+    iiifChanged,
+  }) => {
+    const rows = compareIiifCopy(
+      { title: { ja: current }, contributor: "新潟縣" },
+      { title: { ja: copied } },
+      { title: { ja: fresh, en: "Niigata" }, contributor: { ja: "新潟縣" } },
+      "ja",
+    );
+
+    expect(rows).toHaveLength(3);
+    expect(rows[0]).toEqual({ key: "title", lang: "ja", humanEdited, iiifChanged });
+    expect(rows.slice(1)).toEqual([
+      { key: "title", lang: "en", humanEdited: false, iiifChanged: true },
+      { key: "contributor", lang: "ja", humanEdited: true, iiifChanged: true },
+    ]);
+  });
+});
