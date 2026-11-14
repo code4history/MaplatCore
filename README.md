@@ -37,7 +37,7 @@ MaplatCore is open-source under the Apache License 2.0 (from version 0.13.2).
 
 <!-- release-pinned:start -->
 > **Current release: `1.2.0`**. This block is the only place in
-> this repository that carries a release version (ADR-0012); everything outside it is
+> this repository that carries a release version; everything outside it is
 > written against the 1.0 release.
 > npm: [`@maplat/core`](https://www.npmjs.com/package/@maplat/core)
 > [![npm](https://img.shields.io/npm/v/@maplat/core)](https://www.npmjs.com/package/@maplat/core)
@@ -331,14 +331,19 @@ MaplatEditor:
 - `proposeIiifBindings` always proposes the manifest label for `title`. If that label
   cannot be read, it omits `title`; it does not fall back to the canvas label.
   Explicit `{ from: "canvas", property: "label" }` bindings remain supported.
-- The functions that read a manifest and pick the values to copy are in
-  `src/iiif/manifest.ts` (`listIiifCanvases`, `proposeIiifBindings`,
-  `resolveIiifMetadata`, `compareIiifCopy`, `iiifRightsToLicense`,
-  `IIIF_BINDABLE_KEYS`). They do not fetch and do not use the DOM. HTML values are
-  passed through a sanitizer given by the caller; use `sanitizeIiifHtml` (from
-  `src/sanitize.ts`, which needs a browser `window`; it can also be imported from
+- The functions that read a manifest and pick the values to copy
+  (`listIiifCanvases`, `proposeIiifBindings`, `resolveIiifMetadata`,
+  `compareIiifCopy`, `iiifRightsToLicense`, `IIIF_BINDABLE_KEYS`) are **not part
+  of the package's public API**. They are internal functions used by authoring
+  tools such as MaplatEditor (the source is `src/iiif/manifest.ts`); they are not
+  listed in the `exports` of `package.json`, so user code cannot import them. How
+  they read a manifest is described in
+  [docs/api/iiif-manifest.md](docs/api/iiif-manifest.md).
+- These functions do not fetch and do not use the DOM. HTML values are passed
+  through a sanitizer given by the caller. The sanitizer `sanitizeIiifHtml` (which
+  needs a browser `window`) is public API and can be imported from
   `@maplat/core/common`, together with the `MapMetaIiif` type and the
-  `isIiifMetadataEntry` guard). It keeps only `a`, `b`, `br`,
+  `isIiifMetadataEntry` guard. It keeps only `a`, `b`, `br`,
   `i`, `p`, `small`, `span`, `sub`, `sup` and the `href` attribute (http(s) only;
   links open in a new tab with `rel="noopener noreferrer"`).
 
@@ -353,6 +358,25 @@ MaplatEditor:
 - **API signatures** (release-dependent): see [`docs/api/`](docs/api/)
 - **Conceptual guide** (release-independent): see the
   [Wiki API-Reference](https://github.com/code4history/MaplatCore/wiki/API-Reference)
+
+### Demo
+
+Public demo: <https://code4history.dev/MaplatCore/> (deployed to GitHub Pages from
+`master`). Locally, start it with `pnpm dev` and open `http://localhost:5175/`.
+
+- `?region=<ID>` selects the region (`morioka`, `nobeoka`, `nara`, `tatebayashi`,
+  `hiroshima`, `niigata`). Without it, or with an unknown ID, `morioka` is used.
+  Changing the region selector on the page reloads it with this parameter.
+- Tile cache: the demo registers the Weiwudi Service Worker (`weiwudi-sw.js`) and
+  then starts with `enableCache: true`. The "キャッシュ" (cache) section of the
+  control panel shows the state and statistics (stored bytes, fetched / total
+  tiles) and lets you try "全タイルを取得" (fetch all tiles, with progress and
+  cancel) and "キャッシュを消す" (clear the cache). For a map whose total tile
+  count is unknown or exceeds 3000, bulk fetching is disabled and the reason is
+  shown.
+- `?cache=0` starts the demo without the cache. It also starts without the cache,
+  showing the reason in that section, when Service Workers are unavailable or the
+  registration does not finish within 15 seconds.
 
 ### Development
 
@@ -394,7 +418,7 @@ The E2E tests need no Google Maps API key. To try the Google maps locally, set `
 <!-- SECTION 6: Prerequisites -->
 ## Prerequisites
 
-> Node.js follows the GitHub Actions `test.yml` matrix; pnpm follows the `engines` field in `package.json` (ADR-0012: release-dependent).
+> Node.js follows the GitHub Actions `test.yml` matrix; pnpm follows the `engines` field in `package.json` (release-dependent).
 
 - Node.js: v22 or v24 (tested via GitHub Actions)
 - pnpm: `>=9.0.0` (required; `package.json` enforces pnpm)
@@ -451,7 +475,7 @@ repository; the Sister repositories table below is the public substitute)*
 | Project info / features / cases | <https://www.maplat.jp/en/> | Product site |
 | Sponsor / business inquiry | <https://www.nayuta-inc.co.jp/en/> | Corporate site (Nayuta, Inc.) |
 
-> ADR-0013: Apache-licensed repositories (this one) link to both sites.
+> Apache-licensed repositories (this one) link to both sites.
 > MIT-licensed sister repos (Weiwudi / Quyuan / Chuci) carry no Nayuta link.
 
 <!-- SECTION 10: License -->

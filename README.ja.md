@@ -37,7 +37,7 @@ MaplatCore は Apache License 2.0（バージョン 0.13.2 以降）のオープ
 
 <!-- release-pinned:start -->
 > **現在のリリース: `1.2.0`**。このブロックは本リポジトリで唯一
-> リリース版数を持つ場所です（ADR-0012）。ブロックの外はすべて 1.0 正式版を前提に
+> リリース版数を持つ場所です。ブロックの外はすべて 1.0 正式版を前提に
 > 書かれています。
 > npm: [`@maplat/core`](https://www.npmjs.com/package/@maplat/core)
 > [![npm](https://img.shields.io/npm/v/@maplat/core)](https://www.npmjs.com/package/@maplat/core)
@@ -308,12 +308,15 @@ MaplatCore はフィールドの意味の定義と、結果として得られる
 - `proposeIiifBindings` の題名の既定は常に Manifest の `label` です。読めない場合は
   `title` を返さず、canvas の label へは切り替えません。利用者が「このコマ」を選ぶための
   明示的な `{ from: "canvas", property: "label" }` の指定は引き続き使えます。
-- Manifest を読んで写す値を取り出す関数は `src/iiif/manifest.ts` にあります
-  （`listIiifCanvases`・`proposeIiifBindings`・`resolveIiifMetadata`・`compareIiifCopy`・
-  `iiifRightsToLicense`・`IIIF_BINDABLE_KEYS`）。取得をせず、DOM も使いません。HTML の値は
-  呼び出し側が渡すサニタイザに通します。`src/sanitize.ts` の `sanitizeIiifHtml`
-  （ブラウザの `window` が要ります）を渡してください。`sanitizeIiifHtml` は、型 `MapMetaIiif`・
-  型ガード `isIiifMetadataEntry` とともに `@maplat/core/common` からも import できます。残すのは `a`・`b`・`br`・`i`・`p`・
+- Manifest を読んで写す値を取り出す関数（`listIiifCanvases`・`proposeIiifBindings`・
+  `resolveIiifMetadata`・`compareIiifCopy`・`iiifRightsToLicense`・`IIIF_BINDABLE_KEYS`）は、
+  **パッケージの公開 API ではありません**。MaplatEditor などの作成の道具が使う内部の関数で
+  （ソースは `src/iiif/manifest.ts`）、`package.json` の `exports` に載っていないため、
+  利用者のコードからは import できません。読み方は
+  [docs/api/iiif-manifest.ja.md](docs/api/iiif-manifest.ja.md) にあります。
+- これらの関数は取得をせず、DOM も使いません。HTML の値は呼び出し側が渡すサニタイザに通します。
+  サニタイザ `sanitizeIiifHtml`（ブラウザの `window` が要ります）は公開 API で、型 `MapMetaIiif`・
+  型ガード `isIiifMetadataEntry` とともに `@maplat/core/common` から import できます。残すのは `a`・`b`・`br`・`i`・`p`・
   `small`・`span`・`sub`・`sup` と `href` 属性だけで（`http:`／`https:` のみ）、リンクは
   `rel="noopener noreferrer"` つきの新しいタブで開きます。
 
@@ -330,6 +333,22 @@ MaplatCore はフィールドの意味の定義と、結果として得られる
 - **概念解説**（リリース非依存）:
   [Wiki API-Reference](https://github.com/code4history/MaplatCore/wiki/API-Reference)
   を参照
+
+### デモ
+
+公開デモ: <https://code4history.dev/MaplatCore/>（`master` から GitHub Pages に配備）。
+手元では `pnpm dev` で起動し、`http://localhost:5175/` を開きます。
+
+- `?region=<ID>` で地域を選びます（`morioka`・`nobeoka`・`nara`・`tatebayashi`・`hiroshima`・
+  `niigata`）。無いときや知らない ID のときは `morioka` です。画面の地域の選択を変えると、
+  この引数を付けて読み込み直します。
+- タイルキャッシュ: デモは Weiwudi の Service Worker（`weiwudi-sw.js`）を登録してから
+  `enableCache: true` で起動します。操作パネルの節「キャッシュ」で、状態と統計（保存済みの
+  バイト数・取得済み／全体のタイル数）を見て、「全タイルを取得」（進み具合・中止）と
+  「キャッシュを消す」を試せます。全体のタイル数が分からない地図と 3000 枚を超える地図では、
+  一括取得を止めて理由を出します。
+- `?cache=0` を付けると、キャッシュ無しで起動します。Service Worker が使えない環境や、
+  登録が 15 秒以内に終わらないときも、キャッシュ無しで起動して理由を節に出します。
 
 ### 開発
 
@@ -371,7 +390,7 @@ E2E テストに Google Maps の API キーは要りません。手元で Google
 <!-- SECTION 6: Prerequisites -->
 ## 動作環境
 
-> Node.js は GitHub Actions の `test.yml` matrix、pnpm は `package.json` の `engines` フィールドに基づく（ADR-0012: リリース依存）。
+> Node.js は GitHub Actions の `test.yml` matrix、pnpm は `package.json` の `engines` フィールドに基づく（特定のリリースに紐づく値）。
 
 - Node.js: v22 または v24（GitHub Actions で検証済み）
 - pnpm: `>=9.0.0`（必須・`package.json` で pnpm を強制）
@@ -429,7 +448,7 @@ Maplat エコシステムの一部です。全容は下記エコシステム図�
 | プロジェクト情報・機能紹介・事例 | <https://www.maplat.jp/> | 製品サイト |
 | 支援企業・案件問い合わせ | <https://www.nayuta-inc.co.jp/> | コーポレートサイト（那由多社） |
 
-> ADR-0013: Apache ライセンスのリポジトリ（本リポジトリ）は両サイトへリンクします。
+> Apache ライセンスのリポジトリ（本リポジトリ）は両サイトへリンクします。
 > MIT ライセンスの姉妹リポジトリ（Weiwudi / Quyuan / Chuci）へは那由多社リンクを置きません。
 > 英語ページへ遷移する場合は `/en/` を付与してください（例: `https://www.maplat.jp/en/`）。
 

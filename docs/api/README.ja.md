@@ -2,7 +2,7 @@
 
 本ディレクトリは `@maplat/core` の**リリース依存 API シグネチャ**を保持します。
 
-ADR-0012 は Maplat の文書群を2層に分けます:
+Maplat の文書群は2層に分かれます:
 
 - **リリース依存シグネチャ**（メソッド名・引数・戻り値）— 本 `docs/api/` ディレクトリ。リリースごとに更新します。
 - **リリース非依存の概念解説**（利用パターン・設計メモ）— [Wiki API-Reference](https://github.com/code4history/MaplatCore/wiki/API-Reference)。
@@ -17,6 +17,8 @@ ADR-0012 は Maplat の文書群を2層に分けます:
   （`@maplat/core/element`: 属性とプロパティ・状態・委譲するメソッドと要素固有のメソッド・
   イベント・`uiHooks`）、共通の土台 `@maplat/core/common`、適合テスト
   `@maplat/core/conformance`、`MaplatApp` クラス（次のメジャー版 2.0 で閉じる）との関係
+- [`iiif-manifest.ja.md`](iiif-manifest.ja.md)（[English](iiif-manifest.md)）— IIIF Manifest を読む内部の関数
+  （`src/iiif/manifest.ts`。MaplatEditor などの作成の道具が使い、公開 API ではありません）の読み方
 
 ## README との関係
 
