@@ -2,7 +2,7 @@
 
 [日本語](iiif-manifest.ja.md)
 
-This page describes how the functions in `src/iiif/manifest.ts` (`listIiifCanvases`, `proposeIiifBindings`, `resolveIiifMetadata`, `compareIiifCopy`, `iiifRightsToLicense`, `IIIF_BINDABLE_KEYS`) read a manifest. They are not part of the package's public API: they are not listed in the `exports` of `package.json`, so user code cannot import them. They are internal functions used by authoring tools such as MaplatEditor.
+This page describes how the functions in `src/iiif/manifest.ts` (`listIiifCanvases`, `proposeIiifBindings`, `resolveIiifMetadata`, `compareIiifCopy`, `iiifRightsToLicense`, `IIIF_BINDABLE_KEYS`) read a manifest. They are not part of the package's public API: they are not in the public entry points (`exports`) of `package.json`, and their compatibility is not guaranteed. They are internal functions used by authoring tools such as MaplatEditor.
 
 ## Listing canvases (`listIiifCanvases`)
 
@@ -20,7 +20,7 @@ A IIIF value (`label`, `summary` / `description`, `requiredStatement` / `attribu
 
 When a value contains arrays inside arrays, they are flattened and the values inside are read. For example, a metadata value `["Creator", ["Author name"]]` is read as the two values `Creator` and `Author name`. Several values are joined with ` / ` for keys stored as text, such as the title, and with `<br>` for keys stored as HTML and for metadata values. Following nested arrays has a depth limit (32 levels), and it also stops on a value that contains itself (a cycle).
 
-In the metadata table (`copiedMetadata`), entries whose value is empty (`{"en": []}`, an empty string, whitespace only, an empty array, nested arrays that are empty all the way down, an entry with no value, and so on) are dropped without a warning, because an empty entry has nothing worth copying. Entries with content in a shape that cannot be read (a number, a cyclic value, nesting deeper than the limit, and so on) are dropped with the warning "Manifest の metadata の値の形が読めません" (the shape of the metadata value cannot be read; "canvas の …" for canvas entries).
+In the metadata table (`copiedMetadata`), entries whose value is empty (`{"en": []}`, an empty string, whitespace only, an empty array, nested arrays that are empty all the way down, an entry with no value, and so on) are dropped without a warning, because an empty entry has nothing worth copying. Entries with content in a shape that cannot be read (a number, a cyclic value, nesting deeper than the limit, and so on) are dropped with the warning `Manifest の metadata の値の形が読めません` (the shape of the metadata value cannot be read; "canvas の …" for canvas entries). If at least one value can be read, however, only the unreadable parts are dropped, without a warning, and the entry is kept.
 
 Bound keys such as the title are checked separately from the metadata table. When the value is missing (including an empty string), the warning is `鍵 <key> の IIIF の値がありません` (there is no IIIF value); when a value is present but cannot be read, such as an empty language map, the warning is `鍵 <key> の IIIF の値の形が読めません` (the shape of the IIIF value cannot be read). In both cases the key is left unresolved (`unresolved`). A license (`rights` / `license`) is read only from a URI string, and its warnings say `ライセンスの値` (license value) instead of `IIIF の値`.
 

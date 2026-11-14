@@ -2,7 +2,7 @@
 
 [English](iiif-manifest.md)
 
-`src/iiif/manifest.ts` の関数（`listIiifCanvases`・`proposeIiifBindings`・`resolveIiifMetadata`・`compareIiifCopy`・`iiifRightsToLicense`・`IIIF_BINDABLE_KEYS`）の読み方を説明します。これらはパッケージの公開 API ではありません。`package.json` の `exports` に載っていないため、利用者のコードからは import できません。MaplatEditor などの作成の道具が使う内部の関数です。
+`src/iiif/manifest.ts` の関数（`listIiifCanvases`・`proposeIiifBindings`・`resolveIiifMetadata`・`compareIiifCopy`・`iiifRightsToLicense`・`IIIF_BINDABLE_KEYS`）の読み方を説明します。これらはパッケージの公開 API ではありません。`package.json` の公開の入口（`exports`）には無く、互換も保証しません。MaplatEditor などの作成の道具が使う内部の関数です。
 
 ## canvas の一覧（`listIiifCanvases`）
 
@@ -20,7 +20,7 @@ IIIF の値（`label`・`summary`／`description`・`requiredStatement`／`attri
 
 値の中に配列の中の配列があるときは、平らにして中の値を読みます。たとえば metadata の値が `["Creator", ["作者名"]]` なら、`Creator` と `作者名` の 2 つを読みます。複数の値は、題名など文字として入る鍵では ` / `、HTML として入る鍵と metadata の値では `<br>` でつなぎます。入れ子をたどる深さには上限（32 段）があり、自分自身を含む（循環する）値でも止まります。
 
-書誌表（`copiedMetadata`）では、値が空の行（`{"en": []}`・空の文字列・空白だけの値・空の配列・入れ子の配列の中まで空の値・値のない行など）を警告なしで捨てます。写す側から見て、空の行には写す価値がないためです。中身があって形の読めない値（数、循環する値、深さの上限を超えた入れ子など）の行は、「Manifest の metadata の値の形が読めません」（canvas の行は「canvas の …」）と警告して捨てます。
+書誌表（`copiedMetadata`）では、値が空の行（`{"en": []}`・空の文字列・空白だけの値・空の配列・入れ子の配列の中まで空の値・値のない行など）を警告なしで捨てます。写す側から見て、空の行には写す価値がないためです。中身があって形の読めない値（数、循環する値、深さの上限を超えた入れ子など）の行は、「Manifest の metadata の値の形が読めません」（canvas の行は「canvas の …」）と警告して捨てます。ただし、読める値が 1 つでもあれば、読めない部分だけを警告なしで外して行を残します。
 
 題名など結び付けた鍵の判定は書誌表とは別です。値が無い（空の文字列を含む）ときは「鍵 〈鍵〉 の IIIF の値がありません」、空の言語の表のように値はあっても読めないときは「鍵 〈鍵〉 の IIIF の値の形が読めません」と警告し、その鍵を未解決（`unresolved`）にします。ライセンス（`rights`／`license`）は URI の文字列だけを読み、警告の文は「IIIF の値」の代わりに「ライセンスの値」になります。
 

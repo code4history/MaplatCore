@@ -336,7 +336,7 @@ MaplatEditor:
   `compareIiifCopy`, `iiifRightsToLicense`, `IIIF_BINDABLE_KEYS`) are **not part
   of the package's public API**. They are internal functions used by authoring
   tools such as MaplatEditor (the source is `src/iiif/manifest.ts`); they are not
-  listed in the `exports` of `package.json`, so user code cannot import them. How
+  in the public entry points (`exports` of `package.json`), and their compatibility is not guaranteed. How
   they read a manifest is described in
   [docs/api/iiif-manifest.md](docs/api/iiif-manifest.md).
 - These functions do not fetch and do not use the DOM. HTML values are passed

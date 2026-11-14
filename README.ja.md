@@ -311,8 +311,8 @@ MaplatCore はフィールドの意味の定義と、結果として得られる
 - Manifest を読んで写す値を取り出す関数（`listIiifCanvases`・`proposeIiifBindings`・
   `resolveIiifMetadata`・`compareIiifCopy`・`iiifRightsToLicense`・`IIIF_BINDABLE_KEYS`）は、
   **パッケージの公開 API ではありません**。MaplatEditor などの作成の道具が使う内部の関数で
-  （ソースは `src/iiif/manifest.ts`）、`package.json` の `exports` に載っていないため、
-  利用者のコードからは import できません。読み方は
+  （ソースは `src/iiif/manifest.ts`）、公開の入口（`package.json` の `exports`）には無く、
+  互換も保証しません。読み方は
   [docs/api/iiif-manifest.ja.md](docs/api/iiif-manifest.ja.md) にあります。
 - これらの関数は取得をせず、DOM も使いません。HTML の値は呼び出し側が渡すサニタイザに通します。
   サニタイザ `sanitizeIiifHtml`（ブラウザの `window` が要ります）は公開 API で、型 `MapMetaIiif`・
