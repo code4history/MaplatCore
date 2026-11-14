@@ -24,6 +24,16 @@ IIIF の値（`label`・`summary`／`description`・`requiredStatement`／`attri
 
 題名など結び付けた鍵の判定は書誌表とは別です。値が無い（空の文字列を含む）ときは「鍵 〈鍵〉 の IIIF の値がありません」、空の言語の表のように値はあっても読めないときは「鍵 〈鍵〉 の IIIF の値の形が読めません」と警告し、その鍵を未解決（`unresolved`）にします。ライセンス（`rights`／`license`）は URI の文字列だけを読み、警告の文は「IIIF の値」の代わりに「ライセンスの値」になります。
 
+## 写した値との比べ方（`compareIiifCopy`）
+
+`compareIiifCopy(current, copiedValues, fresh, lang)` は、鍵・言語ごとに 1 行（`{ key, lang, humanEdited, iiifChanged }`）を返します。人が直したか（`humanEdited`）は今の地図の値と前回写した時点の値（`copiedValues`）で、IIIF の側が変わったか（`iiifChanged`）は前回写した時点の値と取り直した値（`fresh`）で見ます。今の IIIF の値と今の地図の値は直接比べません。今の地図の値が文字列なら、`lang` の言語の値として比べます。
+
+取り直した値（`fresh`）を渡すと、前回写した値に無い鍵・言語も行になります。写した後で新しく結び付けた鍵、前回は Manifest に値が無く写せなかった鍵、取り直した値で増えた言語がこれに当たります。これらの行は IIIF の側が変わった（`iiifChanged: true`）とし、写した時点の値が無いので、人が直したかは今の地図にその言語の値があるかで決めます。今の地図の値が文字列（言語の区別なし。空の文字列を含む）なら、どの言語の行でも値がある（人が直した）とみなします。文字列の欄の言語は `lang` としか分からず、別の言語の値で黙って置き換えないためです。
+
+`fresh` には、今の結び付けで Manifest から写した値（`resolveIiifMetadata` の `copiedValues`）を渡します。結び付けを外した鍵を `fresh` から除くのは呼び出す側の役目です。`fresh` にはライセンスの注記の鍵（`licenseNote`・`dataLicenseNote`）も入るので、前回写していなければ注記の鍵も行になります。一覧に出すかどうかは呼び出す側で絞ります。
+
+行の順は、`copiedValues` の鍵ごとに前回写した言語、続けてその鍵で増えた言語を並べ、最後に `copiedValues` に無い鍵を取り直した値の順に並べます。`fresh` を渡さない（`undefined`）ときは、`copiedValues` にある鍵・言語だけを返し、`iiifChanged` は `undefined` です。
+
 ## 扱わないもの
 
 対象は先頭の画像アノテーションの単一画像 body です。複数画像の合成、Choice、外部 AnnotationPage の読み込みは扱いません。サービスを複数列挙していても、通信失敗時に別候補へ自動再試行する API ではありません。
