@@ -498,6 +498,18 @@ or a layer-B element on top of `<maplat-app>`:
   `escapeAttr`, `toPlainText`, `buildSlideAttrs`, `createElement`, `assets`.
   Exported from `@maplat/core/common` only: `normalizeArg`, `META_KEYS`,
   `META_KEYS_OPTION`.
+- POI templates (`poiTemplate` / `iconTemplate`, evaluated with Nunjucks; see
+  "POI template syntax" above), exported from `@maplat/core/common` only:
+  `applyPoiTemplates(poi, ...ancestors)`, `createIconSet(poi, ...ancestors)`,
+  `createHtmlFromTemplate(poi, ...ancestors)`. These are the functions
+  `MaplatApp` itself uses to draw markers and for `getMarker`, so another
+  implementation that calls them shows the same result for the same setting
+  file. `ancestors` are the levels nearest first (the POI's layer, then the map,
+  then the app); a level without a usable template is skipped. The POI's own
+  `icon` / `html` wins. `applyPoiTemplates` and `createIconSet` return a copy and
+  do not modify the POI passed in; `createHtmlFromTemplate` alone writes
+  `html` / `poiStyle` into the object it is given. Templates are evaluated in the
+  page (Nunjucks is not a sandbox), so the same trust rules as for setting files apply.
 
 `@maplat/core/element` itself exports the element class `MaplatAppElement`,
 `defineMaplatAppElement(tagName?)` (registers the element under another tag

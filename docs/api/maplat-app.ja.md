@@ -443,6 +443,14 @@ S      = テンプレートの文字列から {% raw %}…{% endraw %}・{% verb
 - 補助関数。`@maplat/core` からも export しているもの: `sanitizeHtml`・`escapeAttr`・
   `toPlainText`・`buildSlideAttrs`・`createElement`・`assets`。`@maplat/core/common` だけが
   export するもの: `normalizeArg`・`META_KEYS`・`META_KEYS_OPTION`。
+- POI テンプレート（`poiTemplate`・`iconTemplate`。Nunjucks で評価する。上の「POI テンプレートの記法」）の
+  評価。`@maplat/core/common` だけが export する: `applyPoiTemplates(poi, ...ancestors)`・
+  `createIconSet(poi, ...ancestors)`・`createHtmlFromTemplate(poi, ...ancestors)`。`MaplatApp` がマーカーの描画と
+  `getMarker` に使う関数そのものなので、別の実装がこれを呼べば同じ設定ファイルで同じ結果になります。
+  `ancestors` は近い段から順に渡します（POI のレイヤー → 地図 → アプリ）。使えるテンプレートの無い段は
+  飛ばし、POI 自身の `icon`・`html` が勝ちます。`applyPoiTemplates`・`createIconSet` は複製を返し、渡した POI を
+  書き換えません（`createHtmlFromTemplate` だけは渡したオブジェクトに `html`・`poiStyle` を書き込みます）。
+  テンプレートはページの権限で評価されるので（Nunjucks はサンドボックスではない）、設定ファイルと同じ信頼の扱いです。
 
 `@maplat/core/element` 自身は、要素のクラス `MaplatAppElement`・`defineMaplatAppElement(tagName?)`
 （別のタグ名で登録する。既定のタグは import で登録済み）・要素が使う上記の名前の表・非推奨の

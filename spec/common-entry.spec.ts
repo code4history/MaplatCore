@@ -1,6 +1,6 @@
 // @maplat/core/common・@maplat/core/conformance の入口の機械検査。
 //   1. 入口からたどれる import の連鎖（src の相対 import を再帰でたどる）に、OpenLayers・Weiwudi・
-//      @maplat/transform・turf を入れない。外部のパッケージは DOMPurify だけ
+//      @maplat/transform・turf を入れない。外部のパッケージは DOMPurify と Quyuan の @c4h/quyuan/template だけ
 //   2. 公開物の一覧（common の export）と、@maplat/core からの従来の export が壊れていないこと
 //   3. package.json の exports・sideEffects
 // ビルド後の dist/maplat_core_common.js の検査は scripts/verify-common-bundle.mjs（build で走る）。
@@ -54,8 +54,9 @@ describe("@maplat/core/common の入口が OpenLayers 等を引き込まない",
       const { files, external } = walk(entry);
       const bad = [...external.keys()].filter(s => FORBIDDEN.test(s));
       expect(bad, `forbidden imports: ${bad.map(b => `${b} ← ${[...external.get(b)!]}`).join(", ")}`).toEqual([]);
-      // 外部のパッケージは DOMPurify だけ（DOM だけに依る）
-      expect([...external.keys()].filter(s => s !== "dompurify")).toEqual([]);
+      // 外部のパッケージは DOMPurify（DOM だけに依る）と、POI テンプレートを評価する Quyuan の
+      // @c4h/quyuan/template（Nunjucks を同梱した単体のモジュール。地図に依らない）だけ
+      expect([...external.keys()].filter(s => s !== "dompurify" && s !== "@c4h/quyuan/template")).toEqual([]);
       // 地図の実装のファイルを含まない
       for (const f of files) {
         expect(f).not.toMatch(/^src\/((index|element|map_ex|source_ex|view_ex)\.ts$|source\/)/);
@@ -81,14 +82,25 @@ describe("@maplat/core/common の入口が OpenLayers 等を引き込まない",
       "src/functions.ts",
       "src/meta_keys.ts",
       "src/sanitize-allowlist.json",
-      "src/sanitize.ts"
+      "src/sanitize.ts",
+      "src/template_works.ts"
     ]);
   });
 });
 
 describe("@maplat/core/common の公開物", () => {
   it("補助関数", () => {
-    for (const name of ["sanitizeHtml", "escapeAttr", "toPlainText", "buildSlideAttrs", "createElement", "normalizeArg"]) {
+    for (const name of [
+      "sanitizeHtml",
+      "escapeAttr",
+      "toPlainText",
+      "buildSlideAttrs",
+      "createElement",
+      "normalizeArg",
+      "createIconSet",
+      "createHtmlFromTemplate",
+      "applyPoiTemplates"
+    ]) {
       expect(typeof (common as any)[name], name).toBe("function");
     }
     expect(Object.keys(common.assets).sort()).toEqual(

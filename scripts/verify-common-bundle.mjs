@@ -48,6 +48,8 @@ function inspect(file) {
   };
 }
 
+// common は外部の import を持たない（DOMPurify と、POI テンプレートを評価する Quyuan の @c4h/quyuan/template
+// 〔Nunjucks を同梱した単体のモジュールで、地図に依らない〕は成果物に同梱する）。∴ 許可する import は空のまま。
 for (const [file, allowedImports] of [
   ["maplat_core_common.js", []],
   ["maplat_core_conformance.js", ["./maplat_core_common.js"]]
