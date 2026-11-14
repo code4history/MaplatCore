@@ -344,9 +344,9 @@ describe("compareIiifCopy — 前回写した値に無い鍵・言語も行に�
 
     expect(rows).toEqual([
       { key: "title", lang: "ja", humanEdited: false, iiifChanged: false },
-      // 文字列の値は lang の言語の値として見るので、ja だけ人が直したとみなす
+      // 欄が文字列なら、どの言語の行でも値があるとみなす（別の言語の値で黙って上書きしない）
       { key: "description", lang: "ja", humanEdited: true, iiifChanged: true },
-      { key: "description", lang: "en", humanEdited: false, iiifChanged: true },
+      { key: "description", lang: "en", humanEdited: true, iiifChanged: true },
     ]);
   });
 
@@ -367,6 +367,31 @@ describe("compareIiifCopy — 前回写した値に無い鍵・言語も行に�
       { key: "title", lang: "fr", humanEdited: true, iiifChanged: true },
       { key: "attr", lang: "ja", humanEdited: false, iiifChanged: false },
     ]);
+  });
+
+  it("文字列で写した欄に取り直した値で言語が増えても、その言語の行は人が直した扱いになる", () => {
+    const rows = compareIiifCopy(
+      { title: "新潟市圖" },
+      { title: { ja: "新潟市圖" } },
+      { title: { ja: "新潟市圖", en: "Niigata" } },
+      "ja",
+    );
+
+    expect(rows).toEqual([
+      { key: "title", lang: "ja", humanEdited: false, iiifChanged: false },
+      { key: "title", lang: "en", humanEdited: true, iiifChanged: true },
+    ]);
+  });
+
+  it("後から結び付けた鍵の欄が文字列なら、別の言語の行も人が直した扱いになる", () => {
+    const rows = compareIiifCopy(
+      { description: "手で入れた説明" },
+      {},
+      { description: { en: "<p>Niigata in Meiji</p>" } },
+      "ja",
+    );
+
+    expect(rows).toEqual([{ key: "description", lang: "en", humanEdited: true, iiifChanged: true }]);
   });
 
   it("取り直した値が無いときは、前回写した値にある鍵・言語だけを返す（今までと同じ）", () => {

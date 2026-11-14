@@ -681,7 +681,8 @@ export function resolveIiifMetadata(
  * 人が直したかは今の値と写した時点の値で、IIIF の側が変わったかは写した時点の値と取り直した値で見る。
  * 今の IIIF の値と今の値を直接は比べない。取り直した値が無ければ IIIF の側が変わったかは判定しない。
  * 取り直した値にあって copiedValues に無い鍵・言語（写した後に結び付けた鍵、前回は値が無く写せなかった鍵、
- * 増えた言語）も行にする。その行は IIIF の側が変わったとみなし、人が直したかは今の地図に値があるかで見る。
+ * 増えた言語）も行にする。その行は IIIF の側が変わったとみなし、人が直したかは今の地図に値があるかで見る
+ * （欄が文字列なら、どの言語の行でも値があるとみなす）。
  * 行の順は、copiedValues の鍵ごとに写した言語 → 増えた言語、その後に copiedValues に無い鍵を取り直した値の順で並べる。
  */
 export function compareIiifCopy(
@@ -705,6 +706,10 @@ export function compareIiifCopy(
         : undefined
       : currentValue?.[language];
   };
+  // 写した時点の値が無い行で、今の地図に値があるか。欄が文字列（言語の区別なし）なら、どの言語の行でも
+  // 「もう誰かが書いた値がある」とみなす（言語は lang としか分からないため。別の言語の値で黙って上書きしない）
+  const hasNow = (key: string, language: string): boolean =>
+    typeof current?.[key] === "string" || nowOf(key, language) !== undefined;
   const copiedTables = copiedValues ?? {};
   for (const [key, table] of Object.entries(copiedTables)) {
     if (!table) continue;
@@ -717,7 +722,7 @@ export function compareIiifCopy(
     // 前回写した後に取り直した値で増えた言語は、その鍵の行の後ろに足す
     for (const language of Object.keys(fresh?.[key] ?? {})) {
       if (Object.prototype.hasOwnProperty.call(table, language)) continue;
-      rows.push({ key, lang: language, humanEdited: nowOf(key, language) !== undefined, iiifChanged: true });
+      rows.push({ key, lang: language, humanEdited: hasNow(key, language), iiifChanged: true });
     }
   }
   // 前回写した値に無い鍵（後から結び付けた・前回は値が無く写せなかった）は、最後に取り直した値の順で足す。
@@ -725,7 +730,7 @@ export function compareIiifCopy(
   for (const [key, table] of Object.entries(fresh ?? {})) {
     if (!table || copiedTables[key]) continue;
     for (const language of Object.keys(table)) {
-      rows.push({ key, lang: language, humanEdited: nowOf(key, language) !== undefined, iiifChanged: true });
+      rows.push({ key, lang: language, humanEdited: hasNow(key, language), iiifChanged: true });
     }
   }
   return rows;
