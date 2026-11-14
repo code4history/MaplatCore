@@ -106,15 +106,16 @@ function markerIconFor(core: { __selectedMarker?: any }, data: any): any {
 }
 
 /**
- * POI を、格納している実体・その層・祖先（アプリの層ならアプリ、地図の層なら source）で引く。
+ * POI を、格納している実体と、テンプレートを当てる祖先（近い段から順）で引く。
+ * 祖先はアプリの層なら [層, アプリ]、地図の層なら [層, 地図（source）, アプリ]（1.2 までと同じ。マーカーの描画と同じ）。
  * アプリの層（`#` なし）は最初に当たったもの、地図の層（`#` あり）は最後に当たったもの。
  */
-function findPoiEntry(app: any, id: string): { poi: any; cluster: any; ancestor: any } | undefined {
+function findPoiEntry(app: any, id: string): { poi: any; ancestors: any[] } | undefined {
   if (!id.includes("#")) {
     for (const key of Object.keys(app.pois)) {
       const cluster = app.pois[key];
       for (const poi of cluster.pois) {
-        if (poi.id === id) return { poi, cluster, ancestor: app };
+        if (poi.id === id) return { poi, ancestors: [cluster, app] };
       }
     }
     return undefined;
@@ -122,11 +123,11 @@ function findPoiEntry(app: any, id: string): { poi: any; cluster: any; ancestor:
   const splits = id.split("#");
   const source = ownEntry<MaplatSource>(app.cacheHash, splits[0]) as any;
   if (!source?.pois) return undefined;
-  let ret: { poi: any; cluster: any; ancestor: any } | undefined;
+  let ret: { poi: any; ancestors: any[] } | undefined;
   for (const key of Object.keys(source.pois)) {
     const cluster = source.pois[key];
     for (const poi of cluster.pois) {
-      if (poi.id === splits[1]) ret = { poi, cluster, ancestor: source };
+      if (poi.id === splits[1]) ret = { poi, ancestors: [cluster, source, app] };
     }
   }
   return ret;
@@ -1786,8 +1787,9 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
       // 1. 描く全件を集める（この時点では層に触らない）
       const items: MarkerItem[] = [];
       let selected: MarkerItem | undefined;
-      const collect = (data: any, cluster: any, ancestor: any) => {
-        const dataCopy = applyPoiTemplates(data, cluster, ancestor);
+      // 祖先は近い段から: アプリの層は (層, アプリ)、地図の層は (層, 地図, アプリ)
+      const collect = (data: any, ...ancestors: any[]) => {
+        const dataCopy = applyPoiTemplates(data, ...ancestors);
         const item: MarkerItem = {
           data: dataCopy,
           icon: markerIconFor(this, dataCopy)
@@ -1810,7 +1812,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
             const cluster = source.pois[key];
             if (!cluster.hide) {
               for (const data of cluster.pois) {
-                collect(data, cluster, source);
+                collect(data, cluster, source, this);
               }
             }
           }
@@ -1901,7 +1903,7 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
   getMarker(id: any) {
     const entry = findPoiEntry(this, id);
     if (!entry) return undefined;
-    return applyPoiTemplates(entry.poi, entry.cluster, entry.ancestor);
+    return applyPoiTemplates(entry.poi, ...entry.ancestors);
   }
   updateMarker(id: any, data: any, overwrite: any) {
     const poi = findPoiEntry(this, id)?.poi;

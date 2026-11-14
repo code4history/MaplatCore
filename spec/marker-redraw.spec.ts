@@ -246,3 +246,37 @@ describe("getMarker は描画の datum と同じ形（clickMarker の detail）�
     }
   });
 });
+
+describe("地図の層の POI に当てるテンプレートの祖先は (層, 地図, アプリ)", () => {
+  // 1.2 までと同じ順。地図の層にも地図にもテンプレートが無ければ、アプリの poiTemplate・iconTemplate が当たる
+  it("層・地図にテンプレートが無い POI は、アプリの poiTemplate・iconTemplate で描く", async () => {
+    const h = makeApp({ main: { pois: [{ namespaceID: "app_0", lnglat: [0, 0], name: "a" }] } });
+    h.self.poiTemplate = "<b>{{ name }}</b>";
+    h.self.poiStyle = "app-style";
+    h.self.iconTemplate = '{"icon": "app.png"}';
+    h.sources.A.pois = { main: { pois: [{ namespaceID: "A#0", lnglat: [0, 0], name: "m" }] } };
+    h.redraw();
+    await h.complete();
+    const datum = (id: string) => h.front.features.map((f: any) => f.get("datum")).find((d: any) => d.namespaceID === id);
+    expect(datum("A#0")).toMatchObject({ html: "<b>m</b>", poiStyle: "app-style", icon: "app.png" });
+    expect(datum("app_0")).toMatchObject({ html: "<b>a</b>", icon: "app.png" });
+    // 格納している POI は書き換えない
+    expect(h.sources.A.pois.main.pois[0]).not.toHaveProperty("html");
+  });
+
+  it("近い段が勝つ: 層 → 地図 → アプリ", async () => {
+    const h = makeApp();
+    h.self.poiTemplate = "<b>app</b>";
+    h.self.icon = "app.png";
+    h.sources.A.poiTemplate = "<i>map</i>";
+    h.sources.A.pois = {
+      own: { pois: [{ namespaceID: "A#0", lnglat: [0, 0] }], poiTemplate: "<u>layer</u>", icon: "layer.png" },
+      bare: { pois: [{ namespaceID: "A#1", lnglat: [0, 0] }] }
+    };
+    h.redraw();
+    await h.complete();
+    const datum = (id: string) => h.front.features.map((f: any) => f.get("datum")).find((d: any) => d.namespaceID === id);
+    expect(datum("A#0")).toMatchObject({ html: "<u>layer</u>", icon: "layer.png" });
+    expect(datum("A#1")).toMatchObject({ html: "<i>map</i>", icon: "app.png" });
+  });
+});
