@@ -15,8 +15,8 @@ Maplat の文書群は2層に分かれます:
   （地図状態・座標系・マーカー・ライン/ベクター・POI レイヤー・GPS・イベント）
 - [`maplat-app.ja.md`](maplat-app.ja.md) — Custom Element `<maplat-app>`
   （`@maplat/core/element`: 属性とプロパティ・状態・委譲するメソッドと要素固有のメソッド・
-  イベント・`uiHooks`）、共通の土台 `@maplat/core/common`、適合テスト
-  `@maplat/core/conformance`、`MaplatApp` クラス（次のメジャー版 2.0 で閉じる）との関係
+  イベント・`uiHooks`）、共通の土台 `@maplat/core/common`、POI テンプレートの評価
+  `@maplat/core/template`、適合テスト `@maplat/core/conformance`、`MaplatApp` クラス（次のメジャー版 2.0 で閉じる）との関係
 - [`iiif-manifest.ja.md`](iiif-manifest.ja.md)（[English](iiif-manifest.md)）— IIIF Manifest を読む内部の関数
   （`src/iiif/manifest.ts`。MaplatEditor などの作成の道具が使い、公開 API ではありません）の読み方
 

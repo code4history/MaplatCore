@@ -3,8 +3,7 @@
 //   import { sanitizeHtml, MAPLAT_APP_EVENTS, MaplatAppElementBase } from "@maplat/core/common";
 //   import type { MaplatAppElement, Viewpoint } from "@maplat/core/common";
 //
-// **地図も描画も持たない**（依存は DOM と DOMPurify、POI テンプレートの評価に使う Quyuan の
-// @c4h/quyuan/template〔Nunjucks を同梱した単体のモジュール〕だけ）。この入口からたどれる import の連鎖に
+// **地図も描画も持たない**（依存は DOM と DOMPurify だけ）。この入口からたどれる import の連鎖に
 // OpenLayers・Weiwudi・@maplat/transform・turf を入れない（spec/common-entry.spec.ts がソースの
 // import を、scripts/verify-common-bundle.mjs がビルド後の dist/maplat_core_common.js を確かめる）。
 // 副作用も持たない（要素を登録しない）。要素の登録は "@maplat/core/element" 等の入口が行う。
@@ -20,9 +19,6 @@ export { assets } from "./assets";
 export { normalizeArg } from "./functions";
 export { META_KEYS, META_KEYS_OPTION } from "./meta_keys";
 export { sanitizeIiifHtml } from "./sanitize";
-// POI テンプレート（poiTemplate・iconTemplate）の評価。MaplatApp のマーカーの描画と getMarker が使う
-// 関数そのもの（同じ設定ファイルなら同じ結果になる）。上位の実装が評価を写さずに使えるように出す。
-export { createIconSet, createHtmlFromTemplate, applyPoiTemplates } from "./template_works";
 
 // ---- 層 A・層 B の名前の表と型 ----
 export {

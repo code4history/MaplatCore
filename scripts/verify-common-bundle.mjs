@@ -1,7 +1,10 @@
 #!/usr/bin/env node
-// ビルド後の @maplat/core/common（dist/maplat_core_common.js）と @maplat/core/conformance
-// （dist/maplat_core_conformance.js）に、OpenLayers・Weiwudi・@maplat/transform・turf 由来のコードが
-// 入っていないことを確かめる。`pnpm run build` の最後に走る。
+// ビルド後の @maplat/core/common（dist/maplat_core_common.js）・@maplat/core/conformance
+// （dist/maplat_core_conformance.js）・@maplat/core/template（dist/maplat_core_template.js）に、
+// OpenLayers・Weiwudi・@maplat/transform・turf 由来のコードが入っていないことを確かめる。
+// あわせて、Nunjucks（Quyuan の @c4h/quyuan/template）が common・conformance・element に入っていないこと
+// （element の利用者に本体の分と 2 重に載せない）と、template には入っていること（対照）を確かめる。
+// `pnpm run build` の最後に走る。
 //
 // 判定（どれか 1 つでも当たれば失敗。exit code 1）:
 //   (a) ソースマップの sources に node_modules/ol/・@c4h/weiwudi・@maplat/transform・@turf・
@@ -21,6 +24,9 @@ const FORBIDDEN_SOURCE = /node_modules\/(?:\.pnpm\/[^/]+\/node_modules\/)?(ol|@c
 const FORBIDDEN_IMPORT = /(?:\bfrom|\bimport)\s*\(?\s*["'](ol|ol\/[^"']*|@c4h\/weiwudi[^"']*|@maplat\/transform[^"']*|@turf\/[^"']*|maplibre-gl|mapbox-gl)["']/;
 // OpenLayers の目印（ol/Map・ol/css・ol/renderer が使う DOM の class 名）
 const OL_MARKERS = ["ol-viewport", "ol-overlaycontainer-stopevent", "ol-unselectable", "ol-layer"];
+// Nunjucks（@c4h/quyuan/template）の目印: ソースマップの sources の Quyuan と、Nunjucks の例外の文言
+const NUNJUCKS_SOURCE = /@c4h\/quyuan\/|node_modules\/(?:\.pnpm\/[^/]+\/node_modules\/)?nunjucks\//;
+const NUNJUCKS_MARKER = "Template render error";
 
 let failed = false;
 const fail = msg => {
@@ -44,15 +50,17 @@ function inspect(file) {
     forbiddenSources: sources ? sources.filter(s => FORBIDDEN_SOURCE.test(s)) : [],
     forbiddenImport: code.match(FORBIDDEN_IMPORT)?.[0] ?? null,
     markers: OL_MARKERS.filter(m => code.includes(m)),
+    nunjucks: (sources || []).some(x => NUNJUCKS_SOURCE.test(x)) || code.includes(NUNJUCKS_MARKER),
     imports: [...code.matchAll(/(?:^|\n)\s*(?:import|export)\s[^;]*?from\s*["']([^"']+)["']/g)].map(m => m[1])
   };
 }
 
-// common は外部の import を持たない（DOMPurify と、POI テンプレートを評価する Quyuan の @c4h/quyuan/template
-// 〔Nunjucks を同梱した単体のモジュールで、地図に依らない〕は成果物に同梱する）。∴ 許可する import は空のまま。
-for (const [file, allowedImports] of [
-  ["maplat_core_common.js", []],
-  ["maplat_core_conformance.js", ["./maplat_core_common.js"]]
+// [成果物, 許可する import, Nunjucks を含むべきか]
+for (const [file, allowedImports, wantNunjucks] of [
+  ["maplat_core_common.js", [], false],
+  ["maplat_core_conformance.js", ["./maplat_core_common.js"], false],
+  // POI テンプレートの評価だけの入口。Nunjucks を同梱し、外部の import は持たない
+  ["maplat_core_template.js", [], true]
 ]) {
   const r = inspect(file);
   if (!r) continue;
@@ -63,6 +71,8 @@ for (const [file, allowedImports] of [
   else ok(`${file}: ol / weiwudi / @maplat/transform / turf の import が無い`);
   if (r.markers.length) fail(`${file}: OpenLayers の目印 ${r.markers.join(", ")}`);
   else ok(`${file}: OpenLayers の目印（${OL_MARKERS.join(", ")}）が無い`);
+  if (r.nunjucks !== wantNunjucks) fail(`${file}: Nunjucks を${wantNunjucks ? "含まない（評価の関数が抜けた）" : "含む（element の利用者に 2 重に載る）"}`);
+  else ok(`${file}: Nunjucks を${wantNunjucks ? "含む" : "含まない"}`);
   const extra = r.imports.filter(i => !allowedImports.includes(i));
   if (extra.length) fail(`${file}: 想定外の import ${extra.join(", ")}`);
   else ok(`${file}: import は ${r.imports.length ? r.imports.join(", ") : "無し"}`);
@@ -78,6 +88,9 @@ for (const [file, allowedImports] of [
     if (missing.length) fail(`maplat_core_element.js: ${missing.join(", ")} を import していない（${r.imports.join(", ")}）`);
     else ok(`maplat_core_element.js: import は ${r.imports.join(", ")}`);
     if (r.code.includes("ELEMENT_ATTRIBUTES = [")) fail("maplat_core_element.js: 名前の表を二重に抱えている");
+    // Nunjucks は ./maplat_core.js の側にだけある（要素の入口自身と、それが import する common には無い）
+    if (r.nunjucks) fail("maplat_core_element.js: Nunjucks を抱えている（本体の分と 2 重になる）");
+    else ok("maplat_core_element.js: Nunjucks を含まない");
     // 要素の入口自身は OL を同梱しない（OL は ./maplat_core.js の側にある）
     if (r.forbiddenSources.length) fail(`maplat_core_element.js: ソースマップに ${r.forbiddenSources.join(", ")}`);
     else ok(`maplat_core_element.js: ソースマップの sources ${r.sources?.length ?? 0} 件に ol 等が無い（${(r.sources || []).map(s => s.replace(/^(\.\.\/)+/, "")).join(", ")}）`);

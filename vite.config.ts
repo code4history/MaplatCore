@@ -16,6 +16,10 @@ const isElementBuild = process.env.BUILD_MODE === "element";
 // 抱えないよう、同じ dist の ./maplat_core_common.js を import させる。
 const isCommonBuild = process.env.BUILD_MODE === "common";
 const isConformanceBuild = process.env.BUILD_MODE === "conformance";
+// @maplat/core/template（src/template.ts）。POI テンプレートを評価する関数を、Nunjucks（@c4h/quyuan/template）
+// ごと 1 本に出す。Nunjucks を common に入れると、common を import する element の利用者すべてで
+// 本体（maplat_core.js）の Nunjucks と 2 重に載るので、別の入口に分ける。
+const isTemplateBuild = process.env.BUILD_MODE === "template";
 const coreEntry = resolve(__dirname, "src/index.ts");
 const commonModules = ["src/common", "src/element_base", "src/element_contract"].map(p => resolve(__dirname, p));
 const isCommonModule = (id: string) => commonModules.some(base => id === base || id === `${base}.ts`);
@@ -113,6 +117,15 @@ export default defineConfig({
     sourcemap: true,
     copyPublicDir: false,
     emptyOutDir: false
+  } : isTemplateBuild ? {
+    lib: {
+      entry: resolve(__dirname, "src/template.ts"),
+      formats: ["es"],
+      fileName: () => "maplat_core_template.js"
+    },
+    sourcemap: true,
+    copyPublicDir: false,
+    emptyOutDir: false
   } : isPackageBuild ? {
     lib: {
       entry: resolve(__dirname, "src/index.ts"),
@@ -165,7 +178,7 @@ export default defineConfig({
     outDir: "dist-demo",
     emptyOutDir: true
   },
-  plugins: isElementBuild || isCommonBuild || isConformanceBuild ? [] : [
+  plugins: isElementBuild || isCommonBuild || isConformanceBuild || isTemplateBuild ? [] : [
     ...(isPackageBuild ? [] : [demoWeiwudiSw()]),
     dts({
       outDir: "dist",

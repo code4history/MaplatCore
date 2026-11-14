@@ -327,9 +327,11 @@ S      = テンプレートの文字列から {% raw %}…{% endraw %}・{% verb
 - 旧い記法のテンプレートは**評価しません**（Nunjucks にも lodash にも渡しません）。そのテンプレートは
   無いものとして扱います: `poiTemplate` なら次の段（層・地図・アプリ）へ進み（その段の `poiStyle` も使いません）、
   `iconTemplate` なら同じ段の `icon` を使うか、無ければ次の段へ進みます。
-- ページで **1 回だけ** `console.warn` で、最初に見つかったテンプレート（先頭 80 文字）を知らせます。
+- **1 回だけ** `console.warn` で、最初に見つかったテンプレート（先頭 80 文字）を知らせます。
 - 評価できないテンプレート（記法の誤り、出力が JSON のオブジェクトにならない `iconTemplate`）も同じ扱いで、
   別の文面の `console.warn` を 1 回だけ出します。地図の描画は止まりません。
+- 「1 回」は評価のコードの写しごとに数えます。下の `@maplat/core/template` も import するページでは、
+  それぞれの警告が `@maplat/core` から 1 回、`@maplat/core/template` から 1 回出ることがあります。
 - `<%`・`${` を文字として出したいときは、その部分を `{% raw %}…{% endraw %}` で囲みます
   （例: `{% raw %}<p>${price}</p>{% endraw %}`）。
 - 検出に当たらないまま表示が変わる場合が 1 つだけあります: lodash の記法を含まず、`{{ }}`・`{% %}` を
@@ -443,14 +445,6 @@ S      = テンプレートの文字列から {% raw %}…{% endraw %}・{% verb
 - 補助関数。`@maplat/core` からも export しているもの: `sanitizeHtml`・`escapeAttr`・
   `toPlainText`・`buildSlideAttrs`・`createElement`・`assets`。`@maplat/core/common` だけが
   export するもの: `normalizeArg`・`META_KEYS`・`META_KEYS_OPTION`。
-- POI テンプレート（`poiTemplate`・`iconTemplate`。Nunjucks で評価する。上の「POI テンプレートの記法」）の
-  評価。`@maplat/core/common` だけが export する: `applyPoiTemplates(poi, ...ancestors)`・
-  `createIconSet(poi, ...ancestors)`・`createHtmlFromTemplate(poi, ...ancestors)`。`MaplatApp` がマーカーの描画と
-  `getMarker` に使う関数そのものなので、別の実装がこれを呼べば同じ設定ファイルで同じ結果になります。
-  `ancestors` は近い段から順に渡します（POI のレイヤー → 地図 → アプリ）。使えるテンプレートの無い段は
-  飛ばし、POI 自身の `icon`・`html` が勝ちます。`applyPoiTemplates`・`createIconSet` は複製を返し、渡した POI を
-  書き換えません（`createHtmlFromTemplate` だけは渡したオブジェクトに `html`・`poiStyle` を書き込みます）。
-  テンプレートはページの権限で評価されるので（Nunjucks はサンドボックスではない）、設定ファイルと同じ信頼の扱いです。
 
 `@maplat/core/element` 自身は、要素のクラス `MaplatAppElement`・`defineMaplatAppElement(tagName?)`
 （別のタグ名で登録する。既定のタグは import で登録済み）・要素が使う上記の名前の表・非推奨の
@@ -465,6 +459,32 @@ S      = テンプレートの文字列から {% raw %}…{% endraw %}・{% verb
 `getDefaultPinIcon` を与え、必要なら hook（`applyRuntimeChanges`・`convertEventDetail`・
 `onImplementationReady`・`disposeImplementation`・`applyDomKeys` …）を上書きします。登録は
 `defineMaplatAppElementOnce(MyElement, "maplat-app", "my package")` で行います。
+
+## `@maplat/core/template` — POI テンプレートの評価
+
+`@maplat/core/template`（`dist/maplat_core_template.js`）は POI テンプレート（`poiTemplate`・`iconTemplate`。
+Nunjucks で評価する。上の「POI テンプレートの記法」）を評価する関数の入口です。
+`applyPoiTemplates(poi, ...ancestors)`・`createIconSet(poi, ...ancestors)`・`createHtmlFromTemplate(poi, ...ancestors)` と、
+型 `PoiTemplateLevel`（テンプレートを持ちうる段）・`PoiTemplateFields`（補うキー）を export します。地図エンジンを
+import せず、何も登録しません。Nunjucks（Quyuan の `@c4h/quyuan/template`）を同梱するので、`@maplat/core/common`
+には入れず別の入口にしています（`@maplat/core/element` は common を import するので、common に入れると
+`@maplat/core` の中の分と合わせて Nunjucks が 2 重に載ります）。
+
+- **同じ実装の、別の写しです。** `MaplatApp` がマーカーの描画と `getMarker` に使うのと同じソースから作るので、
+  `@maplat/core` の版が同じなら、別の実装がこれを呼んでも同じ設定ファイルで同じ結果になります。ただし実行時には、
+  `dist/maplat_core_template.js` は `dist/maplat_core.js` とは別に、そのコードと Nunjucks の写しを持ちます。
+  `@maplat/core` の中の関数と同じオブジェクトではなく、両方を読み込むページでは Nunjucks が 2 重に載ります。
+  これは `@maplat/core/template` を import する実装だけの話で、`@maplat/core/element`・`@maplat/core/common` は
+  Nunjucks を含みません。2 つの写しが同じに評価するよう、`@maplat/core` は 1 つの版にそろえてください。
+- `ancestors` は近い段から順に渡します（POI のレイヤー → 地図 → アプリ）。段から読むのは `poiTemplate`・`poiStyle`・
+  `iconTemplate`・`icon`・`selectedIcon` だけで、使えるテンプレートの無い段は飛ばします。POI 自身の `icon`・`html` が勝ちます。
+- `applyPoiTemplates`・`createIconSet` は複製を返し、渡した POI を書き換えません。`createHtmlFromTemplate` は
+  渡したオブジェクトに `html`・`poiStyle` を書き込み、そのオブジェクトを返します。
+- 3 つとも POI のキーの名前を確かめます（`normalizeArg`）。1.x の旧い名前のキー（`selected_icon`・`namespace_id`・
+  `poi_template` など）が残っている POI では、新しい名前を示す `Error` を投げます。キーの名前は書き換えません。
+  `ancestors` のキーは確かめません。
+- 旧い記法のテンプレート・評価できないテンプレートの警告は、写しごとに 1 回です（「POI テンプレートの記法」）。
+- テンプレートはページの権限で評価されるので（Nunjucks はサンドボックスではない）、設定ファイルと同じ信頼の扱いです。
 
 ## `@maplat/core/conformance` — 層 A の適合テスト
 

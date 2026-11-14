@@ -87,8 +87,8 @@ import '@maplat/core/element';
 </script>
 ```
 
-属性・プロパティ・メソッド・イベント、共通の土台 `@maplat/core/common`、適合テスト
-`@maplat/core/conformance` は [`docs/api/maplat-app.ja.md`](docs/api/maplat-app.ja.md)
+属性・プロパティ・メソッド・イベント、共通の土台 `@maplat/core/common`、POI テンプレートの評価
+`@maplat/core/template`、適合テスト `@maplat/core/conformance` は [`docs/api/maplat-app.ja.md`](docs/api/maplat-app.ja.md)
 を参照してください。`MaplatApp` クラスは 1.x の間そのまま使え、次のメジャー版（2.0）で閉じます。
 
 ### CDN（jsDelivr）

@@ -364,10 +364,13 @@ old = S matches /<%[\s\S]*?%>/  (<% %>, <%= %>, <%- %>)
   It is treated as if it were absent: a `poiTemplate` moves on to the next level (the
   layer, the map, the app; that level's `poiStyle` is not used either), and an
   `iconTemplate` falls back to the `icon` of the same level, or to the next level.
-- The page gets **one** `console.warn` that names the first such template (its first 80 characters).
+- **One** `console.warn` names the first such template (its first 80 characters).
 - A template that fails to render (a syntax error, or an `iconTemplate` whose output is
   not a JSON object) is treated the same way, with a separate single `console.warn`.
   Rendering of the map does not stop.
+- "One" is counted per copy of the evaluation code: a page that also imports
+  `@maplat/core/template` (below) can get each warning once from `@maplat/core`
+  and once from `@maplat/core/template`.
 - To output `<%` or `${` literally, wrap the part in `{% raw %}…{% endraw %}`
   (for example `{% raw %}<p>${price}</p>{% endraw %}`).
 - One case is not detected: an old template that contained no lodash syntax but wrote
@@ -498,18 +501,6 @@ or a layer-B element on top of `<maplat-app>`:
   `escapeAttr`, `toPlainText`, `buildSlideAttrs`, `createElement`, `assets`.
   Exported from `@maplat/core/common` only: `normalizeArg`, `META_KEYS`,
   `META_KEYS_OPTION`.
-- POI templates (`poiTemplate` / `iconTemplate`, evaluated with Nunjucks; see
-  "POI template syntax" above), exported from `@maplat/core/common` only:
-  `applyPoiTemplates(poi, ...ancestors)`, `createIconSet(poi, ...ancestors)`,
-  `createHtmlFromTemplate(poi, ...ancestors)`. These are the functions
-  `MaplatApp` itself uses to draw markers and for `getMarker`, so another
-  implementation that calls them shows the same result for the same setting
-  file. `ancestors` are the levels nearest first (the POI's layer, then the map,
-  then the app); a level without a usable template is skipped. The POI's own
-  `icon` / `html` wins. `applyPoiTemplates` and `createIconSet` return a copy and
-  do not modify the POI passed in; `createHtmlFromTemplate` alone writes
-  `html` / `poiStyle` into the object it is given. Templates are evaluated in the
-  page (Nunjucks is not a sandbox), so the same trust rules as for setting files apply.
 
 `@maplat/core/element` itself exports the element class `MaplatAppElement`,
 `defineMaplatAppElement(tagName?)` (registers the element under another tag
@@ -529,6 +520,46 @@ delegated methods, `appData`, `stateBuffer`, …), `listMaps`, `setEnvelopes`,
 override the hooks (`applyRuntimeChanges`, `convertEventDetail`,
 `onImplementationReady`, `disposeImplementation`, `applyDomKeys`, …). Register
 it with `defineMaplatAppElementOnce(MyElement, "maplat-app", "my package")`.
+
+## `@maplat/core/template` — evaluating POI templates
+
+`@maplat/core/template` (`dist/maplat_core_template.js`) exports the functions
+that evaluate POI templates (`poiTemplate` / `iconTemplate`, with Nunjucks; see
+"POI template syntax" above): `applyPoiTemplates(poi, ...ancestors)`,
+`createIconSet(poi, ...ancestors)` and `createHtmlFromTemplate(poi, ...ancestors)`,
+with the types `PoiTemplateLevel` (a level that may hold templates) and
+`PoiTemplateFields` (the keys they fill in). It imports no map engine and
+registers nothing. It bundles Nunjucks (Quyuan's `@c4h/quyuan/template`), which
+is why it is a separate entry and not part of `@maplat/core/common`:
+`@maplat/core/element` imports `common`, and would otherwise carry Nunjucks a
+second time next to the copy inside `@maplat/core`.
+
+- **The same implementation, in a separate copy.** These functions are built
+  from the same source that `MaplatApp` uses to draw markers and for
+  `getMarker`, so with the same version of `@maplat/core` another
+  implementation gets the same result for the same setting file. At run time,
+  however, `dist/maplat_core_template.js` holds its own copy of that code and
+  of Nunjucks, apart from `dist/maplat_core.js`: the functions are not the same
+  objects as the ones inside `@maplat/core`, and a page that loads both carries
+  Nunjucks twice. Only implementations that import `@maplat/core/template` pay
+  for this; `@maplat/core/element` and `@maplat/core/common` contain no
+  Nunjucks. Make sure a single version of `@maplat/core` is installed, so that
+  both copies evaluate the same way.
+- `ancestors` are the levels nearest first (the POI's layer, then the map, then
+  the app). Only `poiTemplate`, `poiStyle`, `iconTemplate`, `icon` and
+  `selectedIcon` are read from them; a level without a usable template is
+  skipped. The POI's own `icon` / `html` wins.
+- `applyPoiTemplates` and `createIconSet` return a copy and do not modify the
+  POI passed in. `createHtmlFromTemplate` writes `html` / `poiStyle` into the
+  object it is given and returns that same object.
+- All three check the POI's key names (`normalizeArg`): a POI that still has a
+  1.x snake_case key (`selected_icon`, `namespace_id`, `poi_template`, …)
+  throws an `Error` that names the new key. Keys are not renamed. The keys of
+  `ancestors` are not checked.
+- Warnings for templates in the old syntax and for templates that fail to
+  render are printed once per copy (see "POI template syntax").
+- Templates are evaluated in the page (Nunjucks is not a sandbox), so the same
+  trust rules as for setting files apply.
 
 ## `@maplat/core/conformance` — conformance tests for layer A
 

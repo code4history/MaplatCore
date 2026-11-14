@@ -1,52 +1,16 @@
 // @maplat/core/common・@maplat/core/conformance の入口の機械検査。
 //   1. 入口からたどれる import の連鎖（src の相対 import を再帰でたどる）に、OpenLayers・Weiwudi・
-//      @maplat/transform・turf を入れない。外部のパッケージは DOMPurify と Quyuan の @c4h/quyuan/template だけ
+//      @maplat/transform・turf を入れない。外部のパッケージは DOMPurify だけ
 //   2. 公開物の一覧（common の export）と、@maplat/core からの従来の export が壊れていないこと
 //   3. package.json の exports・sideEffects
 // ビルド後の dist/maplat_core_common.js の検査は scripts/verify-common-bundle.mjs（build で走る）。
 import { describe, it, expect } from "vitest";
-import { readFileSync, existsSync } from "fs";
-import { resolve, dirname } from "path";
+import { readFileSync } from "fs";
+import { resolve } from "path";
 import * as common from "../src/common";
 import * as core from "../src/index";
 import * as conformance from "../src/conformance";
-
-const ROOT = resolve(__dirname, "..");
-const FORBIDDEN = /^(ol(\/|$)|@c4h\/weiwudi|@maplat\/transform|@turf\/|maplibre-gl|mapbox-gl)/;
-
-/** 入口から相対 import をたどり、[ファイル, 外部の import 先] を集める。 */
-function walk(entry: string) {
-  const files = new Set<string>();
-  const external = new Map<string, Set<string>>();
-  const stack = [resolve(ROOT, entry)];
-  while (stack.length) {
-    const file = stack.pop()!;
-    if (files.has(file)) continue;
-    files.add(file);
-    if (!/\.(ts|js)$/.test(file)) continue;
-    // 行コメント・ブロックコメントの中の import の例は数えない
-    const src = readFileSync(file, "utf-8")
-      .replace(/\/\*[\s\S]*?\*\//g, "")
-      .replace(/^\s*\/\/.*$/gm, "");
-    // import ... from "x" / export ... from "x" / import "x"（型だけの import も数える＝型の連鎖も OL に触れない）
-    const specs = [...src.matchAll(/(?:import|export)\s[^;]*?from\s*["']([^"']+)["']|import\s*["']([^"']+)["']/g)].map(
-      m => m[1] ?? m[2]
-    );
-    for (const spec of specs) {
-      if (spec.startsWith(".")) {
-        const base = resolve(dirname(file), spec);
-        const candidates = [base, `${base}.ts`, `${base}/index.ts`];
-        const hit = candidates.find(c => existsSync(c) && !c.endsWith("/") && /\.(ts|json|png|jpg)$/.test(c));
-        if (!hit) throw new Error(`cannot resolve ${spec} from ${file}`);
-        stack.push(hit);
-      } else {
-        if (!external.has(spec)) external.set(spec, new Set());
-        external.get(spec)!.add(file.replace(`${ROOT}/`, ""));
-      }
-    }
-  }
-  return { files: [...files].map(f => f.replace(`${ROOT}/`, "")).sort(), external };
-}
+import { FORBIDDEN, ROOT, walk } from "./entry-imports";
 
 describe("@maplat/core/common の入口が OpenLayers 等を引き込まない", () => {
   for (const entry of ["src/common.ts", "src/conformance/index.ts"]) {
@@ -54,9 +18,8 @@ describe("@maplat/core/common の入口が OpenLayers 等を引き込まない",
       const { files, external } = walk(entry);
       const bad = [...external.keys()].filter(s => FORBIDDEN.test(s));
       expect(bad, `forbidden imports: ${bad.map(b => `${b} ← ${[...external.get(b)!]}`).join(", ")}`).toEqual([]);
-      // 外部のパッケージは DOMPurify（DOM だけに依る）と、POI テンプレートを評価する Quyuan の
-      // @c4h/quyuan/template（Nunjucks を同梱した単体のモジュール。地図に依らない）だけ
-      expect([...external.keys()].filter(s => s !== "dompurify" && s !== "@c4h/quyuan/template")).toEqual([]);
+      // 外部のパッケージは DOMPurify だけ（DOM だけに依る）
+      expect([...external.keys()].filter(s => s !== "dompurify")).toEqual([]);
       // 地図の実装のファイルを含まない
       for (const f of files) {
         expect(f).not.toMatch(/^src\/((index|element|map_ex|source_ex|view_ex)\.ts$|source\/)/);
@@ -82,25 +45,14 @@ describe("@maplat/core/common の入口が OpenLayers 等を引き込まない",
       "src/functions.ts",
       "src/meta_keys.ts",
       "src/sanitize-allowlist.json",
-      "src/sanitize.ts",
-      "src/template_works.ts"
+      "src/sanitize.ts"
     ]);
   });
 });
 
 describe("@maplat/core/common の公開物", () => {
   it("補助関数", () => {
-    for (const name of [
-      "sanitizeHtml",
-      "escapeAttr",
-      "toPlainText",
-      "buildSlideAttrs",
-      "createElement",
-      "normalizeArg",
-      "createIconSet",
-      "createHtmlFromTemplate",
-      "applyPoiTemplates"
-    ]) {
+    for (const name of ["sanitizeHtml", "escapeAttr", "toPlainText", "buildSlideAttrs", "createElement", "normalizeArg"]) {
       expect(typeof (common as any)[name], name).toBe("function");
     }
     expect(Object.keys(common.assets).sort()).toEqual(
