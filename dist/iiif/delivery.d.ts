@@ -1,27 +1,5 @@
-/** Core で配れない理由 */
-export type IiifDeliveryReason = "bad-url" | "fetch-failed" | "timeout" | "too-large" | "not-json" | "unsupported-version" | "unsupported-level0" | "size-mismatch";
-/** info.json を検査した結果 */
-export type IiifDeliveryCheck = {
-    ok: true;
-    version: "2" | "3";
-    level: 0 | 1 | 2;
-    tiling: "arbitrary" | "level0-256" | "level0-crop";
-} | {
-    ok: false;
-    reason: IiifDeliveryReason;
-};
-export declare class IiifDeliveryError extends Error {
-    readonly reason: IiifDeliveryReason;
-    readonly mapID?: string;
-    constructor(reason: IiifDeliveryReason, message?: string, mapID?: string);
-}
-/**
- * info.json を検査して、Core で配れるかを返す（取得しない純粋な関数）
- */
-export declare function checkIiifDelivery(info: unknown, expected?: {
-    width: number;
-    height: number;
-}): IiifDeliveryCheck;
+import { IiifDeliveryReason, IiifDeliveryError, ResolvedIiifDelivery } from './image';
+export * from './image';
 /** 使えない IIIF の地図の印（起動を止めないため、source の代わりに配列に残す） */
 export type UnusableSource = {
     mapID: string;
@@ -48,41 +26,9 @@ export type UnusableSourceEntry = {
 export declare function setUnusableSources(app: object, list: UnusableSourceEntry[]): void;
 /** 起動のときに使えなかった地図の控えを読む（無ければ空） */
 export declare function getUnusableSources(app: object): UnusableSourceEntry[];
-/**
- * delivery を解決して、HistMap に渡す tileUrlFunction を作る（info.json を取得する）
- */
-export declare function resolveIiifDelivery(delivery: {
-    type: "iiifImage";
-    url: string;
-}, expected: {
-    width: number;
-    height: number;
-}, opts?: {
-    signal?: AbortSignal;
-    fetchImpl?: typeof fetch;
-}): Promise<{
-    tileUrlFunction: (coord: number[]) => string;
-    /** 配信の基準の URL（info.json の @id と違えば delivery.url のほう） */
-    url: string;
-    width: number;
-    height: number;
-    info: unknown;
-    warnings: string[];
-    /** level0-256 のときだけ、HistMap に渡すズームの下限 */
-    minZoom?: number;
-}>;
-/** この地図の `delivery` が IIIF Image か（type が違えば 1 回だけ警告して false） */
-export declare function wantsIiifDelivery(options: any): boolean;
-/**
- * `delivery` を解決して、HistMap に渡す options に IIIF の URL の関数を入れる
- * （json の道と noload の道の共通の処理）。
- *
- * - `url`・`urls` があれば消す（`delivery` を使う。1 回だけ警告する）
- * - `minZoom` が返れば options に入れる（level0-256 のときだけ）
- * - 解決の警告（info.json の `@id` の食い違い）は地図ごとに 1 回 `console.warn` する
- *
- * 失敗は `IiifDeliveryError` を投げる。
- */
+/** 紙の外を HistMap の透明なタイルに変える */
+export declare function histMapTileUrlFunction(resolved: ResolvedIiifDelivery): (coord: number[]) => string;
+/** 共通の配信を解決し、HistMap の構築と再設定に必要な値を入れる */
 export declare function prepareIiifOptions(options: any, expected: {
     width: number;
     height: number;

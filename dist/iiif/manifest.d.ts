@@ -36,7 +36,7 @@ export interface IiifMetadataEntry {
 /** 書誌の表の出し方（アプリの設定で選ぶ） */
 export type IiifMetadataDisplay = "all" | "hidden";
 /** アプリの設定が無いときに使う、書誌の表の出し方 */
-export declare const IIIF_METADATA_DISPLAY_DEFAULT = "hidden";
+export { IIIF_METADATA_DISPLAY_DEFAULT } from './section';
 /** Manifest の canvas の一覧（Editor の canvas の選択に使う） */
 export declare function listIiifCanvases(manifest: unknown): {
     ok: true;
