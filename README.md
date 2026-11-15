@@ -229,8 +229,9 @@ service instead of from pre-cut tiles. Add `delivery` to the map setting
 `url` is the image service's base URL (the part before `/info.json`). Core fetches
 `<url>/info.json` once when the map is loaded and requests each tile in the IIIF URL
 form (`<url>/<region>/<size>/0/default.jpg`). Reading `info.json` and building the
-request URLs are done by OpenLayers (`ol/format` `IIIFInfo` and `ol/source` `IIIF`),
-so `ol/format` must be resolvable alongside `ol/source`.
+request URLs are handled by Core. Tests verify that its URLs match the OpenLayers
+IIIF implementation. The image delivery and bibliography functions are available
+from [`@maplat/core/common`](docs/api/maplat-core.md#iiif-functions-in-maplatcorecommon).
 
 - Supported: Image API 2 and 3 services that can return any region (most level 1
   and level 2 services), and level 0 services whose tiles are 256 px.

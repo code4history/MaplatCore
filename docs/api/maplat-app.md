@@ -473,6 +473,9 @@ markers, and it writes the same field as the legacy `appOption.hideOutsidePois`.
 
 ## `@maplat/core/common` — the shared base for other implementations
 
+For image delivery and bibliography helpers (`iiifTileUrl`, `mapMetaIiif`, and
+the complete list), see [IIIF functions](maplat-core.md#iiif-functions-in-maplatcorecommon).
+
 `@maplat/core/common` (`dist/maplat_core_common.js`) holds everything that
 does not depend on the map engine: it imports neither OpenLayers nor the tile
 cache, and registers no element. Use it to write another layer-A implementation

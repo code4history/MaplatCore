@@ -10,6 +10,7 @@ import {
   checkIiifDelivery,
   IiifDeliveryError,
   isUnusableSource,
+  histMapTileUrlFunction,
   resolveIiifDelivery,
   unusableSource
 } from "../src/iiif/delivery";
@@ -350,10 +351,10 @@ describe("resolveIiifDelivery: 成功と警告", () => {
     expect(delivery.height).toBe(NDL.height);
     expect(delivery.info).toEqual(NDL);
     expect(delivery.warnings).toEqual([]);
-    expect(delivery.tileUrlFunction([4, 3, 2])).toBe(
+    expect(histMapTileUrlFunction(delivery)([4, 3, 2])).toBe(
       `${NDL_URL}/768,512,256,256/256,/0/default.jpg`
     );
-    expect(delivery.tileUrlFunction([4, 16, 0])).toBe(transPng);
+    expect(histMapTileUrlFunction(delivery)([4, 16, 0])).toBe(transPng);
   });
 
   it("@id が delivery.url と違えば、タイルは delivery.url を基準にして警告が 1 回", async () => {
@@ -368,7 +369,7 @@ describe("resolveIiifDelivery: 成功と警告", () => {
     expect(delivery.warnings.length).toBe(1);
     expect(delivery.warnings[0].startsWith("Maplat: ")).toBe(true);
     expect(delivery.warnings[0]).toContain(info["@id"]);
-    expect(delivery.tileUrlFunction([0, 0, 0])).toBe(
+    expect(histMapTileUrlFunction(delivery)([0, 0, 0])).toBe(
       `${deliveryUrl}/full/170,/0/default.jpg`
     );
   });

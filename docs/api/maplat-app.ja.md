@@ -423,6 +423,9 @@ S      = テンプレートの文字列から {% raw %}…{% endraw %}・{% verb
 
 ## `@maplat/core/common` — 別の実装のための共通の土台
 
+画像の配信と書誌の関数（`iiifTileUrl`・`mapMetaIiif` など）の全一覧は、
+[IIIF 関数](maplat-core.ja.md#maplatcorecommon-の-iiif-関数) を参照してください。
+
 `@maplat/core/common`（`dist/maplat_core_common.js`）は地図エンジンに依らない部分を集めた
 入口です。OpenLayers もタイルキャッシュも import せず、要素も登録しません。層 A の別の実装や、
 `<maplat-app>` の上の層 B の要素を書くときに使います。

@@ -17,7 +17,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { resolveIiifDelivery } from "../src/iiif/delivery";
+import { histMapTileUrlFunction, resolveIiifDelivery } from "../src/iiif/delivery";
 import { HistMap_tin } from "../src/source/histmap_tin";
 import { transPng } from "../src/const_ex";
 
@@ -88,7 +88,7 @@ async function buildSource(name: string): Promise<Measured> {
   const source: any = new HistMap_tin({
     width: delivery.width,
     height: delivery.height,
-    tileUrlFunction: delivery.tileUrlFunction,
+    tileUrlFunction: histMapTileUrlFunction(delivery),
     thumbnail: THUMBNAIL
   });
   return { info, baseUrl, source, grid: source.getTileGrid() };

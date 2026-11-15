@@ -185,6 +185,51 @@ export しています。
 これらは、ホストアプリケーションが内部モジュールを deep import せずに
 地図・ソースを直接構築できるようにするために export されています。
 
+## `@maplat/core/common` の IIIF 関数
+
+これらの関数は OpenLayers のオブジェクトに依存しません。画像の解釈とタイル URL は
+OpenLayers 10.11.0 の規則を移植し、ローカルの資料と合成入力で OL との一致を試験します。
+ライセンスは [第三者の表示](../../THIRD-PARTY-NOTICES.md) にあります。
+
+| export | 契約 |
+| --- | --- |
+| `IIIF_TILE_SIZE` | Maplat のタイル格子の大きさ `256` |
+| `IiifDeliveryError` | `reason: IiifDeliveryReason` と任意の `mapID` を持つ例外 |
+| `parseIiifImageInfo(info: unknown)` | `{ ok: true, service: IiifImageService }` または `{ ok: false, reason }`。JSON の値か JSON 文字列を受ける |
+| `checkIiifDelivery(info, expected?)` | `IiifDeliveryCheck`。任意の `{ width, height }` で画像の大きさも照合する |
+| `iiifMinZoom(service)` | level 0 の 256 px タイルのズーム下限。それ以外は `undefined` |
+| `iiifTileUrl(baseUrl, service, z, x, y)` | タイル URL。紙やズームの範囲外は `undefined`。`checkIiifDelivery` が受理した service を使う |
+| `resolveIiifDelivery(delivery, expected, opts?)` | `info.json` を取得・検査して `Promise<ResolvedIiifDelivery>` を返す |
+| `prepareIiifDelivery(options, expected, opts?)` | `options.delivery` を解決し、衝突する `url`・`urls` を警告 1 回で削除。解決時の警告を出し、必要なら `options.minZoom` を設定して解決結果を返す |
+| `wantsIiifDelivery(options)` | `delivery.type` が `iiifImage` か。未知の type は警告する |
+| `isIiifDelivery(options)` | 警告しない同じ型判定。タイルキャッシュの除外に使う |
+| `IIIF_METADATA_DISPLAY_DEFAULT` | `"hidden"` |
+| `normalizeIiifSection(value, mapID?)` | 書誌の形の正しい項目を残す。`mapID` があれば不正な metadata の要素について 1 回警告する |
+| `normalizeIiifMetadataDisplay(value)` | `"all"`・`"hidden"`・`undefined` のいずれか |
+| `mapMetaIiif(iiif: unknown, display: unknown)` | `MapMetaIiif` または `undefined`。display の既定は `"hidden"`。bindings・copiedValues は含めない |
+
+公開する型は `IiifDeliveryReason`・`IiifDeliveryCheck`・`IiifImageService`・
+`ResolvedIiifDelivery`（既存の `MapMetaIiif` も利用可能）です。
+`IiifImageService` は `version`（`"2"`／`"3"`）・`level`（`0`／`1`／`2`）・
+`width`・`height`・任意の `id`・`supports`・`format`・`quality` と、任意の
+`tileSize`・`scaleFactors`・`sizes` を持ちます。`ResolvedIiifDelivery` は
+`url`・`width`・`height`・`info`・`service`・`warnings`・任意の `minZoom` と
+`tileUrl(z, x, y): string | undefined` を持ちます。OL 用の `tileUrlFunction` は持ちません。
+
+`delivery` は `{ type: "iiifImage", url: string }`、`expected` は
+`{ width: number, height: number }` です。`opts` は任意の `fetchImpl: typeof fetch` と
+`signal: AbortSignal` を受けます。取得は `credentials: "omit"`・10 秒・1 MiB の上限を使い、
+呼ぶ前から signal が中止済みなら通信せず `fetch-failed` で失敗します。
+ほかの理由は `bad-url`・`timeout`・`too-large`・`not-json`・`unsupported-version`・
+`unsupported-level0`・`size-mismatch` です。サービスの ID が異なる場合は警告し、delivery の URL を優先します。
+
+Image API 1・256 px 以外の level 0・`sizes` だけの level 0 は対象外です。
+呼び出し側は `minZoom` を守る必要があり、`iiifTileUrl` 自体はこの下限を適用しません。
+長い辺が 128 px 以下の画像は OL と同じくタイルを返しません。`maxWidth`・`maxHeight`・`maxArea` は
+制限に使いません。回転は常に `0`、形式・品質は解釈した service の値を使います。
+書誌の関数は Manifest を取得せず、HTML の洗浄もしません。HTML を表示する際は `sanitizeIiifHtml` を使います。
+作成ツール用の内部関数は [Manifest の読み取り](iiif-manifest.ja.md) を参照してください。
+
 ## 使用例
 
 ```javascript

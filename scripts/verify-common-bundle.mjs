@@ -16,6 +16,54 @@
 import { readFileSync, existsSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
+import assert from "node:assert/strict";
+import ts from "typescript";
+
+// コメントのライセンス表記を拾わず、構文上の import とプロパティ参照だけを見る。
+function olIiifReport(code) {
+  const ast = ts.createSourceFile("bundle.js", code, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
+  const imports = {};
+  const references = { IIIF: 0, IIIFInfo: 0 };
+  const visit = node => {
+    if (ts.isImportDeclaration(node) && ts.isStringLiteral(node.moduleSpecifier)) {
+      const path = node.moduleSpecifier.text;
+      const bindings = node.importClause?.namedBindings;
+      if (["ol/source", "ol/format"].includes(path) && bindings && ts.isNamedImports(bindings)) {
+        imports[path] = [...(imports[path] || []), ...bindings.elements.map(e => (e.propertyName || e.name).text)];
+      }
+    }
+    if (ts.isPropertyAccessExpression(node) && Object.hasOwn(references, node.name.text)) references[node.name.text]++;
+    if (ts.isElementAccessExpression(node) && ts.isStringLiteral(node.argumentExpression) && Object.hasOwn(references, node.argumentExpression.text)) references[node.argumentExpression.text]++;
+    ts.forEachChild(node, visit);
+  };
+  visit(ast);
+  return { imports, references };
+}
+
+const IIIF_SOURCE = /(?:^|\/)ol\/(?:source\/IIIF|format\/IIIFInfo)\.js$/;
+// 個別のファイルの道（既定の import・名前空間の import・動的 import・require を含む）で OL の IIIF を読む文
+const IIIF_DIRECT_IMPORT = /(?:\bfrom|\bimport|\brequire)\s*\(?\s*["']ol\/(?:source\/IIIF|format\/IIIFInfo)(?:\.js)?["']/;
+const TILE_STATE_SOURCE = /(?:^|\/)ol\/TileState\.js$/;
+
+// 以前の ES bundle の import 文そのものを使う陽性対照。
+const control = olIiifReport(`import { XYZ as BA, Google as kg, Vector as vi, IIIF as _g } from "ol/source";
+import { IIIFInfo as NA } from "ol/format";`);
+assert(control.imports["ol/source"].includes("IIIF"));
+assert(control.imports["ol/format"].includes("IIIFInfo"));
+assert.deepEqual(olIiifReport("new source.IIIF(); new format.IIIFInfo(); format.IIIFInfo;").references, { IIIF: 1, IIIFInfo: 2 });
+assert.deepEqual(olIiifReport('/*! ol/source/IIIF.js; source.IIIF */ const name = "format.IIIFInfo";').references, { IIIF: 0, IIIFInfo: 0 });
+assert(IIIF_SOURCE.test("../node_modules/ol/source/IIIF.js"));
+assert(IIIF_DIRECT_IMPORT.test('import IIIF from "ol/source/IIIF";'));
+assert(IIIF_DIRECT_IMPORT.test('import * as F from "ol/format/IIIFInfo.js";'));
+assert(IIIF_DIRECT_IMPORT.test('const m = await import("ol/source/IIIF.js");'));
+assert(!IIIF_DIRECT_IMPORT.test('import { XYZ } from "ol/source";'));
+assert(IIIF_SOURCE.test("../node_modules/.pnpm/ol@10.11.0/node_modules/ol/format/IIIFInfo.js"));
+assert(TILE_STATE_SOURCE.test("../node_modules/ol/TileState.js"));
+
+if (process.argv[2] === "--ol-iiif-report") {
+  console.log(JSON.stringify(olIiifReport(readFileSync(process.argv[3], "utf8")), null, 2));
+  process.exit(0);
+}
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const dist = resolve(root, "dist");
@@ -115,6 +163,25 @@ for (const [file, allowedImports, wantNunjucks] of [
   for (const marker of ["prototype.getDecimalZoom"]) {
     if (body.includes(marker)) ok(`maplat_core.js に ${marker} がある（view_ex.ts の副作用が残っている）`);
     else fail(`maplat_core.js に ${marker} が無い（sideEffects の絞り込みで view_ex.ts が消えた可能性）`);
+  }
+}
+
+// 製品の本体は OL の IIIF を import も同梱もしない。
+for (const file of ["maplat_core.js", "maplat_core.umd.js"]) {
+  const r = inspect(file);
+  if (!r) continue;
+  const report = olIiifReport(r.code);
+  const imported = Object.values(report.imports).flat().filter(name => ["IIIF", "IIIFInfo"].includes(name));
+  const direct = r.code.match(IIIF_DIRECT_IMPORT)?.[0] ?? null;
+  if (imported.length || direct || report.references.IIIF || report.references.IIIFInfo) fail(`${file}: OL の IIIF 参照 ${JSON.stringify({ ...report, direct })}`);
+  else ok(`${file}: OL の IIIF の import・プロパティ参照が無い`);
+  if (!r.sources) fail(`${file}: ソースマップが無い`);
+  else {
+    const bundled = r.sources.filter(s => IIIF_SOURCE.test(s));
+    if (bundled.length) fail(`${file}: OL の IIIF が同梱されている ${bundled.join(", ")}`);
+    else ok(`${file}: sources に ol/source/IIIF.js・ol/format/IIIFInfo.js が無い`);
+    if (!r.sources.some(s => TILE_STATE_SOURCE.test(s))) fail(`${file}: 対照の ol/TileState.js が sources に無い`);
+    else ok(`${file}: 対照の ol/TileState.js が sources にある`);
   }
 }
 

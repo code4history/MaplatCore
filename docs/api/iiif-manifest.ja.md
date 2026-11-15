@@ -4,6 +4,13 @@
 
 `src/iiif/manifest.ts` の関数（`listIiifCanvases`・`proposeIiifBindings`・`resolveIiifMetadata`・`compareIiifCopy`・`iiifRightsToLicense`・`IIIF_BINDABLE_KEYS`）の読み方を説明します。これらはパッケージの公開 API ではありません。`package.json` の公開の入口（`exports`）には無く、互換も保証しません。MaplatEditor などの作成の道具が使う内部の関数です。
 
+画像の配信と、写し済みの書誌の正規化は
+[`@maplat/core/common`](maplat-core.ja.md#maplatcorecommon-の-iiif-関数) の公開関数です。
+`parseIiifImageInfo`・`checkIiifDelivery`・`iiifTileUrl`・`resolveIiifDelivery`・
+`prepareIiifDelivery`・`normalizeIiifSection`・`normalizeIiifMetadataDisplay`・`mapMetaIiif`
+を使えます。`IIIF_METADATA_DISPLAY_DEFAULT` も同じ入口から公開し、
+`src/iiif/manifest.ts` からの再 export も残します。これらの関数は Manifest を取得しません。
+
 ## canvas の一覧（`listIiifCanvases`）
 
 `listIiifCanvases` は Presentation 2・3 の canvas を列挙します。画像サービスの `id` と `@id` は Presentation の版と独立に読みます。サービスが配列なら、画像サービスでないものや空の ID を飛ばし、最初に読めた画像サービスを選びます。型（`type`／`@type`）があるサービスは `ImageService1`〜`ImageService3` だけを画像サービスとします。Image API 2 で従来使われる型のないサービスは、`@context` か `profile` に `iiif.io/api/image/` を含む URI、または `level0`〜`level2` の profile があるものだけを受け付けます。型のない認証サービス（`/api/auth/` を含むもの）と annex のサービス（`annex/services` を含むもの）は、画像サービスより前にあっても画像として選びません。型も Image API の印もないサービスも選びません。

@@ -4,6 +4,13 @@
 
 This page describes how the functions in `src/iiif/manifest.ts` (`listIiifCanvases`, `proposeIiifBindings`, `resolveIiifMetadata`, `compareIiifCopy`, `iiifRightsToLicense`, `IIIF_BINDABLE_KEYS`) read a manifest. They are not part of the package's public API: they are not in the public entry points (`exports`) of `package.json`, and their compatibility is not guaranteed. They are internal functions used by authoring tools such as MaplatEditor.
 
+Image delivery and normalization of already copied bibliography are public
+functions in [`@maplat/core/common`](maplat-core.md#iiif-functions-in-maplatcorecommon):
+`parseIiifImageInfo`, `checkIiifDelivery`, `iiifTileUrl`, `resolveIiifDelivery`,
+`prepareIiifDelivery`, `normalizeIiifSection`, `normalizeIiifMetadataDisplay`,
+and `mapMetaIiif`. `IIIF_METADATA_DISPLAY_DEFAULT` is also public there and remains
+re-exported from `src/iiif/manifest.ts`. These functions do not fetch a Manifest.
+
 ## Listing canvases (`listIiifCanvases`)
 
 `listIiifCanvases` lists the canvases of Presentation 2 and 3 manifests. The `id` and `@id` of an image service are read independently of the Presentation version. When the service is an array, entries that are not image services or have an empty ID are skipped, and the first readable image service is chosen. A service with a type (`type` / `@type`) counts as an image service only when the type is `ImageService1` to `ImageService3`. An untyped service, as traditionally used with Image API 2, is accepted only when its `@context` or `profile` contains a URI including `iiif.io/api/image/`, or a `level0` to `level2` profile. Untyped authentication services (containing `/api/auth/`) and annex services (containing `annex/services`) are never chosen as the image, even when they come before the image service. Services with neither a type nor an Image API mark are not chosen either.

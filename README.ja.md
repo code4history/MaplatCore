@@ -217,9 +217,9 @@ MaplatCore はフィールドの意味の定義と、結果として得られる
 
 `url` は画像サービスの基点の URL（`/info.json` の手前まで）です。地図を読み込むときに
 `<url>/info.json` を 1 回取得し、タイルは IIIF の URL の形（`<url>/<region>/<size>/0/default.jpg`）
-で要求します。`info.json` の読み取りと要求の URL の組み立ては OpenLayers（`ol/format` の
-`IIIFInfo` と `ol/source` の `IIIF`）が行うため、`ol/source` と同じく `ol/format` も解決できる
-必要があります。
+で要求します。`info.json` の読み取りと要求の URL の組み立ては Core が行います
+（OpenLayers の IIIF の実装と同じ URL になることを試験で確かめています）。
+画像の配信と書誌の関数は [`@maplat/core/common`](docs/api/maplat-core.ja.md#maplatcorecommon-の-iiif-関数) から使えます。
 
 - 使えるもの: 任意の領域を返せる Image API 2・3 のサービス（level 1・level 2 の多く）と、
   タイルが 256 px の level 0 のサービス。

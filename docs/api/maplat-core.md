@@ -192,6 +192,53 @@ also exports the lower-level building blocks directly:
 These exist so that host applications can construct maps and sources
 directly instead of deep-importing internal modules.
 
+## IIIF functions in `@maplat/core/common`
+
+These functions use no OpenLayers objects. Image parsing and tile URLs follow
+OpenLayers 10.11.0; local fixtures and synthetic inputs are compared with OL in
+tests. See [third-party notices](../../THIRD-PARTY-NOTICES.md) for the license.
+
+| Export | Contract |
+| --- | --- |
+| `IIIF_TILE_SIZE` | `256`, the Maplat tile grid size |
+| `IiifDeliveryError` | Error with `reason: IiifDeliveryReason` and optional `mapID` |
+| `parseIiifImageInfo(info: unknown)` | `{ ok: true, service: IiifImageService }` or `{ ok: false, reason }`; accepts parsed JSON or a JSON string |
+| `checkIiifDelivery(info, expected?)` | `IiifDeliveryCheck`; optionally checks `{ width, height }` against the image |
+| `iiifMinZoom(service)` | Zoom floor for level 0 tiles of 256 px, otherwise `undefined` |
+| `iiifTileUrl(baseUrl, service, z, x, y)` | Tile URL or `undefined` outside the image/zoom range; use a service accepted by `checkIiifDelivery` |
+| `resolveIiifDelivery(delivery, expected, opts?)` | `Promise<ResolvedIiifDelivery>`; fetches and checks `info.json` |
+| `prepareIiifDelivery(options, expected, opts?)` | Resolves `options.delivery`, deletes conflicting `url`/`urls` with one warning, logs service warnings and sets `options.minZoom` when applicable; returns the resolved delivery |
+| `wantsIiifDelivery(options)` | Whether `delivery.type` is `iiifImage`; warns for an unknown type |
+| `isIiifDelivery(options)` | Same type test without warnings, for excluding images from the tile cache |
+| `IIIF_METADATA_DISPLAY_DEFAULT` | `"hidden"` |
+| `normalizeIiifSection(value, mapID?)` | Keeps valid bibliography fields; warns once about malformed metadata entries when `mapID` is supplied |
+| `normalizeIiifMetadataDisplay(value)` | `"all"`, `"hidden"`, or `undefined` |
+| `mapMetaIiif(iiif: unknown, display: unknown)` | `MapMetaIiif` or `undefined`; defaults the display to `"hidden"` and omits bindings/copied values |
+
+Types exported here: `IiifDeliveryReason`, `IiifDeliveryCheck`,
+`IiifImageService`, and `ResolvedIiifDelivery` (alongside `MapMetaIiif`).
+`IiifImageService` contains `version` (`"2"`/`"3"`), `level` (`0`/`1`/`2`),
+`width`, `height`, optional `id`, `supports`, `format`, `quality`, and optional
+`tileSize`, `scaleFactors`, `sizes`. `ResolvedIiifDelivery` contains `url`,
+`width`, `height`, `info`, `service`, `warnings`, optional `minZoom`, and
+`tileUrl(z, x, y): string | undefined`. It has no OpenLayers `tileUrlFunction`.
+
+`delivery` is `{ type: "iiifImage", url: string }`; `expected` is
+`{ width: number, height: number }`. `opts` accepts optional `fetchImpl: typeof fetch`
+and `signal: AbortSignal`. Fetching uses `credentials: "omit"`, a 10-second timeout,
+and a 1 MiB response limit. A signal already aborted rejects with `fetch-failed`
+without fetching. The other reasons are `bad-url`, `timeout`, `too-large`,
+`not-json`, `unsupported-version`, `unsupported-level0`, and `size-mismatch`.
+The delivery URL wins over a different service ID, with a warning.
+
+Image API 1, level 0 tiles other than 256 px, and level 0 with only `sizes` are
+unsupported. The caller must honor `minZoom`; `iiifTileUrl` itself does not impose
+that floor. As in OL, images whose longer side is 128 px or less yield no tiles.
+`maxWidth`, `maxHeight`, and `maxArea` are not enforced. Rotation is always `0`;
+format and quality come from the parsed service. Bibliography functions do not
+fetch a Manifest or sanitize HTML; use `sanitizeIiifHtml` when displaying HTML.
+See [manifest reading](iiif-manifest.md) for the internal authoring helpers.
+
 ## Example
 
 ```javascript

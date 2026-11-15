@@ -10,6 +10,7 @@ import { HistMap_tin } from "./source/histmap_tin";
 import { isProviderMapType } from "./source/mixin";
 import {
   applyIiifTileUrlFunction,
+  isIiifDelivery,
   prepareIiifOptions,
   wantsIiifDelivery
 } from "./iiif/delivery";
@@ -304,7 +305,7 @@ export async function registerMapToSW(options: any) {
   const setting: any = {};
   // #90: 地図ごとの noCache で Weiwudi への登録を外す。設定ファイルは JSON なので真偽値で書ける ∴ "true" 等の文字列は真とみなさない（=== true）
   // IIIF Image の地図は URL の関数を配信ごとに作り直すので、キャッシュの層を通さない
-  if (options.maptype === "mapbox" || options.maptype === "maplibre" || options.maptype === "google" || !options.enableCache || options.noCache === true || options.delivery?.type === "iiifImage") return;
+  if (options.maptype === "mapbox" || options.maptype === "maplibre" || options.maptype === "google" || !options.enableCache || options.noCache === true || isIiifDelivery(options)) return;
   else if (options.maptype === "base" || options.maptype === "overlay")
     setting.type = "wmts";
   else setting.type = "xyz";
