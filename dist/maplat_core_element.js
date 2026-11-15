@@ -1,17 +1,20 @@
-import { mercToLngLat as u, defaultPinIcon as d, MaplatApp as v } from "./maplat_core.js";
+import { mercToLngLat as u, defaultPinIcon as E, MaplatApp as v } from "./maplat_core.js";
 import { defineMaplatAppElementOnce as y, MaplatAppElementBase as A } from "./maplat_core_common.js";
-import { featuresOf as T, ELEMENT_ATTRIBUTES as _, ELEMENT_PROPERTIES as O, MAPLAT_APP_TAG as I } from "./maplat_core_common.js";
-import { ELEMENT_ATTRIBUTES as x, ELEMENT_OWN_EVENTS as C, ELEMENT_OWN_METHODS as N, ELEMENT_PROPERTIES as j, ELEMENT_STARTUP_KEYS as k, LAYER_A_PRO_ATTRIBUTES as B, MAPLAT_APP_EVENTS as z, MAPLAT_APP_METHODS as K, MAPLAT_APP_TAG as U } from "./maplat_core_common.js";
+import { featuresOf as T, ELEMENT_ATTRIBUTES as _, ELEMENT_PROPERTIES as M, MAPLAT_APP_TAG as O } from "./maplat_core_common.js";
+import { ELEMENT_ATTRIBUTES as C, ELEMENT_OWN_EVENTS as N, ELEMENT_OWN_METHODS as j, ELEMENT_PROPERTIES as k, ELEMENT_STARTUP_KEYS as B, LAYER_A_PRO_ATTRIBUTES as z, MAPLAT_APP_EVENTS as K, MAPLAT_APP_METHODS as U, MAPLAT_APP_TAG as V } from "./maplat_core_common.js";
 function h(s, e) {
   if (!(s === null || typeof s != "object") && typeof e == "string")
     return Object.hasOwn(s, e) ? s[e] : void 0;
 }
-const M = "1.2.0", P = Object.freeze(T("core")), c = (s) => Array.isArray(s) && Number.isFinite(s[0]) && Number.isFinite(s[1]);
-class g extends A {
+const I = "1.2.0", P = Object.freeze(T("core")), c = (s) => Array.isArray(s) && Number.isFinite(s[0]) && Number.isFinite(s[1]);
+function g() {
+  return typeof matchMedia != "function" ? !1 : matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+class b extends A {
   /** 実装の種別。有償版は "core-pro"。 */
   implementation = "core";
   /** 実装の版（@maplat/core の版）。 */
-  version = M;
+  version = I;
   // 枠線（setEnvelopes）の最後の指定。地図を切り替えたら描き直す
   #t = [];
   #i = 0;
@@ -70,14 +73,14 @@ class g extends A {
   }
   /** 既定のピンの画像（POI にも祖先にも icon が無いマーカーに地図が描く画像。Core の parts/defaultpin*.png）。 */
   getDefaultPinIcon(e = !1) {
-    return d(e);
+    return E(e);
   }
-  /** 現在の地図の zoom を delta だけ変える。 */
+  /** 現在の地図の zoom を delta だけ変える。「動きを減らす」設定のときはアニメーションせず即座に変える。 */
   zoomBy(e) {
     const n = this.requireImplementation("zoomBy").mapObject?.getView?.();
     if (!n) return;
     const t = n.getZoom();
-    typeof t == "number" && (typeof n.animate == "function" ? n.animate({ zoom: t + e, duration: 250 }) : n.setZoom(t + e));
+    typeof t == "number" && (typeof n.animate == "function" && !g() ? n.animate({ zoom: t + e, duration: 250 }) : n.setZoom(t + e));
   }
   /**
    * MaplatApp の生成（テスト用の差し替え口）。
@@ -225,7 +228,7 @@ class g extends A {
           else {
             const m = o.envelope?.geometry?.coordinates?.[0];
             if (!Array.isArray(m)) return null;
-            p = await Promise.all(m.map((E) => i.merc2SysCoordAsync(E)));
+            p = await Promise.all(m.map((d) => i.merc2SysCoordAsync(d)));
           }
           return p.every(c) ? { spec: l, xys: p } : null;
         } catch {
@@ -264,23 +267,23 @@ class g extends A {
   }
 }
 const f = new Map(
-  [..._, ...O].filter((s) => s.option).map((s) => [s.prop, s.option])
+  [..._, ...M].filter((s) => s.option).map((s) => [s.prop, s.option])
 );
-function b(s = I) {
-  y(g, s, "@maplat/core/element");
+function w(s = O) {
+  y(b, s, "@maplat/core/element");
 }
-b();
+w();
 export {
-  x as ELEMENT_ATTRIBUTES,
-  C as ELEMENT_OWN_EVENTS,
-  N as ELEMENT_OWN_METHODS,
-  j as ELEMENT_PROPERTIES,
-  k as ELEMENT_STARTUP_KEYS,
-  B as LAYER_A_PRO_ATTRIBUTES,
-  z as MAPLAT_APP_EVENTS,
-  K as MAPLAT_APP_METHODS,
-  U as MAPLAT_APP_TAG,
-  g as MaplatAppElement,
-  b as defineMaplatAppElement
+  C as ELEMENT_ATTRIBUTES,
+  N as ELEMENT_OWN_EVENTS,
+  j as ELEMENT_OWN_METHODS,
+  k as ELEMENT_PROPERTIES,
+  B as ELEMENT_STARTUP_KEYS,
+  z as LAYER_A_PRO_ATTRIBUTES,
+  K as MAPLAT_APP_EVENTS,
+  U as MAPLAT_APP_METHODS,
+  V as MAPLAT_APP_TAG,
+  b as MaplatAppElement,
+  w as defineMaplatAppElement
 };
 //# sourceMappingURL=maplat_core_element.js.map
