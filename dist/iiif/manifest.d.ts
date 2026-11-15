@@ -78,6 +78,10 @@ export declare function resolveIiifMetadata(manifest: unknown, iiif: Pick<Maplat
  * copiedValues と比べて、鍵・言語ごとに「人が直した」「IIIF の側が変わった」を返す。
  * 人が直したかは今の値と写した時点の値で、IIIF の側が変わったかは写した時点の値と取り直した値で見る。
  * 今の IIIF の値と今の値を直接は比べない。取り直した値が無ければ IIIF の側が変わったかは判定しない。
+ * 取り直した値にあって copiedValues に無い鍵・言語（写した後に結び付けた鍵、前回は値が無く写せなかった鍵、
+ * 増えた言語）も行にする。その行は IIIF の側が変わったとみなし、人が直したかは今の地図に値があるかで見る
+ * （欄が文字列なら、どの言語の行でも値があるとみなす）。
+ * 行の順は、copiedValues の鍵ごとに写した言語 → 増えた言語、その後に copiedValues に無い鍵を取り直した値の順で並べる。
  */
 export declare function compareIiifCopy(current: Record<string, Localized | string | undefined>, copiedValues: Record<string, Record<string, string>>, fresh: Record<string, Record<string, string>> | undefined, lang: string): Array<{
     key: string;

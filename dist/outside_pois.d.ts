@@ -59,6 +59,29 @@ export interface MarkerLayers {
  * `x`・`y`（画素）は地図の座標が分かってもメルカトルが分からないので、範囲外なら描かない。
  */
 export declare function classifyMarker(app: OutsidePoisApp, data: any): Promise<MarkerClass>;
+/**
+ * メルカトルの点が画面のどの地図のどの座標に描かれるか（lngLatToClientPoint が使う）。
+ * ピンを置く規則と同じ判定で、範囲内は前面の座標、範囲外は前面がメルカトルの地図なら
+ * 前面のメルカトル、前面が古地図で背面があれば背面のメルカトル。範囲外のピンを隠す
+ * 指定によらず背面を返す（地点そのものは背面の地図に見えている）。
+ * 背面の無い古地図の紙の外は undefined（呼び出し元が従来の前面の外挿で補う）。前面の変換で
+ * 写せない点は、ピンと同じく範囲外として扱うので背面（前面がメルカトルの地図なら前面）を返す。
+ */
+export declare function locateMerc(app: OutsidePoisApp, merc: number[]): Promise<{
+    map: any;
+    coord: number[];
+} | undefined>;
+/**
+ * 前面の地図の画素に背面の地図が見えていれば、背面のその点のメルカトルを返す
+ * （clientPointToLngLat と clickMap・clickMapMerc が使う。locateMerc の逆向き）。前面が古地図で、
+ * その画素の前面の座標が紙の外（insideCheckSysCoord が偽）で、背面があるときだけ `{ merc }`。
+ * 背面の画素が座標にならなければ `{ merc: undefined }`（前面の外挿で補わない）。それ以外（紙の内・
+ * 前面がメルカトルの地図・背面の無い古地図）は undefined で、呼び出し元が前面の変換で求める。
+ * `offset` は前面と背面の viewport のずれを返す関数（ポインタの移動は取っておいた値を渡す）。
+ */
+export declare function backMercAtPixel(app: OutsidePoisApp, pixel: readonly [number, number], offset?: () => readonly [number, number]): {
+    merc: number[] | undefined;
+} | undefined;
 /** 前面の地図がメルカトルをそのまま座標に使う地図（TMS・envelope を持つ基本地図）か。 */
 export declare function isMercatorFront(src: any): boolean;
 /**

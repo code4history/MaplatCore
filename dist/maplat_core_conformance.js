@@ -864,7 +864,7 @@ class Te extends EventTarget {
   removePoiLayer(t) {
     t !== "main" && this.#n.delete(t);
   }
-  // nov26-m4-t5（#91）: 線を足して id を返す。data.id があればその id、無ければ自動の id。
+  // #91: 線を足して id を返す。data.id があればその id、無ければ自動の id。
   // 呼び手の data は変えず、写しに setLine と同じ正規化（type・stroke → style）をする（Core と同じ）。
   addLine(t) {
     const a = { ...t, type: "Line" };
