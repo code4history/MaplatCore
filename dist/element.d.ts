@@ -32,7 +32,7 @@ export declare class MaplatAppElement extends MaplatAppElementBase implements Ma
     setEnvelopes(items: EnvelopeSpec[]): void;
     /** 既定のピンの画像（POI にも祖先にも icon が無いマーカーに地図が描く画像。Core の parts/defaultpin*.png）。 */
     getDefaultPinIcon(selected?: boolean): string;
-    /** 現在の地図の zoom を delta だけ変える。 */
+    /** 現在の地図の zoom を delta だけ変える。「動きを減らす」設定のときはアニメーションせず即座に変える。 */
     zoomBy(delta: number): void;
     /**
      * MaplatApp の生成（テスト用の差し替え口）。
