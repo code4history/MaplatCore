@@ -21,16 +21,7 @@ export type CrossCoordinatesArray = [
     Coordinate[],
     Size?
 ];
-/**
- * 地図データの iiif 節から、形の正しい項目だけを控える。
- * オブジェクトでなければ控えない（undefined）。manifest・canvas・image・copiedAt は文字列のときだけ、
- * bindings・copiedValues はオブジェクトのときだけ、copiedMetadata は配列のときだけ残す。
- * copiedMetadata は要素の形（isIiifMetadataEntry）に合うものだけを順に残し、外した要素があれば
- * mapID を渡された呼び出し（initialize）で 1 回だけ警告する。
- */
-export declare function normalizeIiifSection(value: unknown, mapID?: string): MaplatIiifSection | undefined;
-/** アプリの設定の書誌の表の出し方。all・hidden のときだけ控える */
-export declare function normalizeIiifMetadataDisplay(value: unknown): IiifMetadataDisplay | undefined;
+export { normalizeIiifSection, normalizeIiifMetadataDisplay } from '../iiif/section';
 export declare function setCustomFunction<TBase extends SourceConstructor>(Base: TBase): ((abstract new (...args: any[]) => {
     weiwudi?: Weiwudi;
     _map?: MaplatMap;
