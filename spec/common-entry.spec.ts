@@ -4,7 +4,7 @@
 //   2. 公開物の一覧（common の export）と、@maplat/core からの従来の export が壊れていないこと
 //   3. package.json の exports・sideEffects
 // ビルド後の dist/maplat_core_common.js の検査は scripts/verify-common-bundle.mjs（build で走る）。
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, expectTypeOf } from "vitest";
 import { readFileSync } from "fs";
 import { resolve } from "path";
 import * as common from "../src/common";
@@ -43,6 +43,9 @@ describe("@maplat/core/common の入口が OpenLayers 等を引き込まない",
       "src/element_base.ts",
       "src/element_contract.ts",
       "src/functions.ts",
+      "src/iiif/image.ts",
+      "src/iiif/manifest.ts",
+      "src/iiif/section.ts",
       "src/meta_keys.ts",
       "src/sanitize-allowlist.json",
       "src/sanitize.ts"
@@ -51,6 +54,32 @@ describe("@maplat/core/common の入口が OpenLayers 等を引き込まない",
 });
 
 describe("@maplat/core/common の公開物", () => {
+  it("IIIF の画像と書誌の関数を公開する", () => {
+    for (const name of [
+      "IiifDeliveryError", "parseIiifImageInfo", "checkIiifDelivery", "iiifMinZoom", "iiifTileUrl",
+      "resolveIiifDelivery", "prepareIiifDelivery", "wantsIiifDelivery", "isIiifDelivery",
+      "normalizeIiifSection", "normalizeIiifMetadataDisplay", "mapMetaIiif"
+    ]) expect(typeof (common as any)[name], name).toBe("function");
+    expect((common as any).IIIF_TILE_SIZE).toBe(256);
+    expect((common as any).IIIF_METADATA_DISPLAY_DEFAULT).toBe("hidden");
+    expect((common as any).mapMetaIiif({ manifest: "https://example.org/m" }, "all")).toEqual({ display: "all", manifest: "https://example.org/m" });
+    expect((common as any).mapMetaIiif(undefined, "all")).toBeUndefined();
+    expect((common as any).mapMetaIiif({}, "ALL")).toEqual({ display: "hidden" });
+  });
+
+  it("従来の IIIF のソースの入口からも同じ名前を読める", async () => {
+    expectTypeOf<common.IiifDeliveryReason>().toEqualTypeOf<import("../src/iiif/delivery").IiifDeliveryReason>();
+    expectTypeOf<common.IiifDeliveryCheck>().toEqualTypeOf<ReturnType<typeof common.checkIiifDelivery>>();
+    expectTypeOf<common.ResolvedIiifDelivery>().toEqualTypeOf<Awaited<ReturnType<typeof common.resolveIiifDelivery>>>();
+    expectTypeOf<common.IiifImageService>().toEqualTypeOf<common.ResolvedIiifDelivery["service"]>();
+    const delivery = await import("../src/iiif/delivery");
+    const manifest = await import("../src/iiif/manifest");
+    expect(delivery.checkIiifDelivery).toBe((common as any).checkIiifDelivery);
+    expect(manifest.IIIF_METADATA_DISPLAY_DEFAULT).toBe((common as any).IIIF_METADATA_DISPLAY_DEFAULT);
+    for (const name of ["listIiifCanvases", "proposeIiifBindings"])
+      expect(typeof (manifest as any)[name]).toBe("function");
+  });
+
   it("補助関数", () => {
     for (const name of ["sanitizeHtml", "escapeAttr", "toPlainText", "buildSlideAttrs", "createElement", "normalizeArg"]) {
       expect(typeof (common as any)[name], name).toBe("function");

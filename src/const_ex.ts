@@ -9,7 +9,7 @@ export const transPng =
   "r+4ICgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
   "AAAAAAAAAAAAABgBDwABHHIJwwAAAABJRU5ErkJggg==";
 
-// タイル画像サイズ
+// タイル画像サイズ（依存のない iiif/image.ts の IIIF_TILE_SIZE と同じ値）
 export const tileSize = 256;
 
 // canvasのテンプレート

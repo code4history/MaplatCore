@@ -61,7 +61,7 @@ export interface IiifMetadataEntry {
 export type IiifMetadataDisplay = "all" | "hidden";
 
 /** アプリの設定が無いときに使う、書誌の表の出し方 */
-export const IIIF_METADATA_DISPLAY_DEFAULT = "hidden";
+export { IIIF_METADATA_DISPLAY_DEFAULT } from "./section";
 
 /** 言語の表で、言語を持たない値を入れる場所（Presentation API の none） */
 const NONE = "none";

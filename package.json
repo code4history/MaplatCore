@@ -35,7 +35,8 @@
   "files": [
     "src/",
     "dist/",
-    "parts/"
+    "parts/",
+    "THIRD-PARTY-NOTICES.md"
   ],
   "scripts": {
     "dev": "vite --host",

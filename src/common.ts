@@ -20,6 +20,14 @@ export { normalizeArg } from "./functions";
 export { META_KEYS, META_KEYS_OPTION } from "./meta_keys";
 export { sanitizeIiifHtml } from "./sanitize";
 
+// IIIF の画像の配信と書誌（地図の実装に依らない部分）
+export {
+  IIIF_TILE_SIZE, IiifDeliveryError, parseIiifImageInfo, checkIiifDelivery, iiifMinZoom, iiifTileUrl,
+  resolveIiifDelivery, prepareIiifDelivery, wantsIiifDelivery, isIiifDelivery
+} from "./iiif/image";
+export type { IiifDeliveryReason, IiifDeliveryCheck, IiifImageService, ResolvedIiifDelivery } from "./iiif/image";
+export { IIIF_METADATA_DISPLAY_DEFAULT, normalizeIiifSection, normalizeIiifMetadataDisplay, mapMetaIiif } from "./iiif/section";
+
 // ---- 層 A・層 B の名前の表と型 ----
 export {
   MAPLAT_APP_TAG,

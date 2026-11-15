@@ -72,6 +72,7 @@ function demoWeiwudiSw(): Plugin {
 }
 
 export default defineConfig({
+  esbuild: { legalComments: "inline" },
   base: "./",
   build: isElementBuild ? {
     lib: {
