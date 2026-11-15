@@ -41,6 +41,8 @@ function olIiifReport(code) {
 }
 
 const IIIF_SOURCE = /(?:^|\/)ol\/(?:source\/IIIF|format\/IIIFInfo)\.js$/;
+// 個別のファイルの道（既定の import・名前空間の import・動的 import・require を含む）で OL の IIIF を読む文
+const IIIF_DIRECT_IMPORT = /(?:\bfrom|\bimport|\brequire)\s*\(?\s*["']ol\/(?:source\/IIIF|format\/IIIFInfo)(?:\.js)?["']/;
 const TILE_STATE_SOURCE = /(?:^|\/)ol\/TileState\.js$/;
 
 // 以前の ES bundle の import 文そのものを使う陽性対照。
@@ -51,6 +53,10 @@ assert(control.imports["ol/format"].includes("IIIFInfo"));
 assert.deepEqual(olIiifReport("new source.IIIF(); new format.IIIFInfo(); format.IIIFInfo;").references, { IIIF: 1, IIIFInfo: 2 });
 assert.deepEqual(olIiifReport('/*! ol/source/IIIF.js; source.IIIF */ const name = "format.IIIFInfo";').references, { IIIF: 0, IIIFInfo: 0 });
 assert(IIIF_SOURCE.test("../node_modules/ol/source/IIIF.js"));
+assert(IIIF_DIRECT_IMPORT.test('import IIIF from "ol/source/IIIF";'));
+assert(IIIF_DIRECT_IMPORT.test('import * as F from "ol/format/IIIFInfo.js";'));
+assert(IIIF_DIRECT_IMPORT.test('const m = await import("ol/source/IIIF.js");'));
+assert(!IIIF_DIRECT_IMPORT.test('import { XYZ } from "ol/source";'));
 assert(IIIF_SOURCE.test("../node_modules/.pnpm/ol@10.11.0/node_modules/ol/format/IIIFInfo.js"));
 assert(TILE_STATE_SOURCE.test("../node_modules/ol/TileState.js"));
 
@@ -166,7 +172,8 @@ for (const file of ["maplat_core.js", "maplat_core.umd.js"]) {
   if (!r) continue;
   const report = olIiifReport(r.code);
   const imported = Object.values(report.imports).flat().filter(name => ["IIIF", "IIIFInfo"].includes(name));
-  if (imported.length || report.references.IIIF || report.references.IIIFInfo) fail(`${file}: OL の IIIF 参照 ${JSON.stringify(report)}`);
+  const direct = r.code.match(IIIF_DIRECT_IMPORT)?.[0] ?? null;
+  if (imported.length || direct || report.references.IIIF || report.references.IIIFInfo) fail(`${file}: OL の IIIF 参照 ${JSON.stringify({ ...report, direct })}`);
   else ok(`${file}: OL の IIIF の import・プロパティ参照が無い`);
   if (!r.sources) fail(`${file}: ソースマップが無い`);
   else {

@@ -225,7 +225,7 @@ OpenLayers 10.11.0 の規則を移植し、ローカルの資料と合成入力�
 
 Image API 1・256 px 以外の level 0・`sizes` だけの level 0 は対象外です。
 呼び出し側は `minZoom` を守る必要があり、`iiifTileUrl` 自体はこの下限を適用しません。
-両辺 128 px 未満の画像は OL と同じくタイルを返しません。`maxWidth`・`maxHeight`・`maxArea` は
+長い辺が 128 px 以下の画像は OL と同じくタイルを返しません。`maxWidth`・`maxHeight`・`maxArea` は
 制限に使いません。回転は常に `0`、形式・品質は解釈した service の値を使います。
 書誌の関数は Manifest を取得せず、HTML の洗浄もしません。HTML を表示する際は `sanitizeIiifHtml` を使います。
 作成ツール用の内部関数は [Manifest の読み取り](iiif-manifest.ja.md) を参照してください。

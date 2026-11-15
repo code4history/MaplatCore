@@ -233,7 +233,7 @@ The delivery URL wins over a different service ID, with a warning.
 
 Image API 1, level 0 tiles other than 256 px, and level 0 with only `sizes` are
 unsupported. The caller must honor `minZoom`; `iiifTileUrl` itself does not impose
-that floor. As in OL, images with both dimensions below 128 px yield no tiles.
+that floor. As in OL, images whose longer side is 128 px or less yield no tiles.
 `maxWidth`, `maxHeight`, and `maxArea` are not enforced. Rotation is always `0`;
 format and quality come from the parsed service. Bibliography functions do not
 fetch a Manifest or sanitize HTML; use `sanitizeIiifHtml` when displaying HTML.
