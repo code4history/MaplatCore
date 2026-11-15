@@ -1,6 +1,6 @@
 // <maplat-app>（src/element.ts）の骨組みの検査。
 // 地図の実体（OL）は jsdom で動かさず、MaplatApp の代わりに FakeCore を createCore で差し込む。
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { readFileSync } from "fs";
 import { resolve } from "path";
 import EventTarget from "ol/events/Target";
@@ -802,5 +802,57 @@ describe("<maplat-app> 状態の読み取り・新設メソッド・イベント
     el.handleGPS(false);
     expect(seen).toEqual([{ enabled: true }, { enabled: false }]);
     expect(el.gpsEnabled).toBe(false);
+  });
+});
+
+describe("<maplat-app> zoomBy と「動きを減らす」設定", () => {
+  let env: ReturnType<typeof defineTestElement>;
+  beforeEach(() => {
+    env = defineTestElement();
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  // zoomBy が使う View の最小の形（getZoom / animate / setZoom）
+  function fakeView() {
+    return { getZoom: vi.fn(() => 10), animate: vi.fn(), setZoom: vi.fn() };
+  }
+
+  async function bootWithView() {
+    const el = document.createElement(env.tag) as MaplatAppElement;
+    el.setAttribute("app-id", "a");
+    document.body.appendChild(el);
+    await tick();
+    const core = env.created[0];
+    const view = fakeView();
+    core.mapObject.getView = () => view;
+    core.resolveReady();
+    await el.ready;
+    return { el, view };
+  }
+
+  it("matchMedia の無い環境では duration 250 のアニメーションで zoom を変える", async () => {
+    vi.stubGlobal("matchMedia", undefined);
+    const { el, view } = await bootWithView();
+    el.zoomBy(1);
+    expect(view.animate).toHaveBeenCalledWith({ zoom: 11, duration: 250 });
+    expect(view.setZoom).not.toHaveBeenCalled();
+  });
+
+  it("prefers-reduced-motion: reduce ならアニメーションせず setZoom で即座に変える", async () => {
+    vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: true })));
+    const { el, view } = await bootWithView();
+    el.zoomBy(-2);
+    expect(view.setZoom).toHaveBeenCalledWith(8);
+    expect(view.animate).not.toHaveBeenCalled();
+  });
+
+  it("no-preference ならいつもどおりアニメーションする", async () => {
+    vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: false })));
+    const { el, view } = await bootWithView();
+    el.zoomBy(1);
+    expect(view.animate).toHaveBeenCalledWith({ zoom: 11, duration: 250 });
+    expect(view.setZoom).not.toHaveBeenCalled();
   });
 });

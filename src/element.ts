@@ -67,6 +67,12 @@ export type MaplatMapListItem = MapListItem;
 const isFiniteXY = (c: unknown): c is [number, number] =>
   Array.isArray(c) && Number.isFinite(c[0]) && Number.isFinite(c[1]);
 
+/** 「動きを減らす」設定（prefers-reduced-motion: reduce）なら true。matchMedia の無い環境（テスト・SSR）では false。 */
+function prefersReducedMotion(): boolean {
+  if (typeof matchMedia !== "function") return false;
+  return matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
 export class MaplatAppElement extends MaplatAppElementBase implements MaplatAppElementContract {
   /** 実装の種別。有償版は "core-pro"。 */
   readonly implementation = "core" as const;
@@ -144,13 +150,13 @@ export class MaplatAppElement extends MaplatAppElementBase implements MaplatAppE
     return defaultPinIcon(selected);
   }
 
-  /** 現在の地図の zoom を delta だけ変える。 */
+  /** 現在の地図の zoom を delta だけ変える。「動きを減らす」設定のときはアニメーションせず即座に変える。 */
   zoomBy(delta: number): void {
     const view = (this.requireImplementation("zoomBy") as any).mapObject?.getView?.();
     if (!view) return;
     const zoom = view.getZoom();
     if (typeof zoom !== "number") return;
-    if (typeof view.animate === "function") view.animate({ zoom: zoom + delta, duration: 250 });
+    if (typeof view.animate === "function" && !prefersReducedMotion()) view.animate({ zoom: zoom + delta, duration: 250 });
     else view.setZoom(zoom + delta);
   }
 

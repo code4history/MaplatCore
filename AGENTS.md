@@ -41,3 +41,13 @@ Recent `git log` shows a mix of Conventional Commits (`fix:`, `chore:`, `docs:`)
 ## Release & Configuration Tips
 
 Version helper scripts live in `scripts/` (`version:bump`, `version:sync`). `pnpm prepublishOnly` is the release gate (lint + typecheck + test + build) and expects a clean working tree. Keep secrets and any proprietary map data out of the repository.
+
+## ブラウザの方針
+
+- 対象は Chrome・Edge・Firefox・Safari（iOS を含む）の最新 2 版。
+- Baseline Widely available の機能は、機能検出なしで使ってよい。
+- Baseline Newly available と Limited availability の機能は、使えないブラウザでも壊れないことを条件に使う。見た目だけの機能はそのまま、配置が崩れるものは `@supports`、振る舞いは機能検出つきの 20 行以内の代わりの実装で受ける。
+- polyfill の依存を足さない。どうしても要るときは、機能検出のうえで `import()` で必要なときだけ読む。
+- iOS Safari（WebKit）で実際に障害が出たことがある。WebKit で挙動が変わりうる変更は Playwright の webkit でも確かめる。
+- 動きのある表現は `prefers-reduced-motion: reduce` のとき止めるか、切り替えだけにする。状態の変化を伝える短い遷移まで一括で消さない。
+- Enter で送信・確定する文字入力は、IME の変換中（`event.isComposing` か `keyCode === 229`）を除外する。
