@@ -121,6 +121,7 @@ export interface PoiTemplateLevel {
   /** iconTemplate が無い・使えないときに使うマーカーの画像 */
   icon?: unknown;
   selectedIcon?: unknown;
+  // テンプレートを持たない段（pois だけの層など）も受けるための索引の型（無いと弱い型の検査で弾かれる）
   [key: string]: unknown;
 }
 
@@ -131,7 +132,7 @@ export type PoiTemplateFields = Pick<MaplatPoi, "icon" | "selectedIcon" | "html"
  * POI の複製に、祖先の iconTemplate・icon から icon・selectedIcon を補って返す。
  * 祖先は近い段から順に見て、最初に使える段の値を使う（iconTemplate が評価できない段は、同じ段の icon・
  * selectedIcon を使い、それも無ければ次の段へ）。POI 自身に icon があれば何も補わない。渡した data は書き換えない。
- * POI に 1.x の旧いキー名（`selected_icon`・`namespace_id` など）があると例外を投げる（normalizeArg）。
+ * POI に 0.x の旧いキー名（snake_case）（`selected_icon`・`namespace_id` など）があると例外を投げる（normalizeArg）。
  * @param data POI（MaplatPoi の形。テンプレートが読む独自のキーもそのまま載る）
  * @param ancestors 近い段から順に、POI のレイヤー → 地図 → アプリ
  */
@@ -162,7 +163,7 @@ export function createIconSet<T extends object>(data: T, ...ancestors: PoiTempla
  * 祖先の poiTemplate から html を作り、同じ段の poiStyle（POI 自身に無ければ）と一緒に data に書き込んで返す。
  * 祖先は近い段から順に見て、最初に評価できた段を使う（評価できない段は poiStyle も使わず次の段へ）。
  * POI 自身に html があれば何もしない。**渡した data そのものを書き換えて返す**（複製しない）。
- * POI に 1.x の旧いキー名（`selected_icon`・`namespace_id` など）があると例外を投げる（normalizeArg）。
+ * POI に 0.x の旧いキー名（snake_case）（`selected_icon`・`namespace_id` など）があると例外を投げる（normalizeArg）。
  * @param data POI（MaplatPoi の形）
  * @param ancestors 近い段から順に、POI のレイヤー → 地図 → アプリ
  */
@@ -188,7 +189,7 @@ export function createHtmlFromTemplate<T extends object>(data: T, ...ancestors: 
  * POI の複製に、祖先のテンプレートから icon・selectedIcon と html・poiStyle を補う
  * （createIconSet で複製してから createHtmlFromTemplate を当てる）。
  * マーカーの描画（clickMarker の detail）と getMarker の戻り値が同じ形になるよう、両方がこの 1 つを通る。
- * 渡した data は書き換えない。POI に 1.x の旧いキー名があると例外を投げる（normalizeArg）。
+ * 渡した data は書き換えない。POI に 0.x の旧いキー名（snake_case）があると例外を投げる（normalizeArg）。
  * @param data POI（MaplatPoi の形）
  * @param ancestors 近い段から順に、POI のレイヤー → 地図 → アプリ
  */

@@ -547,13 +547,14 @@ second time next to the copy inside `@maplat/core`.
   both copies evaluate the same way.
 - `ancestors` are the levels nearest first (the POI's layer, then the map, then
   the app). Only `poiTemplate`, `poiStyle`, `iconTemplate`, `icon` and
-  `selectedIcon` are read from them; a level without a usable template is
-  skipped. The POI's own `icon` / `html` wins.
+  `selectedIcon` are read from them; for `html`, a level without a usable template is
+  skipped; for the icon, a level's own `icon` is used even without an
+  `iconTemplate`. The POI's own `icon` / `html` wins.
 - `applyPoiTemplates` and `createIconSet` return a copy and do not modify the
   POI passed in. `createHtmlFromTemplate` writes `html` / `poiStyle` into the
   object it is given and returns that same object.
 - All three check the POI's key names (`normalizeArg`): a POI that still has a
-  1.x snake_case key (`selected_icon`, `namespace_id`, `poi_template`, …)
+  0.x snake_case key (`selected_icon`, `namespace_id`, `poi_template`, …)
   throws an `Error` that names the new key. Keys are not renamed. The keys of
   `ancestors` are not checked.
 - Warnings for templates in the old syntax and for templates that fail to

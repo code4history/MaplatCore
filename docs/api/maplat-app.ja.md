@@ -477,10 +477,10 @@ import せず、何も登録しません。Nunjucks（Quyuan の `@c4h/quyuan/te
   これは `@maplat/core/template` を import する実装だけの話で、`@maplat/core/element`・`@maplat/core/common` は
   Nunjucks を含みません。2 つの写しが同じに評価するよう、`@maplat/core` は 1 つの版にそろえてください。
 - `ancestors` は近い段から順に渡します（POI のレイヤー → 地図 → アプリ）。段から読むのは `poiTemplate`・`poiStyle`・
-  `iconTemplate`・`icon`・`selectedIcon` だけで、使えるテンプレートの無い段は飛ばします。POI 自身の `icon`・`html` が勝ちます。
+  `iconTemplate`・`icon`・`selectedIcon` だけです。html は使えるテンプレートの無い段を飛ばし、アイコンは `iconTemplate` が無くても同じ段の `icon` を使います。POI 自身の `icon`・`html` が勝ちます。
 - `applyPoiTemplates`・`createIconSet` は複製を返し、渡した POI を書き換えません。`createHtmlFromTemplate` は
   渡したオブジェクトに `html`・`poiStyle` を書き込み、そのオブジェクトを返します。
-- 3 つとも POI のキーの名前を確かめます（`normalizeArg`）。1.x の旧い名前のキー（`selected_icon`・`namespace_id`・
+- 3 つとも POI のキーの名前を確かめます（`normalizeArg`）。0.x の旧い名前のキー（snake_case）（`selected_icon`・`namespace_id`・
   `poi_template` など）が残っている POI では、新しい名前を示す `Error` を投げます。キーの名前は書き換えません。
   `ancestors` のキーは確かめません。
 - 旧い記法のテンプレート・評価できないテンプレートの警告は、写しごとに 1 回です（「POI テンプレートの記法」）。

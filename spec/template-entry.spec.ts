@@ -69,7 +69,7 @@ describe("@maplat/core/template の POI テンプレートの評価", () => {
     expect(got.selectedIcon).toBe("s.png");
   });
 
-  it("祖先は前から順に見る。テンプレートの無い段は飛ばし、POI 自身の html・icon が勝つ", () => {
+  it("祖先は前から順に見る。html はテンプレートの無い段を飛ばし、icon は同じ段の icon も使い、POI 自身の html・icon が勝つ", () => {
     const near = { icon: "near.png" };
     const far = { poiTemplate: "<p>{{ name }}</p>", iconTemplate: '{"icon": "far.png"}' };
     const got = template.applyPoiTemplates({ name: "n" }, near, far);
@@ -94,7 +94,7 @@ describe("@maplat/core/template の POI テンプレートの評価", () => {
     expect(poi).toEqual({ name: "n", html: "<p>n</p>", poiStyle: "s" });
   });
 
-  it("POI に 1.x の旧いキー名があると例外を投げる（名前を書き換えはしない）", () => {
+  it("POI に 0.x の旧いキー名（snake_case）があると例外を投げる（名前を書き換えはしない）", () => {
     for (const fn of [template.applyPoiTemplates, template.createIconSet, template.createHtmlFromTemplate]) {
       expect(() => fn({ name: "n", selected_icon: "s.png" }, { icon: "a.png" })).toThrow(/selected_icon.*selectedIcon/);
     }
