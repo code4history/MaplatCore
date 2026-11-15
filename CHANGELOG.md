@@ -15,6 +15,7 @@
 - 古地図の画像を IIIF Image API の画像サービスから直接配る `delivery: { type: "iiifImage", url }`（地図の設定）。`info.json` の読み取りと要求の URL は OpenLayers の `IIIFInfo`・`IIIF` に任せる。Image API 2・3 の任意の領域を返せるサービスと、タイルが 256 px の level 0 に対応。使えない地図は `sourceLoaded` で `usable: false` になり、他の地図で起動する。タイルキャッシュには登録しない。判定の関数 `checkIiifDelivery`・`resolveIiifDelivery` は `src/iiif/delivery.ts`
 - `<maplat-app>` の属性 `hide-outside-pois`（プロパティ `hideOutsidePois`）。範囲外の POI を描かない。起動後にも変えられ、変えるとマーカーを描き直す
 - 地図の設定の `iiif` 節（IIIF の Manifest から写した書誌: `manifest`・`canvas`・`image`・`bindings`・`copiedAt`・`copiedValues`・`copiedMetadata`）。`getMapMeta`・`mapChanged` の `MapMeta` に `iiif`（`display` はアプリの設定の `sources[]` の `iiifMetadata`、既定 `"hidden"`）。Viewer は Manifest を取得しない。Manifest の値の中の入れ子の配列は、捨てずに平らにして読む（深さの上限は 32 段。循環する値でも止まる）。Manifest を読む純粋な関数（`resolveIiifMetadata` ほか）は `src/iiif/manifest.ts`（MaplatEditor などが使う内部の関数で、パッケージの公開 API ではない）、IIIF の値のサニタイズは `sanitizeHtml(dirty, { profile: "iiif" })`・`sanitizeIiifHtml`。`@maplat/core/common` から `sanitizeIiifHtml`・型 `MapMetaIiif`・型ガード `isIiifMetadataEntry` を import できる。`iiif.copiedMetadata` の形の合わない要素は、地図ごとに 1 回警告して外す
+- 入口 `@maplat/core/template`（`dist/maplat_core_template.js`）。POI テンプレートを評価する関数 `applyPoiTemplates`・`createIconSet`・`createHtmlFromTemplate` と型 `PoiTemplateLevel`・`PoiTemplateFields` を出す。`MaplatApp` がマーカーの描画と `getMarker` に使うのと同じ実装で、上位の実装が同じ設定ファイルで同じ表示を出せるようにするため。Nunjucks（Quyuan の `@c4h/quyuan/template`）を同梱するので `@maplat/core/common` には入れない（`@maplat/core/element`・`@maplat/core/common` は Nunjucks を含まない）。実行時は `@maplat/core` の中の分とは別の写しで、両方を読み込むページでは Nunjucks が 2 重に載る
 
 ### Changed
 - 範囲外の POI が背面の地図に見えるようになった。古地図の紙の外にある POI は背面の `marker` 層にメルカトルの座標で立ち、TMS・基本地図では前面に立つ。範囲外の POI を選んでいる間は中心を紙の内側へ引き戻さず、背面のピンは紙の外の点でだけ押せる
@@ -30,7 +31,7 @@
 ### Removed
 - POI の `poiTemplate`・`iconTemplate` を lodash.template で評価するのをやめ、Nunjucks の記法（Quyuan の `@c4h/quyuan/template`）で評価するようにした。依存 `lodash.template` を外した（#93）
   - 理由: lodash.template はテンプレートの中身を JavaScript としてそのまま実行するため、地図データや POI データに書かれたテンプレートからページの権限でコードが動いた。利用がほとんど無いため、予告の期間を置かずに外した
-  - 旧い記法の検出: テンプレート（`{% raw %}…{% endraw %}`・`{% verbatim %}…{% endverbatim %}` の中を除く）に `<%`…`%>` または `${`…`}` があれば旧い記法とみなし、評価せずにそのテンプレートは無いものとして扱い、ページで 1 回だけ `console.warn` で知らせる。`<%`・`${` を文字として出したいときは `{% raw %}…{% endraw %}` で囲む
+  - 旧い記法の検出: テンプレート（`{% raw %}…{% endraw %}`・`{% verbatim %}…{% endverbatim %}` の中を除く）に `<%`…`%>` または `${`…`}` があれば旧い記法とみなし、評価せずにそのテンプレートは無いものとして扱い、1 回だけ `console.warn` で知らせる（評価のコードの写しごとに 1 回。`@maplat/core/template` も読み込むページでは、そちらからも 1 回出うる）。`<%`・`${` を文字として出したいときは `{% raw %}…{% endraw %}` で囲む
   - 書き換え: `<%- name %>` → `{{ name }}`、`<%= html %>` → `{{ html | safe }}`、`${name}` → `{{ name }}`、`<% if (a) { %>…<% } %>` → `{% if a %}…{% endif %}`、`<% list.forEach(x => { %>…<% }) %>` → `{% for x in list %}…{% endfor %}`。`iconTemplate` は JSON を作るので、文字列の値は `"icon": {{ url | dump | safe }}` と書く（`"{{ url }}"` は `&` などを HTML の形に置き換える）。対応表は `docs/api/maplat-app.md` を参照
   - `{{ }}` は既定で HTML エスケープする（lodash の `<%= %>` はしなかった）。テンプレートの誤りや存在しない値で地図の描画が止まらなくなった（存在しない値は空文字）
   - 検出に当たらないまま表示が変わる場合が 1 つだけある: lodash の記法を含まず、`{{ }}`・`{% %}` を文字として書いていたテンプレートは、1.3 から Nunjucks として評価される

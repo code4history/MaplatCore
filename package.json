@@ -22,6 +22,10 @@
     "./conformance": {
       "types": "./dist/conformance/index.d.ts",
       "import": "./dist/maplat_core_conformance.js"
+    },
+    "./template": {
+      "types": "./dist/template.d.ts",
+      "import": "./dist/maplat_core_template.js"
     }
   },
   "engines": {
@@ -35,10 +39,10 @@
   ],
   "scripts": {
     "dev": "vite --host",
-    "build": "cross-env BUILD_MODE=package vite build && cross-env BUILD_MODE=element vite build && cross-env BUILD_MODE=common vite build && cross-env BUILD_MODE=conformance vite build && node scripts/verify-common-bundle.mjs",
+    "build": "cross-env BUILD_MODE=package vite build && cross-env BUILD_MODE=element vite build && cross-env BUILD_MODE=common vite build && cross-env BUILD_MODE=conformance vite build && cross-env BUILD_MODE=template vite build && node scripts/verify-common-bundle.mjs",
     "verify:common": "node scripts/verify-common-bundle.mjs",
     "build:demo": "vite build",
-    "build:with-typecheck": "pnpm run typecheck && cross-env BUILD_MODE=package vite build && cross-env BUILD_MODE=element vite build && cross-env BUILD_MODE=common vite build && cross-env BUILD_MODE=conformance vite build && node scripts/verify-common-bundle.mjs",
+    "build:with-typecheck": "pnpm run typecheck && cross-env BUILD_MODE=package vite build && cross-env BUILD_MODE=element vite build && cross-env BUILD_MODE=common vite build && cross-env BUILD_MODE=conformance vite build && cross-env BUILD_MODE=template vite build && node scripts/verify-common-bundle.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",

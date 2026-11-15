@@ -89,8 +89,9 @@ import '@maplat/core/element';
 ```
 
 See [`docs/api/maplat-app.md`](docs/api/maplat-app.md) for the attributes,
-properties, methods and events, the shared base `@maplat/core/common` and the
-conformance tests `@maplat/core/conformance`. The `MaplatApp` class stays
+properties, methods and events, the shared base `@maplat/core/common`, the
+POI template functions `@maplat/core/template` and the conformance tests
+`@maplat/core/conformance`. The `MaplatApp` class stays
 available in 1.x and closes in the next major version (2.0).
 
 ### CDN (jsDelivr)

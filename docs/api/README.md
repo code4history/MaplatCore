@@ -19,7 +19,8 @@ here for the canonical list.
 - [`maplat-app.md`](maplat-app.md) — `<maplat-app>` Custom Element
   (`@maplat/core/element`: attributes and properties, state, delegated and
   element-specific methods, events, `uiHooks`), the shared base
-  `@maplat/core/common` and the conformance tests `@maplat/core/conformance`,
+  `@maplat/core/common`, the POI template functions `@maplat/core/template`,
+  the conformance tests `@maplat/core/conformance`,
   and the relationship to the `MaplatApp` class (which closes in the next
   major version (2.0))
 - [`iiif-manifest.md`](iiif-manifest.md) ([日本語](iiif-manifest.ja.md)) — how

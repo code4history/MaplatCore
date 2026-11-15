@@ -5,48 +5,12 @@
 //   3. package.json の exports・sideEffects
 // ビルド後の dist/maplat_core_common.js の検査は scripts/verify-common-bundle.mjs（build で走る）。
 import { describe, it, expect } from "vitest";
-import { readFileSync, existsSync } from "fs";
-import { resolve, dirname } from "path";
+import { readFileSync } from "fs";
+import { resolve } from "path";
 import * as common from "../src/common";
 import * as core from "../src/index";
 import * as conformance from "../src/conformance";
-
-const ROOT = resolve(__dirname, "..");
-const FORBIDDEN = /^(ol(\/|$)|@c4h\/weiwudi|@maplat\/transform|@turf\/|maplibre-gl|mapbox-gl)/;
-
-/** 入口から相対 import をたどり、[ファイル, 外部の import 先] を集める。 */
-function walk(entry: string) {
-  const files = new Set<string>();
-  const external = new Map<string, Set<string>>();
-  const stack = [resolve(ROOT, entry)];
-  while (stack.length) {
-    const file = stack.pop()!;
-    if (files.has(file)) continue;
-    files.add(file);
-    if (!/\.(ts|js)$/.test(file)) continue;
-    // 行コメント・ブロックコメントの中の import の例は数えない
-    const src = readFileSync(file, "utf-8")
-      .replace(/\/\*[\s\S]*?\*\//g, "")
-      .replace(/^\s*\/\/.*$/gm, "");
-    // import ... from "x" / export ... from "x" / import "x"（型だけの import も数える＝型の連鎖も OL に触れない）
-    const specs = [...src.matchAll(/(?:import|export)\s[^;]*?from\s*["']([^"']+)["']|import\s*["']([^"']+)["']/g)].map(
-      m => m[1] ?? m[2]
-    );
-    for (const spec of specs) {
-      if (spec.startsWith(".")) {
-        const base = resolve(dirname(file), spec);
-        const candidates = [base, `${base}.ts`, `${base}/index.ts`];
-        const hit = candidates.find(c => existsSync(c) && !c.endsWith("/") && /\.(ts|json|png|jpg)$/.test(c));
-        if (!hit) throw new Error(`cannot resolve ${spec} from ${file}`);
-        stack.push(hit);
-      } else {
-        if (!external.has(spec)) external.set(spec, new Set());
-        external.get(spec)!.add(file.replace(`${ROOT}/`, ""));
-      }
-    }
-  }
-  return { files: [...files].map(f => f.replace(`${ROOT}/`, "")).sort(), external };
-}
+import { FORBIDDEN, ROOT, walk } from "./entry-imports";
 
 describe("@maplat/core/common の入口が OpenLayers 等を引き込まない", () => {
   for (const entry of ["src/common.ts", "src/conformance/index.ts"]) {
