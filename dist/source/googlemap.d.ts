@@ -12,7 +12,7 @@ import { MaplatIiifSection, IiifMetadataDisplay } from '../iiif/manifest';
  * createSession_() → fetch を発火するためテスト不能）。
  *
  * mapType は正規表現派生にしない。google_hybrid を RegExp.$1 で切ると "hybrid" になり、
- * Tile API が知らない値になる（マイルストーン設計 §1.2 / §2.1、m6-t4 §4.7）。
+ * Tile API が知らない値になる。
  */
 export declare function deriveGoogleTileOptions(maptype: string | undefined, layers: string[] | undefined): {
     mapType: string;

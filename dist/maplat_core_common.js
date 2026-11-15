@@ -1647,7 +1647,7 @@ const pn = [
   "mapper",
   "license",
   "dataLicense",
-  // m6-t2: ライセンスの自由記述欄。META_KEYS_OPTION と lockstep (同じ index) で足す。
+  // ライセンスの自由記述欄。META_KEYS_OPTION と lockstep (同じ index) で足す。
   "licenseNote",
   "dataLicenseNote",
   "attr",
@@ -1809,7 +1809,7 @@ const Le = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU0AK
   "removePoiLayer",
   "addLine",
   "addVector",
-  // nov26-m4-t5（#91）: 線・面を id で 1 件だけ消す
+  // #91: 線・面を id で 1 件だけ消す
   "removeVector",
   "removeLine",
   "clearLine",

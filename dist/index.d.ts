@@ -165,6 +165,7 @@ export declare class MaplatApp extends EventTarget implements ElementImplementat
         cancelled?: boolean;
     };
     private __resizeObserver;
+    private __viewportOffset?;
     private __visibilityHandler;
     private __pendingView;
     private __pendingViewScheduled;
@@ -287,6 +288,8 @@ export declare class MaplatApp extends EventTarget implements ElementImplementat
     pixelToMerc(pixel: readonly [number, number]): Promise<number[] | undefined>;
     /** @internal 表示領域の大きさ。4 隅の作り方は要素が持つ。 */
     viewportSize(): [number, number] | undefined;
+    private __offsetCached;
+    private __offsetNow;
     /** @internal 前面と背面の地図の大きさを測り直す。 */
     updateSize(): void;
     clientPointToLngLat(clientX: number, clientY: number): Promise<{
