@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- 設定ファイル（apps/<id>.json）・タイルはページ起点の相対パスで読まれるので、基点を公開ルートにそろえる -->
+  <base href="../../../">
+  <title>出典の表示（maplat-ui の中）</title>
+  <style>
+    html, body { margin: 0; height: 100%; }
+    maplat-ui { display: block; position: relative; width: 100%; height: 100%; }
+    maplat-app { display: block; width: 100%; height: 100%; }
+  </style>
+</head>
+<body>
+  <!-- <maplat-ui> は定義しない（Core の出典の配置の規則 maplat-ui > maplat-app だけを確かめる） -->
+  <maplat-ui id="ui"></maplat-ui>
+  <script type="module">
+    import "/src/element.ts";
+    // <maplat-ui> の中の <maplat-app> で、出典の箱（と Google Maps のロゴ）の位置を確かめるページ（e2e/attribution.spec.ts）
+    // クエリ: appid（既定 morioka）・googleApiKey（Google の地図を使うとき。e2e では偽のキー）
+    const params = new URLSearchParams(location.search);
+    const el = document.createElement("maplat-app");
+    el.setAttribute("app-id", params.get("appid") || "morioka");
+    if (params.get("googleApiKey")) el.appOption = { googleApiKey: params.get("googleApiKey") };
+    document.getElementById("ui").appendChild(el);
+    el.ready.then(() => {
+      window.__MAPLAT_APP__ = el;
+      document.body.dataset.ready = "true";
+    });
+  </script>
+</body>
+</html>

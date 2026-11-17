@@ -5,6 +5,7 @@
 //   - attr の無い Google の地図は、OpenLayers の source の出典（表示範囲の copyright）を出す
 //   - 要素を外したら表示が残らない
 //   - 旧 API（MaplatApp）でも出る
+//   - Google の地図のあいだは Google Maps のロゴを出典の左隣に出す（狭いときは文字 "Google Maps"）
 // 外のタイルは取りに行かない（page.route で作った画像に差し替え、それ以外の外への要求は止めて数える）。
 // 実行: node_modules/.bin/playwright test --config=e2e/attribution.playwright.config.ts
 // 写真の保存先は環境変数 ATTRIBUTION_SHOTS（無ければ test-results/attribution-shots）。
@@ -161,6 +162,64 @@ async function expectFullyVisible(page: Page, scope = 'maplat-app') {
   expect(geometry.clipped).toBe(false);
   expect(geometry.onTop).toBe(true);
   return geometry;
+}
+
+/** Google Maps のロゴの表示の状態と位置（出典の文字の箱・地図の箱との関係）。 */
+async function googleLogo(page: Page, scope = 'maplat-app') {
+  return page.evaluate(sel => {
+    const host = document.querySelector(sel) as HTMLElement;
+    const box = host.querySelector('.maplat-attribution') as HTMLElement | null;
+    const logo = box?.querySelector('.maplat-attribution-google-logo') as HTMLElement | null;
+    const text = box?.querySelector('.maplat-attribution-text') as HTMLElement | null;
+    const rect = (el: Element | null | undefined) => {
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      return { left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height };
+    };
+    const svg = logo?.querySelector('svg') ?? null;
+    let onTop = false;
+    if (logo) {
+      const r = logo.getBoundingClientRect();
+      const previous = box!.style.pointerEvents;
+      box!.style.pointerEvents = 'auto';
+      const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+      box!.style.pointerEvents = previous;
+      onTop = !!top && logo.contains(top);
+    }
+    const style = logo ? getComputedStyle(logo) : null;
+    return {
+      mode: box?.dataset.googleMaps ?? null,
+      variant: logo?.dataset.variant ?? null,
+      label: logo?.getAttribute('aria-label') ?? null,
+      host: rect(host),
+      box: rect(box),
+      logo: rect(logo),
+      svg: rect(svg),
+      text: rect(text),
+      margin: style ? [style.marginTop, style.marginRight, style.marginBottom, style.marginLeft] : null,
+      onTop,
+      items: box ? [...box.querySelectorAll('.maplat-attribution-item')].map(e => e.textContent) : []
+    };
+  }, scope);
+}
+
+/** ロゴが原寸で、余白を保ち、出典の文字に重ならず、地図の箱の中で最前面にあることを確かめる。 */
+function expectLogoPlacement(g: Awaited<ReturnType<typeof googleLogo>>) {
+  expect(g.mode).toBe('logo');
+  expect(g.label).toBe('Google Maps');
+  expect(g.svg!.width).toBeCloseTo(105, 0);
+  expect(g.svg!.height).toBeCloseTo(22, 0);
+  // 余白（上・左右 10px、下 5px）
+  expect(g.margin).toEqual(['10px', '10px', '5px', '10px']);
+  // 地図の箱の中
+  expect(g.logo!.left).toBeGreaterThanOrEqual(g.host!.left - 0.5);
+  expect(g.logo!.right).toBeLessThanOrEqual(g.host!.right + 0.5);
+  expect(g.logo!.bottom).toBeLessThanOrEqual(g.host!.bottom + 0.5);
+  // 出典の文字に重ならない（同じ行なら文字の左に 10px 以上、折り返したら文字の上）
+  const sameRow = g.logo!.bottom > g.text!.top + 0.5;
+  if (sameRow) expect(g.text!.left - g.logo!.right).toBeGreaterThanOrEqual(9.5);
+  else expect(g.text!.top - g.logo!.bottom).toBeGreaterThanOrEqual(4.5);
+  expect(g.onTop).toBe(true);
 }
 
 test.describe('背景地図の出典の表示', () => {
@@ -330,5 +389,132 @@ test.describe('背景地図の出典の表示', () => {
     // attr のある地図へ切り替えると、Google の copyright は消える
     await page.evaluate(() => (window as any).__MAPLAT_APP__.changeMap('osm'));
     expect((await attribution(page, '#map_div'))?.items).toEqual([OSM]);
+  });
+
+  test('Google の地図のあいだは Google Maps のロゴを出典の左隣に出し、外れたら消す', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    const { blocked } = await routeExternal(page);
+    await page.goto('/e2e/fixtures/attribution/legacy.html?appid=sample&googleApiKey=example-key');
+    await expect(page.locator('body')).toHaveAttribute('data-ready', 'true', { timeout: 30000 });
+    // Google でない地図: ロゴは無い
+    expect((await googleLogo(page, '#map_div')).mode).toBeNull();
+
+    await page.evaluate(() => (window as any).__MAPLAT_APP__.changeMap('google'));
+    await expect.poll(async () => (await attribution(page, '#map_div'))?.items, { timeout: 15000 }).toEqual([GOOGLE_COPYRIGHT]);
+    const road = await googleLogo(page, '#map_div');
+    expectLogoPlacement(road);
+    expect(road.variant).toBe('light');
+    // 広い画面では同じ行で、ロゴが左・copyright が右。箱は右下の隅
+    expect(road.logo!.bottom).toBeGreaterThan(road.text!.top);
+    expect(road.logo!.right).toBeLessThan(road.text!.left);
+    expect(road.host!.right - road.box!.right).toBeLessThan(1);
+    expect(road.host!.bottom - road.box!.bottom).toBeLessThan(1);
+    // ロゴの代わりの文字は出さない
+    expect(road.items).toEqual([GOOGLE_COPYRIGHT]);
+    await page.waitForTimeout(800);
+    await page.screenshot({ path: `${SHOTS}/core-google-logo-1280.png` });
+    await page.screenshot({
+      path: `${SHOTS}/core-google-logo-1280-corner.png`,
+      clip: { x: 1280 - 420, y: 800 - 90, width: 420, height: 90 }
+    });
+
+    // 衛星: 白い字・濃い枠のロゴ
+    await page.evaluate(() => (window as any).__MAPLAT_APP__.changeMap('google_sat'));
+    await expect.poll(async () => (await googleLogo(page, '#map_div')).variant, { timeout: 15000 }).toBe('dark');
+    expectLogoPlacement(await googleLogo(page, '#map_div'));
+    await page.waitForTimeout(800);
+    await page.screenshot({
+      path: `${SHOTS}/core-google-sat-logo-1280-corner.png`,
+      clip: { x: 1280 - 420, y: 800 - 90, width: 420, height: 90 }
+    });
+
+    // 古地図へ: 背面の Google の地図が見えるあいだはロゴも残る
+    await page.evaluate(() => (window as any).__MAPLAT_APP__.changeMap('morioka_ndl2'));
+    await expect.poll(async () => (await googleLogo(page, '#map_div')).mode, { timeout: 15000 }).toBe('logo');
+
+    // 言語を変えてもロゴは同じ
+    await page.evaluate(() => document.getElementById('map_div')!.setAttribute('lang', 'en'));
+    await page.waitForTimeout(200);
+    expect((await googleLogo(page, '#map_div')).mode).toBe('logo');
+
+    // Google でない地図へ: ロゴは消える
+    await page.evaluate(() => (window as any).__MAPLAT_APP__.changeMap('osm'));
+    const osm = await googleLogo(page, '#map_div');
+    expect(osm.mode).toBeNull();
+    expect(osm.logo).toBeNull();
+    expect(osm.items).toEqual([OSM]);
+
+    // 破棄: 表示ごと消える
+    await page.evaluate(() => (window as any).__MAPLAT_APP__.changeMap('google'));
+    await expect.poll(async () => (await googleLogo(page, '#map_div')).mode, { timeout: 15000 }).toBe('logo');
+    await page.evaluate(() => (window as any).__MAPLAT_APP__.remove());
+    expect(await page.evaluate(() => document.querySelectorAll('.maplat-attribution-google-logo').length)).toBe(0);
+
+    // Google 以外の外への要求は無い（Google は偽の応答で返している）
+    expect(blocked.filter(u => /googleapis|gstatic/.test(u))).toEqual([]);
+  });
+
+  test('狭い画面（幅 390px）でもロゴを出し、ロゴが入らない幅では文字 Google Maps にする', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await routeExternal(page);
+    await page.goto('/e2e/fixtures/attribution/legacy.html?appid=sample&googleApiKey=example-key');
+    await expect(page.locator('body')).toHaveAttribute('data-ready', 'true', { timeout: 30000 });
+    await page.evaluate(() => (window as any).__MAPLAT_APP__.changeMap('google'));
+    await expect.poll(async () => (await attribution(page, '#map_div'))?.items, { timeout: 15000 }).toEqual([GOOGLE_COPYRIGHT]);
+    expectLogoPlacement(await googleLogo(page, '#map_div'));
+    await expectFullyVisible(page, '#map_div');
+    await page.waitForTimeout(800);
+    await page.screenshot({ path: `${SHOTS}/core-google-logo-390.png` });
+
+    // 地図の箱が 180px: ロゴは残し、copyright はロゴの下の行へ折り返す
+    await page.evaluate(() => {
+      (document.getElementById('map_div') as HTMLElement).style.width = '180px';
+    });
+    await expect.poll(async () => {
+      const g = await googleLogo(page, '#map_div');
+      return g.mode === 'logo' && g.logo!.bottom <= g.text!.top + 0.5;
+    }).toBe(true);
+    expectLogoPlacement(await googleLogo(page, '#map_div'));
+    await expectFullyVisible(page, '#map_div');
+    await page.waitForTimeout(300);
+    await page.locator('#map_div').screenshot({ path: `${SHOTS}/core-google-logo-180.png` });
+
+    // 地図の箱が 120px（ロゴと左右の余白 125px が入らない）: 文字 "Google Maps" を出典の先頭に出す
+    await page.evaluate(() => {
+      (document.getElementById('map_div') as HTMLElement).style.width = '120px';
+    });
+    await expect.poll(async () => (await googleLogo(page, '#map_div')).mode).toBe('text');
+    const narrow = await googleLogo(page, '#map_div');
+    expect(narrow.logo).toBeNull();
+    expect(narrow.items).toEqual(['Google Maps', GOOGLE_COPYRIGHT]);
+    await expectFullyVisible(page, '#map_div');
+    await page.waitForTimeout(300);
+    await page.locator('#map_div').screenshot({ path: `${SHOTS}/core-google-text-120.png` });
+
+    // 広げるとロゴに戻る
+    await page.evaluate(() => {
+      (document.getElementById('map_div') as HTMLElement).style.width = '';
+    });
+    await expect.poll(async () => (await googleLogo(page, '#map_div')).mode).toBe('logo');
+  });
+
+  test('<maplat-ui> の中では、右下のボタンの列の左隣の出典の箱にロゴも載る', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await routeExternal(page);
+    await page.goto('/e2e/fixtures/attribution/in-ui.html?appid=sample&googleApiKey=example-key');
+    await expect(page.locator('body')).toHaveAttribute('data-ready', 'true', { timeout: 30000 });
+    await page.evaluate(() => (window as any).__MAPLAT_APP__.changeMap('google'));
+    await expect.poll(async () => (await attribution(page, 'maplat-app'))?.items, { timeout: 15000 }).toEqual([GOOGLE_COPYRIGHT]);
+    const g = await googleLogo(page, 'maplat-app');
+    expectLogoPlacement(g);
+    // 箱の右端は右下のボタンの列の左（地図の右端から .5em + ボタンの幅 + 間隔）、下端はスライダーの上
+    const gap = await page.evaluate(() => {
+      const fontSize = parseFloat(getComputedStyle(document.querySelector('maplat-app')!).fontSize);
+      return { right: fontSize * (0.5 + 3.09375) + 7, bottom: 65 + fontSize * 0.5 };
+    });
+    expect(g.host!.right - g.box!.right).toBeCloseTo(gap.right, 0);
+    expect(g.host!.bottom - g.box!.bottom).toBeCloseTo(gap.bottom, 0);
+    await page.waitForTimeout(800);
+    await page.screenshot({ path: `${SHOTS}/core-google-logo-in-ui-390.png` });
   });
 });

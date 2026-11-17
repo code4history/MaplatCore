@@ -8,8 +8,11 @@
 // 古地図の出典はここには出さない（UI の地図情報に出す。長い自由記述のことがあるため）。
 // 地図の設定に `attr` が無い現代の地図（Google など）は、OpenLayers の source の出典
 // （getAttributions。Google は表示範囲ごとに取りに行く copyright）を出す。
+// Google の地図を表示しているあいだは、Map Tiles API の利用条件が求める Google Maps のロゴを、
+// 出典の文字の左隣に出す（狭くてロゴが入らないときは文字 "Google Maps"）。
 import browserLanguage from "./browserlanguage";
 import { MAPLAT_UI_TAG } from "./element_contract";
+import { GOOGLE_MAPS_LOGO_DARK_OUTLINE, GOOGLE_MAPS_LOGO_LIGHT_OUTLINE } from "./google_maps_logo";
 import { sanitizeHtml } from "./sanitize";
 
 /** 出典の値（文字列か、言語ごとの文字列）。 */
@@ -21,6 +24,39 @@ export interface AttributionSourceLike {
   isWmts?: () => boolean;
   /** OpenLayers の source の出典（frameState を受けて文字列・配列・その Promise を返す関数）。 */
   getAttributions?: () => unknown;
+  /** Google の地図（GoogleMap）だけが持つ、Map Tiles API の mapType（roadmap・satellite・terrain）。 */
+  googleMapType?: unknown;
+}
+
+/** Google Maps のロゴの種類。light: 灰色の字・白い枠（地図用）、dark: 白い字・濃い枠（衛星写真用）。 */
+export type GoogleLogoVariant = "light" | "dark";
+
+/** Google Maps のロゴの表示の形。logo: ロゴの画像、text: 文字 "Google Maps"（狭いとき）。 */
+export type GoogleAttributionMode = "logo" | "text";
+
+/** ロゴの幅（105px）と左右の余白（10px ずつ）。使える幅がこれより狭いときは文字にする。 */
+export const GOOGLE_LOGO_MIN_WIDTH = 125;
+
+/** ロゴの代わりに出す文字（利用条件が名指しする文字。言語によらない）。 */
+export const GOOGLE_MAPS_TEXT = "Google Maps";
+
+/**
+ * 表示中の source に Google の地図があれば、出すロゴの種類を返す（無ければ undefined）。
+ * 出典の並び（前面 → 重ね地図 → 背面）で最初の Google の地図の種類で選ぶ。衛星（satellite）は dark。
+ */
+export function googleLogoVariant(sources: AttributionSourceLike[]): GoogleLogoVariant | undefined {
+  for (const source of sources) {
+    const mapType = source.googleMapType;
+    if (typeof mapType !== "string" || !mapType) continue;
+    return mapType === "satellite" ? "dark" : "light";
+  }
+  return undefined;
+}
+
+/** 使える幅（px）からロゴか文字かを決める。測れない（0 以下・数でない）ときはロゴ。 */
+export function googleAttributionMode(availableWidth: number): GoogleAttributionMode {
+  if (!(availableWidth > 0)) return "logo";
+  return availableWidth < GOOGLE_LOGO_MIN_WIDTH ? "text" : "logo";
 }
 
 /**
@@ -173,6 +209,9 @@ const STYLE_ID = "maplat-attribution-style";
 // UI の配置の数値は --maplat-attribution-ui-* の変数に分け、規則は :where() で詳細度 0 にした。
 // ページの CSS で maplat-app に変数を書けば、どちらも上書きできる。
 // z-index は付けない: 地図の箱の最後の子なので地図より上、UI の部品とモーダルより下に描かれる。
+// Google Maps のロゴは出典の文字の左隣（同じ行、入らなければ文字がロゴの下の行へ回る）。
+// 大きさは公式の SVG の原寸（105×22。字の高さ 18px。利用条件は高さ 16〜19dp）、
+// 余白は利用条件の最小（上・左右 10px、下 5px）。縮めない・縦横比を変えない。
 const STYLE_TEXT = `
 .maplat-attribution {
   position: absolute;
@@ -182,10 +221,28 @@ const STYLE_TEXT = `
   box-sizing: border-box;
   margin: 0;
   pointer-events: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: flex-end;
 }
 .maplat-attribution[hidden] { display: none; }
+.maplat-attribution-google-logo {
+  display: block;
+  flex: 0 0 auto;
+  width: 105px;
+  height: 22px;
+  margin: 10px 10px 5px 10px;
+  line-height: 0;
+}
+.maplat-attribution-google-logo svg {
+  display: block;
+  width: 105px;
+  height: 22px;
+}
 .maplat-attribution-text {
   display: block;
+  min-width: 0;
   padding: 1px 5px;
   font-size: 11px;
   line-height: 1.4;
@@ -230,6 +287,7 @@ export class AttributionDisplay {
   // 地図の設定の attr が無い source の、OpenLayers の source から読んだ出典
   #dynamic = new Map<AttributionSourceLike, readonly string[]>();
   #observer: MutationObserver | null = null;
+  #resizeObserver: ResizeObserver | null = null;
   #disposed = false;
 
   constructor(container: HTMLElement, getLang: () => string) {
@@ -243,7 +301,14 @@ export class AttributionDisplay {
     this.element = element;
     container.appendChild(element);
     this.#observeLang();
+    this.#observeResize();
     this.#waitForUiDefinition();
+  }
+
+  /** 今出している Google Maps の表示（ロゴか文字）。Google の地図が無ければ undefined（試験と診断用）。 */
+  get googleAttribution(): GoogleAttributionMode | undefined {
+    const value = this.element.dataset.googleMaps;
+    return value === "logo" || value === "text" ? value : undefined;
   }
 
   /** 今の言語で出典の文字列を返す（試験と診断用）。 */
@@ -304,9 +369,25 @@ export class AttributionDisplay {
     if (element.parentNode !== this.#container) this.#container.appendChild(element);
     const texts = this.texts;
     const doc = element.ownerDocument;
+    const variant = googleLogoVariant(this.#sources);
+    const mode = variant ? googleAttributionMode(this.#availableWidth()) : undefined;
+    const children: HTMLElement[] = [];
+    if (variant && mode === "logo") {
+      const logo = doc.createElement("span");
+      logo.className = "maplat-attribution-google-logo";
+      logo.dataset.variant = variant;
+      logo.setAttribute("role", "img");
+      logo.setAttribute("aria-label", GOOGLE_MAPS_TEXT);
+      // 公式のロゴ（埋め込みの定数。外から来る値ではない）
+      logo.innerHTML = variant === "dark" ? GOOGLE_MAPS_LOGO_DARK_OUTLINE : GOOGLE_MAPS_LOGO_LIGHT_OUTLINE;
+      logo.firstElementChild?.setAttribute("aria-hidden", "true");
+      logo.firstElementChild?.setAttribute("focusable", "false");
+      children.push(logo);
+    }
+    const items = mode === "text" ? [GOOGLE_MAPS_TEXT, ...texts.filter(t => t !== GOOGLE_MAPS_TEXT)] : texts;
     const wrapper = doc.createElement("span");
     wrapper.className = "maplat-attribution-text";
-    texts.forEach((text, index) => {
+    items.forEach((text, index) => {
       if (index > 0) {
         const sep = doc.createElement("span");
         sep.className = "maplat-attribution-sep";
@@ -315,13 +396,39 @@ export class AttributionDisplay {
         wrapper.appendChild(sep);
       }
       const item = doc.createElement("span");
-      item.className = "maplat-attribution-item";
-      // 設定由来の値なので、許可リストで洗ってから入れる（UI の地図情報と同じ関数）
-      item.innerHTML = sanitizeHtml(text);
+      if (mode === "text" && index === 0) {
+        item.className = "maplat-attribution-item maplat-attribution-google-text";
+        item.textContent = GOOGLE_MAPS_TEXT;
+      } else {
+        item.className = "maplat-attribution-item";
+        // 設定由来の値なので、許可リストで洗ってから入れる（UI の地図情報と同じ関数）
+        item.innerHTML = sanitizeHtml(text);
+      }
       wrapper.appendChild(item);
     });
-    element.replaceChildren(...(texts.length ? [wrapper] : []));
-    element.hidden = texts.length === 0;
+    if (items.length) children.push(wrapper);
+    element.replaceChildren(...children);
+    if (mode) element.dataset.googleMaps = mode;
+    else delete element.dataset.googleMaps;
+    element.hidden = children.length === 0;
+  }
+
+  /**
+   * 出典の表示に使える幅（px）。箱に一時的に width: 100% を当て、右の位置と max-width の変数が
+   * 効いた結果の幅を測る。レイアウトが無い（非表示の入れ物・jsdom）ときは 0。
+   */
+  #availableWidth(): number {
+    const element = this.element;
+    const { width, display } = element.style;
+    const wasHidden = element.hidden;
+    element.hidden = false;
+    element.style.width = "100%";
+    element.style.display = "block";
+    const measured = element.getBoundingClientRect().width;
+    element.style.width = width;
+    element.style.display = display;
+    element.hidden = wasHidden;
+    return measured;
   }
 
   /** 表示を外し、言語の監視をやめる。 */
@@ -330,6 +437,8 @@ export class AttributionDisplay {
     this.#disposed = true;
     this.#observer?.disconnect();
     this.#observer = null;
+    this.#resizeObserver?.disconnect();
+    this.#resizeObserver = null;
     this.#sources = [];
     this.#dynamic.clear();
     this.element.remove();
@@ -346,6 +455,20 @@ export class AttributionDisplay {
       () => this.render(),
       () => undefined
     );
+  }
+
+  /**
+   * 地図の箱の大きさが変わったら、Google の地図を出しているときだけ、ロゴと文字のどちらにするかを決め直す
+   * （変わるときだけ描き直す）。
+   */
+  #observeResize(): void {
+    if (typeof ResizeObserver === "undefined") return;
+    this.#resizeObserver = new ResizeObserver(() => {
+      if (this.#disposed || !googleLogoVariant(this.#sources)) return;
+      const mode = googleAttributionMode(this.#availableWidth());
+      if (mode !== this.googleAttribution) this.render();
+    });
+    this.#resizeObserver.observe(this.#container);
   }
 
   #observeLang(): void {

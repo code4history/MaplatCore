@@ -6,6 +6,10 @@ import {
   closestLang,
   displayedAttributionSources,
   normalizeAttributionLang,
+  GOOGLE_LOGO_MIN_WIDTH,
+  GOOGLE_MAPS_TEXT,
+  googleAttributionMode,
+  googleLogoVariant,
   normalizeOlAttributions,
   pickAttributionText,
   resolveAttributionLang
@@ -302,6 +306,173 @@ describe("AttributionDisplay", () => {
     document.body.appendChild(map2);
     new AttributionDisplay(map2, () => "ja");
     expect(document.querySelectorAll("#maplat-attribution-style").length).toBe(1);
+  });
+});
+
+describe("Google Maps のロゴ", () => {
+  const GOOGLE_COPYRIGHT = "Map data ©2026 Google";
+  /** Google の地図（GoogleMap）の形: attr は無く、OpenLayers の出典を持ち、googleMapType を持つ。 */
+  function googleSource(mapType: string, copyright = GOOGLE_COPYRIGHT) {
+    return {
+      get: () => undefined,
+      isWmts: () => true,
+      getAttributions: () => () => copyright,
+      googleMapType: mapType
+    };
+  }
+  function setup() {
+    document.body.innerHTML = `<div id="map" lang="ja"></div>`;
+    const map = document.getElementById("map")!;
+    const display = new AttributionDisplay(map, () => resolveAttributionLang(map));
+    return { map, display };
+  }
+  /** 出典の箱の幅の測り方（jsdom はレイアウトしないので、測った値を差し替える）。 */
+  function stubWidth(display: AttributionDisplay, width: number) {
+    display.element.getBoundingClientRect = () => ({ width }) as DOMRect;
+  }
+  const flush = () => new Promise(resolve => setTimeout(resolve, 0));
+
+  it("Google の地図があるときだけ、種類を返す（衛星は dark、それ以外は light。並びの最初のもの）", () => {
+    expect(googleLogoVariant([source(OSM_ATTR)])).toBeUndefined();
+    expect(googleLogoVariant([])).toBeUndefined();
+    expect(googleLogoVariant([googleSource("roadmap")])).toBe("light");
+    expect(googleLogoVariant([googleSource("terrain")])).toBe("light");
+    expect(googleLogoVariant([googleSource("satellite")])).toBe("dark");
+    expect(googleLogoVariant([source(OSM_ATTR), googleSource("satellite"), googleSource("roadmap")])).toBe("dark");
+    expect(googleLogoVariant([{ ...source(OSM_ATTR), googleMapType: "" }])).toBeUndefined();
+  });
+
+  it("使える幅がロゴと左右の余白（125px）より狭いときだけ文字。測れないときはロゴ", () => {
+    expect(GOOGLE_LOGO_MIN_WIDTH).toBe(125);
+    expect(googleAttributionMode(125)).toBe("logo");
+    expect(googleAttributionMode(124.5)).toBe("text");
+    expect(googleAttributionMode(0)).toBe("logo");
+    expect(googleAttributionMode(Number.NaN)).toBe("logo");
+  });
+
+  it("Google の地図ではロゴを出典の文字の左隣に出す（読み上げは Google Maps）", async () => {
+    const { display } = setup();
+    const google = googleSource("roadmap");
+    display.update([google]);
+    // copyright を取りに行く前からロゴは出す
+    expect(display.googleAttribution).toBe("logo");
+    expect(display.element.hidden).toBe(false);
+    display.refreshDynamic([google], {});
+    await flush();
+    const children = [...display.element.children];
+    expect(children.map(e => e.className)).toEqual(["maplat-attribution-google-logo", "maplat-attribution-text"]);
+    const logo = children[0] as HTMLElement;
+    expect(logo.getAttribute("role")).toBe("img");
+    expect(logo.getAttribute("aria-label")).toBe(GOOGLE_MAPS_TEXT);
+    expect(logo.dataset.variant).toBe("light");
+    const svg = logo.querySelector("svg")!;
+    expect(svg.getAttribute("viewBox")).toBe("0 0 105 22");
+    expect(svg.getAttribute("aria-hidden")).toBe("true");
+    expect(svg.querySelector("[id]")).toBeNull();
+    expect(display.element.dataset.googleMaps).toBe("logo");
+    // 出典の文字は copyright だけ（ロゴの代わりの文字は足さない）
+    expect([...display.element.querySelectorAll(".maplat-attribution-item")].map(e => e.textContent)).toEqual([
+      GOOGLE_COPYRIGHT
+    ]);
+  });
+
+  it("衛星の地図は白い字・濃い枠のロゴ", () => {
+    const { display } = setup();
+    display.update([googleSource("satellite")]);
+    const logo = display.element.querySelector<HTMLElement>(".maplat-attribution-google-logo")!;
+    expect(logo.dataset.variant).toBe("dark");
+    expect(logo.querySelector('g[opacity="0.8"] path')!.getAttribute("fill")).toBe("#1E1E1E");
+  });
+
+  it("地図の設定に attr がある Google の地図でもロゴを出す", () => {
+    const { display } = setup();
+    display.update([{ ...source("© Google"), googleMapType: "roadmap" }]);
+    expect(display.googleAttribution).toBe("logo");
+    expect(display.element.querySelector(".maplat-attribution-item")!.textContent).toBe("© Google");
+  });
+
+  it("狭いときはロゴの代わりに文字 Google Maps を出典の先頭に出す", async () => {
+    const { display } = setup();
+    stubWidth(display, 100);
+    const google = googleSource("roadmap");
+    display.update([google]);
+    display.refreshDynamic([google], {});
+    await flush();
+    expect(display.googleAttribution).toBe("text");
+    expect(display.element.querySelector(".maplat-attribution-google-logo")).toBeNull();
+    const items = [...display.element.querySelectorAll(".maplat-attribution-item")].map(e => e.textContent);
+    expect(items).toEqual([GOOGLE_MAPS_TEXT, GOOGLE_COPYRIGHT]);
+    expect(display.element.textContent).toBe(`${GOOGLE_MAPS_TEXT} | ${GOOGLE_COPYRIGHT}`);
+    // 測るあいだに当てた一時の style は戻す
+    expect(display.element.style.width).toBe("");
+    expect(display.element.style.display).toBe("");
+  });
+
+  it("Google の地図から外れたら、ロゴも data 属性も消える（言語を変えてもロゴは同じ）", async () => {
+    const { map, display } = setup();
+    display.update([googleSource("roadmap")]);
+    expect(display.googleAttribution).toBe("logo");
+    map.setAttribute("lang", "en");
+    await flush();
+    expect(display.googleAttribution).toBe("logo");
+    display.update([source(OSM_ATTR)]);
+    expect(display.googleAttribution).toBeUndefined();
+    expect(display.element.dataset.googleMaps).toBeUndefined();
+    expect(display.element.querySelector(".maplat-attribution-google-logo")).toBeNull();
+    expect(display.element.textContent).toBe(OSM_ATTR);
+  });
+
+  it("前面が古地図で背面が Google の地図のときも出す", () => {
+    const { display } = setup();
+    const hist = { ...source(undefined, false) };
+    const google = googleSource("satellite");
+    display.update(displayedAttributionSources({ front: hist, back: google }));
+    expect(display.googleAttribution).toBe("logo");
+  });
+
+  it("地図の箱の大きさが変わると、ロゴと文字を決め直す（変わるときだけ描き直す）。dispose で監視をやめる", () => {
+    const original = globalThis.ResizeObserver;
+    const observers: { callback: () => void; disconnected: boolean }[] = [];
+    globalThis.ResizeObserver = class {
+      record: { callback: () => void; disconnected: boolean };
+      constructor(callback: () => void) {
+        this.record = { callback, disconnected: false };
+        observers.push(this.record);
+      }
+      observe() {
+        return undefined;
+      }
+      unobserve() {
+        return undefined;
+      }
+      disconnect() {
+        this.record.disconnected = true;
+      }
+    } as unknown as typeof ResizeObserver;
+    try {
+      const { display } = setup();
+      display.update([googleSource("roadmap")]);
+      expect(display.googleAttribution).toBe("logo");
+      let renders = 0;
+      const render = display.render.bind(display);
+      display.render = () => {
+        renders++;
+        render();
+      };
+      observers[0].callback();
+      expect(renders).toBe(0);
+      stubWidth(display, 90);
+      observers[0].callback();
+      expect(renders).toBe(1);
+      expect(display.googleAttribution).toBe("text");
+      stubWidth(display, 300);
+      observers[0].callback();
+      expect(display.googleAttribution).toBe("logo");
+      display.dispose();
+      expect(observers[0].disconnected).toBe(true);
+    } finally {
+      globalThis.ResizeObserver = original;
+    }
   });
 });
 

@@ -37,12 +37,19 @@ export function deriveGoogleTileOptions(
 }
 
 export class GoogleMap extends setCustomFunctionBase(Google) {
+  /**
+   * Map Tiles API の mapType（roadmap・satellite・terrain）。出典の表示（src/attribution.ts）が、
+   * Google の地図かどうかと、Google Maps のロゴの種類（衛星は白い字）を決めるのに読む。
+   */
+  readonly googleMapType: string;
+
   constructor(options: any = {}) {
     const parentOptions = Object.assign({}, options);
     const { mapType, layerTypes } = deriveGoogleTileOptions(options.maptype, options.layers);
     parentOptions.mapType = mapType;
     parentOptions.layerTypes = layerTypes;
     super(parentOptions);
+    this.googleMapType = mapType;
 
     if (options.mapID) {
       this.mapID = options.mapID;
