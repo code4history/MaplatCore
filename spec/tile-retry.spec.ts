@@ -251,7 +251,7 @@ describe("setupTileLoadFunction: 例外で ERROR になったタイルの再読�
     expect(tile.load).toHaveBeenCalledTimes(0);
   });
 
-  it("R-t6-2: 発火までにタイルが ERROR でなくなっていれば（読み直し済み等）何もしない", async () => {
+  it("発火までにタイルが ERROR でなくなっていれば（読み直し済み等）何もしない", async () => {
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null as any);
     vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const h = makeHarness();

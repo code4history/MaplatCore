@@ -176,7 +176,7 @@ test.describe('デモ機能', () => {
         await expect(page.locator(OSM_COPYRIGHT_LINK)).toHaveCount(1);
     });
 
-    test('項目 1（R-t8-5）: 面の内側の POI をクリックすると clickMarker が発火する', async ({ page }) => {
+    test('項目 1: 面の内側の POI をクリックすると clickMarker が発火する', async ({ page }) => {
         await openDemo(page, 'morioka');
         await expect.poll(async () => (await polygons(page)).length, { timeout: 30000 }).toBe(1);
         // アプリ用 POI（層 "app"）の先頭は桜山神社＝盛岡城跡公園の面の内側（実測）
@@ -263,11 +263,11 @@ test.describe('デモ機能', () => {
         const viewports = () => page.locator('#map_div .ol-viewport').count();
         const before = await viewports();
         expect(before).toBeGreaterThan(0);
-        await page.evaluate(() => { (window as any).__MAPLAT_DEMO_APP__.__t8Old = true; });
+        await page.evaluate(() => { (window as any).__MAPLAT_DEMO_APP__.__replacedApp = true; });
         await page.getByRole('button', { name: '再生成', exact: true }).click();
         await page.waitForFunction(() => {
             const app = (window as any).__MAPLAT_DEMO_APP__;
-            return app && !app.__t8Old;
+            return app && !app.__replacedApp;
         }, undefined, { timeout: 60000 });
         await expect.poll(viewports).toBe(before);
         await expect(page.locator('#demo-app-controls section h2', { hasText: '地図' })).toHaveCount(1);

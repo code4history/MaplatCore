@@ -528,7 +528,7 @@ export function createLayerAConformanceCases(options: LayerAConformanceOptions):
     same(el.getTransparency(), 60, "getTransparency()");
   });
 
-  add("A-起動後", "地図を切り替えても透過度を保つ（§3.8 A4）", async ctx => {
+  add("A-起動後", "地図を切り替えても透過度を保つ", async ctx => {
     const el = await ctx.mountReady();
     el.setTransparency(40);
     await el.changeMap(fx.otherMapId);
@@ -663,7 +663,7 @@ export function createLayerAConformanceCases(options: LayerAConformanceOptions):
     assert(typeof direction === "number" && Number.isFinite(direction), `getDirection() must resolve to a number: ${direction}`);
   });
 
-  add("A-メソッド", "clientPointToLngLat・lngLatToClientPoint は Promise でオブジェクトか null（§3.8 A1）", async ctx => {
+  add("A-メソッド", "clientPointToLngLat・lngLatToClientPoint は Promise でオブジェクトか null", async ctx => {
     const el = await ctx.mountReady();
     await waitFor(() => el.getViewpoint(), timeout, "a viewpoint");
     const rect = el.getBoundingClientRect();
@@ -736,7 +736,7 @@ export function createLayerAConformanceCases(options: LayerAConformanceOptions):
   // 統計には全タイル数 total を含める。キャッシュを持つ地図があるときだけ見る
   // （Core は enable-cache 無しで起動すると Weiwudi を持たず、getMapCacheEnable も統計も空になる。
   //  固定データの地図がキャッシュを持たない実装では、この検査は省く）
-  add("A-メソッド", "キャッシュを持つ地図の統計には全タイル数 total が数で載る（§3.8 A10）", async ctx => {
+  add("A-メソッド", "キャッシュを持つ地図の統計には全タイル数 total が数で載る", async ctx => {
     const el = await ctx.mountReady();
     if (!el.supports("tile-cache")) return;
     const cached = el.listMaps().find(m => m.cacheEnable);
@@ -891,7 +891,7 @@ export function createLayerAConformanceCases(options: LayerAConformanceOptions):
     }
   });
 
-  add("A-イベント", "sourceLoaded の detail は {mapID, usable}[]（§3.8 A2）", async ctx => {
+  add("A-イベント", "sourceLoaded の detail は {mapID, usable}[]", async ctx => {
     const el = await ctx.mountReady({ record: ["sourceLoaded"] });
     const seen = ctx.recorded(el).filter(e => e.type === "sourceLoaded");
     assert(seen.length >= 1, "sourceLoaded was not dispatched");

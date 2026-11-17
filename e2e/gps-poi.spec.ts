@@ -85,11 +85,11 @@ async function openApp(page: Page, start: string) {
   }
   await page.evaluate(() => {
     const w = window as any;
-    w.__T4_EVENTS__ = [];
-    w.__T4_REJECTIONS__ = [];
-    window.addEventListener('unhandledrejection', ev => w.__T4_REJECTIONS__.push(String(ev.reason)));
+    w.__GPS_POI_EVENTS__ = [];
+    w.__GPS_POI_REJECTIONS__ = [];
+    window.addEventListener('unhandledrejection', ev => w.__GPS_POI_REJECTIONS__.push(String(ev.reason)));
     for (const type of ['gps_error', 'gps_result', 'gps_request']) {
-      w.__MAPLAT_APP__.addEventListener(type, () => w.__T4_EVENTS__.push(type));
+      w.__MAPLAT_APP__.addEventListener(type, () => w.__GPS_POI_EVENTS__.push(type));
     }
   });
   return pageErrors;
@@ -199,7 +199,7 @@ function expectNoFeatureAt(state: GpsState, xy: Xy, label: string) {
 }
 
 async function events(page: Page): Promise<string[]> {
-  return page.evaluate(() => (window as any).__T4_EVENTS__);
+  return page.evaluate(() => (window as any).__GPS_POI_EVENTS__);
 }
 
 test.describe('GPS / POI の層選択', () => {
@@ -374,7 +374,7 @@ test.describe('GPS / POI の層選択', () => {
       }
     }
     await settle(page, 500);
-    const rejections = await page.evaluate(() => (window as any).__T4_REJECTIONS__);
+    const rejections = await page.evaluate(() => (window as any).__GPS_POI_REJECTIONS__);
     console.log('COMPAT', JSON.stringify({ resolved, pageErrors, rejections }));
     expect(resolved).toBe(6);
     expect(pageErrors).toEqual([]);

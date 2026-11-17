@@ -45,7 +45,7 @@ async function snapshot(page: any) {
     return {
       loading: m.tileQueue_.getTilesLoading(),
       queued: m.tileQueue_.getCount(),
-      injected: w.__T6_INJECTED__ || 0,
+      injected: w.__TILE_RETRY_INJECTED__ || 0,
       zoom: m.getView().getZoom(),
       tiles
     };
@@ -79,16 +79,16 @@ test('例外で ERROR になったタイルが、注入の解除後に view を�
   await page.evaluate(() => {
     const w = window as any;
     const proto = HTMLCanvasElement.prototype as any;
-    w.__T6_ORIG_GETCONTEXT__ = proto.getContext;
-    w.__T6_INJECTED__ = 0;
-    w.__T6_FIRST_INJECT_AT__ = undefined;
+    w.__TILE_RETRY_ORIG_GETCONTEXT__ = proto.getContext;
+    w.__TILE_RETRY_INJECTED__ = 0;
+    w.__TILE_RETRY_FIRST_INJECT_AT__ = undefined;
     proto.getContext = function (this: HTMLCanvasElement, type: string, opts?: any) {
       if (type === '2d' && this.width === 256 && this.height === 256 && !this.closest('.ol-viewport')) {
-        if (w.__T6_INJECTED__ === 0) w.__T6_FIRST_INJECT_AT__ = performance.now();
-        w.__T6_INJECTED__++;
+        if (w.__TILE_RETRY_INJECTED__ === 0) w.__TILE_RETRY_FIRST_INJECT_AT__ = performance.now();
+        w.__TILE_RETRY_INJECTED__++;
         return null;
       }
-      return w.__T6_ORIG_GETCONTEXT__.call(this, type, opts);
+      return w.__TILE_RETRY_ORIG_GETCONTEXT__.call(this, type, opts);
     };
     const v = w.__MAPLAT_APP__.mapObject.getView();
     v.setZoom(v.getZoom() + 1);
@@ -105,8 +105,8 @@ test('例外で ERROR になったタイルが、注入の解除後に view を�
   // --- 注入解除（view は動かさない）。最初の注入から解除までの経過時間を記録する ---
   const elapsedMs: number = await page.evaluate(() => {
     const w = window as any;
-    (HTMLCanvasElement.prototype as any).getContext = w.__T6_ORIG_GETCONTEXT__;
-    return performance.now() - (w.__T6_FIRST_INJECT_AT__ ?? performance.now());
+    (HTMLCanvasElement.prototype as any).getContext = w.__TILE_RETRY_ORIG_GETCONTEXT__;
+    return performance.now() - (w.__TILE_RETRY_FIRST_INJECT_AT__ ?? performance.now());
   });
   // 解除の時点で ERROR だったタイルの key を控える（この後に注入なしで決着するタイルは対象にしない）
   const errorKeys = new Set(
