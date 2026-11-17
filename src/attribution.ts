@@ -26,16 +26,16 @@ export interface AttributionSourceLike {
 /**
  * 言語ごとの値から 1 つ選ぶ。UI の pickLocalized と同じ規則: 一致する言語 → en → 最初の空でない値。
  * （地域を外した言語には寄せない。UI の地図情報と同じ文字を出すため）
- * 文字列はそのまま。何も無ければ undefined。
+ * 文字列はそのまま。空白だけの値は無いものとみなす（OpenLayers の出典へ回す）。何も無ければ undefined。
  */
 export function pickAttributionText(value: AttributionValue, lang: string): string | undefined {
   if (value == null) return undefined;
-  if (typeof value === "string") return value;
+  if (typeof value === "string") return value.trim() ? value : undefined;
   if (typeof value !== "object") return String(value);
   let first: string | undefined;
   let en: string | undefined;
   for (const [key, text] of Object.entries(value)) {
-    if (typeof text !== "string" || !text) continue;
+    if (typeof text !== "string" || !text.trim()) continue;
     if (key === lang) return text;
     if (key === "en" && en === undefined) en = text;
     if (first === undefined) first = text;
@@ -129,7 +129,7 @@ export function displayedAttributionSources(parts: {
   return result;
 }
 
-/** 地図の設定の `attr` を持つか（空の文字列・空の言語ごとの値は持たない扱い）。 */
+/** 地図の設定の `attr` を持つか（空・空白だけの文字列、空の言語ごとの値は持たない扱い）。 */
 export function hasConfiguredAttr(source: AttributionSourceLike): boolean {
   const raw = typeof source.get === "function" ? source.get("attr") : undefined;
   return pickAttributionText(raw as AttributionValue, "en") !== undefined;
@@ -243,6 +243,7 @@ export class AttributionDisplay {
     this.element = element;
     container.appendChild(element);
     this.#observeLang();
+    this.#waitForUiDefinition();
   }
 
   /** 今の言語で出典の文字列を返す（試験と診断用）。 */
@@ -332,6 +333,19 @@ export class AttributionDisplay {
     this.#sources = [];
     this.#dynamic.clear();
     this.element.remove();
+  }
+
+  /**
+   * 地図が <maplat-ui> の中にあり、その要素がまだ定義されていないときは、定義を待って一度だけ描き直す
+   * （定義の前は currentLang が無く、仮の順で言語を選んでいるため）。破棄の後は描かない。
+   */
+  #waitForUiDefinition(): void {
+    if (typeof customElements === "undefined" || customElements.get(MAPLAT_UI_TAG)) return;
+    if (!closestAcrossShadow(this.#container, MAPLAT_UI_TAG)) return;
+    customElements.whenDefined(MAPLAT_UI_TAG).then(
+      () => this.render(),
+      () => undefined
+    );
   }
 
   #observeLang(): void {

@@ -40,7 +40,7 @@
   - 検出に当たらないまま表示が変わる場合が 1 つだけある: lodash の記法を含まず、`{{ }}`・`{% %}` を文字として書いていたテンプレートは、1.3 から Nunjucks として評価される
 
 ### Fixed
-- 表示中の背景地図・タイルの重ね地図の出典を、地図の右下に出すようにした（#191）。これまでは OpenLayers の地図を `controls: []` で作っていたため、OpenStreetMap・地理院地図のタイルを表示していても、出典は UI の地図情報の中にしか出ていなかった。表示は `div.maplat-attribution`。出すのは地図の `attr`、`attr` の無い現代の地図では OpenLayers の source の出典（Google の地図の表示範囲の copyright）。アプリの設定で定義する背景地図・重ね地図には `attr` を書くこと。言語は `<maplat-ui>` と同じ順で選び、地図の切り替えと `lang` 属性の変更で作り直し、要素を外す（`remove()`）と消える。古地図の出典は従来どおり UI の地図情報に出す。位置は CSS の変数 `--maplat-attribution-right`・`--maplat-attribution-bottom`・`--maplat-attribution-max-width` で変えられ、`<maplat-ui>` の中では UI の部品に重ならない位置を既定にする（その数値も `--maplat-attribution-ui-*` の変数）。Google のロゴは出さない
+- 表示中の背景地図・タイルの重ね地図の出典を、地図の右下に出すようにした（#191）。これまでは OpenLayers の地図を `controls: []` で作っていたため、OpenStreetMap・地理院地図のタイルを表示していても、出典は UI の地図情報の中にしか出ていなかった。表示は `div.maplat-attribution`。出すのは地図の `attr`、`attr` の無い現代の地図では OpenLayers の source の出典（Google の地図の表示範囲の copyright）。アプリの設定で定義する背景地図・重ね地図には `attr` を書くこと。言語は `<maplat-ui>` と同じ順で選び、地図の切り替えと `lang` 属性の変更で作り直し、要素を外す（`remove()`）と消える。古地図の出典は従来どおり UI の地図情報に出す。位置は CSS の変数 `--maplat-attribution-right`・`--maplat-attribution-bottom`・`--maplat-attribution-max-width` で変えられ、`<maplat-ui>` の中では UI の部品に重ならない位置を既定にする（その数値も `--maplat-attribution-ui-*` の変数。変数は `maplat-app` の要素そのものに書く）。空や空白だけの `attr` は無いものとみなす。Google のロゴはまだ出さない（#193 で扱う）
 - IIIF の書誌の写し直しで、前回写した後に結び付けた鍵、前回は Manifest に値が無く写せなかった鍵、取り直した値で増えた言語も、写し直しの候補に出るようにした（`compareIiifCopy`）。これまでは候補に出ず、値を入れるには全部を上書きして写すしかなかった
   - 新しく出る候補は、欄にすでに値があれば（欄が言語の区別の無い文字列ならどの言語でも）人が直した扱いにし、既定では選ばない
 - `proposeIiifBindings` の題名の既定を常に Manifest の `label` にした。読めなければ `title` を返さず、canvas の label に切り替えない。明示的な canvas の指定は引き続き使える

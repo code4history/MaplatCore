@@ -208,12 +208,17 @@ A credit is shown only when there is one to show: the map's `attr`, or, for a
 modern map without `attr`, the attribution of its OpenLayers source (the
 Google maps use this: the copyright for the current view, fetched from the Map
 Tiles API). **If you define your own base map or tile overlay in the app
-settings, write its `attr`**; otherwise nothing is shown for it. The Google
-logo that Google's terms also ask for is not shown by MaplatCore.
+settings, write its `attr`**; otherwise nothing is shown for it. An `attr`
+that is empty or only whitespace counts as no `attr`. The Google logo that
+Google's terms also ask for is not shown by MaplatCore yet (tracked in
+[#193](https://github.com/code4history/MaplatCore/issues/193)).
 
-The same text is shown once. The box is updated when the map is switched and
-when a `lang` attribute changes. The language follows the same order as
-`<maplat-ui>`: inside `<maplat-ui>`, its current language; otherwise the `lang`
+The same text is shown once. The box is updated when the map is switched,
+when a `lang` attribute changes, when the attribution of an OpenLayers source
+changes (such as the Google copyright for a new view), and once when
+`<maplat-ui>` becomes defined. The language follows the same order as
+`<maplat-ui>`: inside `<maplat-ui>`, its current language when the element is
+defined; otherwise the `lang`
 attribute of the map element, then of the closest `<maplat-ui>`, then
 `appOption.lang`, `lang` of the app settings, the closest `lang` attribute of
 an ancestor (such as `<html lang>`), the browser language, and `en`. A
@@ -230,6 +235,9 @@ box to the left of the bottom-right buttons so that it does not overlap the UI
 controls; the numbers it uses are also custom properties
 (`--maplat-attribution-ui-inset`, `--maplat-attribution-ui-bottom-offset`,
 `--maplat-attribution-ui-button-width`, `--maplat-attribution-ui-gap`).
+Write these properties on the `maplat-app` element itself: inside
+`<maplat-ui>`, values set on `<maplat-ui>` or another ancestor lose to the
+default rule on `maplat-app`.
 
 ### Excluding a map from the tile cache (`noCache`)
 

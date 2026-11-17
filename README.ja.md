@@ -198,11 +198,13 @@ MaplatCore はフィールドの意味の定義と、結果として得られる
 地図では OpenLayers の source の出典（Google の地図はこれで、表示範囲の copyright を
 Map Tiles API から取りに行きます）を出します。**アプリの設定で背景地図や重ね地図を自分で
 定義するときは、`attr` を書いてください**。書かないと、その地図の出典は出ません。
-Google の利用条件が求める Google のロゴは、MaplatCore は出しません。
+空や空白だけの `attr` は、無いものとみなします。Google の利用条件が求める Google のロゴは、
+MaplatCore はまだ出しません（[#193](https://github.com/code4history/MaplatCore/issues/193) で扱います）。
 
-同じ文字列は 1 回だけ出します。地図を切り替えたとき、および `lang` 属性が変わったときに
-作り直します。言語は `<maplat-ui>` と同じ順で決めます。`<maplat-ui>` の中ではその今の言語、
-それ以外では、地図の要素の `lang` 属性 → 最も近い `<maplat-ui>` の `lang` 属性 →
+同じ文字列は 1 回だけ出します。地図を切り替えたとき、`lang` 属性が変わったとき、
+OpenLayers の source の出典が変わったとき（Google の表示範囲が変わったときなど）、および
+`<maplat-ui>` が定義されたとき（1 回だけ）に作り直します。言語は `<maplat-ui>` と同じ順で
+決めます。`<maplat-ui>` の中では、その要素が定義済みのときはその今の言語、それ以外では、地図の要素の `lang` 属性 → 最も近い `<maplat-ui>` の `lang` 属性 →
 `appOption.lang` → アプリの設定の `lang` → 祖先の `lang` 属性（`<html lang>` など）→
 ブラウザの言語 → `en` の順です。多言語の `attr` からの選び方も UI と同じ（その言語 → `en`
 → 最初の値）です。古地図の `attr` はここには出さず、今までどおり UI の地図情報に出します。
@@ -214,6 +216,8 @@ Google の利用条件が求める Google のロゴは、MaplatCore は出しま
 重ならないよう、右下のボタンの列の左隣を既定にしています。そこで使う数値も変数
 （`--maplat-attribution-ui-inset`・`--maplat-attribution-ui-bottom-offset`・
 `--maplat-attribution-ui-button-width`・`--maplat-attribution-ui-gap`）で変えられます。
+これらの変数は `maplat-app` の要素そのものに書いてください。`<maplat-ui>` の中では、
+`<maplat-ui>` やほかの祖先に書いた値は、`maplat-app` に当たる既定の規則に負けます。
 
 ### 地図をタイルキャッシュから外す（`noCache`）
 

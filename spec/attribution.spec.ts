@@ -83,6 +83,21 @@ describe("言語の解決", () => {
     Object.defineProperty(ui, "currentLang", { get: () => "ja", configurable: true });
     expect(resolveAttributionLang(document.getElementById("map"), "en", "en")).toBe("ja");
   });
+  it("<maplat-ui> の currentLang の getter が例外を投げたら、仮の順で選ぶ", () => {
+    document.body.innerHTML = `<maplat-ui id="ui" lang="ko"><div id="map"></div></maplat-ui>`;
+    Object.defineProperty(document.getElementById("ui")!, "currentLang", {
+      get: () => {
+        throw new Error("not ready");
+      },
+      configurable: true
+    });
+    expect(resolveAttributionLang(document.getElementById("map"), "ja", "ja")).toBe("ko");
+  });
+  it("<maplat-ui> の currentLang が空の文字列なら、仮の順で選ぶ", () => {
+    document.body.innerHTML = `<maplat-ui id="ui"><div id="map"></div></maplat-ui>`;
+    Object.defineProperty(document.getElementById("ui")!, "currentLang", { get: () => "", configurable: true });
+    expect(resolveAttributionLang(document.getElementById("map"), undefined, "en")).toBe("en");
+  });
   it("<maplat-ui> が未定義（currentLang が無い）なら、その lang 属性を appOption・設定より先に見る", () => {
     document.body.innerHTML = `<maplat-ui lang="en"><div id="map"></div></maplat-ui>`;
     expect(resolveAttributionLang(document.getElementById("map"), "ja", "ja")).toBe("en");
@@ -218,6 +233,25 @@ describe("AttributionDisplay", () => {
     expect(display.element.textContent).toBe(OSM_ATTR);
   });
 
+  it("空白だけの attr は無いものとみなし、OpenLayers の出典を読む", async () => {
+    const { display } = setup("ja");
+    const blank = {
+      get: (key: string) => (key === "attr" ? "   " : undefined),
+      isWmts: () => true,
+      getAttributions: () => () => "OL の出典"
+    };
+    const blankLocalized = {
+      get: (key: string) => (key === "attr" ? { ja: " ", en: "" } : undefined),
+      isWmts: () => true,
+      getAttributions: () => () => ["別の OL の出典"]
+    };
+    display.update([blank, blankLocalized]);
+    expect(display.element.hidden).toBe(true);
+    display.refreshDynamic([blank, blankLocalized], {});
+    await flush();
+    expect(display.element.textContent).toBe("OL の出典 | 別の OL の出典");
+  });
+
   it("地図の設定の attr があれば OpenLayers の出典は読まない", async () => {
     const { display } = setup("ja");
     let called = false;
@@ -268,5 +302,45 @@ describe("AttributionDisplay", () => {
     document.body.appendChild(map2);
     new AttributionDisplay(map2, () => "ja");
     expect(document.querySelectorAll("#maplat-attribution-style").length).toBe(1);
+  });
+});
+
+// <maplat-ui> を定義すると文書全体に残るので、このファイルの最後に置く
+describe("<maplat-ui> の定義を待つ", () => {
+  const flush = () => new Promise(resolve => setTimeout(resolve, 0));
+
+  it("定義の前に描いた出典を、定義の後に一度だけ UI の言語で描き直す（破棄した表示は描かない）", async () => {
+    expect(customElements.get("maplat-ui")).toBeUndefined();
+    document.body.innerHTML =
+      `<maplat-ui><div id="map" lang="en"></div></maplat-ui><maplat-ui><div id="map2"></div></maplat-ui>`;
+    const map = document.getElementById("map")!;
+    const display = new AttributionDisplay(map, () => resolveAttributionLang(map, undefined, "ja"));
+    display.update([source(GSI_ATTR)]);
+    // 定義の前は仮の順（地図の要素の lang="en"）
+    expect(display.element.textContent).toBe(GSI_ATTR.en);
+
+    const map2 = document.getElementById("map2")!;
+    const disposed = new AttributionDisplay(map2, () => "ja");
+    disposed.update([source(GSI_ATTR)]);
+    disposed.dispose();
+
+    let renders = 0;
+    const original = display.render.bind(display);
+    display.render = () => {
+      renders++;
+      original();
+    };
+    customElements.define(
+      "maplat-ui",
+      class extends HTMLElement {
+        get currentLang() {
+          return "ja";
+        }
+      }
+    );
+    await flush();
+    expect(display.element.textContent).toBe("国土地理院");
+    expect(renders).toBe(1);
+    expect(map2.querySelector(".maplat-attribution")).toBeNull();
   });
 });
