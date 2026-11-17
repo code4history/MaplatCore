@@ -41,5 +41,5 @@ Palace, Tokyo. They are bundled into `dist/` (as data URLs) through
 | File | Source | License / terms |
 |---|---|---|
 | `parts/osm.jpg` | OpenStreetMap standard tile layer. © OpenStreetMap contributors | Data available under the Open Database License (ODbL): <https://www.openstreetmap.org/copyright> |
-| `parts/gsi.jpg` | GSI Tiles (Standard Map), Geospatial Information Authority of Japan. 出典：国土地理院（地理院タイル 標準地図）。地理院タイル（標準地図）を縮小・切り抜きして作成 | GSI Content Terms of Use: <https://maps.gsi.go.jp/development/ichiran.html> |
-| `parts/gsi_ortho.jpg` | GSI Tiles (Photo), Geospatial Information Authority of Japan. 出典：国土地理院（地理院タイル 写真）。地理院タイル（写真）を縮小・切り抜きして作成 | GSI Content Terms of Use: <https://maps.gsi.go.jp/development/ichiran.html> |
+| `parts/gsi.jpg` | GSI Tiles (Standard Map), Geospatial Information Authority of Japan. 出典：国土地理院（地理院タイル 標準地図）。地理院タイル（標準地図）を縮小・切り抜きして作成 | GSI Content Terms of Use: <https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html>; GSI Tiles list: <https://maps.gsi.go.jp/development/ichiran.html> |
+| `parts/gsi_ortho.jpg` | GSI Tiles (Photo), Geospatial Information Authority of Japan. 出典：国土地理院（地理院タイル 写真）。地理院タイル（写真）を縮小・切り抜きして作成 | GSI Content Terms of Use: <https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html>; GSI Tiles list: <https://maps.gsi.go.jp/development/ichiran.html> |
