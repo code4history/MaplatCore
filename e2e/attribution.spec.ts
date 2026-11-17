@@ -227,7 +227,8 @@ test.describe('背景地図の出典の表示', () => {
     const { blocked, overlayTiles } = await openElementPage(page);
 
     // 起動直後: 古地図（morioka_ndl）＋背面の地理院。古地図の出典は出さない
-    await expect.poll(async () => (await attribution(page))?.items).toEqual([GSI_JA]);
+    // （vite を起こした直後の最初のページは遅いので、待ちを長めにとる）
+    await expect.poll(async () => (await attribution(page))?.items, { timeout: 15000 }).toEqual([GSI_JA]);
     const geometry = await expectFullyVisible(page);
     // <maplat-ui> の外では右下の隅
     expect(geometry.rightGap).toBeLessThan(1);
@@ -421,6 +422,8 @@ test.describe('背景地図の出典の表示', () => {
     // 衛星: 白い字・濃い枠のロゴ
     await page.evaluate(() => (window as any).__MAPLAT_APP__.changeMap('google_sat'));
     await expect.poll(async () => (await googleLogo(page, '#map_div')).variant, { timeout: 15000 }).toBe('dark');
+    // copyright は新しい source が表示範囲を取りに行ってから出る（ロゴはその前から出ている）
+    await expect.poll(async () => (await attribution(page, '#map_div'))?.items, { timeout: 15000 }).toEqual([GOOGLE_COPYRIGHT]);
     expectLogoPlacement(await googleLogo(page, '#map_div'));
     await page.waitForTimeout(800);
     await page.screenshot({
