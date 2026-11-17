@@ -47,3 +47,28 @@ under CC BY-SA 2.0.
 | `parts/osm.jpg` | OpenStreetMap standard tile layer. © OpenStreetMap contributors. Map tiles © OpenStreetMap contributors, CC BY-SA 2.0 | Data available under the Open Database License (ODbL): <https://www.openstreetmap.org/copyright>. Map tiles: Creative Commons Attribution-ShareAlike 2.0 (CC BY-SA 2.0): <https://creativecommons.org/licenses/by-sa/2.0/>. This thumbnail is distributed under CC BY-SA 2.0. |
 | `parts/gsi.jpg` | GSI Tiles (Standard Map), Geospatial Information Authority of Japan. 出典：国土地理院（地理院タイル 標準地図）。地理院タイル（標準地図）を縮小・切り抜きして作成 | GSI Content Terms of Use: <https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html>; GSI Tiles list: <https://maps.gsi.go.jp/development/ichiran.html> |
 | `parts/gsi_ortho.jpg` | GSI Tiles (Photo), Geospatial Information Authority of Japan. 出典：国土地理院（地理院タイル 写真）。地理院タイル（写真）を縮小・切り抜きして作成 | GSI Content Terms of Use: <https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html>; GSI Tiles list: <https://maps.gsi.go.jp/development/ichiran.html> |
+
+## Google Maps logo
+
+The Google Maps logo is a trademark of Google LLC. It is not covered by the
+license of this repository.
+
+MaplatCore shows the logo while a Google map is displayed, because the
+[Map Tiles API Policies](https://developers.google.com/maps/documentation/tile/policies)
+require the Google Maps logo as attribution and ask applications to "Use the
+official Google Maps logos provided below". The logo files come unmodified from
+Google's "Google Maps attribution assets"
+(<https://developers.google.com/static/maps/documentation/images/Google_Maps_Attribution_Assets.zip>).
+Use of the logo is subject to Google's terms, including the
+[Geo Guidelines](https://about.google/brand-resource-center/products-and-services/geo-guidelines/).
+The logo is used only to attribute Google maps displayed by MaplatCore. No
+permission is given to use it for any other purpose.
+
+`src/google_maps_logo.ts` is in `src/`, which is published in the npm package
+together with `dist/`. The files in `assets/google-maps-logo/` are not.
+
+| File | Source |
+|---|---|
+| `assets/google-maps-logo/GoogleMaps_Logo_WithLightOutline.svg` | `GoogleMaps_Logo_WithLightOutline/GoogleMaps_Logo_WithLightOutline.svg` in the assets above (not included in the npm package) |
+| `assets/google-maps-logo/GoogleMaps_Logo_WithDarkOutline.svg` | `GoogleMaps_Logo_WithDarkOutline/GoogleMaps_Logo_WithDarkOutline.svg` in the assets above (not included in the npm package) |
+| `src/google_maps_logo.ts` (bundled into `dist/`) | The two SVG files above as strings, with only the XML declaration, comments, `id` attributes and whitespace removed (`scripts/build-google-maps-logo.mjs`). `spec/google-maps-logo.spec.ts` checks that the shapes, colours and size are the same as the files |

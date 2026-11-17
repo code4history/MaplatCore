@@ -205,13 +205,42 @@ the bottom right of the map (`div.maplat-attribution`):
 - the base map in the background while a historical map is in front.
 
 A credit is shown only when there is one to show: the map's `attr`, or, for a
-modern map without `attr`, the attribution of its OpenLayers source (the
-Google maps use this: the copyright for the current view, fetched from the Map
-Tiles API). **If you define your own base map or tile overlay in the app
+modern map without `attr`, the attribution of its OpenLayers source. A Google
+map always shows the copyright for the current view, fetched from the Map
+Tiles API, whether or not it has an `attr`, because the policies require that
+copyright in full; an `attr` on a Google map is shown after the copyright. **If you define your own base map or tile overlay in the app
 settings, write its `attr`**; otherwise nothing is shown for it. An `attr`
-that is empty or only whitespace counts as no `attr`. The Google logo that
-Google's terms also ask for is not shown by MaplatCore yet (tracked in
-[#193](https://github.com/code4history/MaplatCore/issues/193)).
+that is empty or only whitespace counts as no `attr`.
+
+While a Google map (a map whose `maptype` is `google`, `google_roadmap`,
+`google_satellite`, `google_hybrid` or `google_terrain`) is displayed, the
+Google Maps logo is shown to the left of Google's credit (the copyright), as
+the [Map Tiles API Policies](https://developers.google.com/maps/documentation/tile/policies)
+require. This includes a Google map in the background behind a historical map.
+The credits of other maps, such as a tile overlay on a Google map, are shown in
+a separate box above the row with the logo and Google's credit, so that they
+are clearly told apart from Google's, as the policies require.
+
+- The logo is the official SVG from Google's attribution assets, shown
+  unmodified at its own size (105×22 px). Maps use the grey logo with a white
+  outline; satellite imagery (`google_satellite`, `google_hybrid`) uses the
+  white logo with a dark outline. The logo keeps a clear space of 10 px on the
+  left, right and top and 5 px at the bottom, and never covers the credit
+  text. Its accessible name is "Google Maps".
+- When the credit text does not fit to the right of the logo, the text wraps
+  to the line below the logo. Only when the box has less than 125 px of width
+  (the logo and its side clear space) is the text "Google Maps" shown at the
+  start of the credit instead of the logo. This is decided again when the map
+  element is resized.
+- The state can be read from `data-google-maps` on `div.maplat-attribution`
+  (`logo` or `text`; no attribute when no Google map is displayed). The logo
+  element is `.maplat-attribution-google-logo`.
+- **Do not hide the logo or change its size or colours with CSS**; the policies
+  forbid it. Move it together with the credit through the custom properties
+  below.
+- The logo size is set in CSS pixels. On a page without
+  `<meta name="viewport" content="width=device-width">`, a smartphone shows the
+  whole page scaled down, so the logo is physically smaller too.
 
 The same text is shown once. The box is updated when the map is switched,
 when a `lang` attribute changes, when the attribution of an OpenLayers source

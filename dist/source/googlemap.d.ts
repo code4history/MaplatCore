@@ -135,6 +135,11 @@ declare const GoogleMap_base: ((abstract new (...args: any[]) => {
     createAsync(options: any): Promise<any>;
 }) & typeof Google;
 export declare class GoogleMap extends GoogleMap_base {
+    /**
+     * Map Tiles API の mapType（roadmap・satellite・terrain）。出典の表示（src/attribution.ts）が、
+     * Google の地図かどうかと、Google Maps のロゴの種類（衛星は白い字）を決めるのに読む。
+     */
+    readonly googleMapType: string;
     constructor(options?: any);
 }
 export {};
