@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- 設定ファイル（apps/<id>.json）・タイルはページ起点の相対パスで読まれるので、基点を公開ルートにそろえる -->
+  <base href="../../../">
+  <title>出典の表示（旧 API）</title>
+  <style>
+    html, body { margin: 0; height: 100%; }
+    #map_div { position: relative; width: 100%; height: 100%; overflow: hidden; }
+  </style>
+</head>
+<body>
+  <div id="map_div"></div>
+  <script type="module">
+    import { MaplatApp } from "/src/index.ts";
+    // 旧 API（MaplatApp）の経路で出典が出ることを確かめるページ（e2e/attribution.spec.ts）
+    // クエリ: appid（既定 morioka）・googleApiKey（Google の地図を使うとき。e2e では偽のキー）
+    const params = new URLSearchParams(location.search);
+    const option = { appid: params.get("appid") || "morioka", div: "map_div" };
+    if (params.get("googleApiKey")) option.googleApiKey = params.get("googleApiKey");
+    MaplatApp.createObject(option).then(app => {
+      window.__MAPLAT_APP__ = app;
+      document.body.dataset.ready = "true";
+    });
+  </script>
+</body>
+</html>
