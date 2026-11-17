@@ -30,3 +30,20 @@ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+## Basemap thumbnails
+
+The thumbnails of the three built-in base maps are 52x52 px JPEG images,
+cropped and reduced from map tiles around Tokyo Station and the Imperial
+Palace, Tokyo. They are bundled into `dist/` (as data URLs) through
+`src/assets.ts` and `src/source_ex.ts`.
+
+`parts/osm.jpg` was made in early 2020. At that time the OpenStreetMap
+copyright page stated that the cartography in its map tiles was licensed
+under CC BY-SA 2.0.
+
+| File | Source | License / terms |
+|---|---|---|
+| `parts/osm.jpg` | OpenStreetMap standard tile layer. © OpenStreetMap contributors. Map tiles © OpenStreetMap contributors, CC BY-SA 2.0 | Data available under the Open Database License (ODbL): <https://www.openstreetmap.org/copyright>. Map tiles: Creative Commons Attribution-ShareAlike 2.0 (CC BY-SA 2.0): <https://creativecommons.org/licenses/by-sa/2.0/>. This thumbnail is distributed under CC BY-SA 2.0. |
+| `parts/gsi.jpg` | GSI Tiles (Standard Map), Geospatial Information Authority of Japan. 出典：国土地理院（地理院タイル 標準地図）。地理院タイル（標準地図）を縮小・切り抜きして作成 | GSI Content Terms of Use: <https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html>; GSI Tiles list: <https://maps.gsi.go.jp/development/ichiran.html> |
+| `parts/gsi_ortho.jpg` | GSI Tiles (Photo), Geospatial Information Authority of Japan. 出典：国土地理院（地理院タイル 写真）。地理院タイル（写真）を縮小・切り抜きして作成 | GSI Content Terms of Use: <https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html>; GSI Tiles list: <https://maps.gsi.go.jp/development/ichiran.html> |
