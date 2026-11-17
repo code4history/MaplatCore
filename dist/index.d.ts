@@ -178,6 +178,8 @@ export declare class MaplatApp extends EventTarget implements ElementImplementat
     private __vectors?;
     private __vectorSeq?;
     private __vectorDrawSeq?;
+    private __attribution?;
+    private __attributionLangOption?;
     lastClickEvent: any;
     /** @internal */
     protected __startupLocked: boolean;

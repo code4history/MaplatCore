@@ -233,7 +233,7 @@ function oe(p) {
     const o = Q(e, "transparency");
     for (let n = 1; n <= 20; n++) e.setTransparency(n * 3);
     s(e.getAttribute("transparency"), "0", "transparency attribute right after the calls (written on the next frame)"), await F(), await F(), await v(300), await F(), o.stop(), s(o.values, ["60"], "transparency attribute mutations for 20 calls in one frame"), s(e.transparency, 60, "transparency property"), s(e.getTransparency(), 60, "getTransparency()");
-  }), u("A-起動後", "地図を切り替えても透過度を保つ（§3.8 A4）", async (r) => {
+  }), u("A-起動後", "地図を切り替えても透過度を保つ", async (r) => {
     const e = await r.mountReady();
     e.setTransparency(40), await e.changeMap(a.otherMapId), await I(() => e.currentMapId === a.otherMapId, i, "map switched"), s(e.getTransparency(), 40, "getTransparency() after changeMap"), await I(() => e.state.transparency === 40, i, "state.transparency stays 40");
   }), u("A-メソッド", "46 の委譲メソッドと新設メソッドが関数として在る", async () => {
@@ -298,7 +298,7 @@ function oe(p) {
     m(typeof o?.then == "function", "getDirection() must return a Promise (thenable)");
     const n = await o;
     m(typeof n == "number" && Number.isFinite(n), `getDirection() must resolve to a number: ${n}`);
-  }), u("A-メソッド", "clientPointToLngLat・lngLatToClientPoint は Promise でオブジェクトか null（§3.8 A1）", async (r) => {
+  }), u("A-メソッド", "clientPointToLngLat・lngLatToClientPoint は Promise でオブジェクトか null", async (r) => {
     const e = await r.mountReady();
     await I(() => e.getViewpoint(), i, "a viewpoint");
     const o = e.getBoundingClientRect(), n = o.left + o.width / 2, c = o.top + o.height / 2, f = e.clientPointToLngLat(n, c);
@@ -347,7 +347,7 @@ function oe(p) {
       m(c === void 0 || typeof c == "number", `stats.${n} is not a number: ${c}`);
     }
     s(typeof await e.getMapTileCacheSizeAsync(), "number", "getMapTileCacheSizeAsync()"), s(typeof e.getMapCacheEnable(a.initialMapId), "boolean", "getMapCacheEnable()");
-  }), u("A-メソッド", "キャッシュを持つ地図の統計には全タイル数 total が数で載る（§3.8 A10）", async (r) => {
+  }), u("A-メソッド", "キャッシュを持つ地図の統計には全タイル数 total が数で載る", async (r) => {
     const e = await r.mountReady();
     if (!e.supports("tile-cache")) return;
     const o = e.listMaps().find((f) => f.cacheEnable);
@@ -410,7 +410,7 @@ function oe(p) {
     );
     for (const c of n)
       m(fe(c.detail), `${c.type} detail keys: ${Object.keys(c.detail || {})}`);
-  }), u("A-イベント", "sourceLoaded の detail は {mapID, usable}[]（§3.8 A2）", async (r) => {
+  }), u("A-イベント", "sourceLoaded の detail は {mapID, usable}[]", async (r) => {
     const e = await r.mountReady({ record: ["sourceLoaded"] }), o = r.recorded(e).filter((c) => c.type === "sourceLoaded");
     m(o.length >= 1, "sourceLoaded was not dispatched");
     const n = o[0].detail;
