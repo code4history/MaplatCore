@@ -1,18 +1,16 @@
 // 表示中の現代の地図（basemap・タイルの重ね地図）の出典が、地図の上に常に出ることを実ブラウザで確かめる。
 //   - OSM・地理院のそれぞれで出典が出る／切り替えで変わる
 //   - 重ね地図のときは、下の basemap と重ね地図の両方が出る（折り返して、切れない）
-//   - 言語（lang 属性）を変えると変わる
+//   - 言語は UI と同じ順で選ぶ（要素の lang → 設定ファイルの lang → <html lang>）。lang 属性の変更で変わる
+//   - attr の無い Google の地図は、OpenLayers の source の出典（表示範囲の copyright）を出す
 //   - 要素を外したら表示が残らない
 //   - 旧 API（MaplatApp）でも出る
-// 外のタイルは取りに行かない（page.route で同梱の画像に差し替え、それ以外の外への要求は止めて数える）。
+// 外のタイルは取りに行かない（page.route で作った画像に差し替え、それ以外の外への要求は止めて数える）。
 // 実行: node_modules/.bin/playwright test --config=e2e/attribution.playwright.config.ts
 // 写真の保存先は環境変数 ATTRIBUTION_SHOTS（無ければ test-results/attribution-shots）。
 import { test, expect, type Page } from '@playwright/test';
-import { existsSync } from 'fs';
-import { dirname, resolve } from 'path';
-import { fileURLToPath } from 'url';
+import { resolve } from 'path';
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SHOTS = process.env.ATTRIBUTION_SHOTS || resolve(process.cwd(), 'test-results/attribution-shots');
 const OSM = '©︎ OpenStreetMap contributors';
 const GSI_JA = '国土地理院';
@@ -20,21 +18,37 @@ const GSI_EN = 'The Geospatial Information Authority of Japan';
 const OVERLAY_JA = '正保城絵図 南部領盛岡平城絵図 (正保元年) 国立公文書館';
 const OVERLAY_EN = 'Japan National Archives';
 
-/** 差し替えのタイル（256px の SVG。地図の種類と z/x/y を描く。写真で地図の種類が見分けられるように）。 */
-function fakeTile(url: string, label: string, fill: string) {
-  const zxy = (url.match(/\/(\d+)\/(\d+)\/(\d+)\.\w+$/) || []).slice(1).join('/');
+/**
+ * 差し替えのタイル（256px の SVG。地図の種類と z/x/y を描く。写真で地図の種類が見分けられるように）。
+ * opacity を与えると半透明の重ね地図用（下の地図が透けて見える）。textY は文字の高さ（重ね地図は下の地図の文字と重ねない）。
+ */
+function fakeTile(url: string, label: string, fill: string, opacity = 1, textY = 120) {
+  const zxy = (new URL(url).pathname.match(/\/(\d+)\/(\d+)\/(\d+)(?:\.\w+)?$/) || []).slice(1).join('/');
   const body =
     `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256">` +
-    `<rect width="256" height="256" fill="${fill}" stroke="#999" stroke-width="1"/>` +
-    `<text x="128" y="120" font-family="sans-serif" font-size="28" text-anchor="middle" fill="#555">${label}</text>` +
-    `<text x="128" y="152" font-family="sans-serif" font-size="16" text-anchor="middle" fill="#777">${zxy}</text>` +
+    `<rect width="256" height="256" fill="${fill}" fill-opacity="${opacity}" stroke="#999" stroke-width="1"/>` +
+    `<text x="128" y="${textY}" font-family="sans-serif" font-size="28" text-anchor="middle" fill="#555">${label}</text>` +
+    `<text x="128" y="${textY + 32}" font-family="sans-serif" font-size="16" text-anchor="middle" fill="#777">${zxy}</text>` +
     `</svg>`;
   return { status: 200, contentType: 'image/svg+xml', headers: { 'Access-Control-Allow-Origin': '*' }, body };
 }
 
-/** 外への要求を止める。OSM・地理院のタイルは作った画像、重ね地図は同梱のタイルで返す。 */
-async function routeExternal(page: Page): Promise<string[]> {
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
+};
+const GOOGLE_COPYRIGHT = 'Map data ©2026 Google';
+
+/**
+ * 外への要求を止める（止めた URL を返す）。OSM・地理院・重ね地図（TMS）・Google のタイルは作った画像で返す。
+ * 重ね地図のタイルの画像はリポジトリに無い（public/tiles/morioka_ndl_affine は目録だけ）ので、半透明の画像を作る。
+ * Google は Map Tiles API の session・表示範囲の copyright（viewport）も偽の応答で返す。
+ */
+async function routeExternal(page: Page): Promise<{ blocked: string[]; overlayTiles: string[]; viewport: string[] }> {
   const blocked: string[] = [];
+  const overlayTiles: string[] = [];
+  const viewport: string[] = [];
   await page.route(
     url => !['127.0.0.1', 'localhost'].includes(url.hostname),
     route => {
@@ -44,22 +58,48 @@ async function routeExternal(page: Page): Promise<string[]> {
   );
   await page.route(/tile\.openstreetmap\.org\//, route => route.fulfill(fakeTile(route.request().url(), 'OSM', '#cfe3c8')));
   await page.route(/cyberjapandata\.gsi\.go\.jp\//, route => route.fulfill(fakeTile(route.request().url(), 'GSI', '#f3e6c4')));
-  await page.route(/code4history\.dev\/Maplat\/tiles\//, route => {
-    const local = resolve(ROOT, 'public', new URL(route.request().url()).pathname.replace(/^\/Maplat\//, ''));
-    return existsSync(local)
-      ? route.fulfill({ path: local, contentType: 'image/png' })
-      : route.fulfill({ status: 404, body: '' });
+  await page.route(/code4history\.dev\/Maplat\/tiles\/morioka_ndl_affine\//, route => {
+    overlayTiles.push(route.request().url());
+    return route.fulfill(fakeTile(route.request().url(), 'OVERLAY', '#d04040', 0.35, 50));
   });
-  return blocked;
+  await page.route(/tile\.googleapis\.com\//, route => {
+    const url = new URL(route.request().url());
+    if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers: CORS });
+    if (url.pathname === '/v1/createSession') {
+      const expiry = String(Math.floor(Date.now() / 1000) + 3600);
+      return route.fulfill({
+        status: 200,
+        headers: CORS,
+        contentType: 'application/json',
+        body: JSON.stringify({ session: 'example-session', expiry, tileWidth: 256, tileHeight: 256, imageFormat: 'png' })
+      });
+    }
+    if (url.pathname === '/tile/v1/viewport') {
+      viewport.push(url.search);
+      return route.fulfill({ status: 200, headers: CORS, contentType: 'application/json', body: JSON.stringify({ copyright: GOOGLE_COPYRIGHT }) });
+    }
+    return route.fulfill(fakeTile(route.request().url(), 'GOOGLE', '#dfe6f3'));
+  });
+  return { blocked, overlayTiles, viewport };
+}
+
+/** 設定ファイル（apps/<id>.json）の lang を書き換えて返す。 */
+async function routeSettingLang(page: Page, appid: string, lang: string) {
+  await page.route(new RegExp(`/apps/${appid}\\.json$`), async route => {
+    const response = await route.fetch();
+    const json = await response.json();
+    json.lang = lang;
+    return route.fulfill({ response, body: JSON.stringify(json), contentType: 'application/json' });
+  });
 }
 
 async function openElementPage(page: Page, width = 1280, height = 800) {
   await page.setViewportSize({ width, height });
-  const blocked = await routeExternal(page);
+  const routed = await routeExternal(page);
   await page.goto('/demo/element.html');
   await expect(page.getByTestId('status')).toHaveAttribute('data-ready', 'true', { timeout: 30000 });
   await expect(page.locator('maplat-app canvas').first()).toBeAttached({ timeout: 15000 });
-  return blocked;
+  return routed;
 }
 
 async function changeMap(page: Page, mapID: string) {
@@ -125,7 +165,7 @@ async function expectFullyVisible(page: Page, scope = 'maplat-app') {
 
 test.describe('背景地図の出典の表示', () => {
   test('OSM・地理院の出典が出て、切り替えで変わる。重ね地図では両方が出る', async ({ page }) => {
-    const blocked = await openElementPage(page);
+    const { blocked, overlayTiles } = await openElementPage(page);
 
     // 起動直後: 古地図（morioka_ndl）＋背面の地理院。古地図の出典は出さない
     await expect.poll(async () => (await attribution(page))?.items).toEqual([GSI_JA]);
@@ -161,6 +201,8 @@ test.describe('背景地図の出典の表示', () => {
     expect(overlay?.items).toEqual([GSI_JA, OVERLAY_JA]);
     expect(overlay?.text).toBe(`${GSI_JA} | ${OVERLAY_JA}`);
     await expectFullyVisible(page);
+    // 重ね地図のタイルが実際に読まれて描かれている
+    await expect.poll(() => overlayTiles.length).toBeGreaterThan(0);
 
     // 重ね地図を外すと、重ね地図の出典は消える
     await changeMap(page, 'osm');
@@ -169,23 +211,34 @@ test.describe('背景地図の出典の表示', () => {
     expect(blocked.filter(u => /openstreetmap|gsi\.go\.jp|code4history\.dev/.test(u))).toEqual([]);
   });
 
-  test('言語（lang 属性）を起動後に変えると、出典の言語も変わる', async ({ page }) => {
+  test('言語は UI と同じ順で選び、起動後の lang 属性の変更にも追う', async ({ page }) => {
+    // demo/element.html は <html lang="ja">・設定ファイル（apps/morioka.json）も "lang": "ja"
     await openElementPage(page);
     await changeMap(page, 'gsi');
     await changeMap(page, 'morioka_ndl_affine');
     expect((await attribution(page))?.items).toEqual([GSI_JA, OVERLAY_JA]);
 
-    // 要素の lang 属性
+    // 要素の lang 属性が最優先
     await page.evaluate(() => document.querySelector('maplat-app')!.setAttribute('lang', 'en'));
     await expect.poll(async () => (await attribution(page))?.items).toEqual([GSI_EN, OVERLAY_EN]);
 
-    // 要素の lang を外すと、文書の lang（ja）に戻る
+    // 要素の lang を外すと、設定ファイルの lang（ja）に戻る
     await page.evaluate(() => document.querySelector('maplat-app')!.removeAttribute('lang'));
     await expect.poll(async () => (await attribution(page))?.items).toEqual([GSI_JA, OVERLAY_JA]);
 
-    // 文書の lang（<html lang>）を変えても追う
+    // <html lang="en"> にしても、設定ファイルの lang（ja）が先（UI と同じ）
     await page.evaluate(() => document.documentElement.setAttribute('lang', 'en'));
-    await expect.poll(async () => (await attribution(page))?.items).toEqual([GSI_EN, OVERLAY_EN]);
+    await page.waitForTimeout(200);
+    expect((await attribution(page))?.items).toEqual([GSI_JA, OVERLAY_JA]);
+  });
+
+  test('<html lang="ja"> で設定ファイルの lang が en なら、出典は英語', async ({ page }) => {
+    await routeSettingLang(page, 'morioka', 'en');
+    await openElementPage(page);
+    expect(await page.evaluate(() => document.documentElement.lang)).toBe('ja');
+    await expect.poll(async () => (await attribution(page))?.items).toEqual([GSI_EN]);
+    await changeMap(page, 'osm');
+    expect((await attribution(page))?.items).toEqual([OSM]);
   });
 
   test('狭い画面（幅 390px）でも折り返して全文が見える', async ({ page }) => {
@@ -252,5 +305,30 @@ test.describe('背景地図の出典の表示', () => {
 
     await page.evaluate(() => (window as any).__MAPLAT_APP__.remove());
     expect(await page.evaluate(() => document.querySelectorAll('.maplat-attribution').length)).toBe(0);
+  });
+
+  test('attr の無い Google の地図は、表示範囲の copyright（OpenLayers の source の出典）を出す', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    const { viewport } = await routeExternal(page);
+    // サンプルの設定（apps/sample.json）は google・google_sat を attr なしで持つ。キーは偽の値
+    await page.goto('/e2e/fixtures/attribution/legacy.html?appid=sample&googleApiKey=example-key');
+    await expect(page.locator('body')).toHaveAttribute('data-ready', 'true', { timeout: 30000 });
+    expect(await page.evaluate(() => (window as any).__MAPLAT_APP__.getMapMeta('google').attr)).toBeUndefined();
+
+    await page.evaluate(() => (window as any).__MAPLAT_APP__.changeMap('google'));
+    await expect.poll(async () => (await attribution(page, '#map_div'))?.items, { timeout: 15000 }).toEqual([GOOGLE_COPYRIGHT]);
+    await expectFullyVisible(page, '#map_div');
+    expect(viewport.length).toBeGreaterThan(0);
+    expect(viewport[0]).toContain('key=example-key');
+    await page.waitForTimeout(800);
+    await page.screenshot({ path: `${SHOTS}/core-google-1280.png` });
+
+    // 古地図へ切り替えると、背面の Google の copyright が残る
+    await page.evaluate(() => (window as any).__MAPLAT_APP__.changeMap('morioka_ndl2'));
+    await expect.poll(async () => (await attribution(page, '#map_div'))?.items, { timeout: 15000 }).toEqual([GOOGLE_COPYRIGHT]);
+
+    // attr のある地図へ切り替えると、Google の copyright は消える
+    await page.evaluate(() => (window as any).__MAPLAT_APP__.changeMap('osm'));
+    expect((await attribution(page, '#map_div'))?.items).toEqual([OSM]);
   });
 });

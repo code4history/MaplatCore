@@ -5,6 +5,8 @@ import {
   attributionTexts,
   closestLang,
   displayedAttributionSources,
+  normalizeAttributionLang,
+  normalizeOlAttributions,
   pickAttributionText,
   resolveAttributionLang
 } from "../src/attribution";
@@ -29,8 +31,8 @@ describe("pickAttributionText", () => {
     expect(pickAttributionText(GSI_ATTR, "ja")).toBe("国土地理院");
     expect(pickAttributionText(GSI_ATTR, "en")).toBe(GSI_ATTR.en);
   });
-  it("地域つきの言語は地域を外した言語にも当てる", () => {
-    expect(pickAttributionText(GSI_ATTR, "ja-JP")).toBe("国土地理院");
+  it("UI の pickLocalized と同じく、地域を外した言語には寄せない（一致しなければ en）", () => {
+    expect(pickAttributionText(GSI_ATTR, "ja-JP")).toBe(GSI_ATTR.en);
   });
   it("無い言語は en、en も無ければ最初の空でない値", () => {
     expect(pickAttributionText(GSI_ATTR, "ko")).toBe(GSI_ATTR.en);
@@ -56,12 +58,41 @@ describe("言語の解決", () => {
     shadow.appendChild(inner);
     expect(closestLang(inner)).toBe("ja");
   });
-  it("lang 属性が無ければ appOption.lang → 設定ファイルの lang → ブラウザ → en", () => {
-    document.body.innerHTML = `<div id="map"></div>`;
-    const map = document.getElementById("map");
+  it("UI と同じ順: 地図の要素の lang → appOption.lang → 設定ファイルの lang → 祖先の lang → ブラウザ", () => {
+    document.body.innerHTML = `<div lang="fr"><div id="map"></div></div>`;
+    const map = document.getElementById("map")!;
     expect(resolveAttributionLang(map, "en", "ja")).toBe("en");
     expect(resolveAttributionLang(map, undefined, "ja")).toBe("ja");
-    expect(resolveAttributionLang(map, 3, "")).toBe(navigator.language || "en");
+    expect(resolveAttributionLang(map, 3, "")).toBe("fr");
+    map.setAttribute("lang", "ko");
+    expect(resolveAttributionLang(map, "en", "ja")).toBe("ko");
+    document.body.innerHTML = `<div id="map2"></div>`;
+    expect(resolveAttributionLang(document.getElementById("map2"), 3, "")).toBe(navigator.language || "en");
+  });
+  it("<html lang=\"en\"> で設定の lang が ja なら ja（その逆も）", () => {
+    document.documentElement.setAttribute("lang", "en");
+    document.body.innerHTML = `<div id="map"></div>`;
+    expect(resolveAttributionLang(document.getElementById("map"), undefined, "ja")).toBe("ja");
+    document.documentElement.setAttribute("lang", "ja");
+    expect(resolveAttributionLang(document.getElementById("map"), undefined, "en")).toBe("en");
+  });
+  it("<maplat-ui> の中: currentLang があればそれを使う（地図の要素の lang・<html lang> より先）", () => {
+    document.documentElement.setAttribute("lang", "en");
+    document.body.innerHTML = `<maplat-ui id="ui"><div id="map" lang="fr"></div></maplat-ui>`;
+    const ui = document.getElementById("ui")! as any;
+    Object.defineProperty(ui, "currentLang", { get: () => "ja", configurable: true });
+    expect(resolveAttributionLang(document.getElementById("map"), "en", "en")).toBe("ja");
+  });
+  it("<maplat-ui> が未定義（currentLang が無い）なら、その lang 属性を appOption・設定より先に見る", () => {
+    document.body.innerHTML = `<maplat-ui lang="en"><div id="map"></div></maplat-ui>`;
+    expect(resolveAttributionLang(document.getElementById("map"), "ja", "ja")).toBe("en");
+  });
+  it("UI の normalizeLang と同じく zh-HK・zh-Hant は zh-TW", () => {
+    expect(normalizeAttributionLang("zh-HK")).toBe("zh-TW");
+    expect(normalizeAttributionLang("zh-Hant")).toBe("zh-TW");
+    expect(normalizeAttributionLang("zh-CN")).toBe("zh-CN");
+    document.body.innerHTML = `<div id="map"></div>`;
+    expect(resolveAttributionLang(document.getElementById("map"), "zh-hk")).toBe("zh-TW");
   });
 });
 
@@ -97,7 +128,7 @@ describe("AttributionDisplay", () => {
   function setup(lang?: string) {
     document.body.innerHTML = `<div id="wrap"${lang ? ` lang="${lang}"` : ""}><div id="map"></div></div>`;
     const map = document.getElementById("map")!;
-    const display = new AttributionDisplay(map, () => resolveAttributionLang(map, undefined, "ja"));
+    const display = new AttributionDisplay(map, () => resolveAttributionLang(map));
     return { map, display };
   }
   const flush = () => new Promise(resolve => setTimeout(resolve, 0));
@@ -142,6 +173,73 @@ describe("AttributionDisplay", () => {
     document.getElementById("wrap")!.removeAttribute("lang");
     await flush();
     expect(display.element.textContent).toBe("国土地理院");
+  });
+
+  it("地図の要素の lang 属性を変えても作り直す", async () => {
+    const { map, display } = setup("ja");
+    display.update([source(GSI_ATTR)]);
+    map.setAttribute("lang", "en");
+    await flush();
+    expect(display.element.textContent).toBe(GSI_ATTR.en);
+  });
+
+  it("attr の無い地図は OpenLayers の source の出典を読む（Promise も受ける・空では消さない）", async () => {
+    const { display } = setup("ja");
+    let copyright: unknown = "Map data ©2026 Google";
+    const frames: unknown[] = [];
+    const google = {
+      get: () => undefined,
+      isWmts: () => true,
+      getAttributions: () => (frameState: unknown) => {
+        frames.push(frameState);
+        return Promise.resolve(copyright);
+      }
+    };
+    display.update([google, source(GSI_ATTR)]);
+    expect(display.element.textContent).toBe("国土地理院");
+    display.refreshDynamic([google], { frame: 1 });
+    await flush();
+    expect(frames).toEqual([{ frame: 1 }]);
+    expect(display.element.textContent).toBe("Map data ©2026 Google | 国土地理院");
+    // 動かしている途中など、値が返らないときは前の値のまま
+    copyright = undefined;
+    display.refreshDynamic([google], { frame: 2 });
+    await flush();
+    expect(display.element.textContent).toBe("Map data ©2026 Google | 国土地理院");
+    // 範囲が変わって値が変わったら作り直す
+    copyright = ["Map data ©2026 Google, ZENRIN"];
+    display.refreshDynamic([google], { frame: 3 });
+    await flush();
+    expect(display.element.textContent).toBe("Map data ©2026 Google, ZENRIN | 国土地理院");
+    // 表示から外れたら、遅れて届いた値も出さない
+    display.update([source(OSM_ATTR)]);
+    display.refreshDynamic([google], { frame: 4 });
+    await flush();
+    expect(display.element.textContent).toBe(OSM_ATTR);
+  });
+
+  it("地図の設定の attr があれば OpenLayers の出典は読まない", async () => {
+    const { display } = setup("ja");
+    let called = false;
+    const configured = {
+      get: (key: string) => (key === "attr" ? "設定の出典" : undefined),
+      isWmts: () => true,
+      getAttributions: () => () => {
+        called = true;
+        return "OL の出典";
+      }
+    };
+    display.update([configured]);
+    display.refreshDynamic([configured], {});
+    await flush();
+    expect(called).toBe(false);
+    expect(display.element.textContent).toBe("設定の出典");
+  });
+
+  it("OpenLayers の出典の値を文字列の配列にする", () => {
+    expect(normalizeOlAttributions("a")).toEqual(["a"]);
+    expect(normalizeOlAttributions([" a ", "", 3, "b"])).toEqual(["a", "b"]);
+    expect(normalizeOlAttributions(undefined)).toEqual([]);
   });
 
   it("地図の箱の中身が消されても、次の描画で最後の子に戻す", () => {

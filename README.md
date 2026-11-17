@@ -196,26 +196,40 @@ MaplatCore only defines what the fields mean and renders the resulting credit.
 The tile providers of the built-in base maps ask for a credit on the screen
 while their tiles are displayed (OpenStreetMap: "© OpenStreetMap contributors"
 near the map; GSI Tiles: the source while the tiles are shown). MaplatCore
-therefore always shows the `attr` of the modern maps it is drawing in a small
-box at the bottom right of the map (`div.maplat-attribution`):
+therefore shows the credit of the modern maps it is drawing in a small box at
+the bottom right of the map (`div.maplat-attribution`):
 
 - the base map in front (`osm`, `gsi`, `gsi_ortho`, or a base map defined in
   the app settings),
 - a tile overlay (`maptype: "overlay"`) and the base map under it,
 - the base map in the background while a historical map is in front.
 
+A credit is shown only when there is one to show: the map's `attr`, or, for a
+modern map without `attr`, the attribution of its OpenLayers source (the
+Google maps use this: the copyright for the current view, fetched from the Map
+Tiles API). **If you define your own base map or tile overlay in the app
+settings, write its `attr`**; otherwise nothing is shown for it. The Google
+logo that Google's terms also ask for is not shown by MaplatCore.
+
 The same text is shown once. The box is updated when the map is switched and
-when a `lang` attribute changes (the closest `lang` attribute of the map
-container → `appOption.lang` → `lang` of the app settings → browser language →
-`en`). The `attr` of a historical map is not shown here; it stays in the map
+when a `lang` attribute changes. The language follows the same order as
+`<maplat-ui>`: inside `<maplat-ui>`, its current language; otherwise the `lang`
+attribute of the map element, then of the closest `<maplat-ui>`, then
+`appOption.lang`, `lang` of the app settings, the closest `lang` attribute of
+an ancestor (such as `<html lang>`), the browser language, and `en`. A
+localized `attr` is picked as the UI does (the language → `en` → the first
+value). The `attr` of a historical map is not shown here; it stays in the map
 information of the UI. The value goes through `sanitizeHtml`, so an `attr` may
 contain a link. The box does not take pointer events except for links in it,
 and long credits wrap instead of being cut off.
 
-The position can be changed with CSS custom properties on the map container:
+The position can be changed with CSS custom properties on the map element:
 `--maplat-attribution-right`, `--maplat-attribution-bottom` and
-`--maplat-attribution-max-width`. Inside `<maplat-ui>`, the box is placed to the
-left of the bottom-right buttons so that it does not overlap the UI controls.
+`--maplat-attribution-max-width`. Inside `<maplat-ui>`, the default places the
+box to the left of the bottom-right buttons so that it does not overlap the UI
+controls; the numbers it uses are also custom properties
+(`--maplat-attribution-ui-inset`, `--maplat-attribution-ui-bottom-offset`,
+`--maplat-attribution-ui-button-width`, `--maplat-attribution-ui-gap`).
 
 ### Excluding a map from the tile cache (`noCache`)
 

@@ -188,22 +188,32 @@ MaplatCore はフィールドの意味の定義と、結果として得られる
 同梱の背景地図のタイルの提供元は、タイルを表示しているあいだ画面に出典を出すことを
 求めています（OpenStreetMap: 地図の近くに「© OpenStreetMap contributors」。
 地理院タイル: 表示しているあいだ出典を画面に出す）。そのため MaplatCore は、描いている
-現代の地図の `attr` を、地図の右下の小さな表示（`div.maplat-attribution`）に常に出します。
+現代の地図の出典を、地図の右下の小さな表示（`div.maplat-attribution`）に出します。
 
 - 前面の背景地図（`osm`・`gsi`・`gsi_ortho`、またはアプリの設定で定義した背景地図）
 - タイルの重ね地図（`maptype: "overlay"`）と、その下の背景地図
 - 前面が古地図のときの、背面の背景地図
 
-同じ文字列は 1 回だけ出します。地図を切り替えたとき、および `lang` 属性が変わったときに
-作り直します（言語は、地図の箱から最も近い `lang` 属性 → `appOption.lang` → アプリの
-設定の `lang` → ブラウザの言語 → `en` の順に決めます）。古地図の `attr` はここには出さず、
-今までどおり UI の地図情報に出します。値は `sanitizeHtml` を通すので、`attr` にリンクを
-書けます。表示はリンクを除いて操作を受けず（下の地図へ通します）、長い出典は「…」で
-切らずに折り返します。
+出典が出るのは、出すものがある地図だけです。地図の `attr`、または `attr` の無い現代の
+地図では OpenLayers の source の出典（Google の地図はこれで、表示範囲の copyright を
+Map Tiles API から取りに行きます）を出します。**アプリの設定で背景地図や重ね地図を自分で
+定義するときは、`attr` を書いてください**。書かないと、その地図の出典は出ません。
+Google の利用条件が求める Google のロゴは、MaplatCore は出しません。
 
-位置は地図の箱の CSS の変数（`--maplat-attribution-right`・`--maplat-attribution-bottom`・
+同じ文字列は 1 回だけ出します。地図を切り替えたとき、および `lang` 属性が変わったときに
+作り直します。言語は `<maplat-ui>` と同じ順で決めます。`<maplat-ui>` の中ではその今の言語、
+それ以外では、地図の要素の `lang` 属性 → 最も近い `<maplat-ui>` の `lang` 属性 →
+`appOption.lang` → アプリの設定の `lang` → 祖先の `lang` 属性（`<html lang>` など）→
+ブラウザの言語 → `en` の順です。多言語の `attr` からの選び方も UI と同じ（その言語 → `en`
+→ 最初の値）です。古地図の `attr` はここには出さず、今までどおり UI の地図情報に出します。
+値は `sanitizeHtml` を通すので、`attr` にリンクを書けます。表示はリンクを除いて操作を受けず
+（下の地図へ通します）、長い出典は「…」で切らずに折り返します。
+
+位置は地図の要素の CSS の変数（`--maplat-attribution-right`・`--maplat-attribution-bottom`・
 `--maplat-attribution-max-width`）で変えられます。`<maplat-ui>` の中では、UI の部品に
-重ならないよう、右下のボタンの列の左隣に置きます。
+重ならないよう、右下のボタンの列の左隣を既定にしています。そこで使う数値も変数
+（`--maplat-attribution-ui-inset`・`--maplat-attribution-ui-bottom-offset`・
+`--maplat-attribution-ui-button-width`・`--maplat-attribution-ui-gap`）で変えられます。
 
 ### 地図をタイルキャッシュから外す（`noCache`）
 

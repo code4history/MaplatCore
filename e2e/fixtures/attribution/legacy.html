@@ -16,7 +16,11 @@
   <script type="module">
     import { MaplatApp } from "/src/index.ts";
     // 旧 API（MaplatApp）の経路で出典が出ることを確かめるページ（e2e/attribution.spec.ts）
-    MaplatApp.createObject({ appid: "morioka", div: "map_div" }).then(app => {
+    // クエリ: appid（既定 morioka）・googleApiKey（Google の地図を使うとき。e2e では偽のキー）
+    const params = new URLSearchParams(location.search);
+    const option = { appid: params.get("appid") || "morioka", div: "map_div" };
+    if (params.get("googleApiKey")) option.googleApiKey = params.get("googleApiKey");
+    MaplatApp.createObject(option).then(app => {
       window.__MAPLAT_APP__ = app;
       document.body.dataset.ready = "true";
     });
