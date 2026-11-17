@@ -67,7 +67,7 @@ describe("normalizeArg 経路 (snake_case の license_note)", () => {
   it("license_note を渡しても例外を投げず、initialize 後に source.get('licenseNote') で読める", async () => {
     const source = await mapSourceFactory(
       {
-        mapID: "m6t2-license-note-probe",
+        mapID: "license-note-probe",
         maptype: "base",
         url: "https://tiles.example.test/{z}/{x}/{y}.png",
         maxZoom: 18,

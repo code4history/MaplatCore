@@ -82,7 +82,7 @@ describe("buildSlideAttrs — 属性名 allowlist", () => {
   });
 });
 
-describe("属性の往復（設計書 §3.4・受け手が innerHTML へ補間する前提）", () => {
+describe("属性の往復（受け手が innerHTML へ補間する前提）", () => {
   it.each(ATTR_ROUNDTRIP_ATTACKS)("$name が往復しても HTML にならない", ({ media }) => {
     // 1. 属性文字列を組み立てて DOM へ流す
     const host = document.createElement("div");

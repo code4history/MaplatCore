@@ -20,7 +20,7 @@ const ALLOWED_TAGS = ALLOWLIST.tags;
 const ALLOWED_ATTR = ALLOWLIST.attributes;
 
 /**
- * data: をここで一旦通すのが要点である（設計書 §3.5(b)）。
+ * data: をここで一旦通すのが要点である。
  * afterSanitizeAttributes はサニタイズ**後**に走るため、ここで落とすと
  * img[src] の data:image/* を復元できない。選別は下の hook で行う。
  */
@@ -74,7 +74,7 @@ let activeProfile: SanitizeProfile | undefined;
 
 /**
  * img[src] で許可する data: の MIME。
- * svg+xml は**含めない**（設計書 §3.5(c)）。img 経由ではブラウザが SVG 内の script を
+ * svg+xml は**含めない**。img 経由ではブラウザが SVG 内の script を
  * 実行しないため即 XSS ではないが、許可面を最小に保つ防御的判断である。
  * 実運用データで必要と判明した場合のみ、人間の承認のうえで追加する。
  */
@@ -115,7 +115,7 @@ function afterSanitizeAttributes(node: Element): void {
 let purifier: ReturnType<typeof createDOMPurify> | undefined;
 
 /**
- * ブラウザ / jsdom（Vitest）/ Electron renderer の3環境で使う（設計書 §3.5(a)）。
+ * ブラウザ / jsdom（Vitest）/ Electron renderer の3環境で使う。
  * window が無い純 Node 実行では**明示的に例外にする**。
  * 黙って素通しさせるとサニタイズを迂回した生の HTML が流れるため。
  */
@@ -244,7 +244,7 @@ export function escapeAttr(value: string): string {
 /**
  * HTML を落としてテキストだけを残す。**属性の往復**に備えるためのもの。
  *
- * なぜ必要か（設計書 §3.4）:
+ * なぜ必要か:
  *   escapeAttr は「属性コンテキスト」でのエスケープにすぎない。
  *   属性へ &lt;img…&gt; と書いても、ブラウザの getAttribute はエンティティを復号して
  *   `<img …>` を返す。受け手（Chuci の cc-swiper）はその値を自分の HTML へ補間するため、
@@ -266,7 +266,7 @@ export function toPlainText(value: string): string {
 }
 
 /**
- * cc-swiper-slide に渡してよい**値属性**（設計書 §3.4）。
+ * cc-swiper-slide に渡してよい**値属性**。
  * Chuci/src/components/swiper/cc-swiper.ts の getAttribute を全数走査して確定した。
  */
 const SLIDE_VALUE_ATTRS = new Set(ALLOWLIST.slide.valueAttributes);
@@ -279,7 +279,7 @@ const SWIPER_BOOLEAN_ATTRS = new Set(ALLOWLIST.swiper.booleanAttributes);
 
 /**
  * テキストとして扱う属性。受け手が自分の HTML へ補間するため、
- * 属性エスケープだけでなく**テキスト化**する（往復対策。設計書 §3.4）。
+ * 属性エスケープだけでなく**テキスト化**する（往復対策）。
  */
 const SLIDE_TEXT_ATTRS = new Set(ALLOWLIST.slide.textAttributes.values);
 
@@ -338,7 +338,7 @@ function slideAttrValue(name: string, val: unknown): string | null {
 /**
  * mediaObj から cc-swiper-slide の属性文字列を組み立てる（S2）。
  *
- * **属性名も POI 由来である**ため、値のエスケープだけでは防げない（設計書 §2.3）。
+ * **属性名も POI 由来である**ため、値のエスケープだけでは防げない。
  * 旧実装は `["src","type","thumbnail","desc"]` の blocklist 4件だけを除外しており、
  * `{"onerror":"alert(1)"}` があれば ` onerror="alert(1)"` をそのまま出力していた。
  * ここでは allowlist に一致するキーだけを出力する。

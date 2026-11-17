@@ -1,6 +1,6 @@
 // 死んだ `translator` フックの撤去を実証する。
 //
-// なぜこの条件を選ぶか（設計書 §8）:
+// なぜこの条件を選ぶか:
 //   `options.translator` は公開 API `mapSourceFactory` の options 経由で渡す動的フックで、
 //   `source_ex.ts` の2箇所で `options.url = options.translator(options.url)` を実行していた。
 //   ただし直後の `registerMapToSW()` が weiwudi を返すと `options.url` は
@@ -22,7 +22,7 @@ const REPLACED_URL = "https://tiles.example.test/REPLACED/{z}/{x}/{y}.png";
 describe("translator フックの撤去", () => {
   it("translator を渡しても options.url が書き換わらない（撤去の実証）", async () => {
     const options: any = {
-      mapID: "m5t2-translator-probe",
+      mapID: "translator-probe",
       maptype: "base",
       url: ORIGINAL_URL,
       // weiwudi による url 上書きを避け、translator の効果だけを観測できるようにする
@@ -39,22 +39,22 @@ describe("translator フックの撤去", () => {
   it("translator を渡さない既定経路の URL 自動合成が従来どおり（非回帰）", async () => {
     // 撤去箇所は `tiles/{mapID}/…` の自動合成より前にあるため、撤去が合成へ影響しないことを固定する
     const options: any = {
-      mapID: "m5t2-auto-compose",
+      mapID: "auto-compose",
       maptype: "base",
       enableCache: false
     };
 
     await mapSourceFactory(options, {});
 
-    expect(options.url).toBe("tiles/m5t2-auto-compose/{z}/{x}/{y}.jpg");
+    expect(options.url).toBe("tiles/auto-compose/{z}/{x}/{y}.jpg");
   });
 
   it("url 未指定 + translator ありでも自動合成が translator に汚染されない", async () => {
     // 撤去前の箇所1は URL 自動合成より前に走るため、`translator(undefined)` の戻り値が truthy だと
-    // `tiles/{mapID}/…` の合成が飛ぶという副作用を持っていた（設計書 §2.3）。
+    // `tiles/{mapID}/…` の合成が飛ぶという副作用を持っていた。
     // 撤去後はこの副作用が消え、自動合成が必ず働くことを固定する
     const options: any = {
-      mapID: "m5t2-auto-with-translator",
+      mapID: "auto-with-translator",
       maptype: "base",
       enableCache: false,
       translator: () => REPLACED_URL
@@ -62,6 +62,6 @@ describe("translator フックの撤去", () => {
 
     await mapSourceFactory(options, {});
 
-    expect(options.url).toBe("tiles/m5t2-auto-with-translator/{z}/{x}/{y}.jpg");
+    expect(options.url).toBe("tiles/auto-with-translator/{z}/{x}/{y}.jpg");
   });
 });
