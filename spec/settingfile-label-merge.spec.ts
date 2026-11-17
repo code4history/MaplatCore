@@ -1,7 +1,7 @@
 // settingFile 経由の label がアプリ要素に潰されないことの回帰テスト。
 //
-// エディタの新しい出力文法（ADR-0017）では、ベースマップの定義は maps/<slug>.json
-// （settingFile）側に置かれ、アプリ JSON の sources 要素は「上書き分のみ」を持つ。
+// エディタの新しい出力文法では、地図の定義を maps/<slug>.json の設定ファイル（settingFile）に置き、
+// アプリの sources にはその参照と上書きする値だけを書く（ベースマップも同じ）。
 // 上書きが無いソースは label キーを持たない。
 //
 // ところが source_ex.ts:125 の
@@ -31,7 +31,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-// 新文法のベースマップ設定ファイル（§3.5 の形）。maptype は settingFile 側が持つ。
+// 新文法のベースマップ設定ファイル。maptype は settingFile 側が持つ。
 const BASE_MAP_SETTING_FILE = {
   mapID: "label-merge-osm",
   maptype: "base",

@@ -166,7 +166,7 @@ export async function normalizeLayers(layers: any, options: any) {
     layers = { [key]: normalizeLayer(layers, key, options) };
     // In case of pois layer ref as a whole (wrapper of the whole pois)
   } else if (isPoiLayerRefAsWhole(layers)) {
-    // §3.4(b): layers.layer を解決し単一 FC と同じ key 決定で合成
+    // layers.layer を解決し単一 FC と同じ key 決定で合成
     const data: any = await nodesLoader(layers.layer);
     const key = data.id || (data.properties && data.properties.id) || "main";
     const cluster = normalizeLayer(data, key, options);

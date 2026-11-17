@@ -42,7 +42,7 @@ async function snapshot(page: any) {
     return {
       loading: m.tileQueue_.getTilesLoading(),
       queued: m.tileQueue_.getCount(),
-      injected: w.__M2T5_INJECTED__ || 0,
+      injected: w.__TILE_EXCEPTION_INJECTED__ || 0,
       zoom: m.getView().getZoom(),
       tiles
     };
@@ -76,14 +76,14 @@ test('タイル合成の onload 内で例外が出ても TileQueue が詰まら�
   await page.evaluate(() => {
     const w = window as any;
     const proto = HTMLCanvasElement.prototype as any;
-    w.__M2T5_ORIG_GETCONTEXT__ = proto.getContext;
-    w.__M2T5_INJECTED__ = 0;
+    w.__TILE_EXCEPTION_ORIG_GETCONTEXT__ = proto.getContext;
+    w.__TILE_EXCEPTION_INJECTED__ = 0;
     proto.getContext = function (this: HTMLCanvasElement, type: string, opts?: any) {
       if (type === '2d' && this.width === 256 && this.height === 256 && !this.closest('.ol-viewport')) {
-        w.__M2T5_INJECTED__++;
+        w.__TILE_EXCEPTION_INJECTED__++;
         return null;
       }
-      return w.__M2T5_ORIG_GETCONTEXT__.call(this, type, opts);
+      return w.__TILE_EXCEPTION_ORIG_GETCONTEXT__.call(this, type, opts);
     };
     const v = w.__MAPLAT_APP__.mapObject.getView();
     v.setZoom(v.getZoom() + 1);
@@ -110,7 +110,7 @@ test('タイル合成の onload 内で例外が出ても TileQueue が詰まら�
   // --- 注入解除: 別の範囲へパンし、さらにズームを変える ---
   await page.evaluate(() => {
     const w = window as any;
-    (HTMLCanvasElement.prototype as any).getContext = w.__M2T5_ORIG_GETCONTEXT__;
+    (HTMLCanvasElement.prototype as any).getContext = w.__TILE_EXCEPTION_ORIG_GETCONTEXT__;
     const v = w.__MAPLAT_APP__.mapObject.getView();
     const size = w.__MAPLAT_APP__.mapObject.getSize();
     const res = v.getResolution();

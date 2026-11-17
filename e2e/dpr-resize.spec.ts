@@ -38,15 +38,15 @@ test.describe('DPR 2 で GL の canvas を描画ごとに resize しない', () 
         const app = (window as any).__MAPLAT_APP__;
         // 縮めた後に OpenLayers が 1 回以上描画したことを数える（GL の寸法同期は描画の中で行われる）
         const w = window as any;
-        w.__T2_POSTRENDER__ = 0;
-        app.mapObject.on('postrender', () => { w.__T2_POSTRENDER__++; });
+        w.__DPR_POSTRENDER__ = 0;
+        app.mapObject.on('postrender', () => { w.__DPR_POSTRENDER__++; });
         (document.querySelector('.mainview') as HTMLElement).style.right = '40%';
         app.mapObject.updateSize();
       });
       // 当初は「2 秒待つ」としていたが、高負荷の swiftshader では 2 秒以内に OL の描画が 1 回も起きない
       // ことがあった（postrender 0 回で canvas が縮める前の寸法のまま。修正の前後どちらでも発生）。
       // ∴ 縮めた後の描画が 1 回以上起きるまで待ってから、さらに 2 秒待って測る。
-      await page.waitForFunction(() => (window as any).__T2_POSTRENDER__ >= 1, null, { timeout: 60_000 });
+      await page.waitForFunction(() => (window as any).__DPR_POSTRENDER__ >= 1, null, { timeout: 60_000 });
       await page.waitForTimeout(2000);
       const diff = await page.evaluate((prop) => {
         const app = (window as any).__MAPLAT_APP__;
@@ -62,7 +62,7 @@ test.describe('DPR 2 で GL の canvas を描画ごとに resize しない', () 
             viewportRect: [v.width, v.height],
             canvasPx: [canvas.width, canvas.height],
             container: [container.clientWidth, container.clientHeight],
-            postrender: (window as any).__T2_POSTRENDER__,
+            postrender: (window as any).__DPR_POSTRENDER__,
             pixelRatio: typeof app[prop].getPixelRatio === 'function' ? app[prop].getPixelRatio() : null,
           },
         };
@@ -76,16 +76,16 @@ test.describe('DPR 2 で GL の canvas を描画ごとに resize しない', () 
         const app = (window as any).__MAPLAT_APP__;
         const m = app[prop];
         const orig = m.resize;
-        (window as any).__T2_RESIZE__ = 0;
+        (window as any).__DPR_RESIZE__ = 0;
         m.resize = function (...a: any[]) {
-          (window as any).__T2_RESIZE__++;
+          (window as any).__DPR_RESIZE__++;
           return orig.apply(this, a);
         };
         for (let i = 0; i < 30; i++) {
           app.mapObject.render();
           await new Promise((r) => requestAnimationFrame(() => r(undefined)));
         }
-        return (window as any).__T2_RESIZE__ as number;
+        return (window as any).__DPR_RESIZE__ as number;
       }, glProp);
       console.log(`T2_RESIZE ${mapID} ${count}`);
       expect(count).toBe(0);
