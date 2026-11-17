@@ -191,6 +191,32 @@ spells the terms out in `licenseNote`.
 Choosing these values in a UI is the authoring tool's concern (MaplatEditor);
 MaplatCore only defines what the fields mean and renders the resulting credit.
 
+#### Attribution shown on the map
+
+The tile providers of the built-in base maps ask for a credit on the screen
+while their tiles are displayed (OpenStreetMap: "© OpenStreetMap contributors"
+near the map; GSI Tiles: the source while the tiles are shown). MaplatCore
+therefore always shows the `attr` of the modern maps it is drawing in a small
+box at the bottom right of the map (`div.maplat-attribution`):
+
+- the base map in front (`osm`, `gsi`, `gsi_ortho`, or a base map defined in
+  the app settings),
+- a tile overlay (`maptype: "overlay"`) and the base map under it,
+- the base map in the background while a historical map is in front.
+
+The same text is shown once. The box is updated when the map is switched and
+when a `lang` attribute changes (the closest `lang` attribute of the map
+container → `appOption.lang` → `lang` of the app settings → browser language →
+`en`). The `attr` of a historical map is not shown here; it stays in the map
+information of the UI. The value goes through `sanitizeHtml`, so an `attr` may
+contain a link. The box does not take pointer events except for links in it,
+and long credits wrap instead of being cut off.
+
+The position can be changed with CSS custom properties on the map container:
+`--maplat-attribution-right`, `--maplat-attribution-bottom` and
+`--maplat-attribution-max-width`. Inside `<maplat-ui>`, the box is placed to the
+left of the bottom-right buttons so that it does not overlap the UI controls.
+
 ### Excluding a map from the tile cache (`noCache`)
 
 When `MaplatApp` is started with `enableCache: true` (a `MaplatApp` option),

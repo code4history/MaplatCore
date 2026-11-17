@@ -54,6 +54,7 @@ import {
 } from "./outside_pois";
 import { Geolocation } from './geolocation';
 import { ViewportOffsetCache, measureViewportOffset } from "./viewport_offset";
+import { AttributionDisplay, displayedAttributionSources, resolveAttributionLang } from "./attribution";
 
 import { Coordinate } from "ol/coordinate";
 import BaseEvent from "ol/events/Event";
@@ -381,6 +382,9 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
   private __vectors?: Map<string, VectorEntry>;
   private __vectorSeq?: number;
   private __vectorDrawSeq?: number;
+  // 表示中の現代の地図の出典の表示（src/attribution.ts）と、appOption.lang（言語の候補の 1 つ）
+  private __attribution?: AttributionDisplay;
+  private __attributionLangOption?: unknown;
 
   lastClickEvent: any;
 
@@ -1102,6 +1106,12 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
         }
       });
     }
+    // 表示中の現代の地図の出典（地図の箱の最後の子。中身は changeMap のたびに作り直す）
+    this.__attributionLangOption = appOption.lang;
+    this.__attribution?.dispose();
+    this.__attribution = new AttributionDisplay(this.mapDivDocument!, () =>
+      resolveAttributionLang(this.mapDivDocument, this.__attributionLangOption, this.appData?.lang)
+    );
     await this.runLifecyclePhase("core-dom-ready");
     this.startFrom = this.appData!.startFrom;
     return {
@@ -2331,6 +2341,15 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
             this.resetVector();
             // 登録簿に残っている線・面だけを新しい地図の座標で描き直す
             this.__vectorStore().forEach(entry => this.__drawVectorEntry(entry));
+            // 表示中の現代の地図（前面の basemap・重ね地図・背面の basemap）の出典を描き直す。
+            // MaplatApp の prototype は公開面として固定しているので、メソッドにせずここで呼ぶ
+            this.__attribution?.update(
+              displayedAttributionSources({
+                front: this.mapObject.getSource(),
+                overlay: to instanceof TmsMap ? to : undefined,
+                back: this.backMap?.getSource()
+              })
+            );
             this.dispatchEvent(
               new CustomEvent("mapChanged", this.getMapMeta(to.mapID))
             );
@@ -2834,6 +2853,9 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     }
     this.__viewportOffset?.dispose();
     this.__viewportOffset = undefined;
+    // 出典の表示を外し、言語（lang 属性）の監視をやめる
+    this.__attribution?.dispose();
+    this.__attribution = undefined;
     // 今まで要素の経路だけが塞いでいた漏れを旧クラスでも塞ぐ。
     // OL の Map を target から外して内部の ResizeObserver・リスナを解放し、MapLibre の地図も消す。
     this.mapObject?.setTarget?.(undefined);
