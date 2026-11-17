@@ -195,14 +195,18 @@ MaplatCore はフィールドの意味の定義と、結果として得られる
 - 前面が古地図のときの、背面の背景地図
 
 出典が出るのは、出すものがある地図だけです。地図の `attr`、または `attr` の無い現代の
-地図では OpenLayers の source の出典（Google の地図はこれで、表示範囲の copyright を
-Map Tiles API から取りに行きます）を出します。**アプリの設定で背景地図や重ね地図を自分で
+地図では OpenLayers の source の出典を出します。Google の地図は、`attr` の有無によらず、
+表示範囲の copyright を Map Tiles API から取りに行って必ず出します（利用条件が copyright を
+全文で出すよう求めるため）。Google の地図に `attr` を書くと、copyright の後に添えて出します。**アプリの設定で背景地図や重ね地図を自分で
 定義するときは、`attr` を書いてください**。書かないと、その地図の出典は出ません。
 空や空白だけの `attr` は、無いものとみなします。
 
 Google の地図（`maptype` が `google`・`google_roadmap`・`google_satellite`・`google_hybrid`・
 `google_terrain` の地図）を表示しているあいだは、[Map Tiles API の利用条件](https://developers.google.com/maps/documentation/tile/policies)
-に従い、出典の文字の左隣に Google Maps のロゴを出します。前面が古地図で背面が Google の地図のときも出します。
+に従い、Google の出典（copyright）の左隣に Google Maps のロゴを出します。前面が古地図で背面が Google の地図の
+ときも出します。ほかの地図（Google の地図の上の重ね地図など）の出典は、Google の出典と区別できるよう、
+別の箱にして、ロゴと Google の出典の行の上に出します（利用条件は、第三者の出典を Google の出典とはっきり
+分けるよう求めています）。
 
 - ロゴは Google の公式の配布物の SVG を原寸（105×22 px）で、手を加えずに出します。地図には白い枠の灰色の
   ロゴ、衛星写真（`google_satellite`・`google_hybrid`）には濃い枠の白いロゴを使います。周りに上・左右 10 px、
@@ -214,6 +218,8 @@ Google の地図（`maptype` が `google`・`google_roadmap`・`google_satellite
   で読めます。ロゴの要素は `.maplat-attribution-google-logo` です。
 - **ロゴを CSS で隠したり、大きさ・色を変えたりしないでください。** 利用条件に反します。位置は出典の表示と
   一緒に、下の CSS の変数で動かせます。
+- ロゴの大きさは CSS の px で決めています。`<meta name="viewport" content="width=device-width">` の無いページを
+  スマートフォンで開くと、ページ全体が縮んで表示され、ロゴも物理的に小さくなります。
 
 同じ文字列は 1 回だけ出します。地図を切り替えたとき、`lang` 属性が変わったとき、
 OpenLayers の source の出典が変わったとき（Google の表示範囲が変わったときなど）、および

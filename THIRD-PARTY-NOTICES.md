@@ -61,6 +61,11 @@ Google's "Google Maps attribution assets"
 (<https://developers.google.com/static/maps/documentation/images/Google_Maps_Attribution_Assets.zip>).
 Use of the logo is subject to Google's terms, including the
 [Geo Guidelines](https://about.google/brand-resource-center/products-and-services/geo-guidelines/).
+The logo is used only to attribute Google maps displayed by MaplatCore. No
+permission is given to use it for any other purpose.
+
+`src/google_maps_logo.ts` is in `src/`, which is published in the npm package
+together with `dist/`. The files in `assets/google-maps-logo/` are not.
 
 | File | Source |
 |---|---|

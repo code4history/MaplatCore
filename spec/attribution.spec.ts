@@ -2,6 +2,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import {
   AttributionDisplay,
+  attributionGroups,
   attributionTexts,
   closestLang,
   displayedAttributionSources,
@@ -359,7 +360,9 @@ describe("Google Maps のロゴ", () => {
     expect(display.element.hidden).toBe(false);
     display.refreshDynamic([google], {});
     await flush();
-    const children = [...display.element.children];
+    // 最下段の行に「ロゴ・Google の出典」の順（ほかの出典が無ければ行だけ）
+    expect([...display.element.children].map(e => e.className)).toEqual(["maplat-attribution-google"]);
+    const children = [...display.element.firstElementChild!.children];
     expect(children.map(e => e.className)).toEqual(["maplat-attribution-google-logo", "maplat-attribution-text"]);
     const logo = children[0] as HTMLElement;
     expect(logo.getAttribute("role")).toBe("img");
@@ -384,11 +387,59 @@ describe("Google Maps のロゴ", () => {
     expect(logo.querySelector('g[opacity="0.8"] path')!.getAttribute("fill")).toBe("#1E1E1E");
   });
 
-  it("地図の設定に attr がある Google の地図でもロゴを出す", () => {
+  it("地図の設定に attr がある Google の地図でも、ロゴと表示範囲の copyright を出し、attr は後に添える", async () => {
     const { display } = setup();
-    display.update([{ ...source("© Google"), googleMapType: "roadmap" }]);
+    const google = { ...googleSource("roadmap"), get: (key: string) => (key === "attr" ? "Example basemap note" : undefined) };
+    display.update([google]);
     expect(display.googleAttribution).toBe("logo");
-    expect(display.element.querySelector(".maplat-attribution-item")!.textContent).toBe("© Google");
+    // copyright を読む前は attr だけ
+    expect(display.texts).toEqual(["Example basemap note"]);
+    display.refreshDynamic([google], {});
+    await flush();
+    expect(display.texts).toEqual([GOOGLE_COPYRIGHT, "Example basemap note"]);
+    const items = [...display.element.querySelectorAll(".maplat-attribution-google .maplat-attribution-item")].map(
+      e => e.textContent
+    );
+    expect(items).toEqual([GOOGLE_COPYRIGHT, "Example basemap note"]);
+  });
+
+  it("attr と copyright が同じ文字列なら 1 回だけ", () => {
+    const google = { ...googleSource("roadmap"), get: (key: string) => (key === "attr" ? GOOGLE_COPYRIGHT : undefined) };
+    const dynamic = new Map([[google, [GOOGLE_COPYRIGHT]]]);
+    expect(attributionTexts([google], "ja", dynamic)).toEqual([GOOGLE_COPYRIGHT]);
+  });
+
+  it("Google の地図の出典と、ほかの地図（重ね地図）の出典を分ける", () => {
+    const google = googleSource("roadmap");
+    const overlay = source(OSM_ATTR);
+    const dynamic = new Map([[google, [GOOGLE_COPYRIGHT]]]);
+    expect(attributionGroups([google, overlay], "ja", dynamic)).toEqual({ google: [GOOGLE_COPYRIGHT], others: [OSM_ATTR] });
+    // 平らな並びは source の順のまま
+    expect(attributionTexts([google, overlay], "ja", dynamic)).toEqual([GOOGLE_COPYRIGHT, OSM_ATTR]);
+  });
+
+  it("Google の地図の上に重ね地図があると、重ね地図の出典は別の箱にして Google の行の上に置く", async () => {
+    const { display } = setup();
+    const google = googleSource("roadmap");
+    display.update(displayedAttributionSources({ front: google, overlay: source(GSI_ATTR) }));
+    display.refreshDynamic([google], {});
+    await flush();
+    const children = [...display.element.children] as HTMLElement[];
+    expect(children.map(e => e.className)).toEqual([
+      "maplat-attribution-text maplat-attribution-others",
+      "maplat-attribution-google"
+    ]);
+    expect(children[0].textContent).toBe("国土地理院");
+    expect(children[1].querySelector(".maplat-attribution-text")!.textContent).toBe(GOOGLE_COPYRIGHT);
+    // 区切りの " | " で Google の出典とつながない
+    expect(display.element.textContent).not.toContain(" | ");
+  });
+
+  it("Google の地図が無ければ、箱は 1 つで今までどおり", () => {
+    const { display } = setup();
+    display.update([source(GSI_ATTR), source(OSM_ATTR)]);
+    expect([...display.element.children].map(e => e.className)).toEqual(["maplat-attribution-text"]);
+    expect(display.element.textContent).toBe(`国土地理院 | ${OSM_ATTR}`);
   });
 
   it("狭いときはロゴの代わりに文字 Google Maps を出典の先頭に出す", async () => {
@@ -400,6 +451,7 @@ describe("Google Maps のロゴ", () => {
     await flush();
     expect(display.googleAttribution).toBe("text");
     expect(display.element.querySelector(".maplat-attribution-google-logo")).toBeNull();
+    expect(display.element.querySelector(".maplat-attribution-google-text")!.closest(".maplat-attribution-google")).not.toBeNull();
     const items = [...display.element.querySelectorAll(".maplat-attribution-item")].map(e => e.textContent);
     expect(items).toEqual([GOOGLE_MAPS_TEXT, GOOGLE_COPYRIGHT]);
     expect(display.element.textContent).toBe(`${GOOGLE_MAPS_TEXT} | ${GOOGLE_COPYRIGHT}`);
@@ -408,12 +460,26 @@ describe("Google Maps のロゴ", () => {
     expect(display.element.style.display).toBe("");
   });
 
-  it("Google の地図から外れたら、ロゴも data 属性も消える（言語を変えてもロゴは同じ）", async () => {
+  it("Google の地図から外れたら、ロゴも data 属性も消える（言語を変えると描き直し、ロゴは出したまま）", async () => {
     const { map, display } = setup();
-    display.update([googleSource("roadmap")]);
+    display.update([googleSource("roadmap"), source(GSI_ATTR)]);
     expect(display.googleAttribution).toBe("logo");
+    const before = display.element.querySelector(".maplat-attribution-google-logo");
+    expect(display.element.querySelector(".maplat-attribution-others")!.textContent).toBe("国土地理院");
+    let renders = 0;
+    const render = display.render.bind(display);
+    display.render = () => {
+      renders++;
+      render();
+    };
     map.setAttribute("lang", "en");
     await flush();
+    // 描き直しが起きた（回数・要素の作り直し・重ね地図の出典の言語）
+    expect(renders).toBe(1);
+    const after = display.element.querySelector(".maplat-attribution-google-logo");
+    expect(after).not.toBeNull();
+    expect(after).not.toBe(before);
+    expect(display.element.querySelector(".maplat-attribution-others")!.textContent).toBe(GSI_ATTR.en);
     expect(display.googleAttribution).toBe("logo");
     display.update([source(OSM_ATTR)]);
     expect(display.googleAttribution).toBeUndefined();

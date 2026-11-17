@@ -205,17 +205,21 @@ the bottom right of the map (`div.maplat-attribution`):
 - the base map in the background while a historical map is in front.
 
 A credit is shown only when there is one to show: the map's `attr`, or, for a
-modern map without `attr`, the attribution of its OpenLayers source (the
-Google maps use this: the copyright for the current view, fetched from the Map
-Tiles API). **If you define your own base map or tile overlay in the app
+modern map without `attr`, the attribution of its OpenLayers source. A Google
+map always shows the copyright for the current view, fetched from the Map
+Tiles API, whether or not it has an `attr`, because the policies require that
+copyright in full; an `attr` on a Google map is shown after the copyright. **If you define your own base map or tile overlay in the app
 settings, write its `attr`**; otherwise nothing is shown for it. An `attr`
 that is empty or only whitespace counts as no `attr`.
 
 While a Google map (a map whose `maptype` is `google`, `google_roadmap`,
 `google_satellite`, `google_hybrid` or `google_terrain`) is displayed, the
-Google Maps logo is shown to the left of the credit text, as the
-[Map Tiles API Policies](https://developers.google.com/maps/documentation/tile/policies)
+Google Maps logo is shown to the left of Google's credit (the copyright), as
+the [Map Tiles API Policies](https://developers.google.com/maps/documentation/tile/policies)
 require. This includes a Google map in the background behind a historical map.
+The credits of other maps, such as a tile overlay on a Google map, are shown in
+a separate box above the row with the logo and Google's credit, so that they
+are clearly told apart from Google's, as the policies require.
 
 - The logo is the official SVG from Google's attribution assets, shown
   unmodified at its own size (105×22 px). Maps use the grey logo with a white
@@ -234,6 +238,9 @@ require. This includes a Google map in the background behind a historical map.
 - **Do not hide the logo or change its size or colours with CSS**; the policies
   forbid it. Move it together with the credit through the custom properties
   below.
+- The logo size is set in CSS pixels. On a page without
+  `<meta name="viewport" content="width=device-width">`, a smartphone shows the
+  whole page scaled down, so the logo is physically smaller too.
 
 The same text is shown once. The box is updated when the map is switched,
 when a `lang` attribute changes, when the attribution of an OpenLayers source
