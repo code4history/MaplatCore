@@ -17,6 +17,8 @@ export type GoogleAttributionMode = "logo" | "text";
 export declare const GOOGLE_LOGO_MIN_WIDTH = 125;
 /** ロゴの代わりに出す文字（利用条件が名指しする文字。言語によらない）。 */
 export declare const GOOGLE_MAPS_TEXT = "Google Maps";
+/** Google の地図（GoogleMap。googleMapType を持つ）か。 */
+export declare function isGoogleSource(source: AttributionSourceLike): boolean;
 /**
  * 表示中の source に Google の地図があれば、出すロゴの種類を返す（無ければ undefined）。
  * 出典の並び（前面 → 重ね地図 → 背面）で最初の Google の地図の種類で選ぶ。衛星（satellite）は dark。
@@ -63,8 +65,17 @@ export declare function normalizeOlAttributions(value: unknown): string[];
 /**
  * source の並びから、表示する出典の文字列（言語を選んだもの・空と重複を除いたもの）を作る。
  * 地図の設定の `attr` が無い source は、dynamic（OpenLayers の source から読んだ出典）の値を使う。
+ * Google の地図は `attr` があっても dynamic（copyright）を先に出す。
  */
 export declare function attributionTexts(sources: AttributionSourceLike[], lang: string, dynamic?: ReadonlyMap<AttributionSourceLike, readonly string[]>): string[];
+/**
+ * 出典の文字列を、Google の地図の分（google）とそれ以外（others）に分ける。
+ * 同じ文字列は 1 回だけ（Google の分を先に取る）。並びは source の順。
+ */
+export declare function attributionGroups(sources: AttributionSourceLike[], lang: string, dynamic?: ReadonlyMap<AttributionSourceLike, readonly string[]>): {
+    google: string[];
+    others: string[];
+};
 /**
  * 出典の表示。地図の箱の最後の子に `div.maplat-attribution` を置き、`update` で中身を作り直す。
  * 祖先の `lang` 属性が変わったら、最後に渡された source で作り直す。
