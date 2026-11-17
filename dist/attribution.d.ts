@@ -10,7 +10,7 @@ export interface AttributionSourceLike {
 /**
  * 言語ごとの値から 1 つ選ぶ。UI の pickLocalized と同じ規則: 一致する言語 → en → 最初の空でない値。
  * （地域を外した言語には寄せない。UI の地図情報と同じ文字を出すため）
- * 文字列はそのまま。何も無ければ undefined。
+ * 文字列はそのまま。空白だけの値は無いものとみなす（OpenLayers の出典へ回す）。何も無ければ undefined。
  */
 export declare function pickAttributionText(value: AttributionValue, lang: string): string | undefined;
 /** UI の normalizeLang と同じ寄せ方（zh-HK・zh-Hant は zh-TW）。 */
@@ -39,7 +39,7 @@ export declare function displayedAttributionSources(parts: {
     overlay?: AttributionSourceLike | null;
     back?: AttributionSourceLike | null;
 }): AttributionSourceLike[];
-/** 地図の設定の `attr` を持つか（空の文字列・空の言語ごとの値は持たない扱い）。 */
+/** 地図の設定の `attr` を持つか（空・空白だけの文字列、空の言語ごとの値は持たない扱い）。 */
 export declare function hasConfiguredAttr(source: AttributionSourceLike): boolean;
 /** OpenLayers の出典の値（文字列・配列・それ以外）を文字列の配列にする。 */
 export declare function normalizeOlAttributions(value: unknown): string[];
