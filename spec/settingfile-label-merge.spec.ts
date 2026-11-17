@@ -33,7 +33,7 @@ afterEach(() => {
 
 // 新文法のベースマップ設定ファイル（§3.5 の形）。maptype は settingFile 側が持つ。
 const BASE_MAP_SETTING_FILE = {
-  mapID: "m6t10-osm",
+  mapID: "label-merge-osm",
   maptype: "base",
   url: "https://tile.example.test/{z}/{x}/{y}.png",
   label: { ja: "マスタのラベル", en: "Master Label" },
@@ -47,7 +47,7 @@ describe("settingFile 経由の label がアプリ要素に潰されない", () 
     stubSettingFileFetch(BASE_MAP_SETTING_FILE);
     // 新文法のアプリ JSON 要素: 参照と上書き分のみ。label も maptype も持たない
     const source = await mapSourceFactory(
-      { mapID: "m6t10-osm", settingFile: "maps/m6t10-osm.json" },
+      { mapID: "label-merge-osm", settingFile: "maps/label-merge-osm.json" },
       { enableCache: false },
     );
     expect((source as any).label).toEqual({ ja: "マスタのラベル", en: "Master Label" });
@@ -57,8 +57,8 @@ describe("settingFile 経由の label がアプリ要素に潰されない", () 
     stubSettingFileFetch(BASE_MAP_SETTING_FILE);
     const source = await mapSourceFactory(
       {
-        mapID: "m6t10-osm",
-        settingFile: "maps/m6t10-osm.json",
+        mapID: "label-merge-osm",
+        settingFile: "maps/label-merge-osm.json",
         label: { ja: "アプリの上書き", en: "Master Label" },
       },
       { enableCache: false },
@@ -69,7 +69,7 @@ describe("settingFile 経由の label がアプリ要素に潰されない", () 
   it("回帰: アプリ要素が year を持つとき、従来どおり year が label へ落ちる", async () => {
     stubSettingFileFetch(BASE_MAP_SETTING_FILE);
     const source = await mapSourceFactory(
-      { mapID: "m6t10-osm", settingFile: "maps/m6t10-osm.json", year: "1888" },
+      { mapID: "label-merge-osm", settingFile: "maps/label-merge-osm.json", year: "1888" },
       { enableCache: false },
     );
     // :125 の label = label || year がアプリ要素側の year を拾い、
@@ -81,7 +81,7 @@ describe("settingFile 経由の label がアプリ要素に潰されない", () 
     const { label: _omitted, ...withoutLabel } = BASE_MAP_SETTING_FILE;
     stubSettingFileFetch({ ...withoutLabel, year: "1902" });
     const source = await mapSourceFactory(
-      { mapID: "m6t10-osm", settingFile: "maps/m6t10-osm.json" },
+      { mapID: "label-merge-osm", settingFile: "maps/label-merge-osm.json" },
       { enableCache: false },
     );
     expect((source as any).label).toBe("1902");
@@ -90,7 +90,7 @@ describe("settingFile 経由の label がアプリ要素に潰されない", () 
   it("回帰: インライン経路（maptype を要素側が持つ）では label も year も無いと undefined のまま", async () => {
     // :126 の WMTS 分岐へ入るため fetch は起きない。従来挙動と同じであることを固定する
     const source = await mapSourceFactory(
-      { mapID: "m6t10-inline", maptype: "base", url: "https://tile.example.test/{z}/{x}/{y}.png" },
+      { mapID: "label-merge-inline", maptype: "base", url: "https://tile.example.test/{z}/{x}/{y}.png" },
       { enableCache: false },
     );
     expect((source as any).label).toBeUndefined();

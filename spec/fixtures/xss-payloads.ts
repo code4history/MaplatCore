@@ -40,7 +40,7 @@ export const TARGET_BLANK = {
 
 /**
  * S2（cc-swiper-slide の属性組み立て）の攻撃入力。
- * **キー側**からの注入を含む。値のエスケープだけでは防げない（設計書 §2.3）。
+ * **キー側**からの注入を含む。値のエスケープだけでは防げない。
  */
 export const MEDIA_ATTR_ATTACKS: { name: string; media: Record<string, unknown>; mustNotContain: string[] }[] = [
   { name: "キーが onerror", media: { src: "https://e/a.png", type: "image", onerror: "alert(1)" }, mustNotContain: ["onerror"] },
@@ -65,7 +65,7 @@ export const MEDIA_ATTR_PRESERVED = {
 };
 
 /**
- * **属性の往復**（設計書 §3.4）。
+ * **属性の往復**。
  * escapeAttr は属性コンテキストのエスケープにすぎず、getAttribute はエンティティを
  * 復号して返す。受け手（Chuci の cc-swiper）はその値を自分の HTML へ補間するため、
  * 往復した時点で生の HTML に戻る。実データの caption 13件はすべてテキストであり、

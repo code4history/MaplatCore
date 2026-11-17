@@ -171,7 +171,7 @@ describe("handleSources provider-only + GL missing", () => {
     warn.mockRestore();
   });
 
-  it("混在 app（histmap + provider basemap、GL 無し）: mercSrc は cache から選ばれ死んだ provider を指さない（v1.3.1 m4）", async () => {
+  it("混在 app（histmap + provider basemap、GL 無し）: mercSrc は cache から選ばれ死んだ provider を指さない（v1.3.1）", async () => {
     const app = makeAppStub();
     const hist = {
       mapID: "h1",
