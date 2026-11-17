@@ -19,7 +19,7 @@ describe("getMarker はテンプレートを当てた複製を返す", () => {
     resetTemplateWarnings();
   });
 
-  it("T1: アプリの層。html が付き、実体には付かない", () => {
+  it("アプリの層。html が付き、実体には付かない", () => {
     const entity = { id: "p1", namespaceID: "p1", name: "x" };
     const self = appWith({ pois: [entity], poiTemplate: "<b>{{ name }}</b>" });
     const got = getMarker(self, "p1");
@@ -28,7 +28,7 @@ describe("getMarker はテンプレートを当てた複製を返す", () => {
     expect(got).not.toBe(entity);
   });
 
-  it("T2: 地図の層。source の poiTemplate が当たり、実体に html が無い", () => {
+  it("地図の層。source の poiTemplate が当たり、実体に html が無い", () => {
     const entity = { id: "q1", namespaceID: "A#q1", name: "z" };
     const source = { pois: { main: { pois: [entity] } }, poiTemplate: "<i>{{ name }}</i>" };
     const self: any = { pois: {}, cacheHash: { A: source }, redrawMarkers: vi.fn() };
@@ -56,7 +56,7 @@ describe("getMarker はテンプレートを当てた複製を返す", () => {
     expect(entity).not.toHaveProperty("html");
   });
 
-  it("T3: iconTemplate・層の icon・POI 自身の icon の優先", () => {
+  it("iconTemplate・層の icon・POI 自身の icon の優先", () => {
     const tpl = { id: "p1", namespaceID: "p1", u: "a.png" };
     const self1 = appWith({ pois: [tpl], iconTemplate: '{"icon": {{ u | dump | safe }}}', icon: "layer.png" });
     expect(getMarker(self1, "p1").icon).toBe("a.png");
@@ -71,7 +71,7 @@ describe("getMarker はテンプレートを当てた複製を返す", () => {
     expect(self1.pois.main.pois[0].icon).toBeUndefined();
   });
 
-  it("T4: POI 自身に html があればテンプレートを当てず、poiStyle も補わない", () => {
+  it("POI 自身に html があればテンプレートを当てず、poiStyle も補わない", () => {
     const self = appWith({
       pois: [{ id: "p1", namespaceID: "p1", name: "x", html: "<u>own</u>" }],
       poiTemplate: "<b>{{ name }}</b>",
@@ -82,7 +82,7 @@ describe("getMarker はテンプレートを当てた複製を返す", () => {
     expect(got.poiStyle).toBeUndefined();
   });
 
-  it("T5: updateMarker は実体を書き換え、続く getMarker は評価し直す", () => {
+  it("updateMarker は実体を書き換え、続く getMarker は評価し直す", () => {
     const self = appWith({
       pois: [{ id: "p1", namespaceID: "p1", name: "x" }],
       poiTemplate: "<b>{{ name }}</b>"
@@ -96,7 +96,7 @@ describe("getMarker はテンプレートを当てた複製を返す", () => {
     expect(self.redrawMarkers).toHaveBeenCalled();
   });
 
-  it("T6: 旧い記法は html を作らず、例外なし、警告は 1 回", () => {
+  it("旧い記法は html を作らず、例外なし、警告は 1 回", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const self = appWith({
       pois: [{ id: "p1", namespaceID: "p1", name: "x" }],
@@ -109,7 +109,7 @@ describe("getMarker はテンプレートを当てた複製を返す", () => {
     expect(warn).toHaveBeenCalledTimes(1);
   });
 
-  it("T8: selectMarker はテンプレートの POI でも例外なく選択を立てる", () => {
+  it("selectMarker はテンプレートの POI でも例外なく選択を立てる", () => {
     const self: any = {
       ...appWith({
         pois: [{ id: "p1", namespaceID: "p1", name: "x", lnglat: [139, 35] }],
@@ -125,7 +125,7 @@ describe("getMarker はテンプレートを当てた複製を返す", () => {
     expect(self.setViewpoint).toHaveBeenCalled();
   });
 
-  it("T9: 無い id・無い名前空間は undefined", () => {
+  it("無い id・無い名前空間は undefined", () => {
     const self = appWith({ pois: [{ id: "p1", namespaceID: "p1" }] });
     expect(getMarker(self, "nope")).toBeUndefined();
     expect(getMarker(self, "Z#q1")).toBeUndefined();

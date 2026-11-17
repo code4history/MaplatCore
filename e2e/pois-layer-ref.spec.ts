@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 // pois ラッパー（{layer, hide/title/icon/selectedIcon}）の実ブラウザ到達検証。
-// 既存 consumption.spec.ts の3テストには手を入れず、新規 spec として独立させる（Info-3）。
+// 既存 consumption.spec.ts の3テストには手を入れず、新規 spec として独立させる。
 
 const fixturePath = '/tests/consumption/pois-layer-ref.html';
 

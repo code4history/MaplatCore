@@ -67,7 +67,7 @@ test.describe('DPR 2 で GL の canvas を描画ごとに resize しない', () 
           },
         };
       }, glProp);
-      console.log(`T2_DIFF ${mapID} ${JSON.stringify(diff)}`);
+      console.log(`DPR_DIFF ${mapID} ${JSON.stringify(diff)}`);
       expect(diff.width).toBeLessThanOrEqual(1);
       expect(diff.height).toBeLessThanOrEqual(1);
 
@@ -87,7 +87,7 @@ test.describe('DPR 2 で GL の canvas を描画ごとに resize しない', () 
         }
         return (window as any).__DPR_RESIZE__ as number;
       }, glProp);
-      console.log(`T2_RESIZE ${mapID} ${count}`);
+      console.log(`DPR_RESIZE ${mapID} ${count}`);
       expect(count).toBe(0);
     });
   }

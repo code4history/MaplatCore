@@ -228,7 +228,7 @@ describe("getMarker は描画の datum と同じ形（clickMarker の detail）�
     iconTemplate: '{"icon": {{ u | dump | safe }}}'
   };
 
-  it("T7: アプリの層（ancestor = this）と地図の層（ancestor = source）の両方で deep-equal", async () => {
+  it("アプリの層（ancestor = this）と地図の層（ancestor = source）の両方で deep-equal", async () => {
     const h = makeApp({ main: { pois: [withId("app_0", "app_0")], ...tpl } });
     h.sources.A.pois = { main: { pois: [withId("0", "A#0")], ...tpl } };
     h.self.cacheHash = h.sources;
