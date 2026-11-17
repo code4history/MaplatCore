@@ -6,7 +6,24 @@ export interface AttributionSourceLike {
     isWmts?: () => boolean;
     /** OpenLayers の source の出典（frameState を受けて文字列・配列・その Promise を返す関数）。 */
     getAttributions?: () => unknown;
+    /** Google の地図（GoogleMap）だけが持つ、Map Tiles API の mapType（roadmap・satellite・terrain）。 */
+    googleMapType?: unknown;
 }
+/** Google Maps のロゴの種類。light: 灰色の字・白い枠（地図用）、dark: 白い字・濃い枠（衛星写真用）。 */
+export type GoogleLogoVariant = "light" | "dark";
+/** Google Maps のロゴの表示の形。logo: ロゴの画像、text: 文字 "Google Maps"（狭いとき）。 */
+export type GoogleAttributionMode = "logo" | "text";
+/** ロゴの幅（105px）と左右の余白（10px ずつ）。使える幅がこれより狭いときは文字にする。 */
+export declare const GOOGLE_LOGO_MIN_WIDTH = 125;
+/** ロゴの代わりに出す文字（利用条件が名指しする文字。言語によらない）。 */
+export declare const GOOGLE_MAPS_TEXT = "Google Maps";
+/**
+ * 表示中の source に Google の地図があれば、出すロゴの種類を返す（無ければ undefined）。
+ * 出典の並び（前面 → 重ね地図 → 背面）で最初の Google の地図の種類で選ぶ。衛星（satellite）は dark。
+ */
+export declare function googleLogoVariant(sources: AttributionSourceLike[]): GoogleLogoVariant | undefined;
+/** 使える幅（px）からロゴか文字かを決める。測れない（0 以下・数でない）ときはロゴ。 */
+export declare function googleAttributionMode(availableWidth: number): GoogleAttributionMode;
 /**
  * 言語ごとの値から 1 つ選ぶ。UI の pickLocalized と同じ規則: 一致する言語 → en → 最初の空でない値。
  * （地域を外した言語には寄せない。UI の地図情報と同じ文字を出すため）
@@ -56,6 +73,8 @@ export declare class AttributionDisplay {
     #private;
     readonly element: HTMLDivElement;
     constructor(container: HTMLElement, getLang: () => string);
+    /** 今出している Google Maps の表示（ロゴか文字）。Google の地図が無ければ undefined（試験と診断用）。 */
+    get googleAttribution(): GoogleAttributionMode | undefined;
     /** 今の言語で出典の文字列を返す（試験と診断用）。 */
     get texts(): string[];
     /** 表示する source を差し替えて描き直す。 */
