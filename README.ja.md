@@ -231,6 +231,15 @@ OpenLayers の source の出典が変わったとき（Google の表示範囲が
 値は `sanitizeHtml` を通すので、`attr` にリンクを書けます。表示はリンクを除いて操作を受けず
 （下の地図へ通します）、長い出典は「…」で切らずに折り返します。
 
+OpenLayers の source から読んだ出典（Google の copyright、TileJSON の `attribution` など）は、
+第三者のサーバーが決める値なので、`attr` より狭い許可表（`sanitizeHtml(text, { profile: "iiif" })`）で
+洗います。残すタグは `a`・`b`・`br`・`i`・`p`・`small`・`span`・`sub`・`sup` だけ、属性は `http(s)` の
+`href` だけで、リンクには `target="_blank"` と `rel="noopener noreferrer"` を付けます。画像・`class`・
+`style`・`javascript:` のリンクは落とすので、外の値で地図を画像で覆ったり、地図全体をリンクにしたり、
+第三者の画像を読み込ませたりはできません。文字だけの値（Google の copyright「Map data ©2026 Google」
+など）や、OpenLayers の source（OSM・XYZ・TileJSON など）の既定の出典（文字とリンク）は、今までどおり
+出ます。地図の設定の `attr`（アプリの作者が書く値）は、今までどおり広い許可表で洗います（画像なども書けます）。
+
 位置は地図の要素の CSS の変数（`--maplat-attribution-right`・`--maplat-attribution-bottom`・
 `--maplat-attribution-max-width`）で変えられます。`<maplat-ui>` の中では、UI の部品に
 重ならないよう、右下のボタンの列の左隣を既定にしています。そこで使う数値も変数

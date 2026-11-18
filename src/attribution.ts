@@ -185,6 +185,21 @@ export function normalizeOlAttributions(value: unknown): string[] {
 }
 
 /**
+ * OpenLayers の source から読んだ出典（第三者のサーバーが決める値。Google の copyright・TileJSON の
+ * attribution など）を、狭い許可表（sanitizeHtml の profile "iiif"）で洗う。空になったものは除く。
+ *   - 残るタグは a・b・br・i・p・small・span・sub・sup だけ、属性は http(s) の href だけ。
+ *     img・class・style・javascript: などは落ちる。リンクには target="_blank" と rel="noopener noreferrer" が付く。
+ *   - 理由: 広い許可表（地図の設定の attr 用）のままだと、外の値の
+ *     `<a href="https://…"><img src="https://…" width="4000" height="4000"></a>` で、出典の箱が地図を覆い、
+ *     地図全体が外へのリンクになり、外の画像を読みに行って見ている人の情報が第三者に渡る。
+ * 地図の設定の attr（アプリの作者が書く値）には使わない（従来どおり広い許可表で、img なども通る）。
+ * 文字だけの値（Google の copyright など）は変わらない（& と < > は HTML の形になる）。
+ */
+export function sanitizeSourceAttributions(texts: readonly string[]): string[] {
+  return texts.map(text => sanitizeHtml(text, { profile: "iiif" }).trim()).filter(text => text !== "");
+}
+
+/**
  * 1 つの source の出典の文字列（空を除いたもの。重複は呼び出し側で除く）。
  *   - Google の地図: OpenLayers の source の copyright（dynamic）を必ず出し、地図の設定の `attr` があれば後に添える。
  *   - それ以外: 地図の設定の `attr`。無ければ dynamic（OpenLayers の source から読んだ出典）。
@@ -334,7 +349,8 @@ export class AttributionDisplay {
   #container: HTMLElement;
   #getLang: () => string;
   #sources: AttributionSourceLike[] = [];
-  // 地図の設定の attr が無い source の、OpenLayers の source から読んだ出典
+  // 地図の設定の attr が無い source（と Google の地図）の、OpenLayers の source から読んだ出典。
+  // 外の値なので、入れる前に狭い許可表で洗ってある（sanitizeSourceAttributions）
   #dynamic = new Map<AttributionSourceLike, readonly string[]>();
   #observer: MutationObserver | null = null;
   #resizeObserver: ResizeObserver | null = null;
@@ -403,9 +419,11 @@ export class AttributionDisplay {
     }
   }
 
-  #setDynamic(source: AttributionSourceLike, texts: string[]): void {
+  #setDynamic(source: AttributionSourceLike, raw: string[]): void {
     if (this.#disposed || !this.#sources.includes(source)) return;
+    const texts = sanitizeSourceAttributions(raw);
     // Google の source は取りに行く途中・動かしている途中は前の値（初回は undefined）を返す。空では消さない
+    // （洗って何も残らなかった値でも消さない）
     if (texts.length === 0) return;
     const previous = this.#dynamic.get(source);
     if (previous && previous.length === texts.length && previous.every((t, i) => t === texts[i])) return;
@@ -485,7 +503,9 @@ export class AttributionDisplay {
         item.textContent = GOOGLE_MAPS_TEXT;
       } else {
         item.className = "maplat-attribution-item";
-        // 設定由来の値なので、許可リストで洗ってから入れる（UI の地図情報と同じ関数）
+        // 地図の設定の attr は、許可リストで洗ってから入れる（UI の地図情報と同じ関数・同じ許可表）。
+        // source から読んだ出典は #setDynamic で狭い許可表で洗ってある。その結果は広い許可表の部分集合なので、
+        // ここでもう一度洗っても変わらない
         item.innerHTML = sanitizeHtml(text);
       }
       wrapper.appendChild(item);

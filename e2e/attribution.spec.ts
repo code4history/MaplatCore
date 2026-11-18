@@ -44,9 +44,12 @@ const GOOGLE_COPYRIGHT = 'Map data ©2026 Google';
 /**
  * 外への要求を止める（止めた URL を返す）。OSM・地理院・重ね地図（TMS）・Google のタイルは作った画像で返す。
  * 重ね地図のタイルの画像はリポジトリに無い（public/tiles/morioka_ndl_affine は目録だけ）ので、半透明の画像を作る。
- * Google は Map Tiles API の session・表示範囲の copyright（viewport）も偽の応答で返す。
+ * Google は Map Tiles API の session・表示範囲の copyright（viewport）も偽の応答で返す（copyright で値を変えられる）。
  */
-async function routeExternal(page: Page): Promise<{ blocked: string[]; overlayTiles: string[]; viewport: string[] }> {
+async function routeExternal(
+  page: Page,
+  { copyright = GOOGLE_COPYRIGHT }: { copyright?: string } = {}
+): Promise<{ blocked: string[]; overlayTiles: string[]; viewport: string[] }> {
   const blocked: string[] = [];
   const overlayTiles: string[] = [];
   const viewport: string[] = [];
@@ -77,7 +80,7 @@ async function routeExternal(page: Page): Promise<{ blocked: string[]; overlayTi
     }
     if (url.pathname === '/tile/v1/viewport') {
       viewport.push(url.search);
-      return route.fulfill({ status: 200, headers: CORS, contentType: 'application/json', body: JSON.stringify({ copyright: GOOGLE_COPYRIGHT }) });
+      return route.fulfill({ status: 200, headers: CORS, contentType: 'application/json', body: JSON.stringify({ copyright }) });
     }
     return route.fulfill(fakeTile(route.request().url(), 'GOOGLE', '#dfe6f3'));
   });
@@ -588,5 +591,59 @@ test.describe('背景地図の出典の表示', () => {
     expect(narrow.others!.bottom).toBeLessThanOrEqual(Math.min(narrow.logo!.top, narrow.text!.top) + 0.5);
     await page.waitForTimeout(800);
     await page.locator('#map_div').screenshot({ path: `${SHOTS}/core-google-overlay-390.png` });
+  });
+  test('Google の copyright は文字のまま出る（source から読んだ値を狭い許可表で洗っても変わらない）', async ({ page }) => {
+    const satellite = 'Imagery ©2026 Airbus, CNES / Airbus, Maxar Technologies Map data ©2026';
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await routeExternal(page, { copyright: satellite });
+    await page.goto('/e2e/fixtures/attribution/legacy.html?appid=sample&googleApiKey=example-key');
+    await expect(page.locator('body')).toHaveAttribute('data-ready', 'true', { timeout: 30000 });
+    for (const [mapId, variant] of [['google', 'light'], ['google_sat', 'dark']] as const) {
+      await page.evaluate(id => (window as any).__MAPLAT_APP__.changeMap(id), mapId);
+      await expect.poll(async () => (await googleLogo(page, '#map_div')).variant, { timeout: 15000 }).toBe(variant);
+      await expect.poll(async () => (await googleLogo(page, '#map_div')).googleItems, { timeout: 15000 }).toEqual([satellite]);
+      expectLogoPlacement(await googleLogo(page, '#map_div'));
+      // 中の HTML も文字だけ（タグ・実体参照に置き換わっていない）
+      const html = await page.evaluate(() =>
+        [...document.querySelectorAll('#map_div .maplat-attribution-google .maplat-attribution-item')].map(e => e.innerHTML)
+      );
+      expect(html).toEqual([satellite]);
+    }
+  });
+
+  test('Google の copyright に外の画像やリンクが入っても、画像は出さず、地図を覆わない', async ({ page }) => {
+    const hostile =
+      'Map data ©2026 Google<a href="https://example.org/"><img src="https://example.org/x.png" width="4000" height="4000"></a>' +
+      '<span class="huge" style="font-size:400px">Example</span><a href="javascript:alert(1)">bad</a>';
+    await page.setViewportSize({ width: 1280, height: 800 });
+    const { blocked } = await routeExternal(page, { copyright: hostile });
+    await page.goto('/e2e/fixtures/attribution/legacy.html?appid=sample&googleApiKey=example-key');
+    await expect(page.locator('body')).toHaveAttribute('data-ready', 'true', { timeout: 30000 });
+    await page.evaluate(() => (window as any).__MAPLAT_APP__.changeMap('google'));
+    await expect
+      .poll(async () => (await googleLogo(page, '#map_div')).googleItems, { timeout: 15000 })
+      .toEqual(['Map data ©2026 GoogleExamplebad']);
+    const g = await googleLogo(page, '#map_div');
+    expectLogoPlacement(g);
+    // 出典の箱は小さいまま（地図を覆わない）
+    expect(g.box!.height).toBeLessThan(80);
+    expect(g.box!.width).toBeLessThan(600);
+    await expectFullyVisible(page, '#map_div');
+    const markup = await page.evaluate(() => {
+      const box = document.querySelector('#map_div .maplat-attribution-google .maplat-attribution-text') as HTMLElement;
+      return {
+        imgs: box.querySelectorAll('img').length,
+        styled: box.querySelectorAll('[style], [class="huge"]').length,
+        links: [...box.querySelectorAll('a')].map(a => ({ href: a.getAttribute('href'), rel: a.getAttribute('rel') }))
+      };
+    });
+    expect(markup.imgs).toBe(0);
+    expect(markup.styled).toBe(0);
+    expect(markup.links).toEqual([
+      { href: 'https://example.org/', rel: 'noopener noreferrer' },
+      { href: null, rel: null }
+    ]);
+    // 外の画像を読みに行かない
+    expect(blocked.filter(url => url.startsWith('https://example.org/'))).toEqual([]);
   });
 });

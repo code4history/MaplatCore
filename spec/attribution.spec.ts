@@ -1,5 +1,9 @@
 // 表示中の現代の地図の出典の表示（src/attribution.ts）の単体試験。
 import { afterEach, describe, expect, it } from "vitest";
+import OSM from "ol/source/OSM";
+import StadiaMaps from "ol/source/StadiaMaps";
+import TileJSON from "ol/source/TileJSON";
+import XYZ from "ol/source/XYZ";
 import {
   AttributionDisplay,
   attributionGroups,
@@ -13,7 +17,8 @@ import {
   googleLogoVariant,
   normalizeOlAttributions,
   pickAttributionText,
-  resolveAttributionLang
+  resolveAttributionLang,
+  sanitizeSourceAttributions
 } from "../src/attribution";
 
 const OSM_ATTR = "©︎ OpenStreetMap contributors";
@@ -539,6 +544,173 @@ describe("Google Maps のロゴ", () => {
     } finally {
       globalThis.ResizeObserver = original;
     }
+  });
+});
+describe("source から読んだ出典は狭い許可表で洗う", () => {
+  function setup() {
+    document.body.innerHTML = `<div id="map" lang="ja"></div>`;
+    const map = document.getElementById("map")!;
+    const display = new AttributionDisplay(map, () => resolveAttributionLang(map));
+    return { map, display };
+  }
+  const flush = () => new Promise(resolve => setTimeout(resolve, 0));
+  /** attr の無い現代の地図（OpenLayers の出典を返す）。 */
+  function olSource(value: unknown, googleMapType?: string) {
+    return {
+      get: () => undefined,
+      isWmts: () => true,
+      getAttributions: () => () => value,
+      ...(googleMapType ? { googleMapType } : {})
+    };
+  }
+  async function show(value: unknown, googleMapType?: string) {
+    const { display } = setup();
+    const src = olSource(value, googleMapType);
+    display.update([src]);
+    display.refreshDynamic([src], {});
+    await flush();
+    return display;
+  }
+  const items = (display: AttributionDisplay) => [...display.element.querySelectorAll(".maplat-attribution-item")];
+
+  // Map Tiles API の viewport の copyright の例（文字だけ）
+  const GOOGLE_COPYRIGHTS = [
+    "Map data ©2026 Google",
+    "Imagery ©2026 Airbus, CNES / Airbus, Maxar Technologies Map data ©2026",
+    "Map data ©2026 Google, ZENRIN",
+    "Imagery ©2026 TerraMetrics, Map data ©2026 Google, INEGI",
+    "©︎ OpenStreetMap contributors"
+  ];
+
+  it("Google の copyright（文字だけ）は、洗っても文字が変わらない", async () => {
+    expect(sanitizeSourceAttributions(GOOGLE_COPYRIGHTS)).toEqual(GOOGLE_COPYRIGHTS);
+    for (const copyright of GOOGLE_COPYRIGHTS) {
+      for (const mapType of ["roadmap", "satellite"]) {
+        const display = await show(copyright, mapType);
+        expect(display.texts).toEqual([copyright]);
+        expect(items(display).map(e => e.innerHTML)).toEqual([copyright]);
+        expect(items(display).map(e => e.textContent)).toEqual([copyright]);
+        // ロゴも今までどおり
+        expect(display.googleAttribution).toBe("logo");
+      }
+    }
+  });
+
+  it("外の値の img・class・style・javascript: は落ち、リンクには rel が付く", async () => {
+    const hostile =
+      '<a href="https://example.org/"><img src="https://example.org/x.png" width="4000" height="4000"></a>' +
+      '<span class="huge" style="font-size:400px">Example</span>' +
+      '<a href="javascript:alert(1)">bad</a>' +
+      '<img src=x onerror="alert(2)"><script>alert(3)</script>';
+    const display = await show(hostile);
+    const html = display.element.innerHTML;
+    expect(display.element.querySelector("img")).toBeNull();
+    expect(html).not.toContain("class=\"huge\"");
+    expect(html).not.toContain("style=");
+    expect(html).not.toContain("javascript:");
+    expect(html).not.toContain("onerror");
+    expect(html).not.toContain("<script");
+    const links = [...display.element.querySelectorAll(".maplat-attribution-item a")];
+    expect(links.map(a => a.getAttribute("href"))).toEqual(["https://example.org/", null]);
+    for (const link of links) {
+      if (!link.hasAttribute("href")) continue;
+      expect(link.getAttribute("rel")).toBe("noopener noreferrer");
+      expect(link.getAttribute("target")).toBe("_blank");
+    }
+    // 文字は残る
+    expect(display.element.textContent).toBe("Examplebad");
+  });
+
+  it("Google の copyright に img が入っていても落とし、ロゴは今までどおり出す", async () => {
+    const display = await show(
+      'Map data ©2026 Google<a href="https://example.org/"><img src="https://example.org/x.png" width="4000" height="4000"></a>',
+      "roadmap"
+    );
+    expect(display.googleAttribution).toBe("logo");
+    const google = display.element.querySelector(".maplat-attribution-google .maplat-attribution-text")!;
+    expect(google.querySelector("img")).toBeNull();
+    expect(google.textContent).toBe("Map data ©2026 Google");
+    // ロゴ（埋め込みの SVG）は洗う対象ではない
+    expect(display.element.querySelector(".maplat-attribution-google-logo svg")).not.toBeNull();
+  });
+
+  it("洗って何も残らない値では、前の値を消さない", async () => {
+    const { display } = setup();
+    let value: unknown = "Map data ©2026 Google";
+    const src = { ...olSource(undefined, "roadmap"), getAttributions: () => () => value };
+    display.update([src]);
+    display.refreshDynamic([src], {});
+    await flush();
+    value = '<img src="https://example.org/x.png">';
+    display.refreshDynamic([src], {});
+    await flush();
+    expect(display.texts).toEqual(["Map data ©2026 Google"]);
+  });
+
+  it("地図の設定の attr は今までどおり広い許可表（img・class・width も通る）", () => {
+    const { display } = setup();
+    display.update([
+      source(
+        '<a href="https://example.org/" target="_blank"><img src="https://example.org/logo.png" class="logo" width="20" height="20" alt="Example"></a> Example'
+      )
+    ]);
+    const img = display.element.querySelector(".maplat-attribution-item img")!;
+    expect(img).not.toBeNull();
+    expect(img.getAttribute("src")).toBe("https://example.org/logo.png");
+    expect(img.getAttribute("class")).toBe("logo");
+    expect(img.getAttribute("width")).toBe("20");
+    expect(display.element.querySelector(".maplat-attribution-item a")!.getAttribute("rel")).toBe("noopener noreferrer");
+  });
+
+  it("OpenLayers の source の既定の出典（リンクを含む）が正しく出る", async () => {
+    const frameState = { extent: [-20037508, -20037508, 20037508, 20037508], viewState: { projection: undefined } };
+    const sources = [
+      new OSM(),
+      new StadiaMaps({ layer: "stamen_toner" }),
+      new XYZ({ url: "https://example.org/{z}/{x}/{y}.png", attributions: '&copy; <a href="https://example.org/" target="_blank">Example</a>' }),
+      new TileJSON({
+        tileJSON: {
+          tiles: ["https://example.org/{z}/{x}/{y}.png"],
+          attribution: '<a href="https://example.org/tilejson">Example TileJSON</a> contributors'
+        }
+      })
+    ];
+    const { display } = setup();
+    display.update(sources as never);
+    display.refreshDynamic(sources as never, frameState);
+    await flush();
+    expect(display.element.textContent).toBe(
+      [
+        "© OpenStreetMap contributors.",
+        "© Stadia Maps",
+        "© Stamen Design",
+        "© OpenMapTiles",
+        // StadiaMaps の OSM の出典は OSM の source と同じ文字列なので 1 回だけ
+        "© Example",
+        "Example TileJSON contributors"
+      ].join(" | ")
+    );
+    const links = [...display.element.querySelectorAll(".maplat-attribution-item a")];
+    expect(links.map(a => a.getAttribute("href"))).toEqual([
+      "https://www.openstreetmap.org/copyright",
+      "https://www.stadiamaps.com/",
+      "https://stamen.com/",
+      "https://openmaptiles.org/",
+      "https://example.org/",
+      "https://example.org/tilejson"
+    ]);
+    for (const link of links) {
+      expect(link.getAttribute("rel")).toBe("noopener noreferrer");
+      expect(link.getAttribute("target")).toBe("_blank");
+    }
+  });
+
+  it("Bing Maps の利用規約のリンクは、class だけ落ちてリンクは残る", () => {
+    const tos =
+      '<a class="ol-attribution-bing-tos" href="https://www.microsoft.com/maps/product/terms.html" target="_blank">Terms of Use</a>';
+    expect(sanitizeSourceAttributions([tos])).toEqual([
+      '<a href="https://www.microsoft.com/maps/product/terms.html" target="_blank" rel="noopener noreferrer">Terms of Use</a>'
+    ]);
   });
 });
 

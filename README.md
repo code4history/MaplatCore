@@ -257,6 +257,19 @@ information of the UI. The value goes through `sanitizeHtml`, so an `attr` may
 contain a link. The box does not take pointer events except for links in it,
 and long credits wrap instead of being cut off.
 
+An attribution read from an OpenLayers source (such as the Google copyright or
+the `attribution` of a TileJSON) is decided by a third-party server, so it goes
+through a narrower allowlist than `attr`: `sanitizeHtml(text, { profile: "iiif" })`.
+Only `a`, `b`, `br`, `i`, `p`, `small`, `span`, `sub` and `sup` are kept, the
+only attribute kept is an `http(s)` `href`, and every link gets
+`target="_blank"` and `rel="noopener noreferrer"`. Images, `class`, `style` and
+`javascript:` links are dropped, so such a value cannot cover the map with an
+image, turn the map into a link, or load an image from a third party. Plain
+text, such as the Google copyright ("Map data ©2026 Google"), and the default
+credits of the OpenLayers sources (OSM, XYZ, TileJSON …), which are text and
+links, are shown as before. The `attr` written in the map settings keeps the
+wider allowlist (it may contain an image, for example).
+
 The position can be changed with CSS custom properties on the map element:
 `--maplat-attribution-right`, `--maplat-attribution-bottom` and
 `--maplat-attribution-max-width`. Inside `<maplat-ui>`, the default places the
