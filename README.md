@@ -211,10 +211,13 @@ and the tile overlay's credit in a box above it. The text is not joined with
 
 The viewer shows only two kinds of credit: the map's `attr` from the map
 definition, and the credit declared by the provider. A provider's declaration
-is read only from source types whose credit comes from the provider's server
-response: the copyright that a Google map receives from the Map Tiles API, and
-the `attribution` of a TileJSON (an OpenLayers `TileJSON` source; only the value
-in the TileJSON is shown). The viewer does not fill in a credit from library
+is read only from two source types: the copyright that a Google map receives
+from the Map Tiles API, and the `attribution` written in the TileJSON of an
+OpenLayers `TileJSON` source (only that value is shown). Of the sources that
+Core creates today, only Google maps carry a provider's declaration; the
+TileJSON rule applies when an app passes a `TileJSON` source. A TileJSON may be
+fetched from the provider's server or given directly by the app (the `tileJSON`
+option), in which case the value is what the app wrote. The viewer does not fill in a credit from library
 defaults: the built-in credit of OpenLayers sources such as `OSM`, `StadiaMaps`
 or `BingMaps`, and the `attributions` given when a source is created, are not
 shown. A map with neither an `attr` nor a provider's declaration shows no
@@ -291,7 +294,7 @@ Google's copyright is never cut: it is shown in full and wraps to as many lines
 as it needs, because the policies ask for it "in full as provided".
 
 A provider's declaration (the Google copyright or the `attribution` of a
-TileJSON) is decided by a third-party server, so it goes
+TileJSON) can come from a third-party server, so it goes
 through a narrower allowlist than `attr`: `sanitizeHtml(text, { profile: "iiif" })`.
 Only `a`, `b`, `br`, `i`, `p`, `small`, `span`, `sub` and `sup` are kept, the
 only attribute kept is an `http(s)` `href`, and every link gets

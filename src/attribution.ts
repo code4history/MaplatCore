@@ -185,7 +185,9 @@ export function displayedAttributionSources(parts: {
 export type ProviderAttributionKind = "google" | "tilejson";
 
 /**
- * source の出典が提供元の申告（提供元のサーバーの応答から来る値）かを、source の型で決める。
+ * source の出典が提供元の申告（Google の応答・TileJSON に書かれた値）かを、source の型で決める。
+ * Core が今作る source で提供元の申告を持つのは Google の地図だけ。TileJSON は、アプリが TileJSON の source を
+ * 渡したときの扱い。
  * 申告でない source（OpenLayers の既定値・作るときの値の source）は undefined。
  *   - Google の地図（Core の GoogleMap。googleMapType を持つ）: OpenLayers の Google は、作るときの
  *     attributions を受けず、出典を Map Tiles API の viewport の応答の copyright だけで作る
@@ -195,8 +197,8 @@ export type ProviderAttributionKind = "google" | "tilejson";
  *     attributions を渡すとそちらが使われるので、読むときに TileJSON の `attribution` と同じ値だけを残す
  *     （tileJsonDeclaredAttribution）。出すのはいつも提供元の TileJSON に書かれた値になる。
  *     型は instanceof で見ない: ol/source/TileJSON を読み込むと本体の束が約 77 KB 増える（Core 自身は
- *     TileJSON の source を作らない）。getTileJSON を持つ OpenLayers の source は TileJSON と UTFGrid だけで、
- *     UTFGrid も値は TileJSON の attribution。
+ *     TileJSON の source を作らない）。OpenLayers 10.11.0 で getTileJSON を持つ source は TileJSON だけ。
+ *     TileJSON を直接（tileJSON の項目で）渡して作った source では、値はアプリが書いた TileJSON のもの。
  * 入れないもの: OSM・StadiaMaps・CartoDB・XYZ・WMTS など（作るときの値か、ライブラリの既定の文言）。
  * BingMaps は応答の出典に、ライブラリの既定の利用規約のリンクを必ず足すので、見分けられず入れない。
  */
@@ -255,8 +257,8 @@ function displayText(html: string): string {
 }
 
 /**
- * OpenLayers の source から読んだ出典（第三者のサーバーが決める値。Google の copyright・TileJSON の
- * attribution など）を、狭い許可表（sanitizeHtml の profile "iiif"）で洗う。空になったものは除く。
+ * 提供元の申告として読んだ出典（Google の copyright・TileJSON の attribution。第三者のサーバーから
+ * 来うる値）を、狭い許可表（sanitizeHtml の profile "iiif"）で洗う。空になったものは除く。
  *   - 残るタグは a・b・br・i・p・small・span・sub・sup だけ、属性は http(s) の href だけ。
  *     img・class・style・javascript: などは落ちる。リンクには target="_blank" と rel="noopener noreferrer" が付く。
  *   - 理由: 広い許可表（地図の設定の attr 用）のままだと、外の値の
@@ -409,6 +411,7 @@ const STYLE_ID = "maplat-attribution-style";
 // 中の画像（設定の attr には画像を書ける）も箱の幅と 1 行の高さまでに縮める（縦横比は保つ）。
 // 段落・表・箇条書き・pre などのブロックは、箱の中では行の中の文字として並べる（display: inline・空白は詰める）。
 // ブロックや行より高い画像があると、-webkit-line-clamp が「…」を付ける行を作れず、切られるだけになるため。
+// 行の中に並べたブロックの後ろには空白を入れる（段落や表の升の文字が「AB」と続かないように）。
 // ロゴの大きさは公式の SVG の原寸（105×22。字の高さ 18px。利用条件は高さ 16〜19dp）、
 // 余白は利用条件の最小（上・左右 10px、下 5px）。縮めない・縦横比を変えない。
 const STYLE_TEXT = `
@@ -487,6 +490,7 @@ const STYLE_TEXT = `
   white-space: normal;
   font: inherit;
 }
+.maplat-attribution-clamp :is(p, div, pre, li, tr, td, th)::after { content: " "; }
 .maplat-attribution-item p { margin: 0; }
 .maplat-attribution a { pointer-events: auto; color: #0645ad; }
 :where(maplat-ui > maplat-app) {

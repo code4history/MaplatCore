@@ -834,6 +834,18 @@ describe("出典の箱の行数の上限（Google の copyright は切らない�
     expect(css).not.toMatch(/\.maplat-attribution-text \{[^}]*line-clamp/);
   });
 
+  it("行の中に並べた段落・表の升・箇条書きの後ろには空白を入れる（「AB」と続かない）", () => {
+    const { display } = setup();
+    display.update([source("<p>A</p><p>B</p><table><tr><td>C</td><td>D</td></tr></table><ul><li>E</li><li>F</li></ul>")]);
+    // 中身の要素は残す（区切りは CSS の ::after で入れる。jsdom は ::after を描かないので規則を見る）
+    const box = display.element.querySelector(".maplat-attribution-clamp")!;
+    expect([...box.querySelectorAll("p, td, li")].map(e => e.textContent)).toEqual(["A", "B", "C", "D", "E", "F"]);
+    const css = document.getElementById("maplat-attribution-style")!.textContent!;
+    const start = css.indexOf(".maplat-attribution-clamp :is(p, div, pre, li, tr, td, th)::after {");
+    expect(start).toBeGreaterThanOrEqual(0);
+    expect(css.slice(start, css.indexOf("}", start))).toContain('content: " ";');
+  });
+
   it("source から読んだ長い値・設定の長い attr は、背景地図の箱・重ね地図の箱のどちらでも上限付きの箱に入る", async () => {
     const { display } = setup();
     const fetched = olSource(HOSTILE);
