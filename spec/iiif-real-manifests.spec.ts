@@ -115,7 +115,8 @@ for (const { id, synthetic, expected: e } of cases) {
         );
         if (!copied.ok) throw new Error(copied.reason);
         expect(copied.values.title).toEqual(e.titleValue);
-        expect(copied.values.title).not.toEqual(e.canvasLabel);
+        if (e.canvasLabel !== undefined)
+          expect(copied.values.title).not.toEqual(e.canvasLabel);
         expect(copied.copiedValues.title).toEqual({ [e.lang]: e.title });
       }
     });
