@@ -358,22 +358,30 @@ test.describe('背景地図の出典の表示', () => {
     expect(oneLine.truncated).toBe(false);
     await page.waitForTimeout(800);
     await page.locator('maplat-app').screenshot({ path: `${SHOTS}/core-overlay-390.png` });
-    // 地図の箱が狭いと、2 行までは折り返す
-    await page.evaluate(() => {
-      (document.querySelector('maplat-app') as HTMLElement).style.width = '200px';
+    // 文字の幅は環境の字体で変わるので、測った 1 行の幅から地図の箱の幅を決める（左右の余白 5px ずつ＋ゆとり）
+    const textWidth = await page.evaluate(() => {
+      const el = document.querySelector('maplat-app .maplat-attribution-overlay') as HTMLElement;
+      const ctx = document.createElement('canvas').getContext('2d')!;
+      ctx.font = getComputedStyle(el).font;
+      return ctx.measureText(el.textContent || '').width;
     });
+    const setWidth = (px: number) =>
+      page.evaluate(w => {
+        (document.querySelector('maplat-app') as HTMLElement).style.width = `${w}px`;
+      }, Math.ceil(px));
+    // 地図の箱が狭いと、2 行までは折り返す（1 行の 6 割の幅: 2 行に入る）
+    await setWidth(textWidth * 0.6 + 12);
     await expect.poll(async () => (await overlayBox()).height).toBeGreaterThan(oneLine.height * 1.5);
     const wrapped = await overlayBox();
+    expect(wrapped.truncated).toBe(false);
     expect(wrapped.height).toBeLessThanOrEqual(2 * wrapped.line + 2 + 0.5);
-    // もっと狭く 2 行に入らなければ、2 行で「…」にする（箱の高さは 2 行のまま）
-    await page.evaluate(() => {
-      (document.querySelector('maplat-app') as HTMLElement).style.width = '120px';
-    });
+    // もっと狭く 2 行に入らなければ（1 行の 3 割の幅: 4 行ほど要る）、2 行で「…」にする（箱の高さは 2 行のまま）
+    await setWidth(textWidth * 0.3 + 12);
     await expect.poll(async () => (await overlayBox()).truncated).toBe(true);
     const clamped = await overlayBox();
     expect(clamped.height).toBeLessThanOrEqual(2 * clamped.line + 2 + 0.5);
     await page.waitForTimeout(400);
-    await page.locator('maplat-app').screenshot({ path: `${SHOTS}/core-overlay-clamped-120.png` });
+    await page.locator('maplat-app').screenshot({ path: `${SHOTS}/core-overlay-clamped.png` });
   });
 
   test('要素を外したら出典の表示は残らず、lang の変更にも反応しない', async ({ page }) => {
