@@ -19,8 +19,10 @@ export interface ProviderAttribution {
     attributions: string[];
 }
 /**
- * 提供元の申告の表が変わったとき（地図の切り替え・申告の到着）に、出典の箱から出す DOM の事象。
- * bubbles・composed なので <maplat-app>（旧 API は地図の div）で受けられる。detail は無い。
+ * providerAttributions の値が変わったとき（地図の切り替えで載る地図や値が変わった・申告が届いた・変わった）に出す
+ * DOM の事象。値が変わらなければ出さない（申告の無い地図どうしの切り替えでは出ない）。
+ * 出すのは地図の入れ物（`<maplat-app>` の要素そのもの。旧 API は地図の div）から。detail は無い。
+ * ほかの要素の事象と同じく bubbles: true・composed: false・cancelable: false。
  */
 export declare const ATTRIBUTION_CHANGED_EVENT = "attributionChanged";
 /** Google Maps のロゴの種類。light: 灰色の字・白い枠（地図用）、dark: 白い字・濃い枠（衛星写真用）。 */

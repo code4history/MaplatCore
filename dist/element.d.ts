@@ -36,7 +36,7 @@ export declare class MaplatAppElement extends MaplatAppElementBase implements Ma
      * 値は狭い許可表（sanitizeHtml の profile "iiif"）で洗った HTML。申告の無い地図は載せない。
      * 地図の定義の attr と、ライブラリの既定値（OSM・XYZ などの source の文言）は載せない（attr は getMapMeta で取る）。
      * 地図の準備前は []。
-     * 表が変わると、要素に DOM の事象 `attributionChanged`（detail なし・bubbles）が届く。
+     * 値が変わると、要素から DOM の事象 `attributionChanged`（detail なし・bubbles: true・composed: false）が出る。
      * 層 A の契約の外の Core だけの読み取り（他の実装には無いことがある）。
      */
     get providerAttributions(): ProviderAttribution[];

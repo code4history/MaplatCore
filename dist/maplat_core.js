@@ -14192,35 +14192,35 @@ function Sn(n, t) {
 }
 class JC {
   #e;
-  #s;
+  #r;
   #t;
-  #o;
+  #s;
   #i;
   // 大きさの変化を見張れないとき（viewport か ResizeObserver が無い）は取っておかず毎回測る
-  #r = !1;
+  #a = !1;
   #n = () => {
     this.#t = void 0;
   };
   constructor(t, e) {
-    this.#e = t, this.#s = e;
+    this.#e = t, this.#r = e;
     const i = t.getViewport(), r = e.getViewport();
-    !i || !r || typeof ResizeObserver > "u" || (this.#o = new ResizeObserver(this.#n), this.#o.observe(i), this.#o.observe(r), t.on?.("change:size", this.#n), e.on?.("change:size", this.#n), i.addEventListener("pointerenter", this.#n), this.#i = i, this.#r = !0);
+    !i || !r || typeof ResizeObserver > "u" || (this.#s = new ResizeObserver(this.#n), this.#s.observe(i), this.#s.observe(r), t.on?.("change:size", this.#n), e.on?.("change:size", this.#n), i.addEventListener("pointerenter", this.#n), this.#i = i, this.#a = !0);
   }
   /** 取っておいた値。捨てられていれば測り直す。 */
   get() {
-    return this.#r ? (this.#t || (this.#t = Sn(this.#e, this.#s)), this.#t) : Sn(this.#e, this.#s);
+    return this.#a ? (this.#t || (this.#t = Sn(this.#e, this.#r)), this.#t) : Sn(this.#e, this.#r);
   }
   /** いま測り直して、その値を取っておく。 */
   refresh() {
-    const t = Sn(this.#e, this.#s);
-    return this.#r && (this.#t = t), t;
+    const t = Sn(this.#e, this.#r);
+    return this.#a && (this.#t = t), t;
   }
   /** 取っておいた値を捨てる（次の get で測り直す）。 */
   invalidate() {
     this.#n();
   }
   dispose() {
-    this.#r = !1, this.#o?.disconnect(), this.#o = void 0, this.#e.un?.("change:size", this.#n), this.#s.un?.("change:size", this.#n), this.#i?.removeEventListener("pointerenter", this.#n), this.#i = void 0, this.#t = void 0;
+    this.#a = !1, this.#s?.disconnect(), this.#s = void 0, this.#e.un?.("change:size", this.#n), this.#r.un?.("change:size", this.#n), this.#i?.removeEventListener("pointerenter", this.#n), this.#i = void 0, this.#t = void 0;
   }
 }
 const hg = "marker", qC = (n) => n.lnglat || [n.lng || n.longitude, n.lat || n.latitude];
@@ -16332,23 +16332,25 @@ function Pf(n) {
 class Of {
   element;
   #e;
-  #s;
+  #r;
   #t = [];
   // #sources のうち重ね地図のもの（別の箱に出す）
-  #o = [];
+  #s = [];
   // 地図の設定の attr が無い source（と Google の地図）の、提供元の申告として読んだ出典（元の値）。
   // 読むのは providerAttributionKind が決まる source だけ（ライブラリの既定値は読まない）。
   // 外の値なので、描くときに狭い許可表で洗う（sanitizeSourceAttributions）
   #i = /* @__PURE__ */ new Map();
-  #r = null;
+  // 最後に知らせた providerAttributions（比べる形）。変わったときだけ ATTRIBUTION_CHANGED_EVENT を出す
+  #a = "[]";
   #n = null;
-  #a = !1;
+  #A = null;
+  #o = !1;
   constructor(t, e) {
-    this.#e = t, this.#s = e;
+    this.#e = t, this.#r = e;
     const i = t.ownerDocument;
     Pf(i);
     const r = i.createElement("div");
-    r.className = "maplat-attribution", r.hidden = !0, this.element = r, t.appendChild(r), this.#h(), this.#C(), this.#I();
+    r.className = "maplat-attribution", r.hidden = !0, this.element = r, t.appendChild(r), this.#f(), this.#h(), this.#C();
   }
   /** 今出している Google Maps の表示（ロゴか文字）。Google の地図が無ければ undefined（試験と診断用）。 */
   get googleAttribution() {
@@ -16372,22 +16374,28 @@ class Of {
   }
   /** 今の言語で出典の文字列を返す（試験と診断用）。 */
   get texts() {
-    return Rf(this.#t, this.#s(), this.#i);
+    return Rf(this.#t, this.#r(), this.#i);
   }
   /**
    * 表示する source を差し替えて描き直す。overlays は sources のうち重ね地図のもの（背景地図と別の箱に出す）。
    */
   update(t, e = []) {
-    if (!this.#a) {
-      this.#t = t.slice(), this.#o = e.filter((i) => this.#t.includes(i));
+    if (!this.#o) {
+      this.#t = t.slice(), this.#s = e.filter((i) => this.#t.includes(i));
       for (const i of [...this.#i.keys()])
         this.#t.includes(i) || this.#i.delete(i);
-      this.render(), this.#A();
+      this.render(), this.#g();
     }
   }
-  /** 提供元の申告の表が変わったことを知らせる（ATTRIBUTION_CHANGED_EVENT）。 */
-  #A() {
-    this.#a || typeof CustomEvent > "u" || this.element.dispatchEvent(new CustomEvent(mf, { bubbles: !0, composed: !0 }));
+  /**
+   * providerAttributions の値が前に知らせたときから変わっていれば、地図の入れ物から ATTRIBUTION_CHANGED_EVENT を出す。
+   */
+  #g() {
+    if (this.#o || typeof CustomEvent > "u") return;
+    const t = JSON.stringify(this.providerAttributions);
+    t !== this.#a && (this.#a = t, this.#e.dispatchEvent(
+      new CustomEvent(mf, { bubbles: !0, composed: !1, cancelable: !1 })
+    ));
   }
   /**
    * 地図の設定の attr が無い source の、提供元の申告の出典を、OpenLayers の source（getAttributions）から読む。
@@ -16396,7 +16404,7 @@ class Of {
    * Google の source は表示範囲が変わったときだけ取りに行き、それ以外は前の値を返す（OpenLayers の実装）。
    */
   refreshDynamic(t, e) {
-    if (!this.#a)
+    if (!this.#o)
       for (const i of t) {
         if (!i || !this.#t.includes(i)) continue;
         const r = Ef(i);
@@ -16416,7 +16424,7 @@ class Of {
               const g = xf(i);
               a = a.filter((l) => l === g);
             }
-            this.#l(i, a);
+            this.#u(i, a);
           },
           () => {
           }
@@ -16424,39 +16432,39 @@ class Of {
         );
       }
   }
-  #l(t, e) {
-    if (this.#a || !this.#t.includes(t) || bs(e).length === 0) return;
+  #u(t, e) {
+    if (this.#o || !this.#t.includes(t) || bs(e).length === 0) return;
     const i = this.#i.get(t);
-    i && i.length === e.length && i.every((r, s) => r === e[s]) || (this.#i.set(t, e), this.render(), this.#A());
+    i && i.length === e.length && i.every((r, s) => r === e[s]) || (this.#i.set(t, e), this.render(), this.#g());
   }
   /** 今の source と言語で描き直す。 */
   render() {
-    if (this.#a) return;
+    if (this.#o) return;
     const t = this.element;
     t.parentNode !== this.#e && this.#e.appendChild(t);
-    const e = t.ownerDocument, i = Va(this.#t), r = i ? Wa(this.#c()) : void 0, { google: s, base: o, overlay: A } = kf(
+    const e = t.ownerDocument, i = Va(this.#t), r = i ? Wa(this.#l()) : void 0, { google: s, base: o, overlay: A } = kf(
       this.#t,
-      this.#s(),
+      this.#r(),
       this.#i,
-      this.#o
+      this.#s
     ), a = [];
     for (const [g, l] of [
       [A, "overlay"],
       [o, "base"]
     ]) {
-      const u = this.#g(g);
+      const u = this.#c(g);
       u && (u.classList.add("maplat-attribution-clamp", `maplat-attribution-${l}`), a.push(u));
     }
     if (i) {
       const g = e.createElement("span");
-      g.className = "maplat-attribution-google", r === "logo" && g.appendChild(this.#u(i));
-      const l = this.#g(s, r === "text");
+      g.className = "maplat-attribution-google", r === "logo" && g.appendChild(this.#I(i));
+      const l = this.#c(s, r === "text");
       l && g.appendChild(l), a.push(g);
     }
     a.slice(0, -1).forEach((g) => g.classList.add("maplat-attribution-stacked")), t.replaceChildren(...a), r ? t.dataset.googleMaps = r : delete t.dataset.googleMaps, t.hidden = a.length === 0;
   }
   /** Google Maps のロゴ（公式の SVG。読み上げは "Google Maps"）。 */
-  #u(t) {
+  #I(t) {
     const i = this.element.ownerDocument.createElement("span");
     return i.className = "maplat-attribution-google-logo", i.dataset.variant = t, i.setAttribute("role", "img"), i.setAttribute("aria-label", Za), i.innerHTML = t === "dark" ? gh : Ah, i.firstElementChild?.setAttribute("aria-hidden", "true"), i.firstElementChild?.setAttribute("focusable", "false"), i;
   }
@@ -16464,7 +16472,7 @@ class Of {
    * 出典を " | " で区切って並べた箱（出すものが無ければ null）。
    * googleText が true なら、先頭に文字 "Google Maps"（ロゴの代わり）を入れる。
    */
-  #g(t, e = !1) {
+  #c(t, e = !1) {
     if (t.length === 0 && !e) return null;
     const i = this.element.ownerDocument, r = i.createElement("span");
     r.className = "maplat-attribution-text";
@@ -16489,7 +16497,7 @@ class Of {
    * 出典の表示に使える幅（px）。箱に一時的に width: 100% を当て、右の位置と max-width の変数が
    * 効いた結果の幅を測る。レイアウトが無い（非表示の入れ物・jsdom）ときは 0。
    */
-  #c() {
+  #l() {
     const t = this.element, { width: e, display: i } = t.style, r = t.hidden;
     t.hidden = !1, t.style.width = "100%", t.style.display = "block";
     const s = t.getBoundingClientRect().width;
@@ -16497,13 +16505,13 @@ class Of {
   }
   /** 表示を外し、言語の監視をやめる。 */
   dispose() {
-    this.#a || (this.#a = !0, this.#r?.disconnect(), this.#r = null, this.#n?.disconnect(), this.#n = null, this.#t = [], this.#o = [], this.#i.clear(), this.element.remove());
+    this.#o || (this.#o = !0, this.#n?.disconnect(), this.#n = null, this.#A?.disconnect(), this.#A = null, this.#t = [], this.#s = [], this.#i.clear(), this.element.remove());
   }
   /**
    * 地図が <maplat-ui> の中にあり、その要素がまだ定義されていないときは、定義を待って一度だけ描き直す
    * （定義の前は currentLang が無く、仮の順で言語を選んでいるため）。破棄の後は描かない。
    */
-  #I() {
+  #C() {
     typeof customElements > "u" || customElements.get(ji) || Js(this.#e, ji) && customElements.whenDefined(ji).then(
       () => this.render(),
       () => {
@@ -16514,19 +16522,19 @@ class Of {
    * 地図の箱の大きさが変わったら、Google の地図を出しているときだけ、ロゴと文字のどちらにするかを決め直す
    * （変わるときだけ描き直す）。
    */
-  #C() {
-    typeof ResizeObserver > "u" || (this.#n = new ResizeObserver(() => {
-      if (this.#a || !Va(this.#t)) return;
-      Wa(this.#c()) !== this.googleAttribution && this.render();
-    }), this.#n.observe(this.#e));
-  }
   #h() {
+    typeof ResizeObserver > "u" || (this.#A = new ResizeObserver(() => {
+      if (this.#o || !Va(this.#t)) return;
+      Wa(this.#l()) !== this.googleAttribution && this.render();
+    }), this.#A.observe(this.#e));
+  }
+  #f() {
     if (typeof MutationObserver > "u") return;
-    this.#r = new MutationObserver(() => this.render());
+    this.#n = new MutationObserver(() => this.render());
     const t = { attributes: !0, attributeFilter: ["lang"], subtree: !0 }, e = this.#e.getRootNode?.();
-    e && e.nodeType === 11 && this.#r.observe(e, t);
+    e && e.nodeType === 11 && this.#n.observe(e, t);
     const i = this.#e.ownerDocument.documentElement;
-    i && this.#r.observe(i, t);
+    i && this.#n.observe(i, t);
   }
 }
 const Lf = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyBpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNSBXaW5kb3dzIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjcyNTIxMjZFMDJBMTExRTBCOTNGRTVBRkM1QzM1Qjc5IiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjcyNTIxMjZGMDJBMTExRTBCOTNGRTVBRkM1QzM1Qjc5Ij4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6NzI1MjEyNkMwMkExMTFFMEI5M0ZFNUFGQzVDMzVCNzkiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6NzI1MjEyNkQwMkExMTFFMEI5M0ZFNUFGQzVDMzVCNzkiLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz4RaveOAAAB1UlEQVR42qzUTyikcRzH8d+OsUNbSOTvgW2LREqjHKSk9FjZxAGXlXJQDsqNokRzcebiRC5mT8tllBE7LlzYKBHFJpKMkD+7hvH+6ftMT4M0Y3/1uswzz+d5nu/3+/t9CAaD6n8uu/L5lHK5XroWjwI4kYWP8GMdv3H47A6nk8CDA6U8nvBLX/Ed+TjDEe7lAS24wE+M4zR0180NgXa7NSgOvajHKvqwZglMxBfUoBmVlv/wTXxU0O1WuoqIgQvLaIJDfn9NISbhRd7Tb4ahbJa3a0QthjCFv2/UfwNduJKv0jUOBSajDb8wE0FTdf1GUAzDGliOdExEMSleedsGxJiBZdiVC5GuABbxGZm2p1lUKg1/dOOjnGf9IglIsUkxY3H+jg1yIc136MBb6WjqOwLNe6904AP2kSuDG80qkW15YjZlCdkojSLsEyqwiWMzcAVbaJV6RrK+IQc/dB3NwGuMohAdEYQVoROz8FkHW68FCW1Hv4zS68eeUnWyS/YwLL1Q9rA/jsn4dEtd5mRo9WlzJ03Tda6S7TaPQWmIPCkQCH+6Ww5RfR5WowmX+IckOca2MYBp2SmW8zCb5hpGeKjuWA8yZEulSbP8sqN2JPjZif0owACin4C7wCjG6AAAAABJRU5ErkJggg==", Df = "data:image/png;base64,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", Ai = {
