@@ -58,23 +58,65 @@ export declare function displayedAttributionSources(parts: {
     overlay?: AttributionSourceLike | null;
     back?: AttributionSourceLike | null;
 }): AttributionSourceLike[];
+/** 提供元の申告の種類。google: Map Tiles API の copyright、tilejson: 提供元の TileJSON の attribution。 */
+export type ProviderAttributionKind = "google" | "tilejson";
+/**
+ * source の出典が提供元の申告（Google の応答・TileJSON に書かれた値）かを、source の型で決める。
+ * Core が今作る source で提供元の申告を持つのは Google の地図だけ。TileJSON は、アプリが TileJSON の source を
+ * 渡したときの扱い。
+ * 申告でない source（OpenLayers の既定値・作るときの値の source）は undefined。
+ *   - Google の地図（Core の GoogleMap。googleMapType を持つ）: OpenLayers の Google は、作るときの
+ *     attributions を受けず、出典を Map Tiles API の viewport の応答の copyright だけで作る
+ *     （ol/source/Google.js の fetchAttributions_）。
+ *   - 提供元の TileJSON を持つ source（getTileJSON を持つもの。OpenLayers の TileJSON）: 出典を提供元の
+ *     TileJSON の `attribution` から作る（ol/source/TileJSON.js の handleTileJSONResponse）。ただし作るときに
+ *     attributions を渡すとそちらが使われるので、読むときに TileJSON の `attribution` と同じ値だけを残す
+ *     （tileJsonDeclaredAttribution）。出すのはいつも提供元の TileJSON に書かれた値になる。
+ *     型は instanceof で見ない: ol/source/TileJSON を読み込むと本体の束が約 77 KB 増える（Core 自身は
+ *     TileJSON の source を作らない）。OpenLayers 10.11.0 で getTileJSON を持つ source は TileJSON だけ。
+ *     TileJSON を直接（tileJSON の項目で）渡して作った source では、値はアプリが書いた TileJSON のもの。
+ * 入れないもの: OSM・StadiaMaps・CartoDB・XYZ・WMTS など（作るときの値か、ライブラリの既定の文言）。
+ * BingMaps は応答の出典に、ライブラリの既定の利用規約のリンクを必ず足すので、見分けられず入れない。
+ */
+export declare function providerAttributionKind(source: AttributionSourceLike): ProviderAttributionKind | undefined;
 /** 地図の設定の `attr` を持つか（空・空白だけの文字列、空の言語ごとの値は持たない扱い）。 */
 export declare function hasConfiguredAttr(source: AttributionSourceLike): boolean;
 /** OpenLayers の出典の値（文字列・配列・それ以外）を文字列の配列にする。 */
 export declare function normalizeOlAttributions(value: unknown): string[];
 /**
+ * Google の copyright 以外の出典の箱の行数の上限。超えた分は「…」で切り、箱の高さもこの行数までにする
+ * （はみ出しは隠す）。全文は UI の地図情報などで見せることを想定する。
+ */
+export declare const ATTRIBUTION_MAX_LINES = 2;
+/**
+ * 提供元の申告として読んだ出典（Google の copyright・TileJSON の attribution。第三者のサーバーから
+ * 来うる値）を、狭い許可表（sanitizeHtml の profile "iiif"）で洗う。空になったものは除く。
+ *   - 残るタグは a・b・br・i・p・small・span・sub・sup だけ、属性は http(s) の href だけ。
+ *     img・class・style・javascript: などは落ちる。リンクには target="_blank" と rel="noopener noreferrer" が付く。
+ *   - 理由: 広い許可表（地図の設定の attr 用）のままだと、外の値の
+ *     `<a href="https://…"><img src="https://…" width="4000" height="4000"></a>` で、出典の箱が地図を覆い、
+ *     地図全体が外へのリンクになり、外の画像を読みに行って見ている人の情報が第三者に渡る。
+ * 長さは洗う対象ではない（箱の行数の上限で切る。Google の copyright は切らない）。
+ * 地図の設定の attr（アプリの作者が書く値）には使わない（従来どおり広い許可表で、img なども通る）。
+ * 文字だけの値（Google の copyright など）は変わらない（& と < > は HTML の形になる）。
+ */
+export declare function sanitizeSourceAttributions(texts: readonly string[]): string[];
+/**
  * source の並びから、表示する出典の文字列（言語を選んだもの・空と重複を除いたもの）を作る。
- * 地図の設定の `attr` が無い source は、dynamic（OpenLayers の source から読んだ出典）の値を使う。
+ * 地図の設定の `attr` が無い source は、dynamic（提供元の申告として読んだ出典）の値を使う。
  * Google の地図は `attr` があっても dynamic（copyright）を先に出す。
+ * 重複は表示される文字で比べる（設定の `A &amp; B` と source の `A & B` は同じもの）。
+ * 返すのは元の値（洗う前）。source の値で、洗うと何も残らないものは除く。
  */
 export declare function attributionTexts(sources: AttributionSourceLike[], lang: string, dynamic?: ReadonlyMap<AttributionSourceLike, readonly string[]>): string[];
 /**
- * 出典の文字列を、Google の地図の分（google）とそれ以外（others）に分ける。
- * 同じ文字列は 1 回だけ（Google の分を先に取る）。並びは source の順。
+ * 出典の文字列を箱ごとに分ける（google: Google の copyright・base: 背景地図・overlay: 重ね地図）。
+ * overlays に入っている source が重ね地図。同じ表示の文字は 1 回だけ（google → base → overlay の順に取る）。
  */
-export declare function attributionGroups(sources: AttributionSourceLike[], lang: string, dynamic?: ReadonlyMap<AttributionSourceLike, readonly string[]>): {
+export declare function attributionGroups(sources: AttributionSourceLike[], lang: string, dynamic?: ReadonlyMap<AttributionSourceLike, readonly string[]>, overlays?: readonly AttributionSourceLike[]): {
     google: string[];
-    others: string[];
+    base: string[];
+    overlay: string[];
 };
 /**
  * 出典の表示。地図の箱の最後の子に `div.maplat-attribution` を置き、`update` で中身を作り直す。
@@ -88,10 +130,13 @@ export declare class AttributionDisplay {
     get googleAttribution(): GoogleAttributionMode | undefined;
     /** 今の言語で出典の文字列を返す（試験と診断用）。 */
     get texts(): string[];
-    /** 表示する source を差し替えて描き直す。 */
-    update(sources: AttributionSourceLike[]): void;
     /**
-     * 地図の設定の attr が無い source の出典を、OpenLayers の source（getAttributions）から読む。
+     * 表示する source を差し替えて描き直す。overlays は sources のうち重ね地図のもの（背景地図と別の箱に出す）。
+     */
+    update(sources: AttributionSourceLike[], overlays?: readonly AttributionSourceLike[]): void;
+    /**
+     * 地図の設定の attr が無い source の、提供元の申告の出典を、OpenLayers の source（getAttributions）から読む。
+     * 提供元の申告でない source（providerAttributionKind が undefined）は読まない（ライブラリの既定値で埋めない）。
      * 地図の描画（postrender）のたびに、その地図が描いている source と frameState を渡す。
      * Google の source は表示範囲が変わったときだけ取りに行き、それ以外は前の値を返す（OpenLayers の実装）。
      */

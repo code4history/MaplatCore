@@ -1112,7 +1112,9 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     this.__attribution = new AttributionDisplay(this.mapDivDocument!, () =>
       resolveAttributionLang(this.mapDivDocument, this.__attributionLangOption, this.appData?.lang)
     );
-    // 地図の設定に attr が無い現代の地図と、Google の地図（attr があっても）の出典は OpenLayers の source から読む。
+    // 地図の設定に attr が無い現代の地図と、Google の地図（attr があっても）の、提供元の申告の出典を読む。
+    // 読むのは提供元の申告の型の source だけ（Google の copyright・TileJSON の attribution。attribution.ts の
+    // providerAttributionKind）。ほかの source の出典（OpenLayers の既定値など）は読まない。
     // Google は表示範囲ごとに copyright が変わるので、地図を描くたびに渡す（取りに行くのは範囲が変わったときだけ）
     const frontMap = this.mapObject;
     frontMap.on("postrender", (evt: any) => {
@@ -2356,12 +2358,15 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
             this.__vectorStore().forEach(entry => this.__drawVectorEntry(entry));
             // 表示中の現代の地図（前面の basemap・重ね地図・背面の basemap）の出典を描き直す。
             // MaplatApp の prototype は公開面として固定しているので、メソッドにせずここで呼ぶ
+            // 重ね地図の出典は背景地図の出典と別の箱に出す
+            const attributionOverlay = to instanceof TmsMap ? to : undefined;
             this.__attribution?.update(
               displayedAttributionSources({
                 front: this.mapObject.getSource(),
-                overlay: to instanceof TmsMap ? to : undefined,
+                overlay: attributionOverlay,
                 back: this.backMap?.getSource()
-              })
+              }),
+              attributionOverlay ? [attributionOverlay] : []
             );
             this.dispatchEvent(
               new CustomEvent("mapChanged", this.getMapMeta(to.mapID))
