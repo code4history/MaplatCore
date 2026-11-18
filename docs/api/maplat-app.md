@@ -290,6 +290,24 @@ the next major version (2.0).
 Pro-only methods (`setDisplayMode`, `getDisplayMode`) are **not defined** on
 the MaplatCore element; check `supports("display-mode")` before calling them.
 
+### Provider-declared attributions (MaplatCore only)
+
+- `providerAttributions: { mapID: string; attributions: string[] }[]` (read-only)
+  - The attributions declared by the providers of the displayed modern maps
+    (the foreground map, the overlay and the base map behind), one entry per
+    map: values returned by the provider's server, such as the Google Map Tiles
+    API copyright or the TileJSON `attribution`. They are the same values as
+    the attribution at the bottom right of the map. The map definition's
+    `attr` is not included (read it with `getMapMeta`).
+  - Each value is HTML cleaned with the narrow allowlist
+    (`sanitizeHtml(html, { profile: "iiif" })`). Maps without a declaration
+    are left out. `[]` before the map is ready.
+  - When the table changes (a map change, or a declaration arriving), the
+    element receives the DOM event `attributionChanged` (no detail,
+    `bubbles: true`).
+  - This is a MaplatCore-only read outside the layer A contract. Elements of
+    other implementations may not have it, so check that it exists before use.
+
 ## Events (`MAPLAT_APP_EVENTS`, `ELEMENT_OWN_EVENTS`)
 
 All events are DOM `CustomEvent`s dispatched from the element with

@@ -903,3 +903,73 @@ describe("<maplat-ui> の定義を待つ", () => {
     expect(map2.querySelector(".maplat-attribution")).toBeNull();
   });
 });
+
+describe("providerAttributions（地図ごとの提供元の申告）と attributionChanged", () => {
+  function setup() {
+    document.body.innerHTML = `<div id="map" lang="ja"></div>`;
+    const map = document.getElementById("map")!;
+    const display = new AttributionDisplay(map, () => resolveAttributionLang(map));
+    return { map, display };
+  }
+  const flush = () => new Promise(resolve => setTimeout(resolve, 0));
+  function olSource(mapID: string, value: unknown, extra: Record<string, unknown> = {}) {
+    return { mapID, get: () => undefined, isWmts: () => true, getAttributions: () => () => value, ...extra };
+  }
+
+  it("表示中の source ごとに、読んだ申告を狭い許可表で洗って返す（申告の無い地図・mapID の無い地図は載せない）", async () => {
+    const { display } = setup();
+    const base = olSource("tilejson", `<a href="https://example.org/" style="color:red">Provider</a><img src="https://example.org/x.png">`);
+    const overlay = olSource("overlay", "Overlay provider");
+    const configured = { ...olSource("gsi", "ignored"), get: (key: string) => (key === "attr" ? "国土地理院" : undefined) };
+    const noId = olSource("", "No ID");
+    display.update([base, overlay, configured, noId], [overlay]);
+    display.refreshDynamic([base, overlay, configured, noId], {});
+    await flush();
+    expect(display.providerAttributions).toEqual([
+      {
+        mapID: "tilejson",
+        attributions: ['<a href="https://example.org/" target="_blank" rel="noopener noreferrer">Provider</a>']
+      },
+      { mapID: "overlay", attributions: ["Overlay provider"] }
+    ]);
+  });
+
+  it("Google の地図は attr があっても copyright を返す（attr は返さない）", async () => {
+    const { display } = setup();
+    const google = {
+      ...olSource("gmap", "Map data ©2026 Google"),
+      googleMapType: "roadmap",
+      get: (key: string) => (key === "attr" ? "Configured" : undefined)
+    };
+    display.update([google]);
+    display.refreshDynamic([google], {});
+    await flush();
+    expect(display.providerAttributions).toEqual([{ mapID: "gmap", attributions: ["Map data ©2026 Google"] }]);
+  });
+
+  it("地図の切り替えと申告の到着で、出典の箱から bubbles・composed の attributionChanged を出す", async () => {
+    const { map, display } = setup();
+    const events: Event[] = [];
+    map.addEventListener("attributionChanged", event => events.push(event));
+    const src = olSource("tilejson", "Provider");
+    display.update([src]);
+    expect(events).toHaveLength(1);
+    display.refreshDynamic([src], {});
+    await flush();
+    expect(events).toHaveLength(2);
+    expect(events[1].bubbles).toBe(true);
+    expect(events[1].composed).toBe(true);
+    // 同じ値の再読み取りでは出さない
+    display.refreshDynamic([src], {});
+    await flush();
+    expect(events).toHaveLength(2);
+    // 表示から外れた地図の申告は消える
+    display.update([]);
+    expect(display.providerAttributions).toEqual([]);
+    expect(events).toHaveLength(3);
+    // 破棄の後は出さない
+    display.dispose();
+    display.update([src]);
+    expect(events).toHaveLength(3);
+  });
+});
