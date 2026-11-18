@@ -101,16 +101,16 @@ describe("POI layer identifier contract", () => {
     vi.restoreAllMocks();
   });
 
-  // ---- U-1: app 直下 resolve ---------------------------------------------
-  it("U-1: getPoiLayer resolves app-level layer by app id", () => {
+  // ---- app 直下 resolve ---------------------------------------------
+  it("getPoiLayer resolves app-level layer by app id", () => {
     const layer = makeAppLayer("shrines", "shrines");
     const self = makeSelf({ appPois: { shrines: layer } });
     const result = getPoiLayer.call(self, "shrines");
     expect(result).toBe(layer);
   });
 
-  // ---- U-2: namespaced resolve -------------------------------------------
-  it("U-2: getPoiLayer resolves map-derived layer by <mapID>#<localId>", () => {
+  // ---- namespaced resolve -------------------------------------------
+  it("getPoiLayer resolves map-derived layer by <mapID>#<localId>", () => {
     const mapLayer = makeAppLayer("temples", "omt#temples");
     const source = makeMapSource("omt", { temples: mapLayer });
     const self = makeSelf({ cacheHash: { omt: source } });
@@ -118,8 +118,8 @@ describe("POI layer identifier contract", () => {
     expect(result).toBe(mapLayer);
   });
 
-  // ---- U-3: unresolved returns undefined, no warning --------------------
-  it("U-3: getPoiLayer returns undefined for unresolved id and emits no warning", () => {
+  // ---- unresolved returns undefined, no warning --------------------
+  it("getPoiLayer returns undefined for unresolved id and emits no warning", () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const self = makeSelf({});
     const result = getPoiLayer.call(self, "nope");
@@ -127,8 +127,8 @@ describe("POI layer identifier contract", () => {
     expect(warnSpy).not.toHaveBeenCalled();
   });
 
-  // ---- U-4: bare "main" resolves to app-level ----------------------------
-  it("U-4: getPoiLayer('main') returns app-level main, not map-derived", () => {
+  // ---- bare "main" resolves to app-level ----------------------------
+  it("getPoiLayer('main') returns app-level main, not map-derived", () => {
     const appMain = makeAppLayer("main", "main");
     const mapMain = makeAppLayer("main", "omt#main");
     const source = makeMapSource("omt", { main: mapMain });
@@ -140,8 +140,8 @@ describe("POI layer identifier contract", () => {
     expect(result).toBe(appMain);
   });
 
-  // ---- U-5: hidePoiLayer namespaced isolation ----------------------------
-  it("U-5: hidePoiLayer namespaced sets hide only on the target map-derived layer", () => {
+  // ---- hidePoiLayer namespaced isolation ----------------------------
+  it("hidePoiLayer namespaced sets hide only on the target map-derived layer", () => {
     const appTemples = makeAppLayer("temples", "temples");
     const mapTemples = makeAppLayer("temples", "omt#temples");
     const source = makeMapSource("omt", { temples: mapTemples });
@@ -154,8 +154,8 @@ describe("POI layer identifier contract", () => {
     expect(appTemples.hide).toBeUndefined();
   });
 
-  // ---- U-6: listPoiLayers elements carry id and namespaceID -------------
-  it("U-6: listPoiLayers(false, true) entries have both id and namespaceID", () => {
+  // ---- listPoiLayers elements carry id and namespaceID -------------
+  it("listPoiLayers(false, true) entries have both id and namespaceID", () => {
     const appMain = makeAppLayer("main", "main");
     const appShrines = makeAppLayer("shrines", "shrines");
     const mapTemples = makeAppLayer("temples", "omt#temples");
@@ -173,8 +173,8 @@ describe("POI layer identifier contract", () => {
     expect(result.length).toBeGreaterThan(0);
   });
 
-  // ---- U-7: removePoiLayer namespaced removes from map source -----------
-  it("U-7: removePoiLayer('<mapID>#<localId>') removes the layer from the map source", () => {
+  // ---- removePoiLayer namespaced removes from map source -----------
+  it("removePoiLayer('<mapID>#<localId>') removes the layer from the map source", () => {
     const mapTemples = makeAppLayer("temples", "omt#temples");
     const source = makeMapSource("omt", { temples: mapTemples });
     const self = makeSelf({
@@ -186,8 +186,8 @@ describe("POI layer identifier contract", () => {
     expect(self.redrawMarkers).toHaveBeenCalled();
   });
 
-  // ---- U-8: removePoiLayer unresolved no-op + warning --------------------
-  it("U-8: removePoiLayer('<mapID>#<missing>') does not remove, warns once, no redrawMarkers", () => {
+  // ---- removePoiLayer unresolved no-op + warning --------------------
+  it("removePoiLayer('<mapID>#<missing>') does not remove, warns once, no redrawMarkers", () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const source = makeMapSource("omt", {});
     const self = makeSelf({
@@ -201,8 +201,8 @@ describe("POI layer identifier contract", () => {
     expect(warnSpy.mock.calls[0][0]).toContain("omt#ghost");
   });
 
-  // ---- U-9: addPoiLayer namespaced adds to map source -------------------
-  it("U-9: addPoiLayer('<mapID>#<newId>', data) adds the layer to the map source", () => {
+  // ---- addPoiLayer namespaced adds to map source -------------------
+  it("addPoiLayer('<mapID>#<newId>', data) adds the layer to the map source", () => {
     const source = makeMapSource("omt", {});
     const self = makeSelf({
       appPois: {},
@@ -214,8 +214,8 @@ describe("POI layer identifier contract", () => {
     expect(self.redrawMarkers).toHaveBeenCalled();
   });
 
-  // ---- U-10: unresolved id on show/hide/add/remove → 1 warning each -----
-  it("U-10: unresolved id warns once on show/hide/add/remove without throwing or state change", () => {
+  // ---- unresolved id on show/hide/add/remove → 1 warning each -----
+  it("unresolved id warns once on show/hide/add/remove without throwing or state change", () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const self = makeSelf({
       appPois: {},

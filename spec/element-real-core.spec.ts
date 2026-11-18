@@ -436,7 +436,7 @@ describe("互換モードの機能系キーと属性", () => {
   });
 });
 
-describe("uiHooks の写しは Object.prototype の名前の自作キーも落とさない（Info 1）", () => {
+describe("uiHooks の写しは Object.prototype の名前の自作キーも落とさない", () => {
   it("constructor・toString という名前のキーも写され、hook の context.core は要素", async () => {
     const seen: any[] = [];
     const hooks: Record<string, any> = {
@@ -461,7 +461,7 @@ describe("uiHooks の写しは Object.prototype の名前の自作キーも落�
     expect(Object.keys(passed).filter(k => k === "onUiReady")).toHaveLength(1);
   });
 
-  it("自前のキー __proto__ は写さず、写しのプロトタイプを差し替えない（I-c1）", async () => {
+  it("自前のキー __proto__ は写さず、写しのプロトタイプを差し替えない", async () => {
     const seen: any[] = [];
     const hooks: Record<string, any> = { onUiReady: (context: any) => seen.push(context) };
     Object.defineProperty(hooks, "__proto__", { value: { injected: true }, enumerable: true, configurable: true });
