@@ -462,7 +462,7 @@ function oe(p) {
     const r = document.createElement(t);
     for (const { method: e, feature: o } of we)
       s(typeof r[e], r.supports(o) ? "function" : "undefined", `typeof ${e}`);
-  }), u("A-機能", "未対応の Pro 固有の属性・プロパティはキーごとに 1 回警告して無視する（U3）", async (r) => {
+  }), u("A-機能", "未対応の Pro 固有の属性・プロパティはキーごとに 1 回警告して無視する", async (r) => {
     const e = Me.filter((o) => o.feature && !document.createElement(t).supports(o.feature));
     for (const o of e) {
       const n = r.mount({ bare: !0, connect: !1 }), c = x();
