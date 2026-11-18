@@ -6,7 +6,12 @@
 //   - 操作の自動非表示（tapUIVanish）は `.ol-control` を全部隠す。出典まで隠れてしまう。
 //   - アプリは appOption.controls で部品を差し替えられる。差し替えで出典が消えてはいけない。
 // 古地図の出典はここには出さない（UI の地図情報に出す。長い自由記述のことがあるため）。
-// 地図の設定に `attr` が無い現代の地図は、OpenLayers の source の出典（getAttributions）を出す。
+// 出すのは「地図の定義の `attr`」と「提供元の申告」だけ。ライブラリ（OpenLayers）の既定値では埋めない。
+// 提供元の申告として読むのは、出典の値が提供元のサーバーの応答から来る source の型だけ（providerAttributionKind）:
+//   - Google の地図（Core の GoogleMap）: Map Tiles API の viewport の応答の copyright。
+//   - OpenLayers の TileJSON: 提供元の TileJSON の `attribution`（その値と同じものだけを出す）。
+// OSM・StadiaMaps・BingMaps（利用規約のリンクの既定値が混ざる）・XYZ などの出典は読まない。
+// 地図の設定に `attr` が無く、提供元の申告も無い地図には、何も出さない。
 // Google の地図は、`attr` の有無によらず、表示範囲ごとに取りに行く copyright を必ず出す。
 // Map Tiles API の利用条件が、表示範囲の copyright を "in full as provided" で出すよう求めるため、切らずに全文を出す。
 // Google の地図を表示しているあいだは、利用条件が求める Google Maps のロゴを Google の出典の左隣に出す
@@ -18,6 +23,7 @@
 import browserLanguage from "./browserlanguage";
 import { MAPLAT_UI_TAG } from "./element_contract";
 import { GOOGLE_MAPS_LOGO_DARK_OUTLINE, GOOGLE_MAPS_LOGO_LIGHT_OUTLINE } from "./google_maps_logo";
+import TileJSON from "ol/source/TileJSON";
 import { sanitizeHtml } from "./sanitize";
 
 /** 出典の値（文字列か、言語ごとの文字列）。 */
@@ -175,6 +181,35 @@ export function displayedAttributionSources(parts: {
   return result;
 }
 
+/** 提供元の申告の種類。google: Map Tiles API の copyright、tilejson: 提供元の TileJSON の attribution。 */
+export type ProviderAttributionKind = "google" | "tilejson";
+
+/**
+ * source の出典が提供元の申告（提供元のサーバーの応答から来る値）かを、source の型で決める。
+ * 申告でない source（OpenLayers の既定値・作るときの値の source）は undefined。
+ *   - Google の地図（Core の GoogleMap。googleMapType を持つ）: OpenLayers の Google は、作るときの
+ *     attributions を受けず、出典を Map Tiles API の viewport の応答の copyright だけで作る
+ *     （ol/source/Google.js の fetchAttributions_）。
+ *   - OpenLayers の TileJSON: 出典を提供元の TileJSON の `attribution` から作る（ol/source/TileJSON.js の
+ *     handleTileJSONResponse）。ただし作るときに attributions を渡すとそちらが使われるので、読むときに
+ *     TileJSON の `attribution` と同じ値だけを残す（tileJsonDeclaredAttribution）。
+ * 入れないもの: OSM・StadiaMaps・CartoDB・XYZ・WMTS など（作るときの値か、ライブラリの既定の文言）。
+ * BingMaps は応答の出典に、ライブラリの既定の利用規約のリンクを必ず足すので、見分けられず入れない。
+ * UTFGrid は TileJSON の attribution を持つが、地図の画像を出す source ではないので入れない。
+ */
+export function providerAttributionKind(source: AttributionSourceLike): ProviderAttributionKind | undefined {
+  if (isGoogleSource(source)) return "google";
+  if (source instanceof TileJSON) return "tilejson";
+  return undefined;
+}
+
+/** TileJSON の source の、提供元の TileJSON の `attribution`（無ければ undefined）。 */
+function tileJsonDeclaredAttribution(source: AttributionSourceLike): string | undefined {
+  if (!(source instanceof TileJSON)) return undefined;
+  const value = source.getTileJSON()?.attribution;
+  return typeof value === "string" && value.trim() ? value.trim() : undefined;
+}
+
 /** 地図の設定の `attr` を持つか（空・空白だけの文字列、空の言語ごとの値は持たない扱い）。 */
 export function hasConfiguredAttr(source: AttributionSourceLike): boolean {
   const raw = typeof source.get === "function" ? source.get("attr") : undefined;
@@ -255,7 +290,7 @@ function fetchedEntries(
 /**
  * 1 つの source の出典（空を除いたもの。重複は呼び出し側で除く）。
  *   - Google の地図: OpenLayers の source の copyright（dynamic）を必ず出し、地図の設定の `attr` があれば後に添える。
- *   - それ以外: 地図の設定の `attr`。無ければ dynamic（OpenLayers の source から読んだ出典）。
+ *   - それ以外: 地図の設定の `attr`。無ければ dynamic（提供元の申告。TileJSON の attribution）。
  */
 function entriesOf(
   source: AttributionSourceLike,
@@ -312,7 +347,7 @@ function attributionEntryGroups(
 
 /**
  * source の並びから、表示する出典の文字列（言語を選んだもの・空と重複を除いたもの）を作る。
- * 地図の設定の `attr` が無い source は、dynamic（OpenLayers の source から読んだ出典）の値を使う。
+ * 地図の設定の `attr` が無い source は、dynamic（提供元の申告として読んだ出典）の値を使う。
  * Google の地図は `attr` があっても dynamic（copyright）を先に出す。
  * 重複は表示される文字で比べる（設定の `A &amp; B` と source の `A & B` は同じもの）。
  * 返すのは元の値（洗う前）。source の値で、洗うと何も残らないものは除く。
@@ -462,7 +497,8 @@ export class AttributionDisplay {
   #sources: AttributionSourceLike[] = [];
   // #sources のうち重ね地図のもの（別の箱に出す）
   #overlays: AttributionSourceLike[] = [];
-  // 地図の設定の attr が無い source（と Google の地図）の、OpenLayers の source から読んだ出典（元の値）。
+  // 地図の設定の attr が無い source（と Google の地図）の、提供元の申告として読んだ出典（元の値）。
+  // 読むのは providerAttributionKind が決まる source だけ（ライブラリの既定値は読まない）。
   // 外の値なので、描くときに狭い許可表で洗う（sanitizeSourceAttributions）
   #dynamic = new Map<AttributionSourceLike, readonly string[]>();
   #observer: MutationObserver | null = null;
@@ -510,7 +546,8 @@ export class AttributionDisplay {
   }
 
   /**
-   * 地図の設定の attr が無い source の出典を、OpenLayers の source（getAttributions）から読む。
+   * 地図の設定の attr が無い source の、提供元の申告の出典を、OpenLayers の source（getAttributions）から読む。
+   * 提供元の申告でない source（providerAttributionKind が undefined）は読まない（ライブラリの既定値で埋めない）。
    * 地図の描画（postrender）のたびに、その地図が描いている source と frameState を渡す。
    * Google の source は表示範囲が変わったときだけ取りに行き、それ以外は前の値を返す（OpenLayers の実装）。
    */
@@ -519,7 +556,9 @@ export class AttributionDisplay {
     for (const source of sources) {
       // Google の地図は attr があっても copyright を読む（利用条件が copyright を全文で出すよう求める）
       if (!source || !this.#sources.includes(source)) continue;
-      if (hasConfiguredAttr(source) && !isGoogleSource(source)) continue;
+      const kind = providerAttributionKind(source);
+      if (!kind) continue;
+      if (hasConfiguredAttr(source) && kind !== "google") continue;
       const fn = typeof source.getAttributions === "function" ? source.getAttributions() : undefined;
       if (typeof fn !== "function") continue;
       let result: unknown;
@@ -529,7 +568,15 @@ export class AttributionDisplay {
         continue;
       }
       Promise.resolve(result).then(
-        value => this.#setDynamic(source, normalizeOlAttributions(value)),
+        value => {
+          let texts = normalizeOlAttributions(value);
+          // TileJSON は、提供元の TileJSON の attribution と同じ値だけ（作るときに渡した attributions は出さない）
+          if (kind === "tilejson") {
+            const declared = tileJsonDeclaredAttribution(source);
+            texts = texts.filter(text => text === declared);
+          }
+          this.#setDynamic(source, texts);
+        },
         () => undefined // 取りに行けなかったときは前の値のまま
       );
     }

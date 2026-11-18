@@ -22,6 +22,7 @@
 - Google の地図を表示しているあいだ、Map Tiles API の利用条件に従い、Google の出典（copyright）の左隣に Google Maps のロゴを出すようにした（#193）。ロゴは公式の配布物の SVG を原寸（105×22 px）で手を加えずに使い、地図は白い枠の灰色、衛星写真は濃い枠の白。余白は上・左右 10 px、下 5 px。前面が古地図で背面が Google の地図のときも出す。出典の文字が入らなければロゴの下へ折り返し、使える幅が 125 px より狭いときだけロゴの代わりに文字「Google Maps」を出す。状態は `div.maplat-attribution` の `data-google-maps`（`logo`・`text`）。Google の地図は `attr` を書いても表示範囲の copyright を必ず出し、`attr` は別の箱にして上に出す。Google の地図の上の重ね地図などの出典も、Google の出典と別の箱にして上に出す。ロゴの出どころとライセンスの扱いを `THIRD-PARTY-NOTICES.md` に掲載
 
 ### Changed
+- 地図の右下の出典の表示が出すのを、「地図の定義の `attr`」と「提供元の申告」だけにした。提供元の申告として読むのは、出典の値が提供元のサーバーの応答から来る source の型だけ（Google の地図の Map Tiles API の copyright と、OpenLayers の `TileJSON` の source の TileJSON の `attribution`。TileJSON は、TileJSON に書かれた値と同じものだけ）。これまでは `attr` の無い現代の地図で、どの source の出典（`getAttributions()`）も読んでいた。ライブラリの既定値では埋めない: OpenLayers の `OSM`・`StadiaMaps`・`BingMaps` などが持つ既定の出典や、source を作るときに渡した `attributions` は出さない。`attr` も提供元の申告も無い地図には何も出ないので、背景地図・重ね地図には `attr` を書くこと（Core の組み込みの `osm`・`gsi`・`gsi_ortho` と、同梱の見本の地図は、Google の地図を除いて `attr` を持つ。Google の地図は提供元の申告の copyright を出す）
 - 地図の右下の出典の表示を、背景地図と重ね地図で別の箱に分けた（下の段が背景地図。Google の地図ならロゴと Google の copyright の行。その上が重ね地図）。これまでは Google の地図のときだけ分け、それ以外は 1 つの箱に「 | 」でつないでいた。Google の地図に書いた `attr` も、Google の copyright と別の箱にして上に出す
 - Google の copyright 以外の出典の箱（`attr` と、OpenLayers の source から読んだ出典）は 2 行までにし、超えた分は「…」で切るようにした（`.maplat-attribution-clamp`）。箱は 2 行の高さと地図の幅を超えず、中の画像も箱に入るよう縮める。全文は UI の地図情報で見る前提。Google の copyright は利用条件の "in full as provided" のため切らず、全文を折り返して出す
 - 範囲外の POI が背面の地図に見えるようになった。古地図の紙の外にある POI は背面の `marker` 層にメルカトルの座標で立ち、TMS・基本地図では前面に立つ。範囲外の POI を選んでいる間は中心を紙の内側へ引き戻さず、背面のピンは紙の外の点でだけ押せる
@@ -52,10 +53,10 @@
 - `clientPointToLngLat`、地図のクリックの `clickMapMerc`・`clickMap`、ポインタの移動の `pointerMoveOnMapMerc` が、古地図の紙の外の点で、背面の地図がそこに見せている地点を返すようにした。これまでは前面の古地図の変換を紙の外へ延ばした地点を返していたため、背面の地図に見えている地点と離れ、`lngLatToClientPoint` とも往復しなかった（館林のデモで、`clientPointToLngLat` の点を `lngLatToClientPoint` に戻すと縮尺 14.5 で最大 91 px、16 で最大 225 px ずれた）。戻り値の型は変えていない（変換できないときは従来どおりクラスは `undefined`・要素は `null`）。背面の無い古地図（`overlay: false`）・前面がメルカトルの地図（TMS・基本地図）・紙の内の点は従来どおり。`clickMapXy`・`pointerMoveOnMapXy` は前面の座標のまま、`getViewExtent` の 4 隅は従来どおり前面の変換で求める。紙の外で背面の画素が座標にならないときは、クリックは `clickMapXy` だけを出し（`clickMapMerc`・`clickMap` は出ない）、ポインタの移動は `pointerMoveOnMapXy` だけを出す。座標の判定や変換が失敗した移動も `pointerMoveOnMapMerc` を出さないだけで、その後の移動は従来どおり受け付ける（これまでは変換が失敗すると以後の `pointerMoveOnMapMerc` が出なくなった）
 
 ### Security
-- 地図の右下の出典の表示で、OpenLayers の source から読んだ出典（Google の copyright、TileJSON の `attribution` など、第三者のサーバーが決める値）を、地図の設定の `attr` より厳しく扱うようにした。これまでは `attr` と同じ広い許可表で洗っていたため、外の値の `<a href="https://…"><img src="https://…" width="4000" height="4000"></a>` で、出典の箱が地図を覆い、地図全体が外へのリンクになり、外の画像を読みに行って見ている人の情報が第三者に渡りえた
+- 地図の右下の出典の表示で、提供元の申告として読んだ出典（Google の copyright、TileJSON の `attribution`。第三者のサーバーが決める値）を、地図の設定の `attr` より厳しく扱うようにした。これまでは `attr` と同じ広い許可表で洗っていたため、外の値の `<a href="https://…"><img src="https://…" width="4000" height="4000"></a>` で、出典の箱が地図を覆い、地図全体が外へのリンクになり、外の画像を読みに行って見ている人の情報が第三者に渡りえた
   - 狭い許可表（`sanitizeHtml(text, { profile: "iiif" })`）で洗う。残すタグは `a`・`b`・`br`・`i`・`p`・`small`・`span`・`sub`・`sup`、属性は `http(s)` の `href` だけで、リンクには `rel="noopener noreferrer"` を付ける
   - 狭い許可表を通る `<a href="https://…"><p>長い文字</p></a>` や長い文字だけでも地図を覆わないよう、Google の copyright 以外の出典の箱は 2 行までにした（Changed の項目）
-  - 文字だけの Google の copyright と、OpenLayers の source の既定の出典（文字とリンク）の表示は変わらない。地図の設定の `attr` は従来どおりの許可表
+  - 文字だけの Google の copyright と、文字とリンクの TileJSON の `attribution` の表示は変わらない。地図の設定の `attr` は従来どおりの許可表
   - 出典の重複は、表示される文字で比べるようにした（これまでは元の文字列で比べていた）。`attr` の `A &amp; B` と source の `A & B` は 1 回だけ出る
 - 状態 URL や `localStorage` から来る地図 ID・層 ID の引き当てを、自分の鍵（`Object.hasOwn`）だけに限った。存在しない ID は、継承した名前でも今までの未知の ID と同じ扱いになり、起動や以後の地図の切り替えに影響しない。公開メソッドの `addMarker`・`clearMarker` に渡す層 ID も同じ
 - 地図 ID は文字列だけを受ける（公開の型のとおり）。地図の設定の `mapID: 5` のような数値の ID を `changeMap(5)`・`mapInfo(5)`・`startFrom: 5` のように数値のまま渡しても引き当たらない。文字列（`"5"`）で渡す

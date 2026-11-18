@@ -197,11 +197,15 @@ MaplatCore はフィールドの意味の定義と、結果として得られる
 出典は箱を分けて出します。いちばん下が背景地図の出典の箱（Google の地図なら、Google Maps のロゴと
 Google の copyright の行）、その上が重ね地図の出典の箱です。箱をまたいで「 | 」でつなぐことはしません。
 
-出典が出るのは、出すものがある地図だけです。地図の `attr`、または `attr` の無い現代の
-地図では OpenLayers の source の出典を出します。Google の地図は、`attr` の有無によらず、
+ビューアが出す出典は、「地図の定義の `attr`」と「提供元の申告」の 2 つだけです。提供元の申告として読むのは、
+出典の値が提供元のサーバーの応答から来る source の型だけです。Google の地図が Map Tiles API から受け取る
+copyright と、TileJSON（OpenLayers の `TileJSON` の source）の `attribution`（TileJSON に書かれた値だけ）です。
+ライブラリの既定値では埋めません。OpenLayers の `OSM`・`StadiaMaps`・`BingMaps` などの source が持つ既定の
+出典や、source を作るときに渡した `attributions` は出しません。`attr` も提供元の申告も無い地図には、
+何も出しません。Google の地図は、`attr` の有無によらず、
 表示範囲の copyright を Map Tiles API から取りに行って必ず出します（利用条件が copyright を
 全文で出すよう求めるため）。Google の地図に `attr` を書くと、Google の copyright の行の上の別の箱に出します。**アプリの設定で背景地図や重ね地図を自分で
-定義するときは、`attr` を書いてください**。書かないと、その地図の出典は出ません。
+定義するときは、`attr` を書いてください**。書かないと、その地図の出典は出ません（ビューアは既定値で埋めません）。
 空や空白だけの `attr` は、無いものとみなします。
 
 Google の地図（`maptype` が `google`・`google_roadmap`・`google_satellite`・`google_hybrid`・
@@ -241,14 +245,13 @@ Google の copyright 以外の箱は、2 行までにします（`.maplat-attrib
 当てます。Google の copyright は、利用条件が "in full as provided" で出すよう求めるため、切らずに全文を
 必要なだけ折り返して出します。
 
-OpenLayers の source から読んだ出典（Google の copyright、TileJSON の `attribution` など）は、
+提供元の申告（Google の copyright、TileJSON の `attribution`）は、
 第三者のサーバーが決める値なので、`attr` より狭い許可表（`sanitizeHtml(text, { profile: "iiif" })`）で
 洗います。残すタグは `a`・`b`・`br`・`i`・`p`・`small`・`span`・`sub`・`sup` だけ、属性は `http(s)` の
 `href` だけで、リンクには `target="_blank"` と `rel="noopener noreferrer"` を付けます。画像・`class`・
 `style`・`javascript:` のリンクは落とすので、外の値で画像を出したり、第三者の画像を読み込ませたりはできません。
 文字だけの値（Google の copyright「Imagery ©2026 Airbus, CNES / Airbus, Maxar Technologies Map data ©2026」
-など）や、OpenLayers の source（OSM・XYZ・TileJSON など）の既定の出典（文字とリンク）は、今までどおり
-出ます。地図の設定の `attr`（アプリの作者が書く値）は、今までどおり広い許可表で洗います（画像なども書けます）。
+など）や、ふつうの TileJSON の `attribution` のような文字とリンクは、そのまま出ます。地図の設定の `attr`（アプリの作者が書く値）は、今までどおり広い許可表で洗います（画像なども書けます）。
 同じものかどうかは表示される文字で比べるので、`attr` と source の出典が同じ文字なら 1 回だけ出します。
 
 位置は地図の要素の CSS の変数（`--maplat-attribution-right`・`--maplat-attribution-bottom`・

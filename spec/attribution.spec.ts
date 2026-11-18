@@ -17,6 +17,7 @@ import {
   googleLogoVariant,
   normalizeOlAttributions,
   pickAttributionText,
+  providerAttributionKind,
   resolveAttributionLang,
   sanitizeSourceAttributions,
   ATTRIBUTION_MAX_LINES
@@ -27,6 +28,16 @@ const GSI_ATTR = { ja: "国土地理院", en: "The Geospatial Information Author
 
 function source(attr: unknown, wmts = true) {
   return { get: (key: string) => (key === "attr" ? attr : undefined), isWmts: () => wmts };
+}
+
+/** 地図の描画の frameState（TileJSON の出典は表示範囲と重なるときだけ返る）。 */
+const FRAME = { extent: [-20037508, -20037508, 20037508, 20037508] };
+
+/** 提供元の TileJSON の attribution を持つ OpenLayers の TileJSON の source（地図の設定の attr も付けられる）。 */
+function tileJsonSource(attribution: string, attr?: unknown) {
+  const src = new TileJSON({ tileJSON: { tiles: ["https://example.org/{z}/{x}/{y}.png"], attribution } });
+  if (attr !== undefined) src.set("attr", attr);
+  return src;
 }
 
 afterEach(() => {
@@ -209,34 +220,38 @@ describe("AttributionDisplay", () => {
     expect(display.element.textContent).toBe(GSI_ATTR.en);
   });
 
-  it("attr の無い地図は OpenLayers の source の出典を読む（Promise も受ける・空では消さない）", async () => {
+  it("Google の地図は提供元の申告（copyright）を読む（Promise も受ける・空では消さない）", async () => {
     const { display } = setup("ja");
     let copyright: unknown = "Map data ©2026 Google";
     const frames: unknown[] = [];
     const google = {
       get: () => undefined,
       isWmts: () => true,
+      googleMapType: "roadmap",
       getAttributions: () => (frameState: unknown) => {
         frames.push(frameState);
         return Promise.resolve(copyright);
       }
     };
     display.update([google, source(GSI_ATTR)]);
-    expect(display.element.textContent).toBe("国土地理院");
+    expect(display.texts).toEqual(["国土地理院"]);
     display.refreshDynamic([google], { frame: 1 });
     await flush();
     expect(frames).toEqual([{ frame: 1 }]);
-    expect(display.element.textContent).toBe("Map data ©2026 Google | 国土地理院");
+    expect(display.texts).toEqual(["Map data ©2026 Google", "国土地理院"]);
     // 動かしている途中など、値が返らないときは前の値のまま
     copyright = undefined;
     display.refreshDynamic([google], { frame: 2 });
     await flush();
-    expect(display.element.textContent).toBe("Map data ©2026 Google | 国土地理院");
+    expect(display.texts).toEqual(["Map data ©2026 Google", "国土地理院"]);
     // 範囲が変わって値が変わったら作り直す
     copyright = ["Map data ©2026 Google, ZENRIN"];
     display.refreshDynamic([google], { frame: 3 });
     await flush();
-    expect(display.element.textContent).toBe("Map data ©2026 Google, ZENRIN | 国土地理院");
+    expect(display.texts).toEqual(["Map data ©2026 Google, ZENRIN", "国土地理院"]);
+    expect(
+      display.element.querySelector(".maplat-attribution-google .maplat-attribution-text")!.textContent
+    ).toBe("Map data ©2026 Google, ZENRIN");
     // 表示から外れたら、遅れて届いた値も出さない
     display.update([source(OSM_ATTR)]);
     display.refreshDynamic([google], { frame: 4 });
@@ -244,23 +259,35 @@ describe("AttributionDisplay", () => {
     expect(display.element.textContent).toBe(OSM_ATTR);
   });
 
-  it("空白だけの attr は無いものとみなし、OpenLayers の出典を読む", async () => {
+  it("空白だけの attr は無いものとみなし、提供元の申告（TileJSON の attribution）を読む", async () => {
     const { display } = setup("ja");
-    const blank = {
-      get: (key: string) => (key === "attr" ? "   " : undefined),
-      isWmts: () => true,
-      getAttributions: () => () => "OL の出典"
-    };
-    const blankLocalized = {
-      get: (key: string) => (key === "attr" ? { ja: " ", en: "" } : undefined),
-      isWmts: () => true,
-      getAttributions: () => () => ["別の OL の出典"]
-    };
+    const blank = tileJsonSource("TileJSON の出典", "   ");
+    const blankLocalized = tileJsonSource("別の TileJSON の出典", { ja: " ", en: "" });
     display.update([blank, blankLocalized]);
     expect(display.element.hidden).toBe(true);
-    display.refreshDynamic([blank, blankLocalized], {});
+    display.refreshDynamic([blank, blankLocalized], FRAME);
     await flush();
-    expect(display.element.textContent).toBe("OL の出典 | 別の OL の出典");
+    expect(display.element.textContent).toBe("TileJSON の出典 | 別の TileJSON の出典");
+  });
+
+  it("提供元の申告でない source（型で決める）の出典は読まない。attr も無ければ何も出さない", async () => {
+    const { display } = setup("ja");
+    let called = false;
+    const plain = {
+      get: () => undefined,
+      isWmts: () => true,
+      getAttributions: () => () => {
+        called = true;
+        return "ライブラリの既定の出典";
+      }
+    };
+    const osm = new OSM();
+    display.update([plain, osm]);
+    display.refreshDynamic([plain, osm], FRAME);
+    await flush();
+    expect(called).toBe(false);
+    expect(display.texts).toEqual([]);
+    expect(display.element.hidden).toBe(true);
   });
 
   it("地図の設定の attr があれば OpenLayers の出典は読まない", async () => {
@@ -593,20 +620,19 @@ describe("source から読んだ出典は狭い許可表で洗う", () => {
     return { map, display };
   }
   const flush = () => new Promise(resolve => setTimeout(resolve, 0));
-  /** attr の無い現代の地図（OpenLayers の出典を返す）。 */
+  /**
+   * attr の無い現代の地図で、提供元の申告を持つもの。googleMapType があれば Google の地図（copyright を返す）、
+   * 無ければ OpenLayers の TileJSON（提供元の TileJSON の attribution）。
+   */
   function olSource(value: unknown, googleMapType?: string) {
-    return {
-      get: () => undefined,
-      isWmts: () => true,
-      getAttributions: () => () => value,
-      ...(googleMapType ? { googleMapType } : {})
-    };
+    if (!googleMapType) return tileJsonSource(String(value));
+    return { get: () => undefined, isWmts: () => true, getAttributions: () => () => value, googleMapType };
   }
   async function show(value: unknown, googleMapType?: string) {
     const { display } = setup();
     const src = olSource(value, googleMapType);
     display.update([src]);
-    display.refreshDynamic([src], {});
+    display.refreshDynamic([src], FRAME);
     await flush();
     return display;
   }
@@ -678,10 +704,10 @@ describe("source から読んだ出典は狭い許可表で洗う", () => {
     let value: unknown = "Map data ©2026 Google";
     const src = { ...olSource(undefined, "roadmap"), getAttributions: () => () => value };
     display.update([src]);
-    display.refreshDynamic([src], {});
+    display.refreshDynamic([src], FRAME);
     await flush();
     value = '<img src="https://example.org/x.png">';
-    display.refreshDynamic([src], {});
+    display.refreshDynamic([src], FRAME);
     await flush();
     expect(display.texts).toEqual(["Map data ©2026 Google"]);
   });
@@ -701,47 +727,56 @@ describe("source から読んだ出典は狭い許可表で洗う", () => {
     expect(display.element.querySelector(".maplat-attribution-item a")!.getAttribute("rel")).toBe("noopener noreferrer");
   });
 
-  it("OpenLayers の source の既定の出典（リンクを含む）が正しく出る", async () => {
-    const frameState = { extent: [-20037508, -20037508, 20037508, 20037508], viewState: { projection: undefined } };
+  it("提供元の申告だけを出す: OSM・StadiaMaps・XYZ の既定値・作るときの値は出さず、TileJSON の attribution は出す", async () => {
+    const tileJson = new TileJSON({
+      tileJSON: {
+        tiles: ["https://example.org/{z}/{x}/{y}.png"],
+        attribution: '<a href="https://example.org/tilejson">Example TileJSON</a> contributors'
+      }
+    });
+    // 作るときに attributions を渡した TileJSON は、TileJSON の attribution ではなくそちらを返す（出さない）
+    const tileJsonWithOption = new TileJSON({
+      attributions: "作るときの出典",
+      tileJSON: { tiles: ["https://example.org/{z}/{x}/{y}.png"], attribution: "提供元の出典" }
+    });
     const sources = [
       new OSM(),
       new StadiaMaps({ layer: "stamen_toner" }),
-      new XYZ({ url: "https://example.org/{z}/{x}/{y}.png", attributions: '&copy; <a href="https://example.org/" target="_blank">Example</a>' }),
-      new TileJSON({
-        tileJSON: {
-          tiles: ["https://example.org/{z}/{x}/{y}.png"],
-          attribution: '<a href="https://example.org/tilejson">Example TileJSON</a> contributors'
-        }
-      })
+      new XYZ({ url: "https://example.org/{z}/{x}/{y}.png", attributions: "&copy; Example" }),
+      tileJson,
+      tileJsonWithOption
     ];
+    expect(sources.map(src => providerAttributionKind(src as never))).toEqual([
+      undefined,
+      undefined,
+      undefined,
+      "tilejson",
+      "tilejson"
+    ]);
     const { display } = setup();
     display.update(sources as never);
-    display.refreshDynamic(sources as never, frameState);
+    display.refreshDynamic(sources as never, FRAME);
     await flush();
-    expect(display.element.textContent).toBe(
-      [
-        "© OpenStreetMap contributors.",
-        "© Stadia Maps",
-        "© Stamen Design",
-        "© OpenMapTiles",
-        // StadiaMaps の OSM の出典は OSM の source と同じ文字列なので 1 回だけ
-        "© Example",
-        "Example TileJSON contributors"
-      ].join(" | ")
-    );
+    expect(display.element.textContent).toBe("Example TileJSON contributors");
     const links = [...display.element.querySelectorAll(".maplat-attribution-item a")];
-    expect(links.map(a => a.getAttribute("href"))).toEqual([
-      "https://www.openstreetmap.org/copyright",
-      "https://www.stadiamaps.com/",
-      "https://stamen.com/",
-      "https://openmaptiles.org/",
-      "https://example.org/",
-      "https://example.org/tilejson"
-    ]);
-    for (const link of links) {
-      expect(link.getAttribute("rel")).toBe("noopener noreferrer");
-      expect(link.getAttribute("target")).toBe("_blank");
-    }
+    expect(links.map(a => a.getAttribute("href"))).toEqual(["https://example.org/tilejson"]);
+    expect(links[0].getAttribute("rel")).toBe("noopener noreferrer");
+    expect(links[0].getAttribute("target")).toBe("_blank");
+  });
+
+  it("OSM の source で地図の設定の attr が無いとき、何も出さない（ライブラリの既定値で埋めない）", async () => {
+    const osm = new OSM();
+    expect(typeof osm.getAttributions()).toBe("function");
+    const { display } = setup();
+    display.update([osm as never]);
+    display.refreshDynamic([osm as never], FRAME);
+    await flush();
+    expect(display.texts).toEqual([]);
+    expect(display.element.hidden).toBe(true);
+    // attr を書けば、それを出す
+    osm.set("attr", "©︎ OpenStreetMap contributors");
+    display.update([osm as never]);
+    expect(display.element.textContent).toBe("©︎ OpenStreetMap contributors");
   });
 
   it("Bing Maps の利用規約のリンクは、class だけ落ちてリンクは残る", () => {
@@ -762,7 +797,9 @@ describe("出典の箱の行数の上限（Google の copyright は切らない�
     return { map, display };
   }
   const flush = () => new Promise(resolve => setTimeout(resolve, 0));
+  /** extra に googleMapType があれば Google の地図、無ければ OpenLayers の TileJSON（提供元の申告）。 */
   function olSource(value: unknown, extra: Record<string, unknown> = {}) {
+    if (!("googleMapType" in extra)) return tileJsonSource(String(value));
     return { get: () => undefined, isWmts: () => true, getAttributions: () => () => value, ...extra };
   }
   const LONG = "█".repeat(6000);
@@ -791,7 +828,7 @@ describe("出典の箱の行数の上限（Google の copyright は切らない�
     const OVERLAY_LONG = "▒".repeat(6000);
     const overlay = source(`<p>${OVERLAY_LONG}</p>`);
     display.update([fetched, overlay], [overlay]);
-    display.refreshDynamic([fetched], {});
+    display.refreshDynamic([fetched], FRAME);
     await flush();
     const [overlayBox, baseBox] = boxes(display);
     expect(overlayBox.classList.contains("maplat-attribution-overlay")).toBe(true);
@@ -814,7 +851,7 @@ describe("出典の箱の行数の上限（Google の copyright は切らない�
       const { display } = setup();
       const google = olSource(copyright, { googleMapType: "satellite" });
       display.update([google]);
-      display.refreshDynamic([google], {});
+      display.refreshDynamic([google], FRAME);
       await flush();
       const box = display.element.querySelector<HTMLElement>(".maplat-attribution-google .maplat-attribution-text")!;
       expect(box.classList.contains("maplat-attribution-clamp")).toBe(false);
@@ -829,7 +866,7 @@ describe("出典の箱の行数の上限（Google の copyright は切らない�
       googleMapType: "roadmap"
     });
     display.update([google]);
-    display.refreshDynamic([google], {});
+    display.refreshDynamic([google], FRAME);
     await flush();
     expect(display.element.querySelector("img")).toBeNull();
     expect(display.element.querySelector(".maplat-attribution-google a")!.getAttribute("rel")).toBe("noopener noreferrer");
@@ -842,7 +879,7 @@ describe("出典の箱の行数の上限（Google の copyright は切らない�
     });
     const { display } = setup();
     display.update([google]);
-    display.refreshDynamic([google], {});
+    display.refreshDynamic([google], FRAME);
     await flush();
     expect(display.texts).toEqual(["Map data ©2026 A & B"]);
     expect([...display.element.querySelectorAll(".maplat-attribution-item")].map(e => e.textContent)).toEqual([
@@ -851,13 +888,13 @@ describe("出典の箱の行数の上限（Google の copyright は切らない�
     // 重ね地図の attr が Google の copyright と同じ文字なら、重ね地図の箱は出さない
     const overlay = source("Map data ©2026 A &amp; B");
     display.update([google, overlay], [overlay]);
-    display.refreshDynamic([google], {});
+    display.refreshDynamic([google], FRAME);
     await flush();
     expect(display.element.querySelector(".maplat-attribution-overlay")).toBeNull();
     // source から読んだ値の texts は洗う前の元の値
     const plain = olSource("Example & Co.");
     display.update([plain]);
-    display.refreshDynamic([plain], {});
+    display.refreshDynamic([plain], FRAME);
     await flush();
     expect(display.texts).toEqual(["Example & Co."]);
     expect(display.element.querySelector(".maplat-attribution-item")!.innerHTML).toBe("Example &amp; Co.");
