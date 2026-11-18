@@ -50,8 +50,10 @@ export interface ProviderAttribution {
 }
 
 /**
- * 提供元の申告の表が変わったとき（地図の切り替え・申告の到着）に、出典の箱から出す DOM の事象。
- * bubbles・composed なので <maplat-app>（旧 API は地図の div）で受けられる。detail は無い。
+ * providerAttributions の値が変わったとき（地図の切り替えで載る地図や値が変わった・申告が届いた・変わった）に出す
+ * DOM の事象。値が変わらなければ出さない（申告の無い地図どうしの切り替えでは出ない）。
+ * 出すのは地図の入れ物（`<maplat-app>` の要素そのもの。旧 API は地図の div）から。detail は無い。
+ * ほかの要素の事象と同じく bubbles: true・composed: false・cancelable: false。
  */
 export const ATTRIBUTION_CHANGED_EVENT = "attributionChanged";
 
@@ -544,6 +546,8 @@ export class AttributionDisplay {
   // 読むのは providerAttributionKind が決まる source だけ（ライブラリの既定値は読まない）。
   // 外の値なので、描くときに狭い許可表で洗う（sanitizeSourceAttributions）
   #dynamic = new Map<AttributionSourceLike, readonly string[]>();
+  // 最後に知らせた providerAttributions（比べる形）。変わったときだけ ATTRIBUTION_CHANGED_EVENT を出す
+  #notifiedProviders = "[]";
   #observer: MutationObserver | null = null;
   #resizeObserver: ResizeObserver | null = null;
   #disposed = false;
@@ -605,10 +609,17 @@ export class AttributionDisplay {
     this.#notifyChanged();
   }
 
-  /** 提供元の申告の表が変わったことを知らせる（ATTRIBUTION_CHANGED_EVENT）。 */
+  /**
+   * providerAttributions の値が前に知らせたときから変わっていれば、地図の入れ物から ATTRIBUTION_CHANGED_EVENT を出す。
+   */
   #notifyChanged(): void {
     if (this.#disposed || typeof CustomEvent === "undefined") return;
-    this.element.dispatchEvent(new CustomEvent(ATTRIBUTION_CHANGED_EVENT, { bubbles: true, composed: true }));
+    const current = JSON.stringify(this.providerAttributions);
+    if (current === this.#notifiedProviders) return;
+    this.#notifiedProviders = current;
+    this.#container.dispatchEvent(
+      new CustomEvent(ATTRIBUTION_CHANGED_EVENT, { bubbles: true, composed: false, cancelable: false })
+    );
   }
 
   /**

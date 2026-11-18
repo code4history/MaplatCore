@@ -249,6 +249,8 @@ Google の copyright 以外の箱は、2 行までにします（`.maplat-attrib
 切った出典の全文は、UI の地図情報などで見せることを想定しています。ただし、今の版の `<maplat-ui>` の
 地図情報は、今の地図のメタデータしか出しません。重ね地図を出しているときの下の背景地図の `attr`、古地図の
 背面の背景地図、提供元の申告は、そこには出ません。表示中の地図それぞれの出典を出す UI の直しは、別に進めています。
+提供元の申告は、`<maplat-app>` の `providerAttributions`（地図ごとの値）で読め、値が変わったことは事象
+`attributionChanged` で分かります（MaplatCore の要素だけの口。`docs/api/maplat-app.ja.md`）。
 
 Google の copyright は、利用条件が "in full as provided" で出すよう求めるため、切らずに全文を
 必要なだけ折り返して出します。

@@ -1032,30 +1032,51 @@ describe("providerAttributions（地図ごとの提供元の申告）と attribu
     expect(display.providerAttributions).toEqual([{ mapID: "gmap", attributions: ["Map data ©2026 Google"] }]);
   });
 
-  it("地図の切り替えと申告の到着で、出典の箱から bubbles・composed の attributionChanged を出す", async () => {
+  it("providerAttributions の値が変わったときだけ、地図の入れ物から attributionChanged を出す", async () => {
     const { map, display } = setup();
     const events: Event[] = [];
     map.addEventListener("attributionChanged", event => events.push(event));
     const src = withId("tilejson", tileJsonSource("Provider"));
+    // 地図を載せただけでは値は [] のまま（まだ申告を読んでいない）: 出さない
     display.update([src] as never);
-    expect(events).toHaveLength(1);
+    expect(events).toHaveLength(0);
     display.refreshDynamic([src] as never, FRAME);
     await flush();
     expect(display.providerAttributions).toEqual([{ mapID: "tilejson", attributions: ["Provider"] }]);
-    expect(events).toHaveLength(2);
-    expect(events[1].bubbles).toBe(true);
-    expect(events[1].composed).toBe(true);
-    // 同じ値の再読み取りでは出さない
+    expect(events).toHaveLength(1);
+    expect(events[0].target).toBe(map);
+    expect(events[0].bubbles).toBe(true);
+    expect(events[0].composed).toBe(false);
+    // 同じ値の再読み取り・同じ地図の載せ直しでは出さない
     display.refreshDynamic([src] as never, FRAME);
     await flush();
-    expect(events).toHaveLength(2);
-    // 表示から外れた地図の申告は消える
+    display.update([src] as never);
+    expect(events).toHaveLength(1);
+    // 表示から外れて値が [] になったら出す
     display.update([]);
     expect(display.providerAttributions).toEqual([]);
-    expect(events).toHaveLength(3);
+    expect(events).toHaveLength(2);
     // 破棄の後は出さない
     display.dispose();
     display.update([src] as never);
-    expect(events).toHaveLength(3);
+    display.refreshDynamic([src] as never, FRAME);
+    await flush();
+    expect(events).toHaveLength(2);
+  });
+
+  it("申告の無い地図どうしを切り替えても attributionChanged を出さない", async () => {
+    const { map, display } = setup();
+    const events: Event[] = [];
+    map.addEventListener("attributionChanged", event => events.push(event));
+    const osm = withId("osm", new OSM());
+    const xyz = withId("xyz", new XYZ({ url: "https://example.org/{z}/{x}/{y}.png", attributions: "&copy; Example" }));
+    const configured = withId("gsi", tileJsonSource("Provider", "国土地理院"));
+    for (const sources of [[osm], [xyz], [configured], [osm, xyz], []]) {
+      display.update(sources as never);
+      display.refreshDynamic(sources as never, FRAME);
+      await flush();
+    }
+    expect(display.providerAttributions).toEqual([]);
+    expect(events).toHaveLength(0);
   });
 });

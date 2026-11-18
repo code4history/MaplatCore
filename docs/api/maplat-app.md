@@ -295,20 +295,42 @@ the MaplatCore element; check `supports("display-mode")` before calling them.
 - `providerAttributions: { mapID: string; attributions: string[] }[]` (read-only)
   - The attributions declared by the providers of the displayed modern maps
     (the foreground map, the overlay and the base map behind), one entry per
-    map: values returned by the provider's server, such as the Google Map Tiles
-    API copyright or the TileJSON `attribution`. They are the same values as
-    the attribution at the bottom right of the map. The map definition's
-    `attr` is not included (read it with `getMapMeta`), and neither are
-    library defaults (the text that OpenLayers sources such as OSM or XYZ
-    carry on their own).
-  - Each value is HTML cleaned with the narrow allowlist
-    (`sanitizeHtml(html, { profile: "iiif" })`). Maps without a declaration
-    are left out. `[]` before the map is ready.
-  - When the table changes (a map change, or a declaration arriving), the
-    element receives the DOM event `attributionChanged` (no detail,
-    `bubbles: true`).
-  - This is a MaplatCore-only read outside the layer A contract. Elements of
-    other implementations may not have it, so check that it exists before use.
+    map. It returns **only** these two kinds:
+    - for a Google map, the viewport copyright returned by the Map Tiles API
+      (also when the map has an `attr`);
+    - for an OpenLayers `TileJSON` source without an `attr`, the `attribution`
+      written in the TileJSON (only values equal to it). For a source whose
+      TileJSON is fetched from the provider's server this is the provider's
+      value; for a source to which the app passes `tileJSON` directly, it is
+      the value the app wrote.
+  - Not returned: library defaults (the default credits that OpenLayers
+    sources such as `OSM`, `StadiaMaps` or `BingMaps` carry) and the
+    `attributions` given when a source is constructed (an `XYZ`'s
+    `attributions`, or values given to a `TileJSON` at construction). The map
+    definition's `attr` is not included either (read it with `getMapMeta`).
+  - The values come from the same table as the attribution at the bottom
+    right of the map, except that sources without a `mapID` (such as a source
+    the app passes directly) are left out. Each value is HTML cleaned with the
+    narrow allowlist (`sanitizeHtml(html, { profile: "iiif" })`). Maps without
+    a declaration are left out. `[]` before the map is ready.
+  - Only when the value changes (a map change that changes the maps or values
+    listed, or a declaration arriving or changing), the element dispatches the
+    DOM event `attributionChanged`. It has no detail and, like the other
+    events, `bubbles: true`, `composed: false`, `cancelable: false`; its
+    `target` is the `<maplat-app>` element. Switching between maps without a
+    declaration does not dispatch it.
+  - This is a read that only the MaplatCore element has, outside the layer A
+    contract. Elements of other implementations may not have it, so check
+    that it exists before use:
+
+    ```js
+    const el = document.querySelector("maplat-app");
+    if ("providerAttributions" in el) {
+      const render = () => console.log(el.providerAttributions);
+      el.addEventListener("attributionChanged", render);
+      render();
+    }
+    ```
 
 ## Events (`MAPLAT_APP_EVENTS`, `ELEMENT_OWN_EVENTS`)
 
