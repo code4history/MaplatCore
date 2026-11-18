@@ -1,8 +1,10 @@
 import { MaplatApp } from './index';
+import { ProviderAttribution } from './attribution';
 import { MaplatAppElementBase, ElementStartupConfig, LayerAImplementation, RuntimeValueResolver } from './element_base';
 import { EnvelopeSpec, LngLat, MapListItem, MaplatAppElement as MaplatAppElementContract, Viewpoint } from './element_contract';
 export { MAPLAT_APP_EVENTS, ELEMENT_OWN_EVENTS, MAPLAT_APP_METHODS, ELEMENT_OWN_METHODS, MAPLAT_APP_TAG, ELEMENT_ATTRIBUTES, ELEMENT_PROPERTIES, ELEMENT_STARTUP_KEYS, LAYER_A_PRO_ATTRIBUTES } from './element_contract';
 export type { MaplatAppEventName, MaplatAppMethodName } from './element_contract';
+export type { ProviderAttribution } from './attribution';
 type CoreApp = MaplatApp;
 /** @deprecated 共通の型 Viewpoint（@maplat/core/common）を使う。 */
 export type MaplatViewpoint = Viewpoint;
@@ -28,6 +30,15 @@ export declare class MaplatAppElement extends MaplatAppElementBase implements Ma
      * Core の座標変換は非同期なので、視点が変わるたび（changeViewpoint）に求めて控えた値を返す。
      */
     getViewExtent(): LngLat[] | null;
+    /**
+     * 表示中の現代の地図（前面・重ね地図・背面のベースマップ）ごとの、提供元の申告の出典
+     * （Google の Map Tiles API の著作権・TileJSON の attribution など、提供元のサーバーが返した値）。
+     * 値は狭い許可表（sanitizeHtml の profile "iiif"）で洗った HTML。申告の無い地図は載せない。
+     * 地図の定義の attr は載せない（getMapMeta で取る）。地図の準備前は []。
+     * 表が変わると、要素に DOM の事象 `attributionChanged`（detail なし・bubbles）が届く。
+     * 層 A の契約の外の Core だけの読み取り（他の実装には無いことがある）。
+     */
+    get providerAttributions(): ProviderAttribution[];
     /** 地図の範囲（枠線・塗り）を描く。空配列で消す。地図を切り替えると今の地図の座標で描き直す。 */
     setEnvelopes(items: EnvelopeSpec[]): void;
     /** 既定のピンの画像（POI にも祖先にも icon が無いマーカーに地図が描く画像。Core の parts/defaultpin*.png）。 */

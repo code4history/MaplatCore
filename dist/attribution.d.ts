@@ -8,7 +8,21 @@ export interface AttributionSourceLike {
     getAttributions?: () => unknown;
     /** Google の地図（GoogleMap）だけが持つ、Map Tiles API の mapType（roadmap・satellite・terrain）。 */
     googleMapType?: unknown;
+    /** 地図の ID（providerAttributions で地図ごとに分けるため）。 */
+    mapID?: unknown;
 }
+/** 表示中の地図 1 つ分の、提供元の申告の出典（`<maplat-app>` の providerAttributions の要素）。 */
+export interface ProviderAttribution {
+    /** 地図の ID */
+    mapID: string;
+    /** 提供元の申告（狭い許可表で洗った HTML。空のものは除く） */
+    attributions: string[];
+}
+/**
+ * 提供元の申告の表が変わったとき（地図の切り替え・申告の到着）に、出典の箱から出す DOM の事象。
+ * bubbles・composed なので <maplat-app>（旧 API は地図の div）で受けられる。detail は無い。
+ */
+export declare const ATTRIBUTION_CHANGED_EVENT = "attributionChanged";
 /** Google Maps のロゴの種類。light: 灰色の字・白い枠（地図用）、dark: 白い字・濃い枠（衛星写真用）。 */
 export type GoogleLogoVariant = "light" | "dark";
 /** Google Maps のロゴの表示の形。logo: ロゴの画像、text: 文字 "Google Maps"（狭いとき）。 */
@@ -107,6 +121,12 @@ export declare class AttributionDisplay {
     constructor(container: HTMLElement, getLang: () => string);
     /** 今出している Google Maps の表示（ロゴか文字）。Google の地図が無ければ undefined（試験と診断用）。 */
     get googleAttribution(): GoogleAttributionMode | undefined;
+    /**
+     * 表示中の source ごとの、提供元の申告（OpenLayers の source から読んだ出典を、狭い許可表で洗った HTML）。
+     * 地図の右下に出すのと同じ表から作る。申告の無い source・mapID の無い source は載せない。
+     * 地図の定義の attr は載せない（getMapMeta で取れる）。並びは表示の順（前面 → 重ね地図 → 背面）。
+     */
+    get providerAttributions(): ProviderAttribution[];
     /** 今の言語で出典の文字列を返す（試験と診断用）。 */
     get texts(): string[];
     /**
