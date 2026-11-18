@@ -115,6 +115,7 @@ for (const { id, synthetic, expected: e } of cases) {
         );
         if (!copied.ok) throw new Error(copied.reason);
         expect(copied.values.title).toEqual(e.titleValue);
+        expect(copied.values.title).not.toEqual(e.canvasLabel);
         expect(copied.copiedValues.title).toEqual({ [e.lang]: e.title });
       }
     });
@@ -180,6 +181,63 @@ describe("自作の再現 fixture: canvas が page 1・仮の 6000×6000 の Pre
     expect(read("synthetic-p2-page1.source.json").synthetic).toBe(true);
     expect(readFileSync(resolve(directory, "README.md"), "utf8")).toContain(
       "synthetic-p2-page1"
+    );
+  });
+
+  it("題名の既定は Manifest の label で、canvas の page 1 にならない", () => {
+    const listed = listIiifCanvases(manifest);
+    if (!listed.ok) throw new Error(listed.reason);
+    expect(listed.canvases).toHaveLength(1);
+    expect(listed.canvases[0].label).toBe("page 1");
+    const bindings = proposeIiifBindings(manifest, e.canvasId);
+    expect(bindings.title).toEqual({ from: "manifest", property: "label" });
+    const copied = resolveIiifMetadata(
+      manifest,
+      { canvas: e.canvasId, bindings },
+      "ja",
+      html => html
+    );
+    if (!copied.ok) throw new Error(copied.reason);
+    expect(copied.values.title).toBe(e.title);
+    expect(copied.values.title).not.toBe("page 1");
+  });
+
+  it("大きさは info.json の値で判定し、canvas の 6000×6000 とは不一致になる", () => {
+    const listed = listIiifCanvases(manifest);
+    if (!listed.ok) throw new Error(listed.reason);
+    expect(listed.canvases[0]).toMatchObject({ width: 6000, height: 6000 });
+    expect({ width: info.width, height: info.height }).toEqual({
+      width: 11959,
+      height: 12961
+    });
+    expect(checkIiifDelivery(info, { width: 11959, height: 12961 })).toEqual({
+      ok: true,
+      version: "2",
+      level: 1,
+      tiling: "arbitrary"
+    });
+    expect(checkIiifDelivery(info, { width: 6000, height: 6000 })).toEqual({
+      ok: false,
+      reason: "size-mismatch"
+    });
+  });
+});
+
+describe("山形 amane: canvas が page 1・仮の 6000×6000 の Presentation 2（実在・抜粋）", () => {
+  const entry = cases.find(
+    (item: { id: string }) => item.id === "amane"
+  );
+  const e = entry.expected;
+  const manifest = read("amane.manifest.json");
+  const info = read("amane.info.json");
+  const source = read("amane.source.json");
+
+  it("抜粋であることを cases.json と source.json の両方に記録する", () => {
+    expect(source.excerpt).toBeTruthy();
+    expect(source.excerpt.manifest.length).toBeGreaterThan(0);
+    expect(source.originalSha256.manifest).toMatch(/^[0-9a-f]{64}$/);
+    expect(readFileSync(resolve(directory, "README.md"), "utf8")).toContain(
+      "amane"
     );
   });
 
