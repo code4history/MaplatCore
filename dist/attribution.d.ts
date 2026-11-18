@@ -62,27 +62,39 @@ export declare function displayedAttributionSources(parts: {
 export declare function hasConfiguredAttr(source: AttributionSourceLike): boolean;
 /** OpenLayers の出典の値（文字列・配列・それ以外）を文字列の配列にする。 */
 export declare function normalizeOlAttributions(value: unknown): string[];
+/** source から読んだ出典 1 つの文字数の上限（表示される文字の数。超えたら切って「…」を付ける）。 */
+export declare const SOURCE_ATTRIBUTION_MAX_CHARS = 500;
+/** source から読んだ出典 1 つの箱の高さの上限（行の数）。 */
+export declare const SOURCE_ATTRIBUTION_MAX_LINES = 4;
+/** source から読んだ出典 1 つの箱の高さの上限（地図の高さに対する割合）。行の数の上限と小さい方を使う。 */
+export declare const SOURCE_ATTRIBUTION_MAX_MAP_RATIO = 0.25;
 /**
  * OpenLayers の source から読んだ出典（第三者のサーバーが決める値。Google の copyright・TileJSON の
- * attribution など）を、狭い許可表（sanitizeHtml の profile "iiif"）で洗う。空になったものは除く。
- *   - 残るタグは a・b・br・i・p・small・span・sub・sup だけ、属性は http(s) の href だけ。
- *     img・class・style・javascript: などは落ちる。リンクには target="_blank" と rel="noopener noreferrer" が付く。
+ * attribution など）を、表示用の HTML にする。空になったものは除く。
+ *   - 狭い許可表（sanitizeHtml の profile "iiif"）で洗う。残るタグは a・b・br・i・p・small・span・sub・sup だけ、
+ *     属性は http(s) の href だけ。img・class・style・javascript: などは落ちる。
+ *     リンクには target="_blank" と rel="noopener noreferrer" が付く。
+ *   - 表示される文字は SOURCE_ATTRIBUTION_MAX_CHARS 字まで（超えたら切って「…」）。
+ *     箱の高さも CSS で上限を付ける（.maplat-attribution-item-source）。
  *   - 理由: 広い許可表（地図の設定の attr 用）のままだと、外の値の
  *     `<a href="https://…"><img src="https://…" width="4000" height="4000"></a>` で、出典の箱が地図を覆い、
  *     地図全体が外へのリンクになり、外の画像を読みに行って見ている人の情報が第三者に渡る。
- * 地図の設定の attr（アプリの作者が書く値）には使わない（従来どおり広い許可表で、img なども通る）。
- * 文字だけの値（Google の copyright など）は変わらない（& と < > は HTML の形になる）。
+ *     狭い許可表を通る `<a href="https://…"><p>長い文字</p></a>` や長い文字だけでも、箱が地図を覆いうる。
+ * 地図の設定の attr（アプリの作者が書く値）には使わない（従来どおり広い許可表で、img なども通り、上限も無い）。
+ * 文字だけの値（Google の copyright など）は、上限より短ければ変わらない（& と < > は HTML の形になる）。
  */
 export declare function sanitizeSourceAttributions(texts: readonly string[]): string[];
 /**
  * source の並びから、表示する出典の文字列（言語を選んだもの・空と重複を除いたもの）を作る。
  * 地図の設定の `attr` が無い source は、dynamic（OpenLayers の source から読んだ出典）の値を使う。
  * Google の地図は `attr` があっても dynamic（copyright）を先に出す。
+ * 重複は表示される文字で比べる（設定の `A & B` と source の `A &amp; B` は同じもの）。
+ * 返すのは元の値（洗う前）。source の値で、洗うと何も残らないものは除く。
  */
 export declare function attributionTexts(sources: AttributionSourceLike[], lang: string, dynamic?: ReadonlyMap<AttributionSourceLike, readonly string[]>): string[];
 /**
  * 出典の文字列を、Google の地図の分（google）とそれ以外（others）に分ける。
- * 同じ文字列は 1 回だけ（Google の分を先に取る）。並びは source の順。
+ * 同じ表示の文字は 1 回だけ（Google の分を先に取る）。並びは source の順。
  */
 export declare function attributionGroups(sources: AttributionSourceLike[], lang: string, dynamic?: ReadonlyMap<AttributionSourceLike, readonly string[]>): {
     google: string[];
