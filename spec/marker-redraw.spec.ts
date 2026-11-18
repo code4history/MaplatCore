@@ -79,7 +79,7 @@ function makeApp(appPois: Record<string, any> = {}) {
 }
 
 describe("#134 marker 再描画は直列で最新の要求を残す", () => {
-  it("U-1a: 同 source を3回要求しても走る回は1つで、変換の前に層を消さない", async () => {
+  it("同 source を3回要求しても走る回は1つで、変換の前に層を消さない", async () => {
     const h = makeApp({ main: layer(["app_0", "app_1"]) });
     h.redraw();
     h.redraw();
@@ -98,7 +98,7 @@ describe("#134 marker 再描画は直列で最新の要求を残す", () => {
     expect(h.self.__redrawMarkerBlock).toBe(false);
   });
 
-  it("U-1b: 変換後に実際に追加された Feature の多重集合は各 POI 一件ずつ", async () => {
+  it("変換後に実際に追加された Feature の多重集合は各 POI 一件ずつ", async () => {
     const h = makeApp({ main: layer(["app_0", "app_1"]) });
     h.redraw();
     h.redraw();
@@ -110,7 +110,7 @@ describe("#134 marker 再描画は直列で最新の要求を残す", () => {
     expect(h.ids()).toEqual(["app_0", "app_1"]);
   });
 
-  it("U-2a: A の途中の B→C→C は最新 C 一件だけを保留する", async () => {
+  it("A の途中の B→C→C は最新 C 一件だけを保留する", async () => {
     const h = makeApp();
     h.sources.A.pois = { main: layer(["A#0"]) };
     h.sources.B.pois = { main: layer(["B#0"]) };
@@ -131,7 +131,7 @@ describe("#134 marker 再描画は直列で最新の要求を残す", () => {
     expect(h.ids()).toEqual(["C#0", "C#1"]);
   });
 
-  it("U-2b: 途中の B は描画せず、最終 C の Feature だけが残る", async () => {
+  it("途中の B は描画せず、最終 C の Feature だけが残る", async () => {
     const h = makeApp();
     h.sources.A.pois = { main: layer(["A#0"]) };
     h.sources.B.pois = { main: layer(["B#0"]) };
@@ -147,7 +147,7 @@ describe("#134 marker 再描画は直列で最新の要求を残す", () => {
     expect(h.ids()).toEqual(["C#0"]);
   });
 
-  it("U-3a: 保留後に追加・削除・層 hide を変えると次回開始時の POI が描かれる", async () => {
+  it("保留後に追加・削除・層 hide を変えると次回開始時の POI が描かれる", async () => {
     const h = makeApp({
       main: layer(["app_old"]),
       hidden: layer(["app_hidden"])
@@ -167,7 +167,7 @@ describe("#134 marker 再描画は直列で最新の要求を残す", () => {
     expect(h.ids()).toEqual(["A#new", "app_new"]);
   });
 
-  it("U-3b: 描画途中の全体 hide は保留回に反映され Feature が空になる", async () => {
+  it("描画途中の全体 hide は保留回に反映され Feature が空になる", async () => {
     const h = makeApp({ main: layer(["app_0"]) });
     h.sources.A.pois = { main: layer(["A#0"]) };
     h.redraw();
@@ -178,7 +178,7 @@ describe("#134 marker 再描画は直列で最新の要求を残す", () => {
     expect(h.self.__redrawMarkerBlock).toBe(false);
   });
 
-  it("U-4: 選択中は最後に一回だけ、層の配列の末尾に置く", async () => {
+  it("選択中は最後に一回だけ、層の配列の末尾に置く", async () => {
     const h = makeApp({ main: layer(["app_selected", "app_normal"]) });
     h.self.__selectedMarker = "app_selected";
     h.redraw();
@@ -197,7 +197,7 @@ describe("#134 marker 再描画は直列で最新の要求を残す", () => {
     expect(h.self.__redrawMarkerBlock).toBe(false);
   });
 
-  it("U-5: 保留が空になった後の独立 redraw は新しい POI を描く", async () => {
+  it("保留が空になった後の独立 redraw は新しい POI を描く", async () => {
     const h = makeApp({ main: layer(["app_0"]) });
     h.redraw();
     h.redraw();

@@ -998,7 +998,7 @@ export function createLayerAConformanceCases(options: LayerAConformanceOptions):
     }
   });
 
-  add("A-機能", "未対応の Pro 固有の属性・プロパティはキーごとに 1 回警告して無視する（U3）", async ctx => {
+  add("A-機能", "未対応の Pro 固有の属性・プロパティはキーごとに 1 回警告して無視する", async ctx => {
     const unsupported = LAYER_A_PRO_ATTRIBUTES.filter(d => d.feature && !(document.createElement(tag) as El).supports(d.feature));
     for (const def of unsupported) {
       const el = ctx.mount({ bare: true, connect: false });
