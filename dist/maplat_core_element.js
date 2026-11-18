@@ -1,12 +1,12 @@
-import { mercToLngLat as u, defaultPinIcon as E, MaplatApp as v } from "./maplat_core.js";
+import { mercToLngLat as u, defaultPinIcon as v, MaplatApp as E } from "./maplat_core.js";
 import { defineMaplatAppElementOnce as y, MaplatAppElementBase as A } from "./maplat_core_common.js";
-import { featuresOf as T, ELEMENT_ATTRIBUTES as _, ELEMENT_PROPERTIES as M, MAPLAT_APP_TAG as O } from "./maplat_core_common.js";
+import { featuresOf as _, ELEMENT_ATTRIBUTES as T, ELEMENT_PROPERTIES as M, MAPLAT_APP_TAG as I } from "./maplat_core_common.js";
 import { ELEMENT_ATTRIBUTES as C, ELEMENT_OWN_EVENTS as N, ELEMENT_OWN_METHODS as j, ELEMENT_PROPERTIES as k, ELEMENT_STARTUP_KEYS as B, LAYER_A_PRO_ATTRIBUTES as z, MAPLAT_APP_EVENTS as K, MAPLAT_APP_METHODS as U, MAPLAT_APP_TAG as V } from "./maplat_core_common.js";
 function h(s, e) {
   if (!(s === null || typeof s != "object") && typeof e == "string")
     return Object.hasOwn(s, e) ? s[e] : void 0;
 }
-const I = "1.2.0", P = Object.freeze(T("core")), c = (s) => Array.isArray(s) && Number.isFinite(s[0]) && Number.isFinite(s[1]);
+const O = "1.2.0", P = Object.freeze(_("core")), c = (s) => Array.isArray(s) && Number.isFinite(s[0]) && Number.isFinite(s[1]);
 function g() {
   return typeof matchMedia != "function" ? !1 : matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
@@ -14,7 +14,7 @@ class b extends A {
   /** 実装の種別。有償版は "core-pro"。 */
   implementation = "core";
   /** 実装の版（@maplat/core の版）。 */
-  version = I;
+  version = O;
   // 枠線（setEnvelopes）の最後の指定。地図を切り替えたら描き直す
   #t = [];
   #i = 0;
@@ -67,13 +67,26 @@ class b extends A {
   getViewExtent() {
     return this.#e ? this.#e.map((e) => ({ ...e })) : null;
   }
+  /**
+   * 表示中の現代の地図（前面・重ね地図・背面のベースマップ）ごとの、提供元の申告の出典
+   * （Google の Map Tiles API の著作権・TileJSON の attribution など、提供元のサーバーが返した値）。
+   * 値は狭い許可表（sanitizeHtml の profile "iiif"）で洗った HTML。申告の無い地図は載せない。
+   * 地図の定義の attr と、ライブラリの既定値（OSM・XYZ などの source の文言）は載せない（attr は getMapMeta で取る）。
+   * 地図の準備前は []。
+   * 値が変わると、要素から DOM の事象 `attributionChanged`（detail なし・bubbles: true・composed: false）が出る。
+   * 層 A の契約の外の Core だけの読み取り（他の実装には無いことがある）。
+   */
+  get providerAttributions() {
+    const n = this.currentImplementation()?.__attribution;
+    return n ? n.providerAttributions : [];
+  }
   /** 地図の範囲（枠線・塗り）を描く。空配列で消す。地図を切り替えると今の地図の座標で描き直す。 */
   setEnvelopes(e) {
     this.#t = Array.isArray(e) ? e.map((n) => ({ ...n })) : [], this.#o();
   }
   /** 既定のピンの画像（POI にも祖先にも icon が無いマーカーに地図が描く画像。Core の parts/defaultpin*.png）。 */
   getDefaultPinIcon(e = !1) {
-    return E(e);
+    return v(e);
   }
   /** 現在の地図の zoom を delta だけ変える。「動きを減らす」設定のときはアニメーションせず即座に変える。 */
   zoomBy(e) {
@@ -87,7 +100,7 @@ class b extends A {
    * @internal
    */
   createCore(e) {
-    return new v(e);
+    return new E(e);
   }
   // ---- 基底クラスの hook ----
   features() {
@@ -267,9 +280,9 @@ class b extends A {
   }
 }
 const f = new Map(
-  [..._, ...M].filter((s) => s.option).map((s) => [s.prop, s.option])
+  [...T, ...M].filter((s) => s.option).map((s) => [s.prop, s.option])
 );
-function w(s = O) {
+function w(s = I) {
   y(b, s, "@maplat/core/element");
 }
 w();

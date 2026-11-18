@@ -15,6 +15,7 @@
 // 本体の束は外部化されている）
 import { MaplatApp, defaultPinIcon, mercToLngLat, type ElementImplementationInternals } from "./index";
 import { ownEntry } from "./own-lookup";
+import type { AttributionDisplay, ProviderAttribution } from "./attribution";
 import {
   MaplatAppElementBase,
   defineMaplatAppElementOnce,
@@ -47,6 +48,7 @@ export {
   LAYER_A_PRO_ATTRIBUTES
 } from "./element_contract";
 export type { MaplatAppEventName, MaplatAppMethodName } from "./element_contract";
+export type { ProviderAttribution } from "./attribution";
 
 // @maplat/core の版。ビルド時に vite の define で埋め込む（vite.config.ts・vitest.config.ts）。
 // package.json を import すると型定義の出力の根が変わる（dist/src/ 配下になる）ので使わない。
@@ -137,6 +139,23 @@ export class MaplatAppElement extends MaplatAppElementBase implements MaplatAppE
    */
   getViewExtent(): LngLat[] | null {
     return this.#viewExtent ? this.#viewExtent.map(p => ({ ...p })) : null;
+  }
+
+  /**
+   * 表示中の現代の地図（前面・重ね地図・背面のベースマップ）ごとの、提供元の申告の出典
+   * （Google の Map Tiles API の著作権・TileJSON の attribution など、提供元のサーバーが返した値）。
+   * 値は狭い許可表（sanitizeHtml の profile "iiif"）で洗った HTML。申告の無い地図は載せない。
+   * 地図の定義の attr と、ライブラリの既定値（OSM・XYZ などの source の文言）は載せない（attr は getMapMeta で取る）。
+   * 地図の準備前は []。
+   * 値が変わると、要素から DOM の事象 `attributionChanged`（detail なし・bubbles: true・composed: false）が出る。
+   * 層 A の契約の外の Core だけの読み取り（他の実装には無いことがある）。
+   */
+  get providerAttributions(): ProviderAttribution[] {
+    // MaplatApp の prototype は公開面として固定しているので、メソッドを足さず内部の表示を直接読む
+    // （内部の名前が変わったら spec/element-real-core.spec.ts の試験が落ちる）
+    const impl = this.currentImplementation() as { __attribution?: AttributionDisplay } | null;
+    const display = impl?.__attribution;
+    return display ? display.providerAttributions : [];
   }
 
   /** 地図の範囲（枠線・塗り）を描く。空配列で消す。地図を切り替えると今の地図の座標で描き直す。 */

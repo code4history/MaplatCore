@@ -257,6 +257,36 @@ Maplat の内部用です。使わないでください。
 Pro 専用のメソッド（`setDisplayMode`・`getDisplayMode`）は MaplatCore の要素には
 **定義されていません**。呼ぶ前に `supports("display-mode")` で確かめてください。
 
+### 提供元の申告の出典（MaplatCore だけ）
+
+- `providerAttributions: { mapID: string; attributions: string[] }[]`（読み取り専用）
+  - 表示中の現代の地図（前面・重ね地図・背面のベースマップ）ごとの、提供元の申告の出典です。
+    返すのは次の 2 種類**だけ**です。
+    - Google の地図の、Map Tiles API が返す表示範囲の著作権（地図に `attr` を書いても返します）。
+    - `attr` の無い OpenLayers の `TileJSON` の source の、TileJSON に書かれた `attribution`（その値と同じものだけ）。
+      TileJSON を提供元のサーバーから取った source では提供元の値に、アプリが `tileJSON` の項目で直接渡した
+      source ではアプリが書いた値になります。
+  - 返さないもの: ライブラリの既定値（OpenLayers の `OSM`・`StadiaMaps`・`BingMaps` などが持つ既定の出典）と、
+    source を作るときに渡した `attributions`（`XYZ` の `attributions` や、`TileJSON` に作るときに渡した値）。
+    地図の定義の `attr` も含みません（`getMapMeta` で取ります）。
+  - 値は地図の右下の出典と同じ表から作ります。ただし `mapID` を持たない source（アプリが直接渡した source など）は
+    載りません。値は狭い許可表（`sanitizeHtml(html, { profile: "iiif" })`）で洗った HTML です。申告の無い地図は
+    載りません。地図の準備前は `[]` です。
+  - 値が変わったときだけ（地図の切り替えで載る地図や値が変わった・申告が届いた・変わった）、要素から DOM の事象
+    `attributionChanged` が出ます。detail は無く、ほかのイベントと同じく `bubbles: true`・`composed: false`・
+    `cancelable: false` で、`target` は `<maplat-app>` の要素です。申告の無い地図どうしの切り替えでは出ません。
+  - 層 A の契約の外にある MaplatCore の要素だけの読み取りです。他の実装の要素には無いことがあるので、
+    有無を確かめてから使ってください。
+
+    ```js
+    const el = document.querySelector("maplat-app");
+    if ("providerAttributions" in el) {
+      const render = () => console.log(el.providerAttributions);
+      el.addEventListener("attributionChanged", render);
+      render();
+    }
+    ```
+
 ## イベント（`MAPLAT_APP_EVENTS`・`ELEMENT_OWN_EVENTS`）
 
 すべて要素から出る DOM の `CustomEvent` で、`bubbles: true`・`composed: false`・

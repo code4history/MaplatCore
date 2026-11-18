@@ -3,10 +3,13 @@
 //   起動後に外したときに appOption の値へ戻る（Core に控えを足さずに成り立つこと）
 //   remove() の後始末（前面・背面の target・MapLibre の地図）
 //   uiHooks の context.core / context.mapDivDocument（要素経路は要素・旧クラス経路は MaplatApp）
+//   providerAttributions・attributionChanged（実物の出典の表示から来ること）
 // 地図の実体（OL）は sources を空にして jsdom で起動する（spec/wc-legacy-startup-feature-keys.spec.ts の boot と同じ作り方）。
 import { describe, it, expect, vi, beforeAll, afterEach } from "vitest";
 import { MaplatApp, assets } from "../src/index";
 import "../src/element"; // 副作用で maplat-app を登録する
+import { AttributionDisplay } from "../src/attribution";
+import TileJSON from "ol/source/TileJSON";
 
 const tick = () => new Promise(r => setTimeout(r, 0));
 
@@ -470,5 +473,29 @@ describe("uiHooks の写しは Object.prototype の名前の自作キーも落�
     expect(Object.getPrototypeOf(passed)).toBe(Object.prototype);
     expect((passed as any).injected).toBeUndefined();
     expect(Object.keys(passed)).not.toContain("__proto__");
+  });
+});
+
+describe("providerAttributions と attributionChanged は実物の Core の出典の表示から来る", () => {
+  it("要素の値は Core の出典の表示（内部の __attribution）の申告で、事象は要素から出る", async () => {
+    const el = await bootElement();
+    expect(el.providerAttributions).toEqual([]);
+    // 内部の名前が変わったら、ここで落ちる（要素の getter はこの名前で読む）
+    const display = (el.app as any).__attribution;
+    expect(display).toBeInstanceOf(AttributionDisplay);
+    const events: Event[] = [];
+    el.addEventListener("attributionChanged", (event: Event) => events.push(event));
+    const tileJson = new TileJSON({
+      tileJSON: { tiles: ["https://example.org/{z}/{x}/{y}.png"], attribution: "Example provider" }
+    });
+    (tileJson as any).mapID = "tilejson";
+    display.update([tileJson]);
+    display.refreshDynamic([tileJson], { extent: [-20037508, -20037508, 20037508, 20037508] });
+    await tick();
+    expect(el.providerAttributions).toEqual([{ mapID: "tilejson", attributions: ["Example provider"] }]);
+    expect(events).toHaveLength(1);
+    expect(events[0].target).toBe(el);
+    expect(events[0].bubbles).toBe(true);
+    expect(events[0].composed).toBe(false);
   });
 });

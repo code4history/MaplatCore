@@ -964,3 +964,119 @@ describe("<maplat-ui> の定義を待つ", () => {
     expect(map2.querySelector(".maplat-attribution")).toBeNull();
   });
 });
+
+describe("providerAttributions（地図ごとの提供元の申告）と attributionChanged", () => {
+  function setup() {
+    document.body.innerHTML = `<div id="map" lang="ja"></div>`;
+    const map = document.getElementById("map")!;
+    const display = new AttributionDisplay(map, () => resolveAttributionLang(map));
+    return { map, display };
+  }
+  const flush = () => new Promise(resolve => setTimeout(resolve, 0));
+  /** source に地図の ID を付ける（Core の source は mapID を持つ）。 */
+  function withId<T extends object>(mapID: string, src: T): T {
+    (src as { mapID?: string }).mapID = mapID;
+    return src;
+  }
+  /** Google の地図の形（googleMapType を持ち、出典は Map Tiles API の copyright）。 */
+  function googleSource(mapID: string, copyright: string, attr?: string) {
+    return {
+      mapID,
+      googleMapType: "roadmap",
+      get: (key: string) => (key === "attr" ? attr : undefined),
+      isWmts: () => true,
+      getAttributions: () => () => copyright
+    };
+  }
+
+  it("返すのは Google と TileJSON の申告だけ。OSM・StadiaMaps・XYZ のライブラリの既定値・作るときの値は返さない", async () => {
+    const { display } = setup();
+    const tileJson = withId(
+      "tilejson",
+      tileJsonSource('<a href="https://example.org/" style="color:red">Provider</a><img src="https://example.org/x.png">')
+    );
+    // 作るときに attributions を渡した TileJSON は、TileJSON の attribution と同じ値だけを返す（ここでは無し）
+    const tileJsonWithOption = withId(
+      "tilejson-option",
+      new TileJSON({
+        attributions: "作るときの出典",
+        tileJSON: { tiles: ["https://example.org/{z}/{x}/{y}.png"], attribution: "提供元の出典" }
+      })
+    );
+    const google = googleSource("gmap", "Map data ©2026 Google");
+    const osm = withId("osm", new OSM());
+    const stadia = withId("stadia", new StadiaMaps({ layer: "stamen_toner" }));
+    const xyz = withId("xyz", new XYZ({ url: "https://example.org/{z}/{x}/{y}.png", attributions: "&copy; Example" }));
+    // mapID の無い TileJSON は載せない
+    const noId = tileJsonSource("No ID");
+    const sources = [tileJson, tileJsonWithOption, google, osm, stadia, xyz, noId];
+    display.update(sources as never, [google] as never);
+    display.refreshDynamic(sources as never, FRAME);
+    await flush();
+    expect(display.providerAttributions).toEqual([
+      {
+        mapID: "tilejson",
+        attributions: ['<a href="https://example.org/" target="_blank" rel="noopener noreferrer">Provider</a>']
+      },
+      { mapID: "gmap", attributions: ["Map data ©2026 Google"] }
+    ]);
+  });
+
+  it("地図の定義の attr は返さない。TileJSON は attr があれば申告を読まず、Google は attr があっても copyright を返す", async () => {
+    const { display } = setup();
+    const google = googleSource("gmap", "Map data ©2026 Google", "Configured");
+    const tileJson = withId("tilejson", tileJsonSource("Provider", "国土地理院"));
+    display.update([google, tileJson] as never);
+    display.refreshDynamic([google, tileJson] as never, FRAME);
+    await flush();
+    expect(display.providerAttributions).toEqual([{ mapID: "gmap", attributions: ["Map data ©2026 Google"] }]);
+  });
+
+  it("providerAttributions の値が変わったときだけ、地図の入れ物から attributionChanged を出す", async () => {
+    const { map, display } = setup();
+    const events: Event[] = [];
+    map.addEventListener("attributionChanged", event => events.push(event));
+    const src = withId("tilejson", tileJsonSource("Provider"));
+    // 地図を載せただけでは値は [] のまま（まだ申告を読んでいない）: 出さない
+    display.update([src] as never);
+    expect(events).toHaveLength(0);
+    display.refreshDynamic([src] as never, FRAME);
+    await flush();
+    expect(display.providerAttributions).toEqual([{ mapID: "tilejson", attributions: ["Provider"] }]);
+    expect(events).toHaveLength(1);
+    expect(events[0].target).toBe(map);
+    expect(events[0].bubbles).toBe(true);
+    expect(events[0].composed).toBe(false);
+    // 同じ値の再読み取り・同じ地図の載せ直しでは出さない
+    display.refreshDynamic([src] as never, FRAME);
+    await flush();
+    display.update([src] as never);
+    expect(events).toHaveLength(1);
+    // 表示から外れて値が [] になったら出す
+    display.update([]);
+    expect(display.providerAttributions).toEqual([]);
+    expect(events).toHaveLength(2);
+    // 破棄の後は出さない
+    display.dispose();
+    display.update([src] as never);
+    display.refreshDynamic([src] as never, FRAME);
+    await flush();
+    expect(events).toHaveLength(2);
+  });
+
+  it("申告の無い地図どうしを切り替えても attributionChanged を出さない", async () => {
+    const { map, display } = setup();
+    const events: Event[] = [];
+    map.addEventListener("attributionChanged", event => events.push(event));
+    const osm = withId("osm", new OSM());
+    const xyz = withId("xyz", new XYZ({ url: "https://example.org/{z}/{x}/{y}.png", attributions: "&copy; Example" }));
+    const configured = withId("gsi", tileJsonSource("Provider", "国土地理院"));
+    for (const sources of [[osm], [xyz], [configured], [osm, xyz], []]) {
+      display.update(sources as never);
+      display.refreshDynamic(sources as never, FRAME);
+      await flush();
+    }
+    expect(display.providerAttributions).toEqual([]);
+    expect(events).toHaveLength(0);
+  });
+});

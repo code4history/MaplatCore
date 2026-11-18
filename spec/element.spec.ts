@@ -742,6 +742,19 @@ describe("<maplat-app> 状態の読み取り・新設メソッド・イベント
     await expect(el.clientPointToLngLat(1, 2)).resolves.toBeNull();
   });
 
+  it("providerAttributions は中身の出典の表示の申告を返す（準備前・表示の無い中身は []）", async () => {
+    const el = document.createElement(env.tag) as MaplatAppElement;
+    expect(el.providerAttributions).toEqual([]);
+    el.setAttribute("app-id", "a");
+    document.body.appendChild(el);
+    await tick();
+    const core = env.created[0] as any;
+    expect(el.providerAttributions).toEqual([]);
+    const declared = [{ mapID: "osm", attributions: ["Provider"] }];
+    core.__attribution = { providerAttributions: declared };
+    expect(el.providerAttributions).toBe(declared);
+  });
+
   it("sourceLoaded の detail は { mapID, usable }[]", async () => {
     const el = document.createElement(env.tag) as MaplatAppElement;
     el.setAttribute("app-id", "a");

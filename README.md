@@ -289,6 +289,9 @@ current release shows only the metadata of the current map: while a tile
 overlay is shown, the base map's `attr` under it is not there, nor is the base
 map behind a historical map, nor a provider's declaration. A change to the UI
 that shows the credits of every displayed map is in progress separately.
+The providers' declarations can be read per map from `providerAttributions`
+on `<maplat-app>`, and the `attributionChanged` event tells when they change
+(only the MaplatCore element has them; see `docs/api/maplat-app.md`).
 
 Google's copyright is never cut: it is shown in full and wraps to as many lines
 as it needs, because the policies ask for it "in full as provided".
