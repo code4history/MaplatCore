@@ -139,6 +139,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
   white-space: normal;
   font: inherit;
 }
+.maplat-attribution-clamp :is(p, div, pre, li, tr, td, th)::after { content: " "; }
 .maplat-attribution-item p { margin: 0; }
 .maplat-attribution a { pointer-events: auto; color: #0645ad; }
 :where(maplat-ui > maplat-app) {

@@ -16310,6 +16310,7 @@ const Wa = "maplat-attribution-style", Rf = `
   white-space: normal;
   font: inherit;
 }
+.maplat-attribution-clamp :is(p, div, pre, li, tr, td, th)::after { content: " "; }
 .maplat-attribution-item p { margin: 0; }
 .maplat-attribution a { pointer-events: auto; color: #0645ad; }
 :where(maplat-ui > maplat-app) {
