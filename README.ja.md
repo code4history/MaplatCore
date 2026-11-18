@@ -232,13 +232,21 @@ OpenLayers の source の出典が変わったとき（Google の表示範囲が
 （下の地図へ通します）、長い出典は「…」で切らずに折り返します。
 
 OpenLayers の source から読んだ出典（Google の copyright、TileJSON の `attribution` など）は、
-第三者のサーバーが決める値なので、`attr` より狭い許可表（`sanitizeHtml(text, { profile: "iiif" })`）で
-洗います。残すタグは `a`・`b`・`br`・`i`・`p`・`small`・`span`・`sub`・`sup` だけ、属性は `http(s)` の
-`href` だけで、リンクには `target="_blank"` と `rel="noopener noreferrer"` を付けます。画像・`class`・
-`style`・`javascript:` のリンクは落とすので、外の値で地図を画像で覆ったり、地図全体をリンクにしたり、
-第三者の画像を読み込ませたりはできません。文字だけの値（Google の copyright「Map data ©2026 Google」
+第三者のサーバーが決める値なので、`attr` より厳しく扱います。
+
+- 狭い許可表（`sanitizeHtml(text, { profile: "iiif" })`）で洗います。残すタグは `a`・`b`・`br`・`i`・`p`・
+  `small`・`span`・`sub`・`sup` だけ、属性は `http(s)` の `href` だけで、リンクには `target="_blank"` と
+  `rel="noopener noreferrer"` を付けます。画像・`class`・`style`・`javascript:` のリンクは落とすので、
+  外の値で画像を出したり、第三者の画像を読み込ませたりはできません。
+- 文字は 500 字で切り、「…」を付けます。
+- 高さは「4 行ぶん」と「地図の高さの 25%」の小さい方までにし、はみ出した分は隠します。長い値（長い段落を
+  囲んだリンクでも）は地図の下の帯しか占めず、地図のほかの部分はリンクになりません。
+
+文字だけの値（Google の copyright「Imagery ©2026 Airbus, CNES / Airbus, Maxar Technologies Map data ©2026」
 など）や、OpenLayers の source（OSM・XYZ・TileJSON など）の既定の出典（文字とリンク）は、今までどおり
-出ます。地図の設定の `attr`（アプリの作者が書く値）は、今までどおり広い許可表で洗います（画像なども書けます）。
+出ます。地図の設定の `attr`（アプリの作者が書く値）は、今までどおり広い許可表で洗い（画像なども書けます）、
+長さ・高さの上限も付けません。同じものかどうかは表示される文字で比べるので、`attr` と source の出典が
+同じ文字なら 1 回だけ出します。
 
 位置は地図の要素の CSS の変数（`--maplat-attribution-right`・`--maplat-attribution-bottom`・
 `--maplat-attribution-max-width`）で変えられます。`<maplat-ui>` の中では、UI の部品に

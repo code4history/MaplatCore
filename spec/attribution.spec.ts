@@ -18,7 +18,10 @@ import {
   normalizeOlAttributions,
   pickAttributionText,
   resolveAttributionLang,
-  sanitizeSourceAttributions
+  sanitizeSourceAttributions,
+  SOURCE_ATTRIBUTION_MAX_CHARS,
+  SOURCE_ATTRIBUTION_MAX_LINES,
+  SOURCE_ATTRIBUTION_MAX_MAP_RATIO
 } from "../src/attribution";
 
 const OSM_ATTR = "©︎ OpenStreetMap contributors";
@@ -711,6 +714,135 @@ describe("source から読んだ出典は狭い許可表で洗う", () => {
     expect(sanitizeSourceAttributions([tos])).toEqual([
       '<a href="https://www.microsoft.com/maps/product/terms.html" target="_blank" rel="noopener noreferrer">Terms of Use</a>'
     ]);
+  });
+});
+
+describe("source から読んだ出典の箱の大きさの上限", () => {
+  function setup(height = 0) {
+    document.body.innerHTML = `<div id="map" lang="ja"></div>`;
+    const map = document.getElementById("map")!;
+    // jsdom はレイアウトしないので、地図の箱の高さを差し替える
+    Object.defineProperty(map, "clientHeight", { configurable: true, get: () => height });
+    const display = new AttributionDisplay(map, () => resolveAttributionLang(map));
+    return { map, display };
+  }
+  const flush = () => new Promise(resolve => setTimeout(resolve, 0));
+  function olSource(value: unknown, extra: Record<string, unknown> = {}) {
+    return { get: () => undefined, isWmts: () => true, getAttributions: () => () => value, ...extra };
+  }
+  async function show(sources: ReturnType<typeof olSource>[], height = 0) {
+    const { map, display } = setup(height);
+    display.update(sources);
+    display.refreshDynamic(sources, {});
+    await flush();
+    return { map, display };
+  }
+  const LONG = "█".repeat(6000);
+
+  it("長い値は表示される文字を 500 字で切って「…」を付ける（タグの入れ子は保つ）", () => {
+    expect(SOURCE_ATTRIBUTION_MAX_CHARS).toBe(500);
+    const [html] = sanitizeSourceAttributions([`<a href="https://example.org/"><p>${LONG}</p></a>`]);
+    expect(html).toBe(
+      `<a href="https://example.org/" target="_blank" rel="noopener noreferrer"><p>${"█".repeat(500)}…</p></a>`
+    );
+    // ちょうど 500 字は切らない。501 字は切る
+    expect(sanitizeSourceAttributions(["a".repeat(500)])).toEqual(["a".repeat(500)]);
+    expect(sanitizeSourceAttributions(["a".repeat(501)])).toEqual([`${"a".repeat(500)}…`]);
+    // 境目より後ろの要素は捨てる
+    const [nested] = sanitizeSourceAttributions([`<b>${"a".repeat(498)}</b>bcd<i>ef</i>`]);
+    expect(nested).toBe(`<b>${"a".repeat(498)}</b>bc…`);
+    // 絵文字（サロゲートペア）を途中で割らない
+    const [emoji] = sanitizeSourceAttributions(["😀".repeat(501)]);
+    expect(Array.from(emoji)).toHaveLength(501);
+    expect(emoji.endsWith("😀…")).toBe(true);
+  });
+
+  it("source の値の項目には高さの上限（4 行ぶんと地図の高さの 25% の小さい方・はみ出しは隠す）を付ける", async () => {
+    expect(SOURCE_ATTRIBUTION_MAX_LINES).toBe(4);
+    expect(SOURCE_ATTRIBUTION_MAX_MAP_RATIO).toBe(0.25);
+    const { display } = await show([olSource(`<a href="https://example.org/"><p>${LONG}</p></a>`)], 800);
+    const item = display.element.querySelector<HTMLElement>(".maplat-attribution-item")!;
+    expect(item.classList.contains("maplat-attribution-item-source")).toBe(true);
+    expect(Array.from(item.textContent!)).toHaveLength(501);
+    expect(display.element.style.getPropertyValue("--maplat-attribution-source-map-limit")).toBe("200px");
+    const css = document.getElementById("maplat-attribution-style")!.textContent!;
+    const rule = css.slice(css.indexOf(".maplat-attribution-item-source {"));
+    expect(rule).toContain(
+      "max-height: min(calc(4 * 1.4em), var(--maplat-attribution-source-map-limit, calc(4 * 1.4em)));"
+    );
+    expect(rule).toContain("overflow: hidden;");
+  });
+
+  it("地図の高さが測れないときは 4 行ぶんだけが効く。大きさが変わると 25% の値を直す", async () => {
+    const original = globalThis.ResizeObserver;
+    const callbacks: (() => void)[] = [];
+    globalThis.ResizeObserver = class {
+      constructor(callback: () => void) {
+        callbacks.push(callback);
+      }
+      observe() {
+        return undefined;
+      }
+      disconnect() {
+        return undefined;
+      }
+    } as unknown as typeof ResizeObserver;
+    try {
+      let height = 0;
+      document.body.innerHTML = `<div id="map" lang="ja"></div>`;
+      const map = document.getElementById("map")!;
+      Object.defineProperty(map, "clientHeight", { configurable: true, get: () => height });
+      const display = new AttributionDisplay(map, () => "ja");
+      const src = olSource("Example");
+      display.update([src]);
+      expect(display.element.style.getPropertyValue("--maplat-attribution-source-map-limit")).toBe("");
+      height = 203;
+      callbacks[0]();
+      expect(display.element.style.getPropertyValue("--maplat-attribution-source-map-limit")).toBe("50px");
+    } finally {
+      globalThis.ResizeObserver = original;
+    }
+  });
+
+  it("Google の copyright のふつうの長さは切らない", async () => {
+    const copyright = "Imagery ©2026 Airbus, CNES / Airbus, Maxar Technologies Map data ©2026";
+    const { display } = await show([olSource(copyright, { googleMapType: "satellite" })], 800);
+    const item = display.element.querySelector(".maplat-attribution-google .maplat-attribution-item")!;
+    expect(item.innerHTML).toBe(copyright);
+    expect(item.classList.contains("maplat-attribution-item-source")).toBe(true);
+  });
+
+  it("地図の設定の attr には上限を付けない（長くても切らず、上限の class も付けない）", () => {
+    const { display } = setup(800);
+    display.update([source(`<p>${LONG}</p>`)]);
+    const item = display.element.querySelector(".maplat-attribution-item")!;
+    expect(item.classList.contains("maplat-attribution-item-source")).toBe(false);
+    expect(item.textContent).toBe(LONG);
+  });
+
+  it("重複は表示される文字で比べる（設定の A & B と source の A & B は 1 回だけ）。texts は元の値を返す", async () => {
+    const google = olSource("Map data ©2026 A & B", {
+      googleMapType: "roadmap",
+      get: (key: string) => (key === "attr" ? "Map data ©2026 A & B" : undefined)
+    });
+    const { display } = await show([google]);
+    expect(display.texts).toEqual(["Map data ©2026 A & B"]);
+    expect([...display.element.querySelectorAll(".maplat-attribution-item")].map(e => e.textContent)).toEqual([
+      "Map data ©2026 A & B"
+    ]);
+    // 重ね地図の設定の attr と Google の copyright が同じ文字なら、重ね地図の側は出さない
+    const overlay = source("Map data ©2026 A &amp; B");
+    display.update([google, overlay]);
+    display.refreshDynamic([google], {});
+    await flush();
+    expect(display.element.querySelector(".maplat-attribution-others")).toBeNull();
+    // 純粋な関数でも同じ（元の値を返す）
+    const dynamic = new Map([[google, ["Imagery & more"]]]);
+    expect(attributionTexts([olSource("x")], "ja", new Map())).toEqual([]);
+    expect(attributionGroups([google, source("Imagery &amp; more")], "ja", dynamic)).toEqual({
+      google: ["Imagery & more", "Map data ©2026 A & B"],
+      others: []
+    });
   });
 });
 

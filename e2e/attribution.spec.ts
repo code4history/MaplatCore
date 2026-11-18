@@ -646,4 +646,67 @@ test.describe('背景地図の出典の表示', () => {
     // 外の画像を読みに行かない
     expect(blocked.filter(url => url.startsWith('https://example.org/'))).toEqual([]);
   });
+  test('Google の copyright が長くても（狭い許可表を通るリンクと段落・文字だけ）、箱は上限の中に収まり、地図の大半はリンクにならない', async ({ page }) => {
+    const values = [
+      `<a href="https://example.org/"><p>${'█'.repeat(6000)}</p></a>`,
+      'Example '.repeat(1000).trim()
+    ];
+    for (const [width, height] of [[800, 600], [390, 844], [640, 200]] as const) {
+      for (const copyright of values) {
+        await page.unrouteAll({ behavior: 'ignoreErrors' });
+        await page.setViewportSize({ width, height });
+        await routeExternal(page, { copyright });
+        await page.goto('/e2e/fixtures/attribution/legacy.html?appid=sample&googleApiKey=example-key');
+        await expect(page.locator('body')).toHaveAttribute('data-ready', 'true', { timeout: 30000 });
+        await page.evaluate(() => (window as any).__MAPLAT_APP__.changeMap('google'));
+        await expect
+          .poll(async () => ((await googleLogo(page, '#map_div')).googleItems[0] ?? '').length, { timeout: 15000 })
+          .toBeGreaterThan(400);
+        const g = await googleLogo(page, '#map_div');
+        // 表示される文字は 500 字で切って「…」
+        expect(Array.from(g.googleItems[0]!)).toHaveLength(501);
+        expect(g.googleItems[0]!.endsWith('…')).toBe(true);
+        const measured = await page.evaluate(() => {
+          const host = document.querySelector('#map_div') as HTMLElement;
+          const item = host.querySelector('.maplat-attribution-item-source') as HTMLElement;
+          const box = host.querySelector('.maplat-attribution') as HTMLElement;
+          const h = host.getBoundingClientRect();
+          const i = item.getBoundingClientRect();
+          const b = box.getBoundingClientRect();
+          const lineHeight = parseFloat(getComputedStyle(item).lineHeight);
+          // 地図の上の 20×20 の点のうち、リンクに当たる点の数
+          let linked = 0;
+          let total = 0;
+          for (let x = 0; x < 20; x++) {
+            for (let y = 0; y < 20; y++) {
+              const el = document.elementFromPoint(h.left + ((x + 0.5) * h.width) / 20, h.top + ((y + 0.5) * h.height) / 20);
+              total++;
+              if (el?.closest('a')) linked++;
+            }
+          }
+          const center = document.elementFromPoint(h.left + h.width / 2, h.top + h.height / 2);
+          return {
+            hostHeight: h.height,
+            hostWidth: h.width,
+            itemHeight: i.height,
+            boxHeight: b.height,
+            boxWidth: b.width,
+            lineHeight,
+            linkedRatio: linked / total,
+            centerIsLink: !!center?.closest('a')
+          };
+        });
+        const limit = Math.min(4 * measured.lineHeight, measured.hostHeight * 0.25);
+        expect(measured.itemHeight).toBeLessThanOrEqual(limit + 1);
+        // 箱（Google の行。ロゴが折り返しても）の高さは、項目の上限と、ロゴの行と、余白の分まで
+        expect(measured.boxHeight).toBeLessThanOrEqual(limit + 22 + 15 + 4);
+        expect(measured.boxWidth).toBeLessThanOrEqual(measured.hostWidth + 0.5);
+        // リンクに当たるのは下の帯（項目の高さの上限の分。格子の 1 段ぶんの誤差を見る）だけで、多くても地図の 25%
+        expect(measured.linkedRatio).toBeLessThanOrEqual(Math.min(0.25, limit / measured.hostHeight + 0.05) + 1e-9);
+        expect(measured.centerIsLink).toBe(false);
+        expectLogoPlacement(g);
+      }
+    }
+    await page.screenshot({ path: `${SHOTS}/core-google-long-copyright-390.png` });
+  });
 });

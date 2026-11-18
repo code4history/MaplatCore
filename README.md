@@ -258,17 +258,28 @@ contain a link. The box does not take pointer events except for links in it,
 and long credits wrap instead of being cut off.
 
 An attribution read from an OpenLayers source (such as the Google copyright or
-the `attribution` of a TileJSON) is decided by a third-party server, so it goes
-through a narrower allowlist than `attr`: `sanitizeHtml(text, { profile: "iiif" })`.
-Only `a`, `b`, `br`, `i`, `p`, `small`, `span`, `sub` and `sup` are kept, the
-only attribute kept is an `http(s)` `href`, and every link gets
-`target="_blank"` and `rel="noopener noreferrer"`. Images, `class`, `style` and
-`javascript:` links are dropped, so such a value cannot cover the map with an
-image, turn the map into a link, or load an image from a third party. Plain
-text, such as the Google copyright ("Map data ©2026 Google"), and the default
-credits of the OpenLayers sources (OSM, XYZ, TileJSON …), which are text and
-links, are shown as before. The `attr` written in the map settings keeps the
-wider allowlist (it may contain an image, for example).
+the `attribution` of a TileJSON) is decided by a third-party server, so it is
+handled more strictly than `attr`:
+
+- It goes through a narrower allowlist, `sanitizeHtml(text, { profile: "iiif" })`.
+  Only `a`, `b`, `br`, `i`, `p`, `small`, `span`, `sub` and `sup` are kept, the
+  only attribute kept is an `http(s)` `href`, and every link gets
+  `target="_blank"` and `rel="noopener noreferrer"`. Images, `class`, `style`
+  and `javascript:` links are dropped, so such a value cannot show an image or
+  load one from a third party.
+- Its text is cut at 500 characters, followed by "…".
+- Its height is limited to four lines or a quarter of the map height, whichever
+  is smaller; the rest is hidden. A long value (even a link around a long
+  paragraph) therefore takes at most a strip at the bottom of the map, and the
+  rest of the map does not become a link.
+
+Plain text, such as the Google copyright ("Imagery ©2026 Airbus, CNES / Airbus,
+Maxar Technologies Map data ©2026"), and the default credits of the OpenLayers
+sources (OSM, XYZ, TileJSON …), which are text and links, are shown as before.
+The `attr` written in the map settings keeps the wider allowlist (it may contain
+an image, for example) and has no length or height limit. Duplicates are found
+by the text that is shown, so an `attr` and a source attribution with the same
+text are shown once.
 
 The position can be changed with CSS custom properties on the map element:
 `--maplat-attribution-right`, `--maplat-attribution-bottom` and
