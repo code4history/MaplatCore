@@ -274,11 +274,19 @@ contain a link. The box does not take pointer events except for links in it.
 
 Each box other than Google's copyright shows at most two lines
 (`.maplat-attribution-clamp`). A longer credit wraps to the second line and is
-then cut with "…"; the full text is in the map information of the UI (the "i"
-button). The box is never taller than two lines or wider than the map, even
-when the credit contains a paragraph or an image (an image is scaled down to
-fit), so a long credit cannot cover the map or turn it into a link. This
-applies to both an `attr` and an attribution read from an OpenLayers source.
+then cut with "…". The box is never taller than two lines or wider than the
+map, so a long credit cannot cover the map or turn it into a link. Inside the
+box, blocks (paragraphs, tables, lists, `pre` …) are laid out as inline text
+and an image is scaled down to one line, so that the cut ends with "…". This
+applies to both an `attr` and a provider's declaration.
+
+The full text of a cut credit is meant to be shown elsewhere, such as in the
+map information of a UI. Note that the map information of `<maplat-ui>` in its
+current release shows only the metadata of the current map: while a tile
+overlay is shown, the base map's `attr` under it is not there, nor is the base
+map behind a historical map, nor a provider's declaration. A change to the UI
+that shows the credits of every displayed map is in progress separately.
+
 Google's copyright is never cut: it is shown in full and wraps to as many lines
 as it needs, because the policies ask for it "in full as provided".
 

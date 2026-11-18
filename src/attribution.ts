@@ -19,7 +19,8 @@
 // 出典は箱を分けて出す: 下の段が背景地図（Google の地図ならロゴと copyright の行）、その上が重ね地図。
 // Google の地図に書いた `attr` も、Google の copyright と別の箱にする（利用条件: 第三者の出典は Google の出典と
 // "clearly be disassociated"）。
-// Google の copyright 以外の箱は ATTRIBUTION_MAX_LINES 行までにし、超えた分は「…」で切る。全文は UI の地図情報で見る。
+// Google の copyright 以外の箱は ATTRIBUTION_MAX_LINES 行までにし、超えた分は「…」で切る。全文は UI の地図情報などで
+// 見せることを想定する（今の版の <maplat-ui> の地図情報は今の地図のメタデータしか出さない）。
 import browserLanguage from "./browserlanguage";
 import { MAPLAT_UI_TAG } from "./element_contract";
 import { GOOGLE_MAPS_LOGO_DARK_OUTLINE, GOOGLE_MAPS_LOGO_LIGHT_OUTLINE } from "./google_maps_logo";
@@ -237,7 +238,7 @@ export function normalizeOlAttributions(value: unknown): string[] {
 
 /**
  * Google の copyright 以外の出典の箱の行数の上限。超えた分は「…」で切り、箱の高さもこの行数までにする
- * （はみ出しは隠す）。全文は UI の地図情報で見られる前提。
+ * （はみ出しは隠す）。全文は UI の地図情報などで見せることを想定する。
  */
 export const ATTRIBUTION_MAX_LINES = 2;
 
@@ -405,7 +406,9 @@ const STYLE_ID = "maplat-attribution-style";
 // Google の copyright 以外の箱（.maplat-attribution-clamp）は ATTRIBUTION_MAX_LINES 行までにし、超えた分は「…」で
 // 切る（-webkit-line-clamp）。行の高さの上限（max-height と overflow: hidden）も付け、中身が段落や画像でも、
 // 箱は必ずその高さに収まる（外の値で箱が地図を覆い、地図全体がリンクになることを防ぐ）。幅も地図の箱までにし、
-// 中の画像（設定の attr には画像を書ける）も箱の幅と行の高さまでに縮める（縦横比は保つ）。
+// 中の画像（設定の attr には画像を書ける）も箱の幅と 1 行の高さまでに縮める（縦横比は保つ）。
+// 段落・表・箇条書き・pre などのブロックは、箱の中では行の中の文字として並べる（display: inline・空白は詰める）。
+// ブロックや行より高い画像があると、-webkit-line-clamp が「…」を付ける行を作れず、切られるだけになるため。
 // ロゴの大きさは公式の SVG の原寸（105×22。字の高さ 18px。利用条件は高さ 16〜19dp）、
 // 余白は利用条件の最小（上・左右 10px、下 5px）。縮めない・縦横比を変えない。
 const STYLE_TEXT = `
@@ -473,9 +476,16 @@ const STYLE_TEXT = `
 }
 .maplat-attribution-clamp img {
   max-width: 100%;
-  max-height: calc(${ATTRIBUTION_MAX_LINES} * 1.4em);
+  max-height: 1.4em;
   object-fit: contain;
   vertical-align: bottom;
+}
+.maplat-attribution-clamp :is(p, div, pre, code, ul, ol, li, table, thead, tbody, tr, th, td) {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  white-space: normal;
+  font: inherit;
 }
 .maplat-attribution-item p { margin: 0; }
 .maplat-attribution a { pointer-events: auto; color: #0645ad; }

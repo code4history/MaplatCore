@@ -820,6 +820,16 @@ describe("出典の箱の行数の上限（Google の copyright は切らない�
     expect(rule).toContain("max-width: 100%;");
     expect(rule).toContain("box-sizing: border-box;");
     expect(rule).toContain("overflow: hidden;");
+    // ブロック（段落・表・箇条書き・pre など）は行の中の文字として並べ、画像は 1 行の高さまでにする
+    // （ブロックや行より高い画像があると、「…」が付かずに切られるだけになるため）
+    const inline = css.slice(css.indexOf(".maplat-attribution-clamp :is("), css.indexOf("}", css.indexOf(".maplat-attribution-clamp :is(")));
+    expect(inline).toContain("p, div, pre, code, ul, ol, li, table, thead, tbody, tr, th, td");
+    expect(inline).toContain("display: inline;");
+    expect(inline).toContain("white-space: normal;");
+    expect(inline).toContain("font: inherit;");
+    const img = css.slice(css.indexOf(".maplat-attribution-clamp img {"), css.indexOf("}", css.indexOf(".maplat-attribution-clamp img {")));
+    expect(img).toContain("max-height: 1.4em;");
+    expect(img).toContain("max-width: 100%;");
     // Google の行の箱には付かない規則であること（.maplat-attribution-text 全体には付けない）
     expect(css).not.toMatch(/\.maplat-attribution-text \{[^}]*line-clamp/);
   });
