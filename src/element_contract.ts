@@ -330,10 +330,10 @@ export function wrapUiHooksForElement<H extends Record<string, any>>(
 ): Record<string, any> {
   const wrapped: Record<string, any> = {};
   // 重複は Set で除く（`name in wrapped` は Object.prototype までたどるので、
-  // constructor・toString のような名前の自作キーが落ちる。Info 1）
+  // constructor・toString のような名前の自作キーが落ちる）
   const names = new Set<string>([...UI_HOOK_NAMES, ...Object.keys(hooks)]);
   for (const name of names) {
-    // "__proto__" は写しのプロトタイプを差し替えてしまうので写さない（I-c1）
+    // "__proto__" は写しのプロトタイプを差し替えてしまうので写さない
     if (name === "__proto__") continue;
     const fn = hooks[name];
     wrapped[name] =
