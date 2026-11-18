@@ -31,7 +31,7 @@ export declare function escapeAttr(value: string): string;
  */
 export declare function toPlainText(value: string): string;
 /**
- * mediaObj から cc-swiper-slide の属性文字列を組み立てる（S2）。
+ * mediaObj から cc-swiper-slide の属性文字列を組み立てる。
  *
  * **属性名も POI 由来である**ため、値のエスケープだけでは防げない。
  * 旧実装は `["src","type","thumbnail","desc"]` の blocklist 4件だけを除外しており、
