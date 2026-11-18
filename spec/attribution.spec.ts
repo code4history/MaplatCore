@@ -753,6 +753,8 @@ describe("source から読んだ出典は狭い許可表で洗う", () => {
       "tilejson",
       "tilejson"
     ]);
+    // 提供元の TileJSON を持つ印（getTileJSON）が無い偽の source も、TileJSON とはみなさない
+    expect(providerAttributionKind({ getAttributions: () => () => "x" })).toBeUndefined();
     const { display } = setup();
     display.update(sources as never);
     display.refreshDynamic(sources as never, FRAME);

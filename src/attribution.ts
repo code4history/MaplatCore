@@ -9,7 +9,7 @@
 // 出すのは「地図の定義の `attr`」と「提供元の申告」だけ。ライブラリ（OpenLayers）の既定値では埋めない。
 // 提供元の申告として読むのは、出典の値が提供元のサーバーの応答から来る source の型だけ（providerAttributionKind）:
 //   - Google の地図（Core の GoogleMap）: Map Tiles API の viewport の応答の copyright。
-//   - OpenLayers の TileJSON: 提供元の TileJSON の `attribution`（その値と同じものだけを出す）。
+//   - 提供元の TileJSON を持つ source（OpenLayers の TileJSON）: TileJSON の `attribution`（その値と同じものだけ）。
 // OSM・StadiaMaps・BingMaps（利用規約のリンクの既定値が混ざる）・XYZ などの出典は読まない。
 // 地図の設定に `attr` が無く、提供元の申告も無い地図には、何も出さない。
 // Google の地図は、`attr` の有無によらず、表示範囲ごとに取りに行く copyright を必ず出す。
@@ -23,7 +23,6 @@
 import browserLanguage from "./browserlanguage";
 import { MAPLAT_UI_TAG } from "./element_contract";
 import { GOOGLE_MAPS_LOGO_DARK_OUTLINE, GOOGLE_MAPS_LOGO_LIGHT_OUTLINE } from "./google_maps_logo";
-import TileJSON from "ol/source/TileJSON";
 import { sanitizeHtml } from "./sanitize";
 
 /** 出典の値（文字列か、言語ごとの文字列）。 */
@@ -190,23 +189,37 @@ export type ProviderAttributionKind = "google" | "tilejson";
  *   - Google の地図（Core の GoogleMap。googleMapType を持つ）: OpenLayers の Google は、作るときの
  *     attributions を受けず、出典を Map Tiles API の viewport の応答の copyright だけで作る
  *     （ol/source/Google.js の fetchAttributions_）。
- *   - OpenLayers の TileJSON: 出典を提供元の TileJSON の `attribution` から作る（ol/source/TileJSON.js の
- *     handleTileJSONResponse）。ただし作るときに attributions を渡すとそちらが使われるので、読むときに
- *     TileJSON の `attribution` と同じ値だけを残す（tileJsonDeclaredAttribution）。
+ *   - 提供元の TileJSON を持つ source（getTileJSON を持つもの。OpenLayers の TileJSON）: 出典を提供元の
+ *     TileJSON の `attribution` から作る（ol/source/TileJSON.js の handleTileJSONResponse）。ただし作るときに
+ *     attributions を渡すとそちらが使われるので、読むときに TileJSON の `attribution` と同じ値だけを残す
+ *     （tileJsonDeclaredAttribution）。出すのはいつも提供元の TileJSON に書かれた値になる。
+ *     型は instanceof で見ない: ol/source/TileJSON を読み込むと本体の束が約 77 KB 増える（Core 自身は
+ *     TileJSON の source を作らない）。getTileJSON を持つ OpenLayers の source は TileJSON と UTFGrid だけで、
+ *     UTFGrid も値は TileJSON の attribution。
  * 入れないもの: OSM・StadiaMaps・CartoDB・XYZ・WMTS など（作るときの値か、ライブラリの既定の文言）。
  * BingMaps は応答の出典に、ライブラリの既定の利用規約のリンクを必ず足すので、見分けられず入れない。
- * UTFGrid は TileJSON の attribution を持つが、地図の画像を出す source ではないので入れない。
  */
 export function providerAttributionKind(source: AttributionSourceLike): ProviderAttributionKind | undefined {
   if (isGoogleSource(source)) return "google";
-  if (source instanceof TileJSON) return "tilejson";
+  if (typeof (source as TileJsonSourceLike).getTileJSON === "function") return "tilejson";
   return undefined;
 }
 
-/** TileJSON の source の、提供元の TileJSON の `attribution`（無ければ undefined）。 */
+/** 提供元の TileJSON を持つ source の最小の形（OpenLayers の TileJSON の getTileJSON）。 */
+interface TileJsonSourceLike {
+  getTileJSON?: () => { attribution?: unknown } | null | undefined;
+}
+
+/** 提供元の TileJSON の `attribution`（読めなければ undefined）。 */
 function tileJsonDeclaredAttribution(source: AttributionSourceLike): string | undefined {
-  if (!(source instanceof TileJSON)) return undefined;
-  const value = source.getTileJSON()?.attribution;
+  const getTileJSON = (source as TileJsonSourceLike).getTileJSON;
+  if (typeof getTileJSON !== "function") return undefined;
+  let value: unknown;
+  try {
+    value = getTileJSON.call(source)?.attribution;
+  } catch {
+    return undefined;
+  }
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
 }
 
