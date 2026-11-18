@@ -58,6 +58,22 @@ export declare function displayedAttributionSources(parts: {
     overlay?: AttributionSourceLike | null;
     back?: AttributionSourceLike | null;
 }): AttributionSourceLike[];
+/** 提供元の申告の種類。google: Map Tiles API の copyright、tilejson: 提供元の TileJSON の attribution。 */
+export type ProviderAttributionKind = "google" | "tilejson";
+/**
+ * source の出典が提供元の申告（提供元のサーバーの応答から来る値）かを、source の型で決める。
+ * 申告でない source（OpenLayers の既定値・作るときの値の source）は undefined。
+ *   - Google の地図（Core の GoogleMap。googleMapType を持つ）: OpenLayers の Google は、作るときの
+ *     attributions を受けず、出典を Map Tiles API の viewport の応答の copyright だけで作る
+ *     （ol/source/Google.js の fetchAttributions_）。
+ *   - OpenLayers の TileJSON: 出典を提供元の TileJSON の `attribution` から作る（ol/source/TileJSON.js の
+ *     handleTileJSONResponse）。ただし作るときに attributions を渡すとそちらが使われるので、読むときに
+ *     TileJSON の `attribution` と同じ値だけを残す（tileJsonDeclaredAttribution）。
+ * 入れないもの: OSM・StadiaMaps・CartoDB・XYZ・WMTS など（作るときの値か、ライブラリの既定の文言）。
+ * BingMaps は応答の出典に、ライブラリの既定の利用規約のリンクを必ず足すので、見分けられず入れない。
+ * UTFGrid は TileJSON の attribution を持つが、地図の画像を出す source ではないので入れない。
+ */
+export declare function providerAttributionKind(source: AttributionSourceLike): ProviderAttributionKind | undefined;
 /** 地図の設定の `attr` を持つか（空・空白だけの文字列、空の言語ごとの値は持たない扱い）。 */
 export declare function hasConfiguredAttr(source: AttributionSourceLike): boolean;
 /** OpenLayers の出典の値（文字列・配列・それ以外）を文字列の配列にする。 */
@@ -82,7 +98,7 @@ export declare const ATTRIBUTION_MAX_LINES = 2;
 export declare function sanitizeSourceAttributions(texts: readonly string[]): string[];
 /**
  * source の並びから、表示する出典の文字列（言語を選んだもの・空と重複を除いたもの）を作る。
- * 地図の設定の `attr` が無い source は、dynamic（OpenLayers の source から読んだ出典）の値を使う。
+ * 地図の設定の `attr` が無い source は、dynamic（提供元の申告として読んだ出典）の値を使う。
  * Google の地図は `attr` があっても dynamic（copyright）を先に出す。
  * 重複は表示される文字で比べる（設定の `A &amp; B` と source の `A & B` は同じもの）。
  * 返すのは元の値（洗う前）。source の値で、洗うと何も残らないものは除く。
@@ -114,7 +130,8 @@ export declare class AttributionDisplay {
      */
     update(sources: AttributionSourceLike[], overlays?: readonly AttributionSourceLike[]): void;
     /**
-     * 地図の設定の attr が無い source の出典を、OpenLayers の source（getAttributions）から読む。
+     * 地図の設定の attr が無い source の、提供元の申告の出典を、OpenLayers の source（getAttributions）から読む。
+     * 提供元の申告でない source（providerAttributionKind が undefined）は読まない（ライブラリの既定値で埋めない）。
      * 地図の描画（postrender）のたびに、その地図が描いている source と frameState を渡す。
      * Google の source は表示範囲が変わったときだけ取りに行き、それ以外は前の値を返す（OpenLayers の実装）。
      */
