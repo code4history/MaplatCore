@@ -71,7 +71,8 @@ class b extends A {
    * 表示中の現代の地図（前面・重ね地図・背面のベースマップ）ごとの、提供元の申告の出典
    * （Google の Map Tiles API の著作権・TileJSON の attribution など、提供元のサーバーが返した値）。
    * 値は狭い許可表（sanitizeHtml の profile "iiif"）で洗った HTML。申告の無い地図は載せない。
-   * 地図の定義の attr は載せない（getMapMeta で取る）。地図の準備前は []。
+   * 地図の定義の attr と、ライブラリの既定値（OSM・XYZ などの source の文言）は載せない（attr は getMapMeta で取る）。
+   * 地図の準備前は []。
    * 表が変わると、要素に DOM の事象 `attributionChanged`（detail なし・bubbles）が届く。
    * 層 A の契約の外の Core だけの読み取り（他の実装には無いことがある）。
    */
