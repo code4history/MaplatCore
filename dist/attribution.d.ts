@@ -63,6 +63,18 @@ export declare function hasConfiguredAttr(source: AttributionSourceLike): boolea
 /** OpenLayers の出典の値（文字列・配列・それ以外）を文字列の配列にする。 */
 export declare function normalizeOlAttributions(value: unknown): string[];
 /**
+ * OpenLayers の source から読んだ出典（第三者のサーバーが決める値。Google の copyright・TileJSON の
+ * attribution など）を、狭い許可表（sanitizeHtml の profile "iiif"）で洗う。空になったものは除く。
+ *   - 残るタグは a・b・br・i・p・small・span・sub・sup だけ、属性は http(s) の href だけ。
+ *     img・class・style・javascript: などは落ちる。リンクには target="_blank" と rel="noopener noreferrer" が付く。
+ *   - 理由: 広い許可表（地図の設定の attr 用）のままだと、外の値の
+ *     `<a href="https://…"><img src="https://…" width="4000" height="4000"></a>` で、出典の箱が地図を覆い、
+ *     地図全体が外へのリンクになり、外の画像を読みに行って見ている人の情報が第三者に渡る。
+ * 地図の設定の attr（アプリの作者が書く値）には使わない（従来どおり広い許可表で、img なども通る）。
+ * 文字だけの値（Google の copyright など）は変わらない（& と < > は HTML の形になる）。
+ */
+export declare function sanitizeSourceAttributions(texts: readonly string[]): string[];
+/**
  * source の並びから、表示する出典の文字列（言語を選んだもの・空と重複を除いたもの）を作る。
  * 地図の設定の `attr` が無い source は、dynamic（OpenLayers の source から読んだ出典）の値を使う。
  * Google の地図は `attr` があっても dynamic（copyright）を先に出す。
