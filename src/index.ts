@@ -1112,7 +1112,9 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
     this.__attribution = new AttributionDisplay(this.mapDivDocument!, () =>
       resolveAttributionLang(this.mapDivDocument, this.__attributionLangOption, this.appData?.lang)
     );
-    // 地図の設定に attr が無い現代の地図と、Google の地図（attr があっても）の出典は OpenLayers の source から読む。
+    // 地図の設定に attr が無い現代の地図と、Google の地図（attr があっても）の、提供元の申告の出典を読む。
+    // 読むのは提供元の申告の型の source だけ（Google の copyright・TileJSON の attribution。attribution.ts の
+    // providerAttributionKind）。ほかの source の出典（OpenLayers の既定値など）は読まない。
     // Google は表示範囲ごとに copyright が変わるので、地図を描くたびに渡す（取りに行くのは範囲が変わったときだけ）
     const frontMap = this.mapObject;
     frontMap.on("postrender", (evt: any) => {

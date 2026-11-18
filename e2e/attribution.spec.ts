@@ -358,22 +358,30 @@ test.describe('背景地図の出典の表示', () => {
     expect(oneLine.truncated).toBe(false);
     await page.waitForTimeout(800);
     await page.locator('maplat-app').screenshot({ path: `${SHOTS}/core-overlay-390.png` });
-    // 地図の箱が狭いと、2 行までは折り返す
-    await page.evaluate(() => {
-      (document.querySelector('maplat-app') as HTMLElement).style.width = '200px';
+    // 文字の幅は環境の字体で変わるので、測った 1 行の幅から地図の箱の幅を決める（左右の余白 5px ずつ＋ゆとり）
+    const textWidth = await page.evaluate(() => {
+      const el = document.querySelector('maplat-app .maplat-attribution-overlay') as HTMLElement;
+      const ctx = document.createElement('canvas').getContext('2d')!;
+      ctx.font = getComputedStyle(el).font;
+      return ctx.measureText(el.textContent || '').width;
     });
+    const setWidth = (px: number) =>
+      page.evaluate(w => {
+        (document.querySelector('maplat-app') as HTMLElement).style.width = `${w}px`;
+      }, Math.ceil(px));
+    // 地図の箱が狭いと、2 行までは折り返す（1 行の 6 割の幅: 2 行に入る）
+    await setWidth(textWidth * 0.6 + 12);
     await expect.poll(async () => (await overlayBox()).height).toBeGreaterThan(oneLine.height * 1.5);
     const wrapped = await overlayBox();
+    expect(wrapped.truncated).toBe(false);
     expect(wrapped.height).toBeLessThanOrEqual(2 * wrapped.line + 2 + 0.5);
-    // もっと狭く 2 行に入らなければ、2 行で「…」にする（箱の高さは 2 行のまま）
-    await page.evaluate(() => {
-      (document.querySelector('maplat-app') as HTMLElement).style.width = '120px';
-    });
+    // もっと狭く 2 行に入らなければ（1 行の 3 割の幅: 4 行ほど要る）、2 行で「…」にする（箱の高さは 2 行のまま）
+    await setWidth(textWidth * 0.3 + 12);
     await expect.poll(async () => (await overlayBox()).truncated).toBe(true);
     const clamped = await overlayBox();
     expect(clamped.height).toBeLessThanOrEqual(2 * clamped.line + 2 + 0.5);
     await page.waitForTimeout(400);
-    await page.locator('maplat-app').screenshot({ path: `${SHOTS}/core-overlay-clamped-120.png` });
+    await page.locator('maplat-app').screenshot({ path: `${SHOTS}/core-overlay-clamped.png` });
   });
 
   test('要素を外したら出典の表示は残らず、lang の変更にも反応しない', async ({ page }) => {
@@ -785,6 +793,80 @@ test.describe('背景地図の出典の表示', () => {
       await page.screenshot({ path: `${SHOTS}/core-long-attr-${width}x${height}.png` });
     }
     test.info().annotations.push({ type: 'long-attr', description: JSON.stringify(results) });
+  });
+
+  test('提供元の TileJSON の長い attribution（第三者の値）も、狭い許可表で洗われて 2 行の箱に収まる', async ({ page }) => {
+    // 欧文の長い段落を囲んだリンクと、外の大きな画像（字体に左右されないよう欧文にする）
+    const providerAttribution =
+      `<a href="https://example.org/provider"><img src="https://example.org/x.png" width="4000" height="4000">` +
+      `<p>${'Example provider credit '.repeat(300).trim()}</p></a>`;
+    for (const [width, height] of [[1280, 800], [390, 844]] as const) {
+      await page.unrouteAll({ behavior: 'ignoreErrors' });
+      await page.setViewportSize({ width, height });
+      const blocked: string[] = [];
+      await page.route(
+        url => !['127.0.0.1', 'localhost'].includes(url.hostname),
+        route => {
+          blocked.push(route.request().url());
+          return route.abort();
+        }
+      );
+      await page.route('https://example.org/tilejson.json', route =>
+        route.fulfill({
+          status: 200,
+          headers: { 'Access-Control-Allow-Origin': '*' },
+          contentType: 'application/json',
+          body: JSON.stringify({
+            tilejson: '2.2.0',
+            tiles: ['https://example.org/tiles/{z}/{x}/{y}.png'],
+            attribution: providerAttribution
+          })
+        })
+      );
+      await page.route(/example\.org\/tiles\//, route => route.fulfill(fakeTile(route.request().url(), 'TILEJSON', '#e6e0f3')));
+      await page.goto('/e2e/fixtures/attribution/tilejson.html');
+      await expect(page.locator('body')).toHaveAttribute('data-ready', 'true', { timeout: 30000 });
+      await expect.poll(async () => (await attribution(page, '#map'))?.boxes.map(b => b.role), { timeout: 15000 }).toEqual(['base']);
+      const measured = await page.evaluate(() => {
+        const host = document.querySelector('#map') as HTMLElement;
+        const h = host.getBoundingClientRect();
+        const box = host.querySelector('.maplat-attribution-base') as HTMLElement;
+        const b = box.getBoundingClientRect();
+        let linked = 0;
+        for (let x = 0; x < 20; x++) {
+          for (let y = 0; y < 20; y++) {
+            const el = document.elementFromPoint(h.left + ((x + 0.5) * h.width) / 20, h.top + ((y + 0.5) * h.height) / 20);
+            if (el?.closest('a')) linked++;
+          }
+        }
+        const center = document.elementFromPoint(h.left + h.width / 2, h.top + h.height / 2);
+        return {
+          clamp: box.classList.contains('maplat-attribution-clamp'),
+          height: b.height,
+          width: b.width,
+          hostWidth: h.width,
+          line: parseFloat(getComputedStyle(box).lineHeight),
+          truncated: box.scrollHeight > box.clientHeight + 1,
+          imgs: box.querySelectorAll('img').length,
+          links: [...box.querySelectorAll('a')].map(a => ({ href: a.getAttribute('href'), rel: a.getAttribute('rel') })),
+          linkedRatio: linked / 400,
+          centerIsLink: !!center?.closest('a')
+        };
+      });
+      expect(measured.clamp).toBe(true);
+      expect(measured.height).toBeLessThanOrEqual(2 * measured.line + 2 + 0.5);
+      expect(measured.width).toBeLessThanOrEqual(measured.hostWidth + 0.5);
+      expect(measured.truncated).toBe(true);
+      // 第三者の値の画像は落ち、リンクには rel が付く
+      expect(measured.imgs).toBe(0);
+      expect(measured.links).toEqual([{ href: 'https://example.org/provider', rel: 'noopener noreferrer' }]);
+      expect(blocked.filter(url => url.includes('example.org/x.png'))).toEqual([]);
+      // リンクに当たるのは下の 2 行の帯だけ
+      expect(measured.linkedRatio).toBeLessThanOrEqual(0.1);
+      expect(measured.centerIsLink).toBe(false);
+      await page.waitForTimeout(400);
+      await page.screenshot({ path: `${SHOTS}/core-tilejson-long-${width}.png` });
+    }
   });
 
   test('写真: 幅 1280・390px で、重ね地図あり・なし、Google あり・なし', async ({ page }) => {

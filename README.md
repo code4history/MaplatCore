@@ -209,13 +209,25 @@ The credits are shown in separate boxes: the base map's credit at the bottom
 and the tile overlay's credit in a box above it. The text is not joined with
 " | " across boxes.
 
-A credit is shown only when there is one to show: the map's `attr`, or, for a
-modern map without `attr`, the attribution of its OpenLayers source. A Google
+The viewer shows only two kinds of credit: the map's `attr` from the map
+definition, and the credit declared by the provider. A provider's declaration
+is read only from two source types: the copyright that a Google map receives
+from the Map Tiles API, and the `attribution` written in the TileJSON of an
+OpenLayers `TileJSON` source (only that value is shown). Of the sources that
+Core creates today, only Google maps carry a provider's declaration; the
+TileJSON rule applies when an app passes a `TileJSON` source. A TileJSON may be
+fetched from the provider's server or given directly by the app (the `tileJSON`
+option), in which case the value is what the app wrote. The viewer does not fill in a credit from library
+defaults: the built-in credit of OpenLayers sources such as `OSM`, `StadiaMaps`
+or `BingMaps`, and the `attributions` given when a source is created, are not
+shown. A map with neither an `attr` nor a provider's declaration shows no
+credit at all. A Google
 map always shows the copyright for the current view, fetched from the Map
 Tiles API, whether or not it has an `attr`, because the policies require that
 copyright in full; an `attr` on a Google map is shown in a separate box above
 the row with Google's copyright. **If you define your own base map or tile overlay in the app
-settings, write its `attr`**; otherwise nothing is shown for it. An `attr`
+settings, write its `attr`**; otherwise nothing is shown for it (the viewer
+does not fill in a default). An `attr`
 that is empty or only whitespace counts as no `attr`.
 
 While a Google map (a map whose `maptype` is `google`, `google_roadmap`,
@@ -265,25 +277,32 @@ contain a link. The box does not take pointer events except for links in it.
 
 Each box other than Google's copyright shows at most two lines
 (`.maplat-attribution-clamp`). A longer credit wraps to the second line and is
-then cut with "…"; the full text is in the map information of the UI (the "i"
-button). The box is never taller than two lines or wider than the map, even
-when the credit contains a paragraph or an image (an image is scaled down to
-fit), so a long credit cannot cover the map or turn it into a link. This
-applies to both an `attr` and an attribution read from an OpenLayers source.
+then cut with "…". The box is never taller than two lines or wider than the
+map, so a long credit cannot cover the map or turn it into a link. Inside the
+box, blocks (paragraphs, tables, lists, `pre` …) are laid out as inline text
+and an image is scaled down to one line, so that the cut ends with "…". This
+applies to both an `attr` and a provider's declaration.
+
+The full text of a cut credit is meant to be shown elsewhere, such as in the
+map information of a UI. Note that the map information of `<maplat-ui>` in its
+current release shows only the metadata of the current map: while a tile
+overlay is shown, the base map's `attr` under it is not there, nor is the base
+map behind a historical map, nor a provider's declaration. A change to the UI
+that shows the credits of every displayed map is in progress separately.
+
 Google's copyright is never cut: it is shown in full and wraps to as many lines
 as it needs, because the policies ask for it "in full as provided".
 
-An attribution read from an OpenLayers source (such as the Google copyright or
-the `attribution` of a TileJSON) is decided by a third-party server, so it goes
+A provider's declaration (the Google copyright or the `attribution` of a
+TileJSON) can come from a third-party server, so it goes
 through a narrower allowlist than `attr`: `sanitizeHtml(text, { profile: "iiif" })`.
 Only `a`, `b`, `br`, `i`, `p`, `small`, `span`, `sub` and `sup` are kept, the
 only attribute kept is an `http(s)` `href`, and every link gets
 `target="_blank"` and `rel="noopener noreferrer"`. Images, `class`, `style` and
 `javascript:` links are dropped, so such a value cannot show an image or load
 one from a third party. Plain text, such as the Google copyright ("Imagery
-©2026 Airbus, CNES / Airbus, Maxar Technologies Map data ©2026"), and the
-default credits of the OpenLayers sources (OSM, XYZ, TileJSON …), which are
-text and links, are shown as before. The `attr` written in the map settings
+©2026 Airbus, CNES / Airbus, Maxar Technologies Map data ©2026"), and text with
+links, such as a typical TileJSON `attribution`, are shown unchanged. The `attr` written in the map settings
 keeps the wider allowlist (it may contain an image, for example). Duplicates
 are found by the text that is shown, so an `attr` and a source attribution with
 the same text are shown once.

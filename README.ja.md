@@ -197,11 +197,17 @@ MaplatCore はフィールドの意味の定義と、結果として得られる
 出典は箱を分けて出します。いちばん下が背景地図の出典の箱（Google の地図なら、Google Maps のロゴと
 Google の copyright の行）、その上が重ね地図の出典の箱です。箱をまたいで「 | 」でつなぐことはしません。
 
-出典が出るのは、出すものがある地図だけです。地図の `attr`、または `attr` の無い現代の
-地図では OpenLayers の source の出典を出します。Google の地図は、`attr` の有無によらず、
+ビューアが出す出典は、「地図の定義の `attr`」と「提供元の申告」の 2 つだけです。提供元の申告として読むのは、
+2 つの型の source だけです。Google の地図が Map Tiles API から受け取る copyright と、OpenLayers の `TileJSON` の
+source の、TileJSON に書かれた `attribution`（その値だけ）です。Core が今作る source で提供元の申告を持つのは、
+Google の地図だけです。TileJSON は、アプリが `TileJSON` の source を渡したときの扱いです。TileJSON は提供元の
+サーバーから取ることも、アプリが直接（`tileJSON` の項目で）渡すこともでき、後者ではアプリが書いた値になります。
+ライブラリの既定値では埋めません。OpenLayers の `OSM`・`StadiaMaps`・`BingMaps` などの source が持つ既定の
+出典や、source を作るときに渡した `attributions` は出しません。`attr` も提供元の申告も無い地図には、
+何も出しません。Google の地図は、`attr` の有無によらず、
 表示範囲の copyright を Map Tiles API から取りに行って必ず出します（利用条件が copyright を
 全文で出すよう求めるため）。Google の地図に `attr` を書くと、Google の copyright の行の上の別の箱に出します。**アプリの設定で背景地図や重ね地図を自分で
-定義するときは、`attr` を書いてください**。書かないと、その地図の出典は出ません。
+定義するときは、`attr` を書いてください**。書かないと、その地図の出典は出ません（ビューアは既定値で埋めません）。
 空や空白だけの `attr` は、無いものとみなします。
 
 Google の地図（`maptype` が `google`・`google_roadmap`・`google_satellite`・`google_hybrid`・
@@ -235,20 +241,25 @@ OpenLayers の source の出典が変わったとき（Google の表示範囲が
 （下の地図へ通します）。
 
 Google の copyright 以外の箱は、2 行までにします（`.maplat-attribution-clamp`）。長い出典は 2 行目まで
-折り返し、それを超えた分は「…」で切ります。全文は UI の地図情報（「i」のボタン）で見る前提です。中身が段落や
-画像でも、箱は 2 行の高さと地図の幅を超えません（画像は箱に入るよう縮めます）。そのため、長い出典で地図が
-覆われたり、地図全体がリンクになったりはしません。これは `attr` にも、OpenLayers の source から読んだ出典にも
-当てます。Google の copyright は、利用条件が "in full as provided" で出すよう求めるため、切らずに全文を
+折り返し、それを超えた分は「…」で切ります。箱は 2 行の高さと地図の幅を超えないので、長い出典で地図が
+覆われたり、地図全体がリンクになったりはしません。箱の中では、段落・表・箇条書き・`pre` などのブロックを
+行の中の文字として並べ、画像は 1 行の高さまで縮めます（切った所に「…」が付くようにするため）。これは
+`attr` にも、提供元の申告にも当てます。
+
+切った出典の全文は、UI の地図情報などで見せることを想定しています。ただし、今の版の `<maplat-ui>` の
+地図情報は、今の地図のメタデータしか出しません。重ね地図を出しているときの下の背景地図の `attr`、古地図の
+背面の背景地図、提供元の申告は、そこには出ません。表示中の地図それぞれの出典を出す UI の直しは、別に進めています。
+
+Google の copyright は、利用条件が "in full as provided" で出すよう求めるため、切らずに全文を
 必要なだけ折り返して出します。
 
-OpenLayers の source から読んだ出典（Google の copyright、TileJSON の `attribution` など）は、
-第三者のサーバーが決める値なので、`attr` より狭い許可表（`sanitizeHtml(text, { profile: "iiif" })`）で
+提供元の申告（Google の copyright、TileJSON の `attribution`）は、
+第三者のサーバーから来うる値なので、`attr` より狭い許可表（`sanitizeHtml(text, { profile: "iiif" })`）で
 洗います。残すタグは `a`・`b`・`br`・`i`・`p`・`small`・`span`・`sub`・`sup` だけ、属性は `http(s)` の
 `href` だけで、リンクには `target="_blank"` と `rel="noopener noreferrer"` を付けます。画像・`class`・
 `style`・`javascript:` のリンクは落とすので、外の値で画像を出したり、第三者の画像を読み込ませたりはできません。
 文字だけの値（Google の copyright「Imagery ©2026 Airbus, CNES / Airbus, Maxar Technologies Map data ©2026」
-など）や、OpenLayers の source（OSM・XYZ・TileJSON など）の既定の出典（文字とリンク）は、今までどおり
-出ます。地図の設定の `attr`（アプリの作者が書く値）は、今までどおり広い許可表で洗います（画像なども書けます）。
+など）や、ふつうの TileJSON の `attribution` のような文字とリンクは、そのまま出ます。地図の設定の `attr`（アプリの作者が書く値）は、今までどおり広い許可表で洗います（画像なども書けます）。
 同じものかどうかは表示される文字で比べるので、`attr` と source の出典が同じ文字なら 1 回だけ出します。
 
 位置は地図の要素の CSS の変数（`--maplat-attribution-right`・`--maplat-attribution-bottom`・
