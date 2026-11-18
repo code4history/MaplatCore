@@ -1,6 +1,7 @@
 // 表示中の現代の地図（basemap・タイルの重ね地図）の出典が、地図の上に常に出ることを実ブラウザで確かめる。
 //   - OSM・地理院のそれぞれで出典が出る／切り替えで変わる
-//   - 重ね地図のときは、下の basemap と重ね地図の両方が出る（折り返して、切れない）
+//   - 重ね地図のときは、下の basemap と重ね地図の両方が、別の箱で出る（重ね地図の箱が上）
+//   - Google の copyright 以外の箱は 2 行まで（超えたら「…」）。Google の copyright は切らない
 //   - 言語は UI と同じ順で選ぶ（要素の lang → 設定ファイルの lang → <html lang>）。lang 属性の変更で変わる
 //   - attr の無い Google の地図は、OpenLayers の source の出典（表示範囲の copyright）を出す
 //   - 要素を外したら表示が残らない
@@ -126,17 +127,32 @@ async function attribution(page: Page, scope = 'maplat-app') {
     return {
       hidden: box.hidden,
       text: box.textContent,
-      items: [...box.querySelectorAll('.maplat-attribution-item')].map(e => e.textContent)
+      items: [...box.querySelectorAll('.maplat-attribution-item')].map(e => e.textContent),
+      // 箱ごと（上から）: 役割（overlay・base・google）と文字
+      boxes: [...box.children].map(child => ({
+        role: child.classList.contains('maplat-attribution-overlay')
+          ? 'overlay'
+          : child.classList.contains('maplat-attribution-base')
+            ? 'base'
+            : child.classList.contains('maplat-attribution-google')
+              ? 'google'
+              : 'other',
+        text: child.textContent
+      }))
     };
   }, scope);
 }
 
-/** 出典の表示が地図の箱の中にあり、切れずに見え、最前面にあることを確かめる。 */
+/**
+ * 出典の表示が地図の箱の中にあり、切れずに見え、最前面にあることを確かめる。
+ * 「切れずに」は最下段の箱（背景地図の箱か Google の copyright の箱）で見る。
+ */
 async function expectFullyVisible(page: Page, scope = 'maplat-app') {
   const geometry = await page.evaluate(sel => {
     const host = document.querySelector(sel) as HTMLElement;
     const box = host.querySelector('.maplat-attribution') as HTMLElement;
-    const text = box.querySelector('.maplat-attribution-text') as HTMLElement;
+    const texts = box.querySelectorAll('.maplat-attribution-text');
+    const text = texts[texts.length - 1] as HTMLElement;
     const h = host.getBoundingClientRect();
     const b = box.getBoundingClientRect();
     const style = getComputedStyle(text);
@@ -173,9 +189,10 @@ async function googleLogo(page: Page, scope = 'maplat-app') {
     const host = document.querySelector(sel) as HTMLElement;
     const box = host.querySelector('.maplat-attribution') as HTMLElement | null;
     const logo = box?.querySelector('.maplat-attribution-google-logo') as HTMLElement | null;
-    // Google の出典の箱（ロゴと同じ行）。ほかの出典は別の箱（others）
+    // Google の出典の箱（ロゴと同じ行）。重ね地図の出典は別の箱（others と呼ぶ。.maplat-attribution-overlay）
     const text = box?.querySelector('.maplat-attribution-google .maplat-attribution-text') as HTMLElement | null;
-    const others = box?.querySelector('.maplat-attribution-others') as HTMLElement | null;
+    const others = box?.querySelector('.maplat-attribution-overlay') as HTMLElement | null;
+    const base = box?.querySelector('.maplat-attribution-base') as HTMLElement | null;
     const rect = (el: Element | null | undefined) => {
       if (!el) return null;
       const r = el.getBoundingClientRect();
@@ -203,6 +220,8 @@ async function googleLogo(page: Page, scope = 'maplat-app') {
       text: rect(text),
       others: rect(others),
       othersText: others?.textContent ?? null,
+      base: rect(base),
+      baseText: base?.textContent ?? null,
       googleItems: text ? [...text.querySelectorAll('.maplat-attribution-item')].map(e => e.textContent) : [],
       margin: style ? [style.marginTop, style.marginRight, style.marginBottom, style.marginLeft] : null,
       onTop,
@@ -262,12 +281,15 @@ test.describe('背景地図の出典の表示', () => {
     await changeMap(page, 'morioka_ndl');
     expect((await attribution(page))?.items).toEqual([OSM]);
 
-    // 重ね地図（TMS）: 下の basemap と重ね地図の両方
+    // 重ね地図（TMS）: 下の basemap と重ね地図の両方。別の箱で、重ね地図の箱が上
     await changeMap(page, 'gsi');
     await changeMap(page, 'morioka_ndl_affine');
     const overlay = await attribution(page);
-    expect(overlay?.items).toEqual([GSI_JA, OVERLAY_JA]);
-    expect(overlay?.text).toBe(`${GSI_JA} | ${OVERLAY_JA}`);
+    expect(overlay?.boxes).toEqual([
+      { role: 'overlay', text: OVERLAY_JA },
+      { role: 'base', text: GSI_JA }
+    ]);
+    expect(overlay?.text).not.toContain(' | ');
     await expectFullyVisible(page);
     // 重ね地図のタイルが実際に読まれて描かれている
     await expect.poll(() => overlayTiles.length).toBeGreaterThan(0);
@@ -284,20 +306,20 @@ test.describe('背景地図の出典の表示', () => {
     await openElementPage(page);
     await changeMap(page, 'gsi');
     await changeMap(page, 'morioka_ndl_affine');
-    expect((await attribution(page))?.items).toEqual([GSI_JA, OVERLAY_JA]);
+    expect((await attribution(page))?.items).toEqual([OVERLAY_JA, GSI_JA]);
 
     // 要素の lang 属性が最優先
     await page.evaluate(() => document.querySelector('maplat-app')!.setAttribute('lang', 'en'));
-    await expect.poll(async () => (await attribution(page))?.items).toEqual([GSI_EN, OVERLAY_EN]);
+    await expect.poll(async () => (await attribution(page))?.items).toEqual([OVERLAY_EN, GSI_EN]);
 
     // 要素の lang を外すと、設定ファイルの lang（ja）に戻る
     await page.evaluate(() => document.querySelector('maplat-app')!.removeAttribute('lang'));
-    await expect.poll(async () => (await attribution(page))?.items).toEqual([GSI_JA, OVERLAY_JA]);
+    await expect.poll(async () => (await attribution(page))?.items).toEqual([OVERLAY_JA, GSI_JA]);
 
     // <html lang="en"> にしても、設定ファイルの lang（ja）が先（UI と同じ）
     await page.evaluate(() => document.documentElement.setAttribute('lang', 'en'));
     await page.waitForTimeout(200);
-    expect((await attribution(page))?.items).toEqual([GSI_JA, OVERLAY_JA]);
+    expect((await attribution(page))?.items).toEqual([OVERLAY_JA, GSI_JA]);
   });
 
   test('<html lang="ja"> で設定ファイルの lang が en なら、出典は英語', async ({ page }) => {
@@ -322,17 +344,36 @@ test.describe('背景地図の出典の表示', () => {
     await page.waitForTimeout(800);
     await page.locator('maplat-app').screenshot({ path: `${SHOTS}/core-gsi-390.png` });
 
-    // 重ね地図: 長い出典でも「…」で切らず折り返す
+    // 重ね地図: 重ね地図の箱と背景地図の箱を分けて出す
     await changeMap(page, 'morioka_ndl_affine');
-    const oneLine = await expectFullyVisible(page);
+    await expectFullyVisible(page);
+    const overlayBox = () =>
+      page.evaluate(() => {
+        const el = document.querySelector('maplat-app .maplat-attribution-overlay') as HTMLElement;
+        const r = el.getBoundingClientRect();
+        const line = parseFloat(getComputedStyle(el).lineHeight);
+        return { height: r.height, line, truncated: el.scrollHeight > el.clientHeight + 1 };
+      });
+    const oneLine = await overlayBox();
+    expect(oneLine.truncated).toBe(false);
     await page.waitForTimeout(800);
     await page.locator('maplat-app').screenshot({ path: `${SHOTS}/core-overlay-390.png` });
-    // 地図の箱がもっと狭いと、「…」で切らずに折り返して全文を出す
+    // 地図の箱が狭いと、2 行までは折り返す
     await page.evaluate(() => {
       (document.querySelector('maplat-app') as HTMLElement).style.width = '200px';
     });
-    const wrapped = await expectFullyVisible(page);
-    expect(wrapped.height).toBeGreaterThan(oneLine.height * 1.5);
+    await expect.poll(async () => (await overlayBox()).height).toBeGreaterThan(oneLine.height * 1.5);
+    const wrapped = await overlayBox();
+    expect(wrapped.height).toBeLessThanOrEqual(2 * wrapped.line + 2 + 0.5);
+    // もっと狭く 2 行に入らなければ、2 行で「…」にする（箱の高さは 2 行のまま）
+    await page.evaluate(() => {
+      (document.querySelector('maplat-app') as HTMLElement).style.width = '120px';
+    });
+    await expect.poll(async () => (await overlayBox()).truncated).toBe(true);
+    const clamped = await overlayBox();
+    expect(clamped.height).toBeLessThanOrEqual(2 * clamped.line + 2 + 0.5);
+    await page.waitForTimeout(400);
+    await page.locator('maplat-app').screenshot({ path: `${SHOTS}/core-overlay-clamped-120.png` });
   });
 
   test('要素を外したら出典の表示は残らず、lang の変更にも反応しない', async ({ page }) => {
@@ -539,7 +580,7 @@ test.describe('背景地図の出典の表示', () => {
     await page.screenshot({ path: `${SHOTS}/core-google-logo-in-ui-390.png` });
   });
 
-  test('Google の地図に attr を書いても、表示範囲の copyright を出し、attr は後に添える', async ({ page }) => {
+  test('Google の地図に attr を書いても、表示範囲の copyright を出し、attr は別の箱にして上に出す', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await routeExternal(page);
     await page.route(/\/maps\/google\.json$/, async route => {
@@ -554,8 +595,12 @@ test.describe('背景地図の出典の表示', () => {
     await page.evaluate(() => (window as any).__MAPLAT_APP__.changeMap('google'));
     await expect
       .poll(async () => (await googleLogo(page, '#map_div')).googleItems, { timeout: 15000 })
-      .toEqual([GOOGLE_COPYRIGHT, 'Example basemap note']);
-    expectLogoPlacement(await googleLogo(page, '#map_div'));
+      .toEqual([GOOGLE_COPYRIGHT]);
+    const g = await googleLogo(page, '#map_div');
+    expectLogoPlacement(g);
+    expect(g.baseText).toBe('Example basemap note');
+    // attr の箱は、ロゴ・Google の出典の行より上にあり、重ならない
+    expect(g.base!.bottom).toBeLessThanOrEqual(Math.min(g.logo!.top, g.text!.top) + 0.5);
   });
 
   test('Google の地図の上の重ね地図の出典は、Google の出典と別の箱にして上に出す', async ({ page }) => {
@@ -646,67 +691,134 @@ test.describe('背景地図の出典の表示', () => {
     // 外の画像を読みに行かない
     expect(blocked.filter(url => url.startsWith('https://example.org/'))).toEqual([]);
   });
-  test('Google の copyright が長くても（狭い許可表を通るリンクと段落・文字だけ）、箱は上限の中に収まり、地図の大半はリンクにならない', async ({ page }) => {
-    const values = [
-      `<a href="https://example.org/"><p>${'█'.repeat(6000)}</p></a>`,
-      'Example '.repeat(1000).trim()
-    ];
-    for (const [width, height] of [[800, 600], [390, 844], [640, 200]] as const) {
-      for (const copyright of values) {
-        await page.unrouteAll({ behavior: 'ignoreErrors' });
-        await page.setViewportSize({ width, height });
-        await routeExternal(page, { copyright });
-        await page.goto('/e2e/fixtures/attribution/legacy.html?appid=sample&googleApiKey=example-key');
-        await expect(page.locator('body')).toHaveAttribute('data-ready', 'true', { timeout: 30000 });
-        await page.evaluate(() => (window as any).__MAPLAT_APP__.changeMap('google'));
-        await expect
-          .poll(async () => ((await googleLogo(page, '#map_div')).googleItems[0] ?? '').length, { timeout: 15000 })
-          .toBeGreaterThan(400);
-        const g = await googleLogo(page, '#map_div');
-        // 表示される文字は 500 字で切って「…」
-        expect(Array.from(g.googleItems[0]!)).toHaveLength(501);
-        expect(g.googleItems[0]!.endsWith('…')).toBe(true);
-        const measured = await page.evaluate(() => {
-          const host = document.querySelector('#map_div') as HTMLElement;
-          const item = host.querySelector('.maplat-attribution-item-source') as HTMLElement;
-          const box = host.querySelector('.maplat-attribution') as HTMLElement;
-          const h = host.getBoundingClientRect();
-          const i = item.getBoundingClientRect();
-          const b = box.getBoundingClientRect();
-          const lineHeight = parseFloat(getComputedStyle(item).lineHeight);
-          // 地図の上の 20×20 の点のうち、リンクに当たる点の数
-          let linked = 0;
-          let total = 0;
-          for (let x = 0; x < 20; x++) {
-            for (let y = 0; y < 20; y++) {
-              const el = document.elementFromPoint(h.left + ((x + 0.5) * h.width) / 20, h.top + ((y + 0.5) * h.height) / 20);
-              total++;
-              if (el?.closest('a')) linked++;
-            }
-          }
-          const center = document.elementFromPoint(h.left + h.width / 2, h.top + h.height / 2);
+  test('Google の copyright は長くても切らず、全文を折り返して出す', async ({ page }) => {
+    const long = `Imagery ©2026 Airbus, CNES / Airbus, Maxar Technologies Map data ©2026 ${'Example '.repeat(30).trim()}`;
+    await page.setViewportSize({ width: 390, height: 844 });
+    await routeExternal(page, { copyright: long });
+    await page.goto('/e2e/fixtures/attribution/legacy.html?appid=sample&googleApiKey=example-key');
+    await expect(page.locator('body')).toHaveAttribute('data-ready', 'true', { timeout: 30000 });
+    await page.evaluate(() => (window as any).__MAPLAT_APP__.changeMap('google_sat'));
+    await expect.poll(async () => (await googleLogo(page, '#map_div')).googleItems, { timeout: 15000 }).toEqual([long]);
+    const g = await googleLogo(page, '#map_div');
+    expectLogoPlacement(g);
+    // 何行にもなるが、隠さない（切れていない）
+    const geometry = await expectFullyVisible(page, '#map_div');
+    expect(geometry.height).toBeGreaterThan(60);
+    await page.waitForTimeout(800);
+    await page.locator('#map_div').screenshot({ path: `${SHOTS}/core-google-long-copyright-390.png` });
+  });
+
+  test('Google 以外の出典は長くても 2 行の箱に収まり（超えたら「…」）、地図の大半はリンクにならない', async ({ page }) => {
+    // 設定の attr（アプリの作者が書く値。広い許可表）に、長い段落を囲んだリンクと、大きな画像を入れる
+    const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+    const baseAttr = `<a href="https://example.org/"><p>${'█'.repeat(6000)}</p></a>`;
+    const overlayAttr = `<a href="https://example.org/overlay"><img src="${PNG}" width="4000" height="4000"><p>${'▒'.repeat(6000)}</p></a>`;
+    const routeAttr = async (re: RegExp, attr: string) =>
+      page.route(re, async route => {
+        const response = await route.fetch();
+        const json = await response.json();
+        json.attr = attr;
+        return route.fulfill({ response, body: JSON.stringify(json), contentType: 'application/json' });
+      });
+    const results: unknown[] = [];
+    for (const [width, height] of [[1280, 800], [390, 844], [640, 200]] as const) {
+      await page.unrouteAll({ behavior: 'ignoreErrors' });
+      await page.setViewportSize({ width, height });
+      await routeExternal(page);
+      await routeAttr(/\/maps\/google\.json$/, baseAttr);
+      await routeAttr(/\/maps\/morioka_ndl_affine\.json$/, overlayAttr);
+      await page.goto('/e2e/fixtures/attribution/legacy.html?appid=sample&googleApiKey=example-key');
+      await expect(page.locator('body')).toHaveAttribute('data-ready', 'true', { timeout: 30000 });
+      await page.evaluate(() => (window as any).__MAPLAT_APP__.changeMap('google'));
+      await expect.poll(async () => (await googleLogo(page, '#map_div')).googleItems, { timeout: 15000 }).toEqual([GOOGLE_COPYRIGHT]);
+      await page.evaluate(() => (window as any).__MAPLAT_APP__.changeMap('morioka_ndl_affine'));
+      await expect.poll(async () => (await attribution(page, '#map_div'))?.boxes.map(b => b.role), { timeout: 15000 }).toEqual([
+        'overlay',
+        'base',
+        'google'
+      ]);
+      const measured = await page.evaluate(() => {
+        const host = document.querySelector('#map_div') as HTMLElement;
+        const h = host.getBoundingClientRect();
+        const clamps = [...host.querySelectorAll('.maplat-attribution-clamp')].map(el => {
+          const r = (el as HTMLElement).getBoundingClientRect();
           return {
-            hostHeight: h.height,
-            hostWidth: h.width,
-            itemHeight: i.height,
-            boxHeight: b.height,
-            boxWidth: b.width,
-            lineHeight,
-            linkedRatio: linked / total,
-            centerIsLink: !!center?.closest('a')
+            height: r.height,
+            width: r.width,
+            line: parseFloat(getComputedStyle(el).lineHeight),
+            truncated: el.scrollHeight > el.clientHeight + 1
           };
         });
-        const limit = Math.min(4 * measured.lineHeight, measured.hostHeight * 0.25);
-        expect(measured.itemHeight).toBeLessThanOrEqual(limit + 1);
-        // 箱（Google の行。ロゴが折り返しても）の高さは、項目の上限と、ロゴの行と、余白の分まで
-        expect(measured.boxHeight).toBeLessThanOrEqual(limit + 22 + 15 + 4);
-        expect(measured.boxWidth).toBeLessThanOrEqual(measured.hostWidth + 0.5);
-        // リンクに当たるのは下の帯（項目の高さの上限の分。格子の 1 段ぶんの誤差を見る）だけで、多くても地図の 25%
-        expect(measured.linkedRatio).toBeLessThanOrEqual(Math.min(0.25, limit / measured.hostHeight + 0.05) + 1e-9);
-        expect(measured.centerIsLink).toBe(false);
-        expectLogoPlacement(g);
+        // 地図の上の 20×20 の点のうち、リンクに当たる点の数
+        const box = host.querySelector('.maplat-attribution') as HTMLElement;
+        let linked = 0;
+        for (let x = 0; x < 20; x++) {
+          for (let y = 0; y < 20; y++) {
+            const el = document.elementFromPoint(h.left + ((x + 0.5) * h.width) / 20, h.top + ((y + 0.5) * h.height) / 20);
+            if (el?.closest('a') && box.contains(el)) linked++;
+          }
+        }
+        const center = document.elementFromPoint(h.left + h.width / 2, h.top + h.height / 2);
+        return {
+          hostWidth: h.width,
+          hostHeight: h.height,
+          clamps,
+          linkedRatio: linked / 400,
+          centerIsLink: !!center?.closest('a')
+        };
+      });
+      expect(measured.clamps).toHaveLength(2);
+      for (const clamp of measured.clamps) {
+        // 2 行ぶん（と上下の余白 1px ずつ）より高くならない。中身は切れている
+        expect(clamp.height).toBeLessThanOrEqual(2 * clamp.line + 2 + 0.5);
+        expect(clamp.width).toBeLessThanOrEqual(measured.hostWidth + 0.5);
+        expect(clamp.truncated).toBe(true);
+      }
+      // リンクに当たるのは 2 つの箱（2 行ずつ）だけ。地図の大半はリンクにならない
+      const linkLimit = measured.clamps.reduce((sum, c) => sum + c.height, 0) / measured.hostHeight + 0.1;
+      expect(measured.linkedRatio).toBeLessThanOrEqual(Math.min(0.5, linkLimit));
+      // 高さ 200px の地図では、3 段（重ね地図・背景地図・Google の行）が中心に届く。中心は 400px 以上の地図で見る
+      if (measured.hostHeight >= 400) expect(measured.centerIsLink).toBe(false);
+      results.push({ size: `${width}x${height}`, linkedRatio: measured.linkedRatio, clamps: measured.clamps.map(c => c.height) });
+      expectLogoPlacement(await googleLogo(page, '#map_div'));
+      await page.waitForTimeout(600);
+      await page.screenshot({ path: `${SHOTS}/core-long-attr-${width}x${height}.png` });
+    }
+    test.info().annotations.push({ type: 'long-attr', description: JSON.stringify(results) });
+  });
+
+  test('写真: 幅 1280・390px で、重ね地図あり・なし、Google あり・なし', async ({ page }) => {
+    for (const width of [1280, 390]) {
+      const height = width === 1280 ? 800 : 844;
+      await page.unrouteAll({ behavior: 'ignoreErrors' });
+      await page.setViewportSize({ width, height });
+      await routeExternal(page);
+      await page.goto('/e2e/fixtures/attribution/legacy.html?appid=sample&googleApiKey=example-key');
+      await expect(page.locator('body')).toHaveAttribute('data-ready', 'true', { timeout: 30000 });
+      const cases = [
+        { base: 'gsi', overlay: false, roles: ['base'] },
+        { base: 'gsi', overlay: true, roles: ['overlay', 'base'] },
+        { base: 'google', overlay: false, roles: ['google'] },
+        { base: 'google', overlay: true, roles: ['overlay', 'google'] }
+      ];
+      for (const c of cases) {
+        await page.evaluate(id => (window as any).__MAPLAT_APP__.changeMap(id), c.base);
+        if (c.overlay) await page.evaluate(() => (window as any).__MAPLAT_APP__.changeMap('morioka_ndl_affine'));
+        await expect
+          .poll(async () => (await attribution(page, '#map_div'))?.boxes.map(b => b.role), { timeout: 15000 })
+          .toEqual(c.roles);
+        if (c.base === 'google') {
+          await expect.poll(async () => (await googleLogo(page, '#map_div')).googleItems, { timeout: 15000 }).toEqual([GOOGLE_COPYRIGHT]);
+        }
+        await expectFullyVisible(page, '#map_div');
+        await page.waitForTimeout(800);
+        const name = `boxes-${width}-${c.base}${c.overlay ? '-overlay' : ''}`;
+        await page.screenshot({ path: `${SHOTS}/${name}.png` });
+        await page.screenshot({
+          path: `${SHOTS}/${name}-corner.png`,
+          clip: { x: width - Math.min(width, 520), y: height - 140, width: Math.min(width, 520), height: 140 }
+        });
       }
     }
-    await page.screenshot({ path: `${SHOTS}/core-google-long-copyright-390.png` });
   });
 });

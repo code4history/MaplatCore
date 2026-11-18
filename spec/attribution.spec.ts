@@ -19,9 +19,7 @@ import {
   pickAttributionText,
   resolveAttributionLang,
   sanitizeSourceAttributions,
-  SOURCE_ATTRIBUTION_MAX_CHARS,
-  SOURCE_ATTRIBUTION_MAX_LINES,
-  SOURCE_ATTRIBUTION_MAX_MAP_RATIO
+  ATTRIBUTION_MAX_LINES
 } from "../src/attribution";
 
 const OSM_ATTR = "©︎ OpenStreetMap contributors";
@@ -395,7 +393,7 @@ describe("Google Maps のロゴ", () => {
     expect(logo.querySelector('g[opacity="0.8"] path')!.getAttribute("fill")).toBe("#1E1E1E");
   });
 
-  it("地図の設定に attr がある Google の地図でも、ロゴと表示範囲の copyright を出し、attr は後に添える", async () => {
+  it("地図の設定に attr がある Google の地図でも、ロゴと表示範囲の copyright を出し、attr は別の箱にして上に出す", async () => {
     const { display } = setup();
     const google = { ...googleSource("roadmap"), get: (key: string) => (key === "attr" ? "Example basemap note" : undefined) };
     display.update([google]);
@@ -408,7 +406,14 @@ describe("Google Maps のロゴ", () => {
     const items = [...display.element.querySelectorAll(".maplat-attribution-google .maplat-attribution-item")].map(
       e => e.textContent
     );
-    expect(items).toEqual([GOOGLE_COPYRIGHT, "Example basemap note"]);
+    // Google の行は copyright だけ。attr（アプリの作者が書く値）は Google の出典と別の箱
+    expect(items).toEqual([GOOGLE_COPYRIGHT]);
+    const children = [...display.element.children] as HTMLElement[];
+    expect(children.map(e => e.className)).toEqual([
+      "maplat-attribution-text maplat-attribution-clamp maplat-attribution-base maplat-attribution-stacked",
+      "maplat-attribution-google"
+    ]);
+    expect(children[0].textContent).toBe("Example basemap note");
   });
 
   it("attr と copyright が同じ文字列なら 1 回だけ", () => {
@@ -417,11 +422,21 @@ describe("Google Maps のロゴ", () => {
     expect(attributionTexts([google], "ja", dynamic)).toEqual([GOOGLE_COPYRIGHT]);
   });
 
-  it("Google の地図の出典と、ほかの地図（重ね地図）の出典を分ける", () => {
+  it("Google の copyright・背景地図・重ね地図の出典を分ける", () => {
     const google = googleSource("roadmap");
     const overlay = source(OSM_ATTR);
     const dynamic = new Map([[google, [GOOGLE_COPYRIGHT]]]);
-    expect(attributionGroups([google, overlay], "ja", dynamic)).toEqual({ google: [GOOGLE_COPYRIGHT], others: [OSM_ATTR] });
+    expect(attributionGroups([google, overlay], "ja", dynamic, [overlay])).toEqual({
+      google: [GOOGLE_COPYRIGHT],
+      base: [],
+      overlay: [OSM_ATTR]
+    });
+    // 重ね地図と言われなければ背景地図
+    expect(attributionGroups([google, overlay], "ja", dynamic)).toEqual({
+      google: [GOOGLE_COPYRIGHT],
+      base: [OSM_ATTR],
+      overlay: []
+    });
     // 平らな並びは source の順のまま
     expect(attributionTexts([google, overlay], "ja", dynamic)).toEqual([GOOGLE_COPYRIGHT, OSM_ATTR]);
   });
@@ -429,12 +444,13 @@ describe("Google Maps のロゴ", () => {
   it("Google の地図の上に重ね地図があると、重ね地図の出典は別の箱にして Google の行の上に置く", async () => {
     const { display } = setup();
     const google = googleSource("roadmap");
-    display.update(displayedAttributionSources({ front: google, overlay: source(GSI_ATTR) }));
+    const overlay = source(GSI_ATTR);
+    display.update(displayedAttributionSources({ front: google, overlay }), [overlay]);
     display.refreshDynamic([google], {});
     await flush();
     const children = [...display.element.children] as HTMLElement[];
     expect(children.map(e => e.className)).toEqual([
-      "maplat-attribution-text maplat-attribution-others",
+      "maplat-attribution-text maplat-attribution-clamp maplat-attribution-overlay maplat-attribution-stacked",
       "maplat-attribution-google"
     ]);
     expect(children[0].textContent).toBe("国土地理院");
@@ -443,11 +459,31 @@ describe("Google Maps のロゴ", () => {
     expect(display.element.textContent).not.toContain(" | ");
   });
 
-  it("Google の地図が無ければ、箱は 1 つで今までどおり", () => {
+  it("重ね地図が無ければ、背景地図の箱が 1 つ（行数の上限付き）", () => {
     const { display } = setup();
     display.update([source(GSI_ATTR), source(OSM_ATTR)]);
-    expect([...display.element.children].map(e => e.className)).toEqual(["maplat-attribution-text"]);
+    expect([...display.element.children].map(e => e.className)).toEqual([
+      "maplat-attribution-text maplat-attribution-clamp maplat-attribution-base"
+    ]);
     expect(display.element.textContent).toBe(`国土地理院 | ${OSM_ATTR}`);
+  });
+
+  it("Google の地図が無くても、重ね地図の出典は背景地図と別の箱にして上に出す", () => {
+    const { display } = setup();
+    const overlay = source(GSI_ATTR);
+    display.update(displayedAttributionSources({ front: source(OSM_ATTR), overlay }), [overlay]);
+    const children = [...display.element.children] as HTMLElement[];
+    expect(children.map(e => e.className)).toEqual([
+      "maplat-attribution-text maplat-attribution-clamp maplat-attribution-overlay maplat-attribution-stacked",
+      "maplat-attribution-text maplat-attribution-clamp maplat-attribution-base"
+    ]);
+    expect(children.map(e => e.textContent)).toEqual(["国土地理院", OSM_ATTR]);
+    expect(display.texts).toEqual([OSM_ATTR, "国土地理院"]);
+    // overlays に sources に無いものを渡しても無視する
+    display.update([source(OSM_ATTR)], [overlay]);
+    expect([...display.element.children].map(e => e.className)).toEqual([
+      "maplat-attribution-text maplat-attribution-clamp maplat-attribution-base"
+    ]);
   });
 
   it("狭いときはロゴの代わりに文字 Google Maps を出典の先頭に出す", async () => {
@@ -473,7 +509,7 @@ describe("Google Maps のロゴ", () => {
     display.update([googleSource("roadmap"), source(GSI_ATTR)]);
     expect(display.googleAttribution).toBe("logo");
     const before = display.element.querySelector(".maplat-attribution-google-logo");
-    expect(display.element.querySelector(".maplat-attribution-others")!.textContent).toBe("国土地理院");
+    expect(display.element.querySelector(".maplat-attribution-base")!.textContent).toBe("国土地理院");
     let renders = 0;
     const render = display.render.bind(display);
     display.render = () => {
@@ -487,7 +523,7 @@ describe("Google Maps のロゴ", () => {
     const after = display.element.querySelector(".maplat-attribution-google-logo");
     expect(after).not.toBeNull();
     expect(after).not.toBe(before);
-    expect(display.element.querySelector(".maplat-attribution-others")!.textContent).toBe(GSI_ATTR.en);
+    expect(display.element.querySelector(".maplat-attribution-base")!.textContent).toBe(GSI_ATTR.en);
     expect(display.googleAttribution).toBe("logo");
     display.update([source(OSM_ATTR)]);
     expect(display.googleAttribution).toBeUndefined();
@@ -717,12 +753,11 @@ describe("source から読んだ出典は狭い許可表で洗う", () => {
   });
 });
 
-describe("source から読んだ出典の箱の大きさの上限", () => {
-  function setup(height = 0) {
+
+describe("出典の箱の行数の上限（Google の copyright は切らない）", () => {
+  function setup() {
     document.body.innerHTML = `<div id="map" lang="ja"></div>`;
     const map = document.getElementById("map")!;
-    // jsdom はレイアウトしないので、地図の箱の高さを差し替える
-    Object.defineProperty(map, "clientHeight", { configurable: true, get: () => height });
     const display = new AttributionDisplay(map, () => resolveAttributionLang(map));
     return { map, display };
   }
@@ -730,119 +765,102 @@ describe("source から読んだ出典の箱の大きさの上限", () => {
   function olSource(value: unknown, extra: Record<string, unknown> = {}) {
     return { get: () => undefined, isWmts: () => true, getAttributions: () => () => value, ...extra };
   }
-  async function show(sources: ReturnType<typeof olSource>[], height = 0) {
-    const { map, display } = setup(height);
-    display.update(sources);
-    display.refreshDynamic(sources, {});
-    await flush();
-    return { map, display };
-  }
   const LONG = "█".repeat(6000);
+  const HOSTILE = `<a href="https://example.org/"><p>${LONG}</p></a>`;
+  const boxes = (display: AttributionDisplay) => [...display.element.children] as HTMLElement[];
 
-  it("長い値は表示される文字を 500 字で切って「…」を付ける（タグの入れ子は保つ）", () => {
-    expect(SOURCE_ATTRIBUTION_MAX_CHARS).toBe(500);
-    const [html] = sanitizeSourceAttributions([`<a href="https://example.org/"><p>${LONG}</p></a>`]);
-    expect(html).toBe(
-      `<a href="https://example.org/" target="_blank" rel="noopener noreferrer"><p>${"█".repeat(500)}…</p></a>`
-    );
-    // ちょうど 500 字は切らない。501 字は切る
-    expect(sanitizeSourceAttributions(["a".repeat(500)])).toEqual(["a".repeat(500)]);
-    expect(sanitizeSourceAttributions(["a".repeat(501)])).toEqual([`${"a".repeat(500)}…`]);
-    // 境目より後ろの要素は捨てる
-    const [nested] = sanitizeSourceAttributions([`<b>${"a".repeat(498)}</b>bcd<i>ef</i>`]);
-    expect(nested).toBe(`<b>${"a".repeat(498)}</b>bc…`);
-    // 絵文字（サロゲートペア）を途中で割らない
-    const [emoji] = sanitizeSourceAttributions(["😀".repeat(501)]);
-    expect(Array.from(emoji)).toHaveLength(501);
-    expect(emoji.endsWith("😀…")).toBe(true);
-  });
-
-  it("source の値の項目には高さの上限（4 行ぶんと地図の高さの 25% の小さい方・はみ出しは隠す）を付ける", async () => {
-    expect(SOURCE_ATTRIBUTION_MAX_LINES).toBe(4);
-    expect(SOURCE_ATTRIBUTION_MAX_MAP_RATIO).toBe(0.25);
-    const { display } = await show([olSource(`<a href="https://example.org/"><p>${LONG}</p></a>`)], 800);
-    const item = display.element.querySelector<HTMLElement>(".maplat-attribution-item")!;
-    expect(item.classList.contains("maplat-attribution-item-source")).toBe(true);
-    expect(Array.from(item.textContent!)).toHaveLength(501);
-    expect(display.element.style.getPropertyValue("--maplat-attribution-source-map-limit")).toBe("200px");
+  it("Google の copyright 以外の箱は 2 行まで（超えた分は「…」・高さもその行数まで・はみ出しは隠す）", () => {
+    expect(ATTRIBUTION_MAX_LINES).toBe(2);
+    setup();
     const css = document.getElementById("maplat-attribution-style")!.textContent!;
-    const rule = css.slice(css.indexOf(".maplat-attribution-item-source {"));
-    expect(rule).toContain(
-      "max-height: min(calc(4 * 1.4em), var(--maplat-attribution-source-map-limit, calc(4 * 1.4em)));"
-    );
+    const rule = css.slice(css.indexOf(".maplat-attribution-clamp {"), css.indexOf("}", css.indexOf(".maplat-attribution-clamp {")));
+    expect(rule).toContain("display: -webkit-box;");
+    expect(rule).toContain("-webkit-box-orient: vertical;");
+    expect(rule).toContain("-webkit-line-clamp: 2;");
+    expect(rule).toContain("max-height: calc(2 * 1.4em + 2px);");
+    expect(rule).toContain("max-width: 100%;");
+    expect(rule).toContain("box-sizing: border-box;");
     expect(rule).toContain("overflow: hidden;");
+    // Google の行の箱には付かない規則であること（.maplat-attribution-text 全体には付けない）
+    expect(css).not.toMatch(/\.maplat-attribution-text \{[^}]*line-clamp/);
   });
 
-  it("地図の高さが測れないときは 4 行ぶんだけが効く。大きさが変わると 25% の値を直す", async () => {
-    const original = globalThis.ResizeObserver;
-    const callbacks: (() => void)[] = [];
-    globalThis.ResizeObserver = class {
-      constructor(callback: () => void) {
-        callbacks.push(callback);
-      }
-      observe() {
-        return undefined;
-      }
-      disconnect() {
-        return undefined;
-      }
-    } as unknown as typeof ResizeObserver;
-    try {
-      let height = 0;
-      document.body.innerHTML = `<div id="map" lang="ja"></div>`;
-      const map = document.getElementById("map")!;
-      Object.defineProperty(map, "clientHeight", { configurable: true, get: () => height });
-      const display = new AttributionDisplay(map, () => "ja");
-      const src = olSource("Example");
-      display.update([src]);
-      expect(display.element.style.getPropertyValue("--maplat-attribution-source-map-limit")).toBe("");
-      height = 203;
-      callbacks[0]();
-      expect(display.element.style.getPropertyValue("--maplat-attribution-source-map-limit")).toBe("50px");
-    } finally {
-      globalThis.ResizeObserver = original;
+  it("source から読んだ長い値・設定の長い attr は、背景地図の箱・重ね地図の箱のどちらでも上限付きの箱に入る", async () => {
+    const { display } = setup();
+    const fetched = olSource(HOSTILE);
+    const OVERLAY_LONG = "▒".repeat(6000);
+    const overlay = source(`<p>${OVERLAY_LONG}</p>`);
+    display.update([fetched, overlay], [overlay]);
+    display.refreshDynamic([fetched], {});
+    await flush();
+    const [overlayBox, baseBox] = boxes(display);
+    expect(overlayBox.classList.contains("maplat-attribution-overlay")).toBe(true);
+    expect(baseBox.classList.contains("maplat-attribution-base")).toBe(true);
+    for (const [box, text] of [
+      [overlayBox, OVERLAY_LONG],
+      [baseBox, LONG]
+    ] as const) {
+      expect(box.classList.contains("maplat-attribution-clamp")).toBe(true);
+      // 文字は DOM に残す（切るのは表示だけ。全文は UI の地図情報で見る）
+      expect(box.textContent).toBe(text);
+    }
+    // source の値のリンクは狭い許可表のとおり
+    expect(baseBox.querySelector("a")!.getAttribute("rel")).toBe("noopener noreferrer");
+  });
+
+  it("Google の copyright は上限を当てず、全文を出す（衛星の約 70 字・それより長くても）", async () => {
+    const satellite = "Imagery ©2026 Airbus, CNES / Airbus, Maxar Technologies Map data ©2026";
+    for (const copyright of [satellite, `${satellite} ${"Example ".repeat(40).trim()}`]) {
+      const { display } = setup();
+      const google = olSource(copyright, { googleMapType: "satellite" });
+      display.update([google]);
+      display.refreshDynamic([google], {});
+      await flush();
+      const box = display.element.querySelector<HTMLElement>(".maplat-attribution-google .maplat-attribution-text")!;
+      expect(box.classList.contains("maplat-attribution-clamp")).toBe(false);
+      expect(box.querySelector(".maplat-attribution-item")!.innerHTML).toBe(copyright);
+      expect(display.element.querySelector(".maplat-attribution-clamp")).toBeNull();
     }
   });
 
-  it("Google の copyright のふつうの長さは切らない", async () => {
-    const copyright = "Imagery ©2026 Airbus, CNES / Airbus, Maxar Technologies Map data ©2026";
-    const { display } = await show([olSource(copyright, { googleMapType: "satellite" })], 800);
-    const item = display.element.querySelector(".maplat-attribution-google .maplat-attribution-item")!;
-    expect(item.innerHTML).toBe(copyright);
-    expect(item.classList.contains("maplat-attribution-item-source")).toBe(true);
+  it("Google の copyright も狭い許可表で洗う（画像は落ちる）", async () => {
+    const { display } = setup();
+    const google = olSource(`Map data ©2026 Google<a href="https://example.org/"><img src="https://example.org/x.png" width="4000"></a>`, {
+      googleMapType: "roadmap"
+    });
+    display.update([google]);
+    display.refreshDynamic([google], {});
+    await flush();
+    expect(display.element.querySelector("img")).toBeNull();
+    expect(display.element.querySelector(".maplat-attribution-google a")!.getAttribute("rel")).toBe("noopener noreferrer");
   });
 
-  it("地図の設定の attr には上限を付けない（長くても切らず、上限の class も付けない）", () => {
-    const { display } = setup(800);
-    display.update([source(`<p>${LONG}</p>`)]);
-    const item = display.element.querySelector(".maplat-attribution-item")!;
-    expect(item.classList.contains("maplat-attribution-item-source")).toBe(false);
-    expect(item.textContent).toBe(LONG);
-  });
-
-  it("重複は表示される文字で比べる（設定の A & B と source の A & B は 1 回だけ）。texts は元の値を返す", async () => {
+  it("重複は表示される文字で比べる（設定の A &amp; B と source の A & B は 1 回だけ）。texts は元の値を返す", async () => {
     const google = olSource("Map data ©2026 A & B", {
       googleMapType: "roadmap",
-      get: (key: string) => (key === "attr" ? "Map data ©2026 A & B" : undefined)
+      get: (key: string) => (key === "attr" ? "Map data ©2026 A &amp; B" : undefined)
     });
-    const { display } = await show([google]);
+    const { display } = setup();
+    display.update([google]);
+    display.refreshDynamic([google], {});
+    await flush();
     expect(display.texts).toEqual(["Map data ©2026 A & B"]);
     expect([...display.element.querySelectorAll(".maplat-attribution-item")].map(e => e.textContent)).toEqual([
       "Map data ©2026 A & B"
     ]);
-    // 重ね地図の設定の attr と Google の copyright が同じ文字なら、重ね地図の側は出さない
+    // 重ね地図の attr が Google の copyright と同じ文字なら、重ね地図の箱は出さない
     const overlay = source("Map data ©2026 A &amp; B");
-    display.update([google, overlay]);
+    display.update([google, overlay], [overlay]);
     display.refreshDynamic([google], {});
     await flush();
-    expect(display.element.querySelector(".maplat-attribution-others")).toBeNull();
-    // 純粋な関数でも同じ（元の値を返す）
-    const dynamic = new Map([[google, ["Imagery & more"]]]);
-    expect(attributionTexts([olSource("x")], "ja", new Map())).toEqual([]);
-    expect(attributionGroups([google, source("Imagery &amp; more")], "ja", dynamic)).toEqual({
-      google: ["Imagery & more", "Map data ©2026 A & B"],
-      others: []
-    });
+    expect(display.element.querySelector(".maplat-attribution-overlay")).toBeNull();
+    // source から読んだ値の texts は洗う前の元の値
+    const plain = olSource("Example & Co.");
+    display.update([plain]);
+    display.refreshDynamic([plain], {});
+    await flush();
+    expect(display.texts).toEqual(["Example & Co."]);
+    expect(display.element.querySelector(".maplat-attribution-item")!.innerHTML).toBe("Example &amp; Co.");
   });
 });
 

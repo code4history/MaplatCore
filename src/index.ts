@@ -2356,12 +2356,15 @@ export class MaplatApp extends EventTarget implements ElementImplementationInter
             this.__vectorStore().forEach(entry => this.__drawVectorEntry(entry));
             // 表示中の現代の地図（前面の basemap・重ね地図・背面の basemap）の出典を描き直す。
             // MaplatApp の prototype は公開面として固定しているので、メソッドにせずここで呼ぶ
+            // 重ね地図の出典は背景地図の出典と別の箱に出す
+            const attributionOverlay = to instanceof TmsMap ? to : undefined;
             this.__attribution?.update(
               displayedAttributionSources({
                 front: this.mapObject.getSource(),
-                overlay: to instanceof TmsMap ? to : undefined,
+                overlay: attributionOverlay,
                 back: this.backMap?.getSource()
-              })
+              }),
+              attributionOverlay ? [attributionOverlay] : []
             );
             this.dispatchEvent(
               new CustomEvent("mapChanged", this.getMapMeta(to.mapID))

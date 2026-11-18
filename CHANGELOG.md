@@ -19,9 +19,11 @@
 - `<maplat-app>` の属性 `hide-outside-pois`（プロパティ `hideOutsidePois`）。範囲外の POI を描かない。起動後にも変えられ、変えるとマーカーを描き直す
 - 地図の設定の `iiif` 節（IIIF の Manifest から写した書誌: `manifest`・`canvas`・`image`・`bindings`・`copiedAt`・`copiedValues`・`copiedMetadata`）。`getMapMeta`・`mapChanged` の `MapMeta` に `iiif`（`display` はアプリの設定の `sources[]` の `iiifMetadata`、既定 `"hidden"`）。Viewer は Manifest を取得しない。Manifest の値の中の入れ子の配列は、捨てずに平らにして読む（深さの上限は 32 段。循環する値でも止まる）。Manifest を読む純粋な関数（`resolveIiifMetadata` ほか）は `src/iiif/manifest.ts`（MaplatEditor などが使う内部の関数で、パッケージの公開 API ではない）、IIIF の値のサニタイズは `sanitizeHtml(dirty, { profile: "iiif" })`・`sanitizeIiifHtml`。`@maplat/core/common` から `sanitizeIiifHtml`・型 `MapMetaIiif`・型ガード `isIiifMetadataEntry` を import できる。`iiif.copiedMetadata` の形の合わない要素は、地図ごとに 1 回警告して外す
 - 入口 `@maplat/core/template`（`dist/maplat_core_template.js`）。POI テンプレートを評価する関数 `applyPoiTemplates`・`createIconSet`・`createHtmlFromTemplate` と型 `PoiTemplateLevel`・`PoiTemplateFields` を出す。`MaplatApp` がマーカーの描画と `getMarker` に使うのと同じ実装で、上位の実装が同じ設定ファイルで同じ表示を出せるようにするため。Nunjucks（Quyuan の `@c4h/quyuan/template`）を同梱するので `@maplat/core/common` には入れない（`@maplat/core/element`・`@maplat/core/common` は Nunjucks を含まない）。実行時は `@maplat/core` の中の分とは別の写しで、両方を読み込むページでは Nunjucks が 2 重に載る
-- Google の地図を表示しているあいだ、Map Tiles API の利用条件に従い、Google の出典（copyright）の左隣に Google Maps のロゴを出すようにした（#193）。ロゴは公式の配布物の SVG を原寸（105×22 px）で手を加えずに使い、地図は白い枠の灰色、衛星写真は濃い枠の白。余白は上・左右 10 px、下 5 px。前面が古地図で背面が Google の地図のときも出す。出典の文字が入らなければロゴの下へ折り返し、使える幅が 125 px より狭いときだけロゴの代わりに文字「Google Maps」を出す。状態は `div.maplat-attribution` の `data-google-maps`（`logo`・`text`）。Google の地図は `attr` を書いても表示範囲の copyright を必ず出し、`attr` は後に添える。Google の地図の上の重ね地図などの出典は、Google の出典と別の箱にして上に出す。ロゴの出どころとライセンスの扱いを `THIRD-PARTY-NOTICES.md` に掲載
+- Google の地図を表示しているあいだ、Map Tiles API の利用条件に従い、Google の出典（copyright）の左隣に Google Maps のロゴを出すようにした（#193）。ロゴは公式の配布物の SVG を原寸（105×22 px）で手を加えずに使い、地図は白い枠の灰色、衛星写真は濃い枠の白。余白は上・左右 10 px、下 5 px。前面が古地図で背面が Google の地図のときも出す。出典の文字が入らなければロゴの下へ折り返し、使える幅が 125 px より狭いときだけロゴの代わりに文字「Google Maps」を出す。状態は `div.maplat-attribution` の `data-google-maps`（`logo`・`text`）。Google の地図は `attr` を書いても表示範囲の copyright を必ず出し、`attr` は別の箱にして上に出す。Google の地図の上の重ね地図などの出典も、Google の出典と別の箱にして上に出す。ロゴの出どころとライセンスの扱いを `THIRD-PARTY-NOTICES.md` に掲載
 
 ### Changed
+- 地図の右下の出典の表示を、背景地図と重ね地図で別の箱に分けた（下の段が背景地図。Google の地図ならロゴと Google の copyright の行。その上が重ね地図）。これまでは Google の地図のときだけ分け、それ以外は 1 つの箱に「 | 」でつないでいた。Google の地図に書いた `attr` も、Google の copyright と別の箱にして上に出す
+- Google の copyright 以外の出典の箱（`attr` と、OpenLayers の source から読んだ出典）は 2 行までにし、超えた分は「…」で切るようにした（`.maplat-attribution-clamp`）。箱は 2 行の高さと地図の幅を超えず、中の画像も箱に入るよう縮める。全文は UI の地図情報で見る前提。Google の copyright は利用条件の "in full as provided" のため切らず、全文を折り返して出す
 - 範囲外の POI が背面の地図に見えるようになった。古地図の紙の外にある POI は背面の `marker` 層にメルカトルの座標で立ち、TMS・基本地図では前面に立つ。範囲外の POI を選んでいる間は中心を紙の内側へ引き戻さず、背面のピンは紙の外の点でだけ押せる
 - `MaplatApp` の起動時だけ効くフィールド（`appid`・`enableCache`・`noRotate`・`alwaysGpsOn`・`overlay`・`googleApiKey`・`restoreSession`・`initialRestore`・`uiHooks` など）への構築後の代入は、警告して無視する（読み取りは従来どおり）
 - 上の起動時だけ効くフィールドのうち公開の 12 個は、TypeScript の型定義でも読み取り専用になった（`get` のみ）。`app.restoreSession = false` のような代入はコンパイルエラー（`TS2540`）になる。実行時も、インスタンスの列挙できるプロパティから prototype の accessor（列挙されない）に変わり、`Object.keys(app)`・スプレッドに同じ名前のキー（`appid`・`restoreSession` など）は出ない。値の保管場所 `__appid`・`__restoreSession` などはインスタンスの列挙できるプロパティなので、こちらは出る
@@ -52,8 +54,8 @@
 ### Security
 - 地図の右下の出典の表示で、OpenLayers の source から読んだ出典（Google の copyright、TileJSON の `attribution` など、第三者のサーバーが決める値）を、地図の設定の `attr` より厳しく扱うようにした。これまでは `attr` と同じ広い許可表で洗っていたため、外の値の `<a href="https://…"><img src="https://…" width="4000" height="4000"></a>` で、出典の箱が地図を覆い、地図全体が外へのリンクになり、外の画像を読みに行って見ている人の情報が第三者に渡りえた
   - 狭い許可表（`sanitizeHtml(text, { profile: "iiif" })`）で洗う。残すタグは `a`・`b`・`br`・`i`・`p`・`small`・`span`・`sub`・`sup`、属性は `http(s)` の `href` だけで、リンクには `rel="noopener noreferrer"` を付ける
-  - 文字は 500 字で切って「…」を付け、高さは「4 行ぶん」と「地図の高さの 25%」の小さい方までにする（はみ出しは隠す）。狭い許可表を通る `<a href="https://…"><p>長い文字</p></a>` や長い文字だけでも、地図の下の帯しか占めない
-  - 文字だけの Google の copyright と、OpenLayers の source の既定の出典（文字とリンク）の表示は変わらない。地図の設定の `attr` は従来どおりの許可表で、長さ・高さの上限も無い
+  - 狭い許可表を通る `<a href="https://…"><p>長い文字</p></a>` や長い文字だけでも地図を覆わないよう、Google の copyright 以外の出典の箱は 2 行までにした（Changed の項目）
+  - 文字だけの Google の copyright と、OpenLayers の source の既定の出典（文字とリンク）の表示は変わらない。地図の設定の `attr` は従来どおりの許可表
   - 出典の重複は、表示される文字で比べるようにした（これまでは元の文字列で比べていた）。`attr` の `A &amp; B` と source の `A & B` は 1 回だけ出る
 - 状態 URL や `localStorage` から来る地図 ID・層 ID の引き当てを、自分の鍵（`Object.hasOwn`）だけに限った。存在しない ID は、継承した名前でも今までの未知の ID と同じ扱いになり、起動や以後の地図の切り替えに影響しない。公開メソッドの `addMarker`・`clearMarker` に渡す層 ID も同じ
 - 地図 ID は文字列だけを受ける（公開の型のとおり）。地図の設定の `mapID: 5` のような数値の ID を `changeMap(5)`・`mapInfo(5)`・`startFrom: 5` のように数値のまま渡しても引き当たらない。文字列（`"5"`）で渡す

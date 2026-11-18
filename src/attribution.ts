@@ -7,11 +7,14 @@
 //   - アプリは appOption.controls で部品を差し替えられる。差し替えで出典が消えてはいけない。
 // 古地図の出典はここには出さない（UI の地図情報に出す。長い自由記述のことがあるため）。
 // 地図の設定に `attr` が無い現代の地図は、OpenLayers の source の出典（getAttributions）を出す。
-// Google の地図は、`attr` の有無によらず、表示範囲ごとに取りに行く copyright を必ず出す（`attr` は後に添える）。
-// Map Tiles API の利用条件が、表示範囲の copyright を "in full as provided" で出すよう求めるため。
+// Google の地図は、`attr` の有無によらず、表示範囲ごとに取りに行く copyright を必ず出す。
+// Map Tiles API の利用条件が、表示範囲の copyright を "in full as provided" で出すよう求めるため、切らずに全文を出す。
 // Google の地図を表示しているあいだは、利用条件が求める Google Maps のロゴを Google の出典の左隣に出す
-// （狭くてロゴが入らないときは文字 "Google Maps"）。ほかの地図（重ね地図など）の出典は、Google の出典と
-// 区別できるよう、別の箱にしてその上に出す（利用条件: 第三者の出典は Google の出典と "clearly be disassociated"）。
+// （狭くてロゴが入らないときは文字 "Google Maps"）。
+// 出典は箱を分けて出す: 下の段が背景地図（Google の地図ならロゴと copyright の行）、その上が重ね地図。
+// Google の地図に書いた `attr` も、Google の copyright と別の箱にする（利用条件: 第三者の出典は Google の出典と
+// "clearly be disassociated"）。
+// Google の copyright 以外の箱は ATTRIBUTION_MAX_LINES 行までにし、超えた分は「…」で切る。全文は UI の地図情報で見る。
 import browserLanguage from "./browserlanguage";
 import { MAPLAT_UI_TAG } from "./element_contract";
 import { GOOGLE_MAPS_LOGO_DARK_OUTLINE, GOOGLE_MAPS_LOGO_LIGHT_OUTLINE } from "./google_maps_logo";
@@ -184,50 +187,17 @@ export function normalizeOlAttributions(value: unknown): string[] {
   return list.filter((v): v is string => typeof v === "string" && v.trim() !== "").map(v => v.trim());
 }
 
-/** source から読んだ出典 1 つの文字数の上限（表示される文字の数。超えたら切って「…」を付ける）。 */
-export const SOURCE_ATTRIBUTION_MAX_CHARS = 500;
-
-/** source から読んだ出典 1 つの箱の高さの上限（行の数）。 */
-export const SOURCE_ATTRIBUTION_MAX_LINES = 4;
-
-/** source から読んだ出典 1 つの箱の高さの上限（地図の高さに対する割合）。行の数の上限と小さい方を使う。 */
-export const SOURCE_ATTRIBUTION_MAX_MAP_RATIO = 0.25;
+/**
+ * Google の copyright 以外の出典の箱の行数の上限。超えた分は「…」で切り、箱の高さもこの行数までにする
+ * （はみ出しは隠す）。全文は UI の地図情報で見られる前提。
+ */
+export const ATTRIBUTION_MAX_LINES = 2;
 
 /** HTML を断片として読む（template の中身は画像を読みに行かず、スクリプトも動かない）。 */
 function parseFragment(html: string): DocumentFragment {
   const template = document.createElement("template");
   template.innerHTML = html;
   return template.content;
-}
-
-/**
- * HTML の表示される文字を max 字（コードポイントの数）までにする。超えたら、そこで切って「…」を付け、
- * 後ろの要素・文字は捨てる（タグの入れ子は保つ）。超えなければそのまま返す。
- */
-function truncateHtml(html: string, max: number): string {
-  const fragment = parseFragment(html);
-  const walker = document.createTreeWalker(fragment, NodeFilter.SHOW_TEXT);
-  let remaining = max;
-  let cut: Node | null = null;
-  while (walker.nextNode()) {
-    const node = walker.currentNode as Text;
-    const chars = Array.from(node.data);
-    if (chars.length <= remaining) {
-      remaining -= chars.length;
-      continue;
-    }
-    node.data = `${chars.slice(0, remaining).join("")}…`;
-    cut = node;
-    break;
-  }
-  if (!cut) return html;
-  // 切った文字より後ろ（文書の順）を捨てる
-  for (let node: Node | null = cut; node && node !== fragment; node = node.parentNode) {
-    while (node.nextSibling) node.nextSibling.remove();
-  }
-  const container = document.createElement("template");
-  container.content.appendChild(fragment);
-  return container.innerHTML;
 }
 
 /** HTML の表示される文字（空白はまとめる）。重複を除くときに、設定の値と source の値を同じ形で比べるため。 */
@@ -237,23 +207,18 @@ function displayText(html: string): string {
 
 /**
  * OpenLayers の source から読んだ出典（第三者のサーバーが決める値。Google の copyright・TileJSON の
- * attribution など）を、表示用の HTML にする。空になったものは除く。
- *   - 狭い許可表（sanitizeHtml の profile "iiif"）で洗う。残るタグは a・b・br・i・p・small・span・sub・sup だけ、
- *     属性は http(s) の href だけ。img・class・style・javascript: などは落ちる。
- *     リンクには target="_blank" と rel="noopener noreferrer" が付く。
- *   - 表示される文字は SOURCE_ATTRIBUTION_MAX_CHARS 字まで（超えたら切って「…」）。
- *     箱の高さも CSS で上限を付ける（.maplat-attribution-item-source）。
+ * attribution など）を、狭い許可表（sanitizeHtml の profile "iiif"）で洗う。空になったものは除く。
+ *   - 残るタグは a・b・br・i・p・small・span・sub・sup だけ、属性は http(s) の href だけ。
+ *     img・class・style・javascript: などは落ちる。リンクには target="_blank" と rel="noopener noreferrer" が付く。
  *   - 理由: 広い許可表（地図の設定の attr 用）のままだと、外の値の
  *     `<a href="https://…"><img src="https://…" width="4000" height="4000"></a>` で、出典の箱が地図を覆い、
  *     地図全体が外へのリンクになり、外の画像を読みに行って見ている人の情報が第三者に渡る。
- *     狭い許可表を通る `<a href="https://…"><p>長い文字</p></a>` や長い文字だけでも、箱が地図を覆いうる。
- * 地図の設定の attr（アプリの作者が書く値）には使わない（従来どおり広い許可表で、img なども通り、上限も無い）。
- * 文字だけの値（Google の copyright など）は、上限より短ければ変わらない（& と < > は HTML の形になる）。
+ * 長さは洗う対象ではない（箱の行数の上限で切る。Google の copyright は切らない）。
+ * 地図の設定の attr（アプリの作者が書く値）には使わない（従来どおり広い許可表で、img なども通る）。
+ * 文字だけの値（Google の copyright など）は変わらない（& と < > は HTML の形になる）。
  */
 export function sanitizeSourceAttributions(texts: readonly string[]): string[] {
-  return texts
-    .map(text => truncateHtml(sanitizeHtml(text, { profile: "iiif" }).trim(), SOURCE_ATTRIBUTION_MAX_CHARS))
-    .filter(html => html !== "");
+  return texts.map(text => sanitizeHtml(text, { profile: "iiif" }).trim()).filter(html => html !== "");
 }
 
 /** 表示する出典 1 つ。 */
@@ -264,21 +229,25 @@ interface AttributionEntry {
   html: string;
   /** 重複を除くときに比べる形（表示される文字。文字が無ければ HTML）。 */
   key: string;
-  /** source から読んだ値か（箱の大きさに上限を付ける）。 */
-  fromSource: boolean;
 }
 
-function configuredEntry(text: string): AttributionEntry {
+function configuredEntries(source: AttributionSourceLike, lang: string): AttributionEntry[] {
+  const raw = typeof source.get === "function" ? source.get("attr") : undefined;
+  const text = pickAttributionText(raw as AttributionValue, lang)?.trim();
+  if (!text) return [];
   // 地図の設定の attr は、許可リストで洗ってから入れる（UI の地図情報と同じ関数・同じ許可表）
   const html = sanitizeHtml(text);
-  return { text, html, key: displayText(html) || html, fromSource: false };
+  return [{ text, html, key: displayText(html) || html }];
 }
 
-function sourceEntries(texts: readonly string[]): AttributionEntry[] {
+function fetchedEntries(
+  source: AttributionSourceLike,
+  dynamic?: ReadonlyMap<AttributionSourceLike, readonly string[]>
+): AttributionEntry[] {
   const entries: AttributionEntry[] = [];
-  for (const text of texts) {
-    const [html] = sanitizeSourceAttributions([text]);
-    if (html) entries.push({ text, html, key: displayText(html) || html, fromSource: true });
+  for (const text of dynamic?.get(source) ?? []) {
+    const [html] = sanitizeSourceAttributions([text.trim()]);
+    if (html) entries.push({ text: text.trim(), html, key: displayText(html) || html });
   }
   return entries;
 }
@@ -293,53 +262,59 @@ function entriesOf(
   lang: string,
   dynamic?: ReadonlyMap<AttributionSourceLike, readonly string[]>
 ): AttributionEntry[] {
-  const raw = typeof source.get === "function" ? source.get("attr") : undefined;
-  const configured = pickAttributionText(raw as AttributionValue, lang)?.trim() || undefined;
-  const fetched = sourceEntries((dynamic?.get(source) ?? []).map(text => text.trim()).filter(Boolean));
-  if (isGoogleSource(source)) return configured ? [...fetched, configuredEntry(configured)] : fetched;
-  return configured ? [configuredEntry(configured)] : fetched;
+  const configured = configuredEntries(source, lang);
+  if (isGoogleSource(source)) return [...fetchedEntries(source, dynamic), ...configured];
+  return configured.length > 0 ? configured : fetchedEntries(source, dynamic);
 }
 
-/** source の並びから、表示する出典を作る（表示される文字が同じものは 1 回だけ。exclude にあるものも除く）。 */
-function attributionEntries(
-  sources: AttributionSourceLike[],
-  lang: string,
-  dynamic?: ReadonlyMap<AttributionSourceLike, readonly string[]>,
-  exclude: readonly AttributionEntry[] = []
-): AttributionEntry[] {
-  const entries: AttributionEntry[] = [];
-  const seen = new Set(exclude.map(entry => entry.key));
-  for (const source of sources) {
-    for (const entry of entriesOf(source, lang, dynamic)) {
+/** 表示される文字が同じものを除いて並べる（seen にあるものも除き、加えたものは seen に足す）。 */
+function uniqueEntries(lists: AttributionEntry[][], seen: Set<string>): AttributionEntry[] {
+  const result: AttributionEntry[] = [];
+  for (const list of lists) {
+    for (const entry of list) {
       if (seen.has(entry.key)) continue;
       seen.add(entry.key);
-      entries.push(entry);
+      result.push(entry);
     }
   }
-  return entries;
+  return result;
 }
 
-/** Google の地図の分（google）とそれ以外（others）。同じ表示の文字は 1 回だけ（Google の分を先に取る）。 */
+/**
+ * 箱ごとの出典。重複は表示される文字で比べ、google → base → overlay の順に先に取ったほうに出す。
+ *   - google: Google の地図の copyright（切らない）
+ *   - base: 背景地図の出典（Google の地図に書いた attr を含む）
+ *   - overlay: 重ね地図の出典
+ */
 function attributionEntryGroups(
   sources: AttributionSourceLike[],
   lang: string,
-  dynamic?: ReadonlyMap<AttributionSourceLike, readonly string[]>
-): { google: AttributionEntry[]; others: AttributionEntry[] } {
-  const google = attributionEntries(sources.filter(isGoogleSource), lang, dynamic);
-  const others = attributionEntries(
-    sources.filter(source => !isGoogleSource(source)),
-    lang,
-    dynamic,
-    google
+  dynamic?: ReadonlyMap<AttributionSourceLike, readonly string[]>,
+  overlays: readonly AttributionSourceLike[] = []
+): { google: AttributionEntry[]; base: AttributionEntry[]; overlay: AttributionEntry[] } {
+  const bases = sources.filter(source => !overlays.includes(source));
+  const overlaySources = sources.filter(source => overlays.includes(source));
+  const seen = new Set<string>();
+  const google = uniqueEntries(
+    bases.filter(isGoogleSource).map(source => fetchedEntries(source, dynamic)),
+    seen
   );
-  return { google, others };
+  const base = uniqueEntries(
+    bases.map(source => (isGoogleSource(source) ? configuredEntries(source, lang) : entriesOf(source, lang, dynamic))),
+    seen
+  );
+  const overlay = uniqueEntries(
+    overlaySources.map(source => entriesOf(source, lang, dynamic)),
+    seen
+  );
+  return { google, base, overlay };
 }
 
 /**
  * source の並びから、表示する出典の文字列（言語を選んだもの・空と重複を除いたもの）を作る。
  * 地図の設定の `attr` が無い source は、dynamic（OpenLayers の source から読んだ出典）の値を使う。
  * Google の地図は `attr` があっても dynamic（copyright）を先に出す。
- * 重複は表示される文字で比べる（設定の `A & B` と source の `A &amp; B` は同じもの）。
+ * 重複は表示される文字で比べる（設定の `A &amp; B` と source の `A & B` は同じもの）。
  * 返すのは元の値（洗う前）。source の値で、洗うと何も残らないものは除く。
  */
 export function attributionTexts(
@@ -347,20 +322,25 @@ export function attributionTexts(
   lang: string,
   dynamic?: ReadonlyMap<AttributionSourceLike, readonly string[]>
 ): string[] {
-  return attributionEntries(sources, lang, dynamic).map(entry => entry.text);
+  return uniqueEntries(
+    sources.map(source => entriesOf(source, lang, dynamic)),
+    new Set()
+  ).map(entry => entry.text);
 }
 
 /**
- * 出典の文字列を、Google の地図の分（google）とそれ以外（others）に分ける。
- * 同じ表示の文字は 1 回だけ（Google の分を先に取る）。並びは source の順。
+ * 出典の文字列を箱ごとに分ける（google: Google の copyright・base: 背景地図・overlay: 重ね地図）。
+ * overlays に入っている source が重ね地図。同じ表示の文字は 1 回だけ（google → base → overlay の順に取る）。
  */
 export function attributionGroups(
   sources: AttributionSourceLike[],
   lang: string,
-  dynamic?: ReadonlyMap<AttributionSourceLike, readonly string[]>
-): { google: string[]; others: string[] } {
-  const { google, others } = attributionEntryGroups(sources, lang, dynamic);
-  return { google: google.map(entry => entry.text), others: others.map(entry => entry.text) };
+  dynamic?: ReadonlyMap<AttributionSourceLike, readonly string[]>,
+  overlays: readonly AttributionSourceLike[] = []
+): { google: string[]; base: string[]; overlay: string[] } {
+  const { google, base, overlay } = attributionEntryGroups(sources, lang, dynamic, overlays);
+  const texts = (entries: AttributionEntry[]) => entries.map(entry => entry.text);
+  return { google: texts(google), base: texts(base), overlay: texts(overlay) };
 }
 
 const STYLE_ID = "maplat-attribution-style";
@@ -372,11 +352,12 @@ const STYLE_ID = "maplat-attribution-style";
 // UI の配置の数値は --maplat-attribution-ui-* の変数に分け、規則は :where() で詳細度 0 にした。
 // ページの CSS で maplat-app に変数を書けば、どちらも上書きできる。
 // z-index は付けない: 地図の箱の最後の子なので地図より上、UI の部品とモーダルより下に描かれる。
-// Google の地図のあいだは、最下段を「Google Maps のロゴ＋Google の出典の箱」の行にし（入らなければ出典の箱が
-// ロゴの下の行へ回る）、ほかの出典（重ね地図など）は別の箱にしてその上に置く。
-// source から読んだ出典（第三者のサーバーが決める値）の項目は、高さを「4 行ぶん」と「地図の高さの 25%」の
-// 小さい方までにし、はみ出しは隠す（外の値で箱が地図を覆わないため）。25% の値は JS が地図の箱の高さから
-// --maplat-attribution-source-map-limit に入れる（測れないときは 4 行ぶん）。地図の設定の attr には付けない。
+// 箱は下から、背景地図の箱（Google の地図のあいだは「Google Maps のロゴ＋Google の copyright の箱」の行。
+// 入らなければ copyright の箱がロゴの下の行へ回る。Google の地図の attr はその上の別の箱）、重ね地図の箱の順。
+// Google の copyright 以外の箱（.maplat-attribution-clamp）は ATTRIBUTION_MAX_LINES 行までにし、超えた分は「…」で
+// 切る（-webkit-line-clamp）。行の高さの上限（max-height と overflow: hidden）も付け、中身が段落や画像でも、
+// 箱は必ずその高さに収まる（外の値で箱が地図を覆い、地図全体がリンクになることを防ぐ）。幅も地図の箱までにし、
+// 中の画像（設定の attr には画像を書ける）も箱の幅と行の高さまでに縮める（縦横比は保つ）。
 // ロゴの大きさは公式の SVG の原寸（105×22。字の高さ 18px。利用条件は高さ 16〜19dp）、
 // 余白は利用条件の最小（上・左右 10px、下 5px）。縮めない・縦横比を変えない。
 const STYLE_TEXT = `
@@ -400,7 +381,7 @@ const STYLE_TEXT = `
   align-items: flex-end;
   max-width: 100%;
 }
-.maplat-attribution-others {
+.maplat-attribution-stacked {
   margin-bottom: 4px;
   border-radius: 4px;
 }
@@ -431,14 +412,24 @@ const STYLE_TEXT = `
   overflow-wrap: anywhere;
 }
 .maplat-attribution-sep { color: #777; }
-.maplat-attribution-item-source {
-  display: inline-block;
+.maplat-attribution-clamp {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: ${ATTRIBUTION_MAX_LINES};
+  line-clamp: ${ATTRIBUTION_MAX_LINES};
   max-width: 100%;
-  max-height: min(calc(${SOURCE_ATTRIBUTION_MAX_LINES} * 1.4em), var(--maplat-attribution-source-map-limit, calc(${SOURCE_ATTRIBUTION_MAX_LINES} * 1.4em)));
+  /* 行の高さ × 行数 ＋ 上下の余白（.maplat-attribution-text の padding 1px ずつ）。幅も余白込みで地図の箱まで */
+  box-sizing: border-box;
+  max-height: calc(${ATTRIBUTION_MAX_LINES} * 1.4em + 2px);
   overflow: hidden;
+}
+.maplat-attribution-clamp img {
+  max-width: 100%;
+  max-height: calc(${ATTRIBUTION_MAX_LINES} * 1.4em);
+  object-fit: contain;
   vertical-align: bottom;
 }
-.maplat-attribution-item-source p { margin: 0; }
+.maplat-attribution-item p { margin: 0; }
 .maplat-attribution a { pointer-events: auto; color: #0645ad; }
 :where(maplat-ui > maplat-app) {
   --maplat-attribution-ui-inset: .5em;
@@ -469,8 +460,10 @@ export class AttributionDisplay {
   #container: HTMLElement;
   #getLang: () => string;
   #sources: AttributionSourceLike[] = [];
+  // #sources のうち重ね地図のもの（別の箱に出す）
+  #overlays: AttributionSourceLike[] = [];
   // 地図の設定の attr が無い source（と Google の地図）の、OpenLayers の source から読んだ出典（元の値）。
-  // 外の値なので、描くときに狭い許可表で洗い、長さを切る（sanitizeSourceAttributions）
+  // 外の値なので、描くときに狭い許可表で洗う（sanitizeSourceAttributions）
   #dynamic = new Map<AttributionSourceLike, readonly string[]>();
   #observer: MutationObserver | null = null;
   #resizeObserver: ResizeObserver | null = null;
@@ -502,10 +495,13 @@ export class AttributionDisplay {
     return attributionTexts(this.#sources, this.#getLang(), this.#dynamic);
   }
 
-  /** 表示する source を差し替えて描き直す。 */
-  update(sources: AttributionSourceLike[]): void {
+  /**
+   * 表示する source を差し替えて描き直す。overlays は sources のうち重ね地図のもの（背景地図と別の箱に出す）。
+   */
+  update(sources: AttributionSourceLike[], overlays: readonly AttributionSourceLike[] = []): void {
     if (this.#disposed) return;
     this.#sources = sources.slice();
+    this.#overlays = overlays.filter(source => this.#sources.includes(source));
     // 表示から外れた source の読み取り結果は捨てる
     for (const source of [...this.#dynamic.keys()]) {
       if (!this.#sources.includes(source)) this.#dynamic.delete(source);
@@ -559,26 +555,35 @@ export class AttributionDisplay {
     const doc = element.ownerDocument;
     const variant = googleLogoVariant(this.#sources);
     const mode = variant ? googleAttributionMode(this.#availableWidth()) : undefined;
-    this.#updateSourceLimit();
+    const { google, base, overlay } = attributionEntryGroups(
+      this.#sources,
+      this.#getLang(),
+      this.#dynamic,
+      this.#overlays
+    );
+    // 上から: 重ね地図の箱、背景地図の箱、（Google の地図のあいだは）ロゴと Google の copyright の行
     const children: HTMLElement[] = [];
-    if (!variant) {
-      const box = this.#textBox(attributionEntries(this.#sources, this.#getLang(), this.#dynamic));
-      if (box) children.push(box);
-    } else {
-      const { google, others } = attributionEntryGroups(this.#sources, this.#getLang(), this.#dynamic);
-      // ほかの出典は Google の出典と別の箱にして、上に置く
-      const othersBox = this.#textBox(others);
-      if (othersBox) {
-        othersBox.classList.add("maplat-attribution-others");
-        children.push(othersBox);
-      }
+    for (const [entries, role] of [
+      [overlay, "overlay"],
+      [base, "base"]
+    ] as const) {
+      const box = this.#textBox(entries);
+      if (!box) continue;
+      // Google の copyright 以外は行数の上限で「…」にする
+      box.classList.add("maplat-attribution-clamp", `maplat-attribution-${role}`);
+      children.push(box);
+    }
+    if (variant) {
       const row = doc.createElement("span");
       row.className = "maplat-attribution-google";
       if (mode === "logo") row.appendChild(this.#googleLogo(variant));
+      // Google の copyright は切らない（利用条件の "in full as provided"）
       const googleBox = this.#textBox(google, mode === "text");
       if (googleBox) row.appendChild(googleBox);
       children.push(row);
     }
+    // 最下段より上の箱は、間を空けて角を丸める
+    children.slice(0, -1).forEach(child => child.classList.add("maplat-attribution-stacked"));
     element.replaceChildren(...children);
     if (mode) element.dataset.googleMaps = mode;
     else delete element.dataset.googleMaps;
@@ -603,7 +608,6 @@ export class AttributionDisplay {
   /**
    * 出典を " | " で区切って並べた箱（出すものが無ければ null）。
    * googleText が true なら、先頭に文字 "Google Maps"（ロゴの代わり）を入れる。
-   * source から読んだ出典の項目には .maplat-attribution-item-source を付ける（高さの上限）。
    */
   #textBox(entries: AttributionEntry[], googleText = false): HTMLElement | null {
     if (entries.length === 0 && !googleText) return null;
@@ -619,8 +623,8 @@ export class AttributionDisplay {
     }
     for (const entry of entries) {
       const item = doc.createElement("span");
-      item.className = entry.fromSource ? "maplat-attribution-item maplat-attribution-item-source" : "maplat-attribution-item";
-      // 洗ってある HTML（設定の attr は広い許可表、source の値は狭い許可表と長さの上限）
+      item.className = "maplat-attribution-item";
+      // 洗ってある HTML（設定の attr は広い許可表、source から読んだ値は狭い許可表）
       item.innerHTML = entry.html;
       items.push(item);
     }
@@ -635,22 +639,6 @@ export class AttributionDisplay {
       wrapper.appendChild(item);
     });
     return wrapper;
-  }
-
-  /**
-   * source から読んだ出典の項目の高さの上限のうち、地図の高さの 25% の値（px）を CSS の変数に入れる。
-   * 地図の箱の高さが測れない（0）ときは変数を外す（4 行ぶんだけが効く）。
-   */
-  #updateSourceLimit(): void {
-    const height = this.#container.clientHeight;
-    if (height > 0) {
-      this.element.style.setProperty(
-        "--maplat-attribution-source-map-limit",
-        `${Math.floor(height * SOURCE_ATTRIBUTION_MAX_MAP_RATIO)}px`
-      );
-    } else {
-      this.element.style.removeProperty("--maplat-attribution-source-map-limit");
-    }
   }
 
   /**
@@ -680,6 +668,7 @@ export class AttributionDisplay {
     this.#resizeObserver?.disconnect();
     this.#resizeObserver = null;
     this.#sources = [];
+    this.#overlays = [];
     this.#dynamic.clear();
     this.element.remove();
   }
@@ -698,16 +687,13 @@ export class AttributionDisplay {
   }
 
   /**
-   * 地図の箱の大きさが変わったら、source から読んだ出典の高さの上限を直し、Google の地図を出しているときだけ、
-   * ロゴと文字のどちらにするかを決め直す（変わるときだけ描き直す）。
+   * 地図の箱の大きさが変わったら、Google の地図を出しているときだけ、ロゴと文字のどちらにするかを決め直す
+   * （変わるときだけ描き直す）。
    */
   #observeResize(): void {
     if (typeof ResizeObserver === "undefined") return;
     this.#resizeObserver = new ResizeObserver(() => {
-      if (this.#disposed) return;
-      // source から読んだ出典の高さの上限（地図の高さの 25%）は、描き直さずに変数だけ直す
-      this.#updateSourceLimit();
-      if (!googleLogoVariant(this.#sources)) return;
+      if (this.#disposed || !googleLogoVariant(this.#sources)) return;
       const mode = googleAttributionMode(this.#availableWidth());
       if (mode !== this.googleAttribution) this.render();
     });
