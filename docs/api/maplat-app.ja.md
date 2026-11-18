@@ -263,6 +263,7 @@ Pro 専用のメソッド（`setDisplayMode`・`getDisplayMode`）は MaplatCore
   - 表示中の現代の地図（前面・重ね地図・背面のベースマップ）ごとの、提供元の申告の出典です。
     Google の Map Tiles API の著作権や TileJSON の `attribution` のように、提供元のサーバーが返した値で、
     地図の右下の出典と同じ値です。地図の定義の `attr` は含みません（`getMapMeta` で取ります）。
+    ライブラリの既定値（OpenLayers の OSM・XYZ などの source が持つ文言）も含みません。
   - 値は狭い許可表（`sanitizeHtml(html, { profile: "iiif" })`）で洗った HTML です。申告の無い地図は載りません。
     地図の準備前は `[]` です。
   - 申告の表が変わると（地図の切り替え・申告の到着）、要素に DOM の事象 `attributionChanged`

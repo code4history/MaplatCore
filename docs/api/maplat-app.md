@@ -298,7 +298,9 @@ the MaplatCore element; check `supports("display-mode")` before calling them.
     map: values returned by the provider's server, such as the Google Map Tiles
     API copyright or the TileJSON `attribution`. They are the same values as
     the attribution at the bottom right of the map. The map definition's
-    `attr` is not included (read it with `getMapMeta`).
+    `attr` is not included (read it with `getMapMeta`), and neither are
+    library defaults (the text that OpenLayers sources such as OSM or XYZ
+    carry on their own).
   - Each value is HTML cleaned with the narrow allowlist
     (`sanitizeHtml(html, { profile: "iiif" })`). Maps without a declaration
     are left out. `[]` before the map is ready.
