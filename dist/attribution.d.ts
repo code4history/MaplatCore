@@ -66,12 +66,15 @@ export type ProviderAttributionKind = "google" | "tilejson";
  *   - Google の地図（Core の GoogleMap。googleMapType を持つ）: OpenLayers の Google は、作るときの
  *     attributions を受けず、出典を Map Tiles API の viewport の応答の copyright だけで作る
  *     （ol/source/Google.js の fetchAttributions_）。
- *   - OpenLayers の TileJSON: 出典を提供元の TileJSON の `attribution` から作る（ol/source/TileJSON.js の
- *     handleTileJSONResponse）。ただし作るときに attributions を渡すとそちらが使われるので、読むときに
- *     TileJSON の `attribution` と同じ値だけを残す（tileJsonDeclaredAttribution）。
+ *   - 提供元の TileJSON を持つ source（getTileJSON を持つもの。OpenLayers の TileJSON）: 出典を提供元の
+ *     TileJSON の `attribution` から作る（ol/source/TileJSON.js の handleTileJSONResponse）。ただし作るときに
+ *     attributions を渡すとそちらが使われるので、読むときに TileJSON の `attribution` と同じ値だけを残す
+ *     （tileJsonDeclaredAttribution）。出すのはいつも提供元の TileJSON に書かれた値になる。
+ *     型は instanceof で見ない: ol/source/TileJSON を読み込むと本体の束が約 77 KB 増える（Core 自身は
+ *     TileJSON の source を作らない）。getTileJSON を持つ OpenLayers の source は TileJSON と UTFGrid だけで、
+ *     UTFGrid も値は TileJSON の attribution。
  * 入れないもの: OSM・StadiaMaps・CartoDB・XYZ・WMTS など（作るときの値か、ライブラリの既定の文言）。
  * BingMaps は応答の出典に、ライブラリの既定の利用規約のリンクを必ず足すので、見分けられず入れない。
- * UTFGrid は TileJSON の attribution を持つが、地図の画像を出す source ではないので入れない。
  */
 export declare function providerAttributionKind(source: AttributionSourceLike): ProviderAttributionKind | undefined;
 /** 地図の設定の `attr` を持つか（空・空白だけの文字列、空の言語ごとの値は持たない扱い）。 */
