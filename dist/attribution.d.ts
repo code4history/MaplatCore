@@ -83,7 +83,7 @@ export declare function hasConfiguredAttr(source: AttributionSourceLike): boolea
 export declare function normalizeOlAttributions(value: unknown): string[];
 /**
  * Google の copyright 以外の出典の箱の行数の上限。超えた分は「…」で切り、箱の高さもこの行数までにする
- * （はみ出しは隠す）。全文は UI の地図情報で見られる前提。
+ * （はみ出しは隠す）。全文は UI の地図情報などで見せることを想定する。
  */
 export declare const ATTRIBUTION_MAX_LINES = 2;
 /**
