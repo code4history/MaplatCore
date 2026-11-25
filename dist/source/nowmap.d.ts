@@ -1,10 +1,9 @@
 import { XYZ } from 'ol/source';
 import { Coordinate } from 'ol/coordinate';
-import { ViewpointArray, CrossCoordinatesArray } from './mixin';
+import { ViewpointArray, CrossCoordinatesArray, MapEnvelope } from './mixin';
 import { Size } from 'ol/size';
 import { default as __DTS_DEFAULT_0__ } from '@c4h/weiwudi';
 import { MaplatMap } from '..';
-import { Feature, Polygon } from 'geojson';
 import { MaplatIiifSection, IiifMetadataDisplay } from '../iiif/manifest';
 declare const NowMap_base: ((abstract new (...args: any[]) => {
     insideCheckXy(xy: Coordinate): boolean;
@@ -32,7 +31,7 @@ declare const NowMap_base: ((abstract new (...args: any[]) => {
     initialWait?: Promise<any>;
     maxZoom?: number;
     minZoom?: number;
-    envelope?: Feature<Polygon>;
+    envelope?: MapEnvelope;
     centroid?: number[];
     homeMarginPixels: number;
     thumbnail?: string;

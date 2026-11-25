@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <base href="/">
+  <title>古地図の変換面の試験</title>
+  <style>
+    #map_div { position: relative; width: 512px; height: 384px; }
+  </style>
+</head>
+<body>
+  <div id="map_div"></div>
+  <script type="module">
+    import { MaplatApp, mapSourceFactory } from "/dist/maplat_core.js";
+    import { get as getProjection } from "ol/proj";
+
+    const start = new URLSearchParams(location.search).get("start") || "a";
+    window.layeredMapProjection = getProjection;
+
+    const fixture = id => ({
+      mapID: id,
+      settingFile: `spec/fixtures/layered-map/${id}.json`
+    });
+    window.loadLayeredMap = id => mapSourceFactory(fixture(id), {});
+    const app = new MaplatApp({
+      appid: "layered-map",
+      div: "map_div",
+      startFrom: start,
+      restore: { mapID: start },
+      setting: {
+        homePosition: [139.83, 36.02],
+        defaultZoom: 16,
+        sources: ["gsi", fixture("a"), fixture("b")],
+        pois: []
+      }
+    });
+    window.layeredMapReady = app.waitReady.then(() => app);
+  </script>
+</body>
+</html>

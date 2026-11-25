@@ -3,13 +3,19 @@
 import {
   Transform,
   MapTransform,
-  MapData,
-  Compiled,
-  PointSet,
-  EdgeSet,
-  StrictMode,
-  VertexMode,
-  YaxisMode
+  createProj4ProjectionEngine,
+  type Compiled,
+  type PointSet,
+  type EdgeSet,
+  type StrictMode,
+  type VertexMode,
+  type YaxisMode,
+  type CompiledTransformData,
+  type CrsObject,
+  type LayeredMapData,
+  type LayerSurfaceData,
+  type ProjectionEngine,
+  type WorldFile
 } from "@maplat/transform";
 import type { Position } from "geojson";
 type LangResource = string | Record<string, string>;
@@ -101,7 +107,8 @@ async function store2HistMap_internal(
     ret[key] = store[key];
   });
   if ((store as any)["imageExtention"] || (store as any)["imageExtension"])
-    ret["imageExtension"] = (store as any)["imageExtension"] || (store as any)["imageExtention"];
+    ret["imageExtension"] =
+      (store as any)["imageExtension"] || (store as any)["imageExtention"];
   if (store.compiled) {
     let tin: TinLike = new Transform();
     (tin as Transform).setCompiled(store.compiled);
@@ -160,71 +167,165 @@ async function store2HistMap_internal(
   return [ret as HistMapStore, tins];
 }
 
-// MaplatCore 専用: MapTransform を組み立てて返す
-export async function store2HistMap4Core(
-  store: HistMapStore
-): Promise<[HistMapStore, MapTransform]> {
-  const ret: any = store;
-  keys.forEach(key => {
-    ret[key] = store[key];
-  });
-  if ((store as any)["imageExtention"] || (store as any)["imageExtension"])
-    ret["imageExtension"] = (store as any)["imageExtension"] || (store as any)["imageExtention"];
+interface StoredSurface {
+  compiled?: CompiledTransformData;
+  tinEnabled?: boolean;
+  crs?: CrsObject;
+  worldFile?: WorldFile;
+}
 
-  if (!store.compiled) {
-    throw new Error(
-      "@maplat/transform requires pre-compiled data. Cannot create MapTransform from GCPs."
-    );
+type CoreSubMap = Omit<SubMap, "compiled"> & StoredSurface;
+type CoreMapStore = Omit<HistMapStore, "compiled" | "sub_maps"> &
+  StoredSurface & {
+    mapID?: string;
+    imageExtention?: string;
+    sub_maps?: CoreSubMap[];
+  };
+
+function checkWorldFileDeclaration(layer: StoredSurface, prefix = ""): void {
+  if (Object.hasOwn(layer, "compiled")) {
+    throw new Error(`${prefix}tinEnabled:false の層は compiled を持てません`);
+  }
+}
+
+export function getHistMapDimensions(store: CoreMapStore): [number, number] {
+  if (store.tinEnabled === false) {
+    checkWorldFileDeclaration(store, `Map ${store.mapID}: `);
+    const { width, height } = store;
+    if (
+      width === undefined ||
+      height === undefined ||
+      !Number.isFinite(width) ||
+      !Number.isFinite(height) ||
+      width <= 0 ||
+      height <= 0
+    ) {
+      throw new Error(
+        `Map ${store.mapID}: world file の本図には正の有限な width と height が必要です`
+      );
+    }
+    return [width, height];
   }
 
-  // MapData を組み立てる
-  const mapData: MapData = { compiled: store.compiled };
-  if (store.sub_maps?.length) {
-    mapData.sub_maps = store.sub_maps
-      .filter(s => s.compiled)
-      .map(s => ({
-        compiled: s.compiled!,
-        priority: s.priority,
-        importance: s.importance,
-        bounds: s.bounds
-      }));
+  const wh = store.compiled?.wh;
+  if (!wh) throw new Error(`Map ${store.mapID} is missing compiled data.`);
+  return [wh[0], wh[1]];
+}
+
+let proj4Engine: Promise<ProjectionEngine> | undefined;
+
+async function getProjectionEngine(
+  crs?: CrsObject
+): Promise<ProjectionEngine | undefined> {
+  if (
+    crs?.epsg === 3857 ||
+    crs?.epsg === 4326 ||
+    typeof crs?.proj4 !== "string" ||
+    !crs.proj4.trim()
+  ) {
+    return undefined;
   }
-
-  const mapTransform = new MapTransform();
-  mapTransform.setMapData(mapData);
-
-  // メイン TIN からメタ情報を補完
-  const mainTin = mapTransform.getLayerTransform(0)!;
-  ret.strictMode = mainTin.strictMode;
-  ret.vertexMode = mainTin.vertexMode;
-  ret.yaxisMode = mainTin.yaxisMode;
-  ret.width = mainTin.wh?.[0];
-  ret.height = mainTin.wh?.[1];
-  ret.gcps = mainTin.points;
-  ret.edges = mainTin.edges;
-
-  if (store.sub_maps) {
-    const sub_maps = store.sub_maps.map((sub_map, i) => {
-      const sub: any = {
-        importance: sub_map.importance,
-        priority: sub_map.priority
-      };
-      if (sub_map.compiled) {
-        const subTin = mapTransform.getLayerTransform(i + 1);
-        sub.bounds = subTin?.bounds ?? sub_map.bounds;
-        sub.gcps = subTin?.points;
-        sub.edges = subTin?.edges;
-      } else {
-        sub.bounds = sub_map.bounds;
-        sub.gcps = sub_map.gcps;
-        sub.edges = sub_map.edges;
-      }
-      return sub as SubMap;
+  proj4Engine ??= import("proj4")
+    .then(({ default: proj4 }) => createProj4ProjectionEngine(proj4))
+    .catch(error => {
+      proj4Engine = undefined;
+      throw error;
     });
-    ret.sub_maps = sub_maps;
+  return proj4Engine;
+}
+
+async function toSurfaceData(
+  layer: StoredSurface,
+  dimensions: { wh: [number, number] } | { bounds?: number[][] }
+): Promise<LayerSurfaceData> {
+  const { compiled, crs, worldFile } = layer;
+  const bounds = "bounds" in dimensions ? dimensions.bounds : undefined;
+  if (layer.tinEnabled === false) {
+    checkWorldFileDeclaration(layer);
+    if (!crs) throw new Error("world file の層には CRS（crs）が必要です");
+    if (!worldFile)
+      throw new Error("tinEnabled:false の層には worldFile が必要です");
+    if ("wh" in dimensions) {
+      return {
+        kind: "worldFile",
+        crs,
+        worldFile,
+        wh: dimensions.wh,
+        projectionEngine: await getProjectionEngine(crs)
+      };
+    }
+    if (!Array.isArray(bounds) || bounds.length < 3) {
+      throw new Error("world file の副層には 3 頂点以上の bounds が必要です");
+    }
+    return {
+      kind: "worldFile",
+      crs,
+      worldFile,
+      bounds: bounds as [number[], number[], number[], ...number[][]],
+      projectionEngine: await getProjectionEngine(crs)
+    };
   }
 
-  return [ret as HistMapStore, mapTransform];
+  return {
+    kind: "tin",
+    compiled: compiled!,
+    crs,
+    bounds,
+    projectionEngine: await getProjectionEngine(crs)
+  };
+}
+
+// Core が使う副層はここで一度だけ絞り込み、配列の添字 + 1 をすべての層番号に使う。
+export async function store2HistMap4Core(
+  store: CoreMapStore
+): Promise<[CoreMapStore, MapTransform]> {
+  const wh = getHistMapDimensions(store);
+  try {
+    const subMaps = store.sub_maps?.filter(
+      sub => sub.tinEnabled === false || sub.compiled
+    );
+    const mapData: LayeredMapData = {
+      main: await toSurfaceData(store, { wh }),
+      sub_maps: await Promise.all(
+        (subMaps ?? []).map(async sub => ({
+          ...(await toSurfaceData(sub, { bounds: sub.bounds })),
+          priority: sub.priority,
+          importance: sub.importance
+        }))
+      )
+    };
+    const mapTransform = new MapTransform();
+    mapTransform.setLayeredMapData(mapData);
+
+    const main = mapTransform.getSurfaceTransform(0)!;
+    const ret = {
+      ...store,
+      width: main.wh?.[0],
+      height: main.wh?.[1]
+    };
+    if (!ret.imageExtension && store.imageExtention)
+      ret.imageExtension = store.imageExtention;
+    if (main instanceof Transform) {
+      ret.strictMode = main.strictMode;
+      ret.vertexMode = main.vertexMode;
+      ret.yaxisMode = main.yaxisMode;
+      ret.gcps = main.points;
+      ret.edges = main.edges;
+    }
+    ret.sub_maps = subMaps?.map((sub, index) => {
+      const surface = mapTransform.getSurfaceTransform(index + 1)!;
+      return {
+        ...sub,
+        bounds: sub.bounds ?? surface.bounds,
+        gcps: surface instanceof Transform ? surface.points : sub.gcps,
+        edges: surface instanceof Transform ? surface.edges : sub.edges
+      };
+    });
+    return [ret, mapTransform];
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Map ${store.mapID}: ${message}`, { cause: error });
+  }
 }
 
 export async function histMap2Store(
@@ -236,7 +337,8 @@ export async function histMap2Store(
     ret[key] = histmap[key];
   });
   if ((histmap as any)["imageExtention"] || (histmap as any)["imageExtension"])
-    ret["imageExtension"] = (histmap as any)["imageExtension"] || (histmap as any)["imageExtention"];
+    ret["imageExtension"] =
+      (histmap as any)["imageExtension"] || (histmap as any)["imageExtention"];
   const tin = tins.shift();
   if (typeof tin === "string") {
     ret.width = histmap.width;

@@ -1,5 +1,6 @@
 import { HistMap } from "./histmap";
 import { MapTransform } from "@maplat/transform";
+import { boundingExtent } from "ol/extent";
 import { addCoordinateTransforms, addProjection, toLonLat } from "ol/proj";
 import Projection from "ol/proj/Projection";
 import { transformDirect } from "../proj_ex";
@@ -22,12 +23,11 @@ export class HistMap_tin extends HistMap {
 
   static async createAsync(options: any) {
     const [storeOptions, mapTransform] = await store2HistMap4Core(options);
-    options = storeOptions;
-    const obj = new HistMap_tin(options);
+    const obj = new HistMap_tin(storeOptions);
     obj.mapTransform = mapTransform;
 
     // メインレイヤーの OL Projection 登録
-    const mainTin = mapTransform.getLayerTransform(0)!;
+    const mainSurface = mapTransform.getSurfaceTransform(0)!;
     const proj = new Projection({
       code: `Illst:${obj.mapID}`,
       extent: [0.0, 0.0, obj.width, obj.height],
@@ -37,32 +37,33 @@ export class HistMap_tin extends HistMap {
     addCoordinateTransforms(
       proj,
       "EPSG:3857",
-      xy => mainTin.transform(xy, false) as Coordinate,
-      merc => mainTin.transform(merc, true) as Coordinate
+      xy => mainSurface.transform(xy, false) as Coordinate,
+      merc => mainSurface.transform(merc, true) as Coordinate
     );
     transformDirect("EPSG:4326", proj);
 
-    // サブマップの OL Projection 登録
-    if (options.sub_maps) {
-      options.sub_maps.forEach((_sub_map: any, i: number) => {
-        const index = i + 1;
-        const projKey = `Illst:${obj.mapID}#${index}`;
-        const tin = mapTransform.getLayerTransform(index);
-        if (!tin) return;
-        const subProj = new Projection({
-          code: projKey,
-          extent: [tin.xy![0], tin.xy![1], tin.wh![0], tin.wh![1]],
-          units: "m"
-        });
-        addProjection(subProj);
-        addCoordinateTransforms(
-          subProj,
-          "EPSG:3857",
-          xy => tin.transform(xy, false, true) as Coordinate,
-          merc => tin.transform(merc, true, true) as Coordinate
-        );
-        transformDirect("EPSG:4326", subProj);
+    // 変換面と同じ層番号で副層の OL 投影を登録する。
+    for (let index = 1; index < mapTransform.layerCount; index++) {
+      const surface = mapTransform.getSurfaceTransform(index)!;
+      const { xy, wh } = surface;
+      const bounds = storeOptions.sub_maps?.[index - 1]?.bounds;
+      const extent =
+        xy && wh
+          ? [xy[0], xy[1], xy[0] + wh[0], xy[1] + wh[1]]
+          : bounds && boundingExtent(bounds);
+      const subProj = new Projection({
+        code: `Illst:${obj.mapID}#${index}`,
+        extent,
+        units: "m"
       });
+      addProjection(subProj);
+      addCoordinateTransforms(
+        subProj,
+        "EPSG:3857",
+        xy => surface.transform(xy, false, true) as Coordinate,
+        merc => surface.transform(merc, true, true) as Coordinate
+      );
+      transformDirect("EPSG:4326", subProj);
     }
     return obj;
   }
@@ -83,7 +84,8 @@ export class HistMap_tin extends HistMap {
 
   xy2MercAsync_returnLayer(xy: Coordinate): Promise<[number, Coordinate]> {
     const result = this.mapTransform.xy2MercWithLayer(xy);
-    if (!result) return Promise.reject(new Error("xy2MercWithLayer: out of bounds"));
+    if (!result)
+      return Promise.reject(new Error("xy2MercWithLayer: out of bounds"));
     return Promise.resolve(result as [number, Coordinate]);
   }
 
@@ -101,12 +103,12 @@ export class HistMap_tin extends HistMap {
   setupMapParameter(callback: any) {
     const xy = [this.width / 2, this.height / 2];
     const centerResult = this.mapTransform.xy2MercWithLayer(xy);
-    if (!centerResult) return;
+    if (!centerResult)
+      throw new Error(`Map ${this.mapID}: 地図の中心を投影できません`);
     const [index, mercCenter] = centerResult;
 
-    const layerTin = this.mapTransform.getLayerTransform(index);
-    const mainTin = this.mapTransform.getLayerTransform(0)!;
-    if (!layerTin) return;
+    const layerSurface = this.mapTransform.getSurfaceTransform(index)!;
+    const mainSurface = this.mapTransform.getSurfaceTransform(0)!;
 
     const dir4 = [
       [xy[0] - 150, xy[1]],
@@ -121,10 +123,16 @@ export class HistMap_tin extends HistMap {
       [0, this.height]
     ];
 
-    const dir4Mercs = dir4.map(p => layerTin.transform(p, false) as Coordinate);
-    const envelopeMercs = envelope.map(
-      p => mainTin.transform(p, false) as Coordinate
+    const dir4Mercs = dir4.map(p =>
+      layerSurface.transform(p, false, index > 0)
     );
+    const envelopeMercs = envelope.map(p => mainSurface.transform(p, false));
+    if (
+      !dir4Mercs.every(p => p !== false) ||
+      !envelopeMercs.every(p => p !== false)
+    ) {
+      throw new Error(`Map ${this.mapID}: 初期表示の範囲を投影できません`);
+    }
 
     const delta1 = Math.sqrt(
       Math.pow(dir4Mercs[0][0] - dir4Mercs[1][0], 2) +
@@ -171,9 +179,11 @@ export class HistMap_tin extends HistMap {
           if (rank > 0) {
             return [[this.xy2SysCoord(xy)], mercs[1]] as CrossCoordinatesArray;
           }
-          const tin = this.mapTransform.getLayerTransform(index)!;
+          const surface = this.mapTransform.getSurfaceTransform(index)!;
           const xys = points.map((merc, j) =>
-            j === 0 ? xy : (tin.transform(merc, true, index > 0) as Coordinate)
+            j === 0
+              ? xy
+              : (surface.transform(merc, true, index > 0) as Coordinate)
           );
           return [
             xys.map(p => this.xy2SysCoord(p)),
@@ -186,7 +196,10 @@ export class HistMap_tin extends HistMap {
     return Promise.resolve(
       results.map(result => {
         if (!result) return undefined;
-        return [result.map(xy => xy as Coordinate), mercs[1]] as CrossCoordinatesArray;
+        return [
+          result.map(xy => xy as Coordinate),
+          mercs[1]
+        ] as CrossCoordinatesArray;
       })
     );
   }
@@ -230,10 +243,8 @@ export class HistMap_tin extends HistMap {
     const center = (viewpoint?.[0] ??
       this.getMap().getView().getCenter()!) as number[];
     const zoom =
-      viewpoint?.[1] ??
-      (this.getMap().getView() as any).getDecimalZoom();
-    const rotation =
-      viewpoint?.[2] ?? this.getMap().getView().getRotation();
+      viewpoint?.[1] ?? (this.getMap().getView() as any).getDecimalZoom();
+    const rotation = viewpoint?.[2] ?? this.getMap().getView().getRotation();
     if (!size) size = this.getMap().getSize()!;
 
     const mercs = this.mapTransform.viewpoint2Mercs(

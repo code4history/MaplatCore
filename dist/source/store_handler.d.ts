@@ -1,4 +1,4 @@
-import { Transform, MapTransform, Compiled, PointSet, EdgeSet, StrictMode, VertexMode, YaxisMode } from '@maplat/transform';
+import { Transform, MapTransform, Compiled, PointSet, EdgeSet, StrictMode, VertexMode, YaxisMode, CompiledTransformData, CrsObject, WorldFile } from '@maplat/transform';
 import { Position } from 'geojson';
 type LangResource = string | Record<string, string>;
 type TinLike = string | Transform | Compiled;
@@ -42,6 +42,19 @@ interface SubMap {
     bounds?: number[][];
 }
 export declare function store2HistMap(store: HistMapStore, byCompiled?: boolean): Promise<[HistMapStore, TinLike[]]>;
-export declare function store2HistMap4Core(store: HistMapStore): Promise<[HistMapStore, MapTransform]>;
+interface StoredSurface {
+    compiled?: CompiledTransformData;
+    tinEnabled?: boolean;
+    crs?: CrsObject;
+    worldFile?: WorldFile;
+}
+type CoreSubMap = Omit<SubMap, "compiled"> & StoredSurface;
+type CoreMapStore = Omit<HistMapStore, "compiled" | "sub_maps"> & StoredSurface & {
+    mapID?: string;
+    imageExtention?: string;
+    sub_maps?: CoreSubMap[];
+};
+export declare function getHistMapDimensions(store: CoreMapStore): [number, number];
+export declare function store2HistMap4Core(store: CoreMapStore): Promise<[CoreMapStore, MapTransform]>;
 export declare function histMap2Store(histmap: HistMapStore, tins: TinLike[]): Promise<HistMapStore>;
 export {};

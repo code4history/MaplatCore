@@ -292,6 +292,13 @@ Google の copyright は、利用条件が "in full as provided" で出すよう
   ないため、`clearMapTileCacheAsync(mapID)` もその地図には働きません。消すときは
   `noCache` を付ける**前に** `clearMapTileCacheAsync(mapID)` で消してください。
 
+### 古地図の座標変換データ
+
+一つの地図に world file の層と三角網の層を混在させられます。
+EPSG:3857 と EPSG:4326 は内蔵式で変換し、ES 版では他の CRS を使うときに
+proj4js を取得します。UMD 版は proj4js を同梱します。画素の原点・CRS・
+副層の書き方は [地図データの仕様](docs/map-data.ja.md) を参照してください。
+
 ### IIIF の画像サービスから地図の画像を配る（`delivery`）
 
 古地図の画像を、切り出したタイルではなく [IIIF Image API](https://iiif.io/api/image/)
