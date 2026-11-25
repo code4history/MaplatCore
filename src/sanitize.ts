@@ -83,8 +83,9 @@ const SAFE_IMAGE_DATA_URI = /^data:image\/(png|jpeg|gif|webp|avif);/i;
 const isDataUri = (v: string | null): boolean => !!v && /^\s*data:/i.test(v);
 
 function afterSanitizeAttributes(node: Element): void {
-  // 1. target="_blank" には rel を強制付与する（タブナビング対策）
-  if (node.tagName === "A" && node.getAttribute("target") === "_blank") {
+  // 1. target のあるリンクには、値を問わず rel を強制付与する（タブナビング対策）。
+  //    "_blank" との完全一致だけを見ると、大文字の書き方・名前つきの target に付かない。
+  if (node.tagName === "A" && node.hasAttribute("target")) {
     node.setAttribute("rel", "noopener noreferrer");
   }
 
@@ -241,28 +242,43 @@ export function escapeAttr(value: string): string {
     .replace(/'/g, "&#39;");
 }
 
+/** toPlainText が「タグを落とす → 実体参照を戻す」を繰り返す回数の上限。超えたら空にする。 */
+const PLAIN_TEXT_MAX_PASSES = 5;
+
 /**
  * HTML を落としてテキストだけを残す。**属性の往復**に備えるためのもの。
  *
  * なぜ必要か:
  *   escapeAttr は「属性コンテキスト」でのエスケープにすぎない。
  *   属性へ &lt;img…&gt; と書いても、ブラウザの getAttribute はエンティティを復号して
- *   `<img …>` を返す。受け手（Chuci の cc-swiper）はその値を自分の HTML へ補間するため、
+ *   `<img …>` を返す。受け手がその値を自分の HTML へ補間すると、
  *   往復した時点で生の HTML に戻ってしまう。
  *   caption の契約はテキストであり（実データ13件すべてが HTML を含まない）、
  *   HTML が渡ること自体が誤りなので、渡す側でテキスト化する。
+ *
+ * なぜ繰り返すか:
+ *   実体参照を戻した結果が、またタグの形になることがある（実体参照で書かれた山括弧）。
+ *   1 回で止めるとそれが残るので、結果が変わらなくなるまで繰り返す。普通の文字は 1〜2 回で
+ *   変わらなくなる。上限の回数でも変わり続ける値は、テキストとして扱えないので空にする。
  */
 export function toPlainText(value: string): string {
   if (value === undefined || value === null) return "";
-  const stripped = getTextPurifier().sanitize(String(value), {
-    ALLOWED_TAGS: [],
-    ALLOWED_ATTR: [],
-    KEEP_CONTENT: true
-  }) as unknown as string;
-  // stripped はタグを含まないため、ここでの innerHTML はエンティティ復号のためだけに使う
-  const el = (globalThis as unknown as { window: Window }).window.document.createElement("div");
-  el.innerHTML = stripped;
-  return el.textContent || "";
+  const doc = (globalThis as unknown as { window: Window }).window.document;
+  let current = String(value);
+  for (let pass = 0; pass < PLAIN_TEXT_MAX_PASSES; pass++) {
+    const stripped = getTextPurifier().sanitize(current, {
+      ALLOWED_TAGS: [],
+      ALLOWED_ATTR: [],
+      KEEP_CONTENT: true
+    }) as unknown as string;
+    // stripped はタグを含まないため、ここでの innerHTML はエンティティ復号のためだけに使う
+    const el = doc.createElement("div");
+    el.innerHTML = stripped;
+    const next = el.textContent || "";
+    if (next === current) return next;
+    current = next;
+  }
+  return "";
 }
 
 /**
@@ -282,6 +298,19 @@ const SWIPER_BOOLEAN_ATTRS = new Set(ALLOWLIST.swiper.booleanAttributes);
  * 属性エスケープだけでなく**テキスト化**する（往復対策）。
  */
 const SLIDE_TEXT_ATTRS = new Set(ALLOWLIST.slide.textAttributes.values);
+
+/** image-type に残してよい値（データ正本の slide.imageTypes）。 */
+const SLIDE_IMAGE_TYPES = new Set(ALLOWLIST.slide.imageTypes.values);
+
+/** 数をコンマで並べた値だけを取る属性（データ正本の slide.numberListAttributes）。 */
+const SLIDE_NUMBER_LIST_ATTRS = new Set(ALLOWLIST.slide.numberListAttributes);
+
+/** true・false だけを取る値の属性（データ正本の slide.trueFalseAttributes）。 */
+const SLIDE_TRUE_FALSE_ATTRS = new Set(ALLOWLIST.slide.trueFalseAttributes);
+
+/** 数（符号・小数・指数）をコンマで並べた形。前後と区切りの空白は受け付ける。 */
+const NUMBER = "[-+]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][-+]?\\d+)?";
+const NUMBER_LIST = new RegExp(`^${NUMBER}(?:[ \\t]*,[ \\t]*${NUMBER})*$`);
 
 /** URL として扱う属性。http(s) 以外は落とす。 */
 const SLIDE_URL_ATTRS = new Set(ALLOWLIST.slide.urlAttributes);
@@ -332,6 +361,13 @@ function slideAttrValue(name: string, val: unknown): string | null {
     if (URL_ATTR_FORBIDDEN.test(str)) return null; // 往復で構文を破る文字を断つ（上記）
   }
   if (SLIDE_TEXT_ATTRS.has(name)) str = toPlainText(str); // 往復対策
+  // URL でもテキストでもない値は、受け手の扱いに頼らず、決まった形のものだけ残す
+  if (name === "image-type" && !SLIDE_IMAGE_TYPES.has(str)) return null;
+  if (SLIDE_NUMBER_LIST_ATTRS.has(name)) {
+    str = str.trim();
+    if (!NUMBER_LIST.test(str)) return null;
+  }
+  if (SLIDE_TRUE_FALSE_ATTRS.has(name) && str !== "true" && str !== "false") return null;
   return str;
 }
 
