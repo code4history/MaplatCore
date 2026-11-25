@@ -10,6 +10,15 @@ import b from "./fixtures/layered-map/b.json";
 import c from "./fixtures/layered-map/c.json";
 import legacy from "../e2e/fixtures/gps-poi/nobeoka1932.json";
 
+// proj4 の動的 import を試験内で失敗させられるようにする。store_handler の proj4Engine は
+// モジュール単位の共有状態なので、失敗と再試行の試験はこのファイルの最初に置き、
+// それ以外の試験の前には成功したエンジンがキャッシュされる順序を保つ。
+const proj4Mock = vi.hoisted(() => ({ fail: true }));
+vi.mock("proj4", async () => {
+  if (proj4Mock.fail) throw new Error("proj4 の取得に失敗（疑似）");
+  return await vi.importActual<typeof import("proj4")>("proj4");
+});
+
 const ixOrigin = [15566175.462592717, 4300621.372044272];
 const ixOutside = [15566807.697165117, 4301256.358276256];
 const size: [number, number] = [256, 192];
@@ -77,6 +86,29 @@ async function expectGps(map: HistMap_tin, lnglat: number[], pixel: number[]) {
 }
 
 afterEach(() => vi.unstubAllGlobals());
+
+describe("proj4 の動的取得の失敗と再試行", () => {
+  it("失敗は Map <mapID>: 付きのエラーになり、次の読み込みで成功に戻る", async () => {
+    proj4Mock.fail = true;
+    const error = await loadMap("proj4-retry-fail", c).then(
+      () => {
+        throw new Error("proj4 の取得に失敗したのに読み込めてしまいました");
+      },
+      e => e as Error
+    );
+    expect(error.message).toMatch(/^Map proj4-retry-fail: /);
+    const causes: string[] = [];
+    for (let e: unknown = error; e instanceof Error; e = e.cause) {
+      causes.push(e.message);
+    }
+    expect(causes.some(m => m.includes("proj4 の取得に失敗（疑似）"))).toBe(true);
+
+    proj4Mock.fail = false;
+    const map = await loadMap("proj4-retry-ok", c);
+    expectNear(await map.xy2MercAsync(center), ixOrigin, 1e-3);
+    await expectGps(map, [139.833333333333, 36], center);
+  });
+});
 
 describe("地図 JSON からの変換面の読み込み", () => {
   it("A の四隅が GDAL で world file を書き出した合成タイルの外周に合う", async () => {

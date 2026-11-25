@@ -197,3 +197,83 @@ test("配布 UMD 版の同梱 proj4 で平面直角 IX 系の地図を読む", a
   expect(center?.[0]).toBeCloseTo(139.833333333333, 9);
   expect(center?.[1]).toBeCloseTo(36, 9);
 });
+
+test("外部への通信を遮断しても平面直角 IX 系の地図が開いて変換が効く", async ({
+  page
+}) => {
+  // オフラインで動くことの固定: 同一オリジン（開発サーバ）以外への通信をすべて
+  // abort した状態で、平面直角 IX 系の地図 C が開き、proj4 による変換が効く。
+  // 依存を CDN 等へ取りに行っていたらここで開かず・変換もできず失敗する。
+  const chunks: string[] = [];
+  page.on("request", request => {
+    const path = new URL(request.url()).pathname;
+    if (
+      path.startsWith("/dist/") &&
+      path.endsWith(".js") &&
+      path !== "/dist/maplat_core.js"
+    ) {
+      chunks.push(path);
+    }
+  });
+  await page.route("**/*", route => {
+    const url = new URL(route.request().url());
+    if (url.origin === "http://localhost:5175") {
+      // 同一オリジンのタイル画像だけ beforeEach の合成 SVG に差し替える
+      if (/\/tiles\/[abc]\//.test(url.pathname)) return route.fallback();
+      return route.continue();
+    }
+    return route.abort();
+  });
+  await page.route("**/offline-layered-test", route =>
+    route.fulfill({
+      contentType: "text/html",
+      body: `<div id="map_div" style="width:512px;height:384px"></div>
+        <script type="module">
+          import { MaplatApp } from "/dist/maplat_core.js";
+          const app = new MaplatApp({
+            appid: "layered-map-offline",
+            div: "map_div",
+            startFrom: "c",
+            restore: { mapID: "c" },
+            setting: {
+              homePosition: [139.833333333333, 36],
+              defaultZoom: 16,
+              sources: [
+                "gsi",
+                { mapID: "c", settingFile: "/spec/fixtures/layered-map/c.json" }
+              ],
+              pois: []
+            }
+          });
+          window.layeredMapReady = app.waitReady.then(() => app);
+        </script>`
+    })
+  );
+  await page.goto("/offline-layered-test");
+  await page.waitForFunction(() => Boolean(window.layeredMapReady));
+  // 遮断が実際に効いていること（外部の fetch が失敗する）の確認
+  const probe = await page.evaluate(() =>
+    fetch("https://example.com/probe.js").then(
+      () => "unblocked",
+      () => "blocked"
+    )
+  );
+  expect(probe).toBe("blocked");
+  const result = await page.evaluate(async () => {
+    const app = await window.layeredMapReady;
+    const merc = await app.from.xy2MercAsync([256, 256]);
+    return {
+      mapID: app.from.mapID,
+      merc: Array.isArray(merc) ? merc : null,
+      home: app.from.homePosition
+    };
+  });
+  expect(result.mapID).toBe("c");
+  // 図の中心 [256, 256] は平面直角 IX 系の原点で、Web メルカトルへ変換できる
+  expect(result.merc?.[0]).toBeCloseTo(15566175.462592717, 3);
+  expect(result.merc?.[1]).toBeCloseTo(4300621.372044272, 3);
+  expect(result.home?.[0]).toBeCloseTo(139.833333333333, 9);
+  expect(result.home?.[1]).toBeCloseTo(36, 9);
+  // proj4 はローカルのチャンクからのみ遅延取得される
+  expect(chunks).toHaveLength(1);
+});
