@@ -391,7 +391,7 @@ S      = テンプレートの文字列から {% raw %}…{% endraw %}・{% verb
 | | `caption` | テキストにする（値の中の HTML を取り除く。文字参照で書いた HTML も取り除く） |
 | | `image-type` | `image`・`panorama`・`youtube`・`video`・`3dmodel`・`gaussian` のどれか。ほかは落とす |
 | | `camera-position`・`camera-target` | 数をコンマで並べた形（`0,0,1`）。ほかは落とす |
-| | `show-texture` | `true` か `false`。ほかは落とす |
+| | `show-texture` | `true` か `false`。ほかは落とす（テクスチャは表示のまま）。テクスチャを消すには `false` と書く（`0`・`no`・`False` は落ちる） |
 | | `fit-to-container`・`debug-mode` | 真偽値: 値は捨てる |
 
 - POI の `media` と同じ検査である。この 2 つの要素の上のほかの属性（`class`・`style`・`on*` など）は
