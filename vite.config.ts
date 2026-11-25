@@ -145,6 +145,7 @@ export default defineConfig({
         }
       }
     },
+    // Vite は ES の動的 import を別チャンクに出し、UMD では同梱する。
     rollupOptions: {
       external: ["ol", "ol/proj", "ol/source", "ol/format", "ol/layer", "ol/Map", "ol/View", "ol/Feature", "ol/geom/Point", "ol/style"],
       output: {
@@ -169,8 +170,7 @@ export default defineConfig({
             return "maplat_core.css";
           }
           return assetInfo.name || "asset-[name].[ext]";
-        },
-        inlineDynamicImports: true
+        }
       }
     },
     sourcemap: true,

@@ -1,0 +1,17 @@
+{
+  "title": "A: world file",
+  "tinEnabled": false,
+  "width": 512,
+  "height": 512,
+  "crs": {
+    "epsg": 3857
+  },
+  "worldFile": {
+    "xScale": 2.3886571339,
+    "ySkew": 0.0,
+    "xSkew": 0.0,
+    "yScale": -2.3886571339,
+    "xOrigin": 15565637.634321863,
+    "yOrigin": 4303097.750013715
+  }
+}

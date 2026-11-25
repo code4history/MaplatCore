@@ -7,6 +7,7 @@ import { MapLibreMap } from "./source/maplibremap";
 import { GoogleMap } from "./source/googlemap";
 import { HistMap } from "./source/histmap";
 import { HistMap_tin } from "./source/histmap_tin";
+import { getHistMapDimensions } from "./source/store_handler";
 import { isProviderMapType } from "./source/mixin";
 import {
   applyIiifTileUrlFunction,
@@ -272,19 +273,16 @@ export async function mapSourceFactory(options: any, commonOptions: any) {
   if (!iiifMap && options.mapID && !options.url && !options.urls) {
     options.url = `tiles/${options.mapID}/{z}/{x}/{y}.${options.imageExtension}`;
   }
-  if (!options.compiled || !options.compiled.wh) {
+  if (options.tinEnabled !== false && !options.compiled?.wh) {
     console.error(
       `[Maplat] Missing compiled.wh for mapID=${options.mapID}. Check map setting file: ${url}`
     );
-    throw new Error(`Map ${options.mapID} is missing compiled data.`);
   }
-  options.width = options.width || options.compiled.wh[0];
-  options.height = options.height || options.compiled.wh[1];
+  const [width, height] = getHistMapDimensions(options);
+  options.width = options.width || width;
+  options.height = options.height || height;
   if (iiifMap) {
-    await prepareIiifOptions(options, {
-      width: options.compiled.wh[0],
-      height: options.compiled.wh[1]
-    });
+    await prepareIiifOptions(options, { width, height });
   }
   options.weiwudi = await registerMapToSW(options);
   if (options.weiwudi) {

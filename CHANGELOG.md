@@ -5,6 +5,8 @@
 ## [Unreleased]
 
 ### Added
+- 古地図の本図・副層に `tinEnabled: false` の world file と CRS 付き三角網を追加（#97・#200）。三角網の四辺形の外では compiled 内の world file も使える。ES 版は必要な CRS の地図で proj4js を取得し、UMD 版は同梱する。world file 未対応の旧 MaplatEditor ではこの形式の地図を開いたり取り込んだりしないこと。詳しくは [地図データの仕様](docs/map-data.ja.md)
+- Added world-file layers (`tinEnabled: false`), per-layer CRS for TINs, and TINs with a compiled world file for the outer region (#97, #200). The ES build loads proj4js on demand and UMD bundles it. Avoid opening or importing world-file maps in MaplatEditor versions that predate support. See the [map data format](docs/map-data.md).
 - Custom Element `<maplat-app>`（入口 `@maplat/core/element`）。要素そのものが地図の入れ物で、属性・プロパティ（`app-id`・`map-id`・`transparency`・`north-up` …）、`MaplatApp` の公開メソッド 46 個の委譲、同じ名前の DOM イベント、状態の読み取り（`ready`・`implementation`・`version`・`appData`・`initialRestore`・`state`・`currentMapId`・`viewpoint`・`gpsEnabled`）を持つ
 - `<maplat-app>` の `map-id`・`transparency` は地図の側の変化を属性へ書き戻す。中心の目印は `no-center-marker`・`center-marker-src` で消す・差し替える。`uiHooks` の `context.core`・`context.mapDivDocument` は要素の経路では要素になる（`MaplatApp` の経路は従来どおり）
 - 要素の新設 API: `listMaps`・`getViewpoint`・`supports`・`setEnvelopes`・`getMapEnvelope`・`getViewExtent`・`zoomBy`・`getDefaultPinIcon`、イベント `gpsEnabledChanged`・`moveStart`・`moveEnd`
@@ -42,6 +44,8 @@
   - 検出に当たらないまま表示が変わる場合が 1 つだけある: lodash の記法を含まず、`{{ }}`・`{% %}` を文字として書いていたテンプレートは、1.3 から Nunjucks として評価される
 
 ### Fixed
+- 未作成の副層を読み飛ばした後も、変換・境界・OpenLayers 投影の層番号を揃える。投影の extent は、左上に幅と高さを足して右下を求める。
+- Keep transformation, bounds, and OpenLayers projection layer numbering in sync when skipping unfinished insets. The lower-right corner of the projection extent now includes the inset offset.
 - 表示中の背景地図・タイルの重ね地図の出典を、地図の右下に出すようにした（#191）。これまでは OpenLayers の地図を `controls: []` で作っていたため、OpenStreetMap・地理院地図のタイルを表示していても、出典は UI の地図情報の中にしか出ていなかった。表示は `div.maplat-attribution`。古地図の出典は従来どおり UI の地図情報に出す。Google Maps のロゴは #193 で出す（Added の項目）
   - 出すのは「地図の定義の `attr`」と「提供元の申告」だけ。ライブラリの既定値では埋めない（OpenLayers の `OSM`・`StadiaMaps`・`BingMaps` などが持つ既定の出典や、source を作るときに渡した `attributions` は出さない）。`attr` も提供元の申告も無い地図には何も出ないので、アプリの設定で定義する背景地図・重ね地図には `attr` を書くこと。空や空白だけの `attr` は無いものとみなす。Core の組み込みの `osm`・`gsi`・`gsi_ortho` と、同梱の見本の地図は、Google の地図を除いて `attr` を持つ
   - 提供元の申告として読むのは 2 つの型の source だけ: Google の地図（Map Tiles API の copyright。`attr` を書いても必ず出す）と、OpenLayers の `TileJSON` の source（TileJSON に書かれた `attribution` と同じ値だけ）。Core が今作る source で提供元の申告を持つのは Google の地図だけで、TileJSON はアプリが `TileJSON` の source を渡したときの扱い

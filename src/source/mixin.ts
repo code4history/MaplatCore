@@ -47,6 +47,9 @@ type ViewpointObject = {
   direction?: number;
   rotation?: number;
 };
+// 宣言生成時に symlink 先の GeoJSON 型へ解決されないよう Core の型名で参照する。
+export type MapEnvelope = Feature<Polygon>;
+
 export type ViewpointArray = [Coordinate?, number?, number?]; // Center, zoom, rotation
 export type CrossCoordinatesArray = [
   Coordinate[], // Coordinates of center and around 4 points
@@ -69,7 +72,7 @@ export function setCustomFunction<TBase extends SourceConstructor>(Base: TBase) 
     initialWait?: Promise<any>;
     maxZoom?: number;
     minZoom?: number;
-    envelope?: Feature<Polygon>;
+    envelope?: MapEnvelope;
     centroid?: number[];
     homeMarginPixels = 0;
     thumbnail?: string;

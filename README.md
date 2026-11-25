@@ -343,6 +343,13 @@ Without the key, or with `noCache: false`, the map is cached as before.
   has nothing to act on for it; clear the cache with
   `clearMapTileCacheAsync(mapID)` **before** turning `noCache` on.
 
+### Coordinate data for historical maps
+
+World-file layers can be mixed with TIN layers in the same map. Core uses
+EPSG:3857 and EPSG:4326 directly and loads proj4js on demand in the ES build
+for other CRS definitions. The UMD build includes proj4js. See the
+[map data format](docs/map-data.md) for the pixel origin, CRS and inset settings.
+
 ### Serving a map image from a IIIF Image API service (`delivery`)
 
 An old map can be displayed straight from a [IIIF Image API](https://iiif.io/api/image/)

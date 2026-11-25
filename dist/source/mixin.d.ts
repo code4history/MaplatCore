@@ -16,6 +16,7 @@ type ViewpointObject = {
     direction?: number;
     rotation?: number;
 };
+export type MapEnvelope = Feature<Polygon>;
 export type ViewpointArray = [Coordinate?, number?, number?];
 export type CrossCoordinatesArray = [
     Coordinate[],
@@ -35,7 +36,7 @@ export declare function setCustomFunction<TBase extends SourceConstructor>(Base:
     initialWait?: Promise<any>;
     maxZoom?: number;
     minZoom?: number;
-    envelope?: Feature<Polygon>;
+    envelope?: MapEnvelope;
     centroid?: number[];
     homeMarginPixels: number;
     thumbnail?: string;
@@ -145,7 +146,7 @@ export declare function setCustomFunctionBase<TBase extends SourceConstructor>(B
     initialWait?: Promise<any>;
     maxZoom?: number;
     minZoom?: number;
-    envelope?: Feature<Polygon>;
+    envelope?: MapEnvelope;
     centroid?: number[];
     homeMarginPixels: number;
     thumbnail?: string;
@@ -232,7 +233,7 @@ export declare function setCustomFunctionOverlay<TBase extends SourceConstructor
     initialWait?: Promise<any>;
     maxZoom?: number;
     minZoom?: number;
-    envelope?: Feature<Polygon>;
+    envelope?: MapEnvelope;
     centroid?: number[];
     homeMarginPixels: number;
     thumbnail?: string;
@@ -339,7 +340,7 @@ export declare function setCustomFunctionMaplat<TBase extends SourceConstructor>
     initialWait?: Promise<any>;
     maxZoom?: number;
     minZoom?: number;
-    envelope?: Feature<Polygon>;
+    envelope?: MapEnvelope;
     centroid?: number[];
     homeMarginPixels: number;
     thumbnail?: string;

@@ -3,9 +3,8 @@ import { Coordinate } from 'ol/coordinate';
 import { Size } from 'ol/size';
 import { default as __DTS_DEFAULT_0__ } from '@c4h/weiwudi';
 import { MaplatMap } from '..';
-import { Feature, Polygon } from 'geojson';
+import { MapEnvelope, ViewpointArray, CrossCoordinatesArray } from './mixin';
 import { MaplatIiifSection, IiifMetadataDisplay } from '../iiif/manifest';
-import { ViewpointArray, CrossCoordinatesArray } from './mixin';
 declare const HistMap_base: ((abstract new (...args: any[]) => {
     width: number;
     height: number;
@@ -29,7 +28,7 @@ declare const HistMap_base: ((abstract new (...args: any[]) => {
     initialWait?: Promise<any>;
     maxZoom?: number;
     minZoom?: number;
-    envelope?: Feature<Polygon>;
+    envelope?: MapEnvelope;
     centroid?: number[];
     homeMarginPixels: number;
     thumbnail?: string;
