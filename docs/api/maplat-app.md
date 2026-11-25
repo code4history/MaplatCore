@@ -440,8 +440,10 @@ a `poiTemplate` can show a media slider ([Quyuan](https://github.com/code4histor
 |---|---|---|
 | `<qy-swiper>` | `has-thumb`, `autoplay` | Boolean: the value is dropped (`has-thumb=""`) |
 | `<qy-swiper-slide>` | `image-url`, `thumbnail-url`, `material-url` | URL: relative paths, `/…`, `//…` and `http(s):` only. Dropped if the value contains a quote, a backquote, `<`, `>` or whitespace |
-| | `caption` | Turned into plain text (HTML in the value is removed) |
-| | `image-type`, `camera-position`, `camera-target`, `show-texture` | Kept as they are |
+| | `caption` | Turned into plain text (HTML in the value is removed, including HTML written with character references) |
+| | `image-type` | One of `image`, `panorama`, `youtube`, `video`, `3dmodel`, `gaussian`. Dropped otherwise |
+| | `camera-position`, `camera-target` | Numbers separated by commas (`0,0,1`). Dropped otherwise |
+| | `show-texture` | `true` or `false`. Dropped otherwise (texture stays on). To turn the texture off, write `false` (`0`, `no` and `False` are dropped) |
 | | `fit-to-container`, `debug-mode` | Boolean: the value is dropped |
 
 - These are the same checks as a POI's `media`. Any other attribute on these two elements

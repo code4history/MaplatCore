@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
-import { sanitizeHtml, sanitizeIiifHtml, escapeAttr, buildSlideAttrs } from "../src/sanitize";
+import { sanitizeHtml, sanitizeIiifHtml, escapeAttr, buildSlideAttrs, toPlainText } from "../src/sanitize";
 import ALLOWLIST from "../src/sanitize-allowlist.json";
 import {
   MUST_BE_NEUTRALIZED, MUST_BE_PRESERVED, TARGET_BLANK,
@@ -539,5 +539,160 @@ describe("sanitize-allowlist の IIIF の forbidContents は DOMPurify の既定
     expect([...ALLOWLIST.iiif.forbidContents.tags].sort()).toEqual(
       defaults.filter(tag => tag !== "thead").sort()
     );
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// slide の属性の「渡す側の守り」（SR-DEC26-B1-4）
+//
+// 受け手が属性の値をどう描くかに頼らず、渡す値そのものを決まった形にする。
+//   - caption: 何回読み戻してもタグにならない文字にする（media の経路・テンプレートの経路とも）
+//   - image-type: 許可表（データ正本の slide.imageTypes）の値だけ
+//   - camera-position・camera-target: 数をコンマで並べた形だけ
+//   - show-texture: true・false だけ
+describe("slide の属性 — caption は実体参照を重ねて書いてもタグに戻らない", () => {
+  const ENTITY_CAPTIONS = [
+    "&lt;img src=x onerror=alert(1)&gt;",
+    "&amp;lt;img src=x onerror=alert(1)&amp;gt;",
+    "&amp;amp;lt;img src=x onerror=alert(1)&amp;amp;gt;",
+    "&#60;svg onload=alert(1)&#62;",
+    "前&lt;script&gt;alert(1)&lt;/script&gt;後"
+  ];
+  /** 受け手が読み戻した値を HTML として補間しても、要素が生えないこと。 */
+  const expectInert = (back: string | null): void => {
+    if (back === null) return;
+    const out = document.createElement("div");
+    out.innerHTML = `<p>${back}</p>`;
+    expect(out.querySelectorAll("p *")).toHaveLength(0);
+    expect(back).not.toMatch(/<[a-z!/]/i);
+  };
+
+  it.each(ENTITY_CAPTIONS)("media の経路: %s", caption => {
+    const slide = parseOne(`<qy-swiper-slide ${buildSlideAttrs({ caption })}></qy-swiper-slide>`);
+    expectInert(slide.getAttribute("caption"));
+  });
+
+  it.each(ENTITY_CAPTIONS)("テンプレートの経路: %s", caption => {
+    const slide = parseOne(sanitizeHtml(`<qy-swiper-slide caption="${caption}"></qy-swiper-slide>`));
+    expectInert(slide.getAttribute("caption"));
+  });
+
+  it.each(ENTITY_CAPTIONS)("toPlainText: %s", caption => {
+    expectInert(toPlainText(caption));
+  });
+
+  it("実体参照を際限なく重ねた値は空になる", () => {
+    const deep = `&${"amp;".repeat(20)}lt;img src=x&${"amp;".repeat(20)}gt;`;
+    expect(toPlainText(deep)).toBe("");
+  });
+
+  it.each([
+    ["六百遠忌報恩塔", "六百遠忌報恩塔"],
+    ["六百遠忌 報恩塔", "六百遠忌 報恩塔"],
+    [`A "B" & C`, `A "B" & C`],
+    ["AT&amp;T", "AT&T"],
+    ["x &lt; y", "x < y"],
+    ["x < y", "x < y"],
+    ["1 > 0 &amp; 2 &gt; 1", "1 > 0 & 2 > 1"],
+    ["it's <b>&amp;</b>", "it's &"],
+    ["50% &copy; 2026", "50% © 2026"]
+  ])("正当な caption %s は今までどおり %s になる（2 経路とも）", (caption, expected) => {
+    expect(toPlainText(caption)).toBe(expected);
+    const viaMedia = parseOne(`<qy-swiper-slide ${buildSlideAttrs({ caption })}></qy-swiper-slide>`);
+    expect(viaMedia.getAttribute("caption")).toBe(expected);
+  });
+});
+
+describe("slide の属性 — image-type・camera-*・show-texture は決まった形の値だけ残す", () => {
+  const viaMedia = (media: Record<string, unknown>): Element =>
+    parseOne(`<qy-swiper-slide ${buildSlideAttrs(media)}></qy-swiper-slide>`);
+  const viaTemplate = (name: string, value: string): Element =>
+    parseOne(sanitizeHtml(`<qy-swiper-slide image-url="a.jpg" ${name}="${escapeAttr(value)}"></qy-swiper-slide>`));
+
+  it.each(["image", "panorama", "youtube", "video", "3dmodel", "gaussian"])(
+    "image-type=%s が残る（2 経路とも）", type => {
+      expect(viaMedia({ "image-type": type }).getAttribute("image-type")).toBe(type);
+      expect(viaTemplate("image-type", type).getAttribute("image-type")).toBe(type);
+    });
+
+  it("許可表の image-type は、同梱する Quyuan が知っている種類と一致する", () => {
+    expect([...ALLOWLIST.slide.imageTypes.values].sort())
+      .toEqual(["3dmodel", "gaussian", "image", "panorama", "video", "youtube"]);
+  });
+
+  it.each(["<b>", "&lt;b&gt;", `image" onmouseover="x`, "image x", "Image", "", "unknown-type"])(
+    "image-type=%s は落ちる（2 経路とも）", bad => {
+      expect(viaMedia({ "image-type": bad, "image-url": "a.jpg" }).hasAttribute("image-type")).toBe(false);
+      const el = viaTemplate("image-type", bad);
+      expect(el.hasAttribute("image-type")).toBe(false);
+      expect(el.getAttribute("image-url")).toBe("a.jpg");
+    });
+
+  it.each(["0,0,1", "3,3,3", "-1.5, 2e3, .5", "1.25,-0.5,10", " 0 , 0 , 0 ", "+1,2,3", "1"])(
+    "camera-position・camera-target=%s が残る（2 経路とも）", value => {
+      // 前後の空白は 2 経路とも落とす
+      for (const name of ["camera-position", "camera-target"]) {
+        expect(viaMedia({ [name]: value }).getAttribute(name)).toBe(value.trim());
+        expect(viaTemplate(name, value).getAttribute(name)).toBe(value.trim());
+      }
+    });
+
+  it("media の経路で数の配列を渡すと、コンマで並べた形で残る", () => {
+    expect(viaMedia({ "camera-position": [0, -1.5, 2] }).getAttribute("camera-position")).toBe("0,-1.5,2");
+  });
+
+  it.each([`1,2"><img src=x onerror=1>`, "1,2,<b>", "a,b,c", "1;2;3", "1,,2", ",1,2", "1,2,", "", "1,2,3x", "NaN,0,0"])(
+    "camera-position・camera-target=%s は落ちる（2 経路とも）", bad => {
+      for (const name of ["camera-position", "camera-target"]) {
+        expect(viaMedia({ [name]: bad, "image-url": "a.jpg" }).hasAttribute(name)).toBe(false);
+        const el = viaTemplate(name, bad);
+        expect(el.hasAttribute(name)).toBe(false);
+        expect(el.getAttribute("image-url")).toBe("a.jpg");
+      }
+    });
+
+  it("長い camera-position でも検査はすぐ終わる", () => {
+    const t0 = performance.now();
+    expect(viaMedia({ "camera-position": `${"1".repeat(200_000)}x` }).hasAttribute("camera-position")).toBe(false);
+    expect(viaMedia({ "camera-position": `${"1,".repeat(100_000)}x` }).hasAttribute("camera-position")).toBe(false);
+    expect(performance.now() - t0).toBeLessThan(1500);
+  });
+
+  it.each(["true", "false"])("show-texture=%s が残る（2 経路とも）", value => {
+    expect(viaMedia({ "show-texture": value }).getAttribute("show-texture")).toBe(value);
+    expect(viaTemplate("show-texture", value).getAttribute("show-texture")).toBe(value);
+  });
+
+  it("media の経路で真偽値を渡すと true・false の文字で残る", () => {
+    expect(viaMedia({ "show-texture": true }).getAttribute("show-texture")).toBe("true");
+    expect(viaMedia({ "show-texture": false }).getAttribute("show-texture")).toBe("false");
+  });
+
+  it.each(["<b>", "yes", "TRUE", "", `true" x="`, "1"])("show-texture=%s は落ちる（2 経路とも）", bad => {
+    expect(viaMedia({ "show-texture": bad }).hasAttribute("show-texture")).toBe(false);
+    expect(viaTemplate("show-texture", bad).hasAttribute("show-texture")).toBe(false);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// target のあるリンクの rel（SR-DEC26-B2-2）
+describe("sanitizeHtml — target のあるリンクには値を問わず rel を付ける", () => {
+  it.each(["_blank", "_BLANK", "_Blank", "w", "named-window", "_self", "_top", "_parent"])(
+    "target=%s", target => {
+      const a = parseOne(sanitizeHtml(`<a href="https://example.com/" target="${target}">x</a>`));
+      expect(a.getAttribute("href")).toBe("https://example.com/");
+      expect(a.getAttribute("target")).toBe(target);
+      expect(a.getAttribute("rel")).toBe("noopener noreferrer");
+    });
+
+  it("書かれていた rel は上書きされる", () => {
+    const a = parseOne(sanitizeHtml(`<a href="https://example.com/" target="w" rel="opener">x</a>`));
+    expect(a.getAttribute("rel")).toBe("noopener noreferrer");
+  });
+
+  it("target の無いリンクは今までどおり（rel を足さない・書かれていた rel は残る）", () => {
+    expect(parseOne(sanitizeHtml(`<a href="https://example.com/">x</a>`)).hasAttribute("rel")).toBe(false);
+    expect(parseOne(sanitizeHtml(`<a href="https://example.com/" rel="nofollow">x</a>`)).getAttribute("rel"))
+      .toBe("nofollow");
   });
 });

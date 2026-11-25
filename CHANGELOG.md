@@ -61,6 +61,7 @@
 - 地図 ID は文字列だけを受ける（公開の型のとおり）。地図の設定の `mapID: 5` のような数値の ID を `changeMap(5)`・`mapInfo(5)`・`startFrom: 5` のように数値のまま渡しても引き当たらない。文字列（`"5"`）で渡す
 - 上記により、`poiTemplate`・`iconTemplate` の値（POI の名前・説明など）からの注入は起きにくくなった。ただし **Nunjucks もサンドボックスではない**: テンプレートの文字列そのものを第三者が書ける構成（第三者の POI JSON・地図 JSON を読む構成）では、引き続きページの権限でコードが動きうる。そのような構成では、信頼できないデータのテンプレートを使わないこと
 - `sanitizeHtml` が残す `qy-swiper-slide` の属性は、要素を限った検査で POI の `media` と同じ選別（名前の許可表・URL の検査・テキスト化）を通す。ほかの要素にはこれらの属性を残さない
+- `qy-swiper-slide`（POI の `media` とテンプレートの出力の両方）に渡す値の検査を足した。`caption` は文字参照で書いた HTML も取り除く。`image-type` は `image`・`panorama`・`youtube`・`video`・`3dmodel`・`gaussian` のどれか、`camera-position`・`camera-target` は数をコンマで並べた形、`show-texture` は `true`・`false` だけを残し、ほかの値は属性ごと落とす（テクスチャを消すには `false` と書く。`0`・`no`・`False` は落ちて表示のままになる）。`sanitizeHtml` は `target` のあるリンクに、値を問わず `rel="noopener noreferrer"` を付ける（従来は `target="_blank"` のときだけ）。旧い記法のテンプレートの判定は、入力の長さに比例する時間で終わる
 
 ## [1.2.0] - 2026-11-02
 

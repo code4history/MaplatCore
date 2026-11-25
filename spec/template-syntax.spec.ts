@@ -198,3 +198,66 @@ describe("旧い記法の注入", () => {
     expect(w.__legacyInjected).toBeUndefined();
   });
 });
+
+// 旧い記法の判定は入力の長さに比例する時間で終わる（SR-DEC26-B1-3）。
+describe("旧い記法の判定の計算量と、判定の結果が元の正規表現と同じであること", () => {
+  // 判定の定義（1.3.0 の最初の実装）。結果の基準としてだけ使う
+  const REF_RAW = /\{%-?\s*(raw|verbatim)\s*-?%\}[\s\S]*?\{%-?\s*end\1\s*-?%\}/g;
+  const reference = (src: string): boolean => {
+    const stripped = src.replace(REF_RAW, "");
+    return /<%[\s\S]*?%>/.test(stripped) || /\$\{[^}]*\}/.test(stripped);
+  };
+
+  const SIZE = 400_000;
+  const fill = (unit: string): string => unit.repeat(Math.ceil(SIZE / unit.length));
+
+  it.each([
+    ["閉じの無い raw の繰り返し", fill("{% raw %}"), false],
+    ["閉じの無い verbatim と raw の混在", fill("{%- verbatim -%}{% raw %}"), false],
+    ["閉じる側だけの繰り返し", fill("{% endraw %}"), false],
+    ["閉じの無い ${ の繰り返し", fill("${"), false],
+    ["閉じの無い <% の繰り返し", fill("<%"), false],
+    ["閉じた raw の繰り返し", fill("{% raw %}<%x%>{% endraw %}"), false],
+    ["長い空白を挟んだ開き", `{%${" ".repeat(SIZE)}raw %}`, false],
+    ["閉じの無い raw の列の後ろに旧い記法", `${fill("{% raw %}")}<%= a %>`, true]
+  ])("%s（40 万字）が 1.5 秒以内に終わる", (_name, src, expected) => {
+    const t0 = performance.now();
+    const result = isLegacyTemplate(src);
+    const elapsed = performance.now() - t0;
+    expect(result).toBe(expected);
+    expect(elapsed).toBeLessThan(1500);
+  });
+
+  const PARTS = [
+    "{% raw %}", "{%- raw -%}", "{% endraw %}", "{%endraw-%}", "{% verbatim %}", "{% endverbatim %}",
+    "<%", "%>", "${", "}", "{%", "%}", "<", "$", "x", " "
+  ];
+
+  it("部品の組み合わせ（長さ 1〜4 の全数）で、元の正規表現と同じ結果になる", () => {
+    let checked = 0;
+    const walk = (prefix: string, depth: number): void => {
+      if (depth > 0) {
+        if (isLegacyTemplate(prefix) !== reference(prefix)) expect.fail(`結果が違う: ${JSON.stringify(prefix)}`);
+        checked++;
+      }
+      if (depth === 4) return;
+      for (const p of PARTS) walk(prefix + p, depth + 1);
+    };
+    walk("", 0);
+    expect(checked).toBe(16 + 16 ** 2 + 16 ** 3 + 16 ** 4);
+  }, 60_000);
+
+  it("部品を 5〜14 個並べた列（決まった種の乱数で 3 万本）で、元の正規表現と同じ結果になる", () => {
+    // 再現できるように、種を固定した線形合同法で選ぶ
+    let seed = 20261125;
+    const next = (n: number): number => {
+      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+      return seed % n;
+    };
+    for (let k = 0; k < 30_000; k++) {
+      let src = "";
+      for (let n = 5 + next(10); n > 0; n--) src += PARTS[next(PARTS.length)];
+      if (isLegacyTemplate(src) !== reference(src)) expect.fail(`結果が違う: ${JSON.stringify(src)}`);
+    }
+  }, 60_000);
+});

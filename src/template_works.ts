@@ -12,9 +12,66 @@ type TemplateKey = "poiTemplate" | "iconTemplate";
 // {% raw %}…{% endraw %}・{% verbatim %}…{% endverbatim %} の中は判定の対象から外す。
 // 空白制御の "-" は開き・閉じの両側とも受け付ける（閉じ側の "-" は Nunjucks では評価の例外になるが、
 // その場合も評価の例外として扱われ、どちらにしても評価はされない）。
-const RAW_BLOCK = /\{%-?\s*(raw|verbatim)\s*-?%\}[\s\S]*?\{%-?\s*end\1\s*-?%\}/g;
-const LEGACY_ERB = /<%[\s\S]*?%>/;
-const LEGACY_ES = /\$\{[^}]*\}/;
+// 開き・閉じのタグを 1 つずつ拾う式。開きから閉じまでを 1 つの式で探すと、閉じの無い開きが並んだ
+// 入力で長さの 2 乗の時間がかかるので、タグだけを拾って下の stripRawBlocks で 1 回の走査で対にする。
+const RAW_TAG = /\{%-?\s*(end)?(raw|verbatim)\s*-?%\}/g;
+
+type RawKind = "raw" | "verbatim";
+interface RawTag {
+  start: number;
+  end: number;
+  close: boolean;
+  kind: RawKind;
+}
+
+/**
+ * raw・verbatim のブロック（開きのタグから、その後ろで最初に現れる同じ種類の閉じのタグまで）を取り除く。
+ * 閉じの無い開きはそのまま残し、次の開きから探し直す。入力の長さに比例する時間で終わる。
+ */
+function stripRawBlocks(src: string): string {
+  if (!src.includes("{%")) return src;
+  const tags: RawTag[] = [];
+  RAW_TAG.lastIndex = 0;
+  for (let m = RAW_TAG.exec(src); m; m = RAW_TAG.exec(src)) {
+    tags.push({ start: m.index, end: m.index + m[0].length, close: !!m[1], kind: m[2] as RawKind });
+  }
+  if (tags.length === 0) return src;
+  // 種類ごとの閉じのタグ（tags の添字・昇順）と、どこまで見たかの位置。開きは前から順に見るので、
+  // 位置は後ろへ進むだけで戻らない。
+  const closes: Record<RawKind, number[]> = { raw: [], verbatim: [] };
+  tags.forEach((tag, i) => {
+    if (tag.close) closes[tag.kind].push(i);
+  });
+  const cursor: Record<RawKind, number> = { raw: 0, verbatim: 0 };
+  let out = "";
+  let pos = 0;
+  let i = 0;
+  while (i < tags.length) {
+    const open = tags[i];
+    if (open.close) {
+      i++;
+      continue;
+    }
+    const list = closes[open.kind];
+    let c = cursor[open.kind];
+    while (c < list.length && list[c] < i) c++;
+    cursor[open.kind] = c;
+    if (c === list.length) {
+      i++;
+      continue;
+    }
+    out += src.slice(pos, open.start);
+    pos = tags[list[c]].end;
+    i = list[c] + 1;
+  }
+  return out + src.slice(pos);
+}
+
+/** open の後ろ（open の直後から）に close があるか。最初の open だけ見れば足りる。 */
+function hasPair(src: string, open: string, close: string): boolean {
+  const at = src.indexOf(open);
+  return at >= 0 && src.indexOf(close, at + open.length) >= 0;
+}
 
 const LEGACY_MESSAGE_PREFIX =
   'MaplatApp: poiTemplate/iconTemplate written in the lodash.template syntax (<% %>, <%= %>, <%- %>, ${ }) is no longer evaluated since @maplat/core 1.3.0, and was ignored. ' +
@@ -36,8 +93,8 @@ function head(src: string): string {
  * @internal
  */
 export function isLegacyTemplate(src: string): boolean {
-  const stripped = src.replace(RAW_BLOCK, "");
-  return LEGACY_ERB.test(stripped) || LEGACY_ES.test(stripped);
+  const stripped = stripRawBlocks(src);
+  return hasPair(stripped, "<%", "%>") || hasPair(stripped, "${", "}");
 }
 
 /**
