@@ -24,10 +24,15 @@ export declare function escapeAttr(value: string): string;
  * なぜ必要か:
  *   escapeAttr は「属性コンテキスト」でのエスケープにすぎない。
  *   属性へ &lt;img…&gt; と書いても、ブラウザの getAttribute はエンティティを復号して
- *   `<img …>` を返す。受け手（Chuci の cc-swiper）はその値を自分の HTML へ補間するため、
+ *   `<img …>` を返す。受け手がその値を自分の HTML へ補間すると、
  *   往復した時点で生の HTML に戻ってしまう。
  *   caption の契約はテキストであり（実データ13件すべてが HTML を含まない）、
  *   HTML が渡ること自体が誤りなので、渡す側でテキスト化する。
+ *
+ * なぜ繰り返すか:
+ *   実体参照を戻した結果が、またタグの形になることがある（実体参照で書かれた山括弧）。
+ *   1 回で止めるとそれが残るので、結果が変わらなくなるまで繰り返す。普通の文字は 1〜2 回で
+ *   変わらなくなる。上限の回数でも変わり続ける値は、テキストとして扱えないので空にする。
  */
 export declare function toPlainText(value: string): string;
 /**

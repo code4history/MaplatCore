@@ -100,7 +100,25 @@ declare const _default: {
       "values": [
         "caption"
       ]
-    }
+    },
+    "imageTypes": {
+      "_note": "image-type に残してよい値。受け手（Chuci の cc-viewer。Quyuan が同梱）が知っている種類の全数。受け手に種類が増えたらここに足す",
+      "values": [
+        "image",
+        "panorama",
+        "youtube",
+        "video",
+        "3dmodel",
+        "gaussian"
+      ]
+    },
+    "numberListAttributes": [
+      "camera-position",
+      "camera-target"
+    ],
+    "trueFalseAttributes": [
+      "show-texture"
+    ]
   },
   "swiper": {
     "_note": "qy-swiper（Chuci の cc-swiper を継承）が読む真偽値の属性。Chuci cc-swiper.ts の hasAttribute を全数走査して確定",

@@ -2,7 +2,7 @@
 
 このプロジェクトの主な変更を記録します。版数は [Semantic Versioning](https://semver.org/) に従います。
 
-## [Unreleased]
+## [1.3.0-rc.1] - 2026-11-26
 
 ### Added
 - Custom Element `<maplat-app>`（入口 `@maplat/core/element`）。要素そのものが地図の入れ物で、属性・プロパティ（`app-id`・`map-id`・`transparency`・`north-up` …）、`MaplatApp` の公開メソッド 46 個の委譲、同じ名前の DOM イベント、状態の読み取り（`ready`・`implementation`・`version`・`appData`・`initialRestore`・`state`・`currentMapId`・`viewpoint`・`gpsEnabled`）を持つ

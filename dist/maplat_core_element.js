@@ -6,7 +6,7 @@ function h(s, e) {
   if (!(s === null || typeof s != "object") && typeof e == "string")
     return Object.hasOwn(s, e) ? s[e] : void 0;
 }
-const O = "1.2.0", P = Object.freeze(_("core")), c = (s) => Array.isArray(s) && Number.isFinite(s[0]) && Number.isFinite(s[1]);
+const O = "1.3.0-rc.1", P = Object.freeze(_("core")), c = (s) => Array.isArray(s) && Number.isFinite(s[0]) && Number.isFinite(s[1]);
 function g() {
   return typeof matchMedia != "function" ? !1 : matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
