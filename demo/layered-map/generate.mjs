@@ -1,9 +1,11 @@
 // 変換の形のデモ（layered-map.html）の素材を作る。設計書: 2026-11-26-jan27-layered-map-demo-redesign.md（v0.2）
 // 結果は commit 済み（public/maps/layered_demo_*.json・public/demo-data/・public/tiles/layered_demo_p1・p2・p3）なので、
 // 普段は実行しなくてよい。作り直すとき:
-//   cd <MaplatCore> && node demo/layered-map/generate.mjs
+//   cd <MaplatCore> && node demo/layered-map/generate.mjs [j1c|j1d|j1e]
 // 前提（いずれも作業場所 jan27-crs-work の並び。違うときは環境変数で dist を直接指定する）:
-//   - MaplatTin（MaplatTin-j1c = PR #88）の dist …… MAPLAT_TIN_DIST=<MaplatTin>/dist/maplat_tin.js
+//   - MaplatTin の dist。引数で ../MaplatTin-<名前>/dist を選ぶ。既定は j1e（PR #94 = 補完点入り）。
+//     j1c は PR #88、j1d は PR #91。j1c・j1d は補完点を持たないので、「補完点なし」の地図は作られない
+//     環境変数で dist を直接指定するときは MAPLAT_TIN_DIST=<MaplatTin>/dist/maplat_tin.js
 //   - Teiresias の dist（score と推奨を出す）……………… MAPLAT_TEIRESIAS_DIST=<Teiresias>/dist/index.js
 //   - 未公開の @maplat/transform（createProj4ProjectionEngine を含む版。node_modules/@maplat/transform へつないだもの）
 // MaplatTin と Teiresias は素材を作るためだけに使う。Core の依存ではない。ネットワークには出ない
@@ -14,9 +16,11 @@
 //   紙 P1（正確な図）・P2（地方ごとの寄せ集め）・P3（中心を大きく描いた見取り図）。
 //     どれもランベルト正角円錐図法（lcc）の 2048×2048 画素・1 画素 1,500 m
 //   GCP: P1 用 24 組（G1 は打ち間違い 2 組入り・G1c はそれを直したもの）と、歪んだ図用 34 組（G2 は P2 の上で・G3 は P3 の上で打ったもの）
-//   地図 JSON 9 つ（A・C／D・C／A・B・C／B・C）、紙の折れ線 3 つ、正解（経緯度）の折れ線、紙のタイル、meta
+//   地図 JSON 9 つ（A・C／D・C／A・B・C／B・C）と、補完点が付いた三角網の「補完点なし」版（`_off`）、紙の折れ線 3 つ、正解（経緯度）の折れ線、紙のタイル、meta
+//   補完点（MaplatTin#89・#94）: 三角網（V3）の地図は、補完点あり（Tin の既定）と、`supplementPairs: false` で作る補完点なし（#91 と同じ）の
+//     2 つを作る。補完点が 1 つも付かない素材では、2 つが同じになるので「なし」は書かない（画面は切り替えを出さない）
 //   生成のときの検査: B が C に落ちていない・B と C の内側の差が 1 km 未満・折り返しが無い（ヤコビアンの行列式）
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import proj4 from "proj4";
@@ -25,7 +29,9 @@ import { buildMapTransform, haversineKm, lonlat2merc, merc2lonlat } from "./engi
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, "../..");
-const tinDist = process.env.MAPLAT_TIN_DIST ?? resolve(root, "..", "MaplatTin-j1c", "dist/maplat_tin.js");
+const tinName = process.argv[2] ?? "j1e";
+if (!/^[A-Za-z0-9._-]+$/.test(tinName)) throw new Error(`MaplatTin の名前が不正です: ${tinName}`);
+const tinDist = process.env.MAPLAT_TIN_DIST ?? resolve(root, "..", `MaplatTin-${tinName}`, "dist/maplat_tin.js");
 const teiresiasDist = process.env.MAPLAT_TEIRESIAS_DIST ?? resolve(root, "..", "Teiresias/dist/index.js");
 console.log("Tin:", tinDist);
 console.log("Teiresias:", teiresiasDist);
@@ -342,7 +348,8 @@ function fitSimilarity(pairs) {
 function compile(points, extra = {}) {
   const tin = new Tin({ wh: [W, W], yaxisMode: "invert", points, ...extra });
   tin.updateTin();
-  return { compiled: tin.getCompiled(), diagnostics: tin.boundaryDiagnostics };
+  // 補完点を持たない版（j1c・j1d）では undefined
+  return { compiled: tin.getCompiled(), diagnostics: tin.boundaryDiagnostics, supplementCount: (tin.supplementPairs ?? []).length };
 }
 const CRS = { proj4: LCC };
 const lccPoints = pairs => pairs.map(g => [g.pixel.map(v => round(v, 3)), lonlat2lcc(g.lonlat).map(v => round(v, 3))]);
@@ -365,21 +372,33 @@ const tinMap = (id, title, paper, compiledPack, withCrs = true) => {
   DIAG[id] = compiledPack.diagnostics;
   MAPS[id] = { title, ...base(paper), ...(withCrs ? { crs: CRS } : {}), compiled: compiledPack.compiled };
 };
+// 三角網（V3）の地図を、補完点あり（`id`）と補完点なし（`id_off`）の 2 つ作る。補完点が付かない素材では「なし」は作らない
+const SUP_OFF = {}; // 補完点ありの id → 補完点なしの id
+const tinMapPair = (id, title, paper, points, extra = {}) => {
+  const on = compile(points, extra);
+  tinMap(id, title, paper, on);
+  if (on.supplementCount > 0) {
+    const offId = `${id}_off`;
+    tinMap(offId, `${title}（補完点なし）`, paper, compile(points, { ...extra, supplementPairs: false }));
+    SUP_OFF[id] = offId;
+  }
+};
 MAPS.layered_demo_p1_a = aMap("CRS（紙 P1・GCP G1）", "p1", wfP1, pairsG1);
-tinMap("layered_demo_p1_c", "三角網＋扇形外挿（紙 P1・GCP G1）", "p1", compile(lccPoints(pairsG1)));
+tinMapPair("layered_demo_p1_c", "三角網＋扇形外挿（紙 P1・GCP G1）", "p1", lccPoints(pairsG1));
 tinMap("layered_demo_p1c_d", "従来型（3857 固定＋三角網。V2。紙 P1・GCP G1c）", "p1", compile(mercPoints(pairsG1c), { useV2Algorithm: true }), false);
-tinMap("layered_demo_p1c_c", "三角網＋扇形外挿（紙 P1・GCP G1c）", "p1", compile(lccPoints(pairsG1c)));
+tinMapPair("layered_demo_p1c_c", "三角網＋扇形外挿（紙 P1・GCP G1c）", "p1", lccPoints(pairsG1c));
 MAPS.layered_demo_p2_a = aMap("CRS（紙 P2・GCP G2）", "p2", wfP2, pairsG2);
-tinMap("layered_demo_p2_b", "三角網＋大域外挿（紙 P2・GCP G2）", "p2", compile(lccPoints(pairsG2), { outerTransform: "worldFile", worldFile: wfP2 }));
-tinMap("layered_demo_p2_c", "三角網＋扇形外挿（紙 P2・GCP G2）", "p2", compile(lccPoints(pairsG2)));
-tinMap("layered_demo_p3_b", "三角網＋大域外挿（紙 P3・GCP G3）", "p3", compile(lccPoints(pairsG3), { outerTransform: "worldFile", worldFile: wfP3 }));
-tinMap("layered_demo_p3_c", "三角網＋扇形外挿（紙 P3・GCP G3）", "p3", compile(lccPoints(pairsG3)));
-for (const id of ["layered_demo_p2_b", "layered_demo_p3_b"]) {
+tinMapPair("layered_demo_p2_b", "三角網＋大域外挿（紙 P2・GCP G2）", "p2", lccPoints(pairsG2), { outerTransform: "worldFile", worldFile: wfP2 });
+tinMapPair("layered_demo_p2_c", "三角網＋扇形外挿（紙 P2・GCP G2）", "p2", lccPoints(pairsG2));
+tinMapPair("layered_demo_p3_b", "三角網＋大域外挿（紙 P3・GCP G3）", "p3", lccPoints(pairsG3), { outerTransform: "worldFile", worldFile: wfP3 });
+tinMapPair("layered_demo_p3_c", "三角網＋扇形外挿（紙 P3・GCP G3）", "p3", lccPoints(pairsG3));
+for (const id of Object.keys(MAPS).filter(k => /_b(_off)?$/.test(k))) {
   if (MAPS[id].compiled.outerTransform !== "worldFile") throw new Error(`${id} が扇形に落ちました（歪みを弱める）: ` + JSON.stringify(DIAG[id]));
 }
-for (const id of ["layered_demo_p1_c", "layered_demo_p1c_c", "layered_demo_p2_c", "layered_demo_p3_c"]) {
+for (const id of Object.keys(MAPS).filter(k => /_c(_off)?$/.test(k) && !/_a$/.test(k))) {
   if (MAPS[id].compiled.outerTransform !== "extrapolate" && MAPS[id].compiled.outerTransform !== undefined) throw new Error(`${id} の外周が扇形ではありません`);
 }
+console.log("補完点が付いた地図:", Object.fromEntries(Object.keys(SUP_OFF).map(id => [id, MAPS[id].compiled.supplementPairs.length])));
 
 // ---------------------------------------------------------------------------------------------
 // 7. 紙の折れ線と正解の折れ線（設計書 §3.4）。紙の画素と経緯度は頂点ごとに対応させる
@@ -478,23 +497,103 @@ const MAP_DEF = {
   layered_demo_p3_b: { type: "b", paper: "p3", gcps: "g3" },
   layered_demo_p3_c: { type: "c", paper: "p3", gcps: "g3" }
 };
-// 構造の原理（紙の画素のまま）: GCP の三角網・拡張範囲・四辺形・補助頂点・扇形の重心
+// 補完点あり（`id`）と補完点なし（`id_off`）。「なし」の定義は「あり」と同じで、補完点の有無だけが違う
+for (const [id, offId] of Object.entries(SUP_OFF)) {
+  const def = MAP_DEF[id];
+  MAP_DEF[id] = { ...def, supplement: "on", offId };
+  MAP_DEF[offId] = { ...def, supplement: "off", onId: id };
+}
+// 構造の原理（紙の画素のまま）: GCP の三角網・拡張範囲・四辺形・補助頂点・扇形の重心・補完点・凸包・凸包への食い込み
+// 補完点は compiled の edgeNodes の末尾にあり、三角形の頂点からは "e{n}" で指す（MaplatTin#89 設計 §4.1）。
+// 画面向けの頂点の名前は、GCP は 0 始まりの添字（数）、補助頂点は "b{n}"、補完点は "s{k}"（k は補完点の並びの 0 始まり）
+const polyArea = poly => {
+  let a = 0;
+  for (let i = 0; i < poly.length; i++) { const p = poly[i], q = poly[(i + 1) % poly.length]; a += p[0] * q[1] - q[0] * p[1]; }
+  return a / 2;
+};
+// 凸多角形 hull で、多角形 subject を切り抜く（Sutherland–Hodgman）
+function clipConvex(subject, hull) {
+  const sign = Math.sign(polyArea(hull));
+  let out = subject;
+  for (let i = 0; i < hull.length && out.length > 0; i++) {
+    const a = hull[i], b = hull[(i + 1) % hull.length];
+    const side = p => sign * ((b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0]));
+    const next = [];
+    for (let k = 0; k < out.length; k++) {
+      const p = out[k], q = out[(k + 1) % out.length];
+      const meet = () => { const t = side(p) / (side(p) - side(q)); return [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t]; };
+      if (side(p) >= 0) { next.push(p); if (side(q) < 0) next.push(meet()); }
+      else if (side(q) >= 0) next.push(meet());
+    }
+    out = next;
+  }
+  return out;
+}
 function principleOf(json) {
   if (json.tinEnabled === false) return { kind: "none" };
   const c = json.compiled;
   const aux = c.vertices_points.map(v => v[0].map(r1));
   const mean = aux.reduce((s, a) => [s[0] + a[0] / aux.length, s[1] + a[1] / aux.length], [0, 0]);
   const order = aux.map((a, i) => ({ i, ang: Math.atan2(a[1] - mean[1], a[0] - mean[0]) })).sort((x, y) => x.ang - y.ang).map(o => o.i);
-  const tris = c.tins_points[0].map(t => ({
-    v: t.map(x => (typeof x === "number" ? x : Number(String(x).slice(1)))),
-    aux: t.map(x => typeof x !== "number")
-  }));
+  const supRecords = [...(c.supplementPairs ?? [])].sort((a, b) => a.node - b.node);
+  const supIndexOfNode = new Map(supRecords.map((r, k) => [r.node, k]));
+  const name = x => {
+    if (typeof x === "number") return x;
+    const k = Number(String(x).slice(1));
+    if (String(x)[0] === "b") return `b${k}`;
+    if (String(x)[0] === "e") {
+      if (!supIndexOfNode.has(k)) throw new Error(`補完点ではない中継点 ${x} が三角網にあります（このデモは必須エッジを使わない）`);
+      return `s${supIndexOfNode.get(k)}`;
+    }
+    throw new Error(`知らない頂点の名前: ${x}`);
+  };
+  const tris = c.tins_points[0].map(t => t.map(name));
+  const isGcp = v => typeof v === "number", isAux = v => typeof v === "string" && v[0] === "b", isSup = v => typeof v === "string" && v[0] === "s";
+  // 補完点の位置。紙の側は edgeNodes の紙の座標、地理の側は crs（lcc）の座標を経緯度にしたもの
+  const supplement = supRecords.map((r, k) => {
+    const [forw, bakw] = c.edgeNodes[r.node];
+    return {
+      no: k + 1,
+      pixel: forw.map(r1),
+      lonlat: (json.crs ? lcc2lonlat(bakw) : merc2lonlat(bakw)).map(r3),
+      edge: r.edge.map(x => (typeof x === "number" ? x : name(x))),
+      anchor: r.anchor === undefined ? null : (typeof r.anchor === "number" ? r.anchor : name(r.anchor))
+    };
+  });
+  // 凸包の内側への食い込み（紙の面）: 補助頂点を含む三角形が、対応点の凸包の中に入り込む面積の、凸包の面積に対する割合
+  // （MaplatTin の tests/hull-intrusion.ts の intrusionFraction と同じ定義。凸包は補完点を入れずに取る）
+  const posOf = x => {
+    if (typeof x === "number") return c.points[x][0];
+    const k = Number(String(x).slice(1));
+    return String(x)[0] === "b" ? c.vertices_points[k][0] : c.edgeNodes[k][0];
+  };
+  const supNodes = new Set(supRecords.map(r => r.node));
+  const hullPts = [...c.points.map(p => p[0]), ...(c.edgeNodes ?? []).filter((_, n) => !supNodes.has(n)).map(p => p[0])];
+  const hull = convexHull(hullPts);
+  const hullArea = Math.abs(polyArea(hull));
+  let intrudeArea = 0;
+  const intrusionPolys = [];
+  for (const t of c.tins_points[0]) {
+    if (t.every(x => typeof x === "number" || String(x)[0] === "e")) continue;
+    const poly = clipConvex(t.map(posOf), hull);
+    if (poly.length < 3) continue;
+    const a = Math.abs(polyArea(poly));
+    if (a < 1e-6) continue;
+    intrudeArea += a;
+    intrusionPolys.push({ area: a, c: [poly.reduce((s, p) => s + p[0], 0) / poly.length, poly.reduce((s, p) => s + p[1], 0) / poly.length] });
+  }
+  // 画面の注記「食い込み」の位置: いちばん面積が大きい食い込みの重心（離れた食い込みの平均を取ると、食い込みの無い所に落ちる）
+  const biggest = intrusionPolys.reduce((m, q) => (!m || q.area > m.area ? q : m), null);
+  const intrusionAt = biggest ? biggest.c.map(r1) : null;
   return {
     kind: c.outerTransform === "worldFile" ? "worldFile" : "fan",
     aux, ring: order,
     centroid: c.centroid_point?.[0] ? c.centroid_point[0].map(r1) : null,
-    gcpTris: tris.filter(t => t.aux.every(a => !a)).map(t => t.v),
-    extTris: tris.filter(t => t.aux.some(a => a)).map(t => t.v.map((v, i) => (t.aux[i] ? `b${v}` : v)))
+    gcpTris: tris.filter(t => t.every(isGcp)),
+    supTris: tris.filter(t => t.some(isSup)),
+    extTris: tris.filter(t => t.some(isAux) && !t.some(isSup)),
+    supplement,
+    intrusion: { fraction: Number((intrudeArea / hullArea).toFixed(6)), areaPx: r1(intrudeArea), hullAreaPx: r1(hullArea), at: intrusionAt }
   };
 }
 const PRINCIPLE = Object.fromEntries(Object.keys(MAPS).map(id => [id, principleOf(MAPS[id])]));
@@ -566,6 +665,26 @@ for (const [idB, idC] of [["layered_demo_p2_b", "layered_demo_p2_c"], ["layered_
   if (!(innerDiff[idB] < 1)) throw new Error(`${idB} と ${idC} の内側が 1 km 以上違います（${innerDiff[idB]} km）。歪みを弱めてください`);
 }
 
+// 補完点あり・なしの比較（紙の上の 65×65 点。差は 3857 の球面の距離 km）。凸包は対応点の凸包（補完点は入れない）
+const SUPPLEMENT = {};
+for (const [id, offId] of Object.entries(SUP_OFF)) {
+  const on = EVAL[id].samples, off = EVAL[offId].samples;
+  const inner = [], outer = [];
+  on.forEach((s, i) => (s.inner ? inner : outer).push({ km: haversineKm(merc2lonlat(s.m), merc2lonlat(off[i].m)), screenPx: 0 }));
+  const pr = PRINCIPLE[id], prOff = PRINCIPLE[offId];
+  SUPPLEMENT[id] = {
+    offId,
+    count: pr.supplement.length,
+    intrusion: { on: pr.intrusion.fraction, off: prOff.intrusion.fraction },
+    // 食い込みがあった所（「なし」の最大の食い込みの重心）。見る場所「食い込み」の視点。経緯度は「あり」の変換で写した先
+    intrusionAt: prOff.intrusion.at ? { pixel: prOff.intrusion.at, lonlat: merc2lonlat(transformsById[id].xy2Merc(prOff.intrusion.at)).map(r3) } : null,
+    diff: { inner: statOf(inner), outer: statOf(outer) }
+  };
+  if (prOff.supplement.length !== 0) throw new Error(`${offId} に補完点が入っています`);
+  if (MAPS[offId].compiled.supplementPairs?.length) throw new Error(`${offId} の compiled に補完点があります`);
+  console.log(`補完点 ${id}: ${pr.supplement.length} 点・食い込み あり ${(pr.intrusion.fraction * 100).toFixed(2)}% なし ${(prOff.intrusion.fraction * 100).toFixed(2)}%・凸包の外の差 最大 ${SUPPLEMENT[id].diff.outer.max.toFixed(1)} km 二乗平均 ${SUPPLEMENT[id].diff.outer.rms.toFixed(1)} km`);
+}
+
 // ---------------------------------------------------------------------------------------------
 // 9. 書き出し（検査を通ってから）
 // ---------------------------------------------------------------------------------------------
@@ -573,6 +692,8 @@ mkdirSync(join(root, "public/maps"), { recursive: true });
 for (const f of ["layered_demo_gcp_b", "layered_demo_gcp_c", "layered_demo_tin9", "layered_demo_wf3857", "layered_demo_wf4326"]) {
   rmSync(join(root, "public/maps", `${f}.json`), { force: true });
 }
+// 補完点なしの版は、補完点が付いた素材の分だけ作る。前の生成の残りを消してから書く
+for (const f of readdirSync(join(root, "public/maps"))) if (/^layered_demo_.*_off\.json$/.test(f)) rmSync(join(root, "public/maps", f), { force: true });
 for (const [id, json] of Object.entries(MAPS)) writeFileSync(join(root, "public/maps", `${id}.json`), JSON.stringify(json) + "\n");
 mkdirSync(join(root, "public/demo-data"), { recursive: true });
 for (const paper of [1, 2, 3]) {
@@ -596,6 +717,7 @@ writeFileSync(
 // 10. meta
 // ---------------------------------------------------------------------------------------------
 const hullR = hull => hull.map(p => p.map(r1));
+const diffMeta = s => ({ maxKm: r3(s.max), rmsKm: r3(s.rms), n: s.n });
 const statMeta = s => ({ maxKm: r3(s.max), rmsKm: r3(s.rms), maxScreenPx: r3(s.maxScreenPx), n: s.n });
 const metaMaps = {};
 for (const [id, def] of Object.entries(MAP_DEF)) {
@@ -630,19 +752,24 @@ const pairView = (idA, idB, paper) => {
   const d = diffOuter(idA, idB, paper);
   return { outerAt: d.outerAt, diff: { innerMaxKm: r3(d.innerMaxKm), outerMaxKm: r3(d.outerMaxKm), outerMaxScreenPx: r3(d.outerMaxScreenPx) } };
 };
-const demos = {
+// 補完点の切り替えを出す型（その型の地図に補完点が付いたもの）
+const supplementTypes = maps => Object.entries(maps).filter(([, id]) => SUP_OFF[id]).map(([t]) => t);
+const withSupplement = d => (supplementTypes(d.maps).length ? { ...d, supplementTypes: supplementTypes(d.maps) } : d);
+const demos0 = {
   1: { paper: "p1", gcps: "g1", types: ["a", "c"], maps: { a: "layered_demo_p1_a", c: "layered_demo_p1_c" }, teiresias: G.g1.teiresias, ...pairView("layered_demo_p1_a", "layered_demo_p1_c", 1) },
   2: { paper: "p1", gcps: "g1c", types: ["d", "c"], maps: { d: "layered_demo_p1c_d", c: "layered_demo_p1c_c" }, teiresias: G.g1c.teiresias, ...pairView("layered_demo_p1c_d", "layered_demo_p1c_c", 1) },
   3: { paper: "p2", gcps: "g2", types: ["a", "b"], maps: { a: "layered_demo_p2_a", b: "layered_demo_p2_b" }, teiresias: G.g2.teiresias, ...pairView("layered_demo_p2_a", "layered_demo_p2_b", 2) },
   4: { paper: "p2", gcps: "g2", types: ["b", "c"], maps: { b: "layered_demo_p2_b", c: "layered_demo_p2_c" }, teiresias: G.g2.teiresias, ...pairView("layered_demo_p2_b", "layered_demo_p2_c", 2) },
   5: { paper: "p3", gcps: "g3", types: ["b", "c"], maps: { b: "layered_demo_p3_b", c: "layered_demo_p3_c" }, teiresias: G.g3.teiresias, ...pairView("layered_demo_p3_b", "layered_demo_p3_c", 3) }
 };
+const demos = Object.fromEntries(Object.entries(demos0).map(([k, d]) => [k, withSupplement(d)]));
 // 見る場所（画面は meta を読むだけ）。zoomDelta は「全体」の拡大率に足す（対数）
 const views = {
   p1: { whole: WHOLE[1], outer: { lonlat: [145.5, 43.0], zoomDelta: 1.0, label: "北海道の東" } },
   p2: { whole: WHOLE[2], outer: { lonlat: demos[4].outerAt.lonlat, zoomDelta: 0.8, label: "紙の縁（2 つの型の差が最大の所）" } },
   p3: { whole: WHOLE[3], outer: { lonlat: demos[5].outerAt.lonlat, zoomDelta: 0.8, label: "紙の縁（2 つの型の差が最大の所）" } },
-  blunders: BLUNDERS.map(b => ({ no: b.index + 1, lonlat: T1[b.index].lonlat, zoomDelta: 1.5 }))
+  blunders: BLUNDERS.map(b => ({ no: b.index + 1, lonlat: T1[b.index].lonlat, zoomDelta: 1.5 })),
+  supplement: { zoomDelta: 2.0, intrusionZoomDelta: 1.5 }
 };
 const meta = {
   version: 2,
@@ -659,6 +786,13 @@ const meta = {
   blunders: BLUNDERS.map(b => ({ no: b.index + 1, sizePx: b.size, truePixel: T1[b.index].px.map(r1), lonlat: T1[b.index].lonlat })),
   gcpSets: Object.fromEntries(Object.entries(G).map(([k, v]) => [k, { label: v.label, teiresias: v.teiresias }])),
   maps: metaMaps,
+  tin: tinName,
+  supplement: Object.fromEntries(Object.entries(SUPPLEMENT).map(([id, v]) => [id, {
+    offId: v.offId, count: v.count,
+    intrusion: { on: Number(v.intrusion.on.toFixed(6)), off: Number(v.intrusion.off.toFixed(6)) },
+    intrusionAt: v.intrusionAt,
+    diff: { inner: diffMeta(v.diff.inner), outer: diffMeta(v.diff.outer) }
+  }])),
   demos,
   views,
   innerDiffKm: Object.fromEntries(Object.entries(innerDiff).map(([k, v]) => [k, r3(v)])),

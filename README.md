@@ -532,14 +532,21 @@ Each demo has a "確認のポイント" (what to check) line that says what to l
 
 | Demo | Paper | Compared | Point |
 |---|---|---|---|
-| 1 | P1 accurate | CRS only vs TIN + fan extrapolation | For an accurate map with a known CRS, the world file alone fits to the paper edge. The TIN adds no accuracy and drags a GCP typo into its surroundings. Outside the GCPs, the fan stretches even a small GCP error. |
-| 2 | P1 accurate | legacy (V2) vs TIN + fan extrapolation | The legacy shape absorbs the difference in projection with the TIN, so it bends a lot outside the GCPs. Matching the CRS removes the bend. An amplified GCP error remains at the paper corners. |
+| 1 | P1 accurate | CRS only vs TIN + fan extrapolation | For an accurate map with a known CRS, the world file alone fits to the paper edge. The TIN adds no accuracy and drags a GCP typo into its surroundings. |
+| 2 | P1 accurate | legacy (V2) vs TIN + fan extrapolation | The legacy shape absorbs the difference in projection with the TIN, so it bends a lot outside the GCPs. Matching the CRS removes the bend. |
 | 3 | P2 regions pieced together | CRS only vs TIN + global extrapolation | If the map itself is distorted, CRS only leaves an error even at the GCPs. The TIN fixes the distortion over the land that has GCPs. The sea, which has none, stays wrong. |
 | 4 | P2 regions pieced together | TIN + global extrapolation vs TIN + fan extrapolation | Inside the quadrilateral the two are identical. When regional distortions cancel out over the whole map, global extrapolation is closer to the truth outside. |
 | 5 | P3 large-centre sketch | TIN + global extrapolation vs TIN + fan extrapolation | Inside the quadrilateral the two are identical. On a map drawn large at its centre, global extrapolation is pulled by the exaggerated centre and the scale is wrong outside. The fan, which extends at the scale of the GCPs at the edge, is closer. This holds only when the centre is at the centroid of the GCPs. |
 
+**Supplement points on / off** (demos 1, 3 and 4): the supplement points of MaplatTin#89 / #94 are correspondence points the system adds on a hull edge, so that the triangles of the auxiliary vertices do not cut into the inside of the GCP hull.
+They are not points a human placed, so they are drawn as hollow black diamonds with the same number (補1, 補2 …) on the paper face and the 3857 face. The triangles that contain a supplement point use a short dash, and the GCP hull a dash-dot-dot line.
+The panel switches "補完点あり／なし" (on / off; a separate control from the shape switch; the URL takes `?sup=0` or `?sup=1`). On a switch, the 3857 face keeps the result of the side you did not choose as a **thin gray line**, so what moved shows as a red-versus-gray offset
+(there is no truth in this comparison, so gray is not the truth: it is "the result of the other setting"). The panel shows the number of supplement points, the intrusion into the inside of the hull (a fraction of the hull area on the paper face; on / off), and the difference between the converted results with and without them (outside and inside the hull; maximum and RMS).
+The "補完点" and "食い込み" view buttons zoom to that spot (the paper face follows).
+Where no supplement point is added (the GCPs of demo 2, and P3), switching changes nothing, so the switch is not shown. Shapes without supplement points (CRS only, legacy) have the switch disabled.
+
 **Visual grammar** (common to all demos; the source of truth is `demo/layered-map/grammar.ts`, pinned by `spec/layered-map-demo.spec.ts`):
-only three hues: red, blue, black. The **thin red line** is what belongs to the paper (what is drawn on it, and its converted result).
+three hues: red, blue, black (the supplement-point comparison adds gray, only for the result of the other setting). The **thin red line** is what belongs to the paper (what is drawn on it, and its converted result).
 The **thick blue band** is the geographic truth (3857). The **black dotted and dashed lines** show how the transform works (GCP TIN, extension, quadrilateral and fan, told apart by dash pattern).
 Terrain is a thick solid line, the graticule a medium solid line, and the mechanism a thin dotted line. A red line inside the band means it fits, and one outside the band means it does not.
 That one reading holds for terrain, graticule and GCPs alike. A GCP appears with the same number on the paper face (a red dot) and on the 3857 face (a blue ring, with the converted paper side as a red dot inside it);
@@ -557,9 +564,9 @@ P3 is a sketch drawn twice as large around the centroid of the GCPs, and returns
 The GCPs are 24 pairs scattered with a fixed random seed (14 dense, 10 sparse; demo 1 has two typos), and 34 pairs for the distorted papers (at least three per region, from Kyushu to Hokkaido).
 The error of each shape (the distance between the converted result and the truth at 65×65 points on the paper: the whole inside of the GCP hull, the land inside it, the outside, and at the GCPs) and the score and recommendation from Teiresias are computed at generation time and written to
 `public/demo-data/layered_demo_meta.json`; the screen only reads them. Generation stops unless the inside of the two TIN shapes (global and fan) differs by less than 1 km and the distortions do not fold over.
-The map JSON is `public/maps/layered_demo_*.json` (nine files), the paper polylines are
+The map JSON is `public/maps/layered_demo_*.json` (nine files, plus three `layered_demo_*_off.json` files, the "supplement points off" version of the material that got supplement points, made with `supplementPairs: false`), the paper polylines are
 `public/demo-data/layered_demo_paper_p1.json`, `..._p2.json` and `..._p3.json`, and the paper tiles are `public/tiles/layered_demo_p1`, `..._p2` and `..._p3`.
-MaplatTin (default `../MaplatTin-j1c`) and Teiresias are used only to produce the material and are not Core dependencies.
+MaplatTin (`node demo/layered-map/generate.mjs [j1c|j1d|j1e]` picks `../MaplatTin-<name>`; the default is j1e, which has supplement points; j1c and j1d have none, so no "off" version is made) and Teiresias are used only to produce the material and are not Core dependencies.
 
 **Bundled and offline**: the coastline is Natural Earth (<https://www.naturalearthdata.com/>) 1:50m land (`ne_50m_land`; public domain), cut into
 `demo/layered-map/data/coast-lonlat.json` and bundled (`make-coast.mjs` makes the cut). proj4 is bundled as a dependency.

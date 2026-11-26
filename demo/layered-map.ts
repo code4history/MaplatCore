@@ -17,7 +17,7 @@ import { buildMapTransform, lonlat2merc } from "./layered-map/engine";
 import type { DemoMapJson } from "./layered-map/engine";
 import {
   COLOR, DASH, MARK, OPACITY, WIDTH,
-  bandStroke, casingStroke, coreStroke, principleStroke, rgba
+  bandStroke, casingStroke, compareStroke, coreStroke, principleStroke, rgba
 } from "./layered-map/grammar";
 
 type P = number[];
@@ -28,6 +28,8 @@ interface Stat { maxKm: number; rmsKm: number; maxScreenPx: number; n: number }
 type PaperKey = "p1" | "p2" | "p3";
 type GcpKey = "g1" | "g1c" | "g2" | "g3";
 interface Gcp { no: number; lonlat: P; pixel: P; region: string; dense: boolean; blunder?: { sizePx: number } }
+/** システムが足した補完点（MaplatTin#89）。三角形の頂点の名前は "s{番号 - 1}" */
+interface Supplement { no: number; pixel: P; lonlat: P; edge: (number | string)[]; anchor: number | string | null }
 interface Principle {
   kind: "none" | "worldFile" | "fan";
   aux?: P[];
@@ -35,17 +37,28 @@ interface Principle {
   centroid?: P | null;
   gcpTris?: number[][];
   extTris?: (number | string)[][];
+  supTris?: (number | string)[][];
+  supplement?: Supplement[];
+  intrusion?: { fraction: number; at: P | null };
+}
+interface SupplementStat {
+  offId: string;
+  count: number;
+  intrusion: { on: number; off: number };
+  intrusionAt: { pixel: P; lonlat: P } | null;
+  diff: { inner: Stat; outer: Stat };
 }
 interface MapMeta {
   type: string;
   paper: PaperKey;
   gcps: GcpKey;
+  hull: P[];
   principle: Principle;
   stats: { inner: Stat; innerLand: Stat; outer: Stat; gcpMaxKm: number; gcpMaxScreenPx: number };
   gcpResidual: { km: number; screenPx: number }[];
 }
 interface Teiresias { score: number | null; setups: string[]; reason: string }
-interface DemoMeta { paper: PaperKey; gcps: GcpKey; types: string[]; maps: Record<string, string>; teiresias: Teiresias }
+interface DemoMeta { paper: PaperKey; gcps: GcpKey; types: string[]; maps: Record<string, string>; teiresias: Teiresias; supplementTypes?: string[] }
 interface View { lonlat: P; zoomDelta?: number; label?: string }
 interface Meta {
   paper: { size: number };
@@ -53,8 +66,11 @@ interface Meta {
   gcps: Record<string, Gcp[]>;
   gcpSets: Record<string, { label: string; teiresias: Teiresias }>;
   maps: Record<string, MapMeta>;
+  supplement: Record<string, SupplementStat>;
+  tin: string;
   demos: Record<string, DemoMeta>;
   views: {
+    supplement: { zoomDelta: number; intrusionZoomDelta: number };
     p1: { whole: { lonlat: P; spanMerc: P }; outer: View };
     p2: { whole: { lonlat: P; spanMerc: P }; outer: View };
     p3: { whole: { lonlat: P; spanMerc: P }; outer: View };
@@ -68,12 +84,17 @@ interface TrueLines { p1: { coast: Line[]; grid: Line[] }; p2: { coast: Line[]; 
 const TYPE_NAME: Record<string, string> = { a: "CRS", b: "三角網＋大域外挿", c: "三角網＋扇形外挿", d: "従来型" };
 const typeName = (t: string): string => TYPE_NAME[t] ?? t;
 const HINTS: Record<string, string> = {
-  "1": "CRS では、赤い線が紙の端まで青い帯の中に収まる。三角網＋扇形外挿に切り替えると、打ち間違いの GCP 2 つの周りで、赤い線が帯からはみ出す。GCP の外にある紙の隅では、はみ出しがさらに大きくなる。",
-  "2": "従来型では、GCP の外にある北海道の東・沖縄・大陸で、赤い線が大きく曲がって青い帯からはみ出す。三角網＋扇形外挿に切り替えると、曲がりが消える。紙の隅に残るずれは、GCP の 3 画素の誤差が外へ延びて大きくなったもの。",
+  "1": "CRS では、赤い線が紙の端まで青い帯の中に収まる。三角網＋扇形外挿に切り替えると、打ち間違いの GCP 2 つの周りで、赤い線が帯からはみ出す。GCP の外にある紙の隅でも、小さくずれる。",
+  "2": "従来型では、GCP の外にある北海道の東・沖縄・大陸で、赤い線が大きく曲がって青い帯からはみ出す。三角網＋扇形外挿に切り替えると、曲がりが消えて、赤い線が紙の隅まで帯の近くに収まる。",
   "3": "GCP の赤い丸と青い輪を見る。CRS では、赤い丸が輪からずれたまま残る。三角網＋大域外挿に切り替えると、赤い丸がどれも輪の中に入り、GCP のある陸の海岸線が帯に乗る。GCP の無い海の上は直らない。",
   "4": "破線の四辺形の内側は、切り替えても変わらない。この図は地方ごとに歪んでいるが、全体は 1 つの縮尺に乗っている。外側では、三角網＋大域外挿の赤い線が帯に乗り、三角網＋扇形外挿は外れる。",
   "5": "破線の四辺形の内側は、切り替えても変わらない。この図は GCP の重心を中心に大きく描いてある。外側では、三角網＋扇形外挿の赤い線が帯に近く、三角網＋大域外挿は縮尺が合わずに外れる。"
 };
+// 補完点の切り替えがあるデモの、確認のポイントの足し分。菱形の数は meta から入れる
+const supplementHint = (n: number): string =>
+  `補完点ありでは、凸包の辺の上に黒い菱形が ${n} つ出て、凸包の内側に入り込んでいた補助頂点の三角形が消える。凸包の外では、赤い線と灰色の線が離れる所がある。`;
+const SUP_NOTE = "補完点は、システムが足す対応点。補助頂点の三角形が GCP の凸包の内側に入り込まないように、凸包の辺の上に足す。人間が打った対応点ではないので、黒の菱形で描く。";
+const SUP_NOTE_NONE = "この型は三角網を使わないので、補完点は無い。切り替えても変わらない。";
 // デモの選択のボタンは番号だけにし、2 つの型の呼び名は説明文の段の左に出す（5 つ並べると 1280 画素に収まらない）
 const DEMO_PAIR: Record<string, string> = {
   "1": "CRS と 三角網＋扇形外挿",
@@ -88,8 +109,15 @@ const TYPE_NOTE: Record<string, string> = {
   c: "三角網＋扇形外挿は、CRS の上に GCP の三角網を張り、四辺形の外は縁の GCP の傾向を扇形に延ばす。",
   d: "従来型（3857＋三角網＋扇形外挿。V2）は、投影を 3857 に決め打ちして、紙の四隅の 4 つの補助頂点を足した三角網で、投影の違いを吸収する。"
 };
+// 補完点の切り替えがあるデモだけ、型の説明に足す
+const TYPE_NOTE_SUP: Record<string, string> = {
+  a: "三角網を使わないので、補完点は無い。",
+  b: "凸包の辺が三角網を壊すときは、システムが補完点を足す。",
+  c: "凸包の辺が三角網を壊すときは、システムが補完点を足す。",
+  d: "従来型は補完点を使わない。"
+};
 const SETUP_TYPE: Record<string, string> = { worldFileOnly: TYPE_NAME.a, tinGlobal: TYPE_NAME.b, tinFan: TYPE_NAME.c };
-const statusText = (): string => `デモ ${demoNo}・${typeName(typeKey)}`;
+const statusText = (): string => `デモ ${demoNo}・${typeName(typeKey)}${demoHasSup() && hasSup() ? `・補完点${supplementOn ? "あり" : "なし"}` : ""}`;
 const REGION_FAR = 0.3; // 紙の縁の外の余白（紙の幅に対する割合）
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => document.getElementById(id) as T;
@@ -108,28 +136,51 @@ let app: MaplatApp;
 // ---- 状態 ----
 let demoNo = "1";
 let typeKey = "a";
-const show = { terrain: true, grid: true, mech: true, bg: true };
+const show = { terrain: true, grid: true, mech: true, bg: true, compare: true };
+let supplementOn = true; // 補完点あり（Tin の既定）か、なし（supplementPairs: false）か
 let selected: number | undefined; // 選んでいる GCP の番号
+let selectedSup: number | undefined; // 選んでいる補完点の番号
 let blunderCursor = 0;
+let supCursor = 0;
+/** 紙の面を補完点の周りへ寄せる（見る場所「補完点」のとき）。null なら紙の全体 */
+let paperFocus: P | null = null;
+const PAPER_FOCUS_SPAN = 0.3; // 寄せたときの、紙の面の幅（紙の幅に対する割合）
 let openPaper = false;
 
 const demo = (): DemoMeta => meta.demos[demoNo];
-const mapId = (t = typeKey): string => demo().maps[t];
+const baseMapId = (t = typeKey): string => demo().maps[t];
+/** 補完点の切り替えがある型か（その型の地図に補完点が付いたもの）。付かない型・付かない素材では、切り替えても変わらない */
+const hasSup = (t = typeKey): boolean => !!meta.supplement[baseMapId(t)];
+const demoHasSup = (): boolean => (demo().supplementTypes?.length ?? 0) > 0;
+const mapId = (t = typeKey, sup = supplementOn): string => {
+  const s = meta.supplement[baseMapId(t)];
+  return s && !sup ? s.offId : baseMapId(t);
+};
+/** 灰色で重ねる「もう一方の設定」の地図。切り替えが効かない型では無い */
+const compareId = (): string | undefined => (hasSup() ? mapId(typeKey, !supplementOn) : undefined);
 const gcpList = (): Gcp[] => meta.gcps[demo().gcps];
 const transformOf = (id: string): MapTransform => (transforms[id] ??= buildMapTransform(mapJson[id], proj4 as unknown as Proj4Factory));
 
 // ---------------------------------------------------------------------------------------------
 // 原理（紙の画素）。generate.mjs が meta に書いた構造から、線と印を作る
 // ---------------------------------------------------------------------------------------------
-interface Geom { fan: Line[]; ext: Line[]; quad: Line[]; tin: Line[]; aux: P[]; centroid: P | null; kind: Principle["kind"] }
+interface Geom {
+  fan: Line[]; ext: Line[]; quad: Line[]; tin: Line[]; hull: Line[]; sup: Line[];
+  aux: P[]; supplement: Supplement[]; centroid: P | null; intrusionAt: P | null; kind: Principle["kind"]
+}
 const geomCache: Record<string, Geom> = {};
 function geomOf(id: string): Geom {
   if (geomCache[id]) return geomCache[id];
   const pr = meta.maps[id].principle;
   const gcps = meta.gcps[meta.maps[id].gcps];
-  const g: Geom = { fan: [], ext: [], quad: [], tin: [], aux: [], centroid: null, kind: pr.kind };
+  const g: Geom = { fan: [], ext: [], quad: [], tin: [], hull: [], sup: [], aux: [], supplement: [], centroid: null, intrusionAt: null, kind: pr.kind };
   if (pr.kind !== "none" && pr.aux && pr.ring && pr.gcpTris && pr.extTris) {
-    const pos = (v: number | string): P => (typeof v === "number" ? gcps[v].pixel : pr.aux![Number(String(v).slice(1))]);
+    const sups = pr.supplement ?? [];
+    const pos = (v: number | string): P => {
+      if (typeof v === "number") return gcps[v].pixel;
+      const k = Number(String(v).slice(1));
+      return String(v)[0] === "s" ? sups[k].pixel : pr.aux![k];
+    };
     const seen = new Set<string>();
     const edges = (tris: (number | string)[][], into: Line[]): void => {
       for (const t of tris) {
@@ -142,9 +193,16 @@ function geomOf(id: string): Geom {
         }
       }
     };
+    // 補完点を含む三角形の辺を先に取る（ほかの三角形と辺を共有していても、補完点の線として描く）
+    edges(pr.supTris ?? [], g.sup);
     edges(pr.gcpTris, g.tin);
     edges(pr.extTris, g.ext);
     g.aux = pr.aux;
+    g.supplement = sups;
+    // 凸包は、補完点の切り替えがあるデモだけ描く（補助頂点の三角形が内側へ食い込むかを見るため。描くかどうかは描くときに決める）
+    const hull = meta.maps[id].hull;
+    g.hull = [[...hull, hull[0]]];
+    g.intrusionAt = pr.intrusion && pr.intrusion.fraction > 0 ? pr.intrusion.at : null;
     g.quad = [[...pr.ring.map(i => pr.aux![i]), pr.aux[pr.ring[0]]]];
     if (pr.kind === "fan" && pr.centroid) {
       g.centroid = pr.centroid;
@@ -173,15 +231,17 @@ const NSC = 'fill="none" vector-effect="non-scaling-stroke" stroke-linejoin="rou
 function renderPaperFace(): void {
   const svg = $<HTMLElement>("paper-svg") as unknown as SVGSVGElement;
   const W = meta.paper.size;
-  const lo = -REGION_FAR * W, size = (1 + 2 * REGION_FAR) * W;
-  svg.setAttribute("viewBox", `${lo} ${lo} ${size} ${size}`);
+  const lo = -REGION_FAR * W, full = (1 + 2 * REGION_FAR) * W;
+  const size = paperFocus ? PAPER_FOCUS_SPAN * W : full;
+  const [vx, vy] = paperFocus ? [paperFocus[0] - size / 2, paperFocus[1] - size / 2] : [lo, lo];
+  svg.setAttribute("viewBox", `${vx} ${vy} ${size} ${size}`);
   const rect = svg.getBoundingClientRect();
   const k = Math.min(rect.width, rect.height) / size || 0.2; // 画面の画素 / 紙の画素
   const u = (px: number): number => px / k;
   const id = mapId();
   const g = geomOf(id);
   const pl = paperLines[demo().paper];
-  let h = `<rect x="${lo}" y="${lo}" width="${size}" height="${size}" fill="#eef0f4"/><rect x="0" y="0" width="${W}" height="${W}" fill="#fff"/>`;
+  let h = `<rect x="${lo}" y="${lo}" width="${full}" height="${full}" fill="#eef0f4"/><rect x="0" y="0" width="${W}" height="${W}" fill="#fff"/>`;
   // 紙のもの（赤い芯）
   if (show.grid) h += `<path d="${dOf(pl.grid)}" ${NSC} stroke="${COLOR.red}" stroke-width="${WIDTH.grid.core}"/>`;
   if (show.terrain) h += `<path d="${dOf(pl.coast)}" ${NSC} stroke="${COLOR.red}" stroke-width="${WIDTH.terrain.core}"/>`;
@@ -194,10 +254,22 @@ function renderPaperFace(): void {
       return `<path d="${d}" ${NSC} stroke="${rgba(COLOR.white, OPACITY.casing)}" stroke-width="${WIDTH.casing}"/>` +
         `<path d="${d}" ${NSC} stroke="${COLOR.black}" stroke-width="${WIDTH.principle}" stroke-dasharray="${dash.join(" ")}"/>`;
     };
-    h += principle(g.fan, DASH.fan) + principle(g.ext, DASH.extended) + principle(g.quad, DASH.quad) + principle(g.tin, DASH.tin);
+    h += principle(g.fan, DASH.fan) + principle(g.ext, DASH.extended) + principle(g.quad, DASH.quad);
+    if (demoHasSup()) h += principle(g.hull, DASH.hull);
+    h += principle(g.tin, DASH.tin) + principle(g.sup, DASH.supplement);
     for (const a of g.aux) {
       const s = u(MARK.aux);
       h += `<rect x="${a[0] - s / 2}" y="${a[1] - s / 2}" width="${s}" height="${s}" fill="#fff" stroke="${COLOR.black}" stroke-width="${WIDTH.principle}" vector-effect="non-scaling-stroke"/>`;
+    }
+    // 補完点: 黒の中抜きの菱形。両方の面に同じ番号で描く
+    for (const q of g.supplement) {
+      const sel = q.no === selectedSup;
+      const r = (u(MARK.supplement) / 2) * (sel ? MARK.selectScale : 1);
+      const [x, y] = q.pixel;
+      if (sel) h += `<circle cx="${x}" cy="${y}" r="${u(MARK.gcpGeo) * 0.75 * MARK.selectScale}" fill="none" stroke="${COLOR.select}" stroke-width="3" vector-effect="non-scaling-stroke"/>`;
+      h += `<path d="M${x} ${y - r}L${x + r} ${y}L${x} ${y + r}L${x - r} ${y}Z" fill="#fff" stroke="${COLOR.black}" stroke-width="${MARK.supplementStroke}" vector-effect="non-scaling-stroke" stroke-linejoin="miter"/>`;
+      h += `<text x="${x + u(8)}" y="${y + u(14)}" font-size="${u(11)}" font-weight="700">補${q.no}</text>`;
+      h += `<circle data-sup="${q.no}" cx="${x}" cy="${y}" r="${u(10)}" fill="transparent" style="cursor:pointer"/>`;
     }
     if (g.centroid) {
       const s = u(MARK.centroid) / 2, c = g.centroid;
@@ -218,6 +290,9 @@ function renderPaperFace(): void {
   svg.querySelectorAll<SVGElement>("[data-gcp]").forEach(el => {
     el.addEventListener("click", () => selectGcp(Number(el.dataset.gcp)));
   });
+  svg.querySelectorAll<SVGElement>("[data-sup]").forEach(el => {
+    el.addEventListener("click", () => selectSupplement(Number(el.dataset.sup)));
+  });
 }
 
 // 領域の名前は、紙の面の図の上に直接書く（設計書 §4.2）
@@ -234,6 +309,10 @@ function regionLabels(g: Geom, u: (px: number) => number): string {
   const auxRight = Math.max(...g.aux.map(a => a[0]));
   let h = text("GCP の三角網", cx, gcps.reduce((a, p) => a + p[1], 0) / gcps.length);
   h += text("拡張範囲", cx, (hullTop + auxTop) / 2);
+  if (demoHasSup()) {
+    h += text("凸包", Math.min(...gcps.map(p => p[0])) - 0.04 * W, (Math.min(...gcps.map(p => p[1])) + Math.max(...gcps.map(p => p[1]))) / 2);
+    if (g.intrusionAt) h += text("食い込み", g.intrusionAt[0], g.intrusionAt[1] + u(16)); // GCP の番号に重ならないよう、少し下へ
+  }
   const outer = g.kind === "worldFile" ? "大域外挿" : "扇形外挿";
   const y = Math.min(auxBottom + 0.06 * W, (1 + REGION_FAR) * W - u(12));
   h += text(outer, cx, y);
@@ -307,13 +386,22 @@ function redOf(id: string): { coast: P[][]; grid: P[][] } {
   return redCache[id];
 }
 
-/** 赤い芯（紙のもの）と原理（黒）: 型を変えるたびに描き直す。青い帯の上 */
+/** 灰色の細い線（補完点のもう一方の設定の結果）→ 赤い芯（紙のもの）→ 原理（黒）: 型・補完点を変えるたびに描き直す。青い帯の上 */
 async function drawRed(token: number): Promise<void> {
+  clearGroup("gray");
   clearGroup("red");
   clearGroup("mech");
   const id = mapId();
   const T = transformOf(id);
   const red = redOf(id);
+  const other = compareId();
+  if (other && show.compare) {
+    const gray = redOf(other);
+    if (show.grid) for (const l of gray.grid) addLine("gray", l, compareStroke("grid"));
+    if (show.terrain) for (const l of gray.coast) addLine("gray", l, compareStroke("terrain"));
+    await tick();
+    if (token !== runToken) return;
+  }
   if (show.grid) for (const l of red.grid) addLine("red", l, coreStroke("grid"));
   await tick();
   if (token !== runToken) return;
@@ -328,8 +416,9 @@ async function drawRed(token: number): Promise<void> {
       addLine("mech", m, principleStroke(dash));
     }
   };
-  // 重ね順は文法の表（5 扇形 → 6 拡張範囲 → 7 四辺形 → 8 GCP の三角網）
-  for (const [lines, dash] of [[g.fan, DASH.fan], [g.ext, DASH.extended], [g.quad, DASH.quad], [g.tin, DASH.tin]] as [Line[], readonly number[]][]) {
+  // 重ね順は文法の表（5 扇形 → 6 拡張範囲 → 7 四辺形 → 凸包 → 8 GCP の三角網 → 補完点を含む三角形）
+  const layers: [Line[], readonly number[]][] = [[g.fan, DASH.fan], [g.ext, DASH.extended], [g.quad, DASH.quad], [demoHasSup() ? g.hull : [], DASH.hull], [g.tin, DASH.tin], [g.sup, DASH.supplement]];
+  for (const [lines, dash] of layers) {
     mech(lines, dash);
     await tick();
     if (token !== runToken) return;
@@ -359,6 +448,16 @@ const auxIcon = (): { src: string; anchor: P } => ({
   src: svgUri(`<svg xmlns="${NS}" width="14" height="14" viewBox="0 0 14 14"><rect x="${7 - MARK.aux / 2}" y="${7 - MARK.aux / 2}" width="${MARK.aux}" height="${MARK.aux}" fill="#fff" stroke="${COLOR.black}" stroke-width="${WIDTH.principle}"/></svg>`),
   anchor: [0.5, 0.5]
 });
+// 補完点: 黒の中抜きの菱形＋番号（対応点の赤い丸・青い輪と、形で見分ける）
+function supIcon(q: Supplement, sel: boolean): { src: string; anchor: P } {
+  const r = (MARK.supplement / 2) * (sel ? MARK.selectScale : 1);
+  const cx = 20, cy = 20;
+  const sel_ = sel ? `<circle cx="${cx}" cy="${cy}" r="${r + 7}" fill="none" stroke="${COLOR.select}" stroke-width="3"/>` : "";
+  // 白で塗るのは、集まる三角網の線に埋もれないため（中を押しても選べる）
+  const d = `<path d="M${cx} ${cy - r}L${cx + r} ${cy}L${cx} ${cy + r}L${cx - r} ${cy}Z" fill="#fff" stroke="${COLOR.black}" stroke-width="${MARK.supplementStroke}"/>`;
+  const t = label(cx + r + 4, cy + r + 8, `補${q.no}`);
+  return { src: svgUri(`<svg xmlns="${NS}" width="80" height="40" viewBox="0 0 80 40">${sel_}${d}${t}</svg>`), anchor: [cx / 80, 0.5] };
+}
 const centroidIcon = (): { src: string; anchor: P } => ({
   src: svgUri(`<svg xmlns="${NS}" width="14" height="14" viewBox="0 0 14 14"><path d="M${7 - MARK.centroid / 2} 7H${7 + MARK.centroid / 2}M7 ${7 - MARK.centroid / 2}V${7 + MARK.centroid / 2}" stroke="${COLOR.black}" stroke-width="${WIDTH.principle}" fill="none"/></svg>`),
   anchor: [0.5, 0.5]
@@ -378,6 +477,11 @@ function drawMarkers(): void {
       const m = T.xy2Merc(g.centroid);
       if (m) app.addMarker({ id: "centroid", coordinates: m, icon: centroidIcon(), demoKind: "centroid" }, "main");
     }
+    // 補完点は、三角網が必ず通る点（紙の側を変換した先が、地理の側に一致する）。1 つの印で両側を表す
+    for (const q of g.supplement) {
+      const m = T.xy2Merc(q.pixel);
+      if (m) app.addMarker({ id: `sup_${q.no}`, coordinates: m, icon: supIcon(q, q.no === selectedSup), demoKind: "supplement", demoNo: q.no }, "main");
+    }
   }
   // GCP: 地理の側（青い輪）→ 紙の側を変換した先（赤い丸）の順（赤い丸を上に）
   for (const q of gcpList()) app.addMarker({ id: `geo_${q.no}`, lnglat: q.lonlat, icon: ringIcon(q, q.no === selected), demoKind: "gcp", demoNo: q.no }, "main");
@@ -396,7 +500,9 @@ function wholeZoom(): number {
   const mercPerPx = Math.max((v.spanMerc[0] * meta.screenRef.margin) / (rect.width || 600), (v.spanMerc[1] * meta.screenRef.margin) / (rect.height || 600));
   return Math.log2(156543.03 / mercPerPx);
 }
-type ViewKind = "whole" | "outer" | "blunder";
+type ViewKind = "whole" | "outer" | "blunder" | "supplement" | "intrusion";
+/** 今の型の補完点（補完点ありの地図の側から取る。なしの地図には補完点が無い） */
+const supplementList = (): Supplement[] => meta.maps[mapId(typeKey, true)].principle.supplement ?? [];
 function setView(kind: ViewKind): void {
   const paper = demo().paper;
   const v = meta.views[paper];
@@ -407,8 +513,26 @@ function setView(kind: ViewKind): void {
     blunderCursor++;
     c = b.lonlat; dz = b.zoomDelta;
   }
+  if (kind === "supplement") {
+    const list = supplementList();
+    if (list.length) {
+      const b = list[supCursor % list.length];
+      supCursor++;
+      c = b.lonlat; dz = meta.views.supplement.zoomDelta;
+      paperFocus = b.pixel;
+    }
+  }
+  if (kind === "intrusion") {
+    const at = meta.supplement[baseMapId()]?.intrusionAt;
+    if (at) {
+      c = at.lonlat; dz = meta.views.supplement.intrusionZoomDelta;
+      paperFocus = at.pixel;
+    }
+  }
+  if (kind !== "supplement" && kind !== "intrusion") paperFocus = null;
+  renderPaperFace();
   app.setViewpoint({ longitude: c[0], latitude: c[1], mercZoom: wholeZoom() + dz, rotation: 0 });
-  for (const k of ["whole", "outer", "blunder"] as const) $(`view-${k}`).setAttribute("aria-pressed", String(k === kind));
+  for (const k of ["whole", "outer", "blunder", "supplement", "intrusion"] as const) $(`view-${k}`).setAttribute("aria-pressed", String(k === kind));
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -420,7 +544,8 @@ function renderHint(): void {
   const el = $("hint-text");
   const lead = document.createElement("b");
   lead.textContent = "確認のポイント";
-  el.replaceChildren(lead, ` ${HINTS[demoNo]}`);
+  const sup = demoHasSup() ? supplementHint(meta.supplement[baseMapId(demo().supplementTypes![0])].count) : "";
+  el.replaceChildren(lead, ` ${HINTS[demoNo]}${sup ? ` ${sup}` : ""}`);
   const t = demo().teiresias;
   const say = (x: Teiresias, head: string): string => `${head}は ${x.score!.toFixed(4)} で、推奨は ${setupNames(x.setups) || "なし"}。`;
   let msg = t.score === null ? "適合スコアは出なかった。" : say(t, "適合スコア");
@@ -431,6 +556,7 @@ function renderHint(): void {
   $("hint-score").textContent = msg;
 }
 function renderPanel(): void {
+  renderLegend();
   const types = demo().types;
   const box = $("type-buttons");
   box.innerHTML = "";
@@ -442,7 +568,8 @@ function renderPanel(): void {
     b.addEventListener("click", () => void setType(t));
     box.appendChild(b);
   }
-  $("type-note").textContent = TYPE_NOTE[typeKey];
+  $("type-note").textContent = TYPE_NOTE[typeKey] + (demoHasSup() ? TYPE_NOTE_SUP[typeKey] : "");
+  renderSupplement();
   // ずれの表（2 つの型を横に）
   const rows: [string, (s: MapMeta["stats"]) => string, string][] = [
     ["内側（全体）", s => `${fmt(s.inner.maxKm)} / ${fmt(s.inner.rmsKm)}`, "GCP の凸包の中。海も含む"],
@@ -456,10 +583,54 @@ function renderPanel(): void {
   const px = meta.screenRef.mercPerPx[demo().paper];
   $("gap-ref").textContent = `目安として、「全体」で面の幅が ${meta.screenRef.widthPx} 画素のとき、北緯 35 度で 1 画面画素が約 ${(px / 1000 * Math.cos((35 * Math.PI) / 180)).toFixed(1)} km。`;
   $("view-blunder").hidden = demoNo !== "1";
+  $("view-supplement").hidden = !(demoHasSup() && hasSup());
+  $("view-intrusion").hidden = !(demoHasSup() && hasSup());
   renderGcpInfo();
 }
+// 補完点のあり・なしの切り替えと、その数字。補完点が付かない素材のデモでは出さない（切り替えても何も変わらない）
+const pct = (v: number): string => `${(v * 100).toFixed(2)}%`;
+function renderSupplement(): void {
+  const sec = $("sup-sec");
+  sec.hidden = !demoHasSup();
+  if (sec.hidden) return;
+  const box = $("sup-buttons");
+  box.innerHTML = "";
+  for (const [on, name] of [[true, "あり"], [false, "なし"]] as const) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = `補完点${name}`;
+    b.disabled = !hasSup();
+    b.setAttribute("aria-pressed", String(hasSup() && on === supplementOn));
+    b.addEventListener("click", () => void setSupplement(on));
+    box.appendChild(b);
+  }
+  $("sup-note").textContent = hasSup() ? SUP_NOTE : SUP_NOTE_NONE;
+  $<HTMLInputElement>("chk-compare").disabled = !hasSup();
+  const types = demo().supplementTypes!;
+  const rows: [string, (x: SupplementStat) => string, string][] = [
+    ["補完点の数", x => String(x.count), "システムが足した補完点の数"],
+    ["食い込み あり / なし", x => `${pct(x.intrusion.on)} / ${pct(x.intrusion.off)}`, "補助頂点を含む三角形が、GCP の凸包の内側へ入り込む面積の、凸包の面積に対する割合。紙の面で測る。左が補完点あり、右がなし"],
+    ["外の差 最大 / 二乗平均 km", x => `${fmt(x.diff.outer.maxKm)} / ${fmt(x.diff.outer.rmsKm)}`, "補完点あり・なしの変換結果の距離。GCP の凸包の外で、紙の上の 65×65 点で測る"],
+    ["内の差 最大 / 二乗平均 km", x => `${fmt(x.diff.inner.maxKm)} / ${fmt(x.diff.inner.rmsKm)}`, "同じ距離を GCP の凸包の中で測ったもの"]
+  ];
+  let h = `<thead><tr><th></th>${types.map(t => `<th>${typeName(t)}</th>`).join("")}</tr></thead><tbody>`;
+  for (const [name, f, tip] of rows) h += `<tr><th title="${tip}">${name}</th>${types.map(t => `<td>${f(meta.supplement[baseMapId(t)])}</td>`).join("")}</tr>`;
+  $("sup-table").innerHTML = h + "</tbody>";
+}
+const gcpName = (v: number | string | null): string => {
+  if (v === null) return "";
+  if (typeof v === "number") return `GCP ${v + 1}`;
+  return String(v)[0] === "s" ? `補完点 ${Number(String(v).slice(1)) + 1}` : String(v);
+};
 function renderGcpInfo(): void {
   const el = $("gcp-info");
+  if (selectedSup !== undefined) {
+    const q = supplementList().find(x => x.no === selectedSup);
+    if (q) {
+      el.innerHTML = `<b>補完点 ${q.no}</b>。システムが足した点で、人間が打った対応点ではない。<br>${gcpName(q.edge[0])} と ${gcpName(q.edge[1])} を結ぶ凸包の辺の上にある。<br>紙の画素は (${q.pixel[0].toFixed(0)}, ${q.pixel[1].toFixed(0)})、経度・緯度は (${q.lonlat[0].toFixed(3)}, ${q.lonlat[1].toFixed(3)})。三角網は、この点を必ず通る。`;
+      return;
+    }
+  }
   if (selected === undefined) { el.textContent = "印を押すと、ここに詳しく出る。"; return; }
   const q = gcpList().find(x => x.no === selected)!;
   const res = demo().types.map(t => `${typeName(t)}が ${fmt(meta.maps[mapId(t)].gcpResidual[selected! - 1].km, 2)}`).join("、");
@@ -470,10 +641,21 @@ function renderLegend(): void {
   const band = `<line x1="0" y1="6" x2="36" y2="6" stroke="${COLOR.blue}" stroke-opacity="${OPACITY.band}" stroke-width="${WIDTH.terrain.band}"/>`;
   const core = `<line x1="0" y1="6" x2="36" y2="6" stroke="${COLOR.red}" stroke-width="${WIDTH.terrain.core}"/>`;
   const dots = `<line x1="0" y1="6" x2="36" y2="6" stroke="${COLOR.black}" stroke-width="${WIDTH.principle}" stroke-dasharray="${DASH.tin.join(" ")}"/>`;
-  $("legend").innerHTML =
+  let h =
     `<span>${sw(core)}赤い線は、紙に描いてあるものを変換した結果</span>` +
     `<span>${sw(band)}青い帯は正解。赤い線が帯の中なら合っている</span>` +
     `<span>${sw(dots)}黒い点線は、変換のしくみ</span>`;
+  // 補完点の切り替えがあるデモだけ。灰色は正解ではない（正解の無い比較）
+  if (demoHasSup()) {
+    const gray = `<line x1="0" y1="6" x2="36" y2="6" stroke="${COLOR.gray}" stroke-width="${WIDTH.compare.terrain}"/>`;
+    const r = MARK.supplement / 2;
+    const diamond = `<path d="M18 ${6 - r}L${18 + r} 6L18 ${6 + r}L${18 - r} 6Z" fill="#fff" stroke="${COLOR.black}" stroke-width="${MARK.supplementStroke}"/>`;
+    const hull = `<line x1="0" y1="6" x2="36" y2="6" stroke="${COLOR.black}" stroke-width="${WIDTH.principle}" stroke-dasharray="${DASH.hull.join(" ")}"/>`;
+    h += `<span>${sw(gray)}灰色の細い線は、補完点のもう一方の設定の結果。正解ではない</span>` +
+      `<span>${sw(diamond)}黒い菱形は、システムが足した補完点</span>` +
+      `<span>${sw(hull)}黒い破線と点の線は、GCP の凸包</span>`;
+  }
+  $("legend").innerHTML = h;
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -481,13 +663,21 @@ function renderLegend(): void {
 // ---------------------------------------------------------------------------------------------
 function syncUrl(): void {
   try {
-    history.replaceState(null, "", `?demo=${demoNo}&type=${typeKey}`);
+    history.replaceState(null, "", `?demo=${demoNo}&type=${typeKey}${demoHasSup() ? `&sup=${supplementOn ? 1 : 0}` : ""}`);
   } catch {
     /* 失敗しても動作に影響しない */
   }
 }
 function selectGcp(no: number | undefined): void {
   selected = selected === no ? undefined : no;
+  selectedSup = undefined;
+  renderGcpInfo();
+  renderPaperFace();
+  drawMarkers();
+}
+function selectSupplement(no: number | undefined): void {
+  selectedSup = selectedSup === no ? undefined : no;
+  selected = undefined;
   renderGcpInfo();
   renderPaperFace();
   drawMarkers();
@@ -506,10 +696,11 @@ async function redrawAll(): Promise<void> {
   drawMarkers();
   statusEl.textContent = statusText();
 }
-async function setType(t: string): Promise<void> {
-  if (t === typeKey) return;
-  typeKey = t;
+/** 型か補完点の設定が変わったとき。青い帯と視点は動かさず、赤い芯・灰色の線・原理・印だけ描き直す */
+async function redrawRed(): Promise<void> {
   syncUrl();
+  if (!hasSup()) paperFocus = null;
+  selectedSup = selectedSup !== undefined && supplementList().some(q => q.no === selectedSup) && supplementOn && hasSup() ? selectedSup : undefined;
   renderPanel();
   renderPaperFace();
   if (openPaper) await app.changeMap(mapId());
@@ -519,11 +710,24 @@ async function setType(t: string): Promise<void> {
   drawMarkers();
   statusEl.textContent = statusText();
 }
+async function setType(t: string): Promise<void> {
+  if (t === typeKey) return;
+  typeKey = t;
+  await redrawRed();
+}
+async function setSupplement(on: boolean): Promise<void> {
+  if (on === supplementOn || !hasSup()) return;
+  supplementOn = on;
+  await redrawRed();
+}
 async function setDemo(no: string): Promise<void> {
   demoNo = no;
   typeKey = demo().types[0];
   selected = undefined;
+  selectedSup = undefined;
   blunderCursor = 0;
+  supCursor = 0;
+  paperFocus = null;
   syncUrl();
   document.querySelectorAll<HTMLElement>("#demo-tabs button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.demo === no)));
   renderHint();
@@ -578,10 +782,10 @@ async function main(): Promise<void> {
     b.addEventListener("click", () => void setDemo(no));
     tabs.appendChild(b);
   }
-  renderLegend();
   app.addEventListener("clickMarker", evt => {
     const d = (evt as unknown as { detail?: { demoKind?: string; demoNo?: number } }).detail;
     if (d?.demoKind === "gcp" && d.demoNo !== undefined) selectGcp(d.demoNo);
+    if (d?.demoKind === "supplement" && d.demoNo !== undefined) selectSupplement(d.demoNo);
   });
   // 表示の切り替え（地形・グリッド・しくみ・背景）
   const bind = (id: string, key: keyof typeof show, full: boolean): void => {
@@ -595,7 +799,11 @@ async function main(): Promise<void> {
   bind("chk-grid", "grid", true);
   bind("chk-mech", "mech", true);
   bind("chk-bg", "bg", false);
-  for (const k of ["whole", "outer", "blunder"] as const) $(`view-${k}`).addEventListener("click", () => setView(k));
+  $<HTMLInputElement>("chk-compare").addEventListener("change", e => {
+    show.compare = (e.target as HTMLInputElement).checked;
+    void redrawRed();
+  });
+  for (const k of ["whole", "outer", "blunder", "supplement", "intrusion"] as const) $(`view-${k}`).addEventListener("click", () => setView(k));
   $<HTMLInputElement>("chk-open-paper").addEventListener("change", e => {
     openPaper = (e.target as HTMLInputElement).checked;
     void app.changeMap(openPaper ? mapId() : "gsi");
@@ -610,6 +818,7 @@ async function main(): Promise<void> {
   new ResizeObserver(() => { if (meta) renderPaperFace(); }).observe($("paper-wrap"));
 
   await drawCurtain();
+  supplementOn = params.get("sup") !== "0";
   const startDemo = meta.demos[params.get("demo") ?? ""] ? params.get("demo")! : "1";
   await setDemo(startDemo);
   const t = params.get("type");
