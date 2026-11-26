@@ -1,0 +1,5 @@
+/* 「日本語 / English」の切り替え（demo/i18n/core.ts の mountLangSwitch）。C4H 正本 demo-shell.css（バイト等価）に無い部品。class は demo- 接頭辞に限る */
+.demo-lang { font-size: 12px; color: #aac; white-space: nowrap; }
+.demo-lang a { color: #aac; text-decoration: none; padding: 2px; }
+.demo-lang a:hover { color: #fff; text-decoration: underline; }
+.demo-lang a[aria-current="true"] { color: #fff; font-weight: 700; }

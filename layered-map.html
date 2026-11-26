@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="lm.title"></title>
+  <link rel="stylesheet" href="./demo/demo-shell.css">
+  <link rel="stylesheet" href="./demo/i18n/lang-switch.css">
+  <style>
+    /* 2 つの面（紙・3857）を並べ、右に欄。C4H 正本 demo-shell.css（バイト等価）に無いレイアウトだけを置く。class は demo- 接頭辞に限る */
+    body.c4h-app { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+    .demo-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+    .demo-tabs button { min-width: 2.4em; padding: 4px 10px; border: 1px solid #5b6b94; border-radius: 4px; background: transparent; color: #dfe5f5; font-size: 12px; cursor: pointer; }
+    .demo-tabs button[aria-pressed="true"] { background: #fff; border-color: #fff; color: #1a2744; font-weight: 700; }
+    .demo-hint { display: flex; flex-wrap: wrap; gap: 4px 16px; justify-content: space-between; align-items: baseline; padding: 6px 16px; background: #fff; border-bottom: 1px solid #d5d9e2; font-size: 13px; line-height: 1.5; }
+    .demo-hint #hint-demo { flex: none; max-width: 16em; font-weight: 700; color: #1a2744; }
+    .demo-hint #hint-text { flex: 1 1 28em; min-width: 18em; }
+    .demo-hint #hint-score { flex: 0 1 30em; min-width: 16em; font-size: 12px; color: #333; }
+    .demo-layout { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 5fr) 260px; }
+    .demo-face { display: flex; flex-direction: column; min-width: 0; min-height: 0; padding: 6px 8px; border-right: 1px solid #d5d9e2; }
+    .demo-face h2 { font-size: 12px; font-weight: 700; color: #1a2744; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .demo-face h2 label { font-weight: 400; font-size: 11px; color: #333; cursor: pointer; display: flex; gap: 4px; align-items: center; }
+    #paper-wrap { flex: 1; min-height: 0; position: relative; }
+    #paper-svg { position: absolute; inset: 0; width: 100%; height: 100%; background: #eef0f4; border: 1px solid #d5d9e2; display: block; }
+    #paper-svg text { font-family: "Helvetica Neue", Arial, sans-serif; paint-order: stroke; stroke: #fff; stroke-width: 3px; stroke-linejoin: round; fill: #1F2933; pointer-events: none; }
+    #map_div { position: relative; flex: 1; min-height: 0; }
+    /* 画面の中心を示す Core 既定の赤い輪。この比較では「地図の中央の GCP」に見えて紛らわしいので消す */
+    #map_div #center_circle { display: none !important; }
+    .demo-panel { min-height: 0; overflow-y: auto; background: #fff; padding: 8px 12px 16px; font-size: 13px; line-height: 1.4; }
+    .demo-sec { border-top: 1px solid #eef0f4; padding: 8px 0; }
+    .demo-sec:first-child { border-top: 0; padding-top: 0; }
+    .demo-sec h3 { font-size: 12px; font-weight: 700; color: #1a2744; margin-bottom: 4px; }
+    .demo-note { margin: 4px 0 0; font-size: 11px; color: #4a5468; line-height: 1.45; }
+    .demo-row { display: flex; gap: 6px; align-items: center; margin-bottom: 4px; flex-wrap: wrap; }
+    .demo-row button { flex: 1 1 0; min-width: 0; white-space: normal; line-height: 1.3; padding: 6px 4px; border: 1px solid #b8c0d0; border-radius: 4px; background: #f8f9fb; color: #1a2744; font-size: 12px; cursor: pointer; }
+    .demo-row button:hover { background: #e8f0fe; }
+    .demo-row button[aria-pressed="true"] { background: #1a2744; border-color: #1a2744; color: #fff; font-weight: 700; }
+    .demo-row button[hidden] { display: none; }
+    .demo-views button { flex: 1 1 30%; }
+    .demo-row button:disabled { opacity: 0.45; cursor: default; }
+    .demo-row button:disabled:hover { background: #f8f9fb; }
+    .demo-sec[hidden] { display: none; }
+    .demo-sec .demo-table { margin-top: 6px; }
+    #sup-table th:first-child { width: 42%; font-weight: 400; line-height: 1.3; }
+    .demo-check { display: flex; align-items: center; gap: 6px; width: 100%; font-size: 12px; cursor: pointer; }
+    .demo-table { border-collapse: collapse; width: 100%; font-size: 11px; }
+    .demo-table th, .demo-table td { border: 1px solid #d5d9e2; padding: 2px 4px; text-align: right; font-variant-numeric: tabular-nums; }
+    .demo-table th:first-child { text-align: left; background: #f4f6fa; }
+    .demo-table thead th { background: #f4f6fa; text-align: center; font-size: 10px; line-height: 1.25; }
+    .demo-legend { display: flex; flex-direction: column; gap: 4px; font-size: 11px; }
+    .demo-legend span { display: flex; align-items: center; gap: 8px; line-height: 1.3; }
+    .demo-legend svg { flex: none; width: 36px; height: 12px; overflow: visible; }
+    #gcp-info { min-height: 3.2em; font-size: 12px; }
+    @media (max-width: 720px) {
+      body.c4h-app { height: auto; overflow: visible; }
+      .demo-layout { display: block; }
+      .demo-face { border-right: 0; border-bottom: 1px solid #d5d9e2; }
+      #paper-wrap { height: 60vh; }
+      #map_div { height: 60vh; flex: none; }
+    }
+  </style>
+</head>
+<body class="c4h-app">
+  <header class="c4h-header">
+    <h1 data-i18n="lm.h1"></h1>
+    <nav class="demo-tabs" id="demo-tabs" data-i18n-aria-label="lm.nav_label"></nav>
+    <a class="c4h-back-link" href="./index.html" data-i18n="common.back_to_index"></a>
+    <span id="status" class="c4h-status" data-i18n="lm.loading"></span>
+    <span id="lang-switch"></span>
+  </header>
+
+  <div class="demo-hint">
+    <div id="hint-demo"></div>
+    <div id="hint-text"></div>
+    <div id="hint-score"></div>
+  </div>
+
+  <div class="demo-layout">
+    <section class="demo-face" data-i18n-aria-label="lm.paper_aria">
+      <h2 data-i18n="lm.paper_h2"></h2>
+      <div id="paper-wrap"><svg id="paper-svg" role="img" data-i18n-aria-label="lm.paper_svg_aria"></svg></div>
+    </section>
+    <section class="demo-face" data-i18n-aria-label="lm.merc_aria">
+      <h2><span data-i18n="lm.merc_h2"></span>
+        <label><input type="checkbox" id="chk-open-paper"> <span data-i18n="lm.open_paper"></span></label>
+      </h2>
+      <div id="map_div"></div>
+    </section>
+    <aside class="demo-panel" data-i18n-aria-label="lm.panel_aria">
+      <div class="demo-sec">
+        <h3 data-i18n="lm.sec_type"></h3>
+        <div class="demo-row" id="type-buttons"></div>
+        <p class="demo-note" id="type-note"></p>
+      </div>
+      <div class="demo-sec" id="sup-sec" hidden>
+        <h3 data-i18n="lm.sec_sup"></h3>
+        <div class="demo-row" id="sup-buttons"></div>
+        <p class="demo-note" id="sup-note"></p>
+        <label class="demo-check"><input type="checkbox" id="chk-compare" checked> <span data-i18n="lm.chk_compare"></span></label>
+        <table class="demo-table" id="sup-table"></table>
+        <p class="demo-note" data-i18n="lm.sup_measure_note"></p>
+      </div>
+      <div class="demo-sec">
+        <h3 data-i18n="lm.sec_display"></h3>
+        <label class="demo-check"><input type="checkbox" id="chk-terrain" checked> <span data-i18n="lm.chk_terrain"></span></label>
+        <label class="demo-check"><input type="checkbox" id="chk-grid" checked> <span data-i18n="lm.chk_grid"></span></label>
+        <label class="demo-check"><input type="checkbox" id="chk-mech" checked> <span data-i18n="lm.chk_mech"></span></label>
+        <label class="demo-check"><input type="checkbox" id="chk-bg" checked> <span data-i18n="lm.chk_bg"></span></label>
+      </div>
+      <div class="demo-sec">
+        <h3 data-i18n="lm.sec_view"></h3>
+        <div class="demo-row demo-views">
+          <button type="button" id="view-whole" aria-pressed="true" data-i18n="lm.view_whole"></button>
+          <button type="button" id="view-outer" aria-pressed="false" data-i18n="lm.view_outer"></button>
+          <button type="button" id="view-blunder" aria-pressed="false" hidden data-i18n="lm.view_blunder"></button>
+          <button type="button" id="view-supplement" aria-pressed="false" hidden data-i18n="lm.view_supplement"></button>
+          <button type="button" id="view-intrusion" aria-pressed="false" hidden data-i18n="lm.view_intrusion"></button>
+        </div>
+      </div>
+      <div class="demo-sec">
+        <h3 data-i18n="lm.sec_gcp"></h3>
+        <div id="gcp-info"></div>
+      </div>
+      <div class="demo-sec">
+        <h3 data-i18n="lm.sec_gap"></h3>
+        <table class="demo-table" id="gap-table"></table>
+        <p class="demo-note"><span data-i18n="lm.gap_note"></span> <span id="gap-ref"></span></p>
+      </div>
+      <div class="demo-sec">
+        <h3 data-i18n="lm.sec_legend"></h3>
+        <div class="demo-legend" id="legend"></div>
+      </div>
+      <div class="demo-sec">
+        <p class="demo-note" data-i18n="lm.credit"></p>
+      </div>
+    </aside>
+  </div>
+
+  <script type="module" src="./demo/layered-map.ts"></script>
+</body>
+</html>

@@ -177,7 +177,15 @@ export default defineConfig({
     copyPublicDir: false
   } : {
     outDir: "dist-demo",
-    emptyOutDir: true
+    emptyOutDir: true,
+    // デモは 3 ページ: 目次（index.html）・古地図のデモ（old-map.html）・変換の形のデモ（layered-map.html）
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, "index.html"),
+        "old-map": resolve(__dirname, "old-map.html"),
+        "layered-map": resolve(__dirname, "layered-map.html")
+      }
+    }
   },
   plugins: isElementBuild || isCommonBuild || isConformanceBuild || isTemplateBuild ? [] : [
     ...(isPackageBuild ? [] : [demoWeiwudiSw()]),

@@ -501,11 +501,34 @@ MaplatEditor:
 ### Demo
 
 Public demo: <https://code4history.dev/MaplatCore/> (deployed to GitHub Pages from
-`master`). Locally, start it with `pnpm dev` and open `http://localhost:5175/`.
+`master`). Locally, start it with `pnpm dev` and open `http://localhost:5175/`. The root
+(`index.html`) is a table of contents: one click reaches the old-map demo and each of the
+transform-shape demos 1 to 5. The header of every demo page has a "← Contents" link (in Japanese, "← 目次").
+
+**Language switch.** The header of all three pages (contents, old-map demo, transform-shape demo) has a
+"日本語 / English" switch. You can also pass `?lang=ja` or `?lang=en`. Without it, the demo uses Japanese when
+the browser language (`navigator.language`) is Japanese, and English otherwise. The chosen language is carried
+over to the links to the other pages. On the old-map demo, `<html lang>` follows the same value, so the
+names in the map data switch too. All on-screen text lives in one dictionary per page (ja and en) under
+`demo/i18n/`. The English terms follow the MaplatEditor glossary.
+
+#### Old-map demo (`old-map.html`)
+
+`http://localhost:5175/old-map.html` (`old-map.html` on the public demo).
 
 - `?region=<ID>` selects the region (`morioka`, `nobeoka`, `nara`, `tatebayashi`,
   `hiroshima`, `niigata`). Without it, or with an unknown ID, `morioka` is used.
   Changing the region selector on the page reloads it with this parameter.
+- Transform shape: the first section of the control panel, "Transform shape", switches
+  between TIN + fan extrapolation (default) and legacy (V2). `?form=c|v2` also selects it
+  (`c` when omitted). `c` reads `public/maps-c/<mapID>.json` (maps rebuilt as CRS + TIN + fan
+  extrapolation; every map is EPSG:3857 for now). `v2` reads `public/maps/<mapID>.json` (the
+  existing map data, read as V2 and not reinterpreted as A/B/C). Switching keeps the current
+  map, position and scale (the app is recreated and given `restore`). The panel shows the
+  current map's transform shape, CRS, whether it is strict, the number of supplement points,
+  and the shape and score recommended by estimation (Teiresias; `public/maps-c/estimates.json`).
+  For a map whose recommendation is not C it says that the recommendation differs and that
+  this demo builds the map as TIN + fan extrapolation.
 - Tile cache: the demo registers the Weiwudi Service Worker (`weiwudi-sw.js`) and
   then starts with `enableCache: true`. The "キャッシュ" (cache) section of the
   control panel shows the state and statistics (stored bytes, fetched / total
@@ -516,6 +539,61 @@ Public demo: <https://code4history.dev/MaplatCore/> (deployed to GitHub Pages fr
 - `?cache=0` starts the demo without the cache. It also starts without the cache,
   showing the reason in that section, when Service Workers are unavailable or the
   registration does not finish within 15 seconds.
+
+#### Transform-shape demo (`layered-map.html`)
+
+`http://localhost:5175/layered-map.html` (`layered-map.html` on the public demo). `?demo=1` to `5` picks the demo, `?type=` (`a`, `b`, `c`, `d`) picks the shape, and `?sup=0|1` turns the supplementary points off or on. The table of contents links straight to each demo. **Each demo shows one comparison.**
+Switch between two transform shapes (buttons or the ←→ keys). If the converted paper (the red line) stays inside the truth (the blue band), the transform is right.
+Each demo has a "確認のポイント" (what to check) line that says what to look at and what it tells you.
+
+| Shape | What it is |
+|---|---|
+| CRS only | Reads the map as a CRS and covers the whole paper with six coefficients (a world file). No TIN. |
+| TIN + global extrapolation | A TIN of the GCPs on top of the CRS. Outside the quadrilateral, the world file fitted to the whole map extends it. |
+| TIN + fan extrapolation | A TIN of the GCPs on top of the CRS. Outside the quadrilateral, the trend of the GCPs at the edge extends as a fan. |
+| legacy (V2) | Fixed to 3857 with a TIN (3857 + TIN + fan extrapolation). The four auxiliary vertices are the paper's corners, and the TIN absorbs the difference in projection. |
+
+| Demo | Paper | Compared | Point |
+|---|---|---|---|
+| 1 | P1 accurate | CRS only vs TIN + fan extrapolation | For an accurate map with a known CRS, the world file alone fits to the paper edge. The TIN adds no accuracy and drags a GCP typo into its surroundings. |
+| 2 | P1 accurate | legacy (V2) vs TIN + fan extrapolation | The legacy shape absorbs the difference in projection with the TIN, so it bends a lot outside the GCPs. Matching the CRS removes the bend. |
+| 3 | P2 regions pieced together | CRS only vs TIN + global extrapolation | If the map itself is distorted, CRS only leaves an error even at the GCPs. The TIN fixes the distortion over the land that has GCPs. The sea, which has none, stays wrong. |
+| 4 | P2 regions pieced together | TIN + global extrapolation vs TIN + fan extrapolation | Inside the quadrilateral the two are identical. When regional distortions cancel out over the whole map, global extrapolation is closer to the truth outside. |
+| 5 | P3 large-centre sketch | TIN + global extrapolation vs TIN + fan extrapolation | Inside the quadrilateral the two are identical. On a map drawn large at its centre, global extrapolation is pulled by the exaggerated centre and the scale is wrong outside. The fan, which extends at the scale of the GCPs at the edge, is closer. This holds only when the centre is at the centroid of the GCPs. |
+
+**Supplement points on / off** (demos 1, 3 and 4): the supplement points of MaplatTin#89 / #94 are correspondence points the system adds on a hull edge, so that the triangles of the auxiliary vertices do not cut into the inside of the GCP hull.
+They are not points a human placed, so they are drawn as hollow black diamonds with the same number (補1, 補2 …) on the paper face and the 3857 face. The triangles that contain a supplement point use a short dash, and the GCP hull a dash-dot-dot line.
+The panel switches "補完点あり／なし" (on / off; a separate control from the shape switch; the URL takes `?sup=0` or `?sup=1`). On a switch, the 3857 face keeps the result of the side you did not choose as a **thin gray line**, so what moved shows as a red-versus-gray offset
+(there is no truth in this comparison, so gray is not the truth: it is "the result of the other setting"). The panel shows the number of supplement points, the intrusion into the inside of the hull (a fraction of the hull area on the paper face; on / off), and the difference between the converted results with and without them (outside and inside the hull; maximum and RMS).
+The "補完点" and "食い込み" view buttons zoom to that spot (the paper face follows).
+Where no supplement point is added (the GCPs of demo 2, and P3), switching changes nothing, so the switch is not shown. Shapes without supplement points (CRS only, legacy) have the switch disabled.
+
+**Visual grammar** (common to all demos; the source of truth is `demo/layered-map/grammar.ts`, pinned by `spec/layered-map-demo.spec.ts`):
+three hues: red, blue, black (the supplement-point comparison adds gray, only for the result of the other setting). The **thin red line** is what belongs to the paper (what is drawn on it, and its converted result).
+The **thick blue band** is the geographic truth (3857). The **black dotted and dashed lines** show how the transform works (GCP TIN, extension, quadrilateral and fan, told apart by dash pattern).
+Terrain is a thick solid line, the graticule a medium solid line, and the mechanism a thin dotted line. A red line inside the band means it fits, and one outside the band means it does not.
+That one reading holds for terrain, graticule and GCPs alike. A GCP appears with the same number on the paper face (a red dot) and on the 3857 face (a blue ring, with the converted paper side as a red dot inside it);
+pressing either highlights both.
+
+Left is the **paper face** (an SVG in paper pixels), the middle the **3857 face** (Core's `MaplatApp`, background GSI tiles) and the right the panel.
+The blue bands on the 3857 face are longitude/latitude lines (`addLine` with `lnglats`); the red lines and the mechanism convert paper pixels with `MapTransform` of `@maplat/transform`
+and are drawn with `addLine` `coordinates` (Core's public API has no "paper pixel → 3857" entry; that this transform returns the same values as Core's is pinned in
+`spec/layered-map-demo.spec.ts`). "Core でこの紙を開く" shows the view Core redraws in paper coordinates.
+
+The material is generated by `demo/layered-map/generate.mjs` (the output is committed; you do not need to run it). All three papers are drawn on a Lambert conformal conic projection
+(`+proj=lcc +lat_1=30 +lat_2=42 +lat_0=35 +lon_0=136 …`, 2048×2048 pixels, 1,500 m per pixel) with the coastline around Japan and a 2° graticule.
+P1 is accurate. P2 pieces regions together, each with a slightly different scale, rotation and offset, built so that the whole map lies on one similarity.
+P3 is a sketch drawn twice as large around the centroid of the GCPs, and returns to the original scale beyond about 700 km from the centre. Both distortions are bounded, match P1 far away and do not fold over.
+The GCPs are 24 pairs scattered with a fixed random seed (14 dense, 10 sparse; demo 1 has two typos), and 34 pairs for the distorted papers (at least three per region, from Kyushu to Hokkaido).
+The error of each shape (the distance between the converted result and the truth at 65×65 points on the paper: the whole inside of the GCP hull, the land inside it, the outside, and at the GCPs) and the score and recommendation from Teiresias are computed at generation time and written to
+`public/demo-data/layered_demo_meta.json`; the screen only reads them. Generation stops unless the inside of the two TIN shapes (global and fan) differs by less than 1 km and the distortions do not fold over.
+The map JSON is `public/maps/layered_demo_*.json` (nine files, plus three `layered_demo_*_off.json` files, the "supplement points off" version of the material that got supplement points, made with `supplementPairs: false`), the paper polylines are
+`public/demo-data/layered_demo_paper_p1.json`, `..._p2.json` and `..._p3.json`, and the paper tiles are `public/tiles/layered_demo_p1`, `..._p2` and `..._p3`.
+MaplatTin (`node demo/layered-map/generate.mjs [j1c|j1d|j1e]` picks `../MaplatTin-<name>`; the default is j1e, which has supplement points; j1c and j1d have none, so no "off" version is made) and Teiresias are used only to produce the material and are not Core dependencies.
+
+**Bundled and offline**: the coastline is Natural Earth (<https://www.naturalearthdata.com/>) 1:50m land (`ne_50m_land`; public domain), cut into
+`demo/layered-map/data/coast-lonlat.json` and bundled (`make-coast.mjs` makes the cut). proj4 is bundled as a dependency.
+Only the GSI background tiles use the network; the coastline (blue band) is shown even when they cannot be reached.
 
 ### Development
 

@@ -4,7 +4,7 @@ import { test, expect, type Page } from '@playwright/test';
 // 「実 Service Worker」「キャッシュ無しの経路」の試験は、実際の Service Worker と盛岡の手元のタイルを使う（時計は偽にしない）。
 // 「失敗の見え方」の試験は、Core が失敗を握りつぶす状況をメソッドの差し替えと page.clock で決定的に再現する。
 
-const MORIOKA = '/?region=morioka';
+const MORIOKA = '/old-map.html?region=morioka&lang=ja';
 const FETCH = '#cache-fetch';
 const CLEAR = '#cache-clear';
 
@@ -205,7 +205,7 @@ test.describe('デモのタイルキャッシュ（キャッシュ無しの経�
   });
 
   test('全体のタイル数が分からない地図（遠隔の基図）では一括取得を止め、理由を出す', async ({ page }) => {
-    await openDemo(page, '/?region=tatebayashi');
+    await openDemo(page, '/old-map.html?region=tatebayashi&lang=ja');
     // 地域の既定の古地図は全体のタイル数が分かる（599 枚）ので押せる。基図の osm は全体のタイル数が分からない
     await expect(page.locator(FETCH)).toBeEnabled({ timeout: 30000 });
     await page.evaluate(() => (window as any).__MAPLAT_DEMO_APP__.changeMap('osm'));

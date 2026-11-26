@@ -163,86 +163,32 @@ export interface RegionContent {
 /** 地域の説明文が名乗る操作の種類。検査が実データ（sources・demoOps）から導いた集合と照合する */
 export type RegionOp = "map" | "poi" | "line" | "vector" | "move" | "gps";
 
-/** 地域ドロップダウンと地域説明（c4h-note）の表示データ */
+/**
+ * 地域の操作の表示データ。ドロップダウンの表示名・代表古地図の見出し・地域説明の箇条（c4h-note）は、
+ * 画面の文言なので demo/i18n/old-map.ts の辞書（region.<id>.label・title・highlights）に置く
+ */
 export interface RegionMeta {
-  /** ドロップダウンの表示名（v5 カードのバッジ） */
-  label: string;
-  /** 代表古地図の見出し（v5 カードの h2） */
-  title: string;
-  /** この地域で見られる操作（v5 カード本文の箇条。今は無い操作には「（11 月以降順次）」を付ける） */
-  highlights: string[];
-  /** highlights が「今あるもの」として名乗る操作。今は無い操作を入れない */
+  /** この地域の説明文（辞書の highlights）が「今あるもの」として名乗る操作。今は無い操作を入れない */
   ops: RegionOp[];
 }
 
 export const REGION_META: Record<RegionId, RegionMeta> = {
   morioka: {
-    label: "盛岡",
-    title: "正保城絵図・奥州盛岡城図（1644 / 1735）",
-    highlights: [
-      "古地図 ⇄ 地理院地図 / OpenStreetMap の切り替え",
-      "盛岡城・桜山神社・石割桜・三ツ石神社・報恩寺・盛岡銀行の POI",
-      "盛岡山車大絵巻パレード（線）・祭礼の始点終点（移動）",
-      "盛岡城跡公園（岩手公園）の郭（面）",
-      "GPS・透過度の操作",
-    ],
     ops: ["map", "poi", "line", "vector", "move", "gps"],
   },
   nobeoka: {
-    label: "延岡",
-    title: "1932 延岡市街地図",
-    highlights: [
-      "古地図 ⇄ 地理院地図 / OpenStreetMap の切り替え",
-      "挿入図（sub_maps）で GPS が載る／載らない境界のデモ",
-      "延岡城跡などの POI の表示・追加",
-      "延岡大師祭市中パレード（線）・始点終点（移動）",
-      "城山公園（延岡城跡）の範囲（面）",
-    ],
     ops: ["map", "poi", "line", "vector", "move", "gps"],
   },
   nara: {
-    label: "奈良",
-    title: "奈良町絵図（天理図書館保井文庫）",
-    highlights: [
-      "古地図 ⇄ 地理院地図 / OpenStreetMap の切り替え",
-      "歪みの大きい絵図で Maplat の重ね合わせを実感",
-      "元興寺・興福寺・猿沢池などの POI の表示・追加",
-      "春日若宮おん祭 お渡り式の道順（線）・始点終点（移動）",
-      "興福寺 境内（面）",
-    ],
     ops: ["map", "poi", "line", "vector", "move", "gps"],
   },
   tatebayashi: {
-    label: "館林",
-    title: "館林城絵図（秋元時代）",
-    highlights: [
-      "古地図 ⇄ 地理院地図 / OpenStreetMap の切り替え",
-      "館林城・善導寺などの POI の表示・追加",
-      "館林市の散策路「歴史の小径」（線）",
-      "尾曳稲荷神社 境内（面）",
-    ],
     ops: ["map", "poi", "line", "vector", "gps"],
   },
   hiroshima: {
-    label: "広島",
-    title: "安芸国広島城所絵図",
-    highlights: [
-      "古地図 ⇄ 地理院地図 / OpenStreetMap の切り替え",
-      "正保城絵図＋明治測量図の対比（時代軸）",
-      "広島城・縮景園などの POI の表示・追加",
-      "原爆ドーム周辺の徒歩ルート（線。近代以降の道）",
-      "広島城の城域（面）",
-    ],
     ops: ["map", "poi", "line", "vector", "gps"],
   },
   niigata: {
-    label: "新潟",
-    title: "新潟市圖（1920・国立国会図書館の IIIF から配信）",
-    highlights: [
-      "古地図の画像を国立国会図書館の IIIF 画像サービスから直接表示（手元のタイル無し）",
-      "壊れた delivery の地図は「使えない地図」になり、他の地図は普通に使える",
-      "位置合わせは仮（GCP 6 点）",
-    ],
     ops: ["map"],
   },
 };

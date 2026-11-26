@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 
-// MaplatCore のデモ（index.html ＋ demo/demo.ts）に足したデモ機能。
+// MaplatCore のデモ（old-map.html ＋ demo/demo.ts。ルート / は目次）に足したデモ機能。
 // デモは window.__MAPLAT_DEMO_APP__ に app を出す（検査用の口。デモはパッケージに入らない）。
 // 面は feature 層の Feature の name が 'Polygon'（src/map_ex.ts の setVector）。POI は marker 層の Feature の datum。
 
@@ -10,7 +10,7 @@ const COALESCE = ['changeViewpoint', 'updateState'];
 const OSM_COPYRIGHT_LINK = '#vector-attr a[href="https://www.openstreetmap.org/copyright"]';
 
 const openDemo = async (page: Page, region: string, query = '') => {
-    await page.goto(`/?region=${region}&cache=0${query}`, { waitUntil: 'domcontentloaded' });
+    await page.goto(`/old-map.html?region=${region}&cache=0&lang=ja${query}`, { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => (window as any).__MAPLAT_DEMO_APP__, undefined, { timeout: 60000 });
     // 操作パネルの節は app を作った直後に同期で作られる。app ごとの節が出るまで待つ
     await page.waitForSelector('#demo-app-controls .demo-sec', { timeout: 30000 });

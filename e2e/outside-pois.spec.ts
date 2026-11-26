@@ -7,7 +7,7 @@ import { test, expect, type Page } from '@playwright/test';
 // 地物の datum は POI のデータで、namespaceID が POI の id。
 // タイルは読まない（座標の判定と層の中身だけを見る）。
 
-const DEMO = '/?region=tatebayashi&cache=0';
+const DEMO = '/old-map.html?region=tatebayashi&cache=0&lang=ja';
 const OTHER_MAP = 'tatebayashi_ojozu';
 
 type Datum = { namespaceID?: string; name?: unknown; lnglat?: number[]; lat?: number; lng?: number };

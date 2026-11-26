@@ -3,79 +3,143 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MaplatCore デモ - 古地図</title>
+  <title data-i18n="ix.title"></title>
   <link rel="stylesheet" href="./demo/demo-shell.css">
+  <link rel="stylesheet" href="./demo/i18n/lang-switch.css">
   <style>
-    /* 地図を主領域・右に操作パネル。C4H 正本 demo-shell.css（バイト等価）に無いレイアウトだけを置く。class は demo- 接頭辞に限る */
-    body.c4h-app { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-    .demo-layout { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 320px; }
-    .demo-map-col { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
-    .demo-map-col .c4h-main-area { flex: 1; min-height: 0; display: block; padding: 8px; }
-    #map_div { position: relative; width: 100%; height: 100%; }
-    .demo-map-col .c4h-info-box { margin: 0 8px 8px; padding: 6px 12px; font-size: 12px; line-height: 1.5; }
-    .demo-panel { min-height: 0; overflow-y: auto; background: #fff; border-left: 1px solid #d5d9e2; padding: 8px 12px 16px; font-size: 13px; line-height: 1.4; }
-    .demo-panel .c4h-note { margin: 0 -12px 8px; padding: 6px 12px; }
-    .demo-sec { border-top: 1px solid #eef0f4; padding: 8px 0; }
-    .demo-sec h2 { font-size: 12px; font-weight: 700; color: #1a2744; margin-bottom: 6px; }
-    .demo-row { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin-bottom: 6px; }
-    .demo-row button { padding: 4px 10px; border: 1px solid #b8c0d0; border-radius: 4px; background: #f8f9fb; color: #1a2744; font-size: 12px; white-space: nowrap; cursor: pointer; }
-    .demo-row button:hover { background: #e8f0fe; }
-    .demo-row button:disabled { color: #99a; cursor: default; background: #f0f1f4; }
-    .demo-check { display: flex; align-items: flex-start; gap: 6px; width: 100%; font-size: 12px; cursor: pointer; }
-    .demo-field { display: flex; flex-direction: column; gap: 4px; width: 100%; font-size: 12px; }
-    .demo-field select, .demo-field input[type="range"] { width: 100%; }
-    .demo-field select { padding: 4px 6px; font-size: 13px; }
-    /* POI の層の一覧・clickMarkers・detail.html・状態・イベント履歴 */
-    .demo-note { margin: 2px 0 6px; font-size: 11px; color: #5a6478; }
-    .demo-poi-layers { margin-top: 6px; }
-    .demo-poi-layer { flex-wrap: nowrap; margin-bottom: 4px; }
-    .demo-poi-layer .demo-check { flex: 1; width: auto; min-width: 0; word-break: break-all; }
-    .demo-poi-hits { margin: 4px 0; font-size: 12px; }
-    .demo-poi-detail { border: 1px solid #eef0f4; border-radius: 4px; padding: 4px 8px; font-size: 12px; }
-    .demo-poi-detail:empty { display: none; }
-    .demo-state-row { flex-wrap: nowrap; align-items: flex-start; gap: 8px; margin-bottom: 2px; }
-    .demo-state-key { flex: 0 0 104px; color: #5a6478; font-size: 11px; }
-    .demo-state-val { flex: 1; min-width: 0; font-size: 11px; word-break: break-all; }
-    .demo-log { margin: 0; padding: 0; list-style: none; max-height: 240px; overflow-y: auto; font-size: 11px; }
-    .demo-log li { padding: 2px 0; border-bottom: 1px dotted #eef0f4; word-break: break-all; }
-    /* IIIF の書誌: 写した値と metadata の表 */
-    .demo-iiif-table { border-collapse: collapse; width: 100%; margin: 4px 0; font-size: 11px; }
-    .demo-iiif-table th, .demo-iiif-table td { border: 1px solid #d5d9e2; padding: 2px 4px; text-align: left; vertical-align: top; word-break: break-all; }
-    .demo-iiif-table th { background: #f4f6fa; font-weight: 700; }
-    .demo-log-time { color: #8a93a6; }
-    @media (max-width: 720px) {
-      body.c4h-app { height: auto; overflow: visible; }
-      .demo-layout { display: block; }
-      .demo-map-col { display: block; }
-      .demo-map-col .c4h-main-area { height: 55vh; min-height: 300px; }
-      .demo-panel { border-left: 0; border-top: 1px solid #d5d9e2; }
-    }
+    /* 目次。C4H 正本 demo-shell.css（バイト等価）に無いレイアウトだけを置く。class は demo- 接頭辞に限る */
+    .demo-index-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px 24px; flex-wrap: wrap; }
+    .demo-index { width: 100%; max-width: 960px; }
+    .demo-index h2.demo-index-title { font-size: 15px; font-weight: 700; color: #1a2744; margin: 0 0 6px; }
+    .demo-index p.demo-index-lead { font-size: 13px; line-height: 1.7; color: #444; margin: 0 0 12px; }
+    .demo-index section + section { margin-top: 28px; }
+    .demo-index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr)); gap: 16px; }
+    /* 目次の札は、札そのものではなくリンクを押す。持ち上がる動きは、押せる札のものなので止める */
+    .demo-index-card:hover { transform: none; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
+    .demo-index-card .c4h-card-header h3 { font-size: 15px; font-weight: 700; line-height: 1.5; color: #1a2744; }
+    .demo-index-card .c4h-card-header h3 a { color: inherit; text-decoration: none; }
+    .demo-index-card .c4h-card-header h3 a:hover { text-decoration: underline; }
+    .demo-index-links { display: flex; flex-wrap: wrap; gap: 6px 18px; }
+    .demo-index-links a { color: #3a7bd5; text-decoration: none; white-space: nowrap; }
+    .demo-index-links a:hover { text-decoration: underline; }
+    .demo-index-types { margin-top: 4px; padding-left: 18px; font-size: 13px; line-height: 1.7; color: #444; }
   </style>
 </head>
-<body class="c4h-app">
-  <header class="c4h-header">
-    <h1>MaplatCore 古地図デモ</h1>
-    <div class="c4h-control-row">
-      <label>地域 <select id="region-select"></select></label>
+<body class="c4h-portal">
+  <header class="c4h-portal-header demo-index-header">
+    <div>
+      <h1 data-i18n="ix.h1"></h1>
+      <p data-i18n="ix.lead"></p>
     </div>
-    <span id="status" class="c4h-status">読み込み中…</span>
+    <span id="lang-switch"></span>
   </header>
 
-  <div class="demo-layout">
-    <div class="demo-map-col">
-      <div class="c4h-main-area">
-        <div id="map_div"></div>
-      </div>
-      <div class="c4h-info-box">
-        <p>出典: <strong id="map-attr"></strong></p>
-      </div>
-    </div>
-    <aside id="demo-panel" class="demo-panel" aria-label="操作メニュー">
-      <div id="region-note" class="c4h-note"></div>
-      <div id="demo-controls"></div>
-    </aside>
-  </div>
+  <main class="c4h-portal-main">
+    <div class="demo-index">
+      <section aria-labelledby="sec-old-map">
+        <h2 class="demo-index-title" id="sec-old-map" data-i18n="ix.sec_old"></h2>
+        <div class="demo-index-grid">
+          <article class="c4h-demo-card demo-index-card" id="old-map">
+            <div class="c4h-card-header">
+              <span class="c4h-badge" data-i18n="ix.old_badge"></span>
+              <h3><a href="./old-map.html" data-i18n="ix.old_title"></a></h3>
+            </div>
+            <div class="c4h-card-body">
+              <p data-i18n="ix.old_desc"></p>
+            </div>
+            <div class="c4h-card-footer demo-index-links">
+              <a href="./old-map.html" data-i18n="ix.open"></a>
+            </div>
+          </article>
+        </div>
+      </section>
 
-  <script type="module" src="./demo/demo.ts"></script>
+      <section aria-labelledby="sec-layered-map">
+        <h2 class="demo-index-title" id="sec-layered-map" data-i18n="ix.sec_layered"></h2>
+        <p class="demo-index-lead" data-i18n="ix.layered_lead"></p>
+        <div class="demo-index-grid">
+          <article class="c4h-demo-card demo-index-card" id="demo-1">
+            <div class="c4h-card-header">
+              <span class="c4h-badge" data-badge-demo="1"></span>
+              <h3><a href="./layered-map.html?demo=1" data-pair="a,c"></a></h3>
+            </div>
+            <div class="c4h-card-body">
+              <p data-i18n="ix.desc.1"></p>
+            </div>
+            <div class="c4h-card-footer demo-index-links">
+              <a href="./layered-map.html?demo=1" data-i18n="ix.open"></a>
+              <a href="./layered-map.html?demo=1&amp;type=c&amp;sup=1" data-i18n="ix.sup_on"></a>
+              <a href="./layered-map.html?demo=1&amp;type=c&amp;sup=0" data-i18n="ix.sup_off"></a>
+            </div>
+          </article>
+
+          <article class="c4h-demo-card demo-index-card" id="demo-2">
+            <div class="c4h-card-header">
+              <span class="c4h-badge" data-badge-demo="2"></span>
+              <h3><a href="./layered-map.html?demo=2" data-pair="d,c"></a></h3>
+            </div>
+            <div class="c4h-card-body">
+              <p data-i18n="ix.desc.2"></p>
+            </div>
+            <div class="c4h-card-footer demo-index-links">
+              <a href="./layered-map.html?demo=2" data-i18n="ix.open"></a>
+            </div>
+          </article>
+
+          <article class="c4h-demo-card demo-index-card" id="demo-3">
+            <div class="c4h-card-header">
+              <span class="c4h-badge" data-badge-demo="3"></span>
+              <h3><a href="./layered-map.html?demo=3" data-pair="a,b"></a></h3>
+            </div>
+            <div class="c4h-card-body">
+              <p data-i18n="ix.desc.3"></p>
+            </div>
+            <div class="c4h-card-footer demo-index-links">
+              <a href="./layered-map.html?demo=3" data-i18n="ix.open"></a>
+              <a href="./layered-map.html?demo=3&amp;type=b&amp;sup=1" data-i18n="ix.sup_on"></a>
+              <a href="./layered-map.html?demo=3&amp;type=b&amp;sup=0" data-i18n="ix.sup_off"></a>
+            </div>
+          </article>
+
+          <article class="c4h-demo-card demo-index-card" id="demo-4">
+            <div class="c4h-card-header">
+              <span class="c4h-badge" data-badge-demo="4"></span>
+              <h3><a href="./layered-map.html?demo=4" data-pair="b,c"></a></h3>
+            </div>
+            <div class="c4h-card-body">
+              <p data-i18n="ix.desc.4"></p>
+            </div>
+            <div class="c4h-card-footer demo-index-links">
+              <a href="./layered-map.html?demo=4" data-i18n="ix.open"></a>
+              <a href="./layered-map.html?demo=4&amp;type=b&amp;sup=1" data-i18n="ix.sup_on"></a>
+              <a href="./layered-map.html?demo=4&amp;type=b&amp;sup=0" data-i18n="ix.sup_off"></a>
+            </div>
+          </article>
+
+          <article class="c4h-demo-card demo-index-card" id="demo-5">
+            <div class="c4h-card-header">
+              <span class="c4h-badge" data-badge-demo="5"></span>
+              <h3><a href="./layered-map.html?demo=5" data-pair="b,c"></a></h3>
+            </div>
+            <div class="c4h-card-body">
+              <p data-i18n="ix.desc.5"></p>
+            </div>
+            <div class="c4h-card-footer demo-index-links">
+              <a href="./layered-map.html?demo=5" data-i18n="ix.open"></a>
+            </div>
+          </article>
+        </div>
+
+        <h2 class="demo-index-title" id="sec-types" style="margin-top: 20px;" data-i18n="ix.sec_types"></h2>
+        <ul class="demo-index-types" aria-labelledby="sec-types">
+          <li data-type-note="a"></li>
+          <li data-type-note="b"></li>
+          <li data-type-note="c"></li>
+          <li data-type-note="d"></li>
+        </ul>
+      </section>
+    </div>
+  </main>
+  <script type="module" src="./demo/index.ts"></script>
 </body>
 </html>
