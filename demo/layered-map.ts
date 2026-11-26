@@ -415,11 +415,11 @@ function renderHint(): void {
   lead.textContent = "確認のポイント";
   el.replaceChildren(lead, ` ${HINTS[demoNo]}`);
   const t = demo().teiresias;
-  const say = (x: Teiresias, head: string): string => `${head} は ${x.score!.toFixed(4)} で、推奨は ${setupNames(x.setups) || "なし"}。`;
-  let msg = t.score === null ? "Teiresias の score は出なかった。" : say(t, "Teiresias の score");
+  const say = (x: Teiresias, head: string): string => `${head}は ${x.score!.toFixed(4)} で、推奨は ${setupNames(x.setups) || "なし"}。`;
+  let msg = t.score === null ? "適合スコアは出なかった。" : say(t, "適合スコア");
   if (demoNo === "1") {
     const c = meta.gcpSets.g1c.teiresias;
-    if (c.score !== null) msg += `打ち間違いを直した GCP なら、${say(c, "score")}`;
+    if (c.score !== null) msg += `打ち間違いを直した GCP なら、${say(c, "適合スコア")}`;
   }
   $("hint-score").textContent = msg;
 }

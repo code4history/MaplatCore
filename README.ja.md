@@ -481,7 +481,7 @@ proj4js を取得します。UMD 版は proj4js を同梱します。画素の�
 素材は `demo/layered-map/generate.mjs` が作ります（結果はコミット済みで、普段は実行しなくてよい）。紙は 2 枚で、どちらもランベルト正角円錐図法
 （`+proj=lcc +lat_1=30 +lat_2=42 +lat_0=35 +lon_0=136 …`・2048×2048 画素・1 画素 1,500 m）の上に日本とその周りの海岸線と 2 度ごとの経緯線を描いたものです
 （P1 は正確な図、P2 は GCP の凸包の中ほど縮めた既知の歪みを足した図）。GCP は固定の乱数種で散らばらせた 24 組（密 14・疎 10。デモ 1 は打ち間違い 2 組入り）。
-各型の誤差（紙の上の 65×65 点で、変換の結果と正解の距離）と、Teiresias が出す score と推奨は、生成のときに計算して
+各型の誤差（紙の上の 65×65 点で、変換の結果と正解の距離）と、適合スコア（Teiresias の score）と推奨は、生成のときに計算して
 `public/demo-data/layered_demo_meta.json` に書き、画面は読むだけです。地図 JSON は `public/maps/layered_demo_*.json`（7 つ）、
 紙の折れ線は `public/demo-data/layered_demo_paper_p1.json`・`..._p2.json`、紙のタイルは `public/tiles/layered_demo_p1`・`..._p2` にあります。
 MaplatTin（既定は `../MaplatTin-j1c`）と Teiresias は素材を作るためだけに使い、Core の依存ではありません。
