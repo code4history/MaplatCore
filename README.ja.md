@@ -448,6 +448,14 @@ proj4js を取得します。UMD 版は proj4js を同梱します。画素の�
 - `?region=<ID>` で地域を選びます（`morioka`・`nobeoka`・`nara`・`tatebayashi`・`hiroshima`・
   `niigata`）。無いときや知らない ID のときは `morioka` です。画面の地域の選択を変えると、
   この引数を付けて読み込み直します。
+- 変換の形: 操作パネルの先頭の「変換の形」で、「三角網＋扇形外挿」（既定）と「従来型（V2）」を
+  切り替えます。`?form=c|v2` でも指定できます（無いときは `c`）。`c` は `public/maps-c/<mapID>.json`
+  （CRS＋三角網＋扇形外挿で作り直した地図。今のところ全地図が EPSG:3857）、`v2` は
+  `public/maps/<mapID>.json`（これまでの地図データ。V2 のまま読み、A/B/C と解釈し直しません）を読みます。
+  切り替えても、今の地図・位置・縮尺は保ちます（app を作り直し、`restore` で渡します）。欄には、
+  今の地図の変換の形・CRS・strict か・補完点の数と、推定（Teiresias）で推奨された型・適合スコア
+  （`public/maps-c/estimates.json`）を出します。推奨が C 以外の地図では、「推奨は ○○ だが、このデモでは
+  三角網＋扇形外挿で作っている」と書きます。
 - タイルキャッシュ: デモは Weiwudi の Service Worker（`weiwudi-sw.js`）を登録してから
   `enableCache: true` で起動します。操作パネルの節「キャッシュ」で、状態と統計（保存済みの
   バイト数・取得済み／全体のタイル数）を見て、「全タイルを取得」（進み具合・中止）と

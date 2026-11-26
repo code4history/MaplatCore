@@ -21,6 +21,10 @@ import type { AppSetting, DemoOps, LineItem, LineKind, MapLineItem, MapPoi, Poi,
 import { commonDict } from "./i18n/common";
 import { applyLang, detectLang, makeTranslate, mergeDicts, mountLangSwitch } from "./i18n/core";
 import { dict as oldMapDict } from "./i18n/old-map";
+import {
+  ESTIMATES_FILE, MAP_FORMS, formInfo, parseMapForm, settingForForm, v2StrictStatuses,
+  type Estimates, type MapForm
+} from "./old-map-form";
 
 // 言語（?lang= → ブラウザの言語）。画面の文言は demo/i18n/old-map.ts の辞書にまとめ、ここでは t(鍵) で引く。
 // <html lang> も同じ値にするので、地図のデータの名前（i18n()・localizedText）も切り替わる
@@ -952,6 +956,19 @@ async function main(): Promise<void> {
   // app 設定を明示的に取得（root 起点のページ相対 apps/。検証済みの region だけを使う）
   const setting: AppSetting = await (await fetch(`apps/${region}.json`)).json();
 
+  // 変換の形（?form=c|v2。既定は c）。c は public/maps-c/ の作り直した地図、v2 は public/maps/ のこれまでの地図（V2 のまま）。
+  // maps-c/estimates.json（層ごとの推奨の型・適合スコア・strict・補完点の要約）が無ければ、切り替えは出さず v2 で動かす
+  let estimates: Estimates | undefined;
+  try {
+    const res = await fetch(ESTIMATES_FILE);
+    if (res.ok) estimates = (await res.json()) as Estimates;
+  } catch {
+    // 読めなければ切り替えなし
+  }
+  let form: MapForm = estimates ? parseMapForm(location.search) : "v2";
+  // 従来型の strict の判定に使う、元の地図の JSON の compiled.strict_status（本図・挿入図の順）
+  const v2Statuses: Record<string, string[]> = {};
+
   // この地域の古地図のうち、IIIF の配信（delivery.type === "iiifImage"）を使うもの。
   // 「IIIF の画像」の節をどの地図で見せるかを決める（デモだけの処理。地図の設定は読むだけ）
   const iiifMapIDs: string[] = [];
@@ -962,6 +979,7 @@ async function main(): Promise<void> {
     const mapID = (source as { mapID: string }).mapID;
     try {
       const map = await (await fetch(`maps/${mapID}.json`)).json();
+      v2Statuses[mapID] = v2StrictStatuses(map);
       if (map?.delivery?.type === "iiifImage") iiifMapIDs.push(mapID);
       if (map?.iiif && typeof map.iiif === "object" && !Array.isArray(map.iiif)) {
         const label = i18n((source as { label?: string | { ja?: string; en?: string } }).label) || mapID;
@@ -1111,6 +1129,9 @@ async function main(): Promise<void> {
     const s = JSON.stringify(v) ?? "";
     return s.length > 160 ? `${s.slice(0, 160)}…` : s;
   };
+
+  // 変換の形の節の「いまの地図の情報」の更新。節は app を作り直しても残るので、app の外に置き、buildApp の中の refreshMapState から呼ぶ
+  let refreshFormInfo: () => void = () => undefined;
 
   // 1 つの app に対して、節を作り、イベントを購読する（古い app への参照を残さない）
   const buildApp = (app: MaplatApp): void => {
@@ -1639,6 +1660,7 @@ async function main(): Promise<void> {
       refreshLineChecks();
       redrawShapes();
       void refreshViewpoint();
+      refreshFormInfo();
     };
     app.addEventListener("mapChanged", () => {
       refreshMapState();
@@ -1773,16 +1795,19 @@ async function main(): Promise<void> {
     attr.textContent = "";
     status.textContent = t("app.destroyed");
   };
-  const create = async (restoreSession: boolean): Promise<void> => {
+  const create = async (restoreSession: boolean, restore?: Record<string, unknown>): Promise<void> => {
     if (restoreSession) dropForeignSession();
     // setting を明示渡し。同時に存在する app は 1 つだけ。poiTemplate は clickMarker の detail.html の元
     // Service Worker を先に登録してから enableCache で作る。使えなければキャッシュ無しで起動する
     cacheDisabledReason = await ensureServiceWorker(status);
     const app = await MaplatApp.createObject({
       appid: region,
-      setting,
+      // 変換の形に合わせて、地図の JSON の置き場所（settingFile）を替えた app 設定
+      setting: settingForForm(setting, form, estimates),
       poiTemplate: POI_TEMPLATE,
       restoreSession,
+      // 変換の形を切り替えたときだけ、直前の地図・位置・縮尺を渡す
+      ...(restore ? { restore } : {}),
       ...(cacheDisabledReason === undefined ? { enableCache: true } : {})
     });
     current = app;
@@ -1887,6 +1912,108 @@ async function main(): Promise<void> {
   mountSection(sanitizeSec, fixedArea);
   // 状態とイベント履歴は操作を持たないが、常に出す（操作パネルの最下部）
   fixedArea.append(stateSec.sec, logSec.sec);
+
+  // ---- 変換の形（三角網＋扇形外挿 ⇄ 従来型（V2））。app を作り直しても残す節 ----
+  // 切り替えは「app.remove() → 地図 JSON の置き場所（settingFile）を替えた設定で createObject」。
+  // 直前の地図・位置・縮尺（app.stateBuffer）は restore で渡して保つ。URL の ?form= も合わせる（再読み込みでも同じ形）
+  if (estimates) {
+    const formSec = makeSection(t("old.form_h"));
+    formSec.sec.id = "demo-form";
+    const formName = (f: MapForm): string => (f === "c" ? t("type.c") : t("old.form_legacy"));
+    const setupName = (letter: string): string => t(`type.${letter.toLowerCase()}`);
+    const formLead = document.createElement("p");
+    formLead.className = "demo-note";
+    formLead.textContent = t("old.form_lead");
+    formSec.sec.appendChild(formLead);
+    const formRow = formSec.row();
+    formRow.setAttribute("role", "group");
+    formRow.setAttribute("aria-label", t("old.form_aria"));
+    const formButtons = new Map<MapForm, HTMLButtonElement>();
+    const formVal = (label: string, id: string): HTMLElement => {
+      const r = formSec.row();
+      r.classList.add("demo-state-row");
+      const k = document.createElement("span");
+      k.className = "demo-state-key";
+      k.textContent = label;
+      const v = document.createElement("span");
+      v.className = "demo-state-val";
+      v.id = id;
+      v.textContent = "—";
+      r.append(k, v);
+      return v;
+    };
+    const fvForm = formVal(t("old.form_row_form"), "form-name");
+    const fvCrs = formVal(t("old.form_row_crs"), "form-crs");
+    const fvStrict = formVal(t("old.form_row_strict"), "form-strict");
+    const fvSup = formVal(t("old.form_row_sup"), "form-supplement");
+    const fvRec = formVal(t("old.form_row_rec"), "form-recommended");
+    const fvScore = formVal(t("old.form_row_score"), "form-score");
+    const formNote = document.createElement("p");
+    formNote.className = "demo-note";
+    formNote.id = "form-note";
+    formSec.sec.appendChild(formNote);
+
+    refreshFormInfo = (): void => {
+      for (const [f, btn] of formButtons) btn.setAttribute("aria-pressed", String(f === form));
+      const mapID = (current?.currentMapInfo() as { mapID?: string } | undefined)?.mapID;
+      const info = formInfo(form, mapID, estimates, mapID ? v2Statuses[mapID] : undefined);
+      fvForm.textContent = formName(form);
+      if (!info) {
+        for (const v of [fvCrs, fvStrict, fvSup, fvRec, fvScore]) v.textContent = "—";
+        formNote.textContent = mapID ? t("old.form_na") : "";
+        return;
+      }
+      fvCrs.textContent = form === "v2" ? t("old.form_crs_fixed", { crs: info.crs }) : info.crs;
+      const st = info.strict;
+      fvStrict.textContent = !st
+        ? "—"
+        : st.allStrict
+          ? t("old.form_strict_yes")
+          : st.main === "strict"
+            ? t("old.form_strict_inset", { n: st.insetNotStrict })
+            : t("old.form_strict_no", { status: st.main });
+      fvSup.textContent = info.supplementCount === null
+        ? t("old.form_sup_none")
+        : t(info.multiLayer ? "old.form_sup_total" : "old.form_sup_count", { n: info.supplementCount });
+      const setups = info.recommended.map(setupName).join(t("old.form_setup_join")) || t("old.form_none");
+      fvRec.textContent = setups + (info.recommendReason === "borderline" ? t("old.form_rec_borderline") : info.recommendReason === "birdeye" ? t("old.form_rec_birdeye") : "");
+      fvScore.textContent = info.score === null ? "—" : info.score.toFixed(4);
+      formNote.textContent = form === "v2" ? t("old.form_note_v2") : info.recommendsNotC ? t("old.form_not_c", { setups }) : "";
+    };
+
+    const switchForm = async (next: MapForm): Promise<void> => {
+      const app = current;
+      if (next === form || busy || !app) return;
+      busy = true;
+      for (const b of [...lifeButtons, ...formButtons.values()]) b.disabled = true;
+      try {
+        const mapID = (app.currentMapInfo() as { mapID?: string } | undefined)?.mapID;
+        // 直前の状態（地図・位置・縮尺・回転・透過度など）。まだ何も動かしていなければ、地図の既定の位置から始める
+        const restore: Record<string, unknown> = { ...app.stateBuffer, ...(mapID ? { mapID } : {}) };
+        destroy();
+        form = next;
+        const url = new URL(location.href);
+        url.searchParams.set("form", next);
+        history.replaceState(null, "", url.toString());
+        await create(false, restore);
+        logEvent("form", t("old.form_switched", { form: formName(next) }));
+      } catch (e) {
+        showError(t("old.form_h"), e);
+      } finally {
+        busy = false;
+        for (const b of [...lifeButtons, ...formButtons.values()]) b.disabled = false;
+        refreshFormInfo();
+      }
+    };
+    for (const f of MAP_FORMS) {
+      const btn = makeButton(formName(f), () => { void switchForm(f); });
+      btn.dataset.form = f;
+      formButtons.set(f, btn);
+      formRow.appendChild(btn);
+    }
+    controls.insertBefore(formSec.sec, appArea);
+    refreshFormInfo();
+  }
 
   await create(wantRestore());
 }

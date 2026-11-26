@@ -519,6 +519,16 @@ names in the map data switch too. All on-screen text lives in one dictionary per
 - `?region=<ID>` selects the region (`morioka`, `nobeoka`, `nara`, `tatebayashi`,
   `hiroshima`, `niigata`). Without it, or with an unknown ID, `morioka` is used.
   Changing the region selector on the page reloads it with this parameter.
+- Transform shape: the first section of the control panel, "Transform shape", switches
+  between TIN + fan extrapolation (default) and legacy (V2). `?form=c|v2` also selects it
+  (`c` when omitted). `c` reads `public/maps-c/<mapID>.json` (maps rebuilt as CRS + TIN + fan
+  extrapolation; every map is EPSG:3857 for now). `v2` reads `public/maps/<mapID>.json` (the
+  existing map data, read as V2 and not reinterpreted as A/B/C). Switching keeps the current
+  map, position and scale (the app is recreated and given `restore`). The panel shows the
+  current map's transform shape, CRS, whether it is strict, the number of supplement points,
+  and the shape and score recommended by estimation (Teiresias; `public/maps-c/estimates.json`).
+  For a map whose recommendation is not C it says that the recommendation differs and that
+  this demo builds the map as TIN + fan extrapolation.
 - Tile cache: the demo registers the Weiwudi Service Worker (`weiwudi-sw.js`) and
   then starts with `enableCache: true`. The "キャッシュ" (cache) section of the
   control panel shows the state and statistics (stored bytes, fetched / total
