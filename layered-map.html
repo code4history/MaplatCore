@@ -11,10 +11,10 @@
     .demo-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
     .demo-tabs button { min-width: 2.4em; padding: 4px 10px; border: 1px solid #5b6b94; border-radius: 4px; background: transparent; color: #dfe5f5; font-size: 12px; cursor: pointer; }
     .demo-tabs button[aria-pressed="true"] { background: #fff; border-color: #fff; color: #1a2744; font-weight: 700; }
-    .demo-hint { display: flex; gap: 16px; justify-content: space-between; align-items: baseline; padding: 6px 16px; background: #fff; border-bottom: 1px solid #d5d9e2; font-size: 13px; line-height: 1.5; }
+    .demo-hint { display: flex; flex-wrap: wrap; gap: 4px 16px; justify-content: space-between; align-items: baseline; padding: 6px 16px; background: #fff; border-bottom: 1px solid #d5d9e2; font-size: 13px; line-height: 1.5; }
     .demo-hint #hint-demo { flex: none; max-width: 16em; font-weight: 700; color: #1a2744; }
-    .demo-hint #hint-text { flex: 1 1 auto; }
-    .demo-hint #hint-score { flex: none; font-size: 12px; color: #333; text-align: right; }
+    .demo-hint #hint-text { flex: 1 1 28em; min-width: 18em; }
+    .demo-hint #hint-score { flex: 0 1 30em; min-width: 16em; font-size: 12px; color: #333; }
     .demo-layout { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 5fr) 260px; }
     .demo-face { display: flex; flex-direction: column; min-width: 0; min-height: 0; padding: 6px 8px; border-right: 1px solid #d5d9e2; }
     .demo-face h2 { font-size: 12px; font-weight: 700; color: #1a2744; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
