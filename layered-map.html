@@ -35,6 +35,8 @@
     .demo-table th { background: #f4f6fa; font-weight: 700; width: 38%; }
     .demo-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
     .demo-pre { margin: 4px 0; padding: 4px 6px; background: #f6f7f9; border: 1px solid #e3e6ee; border-radius: 4px; font: 11px/1.4 ui-monospace, monospace; white-space: pre-wrap; word-break: break-all; max-height: 180px; overflow-y: auto; }
+    /* 画面の中心を示す Core 既定の赤い輪（#center_circle）。この比較では「地図の中央の GCP」に見えて紛らわしいので消す */
+    #map_div #center_circle { display: none !important; }
     #demo-chart { width: 100%; height: auto; border: 1px solid #d5d9e2; border-radius: 4px; background: #fff; }
     @media (max-width: 720px) {
       body.c4h-app { height: auto; overflow: visible; }
@@ -62,7 +64,8 @@
           <strong>青の線は経緯度から描いた基準の経緯線</strong>（5 度ごと・紙の外へも延ばす）。
           紙の赤い線に青が重なれば、その場所の変換は正しい。
           三角網の地図には、三角網の構造を<strong>紙の画素の座標のまま</strong>（変換を通さずに）重ねる。
-          world file の地図には、対応点（紙の画素 ↔ 経度・緯度の組）を ● と ✕ で重ねる。</p>
+          world file の地図には、<strong>検算点</strong>（紙の画素 ↔ 経度・緯度の組。crs が効いているかを確かめるもので、GCP ではない。world file は 6 つの係数だけで変換し、検算点は変換に使わない）を ○（紙側）と ✕（地理側）で重ねる。
+          GCP は三角網を張る点（紙の画素 ↔ 経度・緯度の組）で、三角網の地図にだけあり、● で描く。</p>
       </div>
     </div>
     <aside id="demo-panel" class="demo-panel" aria-label="操作メニュー">
@@ -71,7 +74,7 @@
         <h2>表示</h2>
         <div class="demo-row">
           <label class="demo-check"><input type="checkbox" id="chk-ref" checked>基準の経緯線（青）を重ねる</label>
-          <label class="demo-check"><input type="checkbox" id="chk-gcp" checked>対応点と、三角網の構造（GCP の三角網・四辺形と補助頂点・扇形）を重ねる</label>
+          <label class="demo-check"><input type="checkbox" id="chk-gcp" checked>検算点（world file の地図）と、三角網の構造（GCP の三角網・四辺形と補助頂点・扇形）を重ねる</label>
         </div>
         <div class="demo-row">
           <button type="button" id="btn-view-paper">紙の全体を見る</button>
@@ -83,7 +86,7 @@
       </section>
       <section class="demo-sec" id="sec-select">
         <h2>選んだ印の値</h2>
-        <p class="demo-note">地図の印をクリックすると出ます（対応点は紙の画素・経度・緯度・両側のずれ）。</p>
+        <p class="demo-note">地図の印をクリックすると出ます（検算点・GCP は紙の画素・経度・緯度。検算点は両側のずれも）。</p>
         <table class="demo-table" id="tbl-sel"></table>
       </section>
       <section class="demo-sec" id="sec-state">

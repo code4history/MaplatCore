@@ -43,6 +43,7 @@ const GROUPS: Group[] = [
     ids: ["layered_demo_wf4326", "layered_demo_tin9"],
     note:
       "同じ画像を、(a) は 4326 の world file だけで、(b) は紙の中央 30% にだけ置いた 9 点の GCP の三角網で読む。" +
+      "GCP は三角網を張る点（紙の画素 ↔ 経度・緯度の組）で、(b) にだけある。(a) の world file は 6 つの係数だけで変換し、GCP を使わない。" +
       "(a) は紙の端まで赤い線に青い線が重なる。(b) は GCP の外が扇形の外挿になり、周辺ほど青が赤から外れる。" +
       "(b) では三角網の構造（GCP・四辺形・補助頂点・扇形）を紙の上に描く。"
   },
@@ -53,8 +54,9 @@ const GROUPS: Group[] = [
     note:
       "同じ画像を、(a) 4326 の world file と、(c) それを 3857 のアフィンで近似した world file で読む。" +
       "(c) は緯度方向の伸びを 1 つの係数でしか表せないので、青が赤から緯度に応じてずれる" +
-      "（重なる緯度が 2 本あり、中央と両端では逆向きにずれる）。紙の全体に散らした 16 組の対応点（紙の画素 ↔ 経度・緯度）を描く。" +
-      "(a) は組の両側が一致し、(c) は最小二乗の残差として地理側（✕）が紙側（●）からずれる（線で結ぶ）。下の図に緯度ごとの差を描く。"
+      "（重なる緯度が 2 本あり、中央と両端では逆向きにずれる）。紙の全体に散らした 16 組の検算点を描く。" +
+      "検算点は紙の画素 ↔ 経度・緯度の組で、crs が効いているかを確かめるためのもの（GCP ではない。world file は 6 つの係数だけで変換し、検算点は変換に使わない）。" +
+      "(a) は組の両側が一致し、(c) は最小二乗の残差として地理側（✕）が紙側（○）からずれる（線で結ぶ）。下の図に緯度ごとの差を描く。"
   },
   {
     no: "4",
@@ -300,8 +302,8 @@ const range = (a: number, b: number, step: number): number[] => {
   return out;
 };
 
-// ---- 対応点（紙の画素 ↔ 経度・緯度の組）----
-// 地図 JSON の対応点: 三角網の地図は compiled.points、world file の地図は gcps（変換には使わない記録）
+// ---- 紙の画素 ↔ 経度・緯度の組 ----
+// 三角網の地図では GCP（compiled.points。三角網を張る点）、world file の地図では検算点（JSON の鍵は gcps。変換には使わない記録）
 const gcpsOf = (json: any): [Xy, number[]][] => json?.compiled?.points ?? json?.gcps ?? [];
 const lonLatToMerc = ([lon, lat]: LonLat): Xy => [
   R * rad(lon),
@@ -352,15 +354,16 @@ function structureOf(json: any): Structure | undefined {
 }
 
 // ---- 色（凡例と同じ）----
-const COLOR = { gcp: "#15803d", geo: "#be185d", aux: "#ea580c", fan: "#7c3aed", outer: "#475569", gap: "#111827" };
+const COLOR = { gcp: "#15803d", geo: "#be185d", aux: "#ea580c", fan: "#7c3aed", outer: "#475569", gap: "#111827", check: "#0369a1" };
 
 // ---- 点の印: 画面の画素で大きさが決まる SVG のアイコン（Core の POI の icon）。地図の座標の面ではない ----
-type MarkKind = "gcp" | "geo" | "aux" | "centroid";
+type MarkKind = "gcp" | "check" | "geo" | "aux" | "centroid";
 function markSvg(kind: MarkKind, selected: boolean): string {
   const s = selected ? 30 : 20, c = s / 2;
   const halo = selected ? `<circle cx="${c}" cy="${c}" r="${c - 1.5}" fill="rgba(250,204,21,0.45)" stroke="#eab308" stroke-width="2"/>` : "";
   let body = "";
   if (kind === "gcp") body = `<circle cx="${c}" cy="${c}" r="5.5" fill="${COLOR.gcp}" stroke="#fff" stroke-width="2"/>`;
+  else if (kind === "check") body = `<circle cx="${c}" cy="${c}" r="6" fill="none" stroke="#fff" stroke-width="5"/><circle cx="${c}" cy="${c}" r="6" fill="none" stroke="${COLOR.check}" stroke-width="2.4"/>`;
   else if (kind === "geo") {
     const d = `M${c - 5} ${c - 5}L${c + 5} ${c + 5}M${c + 5} ${c - 5}L${c - 5} ${c + 5}`;
     body = `<path d="${d}" stroke="#fff" stroke-width="5.5" stroke-linecap="round"/><path d="${d}" stroke="${COLOR.geo}" stroke-width="2.6" stroke-linecap="round"/>`;
@@ -442,7 +445,7 @@ function redrawOverlays(app: MaplatApp, id: string): void {
     }
   }
 
-  // 対応点の組: 紙側と地理側が一致しない所を線で結ぶ
+  // 検算点の組（world file の地図）: 紙側と地理側が一致しない所を線で結ぶ
   const ps = pairs[id] ?? [];
   const wf = def.kind === "wf";
   if (wf) {
@@ -465,12 +468,12 @@ function redrawOverlays(app: MaplatApp, id: string): void {
   }
   for (const p of ps) {
     const s = isSel("gcp", p.index);
-    if (wf) put({ id: `geo_${p.index}`, name: `地理側 #${p.index + 1}`, lnglat: p.geo, demoKind: "gcp", demoIndex: p.index }, "geo", s);
-    put({ id: `gcp_${p.index}`, name: `GCP #${p.index + 1}`, x: p.px[0], y: p.px[1], demoKind: "gcp", demoIndex: p.index }, "gcp", s);
+    if (wf) put({ id: `geo_${p.index}`, name: `検算点 #${p.index + 1}（地理側）`, lnglat: p.geo, demoKind: "gcp", demoIndex: p.index }, "geo", s);
+    put({ id: `gcp_${p.index}`, name: wf ? `検算点 #${p.index + 1}（紙側）` : `GCP #${p.index + 1}`, x: p.px[0], y: p.px[1], demoKind: "gcp", demoIndex: p.index }, wf ? "check" : "gcp", s);
   }
 }
 
-// 対応点の両側のずれの最大（凡例に書く。小さいときは拡大して見る）
+// 検算点の両側のずれの最大（凡例に書く。小さいときは拡大して見る）
 function gapSummary(id: string): string {
   const ps = pairs[id] ?? [];
   const dPx = Math.max(0, ...ps.map(p => p.dPx)), dM = Math.max(0, ...ps.map(p => p.dM));
@@ -489,14 +492,14 @@ function renderLegend(id: string): void {
   ];
   if (def.kind === "wf") {
     items.push(
-      `<span>${mark("gcp")}対応点（紙の画素 ↔ 経度・緯度の組）の紙側（紙の画素の位置）</span>`,
-      `<span>${mark("geo")}同じ組の地理側（経度・緯度を、この地図の変換で紙に落とした位置）</span>`,
+      `<span>${mark("check")}検算点（紙の画素 ↔ 経度・緯度の組）の紙側（紙の画素の位置）。GCP ではない。world file は 6 つの係数だけで変換し、検算点は変換に使わない</span>`,
+      `<span>${mark("geo")}同じ検算点の地理側（経度・緯度を、この地図の変換で紙に落とした位置）</span>`,
       `<span>${sw("border-color:" + COLOR.gap)}両側のずれ（一致する所は線なし。${gapSummary(id)}）</span>`
     );
   } else {
     items.push(
       `<span>${box("rgba(21,128,61,0.14)", COLOR.gcp)}(1) GCP の三角網（頂点がすべて GCP の三角形）</span>`,
-      `<span>${mark("gcp")}GCP（紙側。三角網は GCP をちょうど通るので、地理側の点も同じ位置に重なる）</span>`,
+      `<span>${mark("gcp")}GCP（三角網を張る点。紙の画素 ↔ 経度・緯度の組。紙側を描く。三角網は GCP をちょうど通るので、地理側の点も同じ位置に重なる）</span>`,
       `<span>${sw("border-color:" + COLOR.aux + ";border-top-width:4px")}(2) 四辺形（補助頂点の外周）</span>`,
       `<span>${mark("aux")}補助頂点</span>`,
       `<span>${box("rgba(234,88,12,0.07)", COLOR.aux)}補助頂点を含む三角形（三角網の拡張範囲）</span>`
@@ -520,14 +523,15 @@ function renderSelection(id: string): void {
   const fx = (v: number) => v.toFixed(1);
   const rows: string[] = [];
   if (!selection) {
-    el.innerHTML = row("（未選択）", "地図の印（●・✕・◆）をクリックすると、その値が出ます");
+    el.innerHTML = row("（未選択）", "地図の印（● ○ ✕ ◆）をクリックすると、その値が出ます");
     return;
   }
   if (selection.kind === "gcp") {
     const p = pairs[id]?.[selection.index];
     if (!p) { el.innerHTML = row("（無い）", ""); return; }
+    const label = MAPS[id].kind === "wf" ? "検算点" : "GCP";
     rows.push(
-      row("対応点", `#${p.index + 1}（紙の画素 ↔ 経度・緯度の組）`),
+      row(label, `#${p.index + 1}（紙の画素 ↔ 経度・緯度の組${label === "検算点" ? "。変換には使わない" : "。三角網を張る点"}）`),
       row("紙の画素", `(${fx(p.px[0])}, ${fx(p.px[1])})`, "num"),
       row("経度・緯度（地理側）", fmtLonLat(p.geo), "num"),
       row("この地図が紙の画素を写す先", fmtLonLat(p.fwd), "num"),
