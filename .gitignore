@@ -92,5 +92,7 @@ playwright/.cache/
 *_output.txt
 test_output*.txt
 *.png
+# 変換の形のデモの紙（透明地に経緯線を描いた合成画像。透過が要るので png）
+!public/tiles/layered_demo_paper/**/*.png
 # Serena MCP の索引ディレクトリ（MaplatEditor と同様）
 .serena/

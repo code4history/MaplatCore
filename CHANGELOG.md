@@ -5,6 +5,8 @@
 ## [Unreleased]
 
 ### Added
+- 変換の形のデモページ `layered-map.html` を追加。合成の経緯線の画像（EPSG:4326 の等間隔図）で、world file の地図と中央 30% の 9 点の三角網の比較、4326 の world file と 3857 のアフィン近似の比較、四辺形の外が world file（B）か扇形（C）かの比較を、ワンクリックで切り替えて見られる
+- Added the `layered-map.html` demo page: a synthetic graticule paper (EPSG:4326) to compare a world-file map with a 9-point TIN, a 4326 world file with its 3857 affine approximation, and TINs whose outer region is a world file (B) or a fan (C).
 - 古地図の本図・副層に `tinEnabled: false` の world file と CRS 付き三角網を追加（#97・#200）。三角網の四辺形の外では compiled 内の world file も使える。ES 版は必要な CRS の地図で proj4js を取得し、UMD 版は同梱する。world file 未対応の旧 MaplatEditor ではこの形式の地図を開いたり取り込んだりしないこと。詳しくは [地図データの仕様](docs/map-data.ja.md)
 - Added world-file layers (`tinEnabled: false`), per-layer CRS for TINs, and TINs with a compiled world file for the outer region (#97, #200). The ES build loads proj4js on demand and UMD bundles it. Avoid opening or importing world-file maps in MaplatEditor versions that predate support. See the [map data format](docs/map-data.md).
 - Custom Element `<maplat-app>`（入口 `@maplat/core/element`）。要素そのものが地図の入れ物で、属性・プロパティ（`app-id`・`map-id`・`transparency`・`north-up` …）、`MaplatApp` の公開メソッド 46 個の委譲、同じ名前の DOM イベント、状態の読み取り（`ready`・`implementation`・`version`・`appData`・`initialRestore`・`state`・`currentMapId`・`viewpoint`・`gpsEnabled`）を持つ

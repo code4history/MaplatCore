@@ -1,0 +1,21 @@
+{
+ "title": "(a) world file（EPSG:4326）",
+ "attr": "合成の経緯線の画像（デモ用・版権なし）",
+ "url": "tiles/layered_demo_paper/{z}/{x}/{y}.png",
+ "imageExtension": "png",
+ "thumbnail": "tiles/layered_demo_paper/0/0/0.png",
+ "width": 2048,
+ "height": 2048,
+ "tinEnabled": false,
+ "crs": {
+  "epsg": 4326
+ },
+ "worldFile": {
+  "xScale": 0.01220703125,
+  "xSkew": 0,
+  "xOrigin": 125.006103515625,
+  "ySkew": 0,
+  "yScale": -0.01220703125,
+  "yOrigin": 49.993896484375
+ }
+}

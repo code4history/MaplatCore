@@ -1,0 +1,21 @@
+{
+ "title": "(c) 3857 のアフィンで近似した world file",
+ "attr": "合成の経緯線の画像（デモ用・版権なし）",
+ "url": "tiles/layered_demo_paper/{z}/{x}/{y}.png",
+ "imageExtension": "png",
+ "thumbnail": "tiles/layered_demo_paper/0/0/0.png",
+ "width": 2048,
+ "height": 2048,
+ "tinEnabled": false,
+ "crs": {
+  "epsg": 3857
+ },
+ "worldFile": {
+  "xScale": 1358.880503,
+  "xSkew": 0,
+  "xOrigin": 13915615.789411,
+  "ySkew": 0,
+  "yScale": -1731.010487,
+  "yOrigin": 6330679.11797
+ }
+}
