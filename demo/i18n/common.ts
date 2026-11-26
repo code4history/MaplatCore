@@ -24,7 +24,7 @@ export const commonDict: Dict = {
     "type.a": "CRS only",
     "type.b": "TIN + global extrapolation",
     "type.c": "TIN + fan extrapolation",
-    "type.d": "Legacy",
+    "type.d": "legacy",
     "type.pair": "{a} vs {b}",
     "type.note.a": "CRS only reads the map as a CRS and covers the whole paper with six coefficients. It does not use a TIN.",
     "type.note.b": "TIN + global extrapolation builds a TIN of the GCPs on top of the CRS. Outside the extrapolation quadrilateral, it extends with a world file fitted to the whole map.",
