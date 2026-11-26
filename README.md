@@ -520,31 +520,32 @@ Public demo: <https://code4history.dev/MaplatCore/> (deployed to GitHub Pages fr
 #### Transform-shape demo (`layered-map.html`)
 
 `http://localhost:5175/layered-map.html` (`layered-map.html` on the public demo). **Each demo shows one comparison.**
-Switch between two transform shapes (buttons or the ←→ keys) and see whether the converted paper (the red core) stays inside the truth (the blue band).
+Switch between two transform shapes (buttons or the ←→ keys). If the converted paper (the red line) stays inside the truth (the blue band), the transform is right.
+Each demo has a "確認のポイント" (what to check) line that says what to look at and what it tells you.
 
 | Shape | What it is |
 |---|---|
-| A | CRS + world file only (no TIN) |
-| B | CRS + TIN; outside the quadrilateral, the global model (world file) |
-| C | CRS + TIN; outside the quadrilateral, a fan |
-| D | fixed 3857 + TIN (V2; the four auxiliary vertices are the paper's corners) |
+| CRS only | Reads the map as a CRS and covers the whole paper with six coefficients (a world file). No TIN. |
+| TIN + global extrapolation | A TIN of the GCPs on top of the CRS. Outside the quadrilateral, the world file fitted to the whole map extends it. |
+| TIN + fan extrapolation | A TIN of the GCPs on top of the CRS. Outside the quadrilateral, the trend of the GCPs at the edge extends as a fan. |
+| legacy (V2) | Fixed to 3857 with a TIN (3857 + TIN + fan extrapolation). The four auxiliary vertices are the paper's corners, and the TIN absorbs the difference in projection. |
 
 | Demo | Paper | Compared | Point |
 |---|---|---|---|
-| 1 | P1 accurate | A vs C | For an accurate map with a known CRS, the world file alone (A) fits to the paper edge. The TIN (C) adds no accuracy and drags a GCP typo into its surroundings |
-| 2 | P1 accurate | D vs C | The fixed-3857 shape (D) bends where GCPs are sparse and outside them. Matching the CRS (C) removes the bend |
-| 3 | P2 distorted | A vs B | If the map itself is distorted, A leaves an error even at the GCPs. B fits at the GCPs |
-| 4 | P2 distorted | B vs C | Inside the TIN B and C are identical; only outside the quadrilateral differs (B follows the world file, C extends a fan) |
+| 1 | P1 accurate | CRS only vs TIN + fan extrapolation | For an accurate map with a known CRS, the world file alone fits to the paper edge. The TIN adds no accuracy and drags a GCP typo into its surroundings. |
+| 2 | P1 accurate | legacy (V2) vs TIN + fan extrapolation | The legacy shape bends where GCPs are sparse and outside them. Matching the CRS makes the bend much smaller. |
+| 3 | P2 distorted | CRS only vs TIN + global extrapolation | If the map itself is distorted, CRS only leaves an error even at the GCPs. The TIN fits at every GCP. |
+| 4 | P2 distorted | TIN + global extrapolation vs TIN + fan extrapolation | Inside the quadrilateral the two are identical. Outside it, the graticule runs straight with the former and follows the fan with the latter. |
 
 **Visual grammar** (common to all demos; the source of truth is `demo/layered-map/grammar.ts`, pinned by `spec/layered-map-demo.spec.ts`):
-only three hues: red, blue, black. **Thin red core = what belongs to the paper** (what is drawn on it and its converted result),
-**thick blue band = the geographic truth** (3857), **black dotted/dashed lines = how the transform works** (GCP TIN, extension, quadrilateral, fan, told apart by dash pattern).
-Terrain is a thick solid line, the graticule a medium solid line, the mechanism a thin dotted line. **A core inside the band means it fits; a core outside means it does not** — one reading for
-terrain, graticule and GCPs alike. A GCP appears with the same number on the paper face (a red dot) and on the 3857 face (a blue ring, with the converted paper side as a red dot inside it);
+only three hues: red, blue, black. The **thin red line** is what belongs to the paper (what is drawn on it, and its converted result).
+The **thick blue band** is the geographic truth (3857). The **black dotted and dashed lines** show how the transform works (GCP TIN, extension, quadrilateral and fan, told apart by dash pattern).
+Terrain is a thick solid line, the graticule a medium solid line, and the mechanism a thin dotted line. A red line inside the band means it fits, and one outside the band means it does not.
+That one reading holds for terrain, graticule and GCPs alike. A GCP appears with the same number on the paper face (a red dot) and on the 3857 face (a blue ring, with the converted paper side as a red dot inside it);
 pressing either highlights both.
 
 Left is the **paper face** (an SVG in paper pixels), the middle the **3857 face** (Core's `MaplatApp`, background GSI tiles) and the right the panel.
-The blue bands on the 3857 face are longitude/latitude lines (`addLine` with `lnglats`); the red cores and the mechanism convert paper pixels with `MapTransform` of `@maplat/transform`
+The blue bands on the 3857 face are longitude/latitude lines (`addLine` with `lnglats`); the red lines and the mechanism convert paper pixels with `MapTransform` of `@maplat/transform`
 and are drawn with `addLine` `coordinates` (Core's public API has no "paper pixel → 3857" entry; that this transform returns the same values as Core's is pinned in
 `spec/layered-map-demo.spec.ts`). "Core でこの紙を開く" shows the view Core redraws in paper coordinates.
 

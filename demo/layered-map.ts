@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-// demo/layered-map.ts: 変換の形（A・B・C・D）のデモ。layered-map.html の操作。
+// demo/layered-map.ts: 変換の形（CRS・三角網＋大域外挿・三角網＋扇形外挿・従来型）のデモ。layered-map.html の操作。
 // 設計書: 2026-11-26-jan27-layered-map-demo-redesign.md。人間が「要望どおりか」を画面で見るためのもの（関門ではない）。
 //
 // 1 つのデモは 1 つの比較だけ（2 つの型の切り替え）。見せ方の文法（色・太さ・線種）は demo/layered-map/grammar.ts だけから取る。
@@ -61,21 +61,29 @@ interface Meta {
 interface PaperLines { size: number; coast: Line[]; grid: Line[] }
 interface TrueLines { p1: { coast: Line[]; grid: Line[] }; p2: { coast: Line[]; grid: Line[] } }
 
-// ---- 画面の文言（設計書 §6.3・§6.2）----
+// ---- 画面の文言（設計書 §6.3・§6.2）。型の呼び名は、地図 JSON の鍵（a・b・c・d）とは別に、ここだけで決める ----
+const TYPE_NAME: Record<string, string> = { a: "CRS", b: "三角網＋大域外挿", c: "三角網＋扇形外挿", d: "従来型" };
+const typeName = (t: string): string => TYPE_NAME[t] ?? t;
 const HINTS: Record<string, string> = {
-  "1": "見る所: 赤い芯が青い帯から出る場所。A は紙の端まで出ない。C は『打ち間違い』の 2 か所の周りで出る。",
-  "2": "見る所: GCP が疎な所（東北・北海道）と、GCP の外（北海道の東・沖縄）。D は赤い芯が青い帯から出る。C は出ない。",
-  "3": "見る所: GCP の的。A は赤い丸が青い輪からずれたまま。B はすべて的に入り、内側の海岸線が帯に乗る。",
-  "4": "見る所: 破線の四辺形の外だけ。内側は B と C で変わらない。外側は、B は経緯線がまっすぐ延び、C は扇形に沿って延びる。"
+  "1": "CRS では、赤い線が紙の端まで青い帯の中に収まる。三角網＋扇形外挿に切り替えると、打ち間違いの GCP 2 つの周りで、赤い線が帯からはみ出す。",
+  "2": "従来型では、GCP の少ない東北・北海道と、GCP の外にある北海道の東・沖縄で、赤い線が青い帯からはみ出す。三角網＋扇形外挿に切り替えると、はみ出しは小さくなる。",
+  "3": "GCP の赤い丸と青い輪を見る。CRS では、赤い丸が輪からずれたまま残る。三角網＋大域外挿に切り替えると、赤い丸がどれも輪の中に入る。",
+  "4": "破線の四辺形の内側は、切り替えても変わらない。外側では、経緯線が三角網＋大域外挿ならまっすぐ延び、三角網＋扇形外挿なら扇形に沿って延びる。"
 };
-const DEMO_TITLE: Record<string, string> = { "1": "1 A と C", "2": "2 D と C", "3": "3 A と B", "4": "4 B と C" };
+const DEMO_TITLE: Record<string, string> = {
+  "1": "1 CRS と 三角網＋扇形外挿",
+  "2": "2 従来型 と 三角網＋扇形外挿",
+  "3": "3 CRS と 三角網＋大域外挿",
+  "4": "4 三角網＋大域外挿 と 三角網＋扇形外挿"
+};
 const TYPE_NOTE: Record<string, string> = {
-  a: "A: CRS＋world file だけ（三角網なし）。6 つの係数で紙の全体を写す。",
-  b: "B: CRS＋三角網。四辺形の外は大域モデル（world file）に従う。",
-  c: "C: CRS＋三角網。四辺形の外は扇形（縁の GCP の傾向を外へ延ばす）。",
-  d: "D: 3857 固定＋三角網（V2）。補助頂点は紙の四隅の 4 つ。投影の違いを三角網で吸収する。"
+  a: "CRS は、地図を CRS として読んで、6 つの係数だけで紙の全体を写し、三角網は使わない。",
+  b: "三角網＋大域外挿は、CRS の上に GCP の三角網を張り、四辺形の外は地図全体に当てはめた world file で延ばす。",
+  c: "三角網＋扇形外挿は、CRS の上に GCP の三角網を張り、四辺形の外は縁の GCP の傾向を扇形に延ばす。",
+  d: "従来型（3857＋三角網＋扇形外挿。V2）は、投影を 3857 に決め打ちして、紙の四隅の 4 つの補助頂点を足した三角網で、投影の違いを吸収する。"
 };
-const SETUP_TYPE: Record<string, string> = { worldFileOnly: "A", tinGlobal: "B", tinFan: "C" };
+const SETUP_TYPE: Record<string, string> = { worldFileOnly: TYPE_NAME.a, tinGlobal: TYPE_NAME.b, tinFan: TYPE_NAME.c };
+const statusText = (): string => `デモ ${demoNo}・${typeName(typeKey)}`;
 const REGION_FAR = 0.3; // 紙の縁の外の余白（紙の幅に対する割合）
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => document.getElementById(id) as T;
@@ -220,7 +228,7 @@ function regionLabels(g: Geom, u: (px: number) => number): string {
   const auxRight = Math.max(...g.aux.map(a => a[0]));
   let h = text("GCP の三角網", cx, gcps.reduce((a, p) => a + p[1], 0) / gcps.length);
   h += text("拡張範囲", cx, (hullTop + auxTop) / 2);
-  const outer = g.kind === "worldFile" ? "world file" : "扇形";
+  const outer = g.kind === "worldFile" ? "大域外挿" : "扇形外挿";
   const y = Math.min(auxBottom + 0.06 * W, (1 + REGION_FAR) * W - u(12));
   h += text(outer, cx, y);
   if (auxRight + 0.1 * W < (1 + REGION_FAR) * W) h += text(outer, Math.min(auxRight + 0.12 * W, (1 + REGION_FAR) * W - 0.06 * W), W / 2);
@@ -402,14 +410,18 @@ function setView(kind: ViewKind): void {
 // ---------------------------------------------------------------------------------------------
 const setupNames = (s: string[]): string => s.map(x => SETUP_TYPE[x] ?? x).join(" または ");
 function renderHint(): void {
-  $("hint-text").textContent = HINTS[demoNo];
+  const el = $("hint-text");
+  const lead = document.createElement("b");
+  lead.textContent = "確認のポイント";
+  el.replaceChildren(lead, ` ${HINTS[demoNo]}`);
   const t = demo().teiresias;
-  let s = t.score === null ? "score なし" : `score ${t.score.toFixed(4)} → 推奨 ${setupNames(t.setups) || "なし"}`;
+  const say = (x: Teiresias, head: string): string => `${head} は ${x.score!.toFixed(4)} で、推奨は ${setupNames(x.setups) || "なし"}。`;
+  let msg = t.score === null ? "Teiresias の score は出なかった。" : say(t, "Teiresias の score");
   if (demoNo === "1") {
     const c = meta.gcpSets.g1c.teiresias;
-    if (c.score !== null) s += `（打ち間違いを直した GCP なら score ${c.score.toFixed(4)} → 推奨 ${setupNames(c.setups)}）`;
+    if (c.score !== null) msg += `打ち間違いを直した GCP なら、${say(c, "score")}`;
   }
-  $("hint-score").textContent = s;
+  $("hint-score").textContent = msg;
 }
 function renderPanel(): void {
   const types = demo().types;
@@ -418,7 +430,7 @@ function renderPanel(): void {
   for (const t of types) {
     const b = document.createElement("button");
     b.type = "button";
-    b.textContent = t.toUpperCase();
+    b.textContent = typeName(t);
     b.setAttribute("aria-pressed", String(t === typeKey));
     b.addEventListener("click", () => void setType(t));
     box.appendChild(b);
@@ -430,20 +442,20 @@ function renderPanel(): void {
     ["外側", s => `${fmt(s.outer.maxKm)} / ${fmt(s.outer.rmsKm)}`, "GCP の凸包の外で紙の中"],
     ["GCP", s => fmt(s.gcpMaxKm, 2), "GCP の位置での残差の最大"]
   ];
-  let h = `<thead><tr><th></th>${types.map(t => `<th>${t.toUpperCase()}</th>`).join("")}</tr></thead><tbody>`;
+  let h = `<thead><tr><th></th>${types.map(t => `<th>${typeName(t)}</th>`).join("")}</tr></thead><tbody>`;
   for (const [name, f, tip] of rows) h += `<tr><th title="${tip}">${name}</th>${types.map(t => `<td>${f(meta.maps[mapId(t)].stats)}</td>`).join("")}</tr>`;
   $("gap-table").innerHTML = h + "</tbody>";
   const px = meta.screenRef.mercPerPx[demo().paper];
-  $("gap-ref").textContent = `1 画面画素 ≒ ${(px / 1000 * Math.cos((35 * Math.PI) / 180)).toFixed(1)} km（北緯 35 度・「全体」で面の幅 ${meta.screenRef.widthPx} 画素のとき）`;
+  $("gap-ref").textContent = `目安として、「全体」で面の幅が ${meta.screenRef.widthPx} 画素のとき、北緯 35 度で 1 画面画素が約 ${(px / 1000 * Math.cos((35 * Math.PI) / 180)).toFixed(1)} km。`;
   $("view-blunder").hidden = demoNo !== "1";
   renderGcpInfo();
 }
 function renderGcpInfo(): void {
   const el = $("gcp-info");
-  if (selected === undefined) { el.textContent = "（印を押してください）"; return; }
+  if (selected === undefined) { el.textContent = "印を押すと、ここに詳しく出る。"; return; }
   const q = gcpList().find(x => x.no === selected)!;
-  const res = demo().types.map(t => `${t.toUpperCase()} ${fmt(meta.maps[mapId(t)].gcpResidual[selected! - 1].km, 2)}`).join(" ／ ");
-  el.innerHTML = `<b>GCP ${q.no}</b>（${q.region}）${q.blunder ? "<b>打ち間違い</b>" : ""}<br>紙の画素 (${q.pixel[0].toFixed(0)}, ${q.pixel[1].toFixed(0)}) ↔ 経度・緯度 (${q.lonlat[0].toFixed(3)}, ${q.lonlat[1].toFixed(3)})<br>残差（km）: ${res}`;
+  const res = demo().types.map(t => `${typeName(t)}が ${fmt(meta.maps[mapId(t)].gcpResidual[selected! - 1].km, 2)}`).join("、");
+  el.innerHTML = `<b>GCP ${q.no}</b>（${q.region}）${q.blunder ? "<b>打ち間違い</b>" : ""}<br>紙の画素は (${q.pixel[0].toFixed(0)}, ${q.pixel[1].toFixed(0)})、経度・緯度は (${q.lonlat[0].toFixed(3)}, ${q.lonlat[1].toFixed(3)})。<br>この GCP でのずれ（km）は、${res}。`;
 }
 function renderLegend(): void {
   const sw = (inner: string): string => `<svg viewBox="0 0 36 12" aria-hidden="true">${inner}</svg>`;
@@ -451,9 +463,9 @@ function renderLegend(): void {
   const core = `<line x1="0" y1="6" x2="36" y2="6" stroke="${COLOR.red}" stroke-width="${WIDTH.terrain.core}"/>`;
   const dots = `<line x1="0" y1="6" x2="36" y2="6" stroke="${COLOR.black}" stroke-width="${WIDTH.principle}" stroke-dasharray="${DASH.tin.join(" ")}"/>`;
   $("legend").innerHTML =
-    `<span>${sw(core)}赤い芯＝紙のもの</span>` +
-    `<span>${sw(band)}青い帯＝正解（芯が帯の中なら合っている）</span>` +
-    `<span>${sw(dots)}黒い点線＝変換のしくみ</span>`;
+    `<span>${sw(core)}赤い線は、紙に描いてあるものを変換した結果</span>` +
+    `<span>${sw(band)}青い帯は正解。赤い線が帯の中なら合っている</span>` +
+    `<span>${sw(dots)}黒い点線は、変換のしくみ</span>`;
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -484,7 +496,7 @@ async function redrawAll(): Promise<void> {
   await drawRed(token);
   if (token !== runToken) return;
   drawMarkers();
-  statusEl.textContent = `デモ ${DEMO_TITLE[demoNo]}（${typeKey.toUpperCase()}）`;
+  statusEl.textContent = statusText();
 }
 async function setType(t: string): Promise<void> {
   if (t === typeKey) return;
@@ -497,7 +509,7 @@ async function setType(t: string): Promise<void> {
   await drawRed(token);
   if (token !== runToken) return;
   drawMarkers();
-  statusEl.textContent = `デモ ${DEMO_TITLE[demoNo]}（${typeKey.toUpperCase()}）`;
+  statusEl.textContent = statusText();
 }
 async function setDemo(no: string): Promise<void> {
   demoNo = no;
@@ -590,7 +602,7 @@ async function main(): Promise<void> {
   await setDemo(startDemo);
   const t = params.get("type");
   if (t && demo().types.includes(t)) await setType(t);
-  statusEl.textContent = `デモ ${DEMO_TITLE[demoNo]}（${typeKey.toUpperCase()}）`;
+  statusEl.textContent = statusText();
 }
 
 main().catch(e => {
