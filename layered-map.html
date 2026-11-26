@@ -25,7 +25,11 @@
     .demo-field { display: flex; flex-direction: column; gap: 4px; width: 100%; font-size: 12px; }
     .demo-field input[type="range"] { width: 100%; }
     .demo-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11px; margin: 4px 0; }
-    .demo-legend i { display: inline-block; width: 18px; height: 0; border-top: 3px solid; vertical-align: middle; margin-right: 4px; }
+    .demo-legend { flex-direction: column; flex-wrap: nowrap; gap: 3px; }
+    .demo-legend span { display: flex; align-items: center; gap: 4px; line-height: 1.3; }
+    .demo-legend i { flex: none; display: inline-block; width: 18px; height: 0; border-top: 3px solid; margin-right: 2px; }
+    .demo-legend b.sw { flex: none; display: inline-block; width: 18px; height: 10px; border: 1.5px solid; margin-right: 2px; }
+    .demo-legend .mk { flex: none; display: inline-flex; width: 20px; height: 20px; }
     .demo-table { border-collapse: collapse; width: 100%; margin: 4px 0; font-size: 11px; }
     .demo-table th, .demo-table td { border: 1px solid #d5d9e2; padding: 2px 4px; text-align: left; vertical-align: top; word-break: break-all; }
     .demo-table th { background: #f4f6fa; font-weight: 700; width: 38%; }
@@ -56,7 +60,9 @@
       <div class="c4h-info-box">
         <p>紙: 合成の経緯線の画像（EPSG:4326 の等間隔図・東経 125〜150 度・北緯 25〜50 度・赤）。
           <strong>青の線は経緯度から描いた基準の経緯線</strong>（5 度ごと・紙の外へも延ばす）。
-          紙の赤い線に青が重なれば、その場所の変換は正しい。</p>
+          紙の赤い線に青が重なれば、その場所の変換は正しい。
+          三角網の地図には、三角網の構造を<strong>紙の画素の座標のまま</strong>（変換を通さずに）重ねる。
+          world file の地図には、対応点（紙の画素 ↔ 経度・緯度の組）を ● と ✕ で重ねる。</p>
       </div>
     </div>
     <aside id="demo-panel" class="demo-panel" aria-label="操作メニュー">
@@ -65,7 +71,7 @@
         <h2>表示</h2>
         <div class="demo-row">
           <label class="demo-check"><input type="checkbox" id="chk-ref" checked>基準の経緯線（青）を重ねる</label>
-          <label class="demo-check"><input type="checkbox" id="chk-gcp" checked>制御点（緑）と四辺形（橙）を重ねる（三角網の地図）</label>
+          <label class="demo-check"><input type="checkbox" id="chk-gcp" checked>対応点と、三角網の構造（GCP の三角網・四辺形と補助頂点・扇形）を重ねる</label>
         </div>
         <div class="demo-row">
           <button type="button" id="btn-view-paper">紙の全体を見る</button>
@@ -74,6 +80,11 @@
         <label class="demo-field">背景地図の透過度（紙を薄くして背景の地理院地図を見る）
           <input type="range" id="rng-transparency" min="0" max="100" value="0">
         </label>
+      </section>
+      <section class="demo-sec" id="sec-select">
+        <h2>選んだ印の値</h2>
+        <p class="demo-note">地図の印をクリックすると出ます（対応点は紙の画素・経度・緯度・両側のずれ）。</p>
+        <table class="demo-table" id="tbl-sel"></table>
       </section>
       <section class="demo-sec" id="sec-state">
         <h2>3. 今の地図（入力）</h2>

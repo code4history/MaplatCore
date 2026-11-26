@@ -18,13 +18,15 @@ interface MapDef {
   label: string;
   /** 制御点が及ぶ範囲（紙の画素。両軸）。その外側が「制御点の外」 */
   inner?: [number, number];
+  /** wf: world file の地図 / fan: 三角網＋外側が扇形 / wfOuter: 三角網＋外側が world file */
+  kind: "wf" | "fan" | "wfOuter";
 }
 const MAPS: Record<string, MapDef> = {
-  layered_demo_wf4326: { id: "layered_demo_wf4326", short: "(a)", label: "(a) world file（EPSG:4326）" },
-  layered_demo_tin9: { id: "layered_demo_tin9", short: "(b)", label: "(b) 中央 30% の 9 点の三角網", inner: [PAPER * 0.35, PAPER * 0.65] },
-  layered_demo_wf3857: { id: "layered_demo_wf3857", short: "(c)", label: "(c) 3857 のアフィンで近似した world file" },
-  layered_demo_gcp_b: { id: "layered_demo_gcp_b", short: "B", label: "B: 四辺形の外は world file", inner: [PAPER * 0.2, PAPER * 0.8] },
-  layered_demo_gcp_c: { id: "layered_demo_gcp_c", short: "C", label: "C: 四辺形の外は扇形", inner: [PAPER * 0.2, PAPER * 0.8] }
+  layered_demo_wf4326: { id: "layered_demo_wf4326", short: "(a)", label: "(a) world file（EPSG:4326）", kind: "wf" },
+  layered_demo_tin9: { id: "layered_demo_tin9", short: "(b)", label: "(b) 中央 30% の 9 点の三角網", inner: [PAPER * 0.35, PAPER * 0.65], kind: "fan" },
+  layered_demo_wf3857: { id: "layered_demo_wf3857", short: "(c)", label: "(c) 3857 のアフィンで近似した world file", kind: "wf" },
+  layered_demo_gcp_b: { id: "layered_demo_gcp_b", short: "B", label: "B: 四辺形の外は world file", inner: [PAPER * 0.2, PAPER * 0.8], kind: "wfOuter" },
+  layered_demo_gcp_c: { id: "layered_demo_gcp_c", short: "C", label: "C: 四辺形の外は扇形", inner: [PAPER * 0.2, PAPER * 0.8], kind: "fan" }
 };
 const REFERENCE = "layered_demo_wf4326";
 
@@ -40,8 +42,9 @@ const GROUPS: Group[] = [
     title: "world file の地図と三角網の地図（制御点の外）",
     ids: ["layered_demo_wf4326", "layered_demo_tin9"],
     note:
-      "同じ画像を、(a) は 4326 の world file だけで、(b) は紙の中央 30% にだけ置いた 9 点（緑）の三角網で読む。" +
-      "(a) は紙の端まで赤い線に青い線が重なる。(b) は制御点の外が扇形の外挿になり、周辺ほど青が赤から外れる。"
+      "同じ画像を、(a) は 4326 の world file だけで、(b) は紙の中央 30% にだけ置いた 9 点の GCP の三角網で読む。" +
+      "(a) は紙の端まで赤い線に青い線が重なる。(b) は GCP の外が扇形の外挿になり、周辺ほど青が赤から外れる。" +
+      "(b) では三角網の構造（GCP・四辺形・補助頂点・扇形）を紙の上に描く。"
   },
   {
     no: "2",
@@ -50,7 +53,8 @@ const GROUPS: Group[] = [
     note:
       "同じ画像を、(a) 4326 の world file と、(c) それを 3857 のアフィンで近似した world file で読む。" +
       "(c) は緯度方向の伸びを 1 つの係数でしか表せないので、青が赤から緯度に応じてずれる" +
-      "（重なる緯度が 2 本あり、中央と両端では逆向きにずれる）。下の図に緯度ごとの差を描く。"
+      "（重なる緯度が 2 本あり、中央と両端では逆向きにずれる）。紙の全体に散らした 16 組の対応点（紙の画素 ↔ 経度・緯度）を描く。" +
+      "(a) は組の両側が一致し、(c) は最小二乗の残差として地理側（✕）が紙側（●）からずれる（線で結ぶ）。下の図に緯度ごとの差を描く。"
   },
   {
     no: "4",
@@ -58,7 +62,8 @@ const GROUPS: Group[] = [
     ids: ["layered_demo_gcp_b", "layered_demo_gcp_c"],
     note:
       "同じ画像に、描き手が外へ向けて縮めた形の 25 点（紙の中央 60%・周辺ほど縮尺が小さい。角で 1.8 倍の距離）を置く。" +
-      "制御点の内側は B・C とも同じ。四辺形（橙）の外で、B は world file の格子を一様に延ばし、C は扇形に延びる。" +
+      "三角網は B・C とも同じ（GCP の三角形・四辺形の外周と補助頂点・補助頂点の三角形）。" +
+      "四辺形の外で、B は world file の格子を一様に延ばし（灰青の面）、C は扇形に延びる（紫の放射線と交互の塗り）。" +
       "紙の周辺〜紙の外で青い線がどう延びるかを比べる。"
   }
 ];
@@ -153,11 +158,7 @@ function buildGroups(onSelect: (id: string) => void): void {
   }
   const legend = document.createElement("div");
   legend.className = "demo-legend";
-  legend.innerHTML =
-    '<span><i style="border-color:#c81e1e"></i>紙の経緯線（1 度ごと・5 度は太い）</span>' +
-    '<span><i style="border-color:#1d4ed8"></i>基準の経緯線（5 度ごと）</span>' +
-    '<span><i style="border-color:#15803d"></i>制御点</span>' +
-    '<span><i style="border-color:#ea580c"></i>四辺形</span>';
+  legend.id = "demo-legend";
   host.appendChild(legend);
 }
 
@@ -299,30 +300,253 @@ const range = (a: number, b: number, step: number): number[] => {
   return out;
 };
 
+// ---- 対応点（紙の画素 ↔ 経度・緯度の組）----
+// 地図 JSON の対応点: 三角網の地図は compiled.points、world file の地図は gcps（変換には使わない記録）
+const gcpsOf = (json: any): [Xy, number[]][] => json?.compiled?.points ?? json?.gcps ?? [];
+const lonLatToMerc = ([lon, lat]: LonLat): Xy => [
+  R * rad(lon),
+  R * Math.log(Math.tan(Math.PI / 4 + rad(lat) / 2))
+];
+
+interface Pair {
+  index: number;
+  px: Xy; // 紙の画素（記録）
+  geo: LonLat; // 地理側の経度・緯度（記録）
+  fwd: LonLat; // 今の地図が紙の画素 px を写す先（順変換）
+  inv: Xy; // 今の地図が geo を落とす紙の画素（逆変換）
+  dPx: number; // 両側のずれ（紙の画素）
+  dM: number; // 両側のずれ（地上の m。fwd と geo の距離）
+}
+const pairs: Record<string, Pair[]> = {};
+
+async function computePairs(id: string, source: any): Promise<Pair[]> {
+  const json = JSONS[id];
+  return Promise.all(
+    gcpsOf(json).map(async ([px, g], index) => {
+      const geo = geoToLonLat(json, g);
+      const fwd = mercToLonLat(await source.xy2MercAsync(px));
+      const inv: Xy = await source.merc2XyAsync(lonLatToMerc(geo));
+      return { index, px: [px[0], px[1]] as Xy, geo, fwd, inv, dPx: Math.hypot(inv[0] - px[0], inv[1] - px[1]), dM: haversine(fwd, geo) };
+    })
+  );
+}
+
+// ---- 三角網の構造（紙側＝画素の座標）----
+interface Structure {
+  gcp: Xy[];
+  aux: Xy[]; // 補助頂点（四辺形の外周の点。b0, b1, …の順）
+  tris: { v: Xy[]; gcpOnly: boolean }[];
+  centroid?: Xy;
+}
+function structureOf(json: any): Structure | undefined {
+  const c = json?.compiled;
+  if (!c) return undefined;
+  const gcp: Xy[] = c.points.map((p: any) => p[0]);
+  const aux: Xy[] = c.vertices_points.map((v: any) => v[0]);
+  const at = (i: number | string): Xy => (typeof i === "number" ? gcp[i] : aux[Number(String(i).slice(1))]);
+  const tris = ((c.tins_points?.[0] ?? []) as (number | string)[][]).map(t => ({
+    v: t.map(at),
+    gcpOnly: t.every(i => typeof i === "number")
+  }));
+  return { gcp, aux, tris, centroid: c.centroid_point?.[0] };
+}
+
+// ---- 色（凡例と同じ）----
+const COLOR = { gcp: "#15803d", geo: "#be185d", aux: "#ea580c", fan: "#7c3aed", outer: "#475569", gap: "#111827" };
+
+// ---- 点の印: 画面の画素で大きさが決まる SVG のアイコン（Core の POI の icon）。地図の座標の面ではない ----
+type MarkKind = "gcp" | "geo" | "aux" | "centroid";
+function markSvg(kind: MarkKind, selected: boolean): string {
+  const s = selected ? 30 : 20, c = s / 2;
+  const halo = selected ? `<circle cx="${c}" cy="${c}" r="${c - 1.5}" fill="rgba(250,204,21,0.45)" stroke="#eab308" stroke-width="2"/>` : "";
+  let body = "";
+  if (kind === "gcp") body = `<circle cx="${c}" cy="${c}" r="5.5" fill="${COLOR.gcp}" stroke="#fff" stroke-width="2"/>`;
+  else if (kind === "geo") {
+    const d = `M${c - 5} ${c - 5}L${c + 5} ${c + 5}M${c + 5} ${c - 5}L${c - 5} ${c + 5}`;
+    body = `<path d="${d}" stroke="#fff" stroke-width="5.5" stroke-linecap="round"/><path d="${d}" stroke="${COLOR.geo}" stroke-width="2.6" stroke-linecap="round"/>`;
+  } else if (kind === "aux") body = `<path d="M${c} ${c - 6.5}L${c + 6.5} ${c}L${c} ${c + 6.5}L${c - 6.5} ${c}Z" fill="${COLOR.aux}" stroke="#fff" stroke-width="1.8"/>`;
+  else body = `<circle cx="${c}" cy="${c}" r="5.5" fill="#fff" stroke="${COLOR.fan}" stroke-width="2.6"/><circle cx="${c}" cy="${c}" r="1.6" fill="${COLOR.fan}"/>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 ${s} ${s}">${halo}${body}</svg>`;
+}
+const svgUri = (svg: string) => "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+const markIcon = (kind: MarkKind, selected: boolean) => ({ src: svgUri(markSvg(kind, selected)), anchor: [0.5, 0.5] });
+
+// 選んでいる印（クリックで変わる）
+interface Selection { kind: "gcp" | "aux" | "centroid"; index: number }
+let selection: Selection | undefined;
+
+const FAR = 7000; // 扇形を延ばす距離（紙の画素）。表示の範囲より十分に遠い
+
 function redrawOverlays(app: MaplatApp, id: string): void {
   app.clearLine();
+  app.clearMarker("main");
+  const json = JSONS[id];
+  const source = app.cacheHash[id] as any;
+  const mo = (app as any).mapObject;
+  if (!json || !source || !mo) return;
+  const sys = (xy: Xy) => source.xy2SysCoord(xy);
+  // 紙の画素のまま置く（変換を通さない）。線・面は Core の mapObject.setVector、点は POI の x, y（紙の画素）
+  const poly = (rings: Xy[][], fill: string | undefined, stroke: { color: string; width: number; lineDash?: number[] } | undefined) =>
+    mo.setVector(rings.map(r => [...r, r[0]].map(sys)), "Polygon", { stroke, fill: fill ? { color: fill } : undefined });
+  const line = (pts: Xy[], stroke: { color: string; width: number; lineDash?: number[] }) => mo.setVector(pts.map(sys), "Line", { stroke });
+
+  const showStructure = $<HTMLInputElement>("chk-gcp").checked;
+  const def = MAPS[id];
+  const st = structureOf(json);
+
+  // (3) 四辺形の外側（先に描く＝下に置く）
+  if (showStructure && st) {
+    if (def.kind === "fan" && st.centroid) {
+      const c = st.centroid;
+      const far = (v: Xy): Xy => {
+        const d = Math.hypot(v[0] - c[0], v[1] - c[1]) || 1;
+        return [c[0] + ((v[0] - c[0]) / d) * FAR, c[1] + ((v[1] - c[1]) / d) * FAR];
+      };
+      const n = st.aux.length;
+      for (let i = 0; i < n; i++) {
+        const a = st.aux[i], b = st.aux[(i + 1) % n];
+        poly([[a, far(a), far(b), b]], i % 2 === 0 ? "rgba(124, 58, 237, 0.10)" : "rgba(124, 58, 237, 0.22)", undefined);
+      }
+    } else if (def.kind === "wfOuter") {
+      const L = -4000, H = 6000;
+      mo.setVector(
+        [[[L, L], [H, L], [H, H], [L, H], [L, L]].map(p => sys(p as Xy)), [...st.aux, st.aux[0]].map(sys)],
+        "Polygon",
+        { fill: { color: "rgba(71, 85, 105, 0.30)" } }
+      );
+    }
+  }
+
   if ($<HTMLInputElement>("chk-ref").checked) {
     const stroke = { color: "#1d4ed8", width: 2.5 };
     for (const lon of range(120, 155, 5)) app.addLine({ lnglats: range(20, 55, 0.5).map(lat => [lon, lat]), stroke });
     for (const lat of range(20, 55, 5)) app.addLine({ lnglats: range(120, 155, 0.5).map(lon => [lon, lat]), stroke });
   }
-  const json = JSONS[id];
-  if ($<HTMLInputElement>("chk-gcp").checked && json?.compiled) {
-    const quad: number[][] | undefined = json.compiled.vertices_points?.map((v: number[][]) => v[1]);
-    if (quad && quad.length >= 3) {
-      const ring = quad.map(g => geoToLonLat(json, g));
-      app.addVector({ type: "Polygon", lnglats: [[...ring, ring[0]]], style: { stroke: { color: "#ea580c", width: 3 }, fill: { color: "rgba(234, 88, 12, 0.06)" } } });
-    }
-    const h = 0.2; // 制御点の目印の半幅（度）
-    for (const [, geo] of json.compiled.points as [number[], number[]][]) {
-      const [lon, lat] = geoToLonLat(json, geo);
-      app.addVector({
-        type: "Polygon",
-        lnglats: [[[lon - h, lat - h], [lon + h, lat - h], [lon + h, lat + h], [lon - h, lat + h], [lon - h, lat - h]]],
-        style: { stroke: { color: "#15803d", width: 1.5 }, fill: { color: "rgba(34, 197, 94, 0.7)" } }
-      });
+
+  if (!showStructure) return;
+
+  if (st) {
+    // (2) 補助頂点を含む三角形（三角網の拡張範囲）→ (1) GCP だけの三角形 の順（GCP の三角網を上に）
+    for (const t of st.tris.filter(t => !t.gcpOnly)) poly([t.v], "rgba(234, 88, 12, 0.07)", { color: "rgba(234, 88, 12, 0.85)", width: 1.2 });
+    for (const t of st.tris.filter(t => t.gcpOnly)) poly([t.v], "rgba(21, 128, 61, 0.14)", { color: COLOR.gcp, width: 2 });
+    // 四辺形（補助頂点の輪）は太線
+    poly([st.aux], undefined, { color: COLOR.aux, width: 4 });
+    // (3) 扇形の放射線: 重心から各補助頂点へ（四辺形の内は細い破線、外は実線で紙の外まで）
+    if (def.kind === "fan" && st.centroid) {
+      const c = st.centroid;
+      for (const a of st.aux) {
+        const d = Math.hypot(a[0] - c[0], a[1] - c[1]) || 1;
+        line([c, a], { color: "rgba(124, 58, 237, 0.55)", width: 1, lineDash: [5, 5] });
+        line([a, [c[0] + ((a[0] - c[0]) / d) * FAR, c[1] + ((a[1] - c[1]) / d) * FAR]], { color: COLOR.fan, width: 1.6 });
+      }
     }
   }
+
+  // 対応点の組: 紙側と地理側が一致しない所を線で結ぶ
+  const ps = pairs[id] ?? [];
+  const wf = def.kind === "wf";
+  if (wf) {
+    for (const p of ps) {
+      if (p.dPx < 0.5) continue;
+      line([p.px, p.inv], { color: "#fff", width: 7 });
+      line([p.px, p.inv], { color: COLOR.gap, width: 3.5 });
+    }
+  }
+
+  // 点の印（POI）。選んでいる組・補助頂点は大きく黄色の輪をつける
+  const put = (data: Record<string, unknown>, kind: MarkKind, selected: boolean) =>
+    app.addMarker({ ...data, icon: markIcon(kind, selected) }, "main");
+  const isSel = (k: Selection["kind"], i: number) => selection?.kind === k && selection.index === i;
+  if (st) {
+    st.aux.forEach((a, i) => put({ id: `aux_${i}`, name: `補助頂点 b${i}`, x: a[0], y: a[1], demoKind: "aux", demoIndex: i }, "aux", isSel("aux", i)));
+    if (def.kind === "fan" && st.centroid) {
+      put({ id: "centroid", name: "重心", x: st.centroid[0], y: st.centroid[1], demoKind: "centroid", demoIndex: 0 }, "centroid", isSel("centroid", 0));
+    }
+  }
+  for (const p of ps) {
+    const s = isSel("gcp", p.index);
+    if (wf) put({ id: `geo_${p.index}`, name: `地理側 #${p.index + 1}`, lnglat: p.geo, demoKind: "gcp", demoIndex: p.index }, "geo", s);
+    put({ id: `gcp_${p.index}`, name: `GCP #${p.index + 1}`, x: p.px[0], y: p.px[1], demoKind: "gcp", demoIndex: p.index }, "gcp", s);
+  }
+}
+
+// 対応点の両側のずれの最大（凡例に書く。小さいときは拡大して見る）
+function gapSummary(id: string): string {
+  const ps = pairs[id] ?? [];
+  const dPx = Math.max(0, ...ps.map(p => p.dPx)), dM = Math.max(0, ...ps.map(p => p.dM));
+  return dM < 0.5 ? "この地図は全組で一致" : `この地図の最大: ${dPx.toFixed(0)} 画素・${(dM / 1000).toFixed(1)} km。画面で小さければ拡大して見る`;
+}
+
+// 凡例（今の地図に出るものだけ）
+function renderLegend(id: string): void {
+  const def = MAPS[id];
+  const sw = (css: string) => `<i style="${css}"></i>`;
+  const box = (fill: string, border: string) => `<b class="sw" style="background:${fill};border-color:${border}"></b>`;
+  const mark = (k: MarkKind) => `<span class="mk">${markSvg(k, false)}</span>`;
+  const items: string[] = [
+    `<span>${sw("border-color:#c81e1e")}紙の経緯線（1 度ごと・5 度は太い）</span>`,
+    `<span>${sw("border-color:#1d4ed8")}基準の経緯線（5 度ごと）</span>`
+  ];
+  if (def.kind === "wf") {
+    items.push(
+      `<span>${mark("gcp")}対応点（紙の画素 ↔ 経度・緯度の組）の紙側（紙の画素の位置）</span>`,
+      `<span>${mark("geo")}同じ組の地理側（経度・緯度を、この地図の変換で紙に落とした位置）</span>`,
+      `<span>${sw("border-color:" + COLOR.gap)}両側のずれ（一致する所は線なし。${gapSummary(id)}）</span>`
+    );
+  } else {
+    items.push(
+      `<span>${box("rgba(21,128,61,0.14)", COLOR.gcp)}(1) GCP の三角網（頂点がすべて GCP の三角形）</span>`,
+      `<span>${mark("gcp")}GCP（紙側。三角網は GCP をちょうど通るので、地理側の点も同じ位置に重なる）</span>`,
+      `<span>${sw("border-color:" + COLOR.aux + ";border-top-width:4px")}(2) 四辺形（補助頂点の外周）</span>`,
+      `<span>${mark("aux")}補助頂点</span>`,
+      `<span>${box("rgba(234,88,12,0.07)", COLOR.aux)}補助頂点を含む三角形（三角網の拡張範囲）</span>`
+    );
+    if (def.kind === "fan") {
+      items.push(
+        `<span>${box("rgba(124,58,237,0.22)", COLOR.fan)}(3) 扇形（四辺形の外の外挿）。重心からの放射線で区切り、交互に塗る</span>`,
+        `<span>${mark("centroid")}扇形の重心</span>`
+      );
+    } else {
+      items.push(`<span>${box("rgba(71,85,105,0.30)", COLOR.outer)}四辺形の外は一様な world file（扇形は無い）</span>`);
+    }
+  }
+  $("demo-legend").innerHTML = items.join("");
+}
+
+// 選んでいる印の値
+function renderSelection(id: string): void {
+  const el = $("tbl-sel");
+  const json = JSONS[id];
+  const fx = (v: number) => v.toFixed(1);
+  const rows: string[] = [];
+  if (!selection) {
+    el.innerHTML = row("（未選択）", "地図の印（●・✕・◆）をクリックすると、その値が出ます");
+    return;
+  }
+  if (selection.kind === "gcp") {
+    const p = pairs[id]?.[selection.index];
+    if (!p) { el.innerHTML = row("（無い）", ""); return; }
+    rows.push(
+      row("対応点", `#${p.index + 1}（紙の画素 ↔ 経度・緯度の組）`),
+      row("紙の画素", `(${fx(p.px[0])}, ${fx(p.px[1])})`, "num"),
+      row("経度・緯度（地理側）", fmtLonLat(p.geo), "num"),
+      row("この地図が紙の画素を写す先", fmtLonLat(p.fwd), "num"),
+      row("地理側が落ちる紙の画素", `(${fx(p.inv[0])}, ${fx(p.inv[1])})`, "num"),
+      row("両側のずれ（紙の画素）", `${p.dPx.toFixed(2)} 画素`, "num"),
+      row("両側のずれ（地上）", p.dM < 0.5 ? `${p.dM.toFixed(3)} m（一致）` : fmtM(p.dM), "num")
+    );
+  } else if (selection.kind === "aux") {
+    const v = json.compiled.vertices_points[selection.index];
+    rows.push(
+      row("補助頂点", `b${selection.index}（四辺形の外周の点）`),
+      row("紙の画素", `(${fx(v[0][0])}, ${fx(v[0][1])})`, "num"),
+      row("地理側", fmtLonLat(geoToLonLat(json, v[1])), "num")
+    );
+  } else {
+    const c = json.compiled.centroid_point[0];
+    rows.push(row("扇形の重心", "放射線の中心"), row("紙の画素", `(${fx(c[0])}, ${fx(c[1])})`, "num"));
+  }
+  el.innerHTML = rows.join("");
 }
 
 // ---- 視点: 紙の全体・紙の外まで ----
@@ -366,7 +590,10 @@ async function main(): Promise<void> {
   await app.waitReady;
 
   // 数値の出力は、読み込み済みの source の座標変換（xy2MercAsync）から求める
-  for (const id of Object.keys(MAPS)) sampled[id] = await sampleSource(app.cacheHash[id]);
+  for (const id of Object.keys(MAPS)) {
+    sampled[id] = await sampleSource(app.cacheHash[id]);
+    pairs[id] = await computePairs(id, app.cacheHash[id]);
+  }
 
   const current = (): string => app.from?.mapID && MAPS[app.from.mapID] ? app.from.mapID : startId;
   const refresh = (): void => {
@@ -374,6 +601,8 @@ async function main(): Promise<void> {
     markActive(id);
     renderState(id, app.cacheHash[id]);
     renderOutput(id);
+    renderLegend(id);
+    renderSelection(id);
     redrawOverlays(app, id);
     status.textContent = `${MAPS[id].label}`;
   };
@@ -382,7 +611,17 @@ async function main(): Promise<void> {
       setView(app, GROUPS.find(g => g.no === "4")!.ids.includes(id)); // B・C は紙の外まで見る
     }, e => { status.textContent = `切り替えに失敗: ${String(e)}`; });
   });
-  app.addEventListener("mapChanged", refresh);
+  app.addEventListener("mapChanged", () => {
+    selection = undefined; // 別の地図では組の位置もずれも違うので、選びなおす
+    refresh();
+  });
+  // 印をクリックすると、その組（または補助頂点）を選ぶ
+  app.addEventListener("clickMarker", evt => {
+    const d = (evt as unknown as { detail?: { demoKind?: Selection["kind"]; demoIndex?: number } }).detail;
+    if (!d?.demoKind || d.demoIndex === undefined) return;
+    selection = { kind: d.demoKind, index: d.demoIndex };
+    refresh();
+  });
   $("chk-ref").addEventListener("change", refresh);
   $("chk-gcp").addEventListener("change", refresh);
   $("btn-view-paper").addEventListener("click", () => setView(app, false));

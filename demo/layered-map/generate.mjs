@@ -47,6 +47,14 @@ function fit3857() {
 }
 const WF_3857 = fit3857();
 
+// ---- (a)・(c) の比較用の GCP（地図 JSON の gcps。変換には使わない記録）----
+// 紙の全体に 4×4 点。地理側は「真の経緯度」＝(a) の world file が定める値。(a) の crs(4326) では経緯度、
+// (c) の crs(3857) ではそれを 3857 の座標にしたもの。(a) は組の両側が一致し、(c) は最小二乗の残差としてずれる。
+const gcpFrac = [0.1, 0.37, 0.63, 0.9];
+const wfGcpPixels = gcpFrac.flatMap(fy => gcpFrac.map(fx => [round(W * fx, 3), round(W * fy, 3)]));
+const gcps4326 = wfGcpPixels.map(p => [p, px2lonlat(p).map(v => round(v))]);
+const gcps3857 = wfGcpPixels.map(p => [p, lonlat2merc(px2lonlat(p)).map(v => round(v, 3))]);
+
 // ---- (b) 紙の内側 30%（中央の矩形）にだけ置いた 9 点（3×3）。真の値は world file から計算 ----
 const lo = W * 0.35, hi = W * 0.65;
 const grid9 = [lo, (lo + hi) / 2, hi];
@@ -107,13 +115,15 @@ const maps = {
   layered_demo_wf4326: {
     title: "(a) world file（EPSG:4326）",
     ...base, width: W, height: W,
-    tinEnabled: false, crs: { epsg: 4326 }, worldFile: WF_4326
+    tinEnabled: false, crs: { epsg: 4326 }, worldFile: WF_4326,
+    gcps: gcps4326
   },
   layered_demo_wf3857: {
     title: "(c) 3857 のアフィンで近似した world file",
     ...base, width: W, height: W,
     tinEnabled: false, crs: { epsg: 3857 },
-    worldFile: Object.fromEntries(Object.entries(WF_3857).map(([k, v]) => [k, round(v, 6)]))
+    worldFile: Object.fromEntries(Object.entries(WF_3857).map(([k, v]) => [k, round(v, 6)])),
+    gcps: gcps3857
   },
   layered_demo_tin9: {
     title: "(b) 中央 30% の 9 点の三角網（扇形の外挿）",
