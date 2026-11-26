@@ -9,9 +9,10 @@
     /* 2 つの面（紙・3857）を並べ、右に欄。C4H 正本 demo-shell.css（バイト等価）に無いレイアウトだけを置く。class は demo- 接頭辞に限る */
     body.c4h-app { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
     .demo-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
-    .demo-tabs button { padding: 4px 10px; border: 1px solid #5b6b94; border-radius: 4px; background: transparent; color: #dfe5f5; font-size: 12px; cursor: pointer; }
+    .demo-tabs button { min-width: 2.4em; padding: 4px 10px; border: 1px solid #5b6b94; border-radius: 4px; background: transparent; color: #dfe5f5; font-size: 12px; cursor: pointer; }
     .demo-tabs button[aria-pressed="true"] { background: #fff; border-color: #fff; color: #1a2744; font-weight: 700; }
     .demo-hint { display: flex; gap: 16px; justify-content: space-between; align-items: baseline; padding: 6px 16px; background: #fff; border-bottom: 1px solid #d5d9e2; font-size: 13px; line-height: 1.5; }
+    .demo-hint #hint-demo { flex: none; max-width: 16em; font-weight: 700; color: #1a2744; }
     .demo-hint #hint-text { flex: 1 1 auto; }
     .demo-hint #hint-score { flex: none; font-size: 12px; color: #333; text-align: right; }
     .demo-layout { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 5fr) 260px; }
@@ -61,6 +62,7 @@
   </header>
 
   <div class="demo-hint">
+    <div id="hint-demo"></div>
     <div id="hint-text"></div>
     <div id="hint-score"></div>
   </div>

@@ -24,7 +24,9 @@ type P = number[];
 type Line = P[];
 
 // ---- meta（generate.mjs が書く）----
-interface Stat { maxKm: number; rmsKm: number; maxScreenPx: number }
+interface Stat { maxKm: number; rmsKm: number; maxScreenPx: number; n: number }
+type PaperKey = "p1" | "p2" | "p3";
+type GcpKey = "g1" | "g1c" | "g2" | "g3";
 interface Gcp { no: number; lonlat: P; pixel: P; region: string; dense: boolean; blunder?: { sizePx: number } }
 interface Principle {
   kind: "none" | "worldFile" | "fan";
@@ -36,14 +38,14 @@ interface Principle {
 }
 interface MapMeta {
   type: string;
-  paper: "p1" | "p2";
-  gcps: "g1" | "g1c" | "g2";
+  paper: PaperKey;
+  gcps: GcpKey;
   principle: Principle;
-  stats: { inner: Stat; outer: Stat; gcpMaxKm: number; gcpMaxScreenPx: number };
+  stats: { inner: Stat; innerLand: Stat; outer: Stat; gcpMaxKm: number; gcpMaxScreenPx: number };
   gcpResidual: { km: number; screenPx: number }[];
 }
 interface Teiresias { score: number | null; setups: string[]; reason: string }
-interface DemoMeta { paper: "p1" | "p2"; gcps: "g1" | "g1c" | "g2"; types: string[]; maps: Record<string, string>; teiresias: Teiresias }
+interface DemoMeta { paper: PaperKey; gcps: GcpKey; types: string[]; maps: Record<string, string>; teiresias: Teiresias }
 interface View { lonlat: P; zoomDelta?: number; label?: string }
 interface Meta {
   paper: { size: number };
@@ -55,26 +57,30 @@ interface Meta {
   views: {
     p1: { whole: { lonlat: P; spanMerc: P }; outer: View };
     p2: { whole: { lonlat: P; spanMerc: P }; outer: View };
+    p3: { whole: { lonlat: P; spanMerc: P }; outer: View };
     blunders: { no: number; lonlat: P; zoomDelta: number }[];
   };
 }
 interface PaperLines { size: number; coast: Line[]; grid: Line[] }
-interface TrueLines { p1: { coast: Line[]; grid: Line[] }; p2: { coast: Line[]; grid: Line[] } }
+interface TrueLines { p1: { coast: Line[]; grid: Line[] }; p2: { coast: Line[]; grid: Line[] }; p3: { coast: Line[]; grid: Line[] } }
 
 // ---- 画面の文言（設計書 §6.3・§6.2）。型の呼び名は、地図 JSON の鍵（a・b・c・d）とは別に、ここだけで決める ----
 const TYPE_NAME: Record<string, string> = { a: "CRS", b: "三角網＋大域外挿", c: "三角網＋扇形外挿", d: "従来型" };
 const typeName = (t: string): string => TYPE_NAME[t] ?? t;
 const HINTS: Record<string, string> = {
-  "1": "CRS では、赤い線が紙の端まで青い帯の中に収まる。三角網＋扇形外挿に切り替えると、打ち間違いの GCP 2 つの周りで、赤い線が帯からはみ出す。",
-  "2": "従来型では、GCP の少ない東北・北海道と、GCP の外にある北海道の東・沖縄で、赤い線が青い帯からはみ出す。三角網＋扇形外挿に切り替えると、はみ出しは小さくなる。",
-  "3": "GCP の赤い丸と青い輪を見る。CRS では、赤い丸が輪からずれたまま残る。三角網＋大域外挿に切り替えると、赤い丸がどれも輪の中に入る。",
-  "4": "破線の四辺形の内側は、切り替えても変わらない。外側では、経緯線が三角網＋大域外挿ならまっすぐ延び、三角網＋扇形外挿なら扇形に沿って延びる。"
+  "1": "CRS では、赤い線が紙の端まで青い帯の中に収まる。三角網＋扇形外挿に切り替えると、打ち間違いの GCP 2 つの周りで、赤い線が帯からはみ出す。GCP の外にある紙の隅では、はみ出しがさらに大きくなる。",
+  "2": "従来型では、GCP の外にある北海道の東・沖縄・大陸で、赤い線が大きく曲がって青い帯からはみ出す。三角網＋扇形外挿に切り替えると、曲がりが消える。紙の隅に残るずれは、GCP の 3 画素の誤差が外へ延びて大きくなったもの。",
+  "3": "GCP の赤い丸と青い輪を見る。CRS では、赤い丸が輪からずれたまま残る。三角網＋大域外挿に切り替えると、赤い丸がどれも輪の中に入り、GCP のある陸の海岸線が帯に乗る。GCP の無い海の上は直らない。",
+  "4": "破線の四辺形の内側は、切り替えても変わらない。この図は地方ごとに歪んでいるが、全体は 1 つの縮尺に乗っている。外側では、三角網＋大域外挿の赤い線が帯に乗り、三角網＋扇形外挿は外れる。",
+  "5": "破線の四辺形の内側は、切り替えても変わらない。この図は GCP の重心を中心に大きく描いてある。外側では、三角網＋扇形外挿の赤い線が帯に近く、三角網＋大域外挿は縮尺が合わずに外れる。"
 };
-const DEMO_TITLE: Record<string, string> = {
-  "1": "1 CRS と 三角網＋扇形外挿",
-  "2": "2 従来型 と 三角網＋扇形外挿",
-  "3": "3 CRS と 三角網＋大域外挿",
-  "4": "4 三角網＋大域外挿 と 三角網＋扇形外挿"
+// デモの選択のボタンは番号だけにし、2 つの型の呼び名は説明文の段の左に出す（5 つ並べると 1280 画素に収まらない）
+const DEMO_PAIR: Record<string, string> = {
+  "1": "CRS と 三角網＋扇形外挿",
+  "2": "従来型 と 三角網＋扇形外挿",
+  "3": "CRS と 三角網＋大域外挿",
+  "4": "三角網＋大域外挿 と 三角網＋扇形外挿",
+  "5": "三角網＋大域外挿 と 三角網＋扇形外挿"
 };
 const TYPE_NOTE: Record<string, string> = {
   a: "CRS は、地図を CRS として読んで、6 つの係数だけで紙の全体を写し、三角網は使わない。",
@@ -410,6 +416,7 @@ function setView(kind: ViewKind): void {
 // ---------------------------------------------------------------------------------------------
 const setupNames = (s: string[]): string => s.map(x => SETUP_TYPE[x] ?? x).join(" または ");
 function renderHint(): void {
+  $("hint-demo").textContent = `デモ ${demoNo}　${DEMO_PAIR[demoNo]}`;
   const el = $("hint-text");
   const lead = document.createElement("b");
   lead.textContent = "確認のポイント";
@@ -438,7 +445,8 @@ function renderPanel(): void {
   $("type-note").textContent = TYPE_NOTE[typeKey];
   // ずれの表（2 つの型を横に）
   const rows: [string, (s: MapMeta["stats"]) => string, string][] = [
-    ["内側", s => `${fmt(s.inner.maxKm)} / ${fmt(s.inner.rmsKm)}`, "GCP の凸包の中"],
+    ["内側（全体）", s => `${fmt(s.inner.maxKm)} / ${fmt(s.inner.rmsKm)}`, "GCP の凸包の中。海も含む"],
+    ["内側の陸", s => `${fmt(s.innerLand.maxKm)} / ${fmt(s.innerLand.rmsKm)}`, "GCP の凸包の中で、正解の位置が陸の所だけ"],
     ["外側", s => `${fmt(s.outer.maxKm)} / ${fmt(s.outer.rmsKm)}`, "GCP の凸包の外で紙の中"],
     ["GCP", s => fmt(s.gcpMaxKm, 2), "GCP の位置での残差の最大"]
   ];
@@ -529,14 +537,16 @@ async function main(): Promise<void> {
   const params = new URLSearchParams(location.search);
   const j = async <T>(url: string): Promise<T> => (await fetch(url)).json() as Promise<T>;
   meta = await j<Meta>("demo-data/layered_demo_meta.json");
-  const [coast, p1, p2] = await Promise.all([
+  const [coast, p1, p2, p3] = await Promise.all([
     j<TrueLines>("demo-data/layered_demo_coast.json"),
     j<PaperLines>("demo-data/layered_demo_paper_p1.json"),
-    j<PaperLines>("demo-data/layered_demo_paper_p2.json")
+    j<PaperLines>("demo-data/layered_demo_paper_p2.json"),
+    j<PaperLines>("demo-data/layered_demo_paper_p3.json")
   ]);
   trueLines = coast;
   paperLines.p1 = p1;
   paperLines.p2 = p2;
+  paperLines.p3 = p3;
   const ids = Object.keys(meta.maps);
   await Promise.all(ids.map(async id => { mapJson[id] = await j<DemoMapJson>(`maps/${id}.json`); }));
 
@@ -562,7 +572,9 @@ async function main(): Promise<void> {
     const b = document.createElement("button");
     b.type = "button";
     b.dataset.demo = no;
-    b.textContent = DEMO_TITLE[no];
+    b.textContent = no;
+    b.title = DEMO_PAIR[no];
+    b.setAttribute("aria-label", `デモ ${no}: ${DEMO_PAIR[no]}`);
     b.addEventListener("click", () => void setDemo(no));
     tabs.appendChild(b);
   }
