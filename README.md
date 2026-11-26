@@ -519,37 +519,46 @@ Public demo: <https://code4history.dev/MaplatCore/> (deployed to GitHub Pages fr
 
 #### Transform-shape demo (`layered-map.html`)
 
-`http://localhost:5175/layered-map.html` (`layered-map.html` on the public demo). A synthetic
-graticule image (an equally spaced EPSG:4326 chart, 125–150°E and 25–50°N, red lines) is the paper,
-and the same image is read through different transforms. The blue lines are a reference graticule
-drawn from longitude/latitude (every 5°, also outside the paper). **Where blue lies on red, the
-transform is right.** The side panel shows `tinEnabled`, `crs`, `worldFile`, the compiled
-`outerTransform` and the control points ("3. input"), and the paper's four corners in
-longitude/latitude with the maximum difference from (a) in metres ("3. output", taken from the
-transform Core built). Clicking a mark (● ○ ✕ ◆) shows its values under "Selected mark".
+`http://localhost:5175/layered-map.html` (`layered-map.html` on the public demo). **Each demo shows one comparison.**
+Switch between two transform shapes (buttons or the ←→ keys) and see whether the converted paper (the red core) stays inside the truth (the blue band).
 
-Two kinds of overlay are drawn. **TIN maps ((b), B, C) show the structure of the TIN in paper-pixel coordinates**, not through the transform (Core's `mapObject.setVector` and POI `x`/`y`). **World-file maps ((a), (c)) show check points (pairs of paper pixel ↔ longitude/latitude)**. A world file converts with its six coefficients only and uses no GCPs; the check points are not used by the transform, they only let you verify that `crs` takes effect. GCPs exist only on the TIN maps: a GCP is a point the TIN is built on (a pair of paper pixel ↔ longitude/latitude). All marks are sized in screen pixels (dot, ring, cross, diamond), not map-coordinate shapes. Core's default red ring at the centre of the screen is hidden in this demo, because it looks like a GCP at the middle of the map.
+| Shape | What it is |
+|---|---|
+| A | CRS + world file only (no TIN) |
+| B | CRS + TIN; outside the quadrilateral, the global model (world file) |
+| C | CRS + TIN; outside the quadrilateral, a fan |
+| D | fixed 3857 + TIN (V2; the four auxiliary vertices are the paper's corners) |
 
-- (1) **The GCP TIN** (green): triangles whose vertices are all GCPs. ● is a GCP (the TIN passes through the GCPs exactly, so the paper side and the geographic side coincide).
-- (2) **The quadrilateral (thick orange) and auxiliary vertices (◆)**, and the **triangles that include auxiliary vertices** (thin orange: the extension of the TIN).
-- (3) **The fan** ((b) and C; extrapolation outside the quadrilateral): rays from the centroid (purple ring) to each auxiliary vertex (dashed inside the quadrilateral, solid to beyond the paper outside), with the sectors between rays tinted alternately. B has a uniform world file outside the quadrilateral, so no fan is drawn; a grey-blue wash marks that region.
-- **Check points** ((a), (c); blue ring ○ and cross ✕): ○ is the paper side (the paper pixel), ✕ the geographic side (longitude/latitude mapped onto the paper by that map's transform); a black line joins the two where they disagree. (a) agrees for every pair; (c) is off north–south as a least-squares residual.
+| Demo | Paper | Compared | Point |
+|---|---|---|---|
+| 1 | P1 accurate | A vs C | For an accurate map with a known CRS, the world file alone (A) fits to the paper edge. The TIN (C) adds no accuracy and drags a GCP typo into its surroundings |
+| 2 | P1 accurate | D vs C | The fixed-3857 shape (D) bends where GCPs are sparse and outside them. Matching the CRS (C) removes the bend |
+| 3 | P2 distorted | A vs B | If the map itself is distorted, A leaves an error even at the GCPs. B fits at the GCPs |
+| 4 | P2 distorted | B vs C | Inside the TIN B and C are identical; only outside the quadrilateral differs (B follows the world file, C extends a fan) |
 
-1. **World-file map vs. TIN map**: (a) reads the image with a 4326 world file only; (b) with a TIN of
-   9 GCPs placed in the central 30%. (a) matches to the paper edge; (b) is extrapolated
-   outside the control points, so blue drifts away from red towards the margin.
-2. **`crs` takes effect**: (a) vs. (c), a 3857 affine approximation of (a). (c) can express the
-   latitude stretch with one coefficient only, so blue is off in latitude (two latitudes agree; the
-   centre and the ends are off in opposite directions). A small chart plots the difference by latitude.
-3. **Input and output**: as above.
-4. **Shapes B and C (outside the quadrilateral)**: the same image with 25 control points drawn with a
-   smaller scale towards the margin; switch between B (TIN, world file outside the quadrilateral) and
-   C (TIN, fan outside). The TIN is the same; outside the quadrilateral B extends a uniform
-   grid and C extends a fan. "紙の外まで見る" zooms out.
+**Visual grammar** (common to all demos; the source of truth is `demo/layered-map/grammar.ts`, pinned by `spec/layered-map-demo.spec.ts`):
+only three hues: red, blue, black. **Thin red core = what belongs to the paper** (what is drawn on it and its converted result),
+**thick blue band = the geographic truth** (3857), **black dotted/dashed lines = how the transform works** (GCP TIN, extension, quadrilateral, fan, told apart by dash pattern).
+Terrain is a thick solid line, the graticule a medium solid line, the mechanism a thin dotted line. **A core inside the band means it fits; a core outside means it does not** — one reading for
+terrain, graticule and GCPs alike. A GCP appears with the same number on the paper face (a red dot) and on the 3857 face (a blue ring, with the converted paper side as a red dot inside it);
+pressing either highlights both.
 
-The map JSON (`public/maps/layered_demo_*.json`) and the paper tiles are generated by
-`demo/layered-map/generate.mjs` (pass MaplatTin's dist via `MAPLAT_TIN_DIST`; the output is committed).
-The JSON of (a) and (c) carries 16 check points (pairs of paper pixel ↔ longitude/latitude; a 4×4 grid over the whole paper; the geographic side is the true longitude/latitude) under the key `gcps` (a record that the transform does not use; in the demo they are called check points, not GCPs).
+Left is the **paper face** (an SVG in paper pixels), the middle the **3857 face** (Core's `MaplatApp`, background GSI tiles) and the right the panel.
+The blue bands on the 3857 face are longitude/latitude lines (`addLine` with `lnglats`); the red cores and the mechanism convert paper pixels with `MapTransform` of `@maplat/transform`
+and are drawn with `addLine` `coordinates` (Core's public API has no "paper pixel → 3857" entry; that this transform returns the same values as Core's is pinned in
+`spec/layered-map-demo.spec.ts`). "Core でこの紙を開く" shows the view Core redraws in paper coordinates.
+
+The material is generated by `demo/layered-map/generate.mjs` (the output is committed; you do not need to run it). Both papers are drawn on a Lambert conformal conic projection
+(`+proj=lcc +lat_1=30 +lat_2=42 +lat_0=35 +lon_0=136 …`, 2048×2048 pixels, 1,500 m per pixel) with the coastline around Japan and a 2° graticule
+(P1 is accurate; P2 adds a known distortion that shrinks the map more towards the edge of the GCP hull). The GCPs are 24 pairs scattered with a fixed random seed (14 dense, 10 sparse; demo 1 has two typos).
+The error of each shape (the distance between the converted result and the truth at 65×65 points on the paper) and the score and recommendation from Teiresias are computed at generation time and written to
+`public/demo-data/layered_demo_meta.json`; the screen only reads them. The map JSON is `public/maps/layered_demo_*.json` (seven files), the paper polylines are
+`public/demo-data/layered_demo_paper_p1.json` and `..._p2.json`, and the paper tiles are `public/tiles/layered_demo_p1` and `..._p2`.
+MaplatTin (default `../MaplatTin-j1c`) and Teiresias are used only to produce the material and are not Core dependencies.
+
+**Bundled and offline**: the coastline is Natural Earth (<https://www.naturalearthdata.com/>) 1:50m land (`ne_50m_land`; public domain), cut into
+`demo/layered-map/data/coast-lonlat.json` and bundled (`make-coast.mjs` makes the cut). proj4 is bundled as a dependency.
+Only the GSI background tiles use the network; the coastline (blue band) is shown even when they cannot be reached.
 
 ### Development
 

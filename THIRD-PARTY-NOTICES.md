@@ -102,3 +102,18 @@ THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
+
+## Natural Earth
+
+The coastline of the transform-shape demo (`layered-map.html`) is cut from Natural Earth
+1:50m Land (`ne_50m_land`; <https://www.naturalearthdata.com/>) into
+`demo/layered-map/data/coast-lonlat.json` and `public/demo-data/`. It is not shipped in the
+npm package (`files`: `src/`, `dist/`, `parts/`).
+
+Natural Earth is in the public domain: "All versions of Natural Earth raster + vector map data
+found on this website are in the public domain. You may use the maps in any manner, including
+modifying the content and design, electronic dissemination, and offset printing. The primary
+authors, Tom Patterson and Nathaniel Vaughn Kelso, and all other contributors renounce all
+financial claim to the maps and invite you to use them for personal, educational, and
+commercial purposes. No permission is needed to use Natural Earth. Crediting the authors is
+unnecessary."

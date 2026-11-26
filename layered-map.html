@@ -3,108 +3,116 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MaplatCore デモ - 変換の形（world file・三角網 B/C）</title>
+  <title>MaplatCore デモ - 変換の形</title>
   <link rel="stylesheet" href="./demo/demo-shell.css">
   <style>
-    /* 地図を主領域・右に操作パネル。C4H 正本 demo-shell.css（バイト等価）に無いレイアウトだけを置く。class は demo- 接頭辞に限る */
+    /* 2 つの面（紙・3857）を並べ、右に欄。C4H 正本 demo-shell.css（バイト等価）に無いレイアウトだけを置く。class は demo- 接頭辞に限る */
     body.c4h-app { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-    .demo-layout { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 400px; }
-    .demo-map-col { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
-    .demo-map-col .c4h-main-area { flex: 1; min-height: 0; display: block; padding: 8px; }
-    #map_div { position: relative; width: 100%; height: 100%; }
-    .demo-map-col .c4h-info-box { margin: 0 8px 8px; padding: 6px 12px; font-size: 12px; line-height: 1.5; }
-    .demo-panel { min-height: 0; overflow-y: auto; background: #fff; border-left: 1px solid #d5d9e2; padding: 8px 12px 16px; font-size: 13px; line-height: 1.4; }
+    .demo-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+    .demo-tabs button { padding: 4px 10px; border: 1px solid #5b6b94; border-radius: 4px; background: transparent; color: #dfe5f5; font-size: 12px; cursor: pointer; }
+    .demo-tabs button[aria-pressed="true"] { background: #fff; border-color: #fff; color: #1a2744; font-weight: 700; }
+    .demo-hint { display: flex; gap: 16px; justify-content: space-between; align-items: baseline; padding: 6px 16px; background: #fff; border-bottom: 1px solid #d5d9e2; font-size: 13px; line-height: 1.5; }
+    .demo-hint #hint-text { flex: 1 1 auto; }
+    .demo-hint #hint-score { flex: none; font-size: 12px; color: #333; text-align: right; }
+    .demo-layout { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 5fr) 260px; }
+    .demo-face { display: flex; flex-direction: column; min-width: 0; min-height: 0; padding: 6px 8px; border-right: 1px solid #d5d9e2; }
+    .demo-face h2 { font-size: 12px; font-weight: 700; color: #1a2744; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .demo-face h2 label { font-weight: 400; font-size: 11px; color: #333; cursor: pointer; display: flex; gap: 4px; align-items: center; }
+    #paper-wrap { flex: 1; min-height: 0; position: relative; }
+    #paper-svg { position: absolute; inset: 0; width: 100%; height: 100%; background: #eef0f4; border: 1px solid #d5d9e2; display: block; }
+    #paper-svg text { font-family: "Helvetica Neue", Arial, sans-serif; paint-order: stroke; stroke: #fff; stroke-width: 3px; stroke-linejoin: round; fill: #1F2933; pointer-events: none; }
+    #map_div { position: relative; flex: 1; min-height: 0; }
+    /* 画面の中心を示す Core 既定の赤い輪。この比較では「地図の中央の GCP」に見えて紛らわしいので消す */
+    #map_div #center_circle { display: none !important; }
+    .demo-panel { min-height: 0; overflow-y: auto; background: #fff; padding: 8px 12px 16px; font-size: 13px; line-height: 1.4; }
     .demo-sec { border-top: 1px solid #eef0f4; padding: 8px 0; }
-    .demo-sec h2 { font-size: 13px; font-weight: 700; color: #1a2744; margin-bottom: 4px; }
-    .demo-note { margin: 2px 0 6px; font-size: 11px; color: #5a6478; }
-    .demo-row { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; margin-bottom: 6px; }
-    .demo-row button { flex: 1 1 0; min-width: 0; padding: 6px 8px; border: 1px solid #b8c0d0; border-radius: 4px; background: #f8f9fb; color: #1a2744; font-size: 12px; line-height: 1.3; cursor: pointer; }
+    .demo-sec:first-child { border-top: 0; padding-top: 0; }
+    .demo-sec h3 { font-size: 12px; font-weight: 700; color: #1a2744; margin-bottom: 4px; }
+    .demo-note { margin: 4px 0 0; font-size: 11px; color: #4a5468; line-height: 1.45; }
+    .demo-row { display: flex; gap: 6px; align-items: center; margin-bottom: 4px; flex-wrap: wrap; }
+    .demo-row button { flex: 1 1 0; min-width: 0; white-space: nowrap; padding: 6px 4px; border: 1px solid #b8c0d0; border-radius: 4px; background: #f8f9fb; color: #1a2744; font-size: 12px; cursor: pointer; }
     .demo-row button:hover { background: #e8f0fe; }
     .demo-row button[aria-pressed="true"] { background: #1a2744; border-color: #1a2744; color: #fff; font-weight: 700; }
-    .demo-check { display: flex; align-items: flex-start; gap: 6px; width: 100%; font-size: 12px; cursor: pointer; }
-    .demo-field { display: flex; flex-direction: column; gap: 4px; width: 100%; font-size: 12px; }
-    .demo-field input[type="range"] { width: 100%; }
-    .demo-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11px; margin: 4px 0; }
-    .demo-legend { flex-direction: column; flex-wrap: nowrap; gap: 3px; }
-    .demo-legend span { display: flex; align-items: center; gap: 4px; line-height: 1.3; }
-    .demo-legend i { flex: none; display: inline-block; width: 18px; height: 0; border-top: 3px solid; margin-right: 2px; }
-    .demo-legend b.sw { flex: none; display: inline-block; width: 18px; height: 10px; border: 1.5px solid; margin-right: 2px; }
-    .demo-legend .mk { flex: none; display: inline-flex; width: 20px; height: 20px; }
-    .demo-table { border-collapse: collapse; width: 100%; margin: 4px 0; font-size: 11px; }
-    .demo-table th, .demo-table td { border: 1px solid #d5d9e2; padding: 2px 4px; text-align: left; vertical-align: top; word-break: break-all; }
-    .demo-table th { background: #f4f6fa; font-weight: 700; width: 38%; }
-    .demo-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
-    .demo-pre { margin: 4px 0; padding: 4px 6px; background: #f6f7f9; border: 1px solid #e3e6ee; border-radius: 4px; font: 11px/1.4 ui-monospace, monospace; white-space: pre-wrap; word-break: break-all; max-height: 180px; overflow-y: auto; }
-    /* 画面の中心を示す Core 既定の赤い輪（#center_circle）。この比較では「地図の中央の GCP」に見えて紛らわしいので消す */
-    #map_div #center_circle { display: none !important; }
-    #demo-chart { width: 100%; height: auto; border: 1px solid #d5d9e2; border-radius: 4px; background: #fff; }
+    .demo-row button[hidden] { display: none; }
+    .demo-check { display: flex; align-items: center; gap: 6px; width: 100%; font-size: 12px; cursor: pointer; }
+    .demo-table { border-collapse: collapse; width: 100%; font-size: 11px; }
+    .demo-table th, .demo-table td { border: 1px solid #d5d9e2; padding: 2px 4px; text-align: right; font-variant-numeric: tabular-nums; }
+    .demo-table th:first-child { text-align: left; background: #f4f6fa; }
+    .demo-table thead th { background: #f4f6fa; text-align: center; }
+    .demo-legend { display: flex; flex-direction: column; gap: 4px; font-size: 11px; }
+    .demo-legend span { display: flex; align-items: center; gap: 8px; line-height: 1.3; }
+    .demo-legend svg { flex: none; width: 36px; height: 12px; overflow: visible; }
+    #gcp-info { min-height: 3.2em; font-size: 12px; }
     @media (max-width: 720px) {
       body.c4h-app { height: auto; overflow: visible; }
       .demo-layout { display: block; }
-      .demo-map-col { display: block; }
-      .demo-map-col .c4h-main-area { height: 55vh; min-height: 300px; }
-      .demo-panel { border-left: 0; border-top: 1px solid #d5d9e2; }
+      .demo-face { border-right: 0; border-bottom: 1px solid #d5d9e2; }
+      #paper-wrap { height: 60vh; }
+      #map_div { height: 60vh; flex: none; }
     }
   </style>
 </head>
 <body class="c4h-app">
   <header class="c4h-header">
-    <h1>MaplatCore 変換の形のデモ（world file・三角網 B/C）</h1>
+    <h1>MaplatCore 変換の形のデモ</h1>
+    <nav class="demo-tabs" id="demo-tabs" aria-label="デモの選択"></nav>
     <a class="c4h-back-link" href="./index.html">← 古地図デモ</a>
     <span id="status" class="c4h-status">読み込み中…</span>
   </header>
 
+  <div class="demo-hint">
+    <div id="hint-text"></div>
+    <div id="hint-score"></div>
+  </div>
+
   <div class="demo-layout">
-    <div class="demo-map-col">
-      <div class="c4h-main-area">
-        <div id="map_div"></div>
+    <section class="demo-face" aria-label="紙の面">
+      <h2>紙（紙の画素）</h2>
+      <div id="paper-wrap"><svg id="paper-svg" role="img" aria-label="紙の面。赤は紙に描いてあるもの、黒の線は変換のしくみ"></svg></div>
+    </section>
+    <section class="demo-face" aria-label="3857 の面">
+      <h2>変換した結果（3857）
+        <label><input type="checkbox" id="chk-open-paper"> Core でこの紙を開く</label>
+      </h2>
+      <div id="map_div"></div>
+    </section>
+    <aside class="demo-panel" aria-label="操作と数値">
+      <div class="demo-sec">
+        <h3>型（2 つを切り替える。←→ キーでも）</h3>
+        <div class="demo-row" id="type-buttons"></div>
+        <p class="demo-note" id="type-note"></p>
       </div>
-      <div class="c4h-info-box">
-        <p>紙: 合成の経緯線の画像（EPSG:4326 の等間隔図・東経 125〜150 度・北緯 25〜50 度・赤）。
-          <strong>青の線は経緯度から描いた基準の経緯線</strong>（5 度ごと・紙の外へも延ばす）。
-          紙の赤い線に青が重なれば、その場所の変換は正しい。
-          三角網の地図には、三角網の構造を<strong>紙の画素の座標のまま</strong>（変換を通さずに）重ねる。
-          world file の地図には、<strong>検算点</strong>（紙の画素 ↔ 経度・緯度の組。crs が効いているかを確かめるもので、GCP ではない。world file は 6 つの係数だけで変換し、検算点は変換に使わない）を ○（紙側）と ✕（地理側）で重ねる。
-          GCP は三角網を張る点（紙の画素 ↔ 経度・緯度の組）で、三角網の地図にだけあり、● で描く。</p>
+      <div class="demo-sec">
+        <h3>表示</h3>
+        <label class="demo-check"><input type="checkbox" id="chk-terrain" checked> 地形</label>
+        <label class="demo-check"><input type="checkbox" id="chk-grid" checked> グリッド</label>
+        <label class="demo-check"><input type="checkbox" id="chk-mech" checked> しくみ</label>
+        <label class="demo-check"><input type="checkbox" id="chk-bg" checked> 背景の地図（地理院タイル）</label>
       </div>
-    </div>
-    <aside id="demo-panel" class="demo-panel" aria-label="操作メニュー">
-      <section class="demo-sec" id="sec-groups"></section>
-      <section class="demo-sec">
-        <h2>表示</h2>
+      <div class="demo-sec">
+        <h3>見る場所</h3>
         <div class="demo-row">
-          <label class="demo-check"><input type="checkbox" id="chk-ref" checked>基準の経緯線（青）を重ねる</label>
-          <label class="demo-check"><input type="checkbox" id="chk-gcp" checked>検算点（world file の地図）と、三角網の構造（GCP の三角網・四辺形と補助頂点・扇形）を重ねる</label>
+          <button type="button" id="view-whole" aria-pressed="true">全体</button>
+          <button type="button" id="view-outer" aria-pressed="false">外側</button>
+          <button type="button" id="view-blunder" aria-pressed="false" hidden>打ち間違い</button>
         </div>
-        <div class="demo-row">
-          <button type="button" id="btn-view-paper">紙の全体を見る</button>
-          <button type="button" id="btn-view-wide">紙の外まで見る</button>
-        </div>
-        <label class="demo-field">背景地図の透過度（紙を薄くして背景の地理院地図を見る）
-          <input type="range" id="rng-transparency" min="0" max="100" value="0">
-        </label>
-      </section>
-      <section class="demo-sec" id="sec-select">
-        <h2>選んだ印の値</h2>
-        <p class="demo-note">地図の印をクリックすると出ます（検算点・GCP は紙の画素・経度・緯度。検算点は両側のずれも）。</p>
-        <table class="demo-table" id="tbl-sel"></table>
-      </section>
-      <section class="demo-sec" id="sec-state">
-        <h2>3. 今の地図（入力）</h2>
-        <table class="demo-table" id="tbl-state"></table>
-        <div id="state-detail"></div>
-      </section>
-      <section class="demo-sec" id="sec-output">
-        <h2>3. 出力（Core の変換の結果）</h2>
-        <table class="demo-table" id="tbl-corners"></table>
-        <table class="demo-table" id="tbl-diff"></table>
-      </section>
-      <section class="demo-sec" id="sec-chart">
-        <h2>2. (a) と (c) の差（緯度ごと）</h2>
-        <p class="demo-note">紙の中央の列（x=1024）で、同じ画素が (a) と (c) で指す緯度の差（(c)−(a)、北向きを正、km）。</p>
-        <canvas id="demo-chart" width="368" height="190"></canvas>
-        <p class="demo-note" id="chart-summary"></p>
-      </section>
+      </div>
+      <div class="demo-sec">
+        <h3>GCP（印を押すと、2 つの面で同じ番号が強調される）</h3>
+        <div id="gcp-info"></div>
+      </div>
+      <div class="demo-sec">
+        <h3>ずれ（km。最大 / 二乗平均）</h3>
+        <table class="demo-table" id="gap-table"></table>
+        <p class="demo-note">紙の上の 65×65 点で、変換の結果と正解の距離。数値は生成のときに測ったもの（<span id="gap-ref"></span>）。</p>
+      </div>
+      <div class="demo-sec">
+        <h3>凡例</h3>
+        <div class="demo-legend" id="legend"></div>
+      </div>
+      <div class="demo-sec">
+        <p class="demo-note">海岸線: Natural Earth（1:50m の陸地・パブリックドメイン。naturalearthdata.com）を同梱。背景の地図だけ地理院タイルをネットから読む。</p>
+      </div>
     </aside>
   </div>
 
