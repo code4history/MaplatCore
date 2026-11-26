@@ -1,7 +1,8 @@
 // 変換の形のデモ（layered-map.html）の素材を作る。実行は人間が手元で行わなくてよい（結果は
 // public/maps/layered_demo_*.json と public/tiles/layered_demo_paper/ にコミット済み）。
-// 作り直すとき:
-//   cd <MaplatCore> && MAPLAT_TIN_DIST=<MaplatTin>/dist/maplat_tin.js node demo/layered-map/generate.mjs
+// 作り直すとき（既定は MaplatTin-j1c = PR #88。GCP の凸包の辺の制約と、扇形の中心を GCP の重心にする版）:
+//   cd <MaplatCore> && node demo/layered-map/generate.mjs [--tin=j1c|j1b]
+// 作業場所の並びが違うときは MAPLAT_TIN_DIST=<MaplatTin>/dist/maplat_tin.js で dist を直接指定する。
 // MaplatTin は素材（compiled）を作るためだけに使う。Core の依存ではない。
 import { mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -9,8 +10,11 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { chromium } from "@playwright/test";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
-const tinDist = process.env.MAPLAT_TIN_DIST;
-if (!tinDist) throw new Error("MAPLAT_TIN_DIST に MaplatTin の dist/maplat_tin.js を指定してください");
+const TIN_VARIANTS = { j1b: "MaplatTin-j1b", j1c: "MaplatTin-j1c" };
+const tinArg = process.argv.slice(2).find(a => a.startsWith("--tin="))?.slice(6) ?? "j1c";
+if (!(tinArg in TIN_VARIANTS)) throw new Error(`--tin は j1b か j1c です: ${tinArg}`);
+const tinDist = process.env.MAPLAT_TIN_DIST ?? resolve(root, "..", TIN_VARIANTS[tinArg], "dist/maplat_tin.js");
+console.log("Tin:", tinDist);
 const { Tin } = await import(pathToFileURL(resolve(tinDist)).href);
 
 // ---- 紙: EPSG:4326 で描いた等間隔図。東経 125〜150 度・北緯 25〜50 度、2048×2048 画素 ----

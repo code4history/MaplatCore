@@ -49,11 +49,11 @@ describe("変換の形のデモの素材", () => {
     for (const id of ["layered_demo_tin9", "layered_demo_gcp_b", "layered_demo_gcp_c"]) {
       const c = load(id).compiled;
       expect(c.points.length).toBeGreaterThan(0);
-      expect(c.vertices_points).toHaveLength(36);
+      expect(c.vertices_points).toHaveLength(32);
       expect(c.tins_points[0].length).toBeGreaterThan(0);
       for (const t of c.tins_points[0] as (number | string)[][]) {
         for (const v of t) {
-          const ok = typeof v === "number" ? v < c.points.length : /^b\d+$/.test(v) && Number(v.slice(1)) < 36;
+          const ok = typeof v === "number" ? v < c.points.length : /^b\d+$/.test(v) && Number(v.slice(1)) < 32;
           expect(ok).toBe(true);
         }
       }
@@ -61,6 +61,31 @@ describe("変換の形のデモの素材", () => {
     expect(load("layered_demo_tin9").compiled.centroid_point).toBeTruthy();
     expect(load("layered_demo_gcp_c").compiled.centroid_point).toBeTruthy();
     expect(load("layered_demo_gcp_b").compiled.centroid_point).toBeUndefined();
+  });
+
+  it("扇形の中心は GCP の重心で、補助頂点は上下左右に対称に並び、GCP だけの三角形がある", () => {
+    // Tin の「GCP の凸包の辺を制約にする」「扇形の中心を GCP の重心にする」版（MaplatTin#88）で作った素材。
+    // 紙の中央 (1024, 1024) を中心に、(b) の 9 点も C の 25 点も点対称・線対称に置いてある
+    for (const id of ["layered_demo_tin9", "layered_demo_gcp_c"]) {
+      const centroid = load(id).compiled.centroid_point[0] as number[];
+      expect(centroid[0]).toBeCloseTo(1024, 6);
+      expect(centroid[1]).toBeCloseTo(1024, 6);
+    }
+    for (const id of ["layered_demo_tin9", "layered_demo_gcp_b", "layered_demo_gcp_c"]) {
+      const c = load(id).compiled;
+      const aux = c.vertices_points.map((v: number[][]) => v[0]) as number[][];
+      const has = (x: number, y: number) =>
+        aux.some(([ax, ay]) => Math.abs(ax - x) < 1e-3 && Math.abs(ay - y) < 1e-3);
+      for (const [x, y] of aux) {
+        expect(has(2048 - x, y)).toBe(true); // 左右
+        expect(has(x, 2048 - y)).toBe(true); // 上下
+      }
+      const gcpOnly = (c.tins_points[0] as (number | string)[][]).filter(t =>
+        t.every(v => typeof v === "number")
+      );
+      // 3×3 の 9 点は 2×2 の升目を 2 つずつの三角形（8）、5×5 の 25 点は 4×4 の升目（32）
+      expect(gcpOnly).toHaveLength(id === "layered_demo_tin9" ? 8 : 32);
+    }
   });
 
   it("紙の中央は同じ画素が (a) と (c) で異なる緯度を指す", async () => {
