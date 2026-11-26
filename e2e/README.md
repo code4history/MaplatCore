@@ -8,7 +8,7 @@
 
 #### 本番HTMLとテストHTMLの違い
 
-**本番HTML (`index.html`)**:
+**本番HTML (`old-map.html`。ルートの `index.html` は目次)**:
 ```javascript
 window.addEventListener('DOMContentLoaded', async () => {
   window.Maplat = MaplatApp;

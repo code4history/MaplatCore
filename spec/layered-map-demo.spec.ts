@@ -419,7 +419,7 @@ describe("見せ方の文法（設計書 §4.2 の表。ここを変えるとき
 
 describe("オフライン（設計書 C8）: 画面の資源は同梱で、外部の URL を取りに行かない", () => {
   // 背景の地理院タイルは Core の既定の地図（gsi）が読む。デモ自身は外部の URL を持たない
-  const files = ["layered-map.html", "demo/layered-map.ts", "demo/layered-map/engine.ts", "demo/layered-map/grammar.ts"];
+  const files = ["layered-map.html", "demo/layered-map.ts", "demo/layered-map/engine.ts", "demo/layered-map/grammar.ts", "demo/i18n/layered-map.ts", "demo/i18n/common.ts", "demo/i18n/core.ts"];
   it("HTML・画面のコードに、外部 URL への参照が無い（SVG の名前空間の宣言は除く）", () => {
     for (const f of files) {
       const text = readFileSync(f, "utf-8").replace(/http:\/\/www\.w3\.org\/2000\/svg/g, "");

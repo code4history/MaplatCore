@@ -433,7 +433,17 @@ proj4js を取得します。UMD 版は proj4js を同梱します。画素の�
 ### デモ
 
 公開デモ: <https://code4history.dev/MaplatCore/>（`master` から GitHub Pages に配備）。
-手元では `pnpm dev` で起動し、`http://localhost:5175/` を開きます。
+手元では `pnpm dev` で起動し、`http://localhost:5175/` を開きます。ルート（`index.html`）は目次で、
+古地図のデモと変換の形のデモ 1〜5 のどれにも 1 回のクリックで飛べます。各デモのページの見出しに「← 目次」のリンクがあります。
+
+**言語の切り替え。** 3 ページ（目次・古地図のデモ・変換の形のデモ）の見出しの右に「日本語 / English」の切り替えがあります。
+`?lang=ja` か `?lang=en` でも指定できます。指定が無いときは、ブラウザの言語（`navigator.language`）が日本語なら日本語、それ以外は英語です。
+切り替えた言語は、ほかのページへのリンクに引き継がれます。古地図のデモでは `<html lang>` も同じ値になり、地図のデータの名前も切り替わります。
+画面の文言は、`demo/i18n/` の辞書（ja・en）に 1 か所ずつまとめてあります。英語の用語は、MaplatEditor の用語集に合わせています。
+
+#### 古地図のデモ（`old-map.html`）
+
+`http://localhost:5175/old-map.html`（公開デモでは `old-map.html`）。
 
 - `?region=<ID>` で地域を選びます（`morioka`・`nobeoka`・`nara`・`tatebayashi`・`hiroshima`・
   `niigata`）。無いときや知らない ID のときは `morioka` です。画面の地域の選択を変えると、
@@ -448,7 +458,7 @@ proj4js を取得します。UMD 版は proj4js を同梱します。画素の�
 
 #### 変換の形のデモ（`layered-map.html`）
 
-`http://localhost:5175/layered-map.html`（公開デモでは `layered-map.html`）。**1 つのデモは 1 つの比較だけ**を見せます。
+`http://localhost:5175/layered-map.html`（公開デモでは `layered-map.html`）。`?demo=1`〜`5` でデモを、`?type=`（`a`・`b`・`c`・`d`）で型を、`?sup=0|1` で補完点の あり／なし を指定できます。目次には、デモごとの直接のリンクがあります。**1 つのデモは 1 つの比較だけ**を見せます。
 変換の型を 2 つ切り替えて（ボタンまたは ←→ キー）、紙から変換した結果（赤い線）が、正解（青い帯）の中に収まるかを見ます。
 どのデモにも「確認のポイント」の 1 行があり、何を見れば何が分かるかを書いています。
 

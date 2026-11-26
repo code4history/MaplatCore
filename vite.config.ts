@@ -178,10 +178,11 @@ export default defineConfig({
   } : {
     outDir: "dist-demo",
     emptyOutDir: true,
-    // デモは 2 ページ: 古地図のデモ（index.html）と、変換の形のデモ（layered-map.html）
+    // デモは 3 ページ: 目次（index.html）・古地図のデモ（old-map.html）・変換の形のデモ（layered-map.html）
     rollupOptions: {
       input: {
         main: resolve(__dirname, "index.html"),
+        "old-map": resolve(__dirname, "old-map.html"),
         "layered-map": resolve(__dirname, "layered-map.html")
       }
     }

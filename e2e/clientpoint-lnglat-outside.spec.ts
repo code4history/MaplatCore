@@ -6,7 +6,7 @@ import { test, expect, type Page } from '@playwright/test';
 //   - 背面に描かれた範囲外のピンの地点を押すと、その POI の経緯度が返る
 //   - 紙の縁をまたぐ隣どうしの画素で、判定が前面・背面に切り替わる
 
-const DEMO = '/?region=tatebayashi&cache=0';
+const DEMO = '/old-map.html?region=tatebayashi&cache=0&lang=ja';
 const ZOOMS = [13, 14.5, 15, 16];
 // 許す差（px）。丸めの分だけ。
 const TOLERANCE = 1;

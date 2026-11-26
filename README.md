@@ -501,7 +501,20 @@ MaplatEditor:
 ### Demo
 
 Public demo: <https://code4history.dev/MaplatCore/> (deployed to GitHub Pages from
-`master`). Locally, start it with `pnpm dev` and open `http://localhost:5175/`.
+`master`). Locally, start it with `pnpm dev` and open `http://localhost:5175/`. The root
+(`index.html`) is a table of contents: one click reaches the old-map demo and each of the
+transform-shape demos 1 to 5. The header of every demo page has a "← Contents" link (in Japanese, "← 目次").
+
+**Language switch.** The header of all three pages (contents, old-map demo, transform-shape demo) has a
+"日本語 / English" switch. You can also pass `?lang=ja` or `?lang=en`. Without it, the demo uses Japanese when
+the browser language (`navigator.language`) is Japanese, and English otherwise. The chosen language is carried
+over to the links to the other pages. On the old-map demo, `<html lang>` follows the same value, so the
+names in the map data switch too. All on-screen text lives in one dictionary per page (ja and en) under
+`demo/i18n/`. The English terms follow the MaplatEditor glossary.
+
+#### Old-map demo (`old-map.html`)
+
+`http://localhost:5175/old-map.html` (`old-map.html` on the public demo).
 
 - `?region=<ID>` selects the region (`morioka`, `nobeoka`, `nara`, `tatebayashi`,
   `hiroshima`, `niigata`). Without it, or with an unknown ID, `morioka` is used.
@@ -519,7 +532,7 @@ Public demo: <https://code4history.dev/MaplatCore/> (deployed to GitHub Pages fr
 
 #### Transform-shape demo (`layered-map.html`)
 
-`http://localhost:5175/layered-map.html` (`layered-map.html` on the public demo). **Each demo shows one comparison.**
+`http://localhost:5175/layered-map.html` (`layered-map.html` on the public demo). `?demo=1` to `5` picks the demo, `?type=` (`a`, `b`, `c`, `d`) picks the shape, and `?sup=0|1` turns the supplementary points off or on. The table of contents links straight to each demo. **Each demo shows one comparison.**
 Switch between two transform shapes (buttons or the ←→ keys). If the converted paper (the red line) stays inside the truth (the blue band), the transform is right.
 Each demo has a "確認のポイント" (what to check) line that says what to look at and what it tells you.
 

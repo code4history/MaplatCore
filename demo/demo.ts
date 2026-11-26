@@ -16,8 +16,18 @@ import { type IiifBindings, type IiifMetadataEntry, compareIiifCopy, listIiifCan
 import { sanitizeIiifHtml } from "../src/sanitize.ts";
 import NDL_MANIFEST from "../spec/fixtures/iiif/ndl-948741.manifest.json";
 import V3_MANIFEST from "../spec/fixtures/iiif/presentation-v3-minimal.manifest.json";
-import { REGION_IDS, REGION_META } from "./regions";
+import { REGION_IDS } from "./regions";
 import type { AppSetting, DemoOps, LineItem, LineKind, MapLineItem, MapPoi, Poi, RegionContent, RegionId, VectorItem } from "./regions";
+import { commonDict } from "./i18n/common";
+import { applyLang, detectLang, makeTranslate, mergeDicts, mountLangSwitch } from "./i18n/core";
+import { dict as oldMapDict } from "./i18n/old-map";
+
+// 言語（?lang= → ブラウザの言語）。画面の文言は demo/i18n/old-map.ts の辞書にまとめ、ここでは t(鍵) で引く。
+// <html lang> も同じ値にするので、地図のデータの名前（i18n()・localizedText）も切り替わる
+const lang = detectLang();
+const t = makeTranslate(mergeDicts(commonDict, oldMapDict), lang);
+applyLang(t, lang);
+mountLangSwitch(document.getElementById("lang-switch")!, lang, t("common.lang_label"));
 
 // 素材 JSON（demo/content/<region>.json）を Vite の import.meta.glob でバンドルに取り込む。
 // キーは "./content/<region>.json"（demo/ 起点の相対 glob）。ページの基点に依存しない。
@@ -91,19 +101,19 @@ const POI_TEMPLATE =
 
 // poiTemplate の記法のプリセット（新しい記法・旧い記法・書き誤り・| safe の有無）。
 // 旧い記法（lodash.template）は 1.3 から評価されず、ページで 1 回だけ console.warn が出る
-const TEMPLATE_PRESETS: { id: string; label: string; template: string }[] = [
-  { id: "nunjucks", label: "(a) 新しい記法", template: POI_TEMPLATE },
+const TEMPLATE_PRESETS: { id: string; labelKey: string; template: string }[] = [
+  { id: "nunjucks", labelKey: "tpl.nunjucks", template: POI_TEMPLATE },
   {
     id: "legacy",
-    label: "(b) 旧い記法",
+    labelKey: "tpl.legacy",
     template:
       '<div class="demo-poi-html"><strong><%- typeof name === "string" ? name : (name && (name.ja || name.en)) || "" %></strong>' +
       '<% if (typeof desc === "string" && desc) { %><p><%- desc %></p><% } %></div>'
   },
-  { id: "broken", label: "(c) 書き誤り", template: '<div class="demo-poi-html"><strong>{{ name }</strong></div>' },
+  { id: "broken", labelKey: "tpl.broken", template: '<div class="demo-poi-html"><strong>{{ name }</strong></div>' },
   {
     id: "safe",
-    label: "(d) | safe の有無",
+    labelKey: "tpl.safe",
     template:
       '<div class="demo-poi-html"><p>{{ "{{ name }}" }}: {{ name if name is string else name.ja }}</p>' +
       '<p>{{ "{{ name | safe }}" }}: {{ (name if name is string else name.ja) | safe }}</p></div>'
@@ -117,13 +127,13 @@ const TEMPLATE_LAYER = "template_demo";
 const SANITIZE_PRESETS = [
   {
     id: "qy-allowed",
-    label: "許される qy-swiper",
-    html: '<qy-swiper has-thumb><qy-swiper-slide image-url="img/a.jpg" image-type="image" caption="&lt;i&gt;六百遠忌&lt;/i&gt;報恩塔" fit-to-container></qy-swiper-slide></qy-swiper>'
+    labelKey: "sanitize.qy_allowed",
+    html: `<qy-swiper has-thumb><qy-swiper-slide image-url="img/a.jpg" image-type="image" caption="${t("sanitize.sample_caption")}" fit-to-container></qy-swiper-slide></qy-swiper>`
   },
   {
     id: "qy-dangerous",
-    label: "危険な属性",
-    html: '<qy-swiper style="color:red" onclick="alert(1)"><qy-swiper-slide image-url="javascript:alert(1)" image-type="image" onerror="alert(1)" caption="c"></qy-swiper-slide></qy-swiper><cc-swiper><cc-swiper-slide image-url="a.jpg">cc-swiper の中の文字</cc-swiper-slide></cc-swiper><div image-url="a.jpg">div の中の文字</div>'
+    labelKey: "sanitize.qy_dangerous",
+    html: `<qy-swiper style="color:red" onclick="alert(1)"><qy-swiper-slide image-url="javascript:alert(1)" image-type="image" onerror="alert(1)" caption="c"></qy-swiper-slide></qy-swiper><cc-swiper><cc-swiper-slide image-url="a.jpg">${t("sanitize.sample_cc_text")}</cc-swiper-slide></cc-swiper><div image-url="a.jpg">${t("sanitize.sample_div_text")}</div>`
   }
 ] as const;
 
@@ -133,13 +143,13 @@ const SANITIZE_PRESETS = [
 const IIIF_TRY_SOURCES = [
   {
     id: "ndl",
-    label: "国立国会図書館の Manifest（版 2）",
+    labelKey: "bib.src_ndl",
     manifest: NDL_MANIFEST as unknown,
     canvas: "https://dl.ndl.go.jp/api/iiif/948741/canvas/3"
   },
   {
     id: "v3",
-    label: "手書きの Manifest（版 3）",
+    labelKey: "bib.src_v3",
     manifest: V3_MANIFEST as unknown,
     canvas: "https://iiif.example.test/manifest/sample-map/canvas/2"
   }
@@ -150,31 +160,16 @@ const IIIF_BAD_MANIFEST = {
   "@context": "http://iiif.io/api/presentation/3/context.json",
   id: "https://iiif.example.test/bad/manifest.json",
   type: "Manifest",
-  label: { none: ["悪い値の見本"] },
-  summary: {
-    none: [
-      '値の中の<img src="x" onerror="alert(1)">画像と、<script>alert(1)</script>実行のタグ。',
-      '<a href="javascript:alert(1)">javascript のリンク</a>と<a href="https://example.org/">https のリンク</a>。'
-    ]
-  },
+  label: { none: [t("bib.bad_label")] },
+  summary: { none: [t("bib.bad_summary_1"), t("bib.bad_summary_2")] },
   requiredStatement: {
-    label: { none: ["帰属"] },
-    value: { none: ['<b>見本</b>の提供元<img src="x" onerror="alert(1)">'] }
+    label: { none: [t("bib.bad_attr_label")] },
+    value: { none: [t("bib.bad_attr_value")] }
   },
   metadata: [
-    { label: { none: ["画像"] }, value: { none: ['<img src="x" onerror="alert(1)">'] } },
-    {
-      label: { none: ["表"] },
-      value: { none: ["<table><thead><tr><th>見出し</th></tr></thead><tbody><tr><td>セル</td></tr></tbody></table>"] }
-    },
-    {
-      label: { none: ["リンク"] },
-      value: {
-        none: [
-          '<a href="https://example.org/">https のリンク</a>／<a href="mailto:test@example.org">mailto のリンク</a>／<a href="javascript:alert(1)">javascript のリンク</a>'
-        ]
-      }
-    }
+    { label: { none: [t("bib.bad_meta_image")] }, value: { none: ['<img src="x" onerror="alert(1)">'] } },
+    { label: { none: [t("bib.bad_meta_table")] }, value: { none: [t("bib.bad_table_value")] } },
+    { label: { none: [t("bib.bad_meta_links")] }, value: { none: [t("bib.bad_links_value")] } }
   ],
   items: []
 };
@@ -188,8 +183,8 @@ const IIIF_HTML_KEYS = new Set(["attr", "dataAttr", "description", "contributor"
 
 // ベースマップ（gsi / osm）の表示名。地図の id 自体は app 設定の sources（bare string）から得る。
 const BASEMAP_LABEL: Record<string, string> = {
-  gsi: "地理院地図",
-  osm: "OpenStreetMap"
+  gsi: t("basemap.gsi"),
+  osm: t("basemap.osm")
 };
 
 // テンプレートの警告（Core の console.warn）を、デモの「テンプレートの警告」欄へ写す（デモだけの処理）
@@ -252,10 +247,9 @@ function currentRegion(): RegionId {
   return hit ?? REGION_IDS[0];
 }
 
-/** ページの言語（`<html lang>`）。無い・未知なら ja */
+/** ページの言語。?lang= かブラウザの言語で決め（detectLang）、<html lang> にも同じ値を入れてある */
 function pageLang(): "ja" | "en" {
-  const raw = (document.documentElement.lang || "ja").toLowerCase();
-  return raw.startsWith("en") ? "en" : "ja";
+  return lang;
 }
 
 /** 多言語文字列（I18nText）から表示用文字列を得る（ページ言語優先・無ければ ja） */
@@ -294,7 +288,7 @@ function makeButton(label: string, onClick: () => void): HTMLButtonElement {
 // ---- タイルキャッシュ（Weiwudi の Service Worker と、Core の公開 API の呼び出し）----
 // Service Worker はページごとに 1 回だけ登録する（remove()→再生成では登録の結果を使い回す）。
 // 失敗してもデモのほかの機能は止めず、キャッシュ無しで起動して節に理由を出す。
-const SW_WAIT_MESSAGE = "Service Worker を待っています…";
+const SW_WAIT_MESSAGE = t("sw.wait");
 // Weiwudi.registerSW の待ちの上限は制御を待つ 10 秒だけで、その後の疎通確認（fetch）には上限が無い。
 // SW が制御を始めたのに応答しないとデモが起動しないので、デモ側で打ち切る（10 秒に疎通確認の余裕 5 秒）
 const CACHE_REGISTER_LIMIT_MS = 15_000;
@@ -303,14 +297,14 @@ let swRegistration: Promise<string | undefined> | undefined;
 
 /** 成功なら undefined、使えないなら理由の文字列 */
 function ensureServiceWorker(status: HTMLElement): Promise<string | undefined> {
-  if (cacheDisabledByUrl()) return Promise.resolve("URL の ?cache=0 で無効にしています");
+  if (cacheDisabledByUrl()) return Promise.resolve(t("sw.disabled_by_url"));
   swRegistration ??= (async () => {
     const before = status.textContent;
     status.textContent = SW_WAIT_MESSAGE;
     try {
-      if (!navigator.serviceWorker) throw new Error("このブラウザでは navigator.serviceWorker が使えません");
+      if (!navigator.serviceWorker) throw new Error(t("sw.unsupported"));
       await new Promise<void>((resolve, reject) => {
-        const timer = setTimeout(() => { reject(new Error("Service Worker の登録が時間内に終わりませんでした")); }, CACHE_REGISTER_LIMIT_MS);
+        const timer = setTimeout(() => { reject(new Error(t("sw.timeout"))); }, CACHE_REGISTER_LIMIT_MS);
         // 負けたあとで registerSW が解決・失敗しても起動には影響させない（結果はここで握る）
         Weiwudi.registerSW(new URL("./weiwudi-sw.js", location.href), { scope: "./" }).then(
           () => { clearTimeout(timer); resolve(); },
@@ -320,7 +314,7 @@ function ensureServiceWorker(status: HTMLElement): Promise<string | undefined> {
       return undefined;
     } catch (e) {
       // Weiwudi 1.1.x は文字列、新しい版は Error を投げうる
-      return `Service Worker を使えないのでキャッシュ無しで動いています: ${String(e instanceof Error ? e.message : e)}`;
+      return t("sw.failed", { reason: String(e instanceof Error ? e.message : e) });
     } finally {
       if (status.textContent === SW_WAIT_MESSAGE) status.textContent = before;
     }
@@ -371,7 +365,7 @@ type CacheStats = { count?: number; size?: number; total?: number; percent?: num
 // 「進んでいない」「応答が無い」「消えていない」を見張り、ボタンが必ず戻るようにする。
 function buildCacheSection(ctx: CacheSectionContext): void {
   const { app, makeSection, mountSection, showError, logEvent, activeMapId, disabledReason } = ctx;
-  const sec = makeSection("キャッシュ");
+  const sec = makeSection(t("section.cache"));
   sec.sec.id = "demo-cache";
   const text = (id: string, label: string): HTMLSpanElement => {
     const r = sec.row();
@@ -382,8 +376,8 @@ function buildCacheSection(ctx: CacheSectionContext): void {
     r.append(k, v);
     return v;
   };
-  const appState = text("cache-app", "アプリのキャッシュ:");
-  const target = text("cache-target", "対象の地図:");
+  const appState = text("cache-app", t("cache.app"));
+  const target = text("cache-target", t("cache.target"));
   const sizeRow = sec.row();
   const sizeView = document.createElement("span");
   sizeView.id = "cache-stats";
@@ -396,15 +390,15 @@ function buildCacheSection(ctx: CacheSectionContext): void {
   const statsFail = document.createElement("span");
   statsFail.id = "cache-stats-fail";
   for (const n of [sizeNum, countNum, totalNum]) n.textContent = "—";
-  sizeView.append("保存済み: ", sizeNum, " バイト ／ タイル: ", countNum, " / ", totalNum, " ", statsFail);
+  sizeView.append(`${t("cache.stored")} `, sizeNum, ` ${t("cache.bytes_tiles")} `, countNum, " / ", totalNum, " ", statsFail);
   sizeRow.appendChild(sizeView);
-  const progress = text("cache-progress", "進捗:");
-  const result = text("cache-result", "終了:");
+  const progress = text("cache-progress", t("cache.progress"));
+  const result = text("cache-result", t("cache.result"));
   const message = text("cache-message", "");
   const buttons = sec.row();
-  const fetchBtn = makeButton("全タイルを取得", () => { onFetchClick(); });
+  const fetchBtn = makeButton(t("cache.fetch_all"), () => { onFetchClick(); });
   fetchBtn.id = "cache-fetch";
-  const clearBtn = makeButton("キャッシュを消す", () => { onClear(); });
+  const clearBtn = makeButton(t("cache.clear"), () => { onClear(); });
   clearBtn.id = "cache-clear";
   buttons.append(fetchBtn, clearBtn);
   const note = document.createElement("p");
@@ -413,12 +407,11 @@ function buildCacheSection(ctx: CacheSectionContext): void {
   sec.sec.appendChild(note);
   const fixedNote = document.createElement("p");
   fixedNote.className = "demo-note";
-  fixedNote.textContent =
-    "IIIF の画像は配信ごとに URL を作り直すため、キャッシュの対象外です。Service Worker の解除は DevTools の Application › Service Workers から行えます";
+  fixedNote.textContent = t("cache.fixed_note");
   sec.sec.appendChild(fixedNote);
 
   const enabled = disabledReason === undefined;
-  appState.textContent = enabled ? "有効" : `無効（${disabledReason}）`;
+  appState.textContent = enabled ? t("cache.enabled") : t("cache.disabled", { reason: disabledReason });
 
   // 取得の状態: idle（待機）→ fetching（取得中）→ cancelling（中止を押した）／ firing（見張りが発火して cancel の完了待ち）
   let state: "idle" | "fetching" | "cancelling" | "firing" = "idle";
@@ -437,15 +430,15 @@ function buildCacheSection(ctx: CacheSectionContext): void {
   const refreshButtons = (): void => {
     const mapID = activeMapId();
     const usable = enabled && !!mapID && app.getMapCacheEnable(mapID);
-    target.textContent = mapID ? `${mapID} ／ キャッシュ: ${usable ? "対象" : "対象外"}` : "—";
-    fetchBtn.textContent = state === "fetching" || state === "cancelling" || state === "firing" ? "取得を中止" : "全タイルを取得";
+    target.textContent = mapID ? t("cache.target_value", { mapID, state: usable ? t("cache.cacheable") : t("cache.not_cacheable") }) : "—";
+    fetchBtn.textContent = state === "fetching" || state === "cancelling" || state === "firing" ? t("cache.cancel_fetch") : t("cache.fetch_all");
     clearBtn.disabled = !usable || busyClear || state !== "idle";
     if (state === "idle") {
       let reason = "";
-      if (!enabled) reason = "キャッシュが無効なので一括取得を使えません";
-      else if (!usable) reason = "この地図はキャッシュの対象外なので一括取得を使えません";
-      else if (lastTotal === undefined) reason = "全体のタイル数が分からないので一括取得を止めています";
-      else if (lastTotal > CACHE_FETCH_MAX_TILES) reason = `全体のタイル数が多すぎる（${lastTotal} 枚）ので一括取得を止めています`;
+      if (!enabled) reason = t("cache.reason_disabled");
+      else if (!usable) reason = t("cache.reason_not_cacheable");
+      else if (lastTotal === undefined) reason = t("cache.reason_total_unknown");
+      else if (lastTotal > CACHE_FETCH_MAX_TILES) reason = t("cache.reason_too_many", { total: lastTotal });
       fetchBtn.disabled = reason !== "";
       if (reason) fetchBtn.title = reason;
       else fetchBtn.removeAttribute("title");
@@ -466,7 +459,7 @@ function buildCacheSection(ctx: CacheSectionContext): void {
         sizeNum.textContent = "—";
         countNum.textContent = "—";
         totalNum.textContent = "—";
-        statsFail.textContent = "（取得できません）";
+        statsFail.textContent = t("cache.stats_unavailable");
         lastTotal = undefined;
       }
       return;
@@ -557,10 +550,10 @@ function buildCacheSection(ctx: CacheSectionContext): void {
         done = true;
         clearTimeout(limit);
         const msg = timedOut
-          ? "中止の応答がありません（SW が応答していない可能性があります）"
-          : "進んでいません（遅い回線の可能性があります。取得は中止しました）";
+          ? t("cache.cancel_no_response_sw")
+          : t("cache.no_progress");
         setMessage(msg);
-        showError("タイルキャッシュ", msg);
+        showError(t("cache.where"), msg);
         toIdle();
       };
       const limit = setTimeout(() => { finish(true); }, CACHE_CANCEL_LIMIT_MS);
@@ -572,9 +565,9 @@ function buildCacheSection(ctx: CacheSectionContext): void {
     } else if (state === "cancelling") {
       // 中止側: 中止の応答が無い。cancel はもう呼ばない
       gen++;
-      const msg = "中止の応答がありません（遅い回線の可能性があります）";
+      const msg = t("cache.cancel_no_response_slow");
       setMessage(msg);
-      showError("タイルキャッシュ", msg);
+      showError(t("cache.where"), msg);
       toIdle();
     }
   }
@@ -584,7 +577,7 @@ function buildCacheSection(ctx: CacheSectionContext): void {
     const parts: string[] = [];
     if (typeof d.percent === "number") parts.push(`${d.percent}%`);
     if (typeof d.processed === "number" && typeof d.total === "number") parts.push(`(${d.processed} / ${d.total})`);
-    if (typeof d.error === "number" && d.error > 0) parts.push(`失敗 ${d.error}`);
+    if (typeof d.error === "number" && d.error > 0) parts.push(t("cache.failed_count", { count: d.error }));
     return parts.join(" ");
   };
 
@@ -594,7 +587,7 @@ function buildCacheSection(ctx: CacheSectionContext): void {
       state = "cancelling";
       armWatch();
       refreshButtons();
-      logEvent("tileCache", "中止を要求");
+      logEvent("tileCache", t("cache.log_cancel"));
       try {
         void Promise.resolve(app.cancelMapTileCacheAsync(fetchMapID ?? "")).catch(() => undefined);
       } catch {
@@ -612,7 +605,7 @@ function buildCacheSection(ctx: CacheSectionContext): void {
     result.textContent = "";
     setMessage("");
     refreshButtons();
-    logEvent("tileCache", `${mapID} の全タイルの取得を開始`);
+    logEvent("tileCache", t("cache.log_start", { mapID }));
     // 見張りを先に張る。取得の戻りは待たない（Core は失敗を握りつぶし、戻りが来ないことがある）
     startTimers();
     const onEvent = (type: string, detail: unknown): void => {
@@ -626,7 +619,7 @@ function buildCacheSection(ctx: CacheSectionContext): void {
       }
       if (type === "finish" || type === "stop" || type === "canceled") {
         const extra = formatProgress(d);
-        result.textContent = type === "finish" && typeof d?.error === "number" ? `finish（失敗 ${d.error} 枚）` : type;
+        result.textContent = type === "finish" && typeof d?.error === "number" ? t("cache.finish_with_failures", { count: d.error }) : type;
         if (extra) progress.textContent = extra;
         logEvent("tileCache", `${type} ${mapID}`);
         toIdle();
@@ -645,7 +638,7 @@ function buildCacheSection(ctx: CacheSectionContext): void {
     busyClear = true;
     refreshButtons();
     setMessage("");
-    logEvent("tileCache", `${mapID} のキャッシュを消す`);
+    logEvent("tileCache", t("cache.log_clear", { mapID }));
     // 戻りは待たない。サイズが 0 になるのを 0.5 秒ごと 3 秒まで確かめる
     try {
       void Promise.resolve(app.clearMapTileCacheAsync(mapID)).catch(() => undefined);
@@ -663,14 +656,14 @@ function buildCacheSection(ctx: CacheSectionContext): void {
       if (checkTimer !== undefined) clearTimeout(checkTimer);
       busyClear = false;
       if (ok) {
-        setMessage("消去しました");
+        setMessage(t("cache.cleared"));
       } else {
         const msg =
           lastSize < 0
-            ? "消去を確認できませんでした（サイズを読み取れません）"
-            : `消去できませんでした（サイズ ${lastSize} バイトが残っています）`;
+            ? t("cache.clear_unconfirmed")
+            : t("cache.clear_failed", { size: lastSize });
         setMessage(msg);
-        showError("タイルキャッシュ", msg);
+        showError(t("cache.where"), msg);
       }
       refreshButtons();
       void refreshStats();
@@ -728,10 +721,10 @@ interface OutsidePoiSectionCtx {
 
 function mountOutsidePoiSection(app: MaplatApp, ctx: OutsidePoiSectionCtx): void {
   const { makeSection, mountSection, entries, layerID } = ctx;
-  const sec = makeSection("範囲外の POI");
+  const sec = makeSection(t("section.outside_poi"));
   const note = document.createElement("p");
   note.className = "demo-note";
-  note.textContent = "前者は紙の外の地理の地図の上にピンが立ち、後者は立たない";
+  note.textContent = t("outside.note");
   sec.sec.appendChild(note);
 
   const table = document.createElement("table");
@@ -789,8 +782,8 @@ function mountOutsidePoiSection(app: MaplatApp, ctx: OutsidePoiSectionCtx): void
         if (found.some((p) => p[0] === lnglat[0] && p[1] === lnglat[1])) continue;
         found.push(lnglat);
         const data = {
-          name: `範囲外の POI の例 ${found.length}`,
-          desc: "紙の縁から外へ離した点（デモが足した例）",
+          name: t("outside.example_name", { n: found.length }),
+          desc: t("outside.example_desc"),
           lnglat
         };
         const id = app.addMarker(data, layerID) as string;
@@ -803,7 +796,7 @@ function mountOutsidePoiSection(app: MaplatApp, ctx: OutsidePoiSectionCtx): void
   const render = (): void => {
     const layer = outsideMarkerLayer(app);
     const header = document.createElement("tr");
-    for (const label of ["POI", "範囲", "描く層"]) {
+    for (const label of [t("outside.col_poi"), t("outside.col_range"), t("outside.col_layer")]) {
       const th = document.createElement("th");
       th.textContent = label;
       th.style.cssText = "text-align:left;border-bottom:1px solid #d5d9e2;padding:2px 4px;";
@@ -819,17 +812,17 @@ function mountOutsidePoiSection(app: MaplatApp, ctx: OutsidePoiSectionCtx): void
       name.textContent = i18n(entry.data.name);
       const kind = document.createElement("td");
       kind.textContent =
-        classified.kind === "inside" ? "範囲内" : classified.kind === "outside" ? "範囲外" : "範囲外（画素指定）";
+        classified.kind === "inside" ? t("outside.inside") : classified.kind === "outside" ? t("outside.outside") : t("outside.outside_pixel");
       const drawn = document.createElement("td");
       // 範囲内は hide-outside-pois でも前面のまま（描かないのは範囲外だけ）
       drawn.textContent =
         classified.kind === "inside"
-          ? "前面"
+          ? t("outside.front")
           : classified.kind === "skip" || layer === "none"
-            ? "描かない"
+            ? t("outside.not_drawn")
             : layer === "front"
-              ? "前面"
-              : "背面";
+              ? t("outside.front")
+              : t("outside.back");
       for (const cell of [name, kind, drawn]) {
         cell.style.cssText = "border-bottom:1px solid #eef0f4;padding:2px 4px;";
         tr.appendChild(cell);
@@ -856,7 +849,7 @@ function mountOutsidePoiSection(app: MaplatApp, ctx: OutsidePoiSectionCtx): void
 
   // (1) 範囲外を出す（既定）と hide-outside-pois（起動後も変えられる既存の口を使う）
   const shownRow = sec.row();
-  shownRow.appendChild(makeButton("範囲外を出す（既定）", () => {
+  shownRow.appendChild(makeButton(t("outside.btn_show"), () => {
     app.applyRuntimeOptions({ hideOutsidePois: false });
     void refresh();
   }));
@@ -867,41 +860,41 @@ function mountOutsidePoiSection(app: MaplatApp, ctx: OutsidePoiSectionCtx): void
 
   // (2) 透過度 0 と 70（紙に覆われた背面のピンが見えるか）
   const transparencyRow = sec.row();
-  transparencyRow.appendChild(makeButton("透過度 0", () => {
+  transparencyRow.appendChild(makeButton(t("outside.btn_transparency_0"), () => {
     ctx.setTransparency(0);
     void refresh();
   }));
-  transparencyRow.appendChild(makeButton("透過度 70", () => {
+  transparencyRow.appendChild(makeButton(t("outside.btn_transparency_70"), () => {
     ctx.setTransparency(70);
     void refresh();
   }));
 
   // (3) 範囲外のピンを選ぶ → 選択を外す。(4) 範囲内のピンを選ぶ
   const selectRow = sec.row();
-  selectRow.appendChild(makeButton("範囲外のピンを選ぶ", () => {
+  selectRow.appendChild(makeButton(t("outside.btn_select_outside"), () => {
     const hit = rows.find((row) => row.classified.kind === "outside");
     if (!hit) {
-      status.textContent = "範囲外の POI がありません";
+      status.textContent = t("outside.none_outside");
       return;
     }
     app.selectMarker(hit.entry.id);
     ctx.onSelected(hit.entry.id);
-    status.textContent = `選択中: ${i18n(hit.entry.data.name)}（中心がそのピンへ寄ります）`;
+    status.textContent = t("outside.selected_outside", { name: i18n(hit.entry.data.name) });
   }));
-  selectRow.appendChild(makeButton("選択を外す", () => {
+  selectRow.appendChild(makeButton(t("outside.btn_unselect"), () => {
     app.unselectMarker();
     ctx.onSelected(undefined);
-    status.textContent = "選択を外しました（中心が紙の縁へ戻ります）";
+    status.textContent = t("outside.unselected");
   }));
-  selectRow.appendChild(makeButton("範囲内のピンを選ぶ", () => {
+  selectRow.appendChild(makeButton(t("outside.btn_select_inside"), () => {
     const hit = rows.find((row) => row.classified.kind === "inside");
     if (!hit) {
-      status.textContent = "範囲内の POI がありません";
+      status.textContent = t("outside.none_inside");
       return;
     }
     app.selectMarker(hit.entry.id);
     ctx.onSelected(hit.entry.id);
-    status.textContent = `選択中: ${i18n(hit.entry.data.name)}`;
+    status.textContent = t("outside.selected", { name: i18n(hit.entry.data.name) });
   }));
 
   mountSection(sec);
@@ -917,7 +910,7 @@ async function main(): Promise<void> {
   for (const id of REGION_IDS) {
     const opt = document.createElement("option");
     opt.value = id;
-    opt.textContent = REGION_META[id].label;
+    opt.textContent = t(`region.${id}.label`);
     opt.selected = id === region;
     select.appendChild(opt);
   }
@@ -928,14 +921,13 @@ async function main(): Promise<void> {
   });
 
   // 地域説明（title・highlights）を #region-note に表示
-  const meta = REGION_META[region];
   const note = byId("region-note");
   const noteTitle = document.createElement("strong");
-  noteTitle.textContent = meta.title;
+  noteTitle.textContent = t(`region.${region}.title`);
   note.appendChild(noteTitle);
   const noteList = document.createElement("ul");
   noteList.style.cssText = "margin:4px 0 0 18px;padding:0;";
-  for (const h of meta.highlights) {
+  for (const h of t(`region.${region}.highlights`).split("\n")) {
     const li = document.createElement("li");
     li.textContent = h;
     noteList.appendChild(li);
@@ -1042,7 +1034,7 @@ async function main(): Promise<void> {
   };
 
   // ---- 状態。app を作り直しても残す ----
-  const stateSec = makeSection("状態");
+  const stateSec = makeSection(t("section.state"));
   const stateRow = (label: string, id: string): HTMLElement => {
     const r = stateSec.row();
     r.classList.add("demo-state-row");
@@ -1057,18 +1049,18 @@ async function main(): Promise<void> {
     r.appendChild(v);
     return v;
   };
-  const stRotation = stateRow("回転・方位", "state-rotation");
-  const stGps = stateRow("GPS の最後の結果", "state-gps");
-  const stViewpoint = stateRow("視点", "state-viewpoint");
+  const stRotation = stateRow(t("state.rotation"), "state-rotation");
+  const stGps = stateRow(t("state.gps"), "state-gps");
+  const stViewpoint = stateRow(t("state.viewpoint"), "state-viewpoint");
   const stUpdate = stateRow("updateState", "state-update");
-  const stClick = stateRow("最後の clickMap", "state-click");
-  const stUnknown = stateRow("未知の mapID", "state-unknown-map");
-  const stError = stateRow("エラー", "state-error");
+  const stClick = stateRow(t("state.click"), "state-click");
+  const stUnknown = stateRow(t("state.unknown_map"), "state-unknown-map");
+  const stError = stateRow(t("state.error"), "state-error");
 
   // ---- イベント履歴。新しい順・最大 50 件。changeViewpoint と updateState は直前と同種なら上書き ----
   const LOG_MAX = 50;
   const COALESCE = new Set(["changeViewpoint", "updateState"]);
-  const logSec = makeSection("イベント履歴");
+  const logSec = makeSection(t("section.log"));
   const logList = document.createElement("ol");
   logList.className = "demo-log";
   logList.id = "event-log";
@@ -1079,19 +1071,19 @@ async function main(): Promise<void> {
       ...logEntries.map((e) => {
         const li = document.createElement("li");
         li.dataset.type = e.type;
-        const t = document.createElement("span");
-        t.className = "demo-log-time";
-        t.textContent = e.time;
+        const timeEl = document.createElement("span");
+        timeEl.className = "demo-log-time";
+        timeEl.textContent = e.time;
         const n = document.createElement("strong");
         n.textContent = e.type;
-        li.append(t, " ", n);
+        li.append(timeEl, " ", n);
         if (e.text) li.append(` ${e.text}`);
         return li;
       })
     );
   };
   const logEvent = (type: string, text = ""): void => {
-    const time = new Date().toLocaleTimeString("ja-JP", { hour12: false });
+    const time = new Date().toLocaleTimeString(lang === "ja" ? "ja-JP" : "en-GB", { hour12: false });
     const entry = { type, text, time };
     if (COALESCE.has(type) && logEntries[0]?.type === type) logEntries[0] = entry;
     else {
@@ -1136,9 +1128,9 @@ async function main(): Promise<void> {
     // 手順 4: refreshAttr の dataLicense 行を置き換える
     const attrDataParts = (m: { dataAttr?: string | { ja?: string; en?: string }; dataLicense?: string } | undefined): string[] => {
       const dataAttr = m ? i18n(m.dataAttr) : "";
-      if (dataAttr && m?.dataLicense) return [`地理参照データ: ${dataAttr}（${m.dataLicense}）`];
-      if (m?.dataLicense) return [`地理参照データ: ${m.dataLicense}`];
-      if (dataAttr) return [`地理参照データ: ${dataAttr}`];
+      if (dataAttr && m?.dataLicense) return [t("attr.geo_data_license", { attr: dataAttr, license: m.dataLicense })];
+      if (m?.dataLicense) return [t("attr.geo_data", { value: m.dataLicense })];
+      if (dataAttr) return [t("attr.geo_data", { value: dataAttr })];
       return [];
     };
     const refreshAttr = (): void => {
@@ -1157,17 +1149,17 @@ async function main(): Promise<void> {
       if (label && attrStr) parts.push(`${label}: ${attrStr}`);
       else if (attrStr) parts.push(attrStr);
       else if (label) parts.push(label);
-      if (m?.license) parts.push(`ライセンス: ${m.license}`);
+      if (m?.license) parts.push(t("attr.license", { license: m.license }));
       // dataAttr・dataLicense（CC BY-SA など）の地図は「地理参照データ」を併記する
       parts.push(...attrDataParts(m));
-      attr.textContent = parts.join(" ／ ");
+      attr.textContent = parts.join(t("attr.sep"));
     };
 
     // ---- 視点表示（回転・方位。zoom は Core 公開面に取得 API が無いため出さない）----
     const refreshViewpoint = async (): Promise<void> => {
       const rotation = app.getRotation();
       const direction = await app.getDirection();
-      status.textContent = `回転 ${rotation.toFixed(1)}° / 方位 ${direction.toFixed(1)}°`;
+      status.textContent = t("view.rotation_direction", { rotation: rotation.toFixed(1), direction: direction.toFixed(1) });
       stRotation.textContent = status.textContent;
     };
 
@@ -1187,7 +1179,7 @@ async function main(): Promise<void> {
     const ensureLayer = (id: string, name: string): void => {
       if (!app.getPoiLayer(id)) app.addPoiLayer(id, { name });
     };
-    if (appPois.length > 0 || demoOps.addPoi.length > 0) app.addPoiLayer(APP_LAYER, { name: "アプリ用 POI" });
+    if (appPois.length > 0 || demoOps.addPoi.length > 0) app.addPoiLayer(APP_LAYER, { name: t("poi.layer_app") });
     // 「範囲外の POI」の節が使う（どの POI が範囲の外か・どの層に描くかを出す）。
     // 地図用 POI はその地図のときだけ節に出すので、mapID を控える
     const recordedPois: OutsidePoiEntry[] = [];
@@ -1200,7 +1192,7 @@ async function main(): Promise<void> {
     for (const poi of mapPois) {
       const { maps, ...data } = poi;
       for (const mapID of maps) {
-        if (!app.getPoiLayer(mapLayerId(mapID))) app.addPoiLayer(mapLayerId(mapID), { name: "地図用 POI" });
+        if (!app.getPoiLayer(mapLayerId(mapID))) app.addPoiLayer(mapLayerId(mapID), { name: t("poi.layer_map") });
         recordedPois.push({ id: app.addMarker(structuredClone(data), mapLayerId(mapID)) as string, data, mapID });
         mapPoiCount.set(mapID, (mapPoiCount.get(mapID) ?? 0) + 1);
       }
@@ -1216,18 +1208,19 @@ async function main(): Promise<void> {
     const refreshVectorAttr = (): void => {
       vectorAttr.textContent = "";
       activeVectors.forEach((vec, index) => {
-        if (index > 0) vectorAttr.appendChild(document.createTextNode(" ／ "));
-        vectorAttr.appendChild(document.createTextNode(`面の出典: ${vec.source}`));
+        if (index > 0) vectorAttr.appendChild(document.createTextNode(t("attr.sep")));
+        vectorAttr.appendChild(document.createTextNode(t("vector.source", { source: vec.source })));
         if (!vec.source.startsWith("OpenStreetMap")) return;
         // OpenStreetMap のデータの表示義務: 著作権表示と copyright ページへのリンク
         const copyrightLink = document.createElement("a");
         copyrightLink.href = "https://www.openstreetmap.org/copyright";
         copyrightLink.target = "_blank";
         copyrightLink.rel = "noopener";
-        copyrightLink.textContent = "著作権";
-        vectorAttr.appendChild(document.createTextNode(" ／ © OpenStreetMap contributors（"));
+        copyrightLink.textContent = t("vector.copyright");
+        const [creditBefore, creditAfter] = t("vector.osm_credit", { link: "\u0000" }).split("\u0000");
+        vectorAttr.appendChild(document.createTextNode(`${t("attr.sep")}${creditBefore}`));
         vectorAttr.appendChild(copyrightLink);
-        vectorAttr.appendChild(document.createTextNode("）"));
+        vectorAttr.appendChild(document.createTextNode(creditAfter));
       });
       vectorAttr.style.display = activeVectors.length > 0 ? "" : "none";
     };
@@ -1252,16 +1245,16 @@ async function main(): Promise<void> {
     };
 
     // ---- 地図（ドロップダウン＋透過度スライダー）----
-    const mapSec = makeSection("地図");
+    const mapSec = makeSection(t("section.map"));
     const mapField = document.createElement("label");
     mapField.className = "demo-field";
-    mapField.appendChild(document.createTextNode("表示する地図"));
+    mapField.appendChild(document.createTextNode(t("map.field")));
     const mapSelect = document.createElement("select");
     mapSelect.id = "map-select";
     const oldGroup = document.createElement("optgroup");
-    oldGroup.label = "古地図";
+    oldGroup.label = t("map.group_old");
     const baseGroup = document.createElement("optgroup");
-    baseGroup.label = "現代の地図";
+    baseGroup.label = t("map.group_base");
     // 起動のときに使えなかった地図（IIIF の取得に失敗した等）は、一覧で「使えない地図」にする。
     // 控えは Core の内部ではなく、公開の振る舞いである console.error の文から地図の ID を取る
     // （文の形: Maplat: IIIF image for map "<mapID>" is not usable: <reason>）
@@ -1280,7 +1273,7 @@ async function main(): Promise<void> {
       opt.value = mapID;
       opt.textContent = label;
       if (unusableIds.has(mapID)) {
-        opt.textContent = `${label}（使えない地図）`;
+        opt.textContent = t("map.unusable", { label });
         opt.disabled = true;
       }
       (isBasemap ? baseGroup : oldGroup).appendChild(opt);
@@ -1295,7 +1288,7 @@ async function main(): Promise<void> {
     mapSec.row().appendChild(mapField);
     const opField = document.createElement("label");
     opField.className = "demo-field";
-    const opText = document.createTextNode("透過度 0%");
+    const opText = document.createTextNode(t("map.transparency", { value: 0 }));
     const opRange = document.createElement("input");
     opRange.type = "range";
     opRange.id = "opacity-range";
@@ -1306,7 +1299,7 @@ async function main(): Promise<void> {
     // 「範囲外の POI」の節の透過度のボタンからも同じ口を使う（スライダーの表示も合わせる）
     const setTransparency = (value: number): void => {
       opRange.value = String(value);
-      opText.textContent = `透過度 ${value}%`;
+      opText.textContent = t("map.transparency", { value });
       app.setTransparency(value);
     };
     opRange.addEventListener("input", () => {
@@ -1321,15 +1314,15 @@ async function main(): Promise<void> {
     };
 
     // ---- POI（表示のチェック・追加はチェック・移動はチェック）----
-    const poiSec = makeSection("POI");
+    const poiSec = makeSection(t("section.poi"));
     // POI の選択: クリックした POI を Core の selectMarker で選ぶ（アイコンが selected になり、画面の中央へ来る）。
     // 「選択中の POI」のチェックは選択があるときだけ有効で、外すと unselectMarker で全部を未選択に戻す
     let selectedId: string | undefined;
-    const selectWrap = makeCheck("選択中の POI", false, (on) => { if (!on) clearSelection(); });
+    const selectWrap = makeCheck(t("poi.selected"), false, (on) => { if (!on) clearSelection(); });
     const refreshSelectCheck = (): void => {
       const cb = selectWrap.querySelector("input");
       if (cb) cb.checked = selectedId !== undefined;
-      setUsable(selectWrap, selectedId !== undefined, "地図の POI をクリックすると選べます");
+      setUsable(selectWrap, selectedId !== undefined, t("poi.select_hint"));
     };
     const clearSelection = (): void => {
       if (selectedId === undefined) return;
@@ -1341,19 +1334,19 @@ async function main(): Promise<void> {
     let mapPoiCheck: HTMLLabelElement | undefined;
     if (appPois.length > 0 || mapPoiCount.size > 0) {
       const showRow = poiSec.row();
-      showRow.appendChild(makeCheck("すべての POI を表示", true, (on) => {
+      showRow.appendChild(makeCheck(t("poi.show_all"), true, (on) => {
         if (on) app.showAllMarkers();
         else app.hideAllMarkers();
       }));
       if (appPois.length > 0) {
-        showRow.appendChild(makeCheck("アプリ用 POI", true, (on) => {
+        showRow.appendChild(makeCheck(t("poi.layer_app"), true, (on) => {
           if (on) app.showPoiLayer(APP_LAYER);
           else app.hidePoiLayer(APP_LAYER);
         }));
       }
       if (mapPoiCount.size > 0) {
         // 地図用 POI の層は地図ごとにあるので、全部の層へ同じ表示状態を掛ける（地図を替えても揃う）
-        mapPoiCheck = makeCheck("地図用 POI", true, (on) => {
+        mapPoiCheck = makeCheck(t("poi.layer_map"), true, (on) => {
           for (const mapID of mapPoiCount.keys()) {
             if (on) app.showPoiLayer(mapLayerId(mapID));
             else app.hidePoiLayer(mapLayerId(mapID));
@@ -1365,13 +1358,13 @@ async function main(): Promise<void> {
     const refreshPoiChecks = (): void => {
       if (!mapPoiCheck) return;
       const n = mapPoiCount.get(activeMapId() ?? "") ?? 0;
-      setUsable(mapPoiCheck, n > 0, "この地図には地図用 POI がありません");
+      setUsable(mapPoiCheck, n > 0, t("poi.no_map_pois"));
     };
     // 追加 POI・移動のうち出る地図が限られるもの。その地図に無ければチェックを無効化する
     const opChecks: { wrap: HTMLLabelElement; maps: string[] }[] = [];
     const refreshOpChecks = (): void => {
       const mapID = activeMapId() ?? "";
-      for (const { wrap, maps } of opChecks) setUsable(wrap, maps.includes(mapID), "この地図には出せません");
+      for (const { wrap, maps } of opChecks) setUsable(wrap, maps.includes(mapID), t("poi.not_on_map"));
     };
     if (demoOps.addPoi.length > 0 || demoOps.movePoi.length > 0) {
       const opRow = poiSec.row();
@@ -1379,7 +1372,7 @@ async function main(): Promise<void> {
       // maps が無ければアプリ全体の層（全地図）、あれば地図ごとの層 "<mapID>#add"（その地図にだけ出る）
       for (const op of demoOps.addPoi) {
         const layers = op.maps ? op.maps.map(addLayerId) : [APP_LAYER];
-        if (op.maps) for (const id of layers) ensureLayer(id, "追加 POI");
+        if (op.maps) for (const id of layers) ensureLayer(id, t("poi.layer_add"));
         let addedIds: string[] = [];
         const wrap = makeCheck(op.label, false, (on) => {
           if (on && addedIds.length === 0) addedIds = layers.map((id) => app.addMarker(structuredClone(op.poi), id) as string);
@@ -1401,7 +1394,7 @@ async function main(): Promise<void> {
         if (!line || line.points.length < 2) continue; // 素材の検査（scripts/verify-demo-content.js）が先に落とす。ここでは出さないだけ
         const pin = (at: [number, number], where: string) => ({
           name: move.label,
-          desc: `${line.label}の${where}`,
+          desc: t("poi.move_desc", { line: line.label, where }),
           lnglat: [at[0], at[1]] as [number, number],
           icon: MOVE_ICON,
           selectedIcon: MOVE_ICON_SELECTED
@@ -1415,13 +1408,13 @@ async function main(): Promise<void> {
           ? perMap.map((mapID) => ({ layer: moveLayerId(mapID), pts: drawnPoints(line, mapID) }))
           : [{ layer: MOVE_LAYER, pts: line.points }];
         const ends = places.map(({ layer, pts }) => {
-          ensureLayer(layer, "移動ピン");
+          ensureLayer(layer, t("poi.layer_move"));
           const start = pts[0];
           const end = pts[pts.length - 1];
-          return { id: app.addMarker(pin(start, "始点"), layer) as string, start, end };
+          return { id: app.addMarker(pin(start, t("poi.move_start")), layer) as string, start, end };
         });
         const wrap = makeCheck(move.label, false, (on) => {
-          for (const { id, start, end } of ends) app.updateMarker(id, on ? pin(end, "終点") : pin(start, "始点"), false);
+          for (const { id, start, end } of ends) app.updateMarker(id, on ? pin(end, t("poi.move_end")) : pin(start, t("poi.move_start")), false);
         });
         if (lineMaps) opChecks.push({ wrap, maps: lineMaps });
         opRow.appendChild(wrap);
@@ -1433,76 +1426,76 @@ async function main(): Promise<void> {
     // 素材を増やさずにボタンだけで足す。地点は app 設定の homePosition の周り
     const homeLngLat = (): [number, number] => [setting.homePosition[0], setting.homePosition[1]];
     const extraRow = poiSec.row();
-    const iconBtn = makeButton("アイコン指定の層を足す", () => {
+    const iconBtn = makeButton(t("poi.btn_icon_layer"), () => {
       if (app.getPoiLayer(ICON_LAYER)) return;
-      app.addPoiLayer(ICON_LAYER, { name: "アイコン指定の層（icon・selectedIcon）", icon: LAYER_ICON, selectedIcon: LAYER_ICON_SELECTED });
+      app.addPoiLayer(ICON_LAYER, { name: t("poi.icon_layer_name"), icon: LAYER_ICON, selectedIcon: LAYER_ICON_SELECTED });
       const [lng, lat] = homeLngLat();
       const offsets: [number, number][] = [[-0.0015, 0.0008], [0.0015, 0.0008], [0, -0.0012]];
       offsets.forEach(([dx, dy], i) => {
-        app.addMarker({ name: `アイコン指定の例 ${i + 1}`, desc: "層の icon・selectedIcon で描く", lnglat: [lng + dx, lat + dy] }, ICON_LAYER);
+        app.addMarker({ name: t("poi.icon_example_name", { n: i + 1 }), desc: t("poi.icon_example_desc"), lnglat: [lng + dx, lat + dy] }, ICON_LAYER);
       });
       iconBtn.disabled = true;
     });
-    const eraBtn = makeButton("年代で色を変える層を足す", () => {
+    const eraBtn = makeButton(t("poi.btn_era_layer"), () => {
       if (app.getPoiLayer(ERA_LAYER)) return;
-      app.addPoiLayer(ERA_LAYER, { name: "年代で色分けした層（iconTemplate）", iconTemplate: ERA_ICON_TEMPLATE });
+      app.addPoiLayer(ERA_LAYER, { name: t("poi.era_layer_name"), iconTemplate: ERA_ICON_TEMPLATE });
       // 素材の POI（start を持つものがある）を写しで載せる。地図用 POI も全地図に出す
       for (const poi of [...appPois, ...mapPois]) app.addMarker(structuredClone(poi), ERA_LAYER);
       eraBtn.disabled = true;
     });
-    const overlapBtn = makeButton("同じ地点に 2 件置く", () => {
+    const overlapBtn = makeButton(t("poi.btn_overlap"), () => {
       if (app.getPoiLayer(OVERLAP_LAYER)) app.clearMarker(OVERLAP_LAYER);
-      else app.addPoiLayer(OVERLAP_LAYER, { name: "重なった POI" });
+      else app.addPoiLayer(OVERLAP_LAYER, { name: t("poi.overlap_layer_name") });
       const [lng, lat] = homeLngLat();
       for (const n of [1, 2]) {
-        app.addMarker({ name: `重なった POI ${n}`, desc: `同じ地点に置いた ${n} 件目`, lnglat: [lng, lat] }, OVERLAP_LAYER);
+        app.addMarker({ name: t("poi.overlap_name", { n }), desc: t("poi.overlap_desc", { n }), lnglat: [lng, lat] }, OVERLAP_LAYER);
       }
       app.goHome();
     });
     extraRow.append(iconBtn, eraBtn, overlapBtn);
     const eraNote = document.createElement("p");
     eraNote.className = "demo-note";
-    eraNote.textContent = "年代（start）の色: 1599 年以前 赤・1600〜1867 年 緑・1868 年以降 青・年代なし 灰";
+    eraNote.textContent = t("poi.era_note");
     poiSec.sec.appendChild(eraNote);
     // ---- poiTemplate の記法のプリセット（Nunjucks と旧い記法の対比）----
     // 切り替えるたびに警告の記憶を戻し（デモだけの処理）、警告の欄を空にしてから描き直す
     const templateRow = poiSec.row();
     const templateLabel = document.createElement("span");
-    templateLabel.textContent = "poiTemplate の記法: ";
+    templateLabel.textContent = `${t("poi.template_label")} `;
     templateRow.appendChild(templateLabel);
     const applyTemplatePreset = (preset: (typeof TEMPLATE_PRESETS)[number]): void => {
       resetTemplateWarnings();
       templateWarnings.replaceChildren();
-      templateCurrent.textContent = `今のテンプレート（${preset.label}）: ${preset.template}`;
+      templateCurrent.textContent = t("poi.template_current", { label: t(preset.labelKey), template: preset.template });
       // 先にテンプレートを替える（層・POI の追加で起きる描き直しが、前のプリセットで評価して警告を出さないように）
       app.poiTemplate = preset.template;
       if (preset.id === "safe" && !app.getPoiLayer(TEMPLATE_LAYER)) {
         // 名前に <b> を含む POI（{{ name }} では文字のまま、{{ name | safe }} では太字になる）
-        app.addPoiLayer(TEMPLATE_LAYER, { name: "記法の例" });
+        app.addPoiLayer(TEMPLATE_LAYER, { name: t("poi.template_layer_name") });
         const [lng, lat] = homeLngLat();
-        app.addMarker({ name: "<b>太字</b>の名前", desc: "名前に <b> を含む POI", lnglat: [lng, lat + 0.002] }, TEMPLATE_LAYER);
+        app.addMarker({ name: t("poi.template_bold_name"), desc: t("poi.template_bold_desc"), lnglat: [lng, lat + 0.002] }, TEMPLATE_LAYER);
       }
       detailBox.textContent = "";
       app.redrawMarkers();
-      if (!templateWarnings.childElementCount) templateWarnings.textContent = "テンプレートの警告: なし";
+      if (!templateWarnings.childElementCount) templateWarnings.textContent = t("poi.template_warnings_none");
     };
     for (const preset of TEMPLATE_PRESETS) {
-      const btn = makeButton(preset.label, () => { applyTemplatePreset(preset); });
+      const btn = makeButton(t(preset.labelKey), () => { applyTemplatePreset(preset); });
       btn.dataset.templatePreset = preset.id;
       templateRow.appendChild(btn);
     }
     const templateCurrent = document.createElement("p");
     templateCurrent.className = "demo-note";
     templateCurrent.id = "template-current";
-    templateCurrent.textContent = `今のテンプレート（${TEMPLATE_PRESETS[0].label}）: ${POI_TEMPLATE}`;
+    templateCurrent.textContent = t("poi.template_current", { label: t(TEMPLATE_PRESETS[0].labelKey), template: POI_TEMPLATE });
     const templateWarnings = document.createElement("div");
     templateWarnings.className = "demo-note demo-template-warnings";
     templateWarnings.id = "template-warnings";
-    templateWarnings.textContent = "テンプレートの警告: なし";
+    templateWarnings.textContent = t("poi.template_warnings_none");
     templateWarningSink = (message) => {
-      if (templateWarnings.textContent === "テンプレートの警告: なし") templateWarnings.replaceChildren();
+      if (templateWarnings.textContent === t("poi.template_warnings_none")) templateWarnings.replaceChildren();
       const line = document.createElement("p");
-      line.textContent = `テンプレートの警告: ${message}`;
+      line.textContent = t("poi.template_warning", { message });
       templateWarnings.appendChild(line);
     };
     poiSec.sec.append(templateCurrent, templateWarnings);
@@ -1510,7 +1503,7 @@ async function main(): Promise<void> {
     const hitsLine = document.createElement("p");
     hitsLine.className = "demo-poi-hits";
     hitsLine.id = "poi-hits";
-    hitsLine.textContent = "POI をクリックすると、その地点の POI の件数（clickMarkers）を出します";
+    hitsLine.textContent = t("poi.hits_hint");
     const detailBox = document.createElement("div");
     detailBox.className = "demo-poi-detail";
     detailBox.id = "poi-detail";
@@ -1526,18 +1519,18 @@ async function main(): Promise<void> {
       const layers = app.listPoiLayers() as LayerInfo[];
       const title = document.createElement("p");
       title.className = "demo-note";
-      title.textContent = `POI の層（listPoiLayers）: ${layers.length} 層`;
+      title.textContent = t("poi.layers_title", { count: layers.length });
       const rows = layers.map((layer) => {
         const row = document.createElement("div");
         row.className = "demo-row demo-poi-layer";
         row.dataset.layer = layer.namespaceID;
         const name = i18n(layer.name) || layer.namespaceID;
-        row.appendChild(makeCheck(`${layer.namespaceID}（${name}）: ${layer.pois.length} 件`, !layer.hide, (on) => {
+        row.appendChild(makeCheck(t("poi.layer_row", { id: layer.namespaceID, name, count: layer.pois.length }), !layer.hide, (on) => {
           if (on) app.showPoiLayer(layer.namespaceID);
           else app.hidePoiLayer(layer.namespaceID);
           refreshPoiLayers();
         }));
-        row.appendChild(makeButton("消す", () => {
+        row.appendChild(makeButton(t("poi.btn_remove"), () => {
           clearSelection();
           app.clearMarker(layer.namespaceID);
         }));
@@ -1548,7 +1541,7 @@ async function main(): Promise<void> {
         const allRow = document.createElement("div");
         allRow.className = "demo-row demo-poi-layer";
         allRow.dataset.layer = `${mapID}#all`;
-        allRow.appendChild(makeButton(`この地図の層をまとめて消す（${mapID}#all）`, () => {
+        allRow.appendChild(makeButton(t("poi.btn_remove_all", { id: `${mapID}#all` }), () => {
           clearSelection();
           app.clearMarker(`${mapID}#all`);
         }));
@@ -1578,7 +1571,7 @@ async function main(): Promise<void> {
     }
 
     // ---- 線・面（v4.2。アプリの線・地図の線とも既定で表示。地図の線はその地図に無いときチェックを無効化）----
-    const shapeSec = makeSection("線・面");
+    const shapeSec = makeSection(t("section.shapes"));
     const shapeRow = shapeSec.row();
     const toggleIn = <T>(list: T[], item: T, on: boolean): void => {
       const idx = list.indexOf(item);
@@ -1597,7 +1590,7 @@ async function main(): Promise<void> {
     }
     const refreshLineChecks = (): void => {
       const mapID = activeMapId();
-      for (const { line, wrap } of lineChecks) setUsable(wrap, lineApplies(line, mapID), "この地図では表示できません");
+      for (const { line, wrap } of lineChecks) setUsable(wrap, lineApplies(line, mapID), t("shape.unavailable"));
     };
     for (const vec of demoOps.addVector) {
       shapeRow.appendChild(makeCheck(vec.label, true, (on) => { toggleIn(activeVectors, vec, on); refreshVectorAttr(); redrawShapes(); }));
@@ -1606,31 +1599,31 @@ async function main(): Promise<void> {
     mountSection(shapeSec);
 
     // ---- 視点 ----
-    const viewSec = makeSection("視点");
+    const viewSec = makeSection(t("section.view"));
     const viewRow = viewSec.row();
-    viewRow.appendChild(makeButton("ホーム", () => { app.goHome(); }));
-    viewRow.appendChild(makeButton("回転を戻す", () => { app.resetRotation(); }));
-    viewRow.appendChild(makeButton("北を上に", () => { app.resetDirection(); }));
+    viewRow.appendChild(makeButton(t("view.home"), () => { app.goHome(); }));
+    viewRow.appendChild(makeButton(t("view.reset_rotation"), () => { app.resetRotation(); }));
+    viewRow.appendChild(makeButton(t("view.north_up"), () => { app.resetDirection(); }));
     mountSection(viewSec);
 
     // ---- キャッシュ（視点の次）----
     buildCacheSection({ app, makeSection, mountSection, showError, logEvent, activeMapId, disabledReason: cacheDisabledReason });
 
     // ---- GPS ----
-    const gpsSec = makeSection("GPS");
+    const gpsSec = makeSection(t("section.gps"));
     const gpsRow = gpsSec.row();
-    const gpsCheck = makeCheck("GPS を使う", false, (on) => {
+    const gpsCheck = makeCheck(t("gps.use"), false, (on) => {
       app.handleGPS(on);
       const cb = gpsCheck.querySelector("input");
       if (cb) cb.checked = app.getGPSEnabled();
     });
     gpsRow.appendChild(gpsCheck);
     const fakeRow = gpsSec.row();
-    fakeRow.appendChild(makeButton("仮の現在地を置く", () => {
+    fakeRow.appendChild(makeButton(t("gps.fake_on"), () => {
       const hp = setting.homePosition;
       app.setGPSMarker({ lnglat: [hp[0], hp[1]], acc: 60 });
     }));
-    fakeRow.appendChild(makeButton("仮の現在地を消す", () => { app.setGPSMarker(null); }));
+    fakeRow.appendChild(makeButton(t("gps.fake_off"), () => { app.setGPSMarker(null); }));
     mountSection(gpsSec);
 
     // ---- 地図切替・視点変化に追従して、出典・選択中の地図・線・視点を出し直す ----
@@ -1654,7 +1647,7 @@ async function main(): Promise<void> {
     app.addEventListener("changeViewpoint", (evt) => {
       void refreshViewpoint();
       const d = detailOf(evt) as { longitude?: number; latitude?: number; zoom?: number; direction?: number } | undefined;
-      const text = `経度 ${num(d?.longitude, 5)} / 緯度 ${num(d?.latitude, 5)} / zoom ${num(d?.zoom, 2)} / 方位 ${num(d?.direction, 1)}°`;
+      const text = t("view.viewpoint", { lng: num(d?.longitude, 5), lat: num(d?.latitude, 5), zoom: num(d?.zoom, 2), direction: num(d?.direction, 1) });
       stViewpoint.textContent = text;
       logEvent("changeViewpoint", text);
     });
@@ -1666,18 +1659,18 @@ async function main(): Promise<void> {
     });
     app.addEventListener("poi_number", (evt) => {
       refreshPoiLayers();
-      logEvent("poi_number", `${String(detailOf(evt))} 件`);
+      logEvent("poi_number", t("log.count", { count: String(detailOf(evt)) }));
     });
     app.addEventListener("clickMap", (evt) => {
       const d = detailOf(evt) as { longitude?: number; latitude?: number } | undefined;
-      const text = `経度 ${num(d?.longitude, 6)} / 緯度 ${num(d?.latitude, 6)}`;
+      const text = t("view.click", { lng: num(d?.longitude, 6), lat: num(d?.latitude, 6) });
       stClick.textContent = text;
       logEvent("clickMap", text);
     });
     app.addEventListener("clickMarkers", (evt) => {
       const list = (detailOf(evt) as { name?: string | { ja?: string; en?: string } }[] | undefined) ?? [];
-      hitsLine.textContent = `clickMarkers: ${list.length} 件（${list.map((d) => i18n(d.name)).join("・")}）`;
-      logEvent("clickMarkers", `${list.length} 件`);
+      hitsLine.textContent = t("poi.hits", { count: list.length, names: list.map((d) => i18n(d.name)).join(t("list.sep")) });
+      logEvent("clickMarkers", t("log.count", { count: list.length }));
     });
     app.addEventListener("gps_result", (evt) => {
       const text = brief(detailOf(evt));
@@ -1697,7 +1690,7 @@ async function main(): Promise<void> {
       if (!data) return;
       const parts: string[] = [i18n(data.name as string | { ja?: string; en?: string })];
       if (typeof data.desc === "string") parts.push(data.desc);
-      if (data.image && typeof data.imageCredit === "string") parts.push(`写真: ${data.imageCredit}`);
+      if (data.image && typeof data.imageCredit === "string") parts.push(t("poi.photo_credit", { credit: data.imageCredit }));
       markerInfo.textContent = parts.join(" — ");
       markerInfo.style.display = "";
       // poiTemplate から作られた detail.html は sanitizeHtml を通したものだけを出す
@@ -1763,7 +1756,7 @@ async function main(): Promise<void> {
       const saved = localStorage.getItem("mapID");
       if (saved && !sourceIds.includes(saved)) {
         localStorage.removeItem("epoch");
-        logEvent("restoreSession", `別の地域で保存した状態（${saved}）は使わない`);
+        logEvent("restoreSession", t("log.restore_foreign", { saved }));
       }
     } catch {
       // localStorage が使えない環境では何もしない（Core も保存・復元をしない）
@@ -1778,7 +1771,7 @@ async function main(): Promise<void> {
     markerInfo.style.display = "none";
     vectorAttr.style.display = "none";
     attr.textContent = "";
-    status.textContent = "app を破棄しました";
+    status.textContent = t("app.destroyed");
   };
   const create = async (restoreSession: boolean): Promise<void> => {
     if (restoreSession) dropForeignSession();
@@ -1796,10 +1789,10 @@ async function main(): Promise<void> {
     // 検査用の口（e2e が Feature の style を読む。デモはパッケージに入らない）
     (window as any).__MAPLAT_DEMO_APP__ = app;
     buildApp(app);
-    logEvent("createObject", restoreSession ? "restoreSession 付き" : "");
+    logEvent("createObject", restoreSession ? t("log.create_restore") : "");
   };
 
-  const lifeSec = makeSection("破棄と再生成");
+  const lifeSec = makeSection(t("section.life"));
   const lifeRow = lifeSec.row();
   const lifeButtons: HTMLButtonElement[] = [];
   let busy = false;
@@ -1824,20 +1817,20 @@ async function main(): Promise<void> {
     lifeRow.appendChild(btn);
   };
   lifeButton("remove()", () => { destroy(); });
-  lifeButton("再生成", async () => {
+  lifeButton(t("life.recreate"), async () => {
     destroy();
     setRestoreParam(false);
     await create(false);
   });
-  lifeButton("restoreSession 付きで再生成", async () => {
+  lifeButton(t("life.recreate_restore"), async () => {
     destroy();
     setRestoreParam(true);
     await create(true);
   });
-  lifeButton("未知の mapID", async () => {
+  lifeButton(t("life.unknown_map"), async () => {
     const app = current;
     if (!app) {
-      stUnknown.textContent = "app がありません（先に再生成してください）";
+      stUnknown.textContent = t("life.no_app");
       return;
     }
     const mapIdOf = (): string | undefined => (app.currentMapInfo() as { mapID?: string } | undefined)?.mapID;
@@ -1845,21 +1838,24 @@ async function main(): Promise<void> {
     let outcome: string;
     try {
       await app.changeMap("__unknown__");
-      outcome = "例外なし・Promise は解決";
+      outcome = t("life.no_exception");
     } catch (e) {
-      outcome = `例外: ${errText(e)}`;
+      outcome = t("life.exception", { message: errText(e) });
     }
     const after = mapIdOf();
-    stUnknown.textContent = `changeMap("__unknown__"): ${outcome}・地図は ${after === before ? `${String(after)} のまま` : `${String(before)} → ${String(after)}`}`;
+    stUnknown.textContent = t("life.unknown_result", {
+      outcome,
+      map: after === before ? t("life.map_same", { map: String(after) }) : t("life.map_changed", { before: String(before), after: String(after) })
+    });
   });
   const lifeNote = document.createElement("p");
   lifeNote.className = "demo-note";
-  lifeNote.textContent = "?restoreSession=1 を付けて読み込むと restoreSession 付きで作り、1 時間以内に保存した地図・視点・透過度に戻ります";
+  lifeNote.textContent = t("life.note");
   lifeSec.sec.appendChild(lifeNote);
   mountSection(lifeSec, fixedArea);
   // ---- sanitizeHtml の入出力（テンプレートの出力の <qy-swiper>・<qy-swiper-slide>）----
   // Core のデモは qy-* を登録しないので、スライダーの見た目ではなく、残る属性と消える属性を文字列で見せる
-  const sanitizeSec = makeSection("sanitizeHtml の入出力");
+  const sanitizeSec = makeSection(t("section.sanitize"));
   const sanitizeInput = document.createElement("textarea");
   sanitizeInput.id = "sanitize-input";
   sanitizeInput.rows = 6;
@@ -1874,17 +1870,17 @@ async function main(): Promise<void> {
   };
   const sanitizeRow = sanitizeSec.row();
   for (const preset of SANITIZE_PRESETS) {
-    const btn = makeButton(preset.label, () => {
+    const btn = makeButton(t(preset.labelKey), () => {
       sanitizeInput.value = preset.html;
       runSanitize();
     });
     btn.dataset.sanitizePreset = preset.id;
     sanitizeRow.appendChild(btn);
   }
-  sanitizeRow.appendChild(makeButton("入力を通す", runSanitize));
+  sanitizeRow.appendChild(makeButton(t("sanitize.run"), runSanitize));
   const sanitizeNote = document.createElement("p");
   sanitizeNote.className = "demo-note";
-  sanitizeNote.textContent = "許される qy-swiper は属性が残り caption がテキストになる。危険な属性（javascript: の URL・onerror・style）と cc-swiper・div の image-url は消える";
+  sanitizeNote.textContent = t("sanitize.note");
   sanitizeSec.sec.append(sanitizeInput, sanitizeNote, sanitizeOutput);
   sanitizeInput.value = SANITIZE_PRESETS[0].html;
   runSanitize();
@@ -1899,7 +1895,7 @@ async function main(): Promise<void> {
 // 無言で「読み込み中…」のまま止めない。
 main().catch((e: unknown) => {
   const status = byId("status");
-  status.textContent = `地図の読み込みに失敗しました: ${e instanceof Error ? e.message : String(e)}`;
+  status.textContent = t("error.load_failed", { message: e instanceof Error ? e.message : String(e) });
 });
 
 // ---- 画像の配信の節（デモだけの処理。製品の挙動は変えない）----
@@ -1936,25 +1932,22 @@ function buildIiifImageSection(ctx: {
   localMapID?: string;
 }): void {
   const { app, makeSection, mountSection, showError, logEvent, activeMapId } = ctx;
-  const sec = makeSection("IIIF の画像");
+  const sec = makeSection(t("section.iiif_image"));
 
   // (a) IIIF から配信
   if (ctx.iiifUsable) {
     const mapID = ctx.iiifUsable;
     const row = sec.row();
     row.appendChild(
-      makeButton("IIIF から配信", () => {
+      makeButton(t("iiif.btn_deliver"), () => {
         app.clearLine();
         void app.changeMap(mapID).catch((e: unknown) => {
-          showError("IIIF から配信", e);
+          showError(t("iiif.btn_deliver"), e);
         });
       })
     );
-    addIiifNote(
-      row,
-      "見えるもの: 古地図が表示される。節の中に「直近のタイルの要求」の一覧（dl.ndl.go.jp/api/iiif/948741/R0000003/768,512,256,256/256,/0/default.jpg の形）。キャッシュの欄は「キャッシュ対象外」"
-    );
-    addIiifNote(row, "対比で分かること: 画像が NDL の IIIF から来ている（ネットワークの要求が IIIF の切り出しの形）");
+    addIiifNote(row, t("iiif.see_deliver"));
+    addIiifNote(row, t("iiif.contrast_deliver"));
   }
 
   // (b) 壊れた delivery
@@ -1962,22 +1955,19 @@ function buildIiifImageSection(ctx: {
     const mapID = ctx.iiifBroken;
     const row = sec.row();
     row.appendChild(
-      makeButton("壊れた delivery", () => {
+      makeButton(t("iiif.btn_broken"), () => {
         void app.changeMap(mapID).then(
           () => {
-            logEvent("changeMap", `${mapID}: 使えない地図なので切り替わりません（他の地図は使えます）`);
+            logEvent("changeMap", t("iiif.log_unusable", { mapID }));
           },
           (e: unknown) => {
-            showError("壊れた delivery", e);
+            showError(t("iiif.btn_broken"), e);
           }
         );
       })
     );
-    addIiifNote(
-      row,
-      "見えるもの: 地図の一覧で「使えない地図」になり、他の地図は普通に使える。節に console.error の文（「IIIF image … is not usable: fetch-failed」）を写す"
-    );
-    addIiifNote(row, "対比で分かること: 失敗しても起動が止まらない");
+    addIiifNote(row, t("iiif.see_broken"));
+    addIiifNote(row, t("iiif.contrast_broken"));
   }
 
   // (c) 既存の地域の古地図（手元のタイル）
@@ -1986,38 +1976,38 @@ function buildIiifImageSection(ctx: {
     if (ctx.localMapID) {
       const mapID = ctx.localMapID;
       row.appendChild(
-        makeButton("この地域の古い地図（手元のタイル）", () => {
+        makeButton(t("iiif.btn_local"), () => {
           app.clearLine();
           void app.changeMap(mapID).catch((e: unknown) => {
-            showError("手元のタイル", e);
+            showError(t("iiif.where_local"), e);
           });
         })
       );
     } else {
       row.appendChild(
-        makeButton("既存の地域（館林）の古い地図", () => {
+        makeButton(t("iiif.btn_tatebayashi"), () => {
           const url = new URL(location.href);
           url.searchParams.set("region", "tatebayashi");
           location.assign(url.toString());
         })
       );
     }
-    addIiifNote(row, "見えるもの: 要求の一覧は t.tilemap.jp/…/{z}/{x}/{y}.jpg の形");
-    addIiifNote(row, "対比で分かること: 手元のタイルの道（今の道）との違い");
-    addIiifNote(row, "同じ画像の手元のタイルはまだ作れないため、既存の地域の古い地図で見せています。");
+    addIiifNote(row, t("iiif.see_local"));
+    addIiifNote(row, t("iiif.contrast_local"));
+    addIiifNote(row, t("iiif.local_unavailable"));
   }
 
   // 直近のタイルの要求（PerformanceObserver の resource。textContent で入れる）
   const requestTitle = document.createElement("p");
   requestTitle.className = "demo-note";
-  requestTitle.textContent = "直近のタイルの要求:";
+  requestTitle.textContent = t("iiif.requests_title");
   const requestList = document.createElement("pre");
   requestList.id = "iiif-tile-requests";
   requestList.className = "demo-note";
   requestList.style.cssText = "white-space:pre-wrap;word-break:break-all;margin:4px 0 0;";
-  requestList.textContent = tileRequests.length > 0 ? tileRequests.join("\n") : "（まだありません）";
+  requestList.textContent = tileRequests.length > 0 ? tileRequests.join("\n") : t("iiif.none_yet");
   tileRequestSink = (list) => {
-    requestList.textContent = list.length > 0 ? list.join("\n") : "（まだありません）";
+    requestList.textContent = list.length > 0 ? list.join("\n") : t("iiif.none_yet");
   };
   startTileRequestObserver();
   sec.sec.append(requestTitle, requestList);
@@ -2025,12 +2015,12 @@ function buildIiifImageSection(ctx: {
   // キャッシュの対象か（Core の公開のメソッドだけで見る）
   const cacheRow = sec.row();
   const cacheLabel = document.createElement("span");
-  cacheLabel.textContent = "キャッシュ: ";
+  cacheLabel.textContent = `${t("iiif.cache_label")} `;
   const cacheValue = document.createElement("span");
   cacheValue.id = "iiif-cache";
   const refreshCache = (): void => {
     const mapID = activeMapId();
-    cacheValue.textContent = mapID && app.getMapCacheEnable(mapID) ? "キャッシュ対象" : "キャッシュ対象外";
+    cacheValue.textContent = mapID && app.getMapCacheEnable(mapID) ? t("iiif.cacheable") : t("iiif.not_cacheable");
   };
   refreshCache();
   app.addEventListener("mapChanged", refreshCache);
@@ -2039,12 +2029,12 @@ function buildIiifImageSection(ctx: {
   // 使えない地図の記録（Core の console.error を写す）
   const errorTitle = document.createElement("p");
   errorTitle.className = "demo-note";
-  errorTitle.textContent = "使えない地図の記録（console.error）:";
+  errorTitle.textContent = t("iiif.errors_title");
   const errorList = document.createElement("pre");
   errorList.id = "iiif-unusable-errors";
   errorList.className = "demo-note";
   errorList.style.cssText = "white-space:pre-wrap;word-break:break-all;margin:4px 0 0;";
-  errorList.textContent = unusableMessages.length > 0 ? unusableMessages.join("\n") : "（ありません）";
+  errorList.textContent = unusableMessages.length > 0 ? unusableMessages.join("\n") : t("iiif.none");
   sec.sec.append(errorTitle, errorList);
 
   mountSection(sec);
@@ -2064,7 +2054,7 @@ function iiifRowTable(rows: IiifTableRow[]): HTMLTableElement {
   table.className = "demo-iiif-table";
   const hasFrom = rows.some((row) => row.from !== undefined);
   const head = document.createElement("tr");
-  for (const text of hasFrom ? ["from", "項目名", "値"] : ["項目名", "値"]) {
+  for (const text of hasFrom ? ["from", t("bib.col_name"), t("bib.col_value")] : [t("bib.col_name"), t("bib.col_value")]) {
     const th = document.createElement("th");
     th.textContent = text;
     head.appendChild(th);
@@ -2120,7 +2110,7 @@ function buildIiifBibliographySection(ctx: {
   maps: Array<{ mapID: string; label: string }>;
 }): void {
   const { app, makeSection, mountSection, showError, activeMapId, maps } = ctx;
-  const sec = makeSection("IIIF の書誌");
+  const sec = makeSection(t("section.iiif_bib"));
 
   // (a) (a') 書誌を持つ地図へ切り替える
   const mapRow = sec.row();
@@ -2128,19 +2118,16 @@ function buildIiifBibliographySection(ctx: {
     const btn = makeButton(map.label, () => {
       app.clearLine();
       void app.changeMap(map.mapID).catch((e: unknown) => {
-        showError("IIIF の書誌", e);
+        showError(t("section.iiif_bib"), e);
       });
     });
     btn.dataset.iiifMap = map.mapID;
     mapRow.appendChild(btn);
   }
-  addIiifNote(
-    mapRow,
-    "見えるもの: 節の「書誌」の欄に getMapMeta の title・attr・license・licenseNote と、iiif.metadata の全件の表（項目名は textContent、値は sanitizeIiifHtml）。copiedAt と「Manifest から写した値」の印"
-  );
-  addIiifNote(mapRow, "対比で分かること: 書誌が Manifest から写されたものだと分かる。NDL のライセンスが「Custom」と URL の文字で出る見え方を人間が見る");
-  addIiifNote(mapRow, "見えるもの: 「書誌の表を出さない」地図では表が出ない（display: \"hidden\"）");
-  addIiifNote(mapRow, "対比で分かること: 表を出すかはアプリ設定で選ぶ");
+  addIiifNote(mapRow, t("bib.see_meta"));
+  addIiifNote(mapRow, t("bib.contrast_meta"));
+  addIiifNote(mapRow, t("bib.see_hidden"));
+  addIiifNote(mapRow, t("bib.contrast_hidden"));
 
   const summaryBox = document.createElement("div");
   summaryBox.id = "iiif-meta-summary";
@@ -2171,23 +2158,23 @@ function buildIiifBibliographySection(ctx: {
     displayLine.textContent = "";
     tableBox.replaceChildren();
     if (!meta || !iiif) {
-      appendLine("書誌", "この地図には IIIF の書誌（iiif 節）がありません");
+      appendLine(t("bib.label"), t("bib.none"));
       return;
     }
     appendLine("title", localizedText(meta.title));
     appendLine("attr", localizedText(meta.attr));
     appendLine("license", typeof meta.license === "string" ? meta.license : "");
     appendLine("licenseNote", localizedText(meta.licenseNote));
-    appendLine("copiedAt", typeof iiif.copiedAt === "string" ? iiif.copiedAt : "（ありません）");
+    appendLine("copiedAt", typeof iiif.copiedAt === "string" ? iiif.copiedAt : t("iiif.none"));
     const stamp = document.createElement("p");
     stamp.id = "iiif-meta-stamp";
-    stamp.textContent = "Manifest から写した値";
+    stamp.textContent = t("bib.stamp");
     summaryBox.appendChild(stamp);
     displayLine.textContent = `display: ${iiif.display === "all" ? "all" : "hidden"}`;
     if (iiif.display !== "all") {
       const note = document.createElement("p");
       note.id = "iiif-meta-hidden";
-      note.textContent = "表を出さない設定（hidden）";
+      note.textContent = t("bib.hidden");
       tableBox.replaceChildren(note);
       return;
     }
@@ -2201,13 +2188,13 @@ function buildIiifBibliographySection(ctx: {
   const tryRow = sec.row();
   const manifestField = document.createElement("label");
   manifestField.className = "demo-field";
-  manifestField.appendChild(document.createTextNode("資料の Manifest"));
+  manifestField.appendChild(document.createTextNode(t("bib.manifest_field")));
   const manifestSelect = document.createElement("select");
   manifestSelect.id = "iiif-try-manifest";
   for (const source of IIIF_TRY_SOURCES) {
     const opt = document.createElement("option");
     opt.value = source.id;
-    opt.textContent = source.label;
+    opt.textContent = t(source.labelKey);
     manifestSelect.appendChild(opt);
   }
   manifestField.appendChild(manifestSelect);
@@ -2218,8 +2205,8 @@ function buildIiifBibliographySection(ctx: {
   canvasSelect.id = "iiif-try-canvas";
   canvasField.appendChild(canvasSelect);
   tryRow.append(manifestField, canvasField);
-  addIiifNote(tryRow, "見えるもの: 入力の JSON（bindings）と出力の表（values・copiedValues・copiedMetadata・unresolved・warnings）、判定の表");
-  addIiifNote(tryRow, "対比で分かること: 純粋な関数が何を取り出すか（v2 と v3 で同じ鍵に揃う）。「人が直した」と「IIIF の側が変わった」が分かれる");
+  addIiifNote(tryRow, t("bib.see_try"));
+  addIiifNote(tryRow, t("bib.contrast_try"));
 
   const preStyle = "white-space:pre-wrap;word-break:break-all;margin:4px 0 0;max-height:240px;overflow:auto;";
   const tryInput = document.createElement("pre");
@@ -2241,21 +2228,21 @@ function buildIiifBibliographySection(ctx: {
   let iiifChanged = false;
 
   const compareRow = sec.row();
-  const humanBtn = makeButton("題名を手で直した", () => {
+  const humanBtn = makeButton(t("bib.btn_human"), () => {
     humanEdited = !humanEdited;
     syncCompareButtons();
     renderCompare();
   });
   humanBtn.dataset.iiifEdit = "human";
-  const iiifBtn = makeButton("IIIF の側が変わった", () => {
+  const iiifBtn = makeButton(t("bib.btn_iiif"), () => {
     iiifChanged = !iiifChanged;
     syncCompareButtons();
     renderCompare();
   });
   iiifBtn.dataset.iiifEdit = "iiif";
   compareRow.append(humanBtn, iiifBtn);
-  addIiifNote(compareRow, "見えるもの: 押した数だけ「人が直した」「IIIF の側が変わった」が変わる判定の表");
-  addIiifNote(compareRow, "対比で分かること: 今の値と写した時点の値で「人が直した」を、写した時点の値と取り直した値で「IIIF の側が変わった」を見る");
+  addIiifNote(compareRow, t("bib.see_compare"));
+  addIiifNote(compareRow, t("bib.contrast_compare"));
   const compareBox = document.createElement("div");
   compareBox.id = "iiif-try-compare";
   compareBox.className = "demo-note";
@@ -2282,21 +2269,21 @@ function buildIiifBibliographySection(ctx: {
 
   const renderCompare = (): void => {
     if (!lastResolved || !lastResolved.ok) {
-      compareBox.textContent = "（先に資料の Manifest と canvas を選ぶと、判定の表を出します）";
+      compareBox.textContent = t("bib.compare_empty");
       return;
     }
     const copied = lastResolved.copiedValues;
     const current = structuredClone(lastResolved.values) as Record<string, unknown>;
     const fresh = structuredClone(copied) as Record<string, Record<string, string>>;
-    if (humanEdited) editTitle(current, "（題名を手で直した）");
-    if (iiifChanged) editTitle(fresh, "（IIIF の側が変わった）");
+    if (humanEdited) editTitle(current, t("bib.suffix_human"));
+    if (iiifChanged) editTitle(fresh, t("bib.suffix_iiif"));
     const rows = compareIiifCopy(current as Parameters<typeof compareIiifCopy>[0], copied, fresh, pageLang());
 
     const table = document.createElement("table");
     table.className = "demo-iiif-table";
     table.id = "iiif-try-compare-table";
     const head = document.createElement("tr");
-    for (const text of ["鍵", "言語", "人が直した", "IIIF の側が変わった"]) {
+    for (const text of [t("bib.col_key"), t("bib.col_lang"), t("bib.col_human"), t("bib.col_iiif")]) {
       const th = document.createElement("th");
       th.textContent = text;
       head.appendChild(th);
@@ -2311,7 +2298,7 @@ function buildIiifBibliographySection(ctx: {
         row.key,
         row.lang,
         String(row.humanEdited),
-        row.iiifChanged === undefined ? "（判定しない）" : String(row.iiifChanged)
+        row.iiifChanged === undefined ? t("bib.not_judged") : String(row.iiifChanged)
       ]) {
         const td = document.createElement("td");
         td.textContent = text;
@@ -2321,7 +2308,7 @@ function buildIiifBibliographySection(ctx: {
     }
     table.appendChild(tbody);
     const note = document.createElement("p");
-    note.textContent = "人が直した: 今の値 ≠ 写した時点の値。IIIF の側が変わった: 写した時点の値 ≠ 取り直した値";
+    note.textContent = t("bib.compare_note");
     compareBox.replaceChildren(table, note);
   };
 
@@ -2331,7 +2318,7 @@ function buildIiifBibliographySection(ctx: {
     if (!listed.ok) {
       const opt = document.createElement("option");
       opt.value = "";
-      opt.textContent = `canvas を読めません（${listed.reason}）`;
+      opt.textContent = t("bib.canvas_unreadable", { reason: listed.reason });
       canvasSelect.appendChild(opt);
       return;
     }
@@ -2339,7 +2326,7 @@ function buildIiifBibliographySection(ctx: {
       const opt = document.createElement("option");
       opt.value = canvas.id;
       const label = localizedText(canvas.label);
-      opt.textContent = label ? `${label}（${canvas.width}×${canvas.height}）` : canvas.id;
+      opt.textContent = label ? t("bib.canvas_option", { label, width: canvas.width, height: canvas.height }) : canvas.id;
       canvasSelect.appendChild(opt);
     }
     canvasSelect.value = listed.canvases.some((canvas) => canvas.id === source.canvas)
@@ -2356,7 +2343,7 @@ function buildIiifBibliographySection(ctx: {
     tryTableBox.replaceChildren();
     lastResolved = resolved;
     if (!resolved.ok) {
-      tryOutput.textContent = `解決できませんでした: ${resolved.reason}`;
+      tryOutput.textContent = t("bib.resolve_failed", { reason: resolved.reason });
       renderCompare();
       return;
     }
@@ -2386,8 +2373,8 @@ function buildIiifBibliographySection(ctx: {
 
   // (c) 悪い値の Manifest をサニタイズに通した表
   const badRow = sec.row();
-  addIiifNote(badRow, "見えるもの: 表の値に画像も実行も出ない");
-  addIiifNote(badRow, "対比で分かること: IIIF の値のサニタイズ");
+  addIiifNote(badRow, t("bib.see_bad"));
+  addIiifNote(badRow, t("bib.contrast_bad"));
   const badOutput = document.createElement("div");
   badOutput.id = "iiif-bad-output";
   badOutput.className = "demo-note";
@@ -2395,7 +2382,7 @@ function buildIiifBibliographySection(ctx: {
 
   const bad = resolveIiifMetadata(IIIF_BAD_MANIFEST, { canvas: "", bindings: IIIF_BAD_BINDINGS }, pageLang(), sanitizeIiifHtml);
   if (!bad.ok) {
-    badOutput.textContent = `悪い値の Manifest を読めませんでした: ${bad.reason}`;
+    badOutput.textContent = t("bib.bad_failed", { reason: bad.reason });
   } else {
     const valueRows: IiifTableRow[] = Object.entries(bad.values).map(([key, value]) =>
       IIIF_HTML_KEYS.has(key)

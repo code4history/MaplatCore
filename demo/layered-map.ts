@@ -19,6 +19,9 @@ import {
   COLOR, DASH, MARK, OPACITY, WIDTH,
   bandStroke, casingStroke, compareStroke, coreStroke, principleStroke, rgba
 } from "./layered-map/grammar";
+import { commonDict } from "./i18n/common";
+import { applyLang, detectLang, makeTranslate, mergeDicts, mountLangSwitch } from "./i18n/core";
+import { dict, REGION_KEY } from "./i18n/layered-map";
 
 type P = number[];
 type Line = P[];
@@ -80,44 +83,25 @@ interface Meta {
 interface PaperLines { size: number; coast: Line[]; grid: Line[] }
 interface TrueLines { p1: { coast: Line[]; grid: Line[] }; p2: { coast: Line[]; grid: Line[] }; p3: { coast: Line[]; grid: Line[] } }
 
-// ---- 画面の文言（設計書 §6.3・§6.2）。型の呼び名は、地図 JSON の鍵（a・b・c・d）とは別に、ここだけで決める ----
-const TYPE_NAME: Record<string, string> = { a: "CRS", b: "三角網＋大域外挿", c: "三角網＋扇形外挿", d: "従来型" };
-const typeName = (t: string): string => TYPE_NAME[t] ?? t;
-const HINTS: Record<string, string> = {
-  "1": "CRS では、赤い線が紙の端まで青い帯の中に収まる。三角網＋扇形外挿に切り替えると、打ち間違いの GCP 2 つの周りで、赤い線が帯からはみ出す。GCP の外にある紙の隅でも、小さくずれる。",
-  "2": "従来型では、GCP の外にある北海道の東・沖縄・大陸で、赤い線が大きく曲がって青い帯からはみ出す。三角網＋扇形外挿に切り替えると、曲がりが消えて、赤い線が紙の隅まで帯の近くに収まる。",
-  "3": "GCP の赤い丸と青い輪を見る。CRS では、赤い丸が輪からずれたまま残る。三角網＋大域外挿に切り替えると、赤い丸がどれも輪の中に入り、GCP のある陸の海岸線が帯に乗る。GCP の無い海の上は直らない。",
-  "4": "破線の四辺形の内側は、切り替えても変わらない。この図は地方ごとに歪んでいるが、全体は 1 つの縮尺に乗っている。外側では、三角網＋大域外挿の赤い線が帯に乗り、三角網＋扇形外挿は外れる。",
-  "5": "破線の四辺形の内側は、切り替えても変わらない。この図は GCP の重心を中心に大きく描いてある。外側では、三角網＋扇形外挿の赤い線が帯に近く、三角網＋大域外挿は縮尺が合わずに外れる。"
-};
+// ---- 画面の文言（設計書 §6.3・§6.2）は、すべて辞書（demo/i18n/common.ts・demo/i18n/layered-map.ts。ja・en）に置く ----
+// 型の呼び名は、地図 JSON の鍵（a・b・c・d）とは別に、辞書だけで決める
+const lang = detectLang();
+const tr = makeTranslate(mergeDicts(commonDict, dict), lang);
+const typeName = (k: string): string => (["a", "b", "c", "d"].includes(k) ? tr(`type.${k}`) : k);
 // 補完点の切り替えがあるデモの、確認のポイントの足し分。菱形の数は meta から入れる
-const supplementHint = (n: number): string =>
-  `補完点ありでは、凸包の辺の上に黒い菱形が ${n} つ出て、凸包の内側に入り込んでいた補助頂点の三角形が消える。凸包の外では、赤い線と灰色の線が離れる所がある。`;
-const SUP_NOTE = "補完点は、システムが足す対応点。補助頂点の三角形が GCP の凸包の内側に入り込まないように、凸包の辺の上に足す。人間が打った対応点ではないので、黒の菱形で描く。";
-const SUP_NOTE_NONE = "この型は三角網を使わないので、補完点は無い。切り替えても変わらない。";
+const supplementHint = (n: number): string => (n === 1 ? tr("lm.hint_sup_one") : tr("lm.hint_sup", { n }));
 // デモの選択のボタンは番号だけにし、2 つの型の呼び名は説明文の段の左に出す（5 つ並べると 1280 画素に収まらない）
-const DEMO_PAIR: Record<string, string> = {
-  "1": "CRS と 三角網＋扇形外挿",
-  "2": "従来型 と 三角網＋扇形外挿",
-  "3": "CRS と 三角網＋大域外挿",
-  "4": "三角網＋大域外挿 と 三角網＋扇形外挿",
-  "5": "三角網＋大域外挿 と 三角網＋扇形外挿"
-};
-const TYPE_NOTE: Record<string, string> = {
-  a: "CRS は、地図を CRS として読んで、6 つの係数だけで紙の全体を写し、三角網は使わない。",
-  b: "三角網＋大域外挿は、CRS の上に GCP の三角網を張り、四辺形の外は地図全体に当てはめたワールドファイルで延ばす。",
-  c: "三角網＋扇形外挿は、CRS の上に GCP の三角網を張り、四辺形の外は縁の GCP の傾向を扇形に延ばす。",
-  d: "従来型（3857＋三角網＋扇形外挿。V2）は、投影を 3857 に決め打ちして、紙の四隅の 4 つの補助頂点を足した三角網で、投影の違いを吸収する。"
+const demoPair = (no: string): string => {
+  const types = meta.demos[no].types;
+  return tr("type.pair", { a: typeName(types[0]), b: typeName(types[1]) });
 };
 // 補完点の切り替えがあるデモだけ、型の説明に足す
-const TYPE_NOTE_SUP: Record<string, string> = {
-  a: "三角網を使わないので、補完点は無い。",
-  b: "凸包の辺が三角網を壊すときは、システムが補完点を足す。",
-  c: "凸包の辺が三角網を壊すときは、システムが補完点を足す。",
-  d: "従来型は補完点を使わない。"
-};
-const SETUP_TYPE: Record<string, string> = { worldFileOnly: TYPE_NAME.a, tinGlobal: TYPE_NAME.b, tinFan: TYPE_NAME.c };
-const statusText = (): string => `デモ ${demoNo}・${typeName(typeKey)}${demoHasSup() && hasSup() ? `・補完点${supplementOn ? "あり" : "なし"}` : ""}`;
+const typeNote = (k: string, withSup: boolean): string => tr(`type.note.${k}`) + (withSup ? tr(`lm.type_sup.${k}`) : "");
+// Teiresias の推奨（setups）の名前 → 型の鍵
+const SETUP_TYPE: Record<string, string> = { worldFileOnly: "a", tinGlobal: "b", tinFan: "c" };
+const statusText = (): string => tr("lm.status_demo", { no: demoNo, type: typeName(typeKey) }) +
+  (demoHasSup() && hasSup() ? tr(supplementOn ? "lm.status_sup_on" : "lm.status_sup_off") : "");
+const regionName = (ja: string): string => (REGION_KEY[ja] ? tr(REGION_KEY[ja]) : ja);
 const REGION_FAR = 0.3; // 紙の縁の外の余白（紙の幅に対する割合）
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => document.getElementById(id) as T;
@@ -268,7 +252,7 @@ function renderPaperFace(): void {
       const [x, y] = q.pixel;
       if (sel) h += `<circle cx="${x}" cy="${y}" r="${u(MARK.gcpGeo) * 0.75 * MARK.selectScale}" fill="none" stroke="${COLOR.select}" stroke-width="3" vector-effect="non-scaling-stroke"/>`;
       h += `<path d="M${x} ${y - r}L${x + r} ${y}L${x} ${y + r}L${x - r} ${y}Z" fill="#fff" stroke="${COLOR.black}" stroke-width="${MARK.supplementStroke}" vector-effect="non-scaling-stroke" stroke-linejoin="miter"/>`;
-      h += `<text x="${x + u(8)}" y="${y + u(14)}" font-size="${u(11)}" font-weight="700">補${q.no}</text>`;
+      h += `<text x="${x + u(8)}" y="${y + u(14)}" font-size="${u(11)}" font-weight="700">${tr("lm.mark_sup", { no: q.no })}</text>`;
       h += `<circle data-sup="${q.no}" cx="${x}" cy="${y}" r="${u(10)}" fill="transparent" style="cursor:pointer"/>`;
     }
     if (g.centroid) {
@@ -283,7 +267,7 @@ function renderPaperFace(): void {
     const r = (u(MARK.gcpPaper) / 2) * (sel ? MARK.selectScale : 1);
     if (sel) h += `<circle cx="${q.pixel[0]}" cy="${q.pixel[1]}" r="${u(MARK.gcpGeo) * 0.75 * MARK.selectScale}" fill="none" stroke="${COLOR.select}" stroke-width="3" vector-effect="non-scaling-stroke"/>`;
     h += `<circle cx="${q.pixel[0]}" cy="${q.pixel[1]}" r="${r}" fill="${COLOR.red}"/>`;
-    h += `<text x="${q.pixel[0] + u(6)}" y="${q.pixel[1] - u(5)}" font-size="${u(11)}" font-weight="700">${q.no}${q.blunder ? " 打ち間違い" : ""}</text>`;
+    h += `<text x="${q.pixel[0] + u(6)}" y="${q.pixel[1] - u(5)}" font-size="${u(11)}" font-weight="700">${q.no}${q.blunder ? tr("lm.mark_blunder") : ""}</text>`;
     h += `<circle data-gcp="${q.no}" cx="${q.pixel[0]}" cy="${q.pixel[1]}" r="${u(10)}" fill="transparent" style="cursor:pointer"/>`;
   }
   svg.innerHTML = h;
@@ -307,13 +291,13 @@ function regionLabels(g: Geom, u: (px: number) => number): string {
   const auxTop = Math.min(...g.aux.map(a => a[1]));
   const auxBottom = Math.max(...g.aux.map(a => a[1]));
   const auxRight = Math.max(...g.aux.map(a => a[0]));
-  let h = text("GCP の三角網", cx, gcps.reduce((a, p) => a + p[1], 0) / gcps.length);
-  h += text("拡張範囲", cx, (hullTop + auxTop) / 2);
+  let h = text(tr("lm.face_tin"), cx, gcps.reduce((a, p) => a + p[1], 0) / gcps.length);
+  h += text(tr("lm.face_extended"), cx, (hullTop + auxTop) / 2);
   if (demoHasSup()) {
-    h += text("凸包", Math.min(...gcps.map(p => p[0])) - 0.04 * W, (Math.min(...gcps.map(p => p[1])) + Math.max(...gcps.map(p => p[1]))) / 2);
-    if (g.intrusionAt) h += text("食い込み", g.intrusionAt[0], g.intrusionAt[1] + u(16)); // GCP の番号に重ならないよう、少し下へ
+    h += text(tr("lm.face_hull"), Math.min(...gcps.map(p => p[0])) - 0.04 * W, (Math.min(...gcps.map(p => p[1])) + Math.max(...gcps.map(p => p[1]))) / 2);
+    if (g.intrusionAt) h += text(tr("lm.face_intrusion"), g.intrusionAt[0], g.intrusionAt[1] + u(16)); // GCP の番号に重ならないよう、少し下へ
   }
-  const outer = g.kind === "worldFile" ? "大域外挿" : "扇形外挿";
+  const outer = tr(g.kind === "worldFile" ? "lm.face_global" : "lm.face_fan");
   const y = Math.min(auxBottom + 0.06 * W, (1 + REGION_FAR) * W - u(12));
   h += text(outer, cx, y);
   if (auxRight + 0.1 * W < (1 + REGION_FAR) * W) h += text(outer, Math.min(auxRight + 0.12 * W, (1 + REGION_FAR) * W - 0.06 * W), W / 2);
@@ -436,7 +420,7 @@ function ringIcon(q: Gcp, sel: boolean): { src: string; anchor: P } {
   // 白抜きの輪。中をほぼ透明で塗るのは、輪の中を押しても選べるようにするため（OpenLayers の当たり判定は描いた画素による）
   const ring = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="rgba(255,255,255,0.02)" stroke="${COLOR.blueDark}" stroke-width="${MARK.gcpGeoStroke}"/>`;
   const sel_ = sel ? `<circle cx="${cx}" cy="${cy}" r="${r + 4}" fill="none" stroke="${COLOR.select}" stroke-width="3"/>` : "";
-  const t = label(cx + r + 5, cy - r + 2, `${q.no}${q.blunder ? " 打ち間違い" : ""}`);
+  const t = label(cx + r + 5, cy - r + 2, `${q.no}${q.blunder ? tr("lm.mark_blunder") : ""}`);
   return { src: svgUri(`<svg xmlns="${NS}" width="120" height="40" viewBox="0 0 120 40">${sel_}${ring}${t}</svg>`), anchor: [cx / 120, 0.5] };
 }
 function dotIcon(sel: boolean): { src: string; anchor: P } {
@@ -455,7 +439,7 @@ function supIcon(q: Supplement, sel: boolean): { src: string; anchor: P } {
   const sel_ = sel ? `<circle cx="${cx}" cy="${cy}" r="${r + 7}" fill="none" stroke="${COLOR.select}" stroke-width="3"/>` : "";
   // 白で塗るのは、集まる三角網の線に埋もれないため（中を押しても選べる）
   const d = `<path d="M${cx} ${cy - r}L${cx + r} ${cy}L${cx} ${cy + r}L${cx - r} ${cy}Z" fill="#fff" stroke="${COLOR.black}" stroke-width="${MARK.supplementStroke}"/>`;
-  const t = label(cx + r + 4, cy + r + 8, `補${q.no}`);
+  const t = label(cx + r + 4, cy + r + 8, tr("lm.mark_sup", { no: q.no }));
   return { src: svgUri(`<svg xmlns="${NS}" width="80" height="40" viewBox="0 0 80 40">${sel_}${d}${t}</svg>`), anchor: [cx / 80, 0.5] };
 }
 const centroidIcon = (): { src: string; anchor: P } => ({
@@ -538,20 +522,20 @@ function setView(kind: ViewKind): void {
 // ---------------------------------------------------------------------------------------------
 // 欄・見出し
 // ---------------------------------------------------------------------------------------------
-const setupNames = (s: string[]): string => s.map(x => SETUP_TYPE[x] ?? x).join(" または ");
+const setupNames = (s: string[]): string => s.map(x => (SETUP_TYPE[x] ? typeName(SETUP_TYPE[x]) : x)).join(tr("lm.setup_join"));
 function renderHint(): void {
-  $("hint-demo").textContent = `デモ ${demoNo}　${DEMO_PAIR[demoNo]}`;
+  $("hint-demo").textContent = tr("lm.hint_demo", { no: demoNo, pair: demoPair(demoNo) });
   const el = $("hint-text");
   const lead = document.createElement("b");
-  lead.textContent = "確認のポイント";
+  lead.textContent = tr("lm.hint_lead");
   const sup = demoHasSup() ? supplementHint(meta.supplement[baseMapId(demo().supplementTypes![0])].count) : "";
-  el.replaceChildren(lead, ` ${HINTS[demoNo]}${sup ? ` ${sup}` : ""}`);
+  el.replaceChildren(lead, ` ${tr(`lm.hint.${demoNo}`)}${sup ? ` ${sup}` : ""}`);
   const t = demo().teiresias;
-  const say = (x: Teiresias, head: string): string => `${head}は ${x.score!.toFixed(4)} で、推奨は ${setupNames(x.setups) || "なし"}。`;
-  let msg = t.score === null ? "適合スコアは出なかった。" : say(t, "適合スコア");
+  const say = (x: Teiresias, key: string): string => tr(key, { score: x.score!.toFixed(4), setups: setupNames(x.setups) || tr("lm.setup_none") });
+  let msg = t.score === null ? tr("lm.score_none") : say(t, "lm.score");
   if (demoNo === "1") {
     const c = meta.gcpSets.g1c.teiresias;
-    if (c.score !== null) msg += `打ち間違いを直した GCP なら、${say(c, "適合スコア")}`;
+    if (c.score !== null) msg += say(c, "lm.score_fixed");
   }
   $("hint-score").textContent = msg;
 }
@@ -568,20 +552,20 @@ function renderPanel(): void {
     b.addEventListener("click", () => void setType(t));
     box.appendChild(b);
   }
-  $("type-note").textContent = TYPE_NOTE[typeKey] + (demoHasSup() ? TYPE_NOTE_SUP[typeKey] : "");
+  $("type-note").textContent = typeNote(typeKey, demoHasSup());
   renderSupplement();
   // ずれの表（2 つの型を横に）
   const rows: [string, (s: MapMeta["stats"]) => string, string][] = [
-    ["内側（全体）", s => `${fmt(s.inner.maxKm)} / ${fmt(s.inner.rmsKm)}`, "GCP の凸包の中。海も含む"],
-    ["内側の陸", s => `${fmt(s.innerLand.maxKm)} / ${fmt(s.innerLand.rmsKm)}`, "GCP の凸包の中で、正解の位置が陸の所だけ"],
-    ["外側", s => `${fmt(s.outer.maxKm)} / ${fmt(s.outer.rmsKm)}`, "GCP の凸包の外で紙の中"],
-    ["GCP", s => fmt(s.gcpMaxKm, 2), "GCP の位置での残差の最大"]
+    ["inner", s => `${fmt(s.inner.maxKm)} / ${fmt(s.inner.rmsKm)}`, ""],
+    ["inner_land", s => `${fmt(s.innerLand.maxKm)} / ${fmt(s.innerLand.rmsKm)}`, ""],
+    ["outer", s => `${fmt(s.outer.maxKm)} / ${fmt(s.outer.rmsKm)}`, ""],
+    ["gcp", s => fmt(s.gcpMaxKm, 2), ""]
   ];
   let h = `<thead><tr><th></th>${types.map(t => `<th>${typeName(t)}</th>`).join("")}</tr></thead><tbody>`;
-  for (const [name, f, tip] of rows) h += `<tr><th title="${tip}">${name}</th>${types.map(t => `<td>${f(meta.maps[mapId(t)].stats)}</td>`).join("")}</tr>`;
+  for (const [key, f] of rows) h += `<tr><th title="${tr(`lm.gap_tip.${key}`)}">${tr(`lm.gap_row.${key}`)}</th>${types.map(t => `<td>${f(meta.maps[mapId(t)].stats)}</td>`).join("")}</tr>`;
   $("gap-table").innerHTML = h + "</tbody>";
   const px = meta.screenRef.mercPerPx[demo().paper];
-  $("gap-ref").textContent = `目安として、「全体」で面の幅が ${meta.screenRef.widthPx} 画素のとき、北緯 35 度で 1 画面画素が約 ${(px / 1000 * Math.cos((35 * Math.PI) / 180)).toFixed(1)} km。`;
+  $("gap-ref").textContent = tr("lm.gap_ref", { width: meta.screenRef.widthPx, km: (px / 1000 * Math.cos((35 * Math.PI) / 180)).toFixed(1) });
   $("view-blunder").hidden = demoNo !== "1";
   $("view-supplement").hidden = !(demoHasSup() && hasSup());
   $("view-intrusion").hidden = !(demoHasSup() && hasSup());
@@ -595,46 +579,46 @@ function renderSupplement(): void {
   if (sec.hidden) return;
   const box = $("sup-buttons");
   box.innerHTML = "";
-  for (const [on, name] of [[true, "あり"], [false, "なし"]] as const) {
+  for (const on of [true, false]) {
     const b = document.createElement("button");
     b.type = "button";
-    b.textContent = `補完点${name}`;
+    b.textContent = tr(on ? "lm.sup_on" : "lm.sup_off");
     b.disabled = !hasSup();
     b.setAttribute("aria-pressed", String(hasSup() && on === supplementOn));
     b.addEventListener("click", () => void setSupplement(on));
     box.appendChild(b);
   }
-  $("sup-note").textContent = hasSup() ? SUP_NOTE : SUP_NOTE_NONE;
+  $("sup-note").textContent = tr(hasSup() ? "lm.sup_note" : "lm.sup_note_none");
   $<HTMLInputElement>("chk-compare").disabled = !hasSup();
   const types = demo().supplementTypes!;
-  const rows: [string, (x: SupplementStat) => string, string][] = [
-    ["補完点の数", x => String(x.count), "システムが足した補完点の数"],
-    ["食い込み あり / なし", x => `${pct(x.intrusion.on)} / ${pct(x.intrusion.off)}`, "補助頂点を含む三角形が、GCP の凸包の内側へ入り込む面積の、凸包の面積に対する割合。紙の面で測る。左が補完点あり、右がなし"],
-    ["外の差 最大 / 二乗平均 km", x => `${fmt(x.diff.outer.maxKm)} / ${fmt(x.diff.outer.rmsKm)}`, "補完点あり・なしの変換結果の距離。GCP の凸包の外で、紙の上の 65×65 点で測る"],
-    ["内の差 最大 / 二乗平均 km", x => `${fmt(x.diff.inner.maxKm)} / ${fmt(x.diff.inner.rmsKm)}`, "同じ距離を GCP の凸包の中で測ったもの"]
+  const rows: [string, (x: SupplementStat) => string][] = [
+    ["count", x => String(x.count)],
+    ["intrusion", x => `${pct(x.intrusion.on)} / ${pct(x.intrusion.off)}`],
+    ["diff_outer", x => `${fmt(x.diff.outer.maxKm)} / ${fmt(x.diff.outer.rmsKm)}`],
+    ["diff_inner", x => `${fmt(x.diff.inner.maxKm)} / ${fmt(x.diff.inner.rmsKm)}`]
   ];
   let h = `<thead><tr><th></th>${types.map(t => `<th>${typeName(t)}</th>`).join("")}</tr></thead><tbody>`;
-  for (const [name, f, tip] of rows) h += `<tr><th title="${tip}">${name}</th>${types.map(t => `<td>${f(meta.supplement[baseMapId(t)])}</td>`).join("")}</tr>`;
+  for (const [key, f] of rows) h += `<tr><th title="${tr(`lm.sup_tip.${key}`)}">${tr(`lm.sup_row.${key}`)}</th>${types.map(t => `<td>${f(meta.supplement[baseMapId(t)])}</td>`).join("")}</tr>`;
   $("sup-table").innerHTML = h + "</tbody>";
 }
 const gcpName = (v: number | string | null): string => {
   if (v === null) return "";
-  if (typeof v === "number") return `GCP ${v + 1}`;
-  return String(v)[0] === "s" ? `補完点 ${Number(String(v).slice(1)) + 1}` : String(v);
+  if (typeof v === "number") return tr("lm.gcp_name", { no: v + 1 });
+  return String(v)[0] === "s" ? tr("lm.sup_name", { no: Number(String(v).slice(1)) + 1 }) : String(v);
 };
 function renderGcpInfo(): void {
   const el = $("gcp-info");
   if (selectedSup !== undefined) {
     const q = supplementList().find(x => x.no === selectedSup);
     if (q) {
-      el.innerHTML = `<b>補完点 ${q.no}</b>。システムが足した点で、人間が打った対応点ではない。<br>${gcpName(q.edge[0])} と ${gcpName(q.edge[1])} を結ぶ凸包の辺の上にある。<br>紙の画素は (${q.pixel[0].toFixed(0)}, ${q.pixel[1].toFixed(0)})、経度・緯度は (${q.lonlat[0].toFixed(3)}, ${q.lonlat[1].toFixed(3)})。三角網は、この点を必ず通る。`;
+      el.innerHTML = tr("lm.info_sup_html", { no: q.no, a: gcpName(q.edge[0]), b: gcpName(q.edge[1]), px: q.pixel[0].toFixed(0), py: q.pixel[1].toFixed(0), lon: q.lonlat[0].toFixed(3), lat: q.lonlat[1].toFixed(3) });
       return;
     }
   }
-  if (selected === undefined) { el.textContent = "印を押すと、ここに詳しく出る。"; return; }
+  if (selected === undefined) { el.textContent = tr("lm.info_none"); return; }
   const q = gcpList().find(x => x.no === selected)!;
-  const res = demo().types.map(t => `${typeName(t)}が ${fmt(meta.maps[mapId(t)].gcpResidual[selected! - 1].km, 2)}`).join("、");
-  el.innerHTML = `<b>GCP ${q.no}</b>（${q.region}）${q.blunder ? "<b>打ち間違い</b>" : ""}<br>紙の画素は (${q.pixel[0].toFixed(0)}, ${q.pixel[1].toFixed(0)})、経度・緯度は (${q.lonlat[0].toFixed(3)}, ${q.lonlat[1].toFixed(3)})。<br>この GCP でのずれ（km）は、${res}。`;
+  const res = demo().types.map(t => tr("lm.res_item", { type: typeName(t), km: fmt(meta.maps[mapId(t)].gcpResidual[selected! - 1].km, 2) })).join(tr("lm.res_join"));
+  el.innerHTML = tr("lm.info_gcp_html", { no: q.no, region: regionName(q.region), blunder: q.blunder ? tr("lm.info_blunder_html") : "", px: q.pixel[0].toFixed(0), py: q.pixel[1].toFixed(0), lon: q.lonlat[0].toFixed(3), lat: q.lonlat[1].toFixed(3), res });
 }
 function renderLegend(): void {
   const sw = (inner: string): string => `<svg viewBox="0 0 36 12" aria-hidden="true">${inner}</svg>`;
@@ -642,18 +626,18 @@ function renderLegend(): void {
   const core = `<line x1="0" y1="6" x2="36" y2="6" stroke="${COLOR.red}" stroke-width="${WIDTH.terrain.core}"/>`;
   const dots = `<line x1="0" y1="6" x2="36" y2="6" stroke="${COLOR.black}" stroke-width="${WIDTH.principle}" stroke-dasharray="${DASH.tin.join(" ")}"/>`;
   let h =
-    `<span>${sw(core)}赤い線は、紙に描いてあるものを変換した結果</span>` +
-    `<span>${sw(band)}青い帯は正解。赤い線が帯の中なら合っている</span>` +
-    `<span>${sw(dots)}黒い点線は、変換のしくみ</span>`;
+    `<span>${sw(core)}${tr("lm.legend.core")}</span>` +
+    `<span>${sw(band)}${tr("lm.legend.band")}</span>` +
+    `<span>${sw(dots)}${tr("lm.legend.dots")}</span>`;
   // 補完点の切り替えがあるデモだけ。灰色は正解ではない（正解の無い比較）
   if (demoHasSup()) {
     const gray = `<line x1="0" y1="6" x2="36" y2="6" stroke="${COLOR.gray}" stroke-width="${WIDTH.compare.terrain}"/>`;
     const r = MARK.supplement / 2;
     const diamond = `<path d="M18 ${6 - r}L${18 + r} 6L18 ${6 + r}L${18 - r} 6Z" fill="#fff" stroke="${COLOR.black}" stroke-width="${MARK.supplementStroke}"/>`;
     const hull = `<line x1="0" y1="6" x2="36" y2="6" stroke="${COLOR.black}" stroke-width="${WIDTH.principle}" stroke-dasharray="${DASH.hull.join(" ")}"/>`;
-    h += `<span>${sw(gray)}灰色の細い線は、補完点のもう一方の設定の結果。正解ではない</span>` +
-      `<span>${sw(diamond)}黒い菱形は、システムが足した補完点</span>` +
-      `<span>${sw(hull)}黒い破線と点の線は、GCP の凸包</span>`;
+    h += `<span>${sw(gray)}${tr("lm.legend.gray")}</span>` +
+      `<span>${sw(diamond)}${tr("lm.legend.diamond")}</span>` +
+      `<span>${sw(hull)}${tr("lm.legend.hull")}</span>`;
   }
   $("legend").innerHTML = h;
 }
@@ -663,7 +647,7 @@ function renderLegend(): void {
 // ---------------------------------------------------------------------------------------------
 function syncUrl(): void {
   try {
-    history.replaceState(null, "", `?demo=${demoNo}&type=${typeKey}${demoHasSup() ? `&sup=${supplementOn ? 1 : 0}` : ""}`);
+    history.replaceState(null, "", `?demo=${demoNo}&type=${typeKey}${demoHasSup() ? `&sup=${supplementOn ? 1 : 0}` : ""}&lang=${lang}`);
   } catch {
     /* 失敗しても動作に影響しない */
   }
@@ -687,7 +671,7 @@ async function applyBackground(): Promise<void> {
 }
 async function redrawAll(): Promise<void> {
   const token = ++runToken;
-  statusEl.textContent = "描いています…";
+  statusEl.textContent = tr("lm.drawing");
   renderPaperFace();
   await drawBlue(token);
   if (token !== runToken) return;
@@ -739,6 +723,8 @@ async function setDemo(no: string): Promise<void> {
 
 async function main(): Promise<void> {
   const params = new URLSearchParams(location.search);
+  applyLang(tr, lang);
+  mountLangSwitch($("lang-switch"), lang, tr("common.lang_label"));
   const j = async <T>(url: string): Promise<T> => (await fetch(url)).json() as Promise<T>;
   meta = await j<Meta>("demo-data/layered_demo_meta.json");
   const [coast, p1, p2, p3] = await Promise.all([
@@ -777,8 +763,8 @@ async function main(): Promise<void> {
     b.type = "button";
     b.dataset.demo = no;
     b.textContent = no;
-    b.title = DEMO_PAIR[no];
-    b.setAttribute("aria-label", `デモ ${no}: ${DEMO_PAIR[no]}`);
+    b.title = demoPair(no);
+    b.setAttribute("aria-label", tr("lm.demo_aria", { no, pair: demoPair(no) }));
     b.addEventListener("click", () => void setDemo(no));
     tabs.appendChild(b);
   }
@@ -827,6 +813,6 @@ async function main(): Promise<void> {
 }
 
 main().catch(e => {
-  statusEl.textContent = `起動に失敗: ${String(e)}`;
+  statusEl.textContent = tr("lm.failed", { error: String(e) });
   console.error(e);
 });

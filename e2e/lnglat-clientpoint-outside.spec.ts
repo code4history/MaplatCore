@@ -4,7 +4,7 @@ import { test, expect, type Page } from '@playwright/test';
 // 描かれたピンの位置（地点の画素・当たり判定）が一致することを確かめる。
 // デモの館林（?region=tatebayashi）で、縮尺を変えて紙の外を出してから測る。
 
-const DEMO = '/?region=tatebayashi&cache=0';
+const DEMO = '/old-map.html?region=tatebayashi&cache=0&lang=ja';
 const ZOOMS = [13, 14.5, 15, 16];
 // ピンの頭の中心（地点から上へ）。アイコンの anchor は下端の中央。
 const PIN_HEAD = 36;
