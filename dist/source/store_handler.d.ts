@@ -32,6 +32,7 @@ interface HistMapStore {
     sub_maps: SubMap[];
     homePosition: Position;
     mercZoom: number;
+    viewpointMode?: string;
 }
 interface SubMap {
     gcps?: PointSet[];
