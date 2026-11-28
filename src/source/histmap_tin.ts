@@ -236,9 +236,16 @@ export class HistMap_tin extends HistMap {
     return this.xy2MercAsync_returnLayer(xy).then(ret => ret[1]);
   }
 
+  /**
+   * @param layerIndex - 層番号（省略時は従来の層選択）。0 = 本図、1 以上 = 副層。
+   *   使える副層（tinEnabled === false または compiled あり）だけに絞り込んだ後の
+   *   添字 + 1 なので、地図 JSON の sub_maps の元の添字とはずれる場合がある。
+   *   範囲外の番号・非整数は例外になる
+   */
   viewpoint2MercsAsync(
     viewpoint?: ViewpointArray,
-    size?: Size
+    size?: Size,
+    layerIndex?: number
   ): Promise<CrossCoordinatesArray> {
     const center = (viewpoint?.[0] ??
       this.getMap().getView().getCenter()!) as number[];
@@ -249,16 +256,27 @@ export class HistMap_tin extends HistMap {
 
     const mercs = this.mapTransform.viewpoint2Mercs(
       { center, zoom, rotation },
-      size as [number, number]
+      size as [number, number],
+      layerIndex
     );
     return Promise.resolve([mercs, size] as CrossCoordinatesArray);
   }
 
-  mercs2ViewpointAsync(mercs: CrossCoordinatesArray): Promise<ViewpointArray> {
+  /**
+   * @param layerIndex - 層番号（省略時は従来の層選択）。0 = 本図、1 以上 = 副層。
+   *   使える副層（tinEnabled === false または compiled あり）だけに絞り込んだ後の
+   *   添字 + 1 なので、地図 JSON の sub_maps の元の添字とはずれる場合がある。
+   *   範囲外の番号・非整数は例外になる
+   */
+  mercs2ViewpointAsync(
+    mercs: CrossCoordinatesArray,
+    layerIndex?: number
+  ): Promise<ViewpointArray> {
     const size = (mercs[1] ?? this.getMap().getSize()!) as [number, number];
     const viewpoint = this.mapTransform.mercs2Viewpoint(
       mercs[0] as number[][],
-      size
+      size,
+      layerIndex
     );
     return Promise.resolve([
       viewpoint.center as Coordinate,
