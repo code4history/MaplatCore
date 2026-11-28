@@ -349,6 +349,9 @@ World-file layers can be mixed with TIN layers in the same map. Core uses
 EPSG:3857 and EPSG:4326 directly and loads proj4js on demand in the ES build
 for other CRS definitions. The UMD build includes proj4js. See the
 [map data format](docs/map-data.md) for the pixel origin, CRS and inset settings.
+The top-level `viewpointMode` key selects how viewpoints (center, scale,
+direction) convert: a dynamic grid (default, exact round trip) or one fixed
+value for the whole map.
 
 ### Serving a map image from a IIIF Image API service (`delivery`)
 

@@ -14,6 +14,7 @@ import {
   type CrsObject,
   type LayeredMapData,
   type LayerSurfaceData,
+  type ViewpointMode,
   type ProjectionEngine,
   type WorldFile
 } from "@maplat/transform";
@@ -56,6 +57,9 @@ interface HistMapStore {
   sub_maps: SubMap[];
   homePosition: Position;
   mercZoom: number;
+  // 地図 JSON 最上位の視点変換モード（"constant" | "grid"、設計書 §3.2）。
+  // 副層（sub_maps）には置かない。読むときは値を検査し、不正な値は捨てる
+  viewpointMode?: string;
 }
 
 interface SubMap {
@@ -87,7 +91,8 @@ const keys: (keyof HistMapStore)[] = [
   "lang",
   "imageExtension",
   "homePosition",
-  "mercZoom"
+  "mercZoom",
+  "viewpointMode"
 ];
 
 export async function store2HistMap(
@@ -276,6 +281,13 @@ async function toSurfaceData(
 }
 
 // Core が使う副層はここで一度だけ絞り込み、配列の添字 + 1 をすべての層番号に使う。
+// 最上位の viewpointMode を検査して LayeredMapData へ渡す（設計書 §3.2）。
+// 不正な値は捨て、無ければ undefined のまま渡して Transform の既定（"grid"）に任せる。
+// 副層（sub_maps）の viewpointMode は読まない
+function toViewpointMode(value: string | undefined): ViewpointMode | undefined {
+  return value === "constant" || value === "grid" ? value : undefined;
+}
+
 export async function store2HistMap4Core(
   store: CoreMapStore
 ): Promise<[CoreMapStore, MapTransform]> {
@@ -292,7 +304,8 @@ export async function store2HistMap4Core(
           priority: sub.priority,
           importance: sub.importance
         }))
-      )
+      ),
+      viewpointMode: toViewpointMode(store.viewpointMode)
     };
     const mapTransform = new MapTransform();
     mapTransform.setLayeredMapData(mapData);

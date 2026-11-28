@@ -72,6 +72,25 @@ the surrounding quadrilateral. The compiled form includes the ordered boundary
 in `vertices_points`. Core ignores `worldFile` and `outerTransform` placed
 alongside `compiled` on a TIN layer.
 
+## Viewpoint conversion mode (`viewpointMode`)
+
+Set the top-level `viewpointMode` key to choose how viewpoints (center, scale,
+direction) convert between the old map and the modern map. The whole map (the
+main map and every inset) shares one value; do not write it inside `sub_maps`
+entries.
+
+| Value | Meaning |
+| --- | --- |
+| (omitted) | Same as `"grid"` |
+| `"grid"` | Dynamic grid: the map is split into cells and each point uses its own scale and rotation (default) |
+| `"constant"` | One fixed scale and rotation for the whole map |
+
+`"grid"` gives an exact round trip (a viewpoint returns to its original
+position, zoom and rotation) and moves smoothly across TIN boundaries. It suits
+maps with large distortion or changing projections. `"constant"` suits maps
+whose direction and scale are nearly uniform. Any value other than `"constant"`
+and `"grid"` is dropped on load and behaves like an omission.
+
 ## CRS and distribution
 
 `crs` is an object with optional `epsg`, `authority`, `code`, `proj4`,

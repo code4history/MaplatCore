@@ -298,6 +298,8 @@ Google の copyright は、利用条件が "in full as provided" で出すよう
 EPSG:3857 と EPSG:4326 は内蔵式で変換し、ES 版では他の CRS を使うときに
 proj4js を取得します。UMD 版は proj4js を同梱します。画素の原点・CRS・
 副層の書き方は [地図データの仕様](docs/map-data.ja.md) を参照してください。
+地図 JSON の最上位の `viewpointMode` で、視点（中心・縮尺・方角）の変換を
+「動的グリッド」（既定・厳密に往復する）と「地図全体で固定」から選べます。
 
 ### IIIF の画像サービスから地図の画像を配る（`delivery`）
 

@@ -292,6 +292,47 @@ describe("地図 JSON からの変換面の読み込み", () => {
     expect(getProjection(`Illst:${id}#3`)).toBeNull();
   });
 
+  it("layerIndex を指定すると、副層が重なる地点でも視点が往復して戻る", async () => {
+    const map = await loadMap("layer-index-roundtrip", b);
+    const zoom = 2.2;
+    const rotation = Math.PI / 6;
+    // 副層 1（world file の枠 [304, 300]-[420, 460]）と本図が重なる地点
+    const overlap = [362, 380];
+    const mercs0 = await map.viewpoint2MercsAsync(
+      [map.xy2SysCoord(overlap), zoom, rotation],
+      size,
+      0
+    );
+    const mercs1 = await map.viewpoint2MercsAsync(
+      [map.xy2SysCoord(overlap), zoom, rotation],
+      size,
+      1
+    );
+    // 層を替えると中心のメルカトル座標が替わる（layerIndex が Transform に届く）
+    expect(
+      Math.hypot(
+        mercs0[0][0][0] - mercs1[0][0][0],
+        mercs0[0][0][1] - mercs1[0][0][1]
+      )
+    ).toBeGreaterThan(1);
+    for (const [layerIndex, point] of [
+      [0, overlap],
+      [1, overlap],
+      [2, [128, 384]]
+    ] as [number, number[]][]) {
+      const mercs = await map.viewpoint2MercsAsync(
+        [map.xy2SysCoord(point), zoom, rotation],
+        size,
+        layerIndex
+      );
+      const [restoredCenter, restoredZoom, restoredRotation] =
+        await map.mercs2ViewpointAsync(mercs, layerIndex);
+      expectNear(map.sysCoord2Xy(restoredCenter!), point, 1e-3);
+      expect(restoredZoom).toBeCloseTo(zoom, 6);
+      expect(restoredRotation).toBeCloseTo(rotation, 6);
+    }
+  });
+
   it("副層の三角網に指定された CRS を使う", async () => {
     const bounds = [
       [80, 80],
