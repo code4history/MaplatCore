@@ -107,15 +107,8 @@ export class HistMap_tin extends HistMap {
       throw new Error(`Map ${this.mapID}: 地図の中心を投影できません`);
     const [index, mercCenter] = centerResult;
 
-    const layerSurface = this.mapTransform.getSurfaceTransform(index)!;
     const mainSurface = this.mapTransform.getSurfaceTransform(0)!;
 
-    const dir4 = [
-      [xy[0] - 150, xy[1]],
-      [xy[0] + 150, xy[1]],
-      [xy[0], xy[1] - 150],
-      [xy[0], xy[1] + 150]
-    ];
     const envelope = [
       [0, 0],
       [this.width, 0],
@@ -123,30 +116,35 @@ export class HistMap_tin extends HistMap {
       [0, this.height]
     ];
 
-    const dir4Mercs = dir4.map(p =>
-      layerSurface.transform(p, false, index > 0)
-    );
     const envelopeMercs = envelope.map(p => mainSurface.transform(p, false));
-    if (
-      !dir4Mercs.every(p => p !== false) ||
-      !envelopeMercs.every(p => p !== false)
-    ) {
+    if (!envelopeMercs.every(p => p !== false)) {
       throw new Error(`Map ${this.mapID}: 初期表示の範囲を投影できません`);
     }
 
-    const delta1 = Math.sqrt(
-      Math.pow(dir4Mercs[0][0] - dir4Mercs[1][0], 2) +
-        Math.pow(dir4Mercs[0][1] - dir4Mercs[1][1], 2)
-    );
-    const delta2 = Math.sqrt(
-      Math.pow(dir4Mercs[2][0] - dir4Mercs[3][0], 2) +
-        Math.pow(dir4Mercs[2][1] - dir4Mercs[3][1], 2)
-    );
-    const delta = (delta1 + delta2) / 2;
-
-    if (!this.mercZoom)
-      this.mercZoom =
-        Math.log((300 * (2 * MERC_MAX)) / 256 / delta) / Math.log(2) - 3;
+    if (!this.mercZoom) {
+      // 既定の mercZoom は、紙の中心で xy2MercWithLayer が選んだ層の縮尺 s から出す
+      // （設計書 §7.2 OQ-3）。モード 2（"grid" / 未指定）は格子を作らずに紙の中心の
+      // 十字 4 点（半径 150 px、ignoreBounds = true）で測り、モード 1（"constant"）は
+      // その層の全体の値 s0 を使う。一様（相似）の図では、旧式（4 点の距離平均
+      // delta = 300 * s）と厳密に一致する
+      let s: number;
+      try {
+        s =
+          this.mapTransform.viewpointMode === "constant"
+            ? this.mapTransform.getViewpointCoefficients(index, xy).s
+            : this.mapTransform.probeViewpointCoefficients(
+                index,
+                [xy[0], xy[1]],
+                150
+              ).s;
+      } catch (error) {
+        throw new Error(
+          `Map ${this.mapID}: 初期表示の範囲を投影できません`,
+          { cause: error }
+        );
+      }
+      this.mercZoom = Math.log2((2 * MERC_MAX) / (256 * s)) - 3;
+    }
     if (!this.homePosition) this.homePosition = toLonLat(mercCenter);
     this.envelope = polygon([
       [
